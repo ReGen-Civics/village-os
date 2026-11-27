@@ -526,7 +526,7 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     keptAsk: "We already have your application. Our first email to you didn't go out, so please confirm this address is yours:",
     keptValidFor: (h) => `The link works for ${h} hours. If you didn't apply, you can ignore this email.`,
     statusSubject: "Where your application is",
-    statusText: (link, promise) => `Your application is with us. Follow where it is, who acts next and by when:\n\n${link}\n\n${promise} Keep this link to yourself: it is how we know it is you.`,
+    statusText: (link, promise) => `Your application is in. Thank you! Follow it here any time, and see who acts next:\n\n${link}\n\n${promise} Keep this link to yourself. It's how we know it's you.`,
     confirmButton: "Confirm it's me",
     statusButton: "Follow your application",
   },
@@ -537,7 +537,7 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     keptAsk: "Ya tenemos su solicitud. Nuestro primer correo no salió, así que confirme que esta dirección es suya:", // check: "correo" for email
     keptValidFor: (h) => `El enlace funciona durante ${h} horas. Si no se postuló, puede ignorar este correo.`,
     statusSubject: "Dónde está su solicitud",
-    statusText: (link, promise) => `Su solicitud está con nosotros. Siga dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarde este enlace para usted: es la forma en que sabemos que es usted.`,
+    statusText: (link, promise) => `Su solicitud llegó. ¡Gracias! Sígala aquí cuando quiera, y vea quién actúa ahora:\n\n${link}\n\n${promise} Guarde este enlace para usted. Así sabemos que es usted.`, // needs-native-review: the voice pass, 27 Nov 2026
     confirmButton: "Confirmar que soy yo", // needs-native-review
     statusButton: "Seguir su solicitud", // needs-native-review
   },

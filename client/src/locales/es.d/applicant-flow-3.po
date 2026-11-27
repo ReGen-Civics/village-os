@@ -14,3 +14,8 @@ msgstr "Su postulación"
 msgctxt "profile: the applicant's next-step card, link to the status page"
 msgid "Open your application"
 msgstr "Abrir su postulación"
+
+# needs-native-review: the proposal stays open through the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up."
+msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y puede seguir mejorando su propuesta hasta que la conversación final quede escrita."

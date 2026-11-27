@@ -70,7 +70,7 @@ interface Served {
   /** An adopted applicant's invitation: "expired" offers the door to ask for a new one, "asked" thanks them. */
   invitation?: "none" | "expired" | "asked";
   /** References asked of a shortlisted applicant (shared/applicantOnboarding.ts): the form while it waits, a count once given. */
-  referencesAsked?: { given: number | null; mayAdd: boolean } | null;
+  referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean } | null;
   /** The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note. */
   sixStages?: StatusServedForView["sixStages"];
 }
@@ -262,6 +262,8 @@ export default function ApplicationStatus() {
   const ref = String(params.ref ?? "");
   const [s, setS] = useState<Served | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "missing">("loading");
+  // The references form opened again to replace the list (the lead, 27 Nov 2026: "offer them a chance to edit").
+  const [editRefs, setEditRefs] = useState(false);
   const token = typeof window === "undefined" ? "" : (new URLSearchParams(window.location.search).get("token") ?? "");
 
   // The words this page owns follow the language the person is reading the site in, else the one kept on their proposal.
@@ -444,18 +446,38 @@ export default function ApplicationStatus() {
               </div>
               <div className="space-y-6">
             {view.six && trail}
+            {/* One button per action, each saying done or to do (the lead, 27 Nov 2026: "easy to see and click
+                buttons so each stage for them is really easy to track and participate in"). */}
             {view.tasks && (
-              <section aria-labelledby="stage-tasks" data-stage-tasks="">
-                <p id="stage-tasks" className={EYEBROW}>{w.status.six.tasks.heading}</p>
-                <ul className="mt-2 divide-y divide-border">
+              <section aria-labelledby="stage-tasks" className={CARD} data-stage-tasks="">
+                <h2 id="stage-tasks" className={H2}>{w.status.six.tasks.heading}</h2>
+                <ul className="mt-3 grid gap-3">
                   {view.tasks.map((task) => (
-                    <li key={task.key} className="flex min-h-11 items-center justify-between gap-3 py-2" data-stage-task={task.key}>
-                      {task.href ? (
-                        <a className="font-medium text-foreground underline underline-offset-4" href={task.href}>{task.label}</a>
-                      ) : (
-                        <span className="font-medium text-foreground">{task.label}</span>
-                      )}
-                      <span className="text-sm text-muted-foreground">{task.state}</span>
+                    <li key={task.key} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-background/40 p-3" data-stage-task={task.key} data-task-done={task.done ? "" : undefined}>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground">{task.label}</p>
+                        <p className={`flex items-center gap-1 text-sm ${task.done ? "text-open" : "text-muted-foreground"}`}>
+                          {task.done && <Check className="size-4 shrink-0" aria-hidden="true" />}
+                          {task.state}
+                        </p>
+                      </div>
+                      {task.action && task.key === "references" && !s.referencesAsked?.mayAdd ? (
+                        <button
+                          type="button"
+                          className={BTN_NOTICE}
+                          onClick={() => {
+                            setEditRefs(true);
+                            window.setTimeout(() => document.getElementById("reference-form")?.scrollIntoView({ block: "start" }), 0);
+                          }}
+                          data-task-action={task.key}
+                        >
+                          {task.action}
+                        </button>
+                      ) : task.action && task.href ? (
+                        <a href={task.href} className={BTN_NOTICE} data-task-action={task.key} {...(task.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                          {task.action}
+                        </a>
+                      ) : null}
                     </li>
                   ))}
                 </ul>
@@ -509,11 +531,15 @@ export default function ApplicationStatus() {
                 </ul>
               </section>
             )}
-            {s.referencesAsked?.mayAdd && (
+            {(s.referencesAsked?.mayAdd || (editRefs && s.referencesAsked?.mayEdit)) && (
               <ReferenceForm
                 postUrl={token ? `/api/application-status/${encodeURIComponent(ref)}/references?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/references`}
                 words={w.status.referenceForm}
-                onGiven={(n) => setS((cur) => (cur ? { ...cur, referencesAsked: { given: n, mayAdd: false }, path: cur.path.map((p) => (p.label === STEP_WORDS.refs_asked ? { ...p, state: "done" } : p)) } : cur))}
+                editing={!s.referencesAsked?.mayAdd}
+                onGiven={(n) => {
+                  setEditRefs(false);
+                  setS((cur) => (cur ? { ...cur, referencesAsked: { given: n, mayAdd: false, mayEdit: cur.referencesAsked?.mayEdit ?? false }, path: cur.path.map((p) => (p.label === STEP_WORDS.refs_asked ? { ...p, state: "done" } : p)) } : cur));
+                }}
               />
             )}
             {s.referencesAsked && typeof s.referencesAsked.given === "number" && (

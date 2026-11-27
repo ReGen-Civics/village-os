@@ -215,8 +215,8 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(receivedMail).toBeTruthy();
     // In the same shape as every letter: the next step, who acts by role, and the link of the conversation open now
     // (this village opens the first one as the address confirms). The old step list is gone.
-    expect(receivedMail.text).toContain(`Next step:\nBook your first conversation with Ops: ${LINK.ops}`);
-    expect(receivedMail.text).toContain("Who acts next:\nYou book the time, then Ops holds the conversation.");
+    expect(receivedMail.text).toContain(`Next step:\nBook your first conversation, with Ops: ${LINK.ops}`);
+    expect(receivedMail.text).toContain("Who acts next:\nYou book the time. Then Ops meets with you.");
     expect(receivedMail.text).not.toContain("decides by consent");
     for (const later of [LINK.community, LINK.final]) expect(everything()).not.toContain(later);
 
@@ -247,8 +247,8 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     // The applicant gives references and refines: the refined letter goes once, however often they save.
     const given = await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, {
       references: [
-        { name: "Ana Example", contact: "ana@example.test", how: "We kept a farm's books.", ally: "" },
-        { name: "Ben Example", contact: "ben@example.test", how: "He hired me twice.", ally: "" },
+        { name: "Ana Example", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We kept a farm's books.", ally: "" },
+        { name: "Ben Example", email: "ben@example.test", whatsapp: "+506 8888 1234", how: "He hired me twice.", ally: "" },
       ],
     });
     expect(given.status, given.text).toBe(200);
@@ -272,7 +272,7 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
     expect(stageMails("final_interview")).toHaveLength(1);
     const fin = stageMails("final_interview")[0];
-    expect(fin.subject).toBe("Your next step: your final conversation with Visionary");
+    expect(fin.subject).toBe("Next up: your final conversation with Visionary");
     expect(fin.text).toContain(`Book your final conversation with Visionary: ${LINK.final}`);
     expect(state.fresh.filter((m) => m.idempotencyKey.includes(":update:conversation"))).toHaveLength(0);
 
@@ -282,7 +282,7 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     await score(id, Number(final.id), FINAL.id);
     expect(stageMails("agreement")).toHaveLength(1);
     const agr = stageMails("agreement")[0];
-    expect(agr.text).toContain("Visionary, who makes the final call.");
+    expect(agr.text).toContain("Who acts next:\nThe circle.");
     for (const l of Object.values(LINK)) expect(agr.text).not.toContain(l);
 
     // Every email this application ever got: once per key, and no private word in any of them.

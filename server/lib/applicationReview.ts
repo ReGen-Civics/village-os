@@ -67,7 +67,7 @@ import { consentClosesAt } from "../../shared/roleProposalConsent";
 import { inTransaction } from "../repos/liveSessions";
 import * as repo from "../repos/applicationReview";
 import { readApplication as readSeatApplication } from "../repos/seatApplications";
-import { referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
+import { referencesEditable, referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
 import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
 import { listOrgRoles } from "./orgChart";
@@ -541,8 +541,8 @@ export async function hasRecused(deps: Pick<ReviewDeps, "getPool">, ref: string,
 
 // ── Our review: invite, or not (Phase A) ────────────────────────────────────
 
-/** `label` is the role with the people holding it: "Role (First, First)". */
-export type ConversationListed = { roleId: string; role: string; label: string; minutes: number; bookingUrl: string | null; bookingLinks: BookingLink[] };
+/** `label` is the role, as its booking button says it ("Ops"). */
+export type ConversationListed = { roleId: string; role: string; label: string; minutes: number; bookingUrl: string | null; bookingLinks: BookingLink[]; final?: boolean };
 
 export type ReviewAnswer =
   | { ok: true; conversations: ConversationListed[] }
@@ -555,9 +555,28 @@ export async function conversationsOf(db: Db, ref: string): Promise<Conversation
   const out: ConversationListed[] = [];
   for (const i of list) {
     const step = await stepBookingOf(db, ref, i.roleId);
-    out.push({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, label: step.label, minutes: i.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    out.push({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, label: step.label, minutes: i.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links, ...(i.final ? { final: true } : {}) });
   }
   return out;
+}
+
+/** How long a final conversation is said to run when no role card names it. */
+const FINAL_MINUTES = 30;
+
+/**
+ * THE CONVERSATIONS THE INVITATION NAMES (the lead, 27 Nov 2026: "mention all 3 calls"): the application's own, and the
+ * final one with the role that makes the final call when the role's list names none (it opens later, by a person's
+ * move). No booking link rides on it: a later step's link is never given early.
+ */
+export async function conversationsToName(db: Db, ref: string): Promise<ConversationListed[]> {
+  const list = await conversationsOf(db, ref);
+  if (list.some((c) => c.final)) return list;
+  const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
+  if (!roleId) return list;
+  const name = (await repo.roleNamesById(db, [roleId])).get(roleId);
+  if (!name) return list;
+  const label = roleShortLabel(roleId, name, stringVar(ROLE_SHORT_LABELS_VARIABLE));
+  return [...list, { roleId, role: name, label, minutes: FINAL_MINUTES, bookingUrl: null, bookingLinks: [], final: true }];
 }
 
 /** Whether our review still waits on this application: it has a review step and nobody has answered it. */
@@ -673,7 +692,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -712,7 +731,9 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   // The references a shortlisted applicant is asked for: a count once given, never the details back, and the form while it waits.
   const refsAsked = steps.some((x) => x.kind === "refs_asked");
   const refsGiven = steps.some((x) => x.kind === "refs_given");
-  const referencesAsked = refsAsked ? { given: refsGiven ? await countReferences(pool, ref) : null, mayAdd: !refsGiven && !decidedStep } : null;
+  // Once given, the applicant may replace them until somebody reaches out (the lead, 27 Nov 2026).
+  const mayEdit = refsGiven && !decidedStep && kindOfRef(ref) === "open" ? await referencesEditable(pool, ref) : false;
+  const referencesAsked = refsAsked ? { given: refsGiven ? await countReferences(pool, ref) : null, mayAdd: !refsGiven && !decidedStep, mayEdit } : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
   // The conversation open now, and how to book it (`stepBookingOf`): the later ones are offered only as they open, in order.

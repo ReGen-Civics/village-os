@@ -75,11 +75,11 @@ describe("the reviewed status path", () => {
 describe("the letters", () => {
   it("the invitation lists the conversations exactly as the role gives them, with the total", () => {
     const l = invitedLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], conversations: [{ role: "A", minutes: 60 }, { role: "B", minutes: 30 }], statusLink: "https://v.test/s", lang: "en" });
-    expect(l.text).toContain("1. A, 60 minutes\n2. B, 30 minutes\nAbout 90 minutes in all.");
+    expect(l.text).toContain("- A conversation with A\n- A conversation with B\nAbout 90 minutes in all, or longer if needed.");
     expect(l.text).toContain("https://v.test/s");
     const es = invitedLetter({ firstName: null, village: "V", roleNames: ["Rol"], conversations: [{ role: "A", minutes: 60 }], statusLink: null, lang: "es" });
     expect(es.subject).toBe("Una invitación a conversar con V");
-    expect(es.text).toContain("1. A, 60 minutos");
+    expect(es.text).toContain("- Una conversación con A");
   });
 
   it("the not-invited letter thanks the person in two plain sentences, and points only where the village has a door", () => {

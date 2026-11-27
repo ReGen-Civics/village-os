@@ -69,6 +69,25 @@ export async function insertReferences(db: Db, ref: string, list: readonly Given
   return n;
 }
 
+/**
+ * The applicant replaces their list (the lead, 27 Nov 2026: "offer them a chance to edit references"): only while no
+ * reference has been followed up or noted, which the caller checks in the same transaction. The old rows go, the new
+ * ones are written in order. How many rows were written.
+ */
+export async function replaceReferences(db: Db, ref: string, list: readonly GivenReference[], ownerRoleId: string, at: Date): Promise<number> {
+  await db.query("DELETE FROM application_references WHERE application_ref = ? AND followed_up_at IS NULL AND notes IS NULL", [ref]);
+  return insertReferences(db, ref, list, ownerRoleId, at);
+}
+
+/** Whether the applicant may still replace their list: given, and nobody has followed one up or written a note yet. */
+export async function referencesEditable(db: Db, ref: string): Promise<boolean> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT COUNT(*) AS n, SUM(followed_up_at IS NOT NULL OR notes IS NOT NULL) AS touched FROM application_references WHERE application_ref = ?",
+    [ref],
+  );
+  return Number(rows[0]?.n ?? 0) > 0 && Number(rows[0]?.touched ?? 0) === 0;
+}
+
 export async function referencesOf(db: Db, ref: string): Promise<StoredReference[]> {
   const [rows] = await db.query<RowDataPacket[]>(`SELECT ${COLUMNS} FROM application_references WHERE application_ref = ? ORDER BY position`, [ref]);
   return rows.map(rowOf);

@@ -312,7 +312,25 @@ export interface AdoptLetterIn {
   waitsForSeat?: boolean;
   /** Our review came first (Phase A): the yes is said as the circle's welcome, with the first cycle. */
   reviewed?: boolean;
+  /** The day they start, in words with its weekday ("Monday 1 December 2026"; shared/startDay.ts). */
+  startDay?: string | null;
+  /** The role that may start them sooner (the welcoming role, by name), or null for the team. */
+  soonerRole?: string | null;
+  /** The all-hands they join that day: when, in words, and its video link (village settings). */
+  allHands?: { when: string; link: string | null } | null;
 }
+
+/** The start day and the all-hands, when the letter knows them, and never for a role still waiting on a seat. */
+const startLines = (i: AdoptLetterIn): string[] => {
+  if (i.waitsForSeat || !i.startDay) return [];
+  const w = wordsIn(i.lang).adopt;
+  return [
+    "",
+    w.startDay(i.startDay),
+    w.startSooner(i.soonerRole ?? null),
+    ...(i.allHands ? ["", w.allHands(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : []),
+  ];
+};
 
 /** The headline, and the first cycle's line for a reviewed application. */
 const yesLines = (i: AdoptLetterIn, w: ReturnType<typeof wordsIn>): string[] =>
@@ -336,19 +354,19 @@ export const ADOPT_MORE: Record<ApplicantLanguage, {
 }> = {
   en: {
     nextHeading: "What comes next:",
-    stepCreate: "1. Create your profile with the button above.",
-    stepSignIn: "1. Sign in with this address.",
-    stepAgreements: "2. Your profile lists any agreements we ask you to align with before your role starts, such as our confidentiality agreement and your role's terms. Each one has its own door there.",
-    stepFirstDays: "3. Once your role starts, your profile shows your first days with us, step by step.",
+    stepCreate: "- Make your profile with the button above.",
+    stepSignIn: "- Sign in with this address.",
+    stepAgreements: "- Align with what your profile lists before you start, like our confidentiality agreement and your role's terms. Each one has its own button there.",
+    stepFirstDays: "- Once you start, your profile walks you through your first days with us.",
     seatOpens: (roles) => `Every place in ${roles} is filled right now, so your role starts when a place opens. We will tell you the day it does.`,
     forAPlace: "for when a place opens",
   },
   es: {
     nextHeading: "Lo que sigue:",
-    stepCreate: "1. Cree su perfil con el botón de arriba.",
-    stepSignIn: "1. Inicie sesión con este correo.",
-    stepAgreements: "2. Su perfil muestra los acuerdos con los que le pedimos alinearse antes de que empiece su rol, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su propia puerta.", // check: "alinear", "puerta"
-    stepFirstDays: "3. Cuando empiece su rol, su perfil muestra sus primeros días con nosotros, paso a paso.",
+    stepCreate: "- Cree su perfil con el botón de arriba.",
+    stepSignIn: "- Inicie sesión con este correo.",
+    stepAgreements: "- Alinéese con lo que muestra su perfil antes de empezar, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su botón.", // check: "alinear"; needs-native-review: the voice pass, 27 Nov 2026
+    stepFirstDays: "- Cuando empiece, su perfil le acompaña en sus primeros días con nosotros.",
     seatOpens: (roles) => `Todos los lugares de ${roles} están ocupados ahora, así que su rol empieza cuando se abra un lugar. Le avisaremos el día que eso pase.`, // check: "lugar" for a place in a role
     forAPlace: "para cuando se abra un lugar",
   },
@@ -398,6 +416,7 @@ export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: num
       i.link,
       "",
       w.adopt.inviteWorks(i.days, whenRolesStart(i)),
+      ...startLines(i),
       "",
       w.adopt.nextAfterProfile,
       ...nextSteps(i, "create"),
@@ -427,6 +446,7 @@ export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { s
       "",
       w.adopt.signIn(whenRolesStart(i)),
       i.signIn,
+      ...startLines(i),
       ...nextSteps(i, "signIn"),
       ...signFirst(i),
       "",
@@ -477,6 +497,8 @@ export interface InvitedConversation {
   bookingLinks?: readonly BookingLink[];
   /** The role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts). Said in place of `role` when given. */
   label?: string;
+  /** The final conversation, with the role that makes the final call (the lead, 27 Nov 2026: "mention all 3 calls"). */
+  final?: boolean;
 }
 
 /**
@@ -499,8 +521,10 @@ export function invitedLetter(i: {
   const talks = i.conversations.length
     ? [
         "",
+        // Every call, the final one too, as a list (the lead, 27 Nov 2026: "mention all 3 calls and say they can be
+        // ~90 min in all or longer if needed"). No length per call: the total says it.
         w.invite.conversationsIntro,
-        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.label || c.role, c.minutes)}`),
+        ...i.conversations.map((c) => (c.final ? w.invite.finalConversation(c.label || c.role) : w.invite.conversation(c.label || c.role, c.minutes))),
         w.invite.total(total),
         "",
         // The next step, who acts by role, and only the first conversation's way in: it is the one open now. The

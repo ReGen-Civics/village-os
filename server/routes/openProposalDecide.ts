@@ -101,7 +101,7 @@ import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
 import { effectiveLifecycle } from "../lib/modules";
-import { answerNotInvited, conversationsOf, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
+import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
 import { currentMoonTerm, moonEnded, REVIEW_WORDS, reviewStageOf } from "../../shared/applicationReview";
 import { statusLinkFor } from "../lib/applicantUpdates";
 import { stepsOf } from "../repos/applicationReview";
@@ -123,6 +123,9 @@ import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
 import { declineNextStepsLines, DECLINE_STEPS_KEYS } from "../../shared/declineNextSteps";
 import type { PlayDoor } from "../../shared/comms/comeAndPlay";
 import { boolVar, stringVar } from "../lib/variables";
+import { ALL_HANDS_VARIABLES, startDayOf, weekdayIndex, weekdayName, zoneLabel } from "../../shared/startDay";
+import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
+import { roleNamesById } from "../repos/applicationReview";
 
 export type DecideRouteDeps = Pick<
   AppDeps,
@@ -324,6 +327,32 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       startsOn: t && from ? civilDayWords(from) : s?.startsOn ? civilDayWords(String(s.startsOn)) : w.adopt.firstDay,
       moon: t && from ? { from: civilDayWords(from), to: civilDayWords(t.endsOn) } : null,
       lang,
+    };
+  };
+
+  /**
+   * THE DAY THEY START AND THE ALL-HANDS THEY JOIN (the lead, 27 Nov 2026): the village's all-hands weekday, the first
+   * one after the acceptance and on or after the role's own start, and the meeting from the village's settings. The
+   * welcoming role may start them sooner, which the letter says by its name.
+   */
+  const startWords = async (p: store.StoredOpenProposal, adoptedAt: Date) => {
+    const s = seasonOf(p);
+    const t = p.body.term;
+    const lang = languageOf(p);
+    const accepted = civilDateKey(adoptedAt, tz());
+    const roleStarts = t ? roleStartsOn(t.startsOn, accepted) : s?.startsOn ? String(s.startsOn) : null;
+    const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
+    const day = startDayOf(roleStarts, accepted, weekday);
+    const dayName = weekdayName(weekday, lang);
+    const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
+    const zone = zoneLabel(stringVar(ALL_HANDS_VARIABLES.zone), lang);
+    const link = stringVar(ALL_HANDS_VARIABLES.link).trim();
+    const welcome = stringVar("org.onboarding_role").trim();
+    const welcomeName = welcome ? (await roleNamesById(getPool(), [welcome])).get(welcome) : undefined;
+    return {
+      startDay: `${dayName} ${wordsIn(lang).day(day)}`,
+      soonerRole: welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
+      allHands: time ? { when: [dayName, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
     };
   };
 
@@ -804,7 +833,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       }
       const why = await sent(
         p.email
-          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await startWords(p, at)), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
           : null,
       );
       await tell(p.id, "adopted");
@@ -852,7 +881,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await startWords(p, at)), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
@@ -989,7 +1018,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             firstName,
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
-            conversations: out.conversations.map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks })),
+            // All three calls, the final one too (the lead, 27 Nov 2026), with only the first one's link.
+            conversations: (await conversationsToName(pool, p.id)).map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks, ...(c.final ? { final: true } : {}) })),
             statusLink: statusLinkFor({ siteUrl: site }, p.id),
             lang: languageOf(p),
             note,
@@ -1058,7 +1088,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), ...(await startWords(p, p.decidedAt ?? now())), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, now(), why === null);

@@ -223,7 +223,9 @@ export async function giveReferences(deps: ReviewDeps, ref: string, raw: unknown
   const steps = await review.stepsOf(pool, ref);
   if (!steps.some((s) => s.kind === "refs_asked")) return { ok: false, status: 409, error: "not_asked", row: null };
   if (steps.some((s) => s.kind === "decided")) return { ok: false, status: 409, error: "decided", row: null };
-  if (steps.some((s) => s.kind === "refs_given")) return { ok: false, status: 409, error: "given", row: null };
+  // Given before: the applicant may replace the list while nobody has reached out yet (the lead, 27 Nov 2026).
+  const again = steps.some((s) => s.kind === "refs_given");
+  if (again && (kindOfRef(ref) !== "open" || !(await repo.referencesEditable(pool, ref)))) return { ok: false, status: 409, error: "given", row: null };
   // A member application is decided on its own row, never by a step here.
   const member = kindOfRef(ref) === "member" ? await memberApplicationFacts(pool, ref) : null;
   if (member && !member.open) return { ok: false, status: 409, error: "decided", row: null };
@@ -232,13 +234,19 @@ export async function giveReferences(deps: ReviewDeps, ref: string, raw: unknown
   const at = deps.now();
   const ownerRole = stringVar(FOLLOWUP_ROLE_VARIABLE).trim();
   const won = await inTransaction(pool, async (conn) => {
+    if (again) {
+      // Checked again inside the write: a follow-up begun since closes the edit.
+      if (!(await repo.referencesEditable(conn, ref))) return false;
+      await repo.replaceReferences(conn, ref, parsed.value, ownerRole, at);
+      return true;
+    }
     // The step is the lock: of two sends at once exactly one stamps it, and only that one writes rows.
     if (!(await review.stampStep(conn, { ref, kind: "refs_given", at, detail: { count: parsed.value.length } }))) return false;
     await repo.insertReferences(conn, ref, parsed.value, ownerRole, at);
     return true;
   });
   if (!won) return { ok: false, status: 409, error: "given", row: null };
-  await tellTeamReferencesIn(deps, ref, ownerRole);
+  if (!again) await tellTeamReferencesIn(deps, ref, ownerRole);
   return { ok: true, given: parsed.value.length };
 }
 
@@ -777,6 +785,7 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
   refine: RefineView;
   shortlisted: boolean;
   next: { act: "follow_up" | "move"; role: string | null } | null;
+  anchorCircle: string | null;
 } | null> {
   if (kindOfRef(ref) !== "open") return null;
   const read = await trackFactsOf(deps, ref);
@@ -800,9 +809,11 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
     now,
     shortlisted: read.facts.shortlist === "yes",
     next,
+    // The circle that reviews the proposal at Agreement, by its own name (the lead, 27 Nov 2026).
+    anchorCircle: await review.anchorCircleName(deps.getPool()),
     refine: {
       open,
-      // Frozen is said only once there was a time to refine: from References and proposal on.
+      // Fixed once the final conversation is written up and the proposal goes to the anchor circle (Agreement).
       frozen: !decided && finalFrozen,
       why: open ? (own?.body.why ?? "") : "",
       aim: open ? (own?.body.aim ?? "") : "",

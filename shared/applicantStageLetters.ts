@@ -9,12 +9,16 @@
  * rest: References and proposal, Final conversation and Agreement, plus the one letter after the applicant first
  * refines their proposal. Each goes once per application and stage (`stageLetterKey`).
  *
- * WHAT A LETTER CARRIES, and nothing else: the stage, the next step, who acts next BY ROLE, and the booking link of
- * the conversation open NOW at this stage (a later stage's link is never in it), and the applicant's status link. No
- * note, score, reference, transcript or private team text ever reaches these words: the builder takes none of them.
+ * WHAT A LETTER CARRIES, and nothing else: the stage, the next step (a "- " list when there are several, the lead:
+ * "make these bullet points when there are multiple steps"), who acts next BY ROLE, a link to the applicant's own page
+ * where each step has its button, and the booking link of the conversation open NOW at this stage (a later stage's
+ * link is never in it). No note, score, reference, reference's contact or private team text ever reaches these words:
+ * the builder takes none of them.
+ *
+ * THE VOICE (the lead's, 27 Nov 2026): warm, direct, plain, short sentences.
  *
  * PURE: words only. The server decides which stage, which link and which roles (server/lib/applicantStageLetters.ts).
- * No village or person is named here; the village's name and the roles' names come in from the caller.
+ * No village or person is named here; the village's name, the circle's name and the roles' names come in from the caller.
  */
 import { wordsIn, type ApplicantLanguage } from "./applicantWords";
 
@@ -34,107 +38,133 @@ export interface StageLetterInput {
   booking: { role: string; links: readonly string[] } | null;
   /** The role that follows up references, by name, or null. */
   followupRole: string | null;
-  /** The role that makes the final call, by name, or null (then the people who place roles decide). */
+  /** The role that makes the final call, by name, or null. */
   finalCallRole: string | null;
-  /** The references form is open on the status page now. */
+  /** The village's anchor circle, by name, which reviews the proposal at Agreement; null says "the circle". */
+  anchorCircle?: string | null;
+  /** The references form is open on the applicant's page now. */
   referencesOpen: boolean;
+  /** The references are in already: we never ask again (the lead, 27 Nov 2026). */
+  referencesIn?: boolean;
+  /** They may still replace the list, since nobody has reached out yet. */
+  referencesEditable?: boolean;
   /** The proposal can still be refined. */
   refineOpen: boolean;
   statusLink: string | null;
+  /** The applicant's profile, when they have an account: the same buttons live there. */
+  profileLink?: string | null;
   lang?: ApplicantLanguage | null;
 }
 
 interface StageWords {
-  subject: Record<StageLetterKind, (role: string | null) => string>;
+  subject: Record<StageLetterKind, (role: string | null, circle: string) => string>;
+  onYourPage(link: string): string;
+  onYourProfile(link: string): string;
   references: {
-    where(roles: string): string;
+    where: string;
     refs: string;
     refsSoon: string;
-    refine: string;
+    refsIn(followup: string | null): string;
+    refsEdit: string;
+    refine(circle: string): string;
     book(role: string, link: string): string;
     bookLater: string;
     who(followup: string | null): string;
   };
-  final: { where: string; book(role: string, link: string): string; write(role: string | null): string; fixed: string; who(role: string | null): string };
-  agreement: { where: string; next: string; who(role: string | null): string };
-  refined: { thanks(roles: string): string; again: string };
+  final: { where: string; why(circle: string): string; book(role: string, link: string): string; write(role: string | null): string; who(role: string | null): string };
+  agreement: { where(circle: string): string; next(circle: string): string; who(circle: string): string };
+  refined: { thanks: string; again(circle: string): string };
   nextStep: string;
   whoActs: string;
   links(links: readonly string[]): string;
+  circle: string;
 }
+
+const theCircle = (anchor: string | null | undefined, plain: string): string => (!anchor ? plain : /^(the|el|la)\s/i.test(anchor) ? anchor : anchor);
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 const EN: StageWords = {
   subject: {
-    references: () => "Your next step: your references and your proposal",
-    final_interview: (role) => (role ? `Your next step: your final conversation with ${role}` : "Your next step: your final conversation"),
-    agreement: () => "Your next step: our answer to your proposal",
-    refined: () => "We have your refined proposal",
+    references: () => "Next up: your references and your proposal",
+    final_interview: (role) => (role ? `Next up: your final conversation with ${role}` : "Next up: your final conversation"),
+    agreement: (_role, circle) => `Your proposal is with ${circle}`,
+    refined: () => "Got it: your updated proposal",
   },
+  onYourPage: (link) => `Everything for this step is on your page, one button each: ${link}`,
+  onYourProfile: (link) => `It's on your profile too: ${link}`,
   references: {
-    where: (roles) => `Your application to hold ${roles} is through our review, and now at References and proposal.`,
-    refs: "Add your references on your status page: people who know your work, how to reach them and how they know you.",
-    refsSoon: "We will ask for your references next. The form opens on your status page when we do.",
-    refine: "You can refine your proposal on your status page until your final conversation opens. After that it is fixed.",
-    book: (role, link) => `Book your conversation with ${role}: ${link}`,
-    bookLater: "Your next conversation opens on your status page when it is ready.",
-    who: (followup) => (followup ? `You, then ${followup}, who follows up with your references.` : "You, then the team, who follows up with your references."),
+    where: "Thanks for your conversation. You're now at References and proposal.",
+    refs: "- Add your references. For each one we need their email, plus a WhatsApp number, a US phone number or a Signal number. Please let them know we'll be in touch.",
+    refsSoon: "- Add your references when we ask. The form opens on your page.",
+    refsIn: (followup) => `- Your references are in. ${followup ?? "The team"} is about to reach out to them.`,
+    refsEdit: "- Want to change one? You can edit them on your page until we reach out.",
+    refine: (circle) => `- Keep refining your proposal. You can update it until it goes to ${circle} for review.`,
+    book: (role, link) => `- Book your conversation with ${role}: ${link}`,
+    bookLater: "- Your next conversation opens on your page when it's ready.",
+    who: (followup) => (followup ? `You, then ${followup}, who reaches out to your references.` : "You, then the team, who reaches out to your references."),
   },
   final: {
-    where: "Your conversations and references are in. Your application is at its final conversation.",
+    where: "Your conversations and references are done. Next is your final conversation.",
+    why: (circle) => `It's a chance to connect with the source of this village. Bring your proposal as best you can. You won't be presenting it. You can keep refining it after the conversation too, until it goes to ${circle} for review.`,
     book: (role, link) => `Book your final conversation with ${role}: ${link}`,
     write: (role) => (role ? `We'll write to you with times for your final conversation with ${role}.` : "We'll write to you with times for your final conversation."),
-    fixed: "Bring your proposal: you present it there. It is now fixed, so any change from here goes through our answer to it.",
-    who: (role) => (role ? `You book the time, then ${role} holds the conversation.` : "You book the time, then the team holds the conversation."),
+    who: (role) => (role ? `You book the time. Then ${role} meets with you.` : "You book the time. Then the team meets with you."),
   },
   agreement: {
-    where: "Your final conversation is written up. Your application is at Agreement.",
-    next: "We answer your proposal: we accept it, or we suggest changes to its terms. You answer each change on your status page, and we go back and forth until we agree.",
-    who: (role) => (role ? `${role}, who makes the final call.` : "The people who place roles in the village."),
+    where: (circle) => `Your final conversation is done, and your proposal is now with ${circle} for review. It's fixed from here.`,
+    next: (circle) => `${cap(circle)} accepts your proposal or sends a counter-offer. If they counter, you answer each change on your page, and we go back and forth until we agree. Then you get an email with your start date.`,
+    who: (circle) => `${cap(circle)}.`,
   },
   refined: {
-    thanks: (roles) => `Thank you: your refined proposal to hold ${roles} is saved, and the team reads it before your final conversation.`,
-    again: "You can refine it again on your status page until your final conversation opens.",
+    thanks: "Got it. Your updated proposal is saved, and the team will read it.",
+    again: (circle) => `You can keep refining it on your page until it goes to ${circle} for review.`,
   },
   nextStep: "Next step:",
   whoActs: "Who acts next:",
-  links: (links) => (links.length === 1 ? links[0] : `\n${links.map((l, n) => `${n + 1}. ${l}`).join("\n")}`),
+  links: (links) => (links.length === 1 ? links[0] : `\n${links.map((l, n) => `  ${n + 1}. ${l}`).join("\n")}`),
+  circle: "the circle",
 };
 
 const ES: StageWords = {
   subject: {
-    references: () => "Su siguiente paso: sus referencias y su propuesta",
-    final_interview: (role) => (role ? `Su siguiente paso: su conversación final con ${role}` : "Su siguiente paso: su conversación final"),
-    agreement: () => "Su siguiente paso: nuestra respuesta a su propuesta",
-    refined: () => "Tenemos su propuesta mejorada",
+    references: () => "Lo que sigue: sus referencias y su propuesta",
+    final_interview: (role) => (role ? `Lo que sigue: su conversación final con ${role}` : "Lo que sigue: su conversación final"),
+    agreement: (_role, circle) => `Su propuesta está con ${circle}`,
+    refined: () => "Recibido: su propuesta actualizada",
   },
+  onYourPage: (link) => `Todo lo de este paso está en su página, con un botón para cada cosa: ${link}`,
+  onYourProfile: (link) => `También está en su perfil: ${link}`,
   references: {
-    where: (roles) => `Su postulación para sostener ${roles} pasó nuestra revisión y ahora está en Referencias y propuesta.`,
-    refs: "Agregue sus referencias en su página de estado: personas que conocen su trabajo, cómo contactarlas y cómo la conocen.",
-    refsSoon: "Le pediremos sus referencias a continuación. El formulario se abre en su página de estado cuando lo hagamos.",
-    refine: "Puede mejorar su propuesta en su página de estado hasta que se abra su conversación final. Después queda fija.",
-    book: (role, link) => `Reserve su conversación con ${role}: ${link}`,
-    bookLater: "Su siguiente conversación se abre en su página de estado cuando esté lista.",
+    where: "Gracias por su conversación. Ahora está en Referencias y propuesta.",
+    refs: "- Agregue sus referencias. De cada una necesitamos su correo, y además un número de WhatsApp, un teléfono de EE. UU. o un número de Signal. Por favor, avíseles que nos pondremos en contacto.",
+    refsSoon: "- Agregue sus referencias cuando se las pidamos. El formulario se abre en su página.",
+    refsIn: (followup) => `- Sus referencias ya llegaron. ${followup ?? "El equipo"} está por contactarlas.`,
+    refsEdit: "- ¿Quiere cambiar alguna? Puede editarlas en su página hasta que las contactemos.",
+    refine: (circle) => `- Siga mejorando su propuesta. Puede actualizarla hasta que pase a ${circle} para su revisión.`,
+    book: (role, link) => `- Reserve su conversación con ${role}: ${link}`,
+    bookLater: "- Su siguiente conversación se abre en su página cuando esté lista.",
     who: (followup) => (followup ? `Usted, y luego ${followup}, que contacta a sus referencias.` : "Usted, y luego el equipo, que contacta a sus referencias."),
   },
   final: {
-    where: "Sus conversaciones y referencias están completas. Su postulación está en su conversación final.",
+    where: "Sus conversaciones y referencias están listas. Ahora sigue su conversación final.",
+    why: (circle) => `Es una oportunidad para conectar con la fuente de esta aldea. Traiga su propuesta lo mejor que pueda. No tiene que presentarla. Puede seguir mejorándola también después de la conversación, hasta que pase a ${circle} para su revisión.`,
     book: (role, link) => `Reserve su conversación final con ${role}: ${link}`,
     write: (role) => (role ? `Le escribiremos con horarios para su conversación final con ${role}.` : "Le escribiremos con horarios para su conversación final."),
-    fixed: "Traiga su propuesta: usted la presenta allí. Ahora queda fija, así que cualquier cambio desde aquí pasa por nuestra respuesta.",
-    who: (role) => (role ? `Usted reserva el horario y luego ${role} sostiene la conversación.` : "Usted reserva el horario y luego el equipo sostiene la conversación."),
+    who: (role) => (role ? `Usted reserva el horario. Luego ${role} se reúne con usted.` : "Usted reserva el horario. Luego el equipo se reúne con usted."),
   },
   agreement: {
-    where: "Su conversación final está escrita. Su postulación está en Acuerdo.",
-    next: "Respondemos a su propuesta: la aceptamos o sugerimos cambios en sus términos. Usted responde cada cambio en su página de estado, y seguimos hasta llegar a un acuerdo.",
-    who: (role) => (role ? `${role}, que toma la decisión final.` : "Las personas que asignan los roles en la aldea."),
+    where: (circle) => `Su conversación final está lista, y su propuesta ahora está con ${circle} para su revisión. Desde aquí queda fija.`,
+    next: (circle) => `${cap(circle)} acepta su propuesta o le envía una contraoferta. Si hay contraoferta, usted responde cada cambio en su página, y seguimos hasta llegar a un acuerdo. Luego le llega un correo con su fecha de inicio.`,
+    who: (circle) => `${cap(circle)}.`,
   },
   refined: {
-    thanks: (roles) => `Gracias: su propuesta mejorada para sostener ${roles} está guardada, y el equipo la lee antes de su conversación final.`,
-    again: "Puede mejorarla de nuevo en su página de estado hasta que se abra su conversación final.",
+    thanks: "Recibido. Su propuesta actualizada está guardada, y el equipo la leerá.",
+    again: (circle) => `Puede seguir mejorándola en su página hasta que pase a ${circle} para su revisión.`,
   },
   nextStep: "Siguiente paso:",
   whoActs: "Quién actúa ahora:",
-  links: (links) => (links.length === 1 ? links[0] : `\n${links.map((l, n) => `${n + 1}. ${l}`).join("\n")}`),
+  links: (links) => (links.length === 1 ? links[0] : `\n${links.map((l, n) => `  ${n + 1}. ${l}`).join("\n")}`),
+  circle: "el círculo",
 };
 
 const TABLES: Record<ApplicantLanguage, StageWords> = { en: EN, es: ES };
@@ -145,16 +175,20 @@ export function stageLetter(i: StageLetterInput): { subject: string; text: strin
   const base = wordsIn(lang);
   const s = TABLES[lang];
   const roles = base.list(i.roleNames) || base.aRole;
+  const circle = theCircle(i.anchorCircle, s.circle);
   const booking = i.booking && i.booking.links.length ? i.booking : null;
+  const page = [...(i.statusLink ? [s.onYourPage(i.statusLink)] : []), ...(i.profileLink ? [s.onYourProfile(i.profileLink)] : [])];
   let lines: string[];
   switch (i.kind) {
     case "references":
       lines = [
-        s.references.where(roles),
+        s.references.where,
         "",
         s.nextStep,
-        i.referencesOpen ? s.references.refs : s.references.refsSoon,
-        ...(i.refineOpen ? [s.references.refine] : []),
+        ...page,
+        // Never asked twice (the lead, 27 Nov 2026): once they are in, we say we are about to reach out.
+        ...(i.referencesIn ? [s.references.refsIn(i.followupRole), ...(i.referencesEditable ? [s.references.refsEdit] : [])] : [i.referencesOpen ? s.references.refs : s.references.refsSoon]),
+        ...(i.refineOpen ? [s.references.refine(circle)] : []),
         booking ? s.references.book(booking.role, s.links(booking.links)) : s.references.bookLater,
         "",
         s.whoActs,
@@ -166,9 +200,10 @@ export function stageLetter(i: StageLetterInput): { subject: string; text: strin
       lines = [
         s.final.where,
         "",
+        s.final.why(circle),
+        "",
         s.nextStep,
         booking ? s.final.book(booking.role, s.links(booking.links)) : s.final.write(role),
-        s.final.fixed,
         "",
         s.whoActs,
         s.final.who(role),
@@ -176,15 +211,17 @@ export function stageLetter(i: StageLetterInput): { subject: string; text: strin
       break;
     }
     case "agreement":
-      lines = [s.agreement.where, "", s.nextStep, s.agreement.next, "", s.whoActs, s.agreement.who(i.finalCallRole)];
+      lines = [s.agreement.where(circle), "", s.nextStep, s.agreement.next(circle), "", s.whoActs, s.agreement.who(circle)];
       break;
     case "refined":
-      lines = [s.refined.thanks(roles), ...(i.refineOpen ? [s.refined.again] : [])];
+      lines = [s.refined.thanks, ...(i.refineOpen ? [s.refined.again(circle)] : [])];
       break;
   }
   const subjectRole = i.kind === "final_interview" ? (i.booking?.role ?? i.finalCallRole) : null;
+  // The stage letters already point to the page in their own lines; the refined letter and Agreement close with it.
+  const tail = i.kind === "references" ? [] : ["", i.statusLink ? base.statusLinkLine(i.statusLink) : base.keepStatusLink];
   return {
-    subject: s.subject[i.kind](subjectRole),
-    text: [base.hello(i.firstName), "", ...lines, "", i.statusLink ? base.statusLinkLine(i.statusLink) : base.keepStatusLink, ""].join("\n"),
+    subject: s.subject[i.kind](subjectRole, circle),
+    text: [base.hello(i.firstName), "", ...lines, ...tail, ""].join("\n"),
   };
 }

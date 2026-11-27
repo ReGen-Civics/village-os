@@ -20,6 +20,7 @@ import { GUT_CRITERION, type GutCheck, type GutAnswer, type InterviewState, type
 import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
+import { anchorCircleId } from "../../shared/circlePicker";
 import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
 import { deleteGuideNotesOf, forgetGuideNotesBy } from "./applicationGuide";
 import { deleteConversationNotesOf, forgetConversationNotesBy } from "./applicationConversationNotes";
@@ -381,6 +382,18 @@ export async function agentRoleNamesInCircles(db: Db, circleIds: readonly string
  * Each role's booking link (`org_roles.booking_url`, 0362), read as `parseBookingUrl` allows it: an https
  * link or nothing. The applicant books a conversation through the link of the role that holds it.
  */
+/**
+ * The village's anchor circle, by name (shared/circlePicker.ts `anchorCircleId`: the one marked, else the one that
+ * coordinates the rest), or null when it has none. The applicant reads it at Agreement: "Your proposal is with ...".
+ */
+export async function anchorCircleName(db: Db): Promise<string | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, status, is_anchor, parent_circle_id, is_example FROM circles");
+  const circles = rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), status: r.status ?? null, isAnchor: !!r.is_anchor, parentCircleId: r.parent_circle_id ?? null, isExample: !!r.is_example }));
+  const id = anchorCircleId(circles);
+  const name = id ? circles.find((c) => c.id === id)?.name.trim() : "";
+  return name || null;
+}
+
 export async function bookingUrlsById(db: Db, ids: readonly string[]): Promise<Map<string, string | null>> {
   if (!ids.length) return new Map();
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, booking_url FROM org_roles WHERE id IN (?)", [[...ids]]);

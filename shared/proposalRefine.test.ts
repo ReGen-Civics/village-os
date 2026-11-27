@@ -3,19 +3,20 @@ import { finalFreezes, mayRefine, PROPOSAL_VERSIONS_MAX, readRefined, readVersio
 import { OPEN_AIM_MAX } from "./openProposals";
 
 describe("when the applicant may refine their proposal", () => {
-  it("only at References and proposal, undecided, before the final conversation opens", () => {
+  it("at References and proposal and at the Final conversation, undecided, until it goes to the anchor circle", () => {
+    // The lead, 27 Nov 2026: "one more opportunity to refine their proposal before it's up for anchor circle review".
     expect(mayRefine({ stage: "references", decided: false, finalFrozen: false })).toBe(true);
-    // CONTROLS: every other stage, a decision, or a final conversation that opened closes it.
-    for (const stage of ["received", "review", "final_interview", "agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
+    expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: false })).toBe(true);
+    // CONTROLS: every other stage, a decision, or the proposal sent to the circle closes it.
+    for (const stage of ["received", "review", "agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
     expect(mayRefine({ stage: "references", decided: true, finalFrozen: false })).toBe(false);
-    expect(mayRefine({ stage: "references", decided: false, finalFrozen: true })).toBe(false);
+    expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: true })).toBe(false);
   });
 
-  it("a final conversation freezes it once it opens, is booked, held or skipped; one still waiting does not", () => {
+  it("the proposal is fixed once the final conversation is written up (Agreement), never when it only opens or is booked", () => {
     expect(finalFreezes([])).toBe(false);
-    expect(finalFreezes([{ state: "waiting", booked: false }])).toBe(false);
-    expect(finalFreezes([{ state: "waiting", booked: true }])).toBe(true);
-    for (const state of ["open", "scored", "skipped"]) expect(finalFreezes([{ state, booked: false }])).toBe(true);
+    for (const f of [{ state: "waiting", booked: false }, { state: "waiting", booked: true }, { state: "open", booked: true }]) expect(finalFreezes([f])).toBe(false);
+    for (const state of ["scored", "skipped"]) expect(finalFreezes([{ state, booked: false }])).toBe(true);
   });
 });
 

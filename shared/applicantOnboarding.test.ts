@@ -20,27 +20,45 @@ import {
 } from "./applicantOnboarding";
 import { mayReadScorecards } from "./applicationReview";
 
-const ref = (over: Partial<Record<string, string>> = {}) => ({ name: "Ana Ref", contact: "ana@example.test", how: "We built a school garden together.", ally: "She runs a seed library.", ...over });
+const ref = (over: Partial<Record<string, string>> = {}) => ({ name: "Ana Ref", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We built a school garden together.", ally: "She runs a seed library.", ...over });
 
 describe("the reference list", () => {
-  it("takes one to five references and drops wholly blank rows", () => {
-    const out = parseReferenceList([ref(), { name: "", contact: "", how: "", ally: "" }, ref({ name: "Ben", contact: "+506 8888 1234" })]);
+  it("takes one to ten references and drops wholly blank rows", () => {
+    const out = parseReferenceList([ref(), { name: "", email: "", how: "", ally: "" }, ref({ name: "Ben", email: "ben@example.test" })]);
     expect(out.ok && out.value.map((r) => r.name)).toEqual(["Ana Ref", "Ben"]);
+    // The stored contact is labelled lines, the email first.
+    expect(out.ok && out.value[0].contact).toBe("Email: ana@example.test\nWhatsApp: +506 8888 1234");
   });
-  it("leaves the ally line optional and needs a name, a way to reach them and how they know the applicant", () => {
-    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", contact: "ben@example.test" })]).ok).toBe(true);
+  it("leaves the ally line optional and needs a name and how they know the applicant", () => {
+    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", email: "ben@example.test" })]).ok).toBe(true);
     // At least two (the lead, 19 Nov 2026): one alone is refused.
     expect(parseReferenceList([ref()])).toEqual({ ok: false, error: "too_few", row: null });
     expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0 });
-    expect(parseReferenceList([ref(), ref({ contact: "not a way to reach", name: "C" })])).toEqual({ ok: false, error: "contact", row: 1 });
+  });
+  it("THE LEAD'S RULE (27 Nov 2026): an email AND one of WhatsApp, a US phone or Signal, each checked", () => {
+    const b = (over: Record<string, string>) => ref({ name: "Ben", email: "ben@example.test", whatsapp: "", ...over });
+    // No email, or a bad one.
+    expect(parseReferenceList([ref(), b({ email: "", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1 });
+    expect(parseReferenceList([ref(), b({ email: "not an email", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1 });
+    // An email alone is not enough.
+    expect(parseReferenceList([ref(), b({})])).toEqual({ ok: false, error: "channel", row: 1 });
+    // Each of the three, alone, is enough with the email.
+    expect(parseReferenceList([ref(), b({ whatsapp: "+44 7700 900123" })]).ok).toBe(true);
+    expect(parseReferenceList([ref(), b({ usPhone: "(415) 555-0132" })]).ok).toBe(true);
+    expect(parseReferenceList([ref(), b({ signal: "ben.42" })]).ok).toBe(true);
+    // A number that does not read as its kind is refused.
+    expect(parseReferenceList([ref(), b({ usPhone: "+506 8888 1234" })])).toEqual({ ok: false, error: "contact", row: 1 });
+    expect(parseReferenceList([ref(), b({ whatsapp: "12" })])).toEqual({ ok: false, error: "contact", row: 1 });
+    // An older form's single contact reads as the email, and still needs a number.
+    expect(parseReferenceList([ref(), { name: "Old", contact: "old@example.test", how: "Knew me." }])).toEqual({ ok: false, error: "channel", row: 1 });
   });
   it("refuses none, the same reference twice and more than ten", () => {
     expect(parseReferenceList([])).toEqual({ ok: false, error: "none", row: null });
-    expect(parseReferenceList([ref(), ref({ name: "Again", contact: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
-    const six = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.test` }));
-    expect(parseReferenceList(six)).toMatchObject({ ok: false, error: "too_many" });
+    expect(parseReferenceList([ref(), ref({ name: "Again", email: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
+    const many = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, email: `r${i}@example.test` }));
+    expect(parseReferenceList(many)).toMatchObject({ ok: false, error: "too_many" });
     // CONTROL: ten is fine.
-    expect(parseReferenceList(six.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
+    expect(parseReferenceList(many.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
   });
 });
 

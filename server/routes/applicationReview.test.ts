@@ -260,8 +260,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect([200, 409], JSON.stringify(asked.body)).toContain(asked.status);
         const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`, {
           references: [
-            { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a garden together.", ally: "" },
-            { name: "Ben Reference", contact: "ben.reference@example.test", how: "He hired me for two harvests.", ally: "" },
+            { name: "Ana Reference", email: "ana.reference@example.test", whatsapp: "+506 8888 1234", how: "We built a garden together.", ally: "" },
+            { name: "Ben Reference", email: "ben.reference@example.test", whatsapp: "+506 8888 1234", how: "He hired me for two harvests.", ally: "" },
           ],
         });
         expect([200, 409], JSON.stringify(given.body)).toContain(given.status);
@@ -525,7 +525,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect(JSON.stringify(await status())).not.toContain("hard to read");
         expect(JSON.stringify(await status())).not.toContain("unsure");
         const letter = state.sent.slice(sentBefore).find((m) => m.text.includes("Data Role"));
-        expect(letter?.text).toContain(`a conversation with Data Role, about 20 minutes. Book a time with Data Role: ${IB_LINK}`);
+        expect(letter?.text).toContain(`a conversation with Data Role. Book a time with Data Role: ${IB_LINK}`);
         expect(letter?.text).not.toContain(IB.email);
         expect(letter?.text).not.toContain("Ivo");
         expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
@@ -833,7 +833,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect((await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id)).body.stamped).toBe(true);
       expect((await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id)).body.stamped).toBe(false);
       expect(updates()).toHaveLength(1);
-      expect(updates()[0]).toMatchObject({ kind: "essential", idempotencyKey: `open-proposal:${id}:update:first_reply`, to: { email: "fr-person@example.test" }, subject: "We have taken up your proposal" });
+      expect(updates()[0]).toMatchObject({ kind: "essential", idempotencyKey: `open-proposal:${id}:update:first_reply`, to: { email: "fr-person@example.test" }, subject: "We've picked up your proposal" });
       expect(updates()[0].text).toContain("You'll hear from us within one moon cycle.");
       // No account yet: email only, nothing on any profile.
       expect(state.notices.filter((n) => n.type === "applicant_update")).toEqual([]);
@@ -860,7 +860,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(updates()).toHaveLength(1);
       expect(updates()[0]).toMatchObject({ idempotencyKey: `open-proposal:${id}:update:conversation:2`, to: { email: "conv-person@example.test" } });
       expect(updates()[0].text).toContain("Data Role");
-      expect(updates()[0].text).toContain("about 20 minutes");
+      // No length per call (the lead, 27 Nov 2026: "drop the per-conversation figures").
+      expect(updates()[0].text).not.toContain("minutes");
       // Scoring the same one again is refused, and tells nobody again.
       await score(id, Number(ivs[0].id), IA.id);
       expect(updates()).toHaveLength(1);
@@ -919,7 +920,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       const ivs = await interviews(id);
       await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id);
       await score(id, Number(ivs[0].id), IA.id, "strong");
-      const mail = state.sent.find((m) => m.to.email === "letterlink@example.test" && m.subject === "We would love to talk with you");
+      const mail = state.sent.find((m) => m.to.email === "letterlink@example.test" && m.subject === "Let's talk");
       expect(mail, "the conversation letter was sent").toBeTruthy();
       // The audit's finding: this letter used to say the link was "in the first email".
       const link = /https?:\/\/\S+\/application-status\/\S+/.exec(mail!.text)?.[0];

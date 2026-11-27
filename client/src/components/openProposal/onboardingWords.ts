@@ -79,7 +79,7 @@ export const ONBOARDING_MIRROR: WordMirror<typeof ONBOARDING_WORDS> = {
   gatheredIntro: (role) => msg({ message: `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`, context: "applicant onboarding: gatheredIntro" }),
   gatheredHidden: msg({ message: "This view is for the role that makes the final call and the people who decide.", context: "applicant onboarding: gatheredHidden" }),
   scorecardsHidden: msg({ message: "Scorecards open to you once you have added your own.", context: "applicant onboarding: scorecardsHidden" }),
-  finalAdded: msg({ message: "The final conversation is open. The applicant books it now, and their proposal is fixed.", context: "applicant onboarding: finalAdded" }),
+  finalAdded: msg({ message: "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up.", context: "applicant onboarding: finalAdded" }),
   finalExists: msg({ message: "The final conversation is already open or done.", context: "applicant onboarding: finalExists" }),
   finalTalksFirst: msg({ message: "Write up the conversations before it first. Then move the application to the final conversation.", context: "applicant onboarding: finalTalksFirst" }),
   finalAtReferences: msg({ message: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.", context: "applicant onboarding: finalAtReferences" }),

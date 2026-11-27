@@ -49,7 +49,8 @@ export default function ApplicationNextCard() {
       </h2>
       {/* The page's line points "below"; here it points to the application's page, where the form is. */}
       <p className="mt-1 text-lg text-foreground" data-application-next-move="">{sayOnProfile(lang, view.move)}</p>
-      {(view.primary || book.length > 0) && (
+      {/* With the stage's buttons below, the same acts are drawn once, there. */}
+      {!view.tasks?.length && (view.primary || book.length > 0) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {view.primary && (
             <a href={`${page}${view.primary.href}`} className={BTN_PRIMARY} data-application-next-primary="">
@@ -62,6 +63,24 @@ export default function ApplicationNextCard() {
             </a>
           ))}
         </div>
+      )}
+      {/* The stage's buttons, the same as on the application's page (the lead, 27 Nov 2026). */}
+      {view.tasks && view.tasks.length > 0 && (
+        <ul className="mt-4 grid gap-2" data-application-next-tasks="">
+          {view.tasks.map((task) => (
+            <li key={task.key} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border p-3" data-application-next-task={task.key}>
+              <span className="min-w-0">
+                <span className="block font-semibold text-foreground">{task.label}</span>
+                <span className={`block text-sm ${task.done ? "text-open" : "text-muted-foreground"}`}>{task.state}</span>
+              </span>
+              {task.action && task.href && (
+                <a href={task.external ? task.href : `${page}${task.href}`} className={BTN_NOTICE} {...(task.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                  {task.action}
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
       <a href={page} className={`mt-4 ${DOOR}`} data-application-next-open="">
         {t({ message: "Open your application", context: "profile: the applicant's next-step card, link to the status page" })}

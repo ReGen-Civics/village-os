@@ -33,7 +33,7 @@ describe("the applicant's six stages", () => {
     const bookNow = { role: "Operations Role", label: "Operations Role (Rye)", url: "https://cal.example.test/ops", links: [{ who: null, url: "https://cal.example.test/ops" }] };
     // Shortlisted (QA round 2: the words say so only then).
     const v = statusView("en", served({ sixStages: { ...six("review")!, shortlisted: true }, bookNow }));
-    expect(v.move).toBe("You are shortlisted. Book your conversation with Operations Role (Rye) below.");
+    expect(v.move).toBe("You're on our shortlist. Book your conversation with Operations Role (Rye) below.");
     expect(v.booking?.text).toBe("");
     expect(v.booking?.book && "links" in v.booking.book ? v.booking.book.links.map((l) => l.url) : []).toEqual(["https://cal.example.test/ops"]);
     // CONTROL: no conversation open, no button, and the older order line is gone.
@@ -48,11 +48,15 @@ describe("the applicant's six stages", () => {
     expect(v.move).toMatch(/contraoferta/);
   });
 
-  it("passes the refine form at References and proposal, and its frozen line after", () => {
+  it("passes the refine form at References and proposal AND at the Final conversation, and its fixed line at Agreement", () => {
     const open = statusView("en", served({ sixStages: six("references", { open: true, frozen: false, why: "Because.", aim: "Books.", versions: 1 }) }));
     expect(open.refine).toEqual({ open: true, frozen: false, why: "Because.", aim: "Books.", versions: 1 });
-    const frozen = statusView("en", served({ sixStages: six("final_interview", { open: false, frozen: true, why: "", aim: "", versions: 1 }) }));
-    expect(frozen.refine?.frozen).toBe(true);
+    // The lead, 27 Nov 2026: they can keep refining through the final conversation.
+    const atFinal = statusView("en", served({ sixStages: six("final_interview", { open: true, frozen: false, why: "Because.", aim: "Books.", versions: 1 }) }));
+    expect(atFinal.refine?.open).toBe(true);
+    expect(atFinal.tasks?.map((t) => t.key)).toEqual(["conversation", "proposal"]);
+    const fixed = statusView("en", served({ sixStages: six("agreement", { open: false, frozen: true, why: "", aim: "", versions: 1 }) }));
+    expect(fixed.refine?.frozen).toBe(true);
     expect(statusView("en", served({ sixStages: six("review") })).refine).toBeNull();
   });
 
@@ -75,8 +79,8 @@ describe("the applicant's six stages", () => {
     const early = statusView("en", served({ sixStages: six("references", { open: false, frozen: false, why: "", aim: "", versions: 0 }), bookNow: finalBook }));
     expect(early.booking).toBeNull();
     expect(early.move).not.toMatch(/Final Call Role/);
-    expect(early.move).not.toMatch(/refine/i);
-    const atFinal = statusView("en", served({ sixStages: six("final_interview", { open: false, frozen: true, why: "", aim: "", versions: 1 }), bookNow: finalBook }));
+    expect(JSON.stringify(early.tasks)).not.toContain("cal.example.test/final");
+    const atFinal = statusView("en", served({ sixStages: six("final_interview", { open: true, frozen: false, why: "", aim: "", versions: 1 }), bookNow: finalBook }));
     expect(atFinal.move).toMatch(/final conversation with Final Call Role \(Flor\)/);
     expect(atFinal.bookGold).toBe(true);
     // CONTROL: the community conversation's button is not the final's, and shows at References and proposal.
@@ -87,22 +91,30 @@ describe("the applicant's six stages", () => {
   it("QA round 1: we say we will reply only while the move is ours, and 'answer each line' only when a counter-offer exists", () => {
     const refs = statusView("en", served({ sixStages: six("references", { open: true, frozen: false, why: "a", aim: "b", versions: 0 }), referencesAsked: { given: null, mayAdd: true } }));
     expect(refs.applicantActs).toBe(true);
-    expect(refs.tasks?.map((t) => [t.key, t.state])).toEqual([["references", "To do"], ["proposal", "Open to refine"], ["conversation", "Opens when it is ready"]]);
+    // One button per action, each saying done or to do (the lead, 27 Nov 2026).
+    expect(refs.tasks?.map((t) => [t.key, t.state, t.action, t.done])).toEqual([
+      ["references", "To do", "Add your references", false],
+      ["proposal", "You can update it", "Refine your proposal", false],
+      ["conversation", "Opens when it's ready", null, false],
+    ]);
     expect(refs.bookGold).toBe(false);
     const waiting = statusView("en", served({ sixStages: six("agreement") }));
     expect(waiting.applicantActs).toBe(false);
     expect(waiting.move).not.toMatch(/Answer each line/);
-    const countered = statusView("en", served({ sixStages: six("agreement", { open: false, frozen: true, why: "", aim: "", versions: 1 }), offer: { mayAnswer: true, rows: [{}] } }));
-    expect(countered.move).toMatch(/Answer each line below/);
+    const countered = statusView("en", served({ sixStages: { ...six("agreement", { open: false, frozen: true, why: "", aim: "", versions: 1 })!, anchorCircle: "Anchor Circle" }, offer: { mayAnswer: true, rows: [{}] } }));
+    expect(countered.move).toBe("The Anchor Circle sent a counter-offer. Answer each change below, and we'll go back and forth until we agree.");
     expect(countered.applicantActs).toBe(true);
-    // The fixed line never shows at Agreement.
+    // With a counter-offer to answer, the fixed line steps aside.
     expect(countered.refine).toBeNull();
+    // Waiting, the circle is named from the village's own circles; none named reads "the circle".
+    expect(statusView("en", served({ sixStages: { ...six("agreement")!, anchorCircle: "Anchor Circle" } })).move).toBe("Your proposal is with the Anchor Circle for review. They'll accept it or send a counter-offer, right here.");
+    expect(statusView("en", served({ sixStages: six("agreement") })).move).toMatch(/^Your proposal is with the circle for review/);
   });
 
   it("QA round 2: 'You are shortlisted' only when it was; invited without a shortlist reads otherwise", () => {
     const bookNow = { role: "Operations Role", label: "Operations Role", url: "https://cal.example.test/ops", links: [{ who: null, url: "https://cal.example.test/ops" }] };
     const invited = statusView("en", served({ sixStages: { ...six("review")!, shortlisted: false }, bookNow }));
-    expect(invited.move).toBe("Book your first conversation with Operations Role below. It is part of our review.");
+    expect(invited.move).toBe("Book your first conversation with Operations Role below. It's part of our review.");
     expect(invited.move).not.toMatch(/shortlist/i);
     // An older server sends no flag: never claim a shortlist it did not say.
     expect(statusView("en", served({ sixStages: six("review"), bookNow })).move).not.toMatch(/shortlist/i);
@@ -125,16 +137,21 @@ describe("the applicant's six stages", () => {
   it("QA round 2: once the references are in, the card says so and names the role that acts next", () => {
     const refine = { open: true, frozen: false, why: "a", aim: "b", versions: 0 };
     const follow = statusView("en", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: "Operations Role" } }, referencesAsked: { given: 2, mayAdd: false } }));
-    expect(follow.move).toMatch(/^Your references are in\. Operations Role contacts them next\./);
-    expect(follow.move).toMatch(/still refine your proposal below/);
+    expect(follow.move).toBe("Your references are in. Operations Role is about to reach out to them.");
     expect(follow.move).not.toMatch(/Add your references/);
+    // Never asked again; the edit button shows only while nobody has reached out.
+    expect(follow.tasks?.[0]).toMatchObject({ key: "references", state: "Done", done: true, action: null });
+    const editable = statusView("en", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: "Operations Role" } }, referencesAsked: { given: 2, mayAdd: false, mayEdit: true } }));
+    expect(editable.tasks?.[0]).toMatchObject({ action: "Edit your references", href: "#reference-form" });
     const move = statusView("en", served({ sixStages: { ...six("references", { ...refine, open: false })!, next: { act: "move", role: "Final Call Role" } }, referencesAsked: { given: 2, mayAdd: false } }));
-    expect(move.move).toBe("Your references are in. Final Call Role moves your application to the final conversation next.");
+    expect(move.move).toBe("Your references are in. Final Call Role moves you to your final conversation next.");
     // No role named: the team.
     const team = statusView("en", served({ sixStages: { ...six("references", refine)!, next: { act: "move", role: null } }, referencesAsked: { given: 1, mayAdd: false } }));
     expect(team.move).toMatch(/^Your references are in\. The team moves/);
-    expect(statusView("es", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: null } }, referencesAsked: { given: 1, mayAdd: false } })).move).toMatch(/^Sus referencias ya llegaron\. El equipo las contacta/);
-    // CONTROL: before they are in, the card still asks for them.
-    expect(statusView("en", served({ sixStages: six("references", refine), referencesAsked: { given: null, mayAdd: true } })).move).toMatch(/^Add your references/);
+    expect(statusView("es", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: null } }, referencesAsked: { given: 1, mayAdd: false } })).move).toMatch(/^Sus referencias ya llegaron\. El equipo está por contactarlas/);
+    // CONTROL: before they are in, the card points to the buttons, the first of which asks for them.
+    const before = statusView("en", served({ sixStages: six("references", refine), referencesAsked: { given: null, mayAdd: true } }));
+    expect(before.move).toBe("Here's what to do at this step. Each one has its own button below.");
+    expect(before.tasks?.[0].action).toBe("Add your references");
   });
 });

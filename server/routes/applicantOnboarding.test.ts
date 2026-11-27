@@ -55,8 +55,9 @@ const OUTSIDER = person("u-ob-out", "Olly Out");
 const NEWBIE = person("u-ob-new", "Nia New");
 
 const REFS = [
-  { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a school garden together.", ally: "She runs the valley seed library." },
-  { name: "Ben Reference", contact: "+506 8888 1234", how: "He hired me for two harvests.", ally: "" },
+  // Each with an email and one of WhatsApp, a US phone or Signal (the lead, 27 Nov 2026).
+  { name: "Ana Reference", email: "ana.reference@example.test", whatsapp: "+506 8888 1234", how: "We built a school garden together.", ally: "She runs the valley seed library." },
+  { name: "Ben Reference", email: "ben.reference@example.test", usPhone: "(415) 555-0132", how: "He hired me for two harvests.", ally: "" },
 ];
 
 describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
@@ -256,7 +257,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`);
       expect(letters).toHaveLength(1);
       expect(letters[0].to.email).toBe("ask@example.test");
-      expect(letters[0].subject).toContain("lista corta");
+      expect(letters[0].subject).toContain("referencias");
       expect(letters[0].text).toContain(`${ORIGIN}/application-status/${id}?token=`);
       // Asked twice: refused, and no second letter.
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(409);
@@ -276,10 +277,18 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(told).toEqual([FOUNDER.id, FINAL.id, HR.id].sort());
       // No name or contact rides on a notice.
       expect(JSON.stringify(state.notices)).not.toContain("ana.reference@example.test");
-      // A second list is refused and writes nothing.
-      const again = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[0]] }, null);
-      expect(again.status).toBe(409);
-      expect(await refRows(id)).toHaveLength(2);
+      // THE EDIT (the lead, 27 Nov 2026): while nobody has reached out, a second list replaces the first, and the team
+      // is not told twice.
+      const noticesBefore = state.notices.length;
+      const again = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[1], REFS[0]] }, null);
+      expect(again.status, JSON.stringify(again.body)).toBe(200);
+      expect((await refRows(id)).map((r: any) => r.name)).toEqual(["Ben Reference", "Ana Reference"]);
+      expect(state.notices.length).toBe(noticesBefore);
+      // Once somebody has followed one up, the list is the team's: refused, and nothing changes.
+      await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ? AND position = 1", [id]);
+      const late = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[0], REFS[1]] }, null);
+      expect(late.status).toBe(409);
+      expect((await refRows(id)).map((r: any) => r.name)).toEqual(["Ben Reference", "Ana Reference"]);
       // CONTROL: a wrong token is the same 404 as an unknown ref.
       expect((await call("POST", `/api/application-status/${id}/references?token=nope`, { references: REFS }, null)).status).toBe(404);
     });
@@ -293,9 +302,12 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(early.body.error).toBe("not_asked");
       await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
       const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)!;
-      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", contact: "nowhere", how: "x" }] }, null);
+      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", how: "x" }] }, null);
       expect(bad.status).toBe(400);
-      expect(bad.body).toMatchObject({ error: "contact", row: 1 });
+      // An email alone is refused: one of WhatsApp, a US phone or Signal too (the lead, 27 Nov 2026).
+      expect(bad.body).toMatchObject({ error: "channel", row: 1 });
+      const badNumber = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", usPhone: "12", how: "x" }] }, null);
+      expect(badNumber.body).toMatchObject({ error: "contact", row: 1 });
       // The status page asks at least two too (the lead, 19 Nov 2026).
       const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0]] }, null);
       expect([one.status, one.body.error]).toEqual([400, "too_few"]);
@@ -306,7 +318,8 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const { id, token } = await withReferences("page@example.test");
       const s = await call("GET", `/api/application-status/${id}?token=${encodeURIComponent(token)}`, undefined, null);
       expect(s.status).toBe(200);
-      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false });
+      // Editable while nobody has reached out (the lead, 27 Nov 2026).
+      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false, mayEdit: true });
       expect(s.body.status.path.map((p: any) => p.label)).toContain("References");
       const text = JSON.stringify(s.body);
       for (const secret of ["Ana Reference", "ana.reference@example.test", "8888", "seed library"]) expect(text).not.toContain(secret);
@@ -319,7 +332,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       for (const who of [FOUNDER.id, FINAL.id, HR.id]) {
         const w = await walk(id, who);
         expect(w.status, who).toBe(200);
-        expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["ana.reference@example.test", "+506 8888 1234"]);
+        expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       }
       const out = await walk(id, OUTSIDER.id);
       expect(out.status).toBe(404);
@@ -494,7 +507,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const rows = await refRows(id);
       expect(rows.map((r: any) => r.owner_role_id)).toEqual([roleHR, roleHR]);
       const w = await walk(id, FOUNDER.id);
-      expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(REFS.map((r) => r.contact));
+      expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       expect(w.body.walkthrough.track.now).toBe("references");
       expect((await walk(id, NEWBIE.id)).status).toBe(404);
       expect((await walk(id, OUTSIDER.id)).status).toBe(404);

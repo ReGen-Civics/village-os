@@ -31,6 +31,7 @@ import { stepBookingOf } from "./applicationReview";
 import { plainLetterHtml } from "./letterHtml";
 import { statusLinkFor, withoutStatusLink, type TellDeps } from "./applicantUpdates";
 import { stringVar } from "./variables";
+import { referencesEditable } from "../repos/applicantOnboarding";
 import { wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
 import { bookingLinksText } from "../../shared/interviewBooking";
 import type { Pool } from "mysql2/promise";
@@ -98,6 +99,8 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
     // The conversation open NOW at this stage: the final's only at Final conversation, a community one only before.
     const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && (now === "final_interview" ? i.final : !i.final));
     const step = open && now !== "agreement" ? await stepBookingOf(pool, ref, open.roleId) : null;
+    const account = await trustedAccountFor(deps.members, p, pool);
+    const origin = deps.siteUrl?.().replace(/\/+$/, "");
     const words = stageLetter({
       kind: now,
       firstName: greetingName(p.name),
@@ -105,9 +108,14 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
       booking: step ? { role: step.label, links: step.links.map((l) => l.url) } : null,
       followupRole: await roleWord(deps, stringVar(FOLLOWUP_ROLE_VARIABLE)),
       finalCallRole: await roleWord(deps, stringVar(FINAL_CALL_ROLE_VARIABLE)),
+      anchorCircle: await review.anchorCircleName(pool),
       referencesOpen: read.facts.refsAsked && !read.facts.refsGiven,
+      // In already: never asked again (the lead, 27 Nov 2026). Only whether they are in and editable rides along.
+      referencesIn: read.facts.refsGiven,
+      referencesEditable: read.facts.refsGiven ? await referencesEditable(pool, ref) : false,
       refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
       statusLink: statusLinkFor(deps, ref),
+      profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
     });
     return await send(deps, p, now, words);
@@ -150,6 +158,7 @@ export async function tellRefinedLetter(deps: TellDeps, ref: string): Promise<bo
       booking: null,
       followupRole: null,
       finalCallRole: null,
+      anchorCircle: await review.anchorCircleName(pool),
       referencesOpen: false,
       refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
       statusLink: statusLinkFor(deps, ref),

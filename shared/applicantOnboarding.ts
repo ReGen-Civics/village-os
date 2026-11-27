@@ -79,7 +79,10 @@ export const FOLLOWUP_NOTE_MAX = 2000;
 /** One reference as the applicant gives it. */
 export interface GivenReference {
   name: string;
-  /** An email address or a phone number. */
+  /**
+   * How to reach them, as the team reads it: their email, then each number given, one per line ("Email: ...",
+   * "WhatsApp: ...", "US phone: ...", "Signal: ..."), built by `contactLines`. Stored in the one contact column.
+   */
   contact: string;
   /** How they know the applicant. */
   how: string;
@@ -97,17 +100,43 @@ export function reachable(contact: string): boolean {
   return PHONE.test(c) && c.replace(/\D/g, "").length >= 6;
 }
 
+/**
+ * HOW WE REACH A REFERENCE (the lead, 27 Nov 2026: "we need 1 of either whatsapp, US phones, or signal numbers to
+ * reach out to references as well as email"). Every reference needs an email AND at least one of these three.
+ */
+export const REFERENCE_CHANNELS = ["whatsapp", "usPhone", "signal"] as const;
+export type ReferenceChannel = (typeof REFERENCE_CHANNELS)[number];
+
+/** A valid email address. */
+export const isReferenceEmail = (v: string): boolean => EMAIL.test(v.trim());
+/** An international phone number, as WhatsApp takes it: 8 to 15 digits, an optional leading +. */
+export const isWhatsApp = (v: string): boolean => PHONE.test(v.trim()) && ((d) => d.length >= 8 && d.length <= 15)(v.replace(/\D/g, ""));
+/** A US phone number: ten digits, with or without a leading +1 or 1. */
+export const isUsPhone = (v: string): boolean => /^[0-9 ().+-]+$/.test(v.trim()) && /^1?[2-9][0-9]{2}[2-9][0-9]{6}$/.test(v.replace(/\D/g, ""));
+/** A Signal number (a phone number) or a Signal username (name.01). */
+export const isSignal = (v: string): boolean => isWhatsApp(v) || /^@?[a-z][a-z0-9_]{2,31}\.[0-9]{2,10}$/i.test(v.trim());
+
+const CHANNEL_OK: Record<ReferenceChannel, (v: string) => boolean> = { whatsapp: isWhatsApp, usPhone: isUsPhone, signal: isSignal };
+/** The label each way of reaching them carries in the stored contact, in the team's language. */
+export const CHANNEL_LABELS: Record<"email" | ReferenceChannel, string> = { email: "Email", whatsapp: "WhatsApp", usPhone: "US phone", signal: "Signal" };
+
+/** The stored contact: one labelled line each, the email first. */
+export function contactLines(c: { email: string } & Partial<Record<ReferenceChannel, string>>): string {
+  return [`${CHANNEL_LABELS.email}: ${c.email}`, ...REFERENCE_CHANNELS.filter((k) => c[k]).map((k) => `${CHANNEL_LABELS[k]}: ${c[k]}`)].join("\n");
+}
+
 const clean = (v: unknown): string => String(typeof v === "string" ? v : "").replace(/\s+/g, " ").trim();
 
 /** The reasons a list is refused, in the applicant's language (shared/applicantWords.ts `status.referenceForm.errors`). */
-export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
+export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "email" | "channel" | "contact" | "twice" | "too_long";
 
 export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null };
 
 /**
- * The list as the form sent it. A wholly blank row is dropped; a row with some
- * of it needs a name, a way to reach them and how they know the applicant.
- * The first problem is answered, with the row it is on.
+ * The list as the form sent it. A wholly blank row is dropped; a row with some of it needs a name, how they know the
+ * applicant, their email AND at least one of a WhatsApp number, a US phone number or a Signal number (the lead,
+ * 27 Nov 2026). The first problem is answered, with the row it is on. An older form that sends one `contact` reads it
+ * as the email when it is one, so it still meets the same rule.
  */
 export function parseReferenceList(raw: unknown): ReferenceParse {
   const rows = Array.isArray(raw) ? raw : [];
@@ -116,14 +145,20 @@ export function parseReferenceList(raw: unknown): ReferenceParse {
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i] as Record<string, unknown> | null;
     const name = clean(r?.name);
-    const contact = clean(r?.contact);
+    const legacy = clean(r?.contact);
+    const email = clean(r?.email) || (isReferenceEmail(legacy) ? legacy : "");
+    const channels = { whatsapp: clean(r?.whatsapp), usPhone: clean(r?.usPhone), signal: clean(r?.signal) };
     const how = clean(r?.how);
     const ally = clean(r?.ally);
-    if (!name && !contact && !how && !ally) continue;
+    if (!name && !email && !legacy && !channels.whatsapp && !channels.usPhone && !channels.signal && !how && !ally) continue;
+    const contact = contactLines({ email, ...channels });
     if (name.length > REF_NAME_MAX || contact.length > REF_CONTACT_MAX || how.length > REF_HOW_MAX || ally.length > REF_ALLY_MAX) return { ok: false, error: "too_long", row: i };
-    if (!name || !contact || !how) return { ok: false, error: "needs_all", row: i };
-    if (!reachable(contact)) return { ok: false, error: "contact", row: i };
-    const key = contact.toLowerCase().replace(/[^a-z0-9@+.]/g, "");
+    if (!name || !how) return { ok: false, error: "needs_all", row: i };
+    if (!email || !isReferenceEmail(email)) return { ok: false, error: "email", row: i };
+    const given = REFERENCE_CHANNELS.filter((k) => channels[k]);
+    if (!given.length) return { ok: false, error: "channel", row: i };
+    if (given.some((k) => !CHANNEL_OK[k](channels[k]))) return { ok: false, error: "contact", row: i };
+    const key = email.toLowerCase();
     if (seen.has(key)) return { ok: false, error: "twice", row: i };
     seen.add(key);
     out.push({ name, contact, how, ally });
@@ -458,7 +493,7 @@ export const ONBOARDING_WORDS = {
   gatheredIntro: (role: string) => `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`,
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
-  finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
+  finalAdded: "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up.",
   finalExists: "The final conversation is already open or done.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
   finalAtReferences: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.",

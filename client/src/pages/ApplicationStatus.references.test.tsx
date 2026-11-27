@@ -81,16 +81,20 @@ describe("the reference form", () => {
     expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(3);
     expect(document.querySelector("[data-reference-how-many]")?.textContent).toBe(EN.howMany);
     fireEvent.change(screen.getAllByLabelText(EN.name)[0], { target: { value: "Ana Reference" } });
-    fireEvent.change(screen.getAllByLabelText(EN.contact)[0], { target: { value: "ana@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.email)[0], { target: { value: "ana@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.whatsapp)[0], { target: { value: "+506 8888 1234" } });
     fireEvent.change(screen.getAllByLabelText(EN.how)[0], { target: { value: "We built a garden." } });
     fireEvent.change(screen.getAllByLabelText(EN.name)[1], { target: { value: "Ben Reference" } });
-    fireEvent.change(screen.getAllByLabelText(EN.contact)[1], { target: { value: "ben@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.email)[1], { target: { value: "ben@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.signal)[1], { target: { value: "ben.42" } });
     fireEvent.change(screen.getAllByLabelText(EN.how)[1], { target: { value: "He hired me." } });
     fireEvent.click(screen.getByRole("button", { name: EN.send }));
     expect(await screen.findByText(EN.given(1))).toBeTruthy();
     expect(posts).toHaveLength(1);
     expect(posts[0].url).toBe("/api/application-status/op_status_1/references?token=tok-123");
-    expect(posts[0].body.references[0]).toMatchObject({ name: "Ana Reference", contact: "ana@example.test", how: "We built a garden." });
+    expect(posts[0].body.references[0]).toMatchObject({ name: "Ana Reference", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We built a garden." });
+    // The applicant is asked to tell their references we'll be in touch (the lead, 27 Nov 2026).
+    expect(screen.queryByText(EN.tellThem)).toBeNull();
     expect(document.querySelector("[data-reference-form]")).toBeNull();
     expect(document.body.textContent).not.toContain("ana@example.test");
   });
@@ -99,9 +103,32 @@ describe("the reference form", () => {
     served = { ...WAITING };
     answer = { status: 400, body: { error: "contact", row: 0 } };
     render(<ApplicationStatus />);
-    fireEvent.click(await screen.findByRole("button", { name: EN.send }));
+    await screen.findByRole("button", { name: EN.send });
+    // Filled to the page's own rule, so the server's answer is what is said.
+    for (const i of [0, 1]) {
+      fireEvent.change(screen.getAllByLabelText(EN.name)[i], { target: { value: `R${i}` } });
+      fireEvent.change(screen.getAllByLabelText(EN.email)[i], { target: { value: `r${i}@example.test` } });
+      fireEvent.change(screen.getAllByLabelText(EN.usPhone)[i], { target: { value: "(415) 555-0132" } });
+      fireEvent.change(screen.getAllByLabelText(EN.how)[i], { target: { value: "Knew me." } });
+    }
+    fireEvent.click(screen.getByRole("button", { name: EN.send }));
     expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.contact);
     expect(document.querySelector("[data-reference-form]")).not.toBeNull();
+  });
+
+  it("THE LEAD'S RULE (27 Nov 2026): an email without a WhatsApp, US phone or Signal number is said on the page, and nothing is sent", async () => {
+    served = { ...WAITING };
+    render(<ApplicationStatus />);
+    expect(await screen.findByText(EN.tellThem)).toBeTruthy();
+    for (const i of [0, 1]) {
+      fireEvent.change(screen.getAllByLabelText(EN.name)[i], { target: { value: `R${i}` } });
+      fireEvent.change(screen.getAllByLabelText(EN.email)[i], { target: { value: `r${i}@example.test` } });
+      fireEvent.change(screen.getAllByLabelText(EN.how)[i], { target: { value: "Knew me." } });
+    }
+    fireEvent.click(screen.getByRole("button", { name: EN.send }));
+    expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.channel);
+    expect(posts).toHaveLength(0);
+    expect(document.querySelector('[data-reference-row="0"]')?.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("adds rows up to ten (the lead, 19 Nov 2026)", async () => {
@@ -118,16 +145,21 @@ describe("the reference form", () => {
     render(<ReferenceForm postUrl="/x" words={ES} onGiven={() => {}} />);
     expect(screen.getByRole("heading", { level: 2, name: ES.heading })).toBeTruthy();
     expect(screen.getByRole("button", { name: ES.send })).toBeTruthy();
-    expect(screen.getAllByLabelText(ES.contact).length).toBe(3);
+    expect(screen.getAllByLabelText(ES.email).length).toBe(3);
+    expect(screen.getAllByLabelText(ES.signal).length).toBe(3);
     expect(screen.getByText(ES.howMany)).toBeTruthy();
   });
 
-  it("a single reference is refused in the applicant's words (too_few)", async () => {
+  it("a single reference is refused in the applicant's words (too_few), on the page before anything is sent", async () => {
     served = { ...WAITING };
-    answer = { status: 400, body: { error: "too_few" } };
     render(<ApplicationStatus />);
-    fireEvent.click(await screen.findByRole("button", { name: EN.send }));
+    fireEvent.change((await screen.findAllByLabelText(EN.name))[0], { target: { value: "Only One" } });
+    fireEvent.change(screen.getAllByLabelText(EN.email)[0], { target: { value: "one@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.whatsapp)[0], { target: { value: "+506 8888 1234" } });
+    fireEvent.change(screen.getAllByLabelText(EN.how)[0], { target: { value: "Knew me." } });
+    fireEvent.click(screen.getByRole("button", { name: EN.send }));
     expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.too_few);
+    expect(posts).toHaveLength(0);
   });
 
   it("is not offered before references are asked for, nor after they are given", async () => {
