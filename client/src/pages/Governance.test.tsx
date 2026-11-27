@@ -97,6 +97,7 @@ vi.mock("@/contexts/AuthContext", async () => {
 });
 
 import Governance from "./Governance";
+import { TOKEN_KEY } from "@/lib/gameApi";
 import { readConflictSteps, WRITE_STEPS_HREF } from "@/components/governance/VillageConflictSteps";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY, conflictIntroOf } from "@shared/conflictIntro";
 import { VARIABLES_BY_KEY } from "@shared/gameVariables";
@@ -1021,5 +1022,226 @@ describe("the first chapter's heading", () => {
     renderPage();
     expect(await headline()).toHaveTextContent("How Willowbrook Decides");
     expect(screen.getByRole("heading", { level: 2, name: "How we work together" })).toBeInTheDocument();
+  });
+});
+
+/*
+ * "I'VE READ THIS" (the lead, 27 Nov 2026): a tick box at the end of the first chapter; ticked, the chapter folds
+ * to one line for that member with the day they read it, and the read is kept server side so it survives a reload.
+ * Here the server is a small in-memory stand-in for `GET`/`PUT /api/profile/how-we-work-read`; the route itself is
+ * held by server/routes/profile.howWeWorkRead.test.ts on a real schema.
+ */
+describe("I've read this, under How we work together", () => {
+  let readAt: string | null;
+  let puts: unknown[];
+  /** How the GET answers: as the server would, never (still asking), or with a failure. */
+  let getAnswers: "ok" | "hang" | "fail";
+  /** How a PUT answers: as the server would, never (still saving), or with a failure. */
+  let putAnswers: "ok" | "hang" | "fail";
+  beforeEach(() => {
+    readAt = null;
+    puts = [];
+    getAnswers = "ok";
+    putAnswers = "ok";
+    window.localStorage.removeItem("howWeWorkRead.seen");
+    window.localStorage.setItem(TOKEN_KEY, "t");
+    const base = fetch as unknown as (url: string, init?: RequestInit) => Promise<Response>;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (String(url) !== "/api/profile/how-we-work-read") return base(url, init);
+        if (init?.method === "PUT") {
+          const read = JSON.parse(String(init.body)).read;
+          puts.push(read);
+          if (putAnswers === "hang") return new Promise<Response>(() => {});
+          if (putAnswers === "fail") return new Response("{}", { status: 500 });
+          readAt = read ? "2026-11-27T10:00:00.000Z" : null;
+        } else if (getAnswers === "hang") return new Promise<Response>(() => {});
+        else if (getAnswers === "fail") return new Response("{}", { status: 500 });
+        return new Response(JSON.stringify({ readAt }), { status: 200 });
+      }),
+    );
+  });
+  afterEach(() => {
+    window.localStorage.removeItem(TOKEN_KEY);
+    window.history.replaceState(null, "", "/");
+  });
+  const asMember = () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+  };
+  const box = () => within(screen.getByTestId("how-we-work-tick")).getByRole("checkbox", { name: "I've read this" });
+
+  it("offers a member a real, labelled box at the end of the chapter, unticked before they read it", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    expect(tick).not.toBeChecked();
+    // At the END of the first chapter, before the mechanics.
+    const chapter = document.getElementById("how-we-work")!;
+    expect(chapter.contains(tick)).toBe(true);
+    expect(chapter.lastElementChild?.contains(tick)).toBe(true);
+  });
+
+  it("stores the read on a tick, folds the chapter to one line with the day, and the fold survives a reload", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    fireEvent.click(await waitFor(() => box()));
+    await waitFor(() => expect(screen.getByTestId("how-we-work-read")).toBeInTheDocument());
+    expect(puts).toEqual([true]);
+    const line = screen.getByTestId("how-we-work-read");
+    expect(line).toHaveTextContent(/How we work together, read on .*2026/);
+    expect(screen.queryByTestId("how-we-work-tick")).toBeNull();
+    expect(screen.queryByRole("heading", { name: said("principles") })).toBeNull();
+    // Nothing left to skip: the jump goes with the chapter.
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+    // The mechanics move up: they now follow the one line directly.
+    expect(line.compareDocumentPosition(document.getElementById("game-mechanics")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    cleanup();
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("how-we-work-read")).toHaveTextContent(/read on/);
+  });
+
+  it("opens again on Read it again, still ticked, and an untick clears the read", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    renderPage();
+    await headline();
+    fireEvent.click(within(await screen.findByTestId("how-we-work-read")).getByRole("button", { name: "Read it again" }));
+    expect(screen.getByRole("heading", { name: said("principles") })).toBeInTheDocument();
+    expect(box()).toBeChecked();
+    fireEvent.click(box());
+    await waitFor(() => expect(puts).toEqual([false]));
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("opens the chapter for the profile's link to it, even once read", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    window.history.replaceState(null, "", "/governance/how#how-we-work");
+    renderPage();
+    await headline();
+    await waitFor(() => expect(box()).toBeChecked());
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("moves focus to the folded line on a tick, and the line names itself by its sentence", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    tick.focus();
+    fireEvent.click(tick);
+    const line = await screen.findByTestId("how-we-work-read");
+    await waitFor(() => expect(document.activeElement).toBe(line));
+    expect(line).toHaveAccessibleName(/How we work together, read on .*2026/);
+  });
+
+  it("keeps focus on the box when it is unticked, and never disables it while saving", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    window.history.replaceState(null, "", "/governance/how#how-we-work");
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    expect(tick).toBeChecked();
+    expect(tick).toHaveAccessibleDescription(/It folds away for you/);
+    tick.focus();
+    fireEvent.click(tick);
+    expect(tick).not.toBeDisabled();
+    await waitFor(() => expect(puts).toEqual([false]));
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(document.activeElement).toBe(box());
+  });
+
+  it("holds the chapter's place, with no jump, while the read is being asked for (no draw-then-collapse)", async () => {
+    getAnswers = "hang";
+    asMember();
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("how-we-work-waiting")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: said("principles") })).toBeNull();
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("draws the chapter at once for a link into one of its sections while the read is still being asked, and lands there", async () => {
+    getAnswers = "hang";
+    asMember();
+    const landed: string[] = [];
+    const before = window.HTMLElement.prototype.scrollIntoView;
+    window.HTMLElement.prototype.scrollIntoView = function (this: HTMLElement) {
+      landed.push(this.id);
+    };
+    window.history.replaceState(null, "", "/governance/how#conflict");
+    try {
+      renderPage();
+      await headline();
+      expect(screen.queryByTestId("how-we-work-waiting")).toBeNull();
+      expect(document.getElementById("conflict")).not.toBeNull();
+      await waitFor(() => expect(landed).toContain("conflict"));
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = before;
+    }
+  });
+
+  it("holds a short place when this device last saw the chapter read, a tall one otherwise", async () => {
+    getAnswers = "hang";
+    asMember();
+    window.localStorage.setItem("howWeWorkRead.seen", "1");
+    renderPage();
+    await headline();
+    expect((await screen.findByTestId("how-we-work-waiting")).className).toContain("min-h-16");
+    cleanup();
+    window.localStorage.setItem("howWeWorkRead.seen", "0");
+    renderPage();
+    await headline();
+    expect((await screen.findByTestId("how-we-work-waiting")).className).toContain("min-h-[60vh]");
+  });
+
+  it("shows the box ticked while it saves, and rolls it back when the save fails", async () => {
+    asMember();
+    putAnswers = "fail";
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    fireEvent.click(tick);
+    await waitFor(() => expect(puts).toEqual([true]));
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(await within(screen.getByTestId("how-we-work-tick")).findByRole("alert")).toHaveTextContent("That did not save. Try again.");
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+
+    cleanup();
+    putAnswers = "hang";
+    renderPage();
+    await headline();
+    fireEvent.click(await waitFor(() => box()));
+    await waitFor(() => expect(puts).toEqual([true, true]));
+    expect(box()).toBeChecked();
+    expect(box()).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("opens the chapter, with the box, when the read cannot be fetched", async () => {
+    getAnswers = "fail";
+    asMember();
+    renderPage();
+    await headline();
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(screen.getByRole("heading", { name: said("principles") })).toBeInTheDocument();
+    expect(screen.queryByTestId("how-we-work-waiting")).toBeNull();
+  });
+
+  it("gives a signed-out visitor the chapter as before, with no box and no read asked for", async () => {
+    window.localStorage.removeItem(TOKEN_KEY);
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(screen.queryByTestId("how-we-work-tick")).toBeNull();
+    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect((fetch as unknown as { mock: { calls: unknown[][] } }).mock.calls.some(([u]) => u === "/api/profile/how-we-work-read")).toBe(false);
   });
 });

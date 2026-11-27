@@ -214,10 +214,8 @@ describe("TokensTab", () => {
   it("does not offer to mint into a token it left off its own list", async () => {
     renderTab({ stays: "off", library: "off" });
     await loaded();
-    // The mint picker is the select whose placeholder option says "Token…".
-    const picker = screen
-      .getAllByRole("combobox")
-      .find((el) => within(el).queryByText("Token…"))!;
+    // The mint picker is the select its visible label names "Token" (the treasury fold gave the pickers labels).
+    const picker = screen.getByLabelText("Token", { selector: "select" });
     const options = within(picker).getAllByRole("option").map((o) => o.textContent);
     expect(options).not.toContain("Stay Credits");
     // Gratitude is never minted by hand: it is only sent member to member (Rye,
@@ -330,7 +328,7 @@ describe("this screen speaks whole tokens", () => {
 
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects.find((s) => within(s).queryByText("Village Voice"))!, "village-voice");
-    await user.selectOptions(selects.find((s) => s.querySelector('option[value=""]')?.textContent?.includes("Member"))!, "u1");
+    await user.selectOptions(screen.getByLabelText("Member", { selector: "select" }), "u1");
     await user.type(screen.getByPlaceholderText("Amount"), "10");
     await user.type(screen.getByPlaceholderText(/Reason/i), "For the harvest");
     await user.click(screen.getByRole("button", { name: /^Mint$/ }));
@@ -357,7 +355,7 @@ describe("this screen speaks whole tokens", () => {
     expect(box.getAttribute("step")).toBe("0.001");
     expect(box.getAttribute("min")).toBe("0.001");
 
-    await user.selectOptions(selects.find((s) => s.querySelector('option[value=""]')?.textContent?.includes("Member"))!, "u1");
+    await user.selectOptions(screen.getByLabelText("Member", { selector: "select" }), "u1");
     await user.type(box, "2.5");
     await user.type(screen.getByPlaceholderText(/Reason/i), "For the harvest");
     await user.click(screen.getByRole("button", { name: /^Mint$/ }));

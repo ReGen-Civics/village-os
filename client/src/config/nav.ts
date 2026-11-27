@@ -280,9 +280,10 @@ export const NAV: readonly NavEntry[] = [
       { href: "/roles", label: "Roles", sub: "Circles & Roles" },
       // 0098. What the village looks after, and who holds each one. Public since #1529.
       { href: "/powers", label: "What We Look After", sub: "Circles & Roles" },
-      // A members-only report on how the roles are going. It had no menu door.
-      // A section of Circles since 1.3.95 (/role-measures redirects to /circles#role-measures).
-      { href: "/circles#role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
+      // How the roles are going: its own page since 27 Nov 2026 (/role-measures and /circles#role-measures redirect there).
+      // Listed for admins only, who read every circle; a circle's lead reaches their own circle's numbers from
+      // their circle's page (the lead, 27 Nov 2026), and every other member would find nothing there.
+      { href: "/admin/role-progress", label: "How roles are going", roles: ["admin", "founder"], newcomers: "never", sub: "Circles & Roles" },
       // The season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms are its
       // tabs, and their old addresses redirect there. Members read it, so it is listed for the signed-in roles only.
       { href: "/season", label: "Season", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
@@ -342,12 +343,13 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
    * member's (the village test run; a stranger meets a sign-in wall), the Command Centre an admin's or a founder's,
    * the Treasury desk whoever holds a treasury power. They keep the amber that marks the machine room.
    */
-  { href: "/journey-to-launch", label: "🌳 Launch Plan", roles: ["member", "admin", "founder"], accent: true, newcomers: "never", sub: "Running the village" },
+  { href: "/journey-to-launch", label: "Launch Plan", roles: ["member", "admin", "founder"], accent: true, newcomers: "never", sub: "Running the village" },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15). "Treasury desk"
-  // in the menu since round 2, so it does not read as Govern's Treasury tab, the budget every member reads.
-  { href: "/treasury", label: "Treasury desk", door: "treasury", sub: "Running the village" },
+  // in the menu since round 2, so it does not read as Govern's Treasury tab, the budget every member reads. Since the
+  // treasury fold (27 Nov 2026) it opens the desk board at the top of that same Treasury; /treasury redirects there.
+  { href: "/governance/treasury#desks", label: "Treasury desk", door: "treasury", sub: "Running the village" },
   // Its own gate unlocks for admin and founder and walls everyone else.
-  { href: "/project-history", brochure: true, label: "🛠 Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
+  { href: "/project-history", brochure: true, label: "Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
   // The admin's one review page (the Governance lane folds /admin/proposals into it).
   { href: "/admin/review", label: "Review", roles: ["admin", "founder"], sub: "Running the village" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"], sub: "Running the village" },

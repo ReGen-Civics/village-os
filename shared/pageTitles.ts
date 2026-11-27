@@ -37,11 +37,11 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/quests": "Quests",
   "/propose-quest": "Propose a quest",
   "/partner": "Become a partner",
-  "/pricing": "Pricing desk",
+  "/pricing": "Pricing desk", // redirects to /governance/treasury#prices (27 Nov 2026)
   "/budget": "Cash budget", // redirects to /governance/treasury#cash-budget (27 Nov 2026)
   // The lead's name for the page, the same as its menu entry and its Governance tab (26 Nov 2026).
   "/governance/how": "How we work together",
-  "/governance/treasury": "Treasury", // the cash budget, folded in from /budget (27 Nov 2026)
+  "/governance/treasury": "Treasury", // the cash budget, the pay desks, prices and the mint, folded in (27 Nov 2026)
   "/roles": "Roles",
   "/roles/select": "Find your roles",
   "/roles/draft": "Find your roles",
@@ -62,8 +62,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/powers": "What this village looks after",
   "/review": "Review",
   "/approvals": "Approvals",
-  "/cash-payouts": "Cash to pay out",
-  "/treasury": "Treasury",
+  "/cash-payouts": "Cash to pay out", // redirects to /governance/treasury#cash (27 Nov 2026)
+  "/treasury": "Treasury", // redirects to /governance/treasury#desks (27 Nov 2026)
   "/role-proposals": "Propose my roles",
   // Keys here are matched by longest PREFIX against the live location, so a
   // key with no route behind it can never match and is dead weight that
@@ -145,7 +145,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/role-applications": "Role proposal",
   "/open-proposals": "A proposed role", // somebody with no account proposed it (0305)
   "/reset": "A fresh start", // clears this device's copy of the site (client/src/pages/Reset.tsx)
-  "/role-measures": "How roles are going", // admins only, counts and medians from stamped times
+  "/role-measures": "How roles are going", // the old address: it redirects to /admin/role-progress
+  "/admin/role-progress": "How roles are going", // admins see every circle, a circle's lead their own; counts and medians only
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
   "/season": "The season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned

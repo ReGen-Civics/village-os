@@ -107,8 +107,8 @@ const PAGES = [
   "client/src/pages/Review.tsx",
   "client/src/pages/Decisions.tsx",
   "client/src/pages/Decision.tsx",
-  // The Treasury (2026-11-15): the hand mint and the pay queues for a holder who is not an admin.
-  "client/src/pages/Treasury.tsx",
+  // The one Treasury under Governance (27 Nov 2026): the cash budget, the pay desks, prices and the mint.
+  "client/src/pages/GovernanceTreasury.tsx",
   // The review page as cards (2026-11-16): where every change an agent proposes is decided.
   "client/src/pages/ProposedChanges.tsx",  // The send and receive page (2026-11-23, credits lane 3): born inside the rule.
   "client/src/pages/Pay.tsx",
@@ -117,6 +117,8 @@ const PAGES = [
   "client/src/pages/ProsperityJourney.tsx",
   // The Governance page's Now view (the Governance brief, 26 Nov 2026): born inside the rule.
   "client/src/pages/GovernanceNow.tsx",
+  // How roles are going, its own page (the lead, 27 Nov 2026): born inside the rule.
+  "client/src/pages/RoleProgress.tsx",
   // How we work together with the game mechanics folded in (26 Nov 2026): into the night world beside its sibling views.
   "client/src/pages/Governance.tsx",
 ];
@@ -169,8 +171,9 @@ const JOURNEY = [
   "client/src/components/rights/ResidentRightsChapter.tsx",
   "client/src/components/rights/StewardRightsChapter.tsx",
   "client/src/components/rights/LeavingWellChapter.tsx",
-  // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
-  "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
+  // How roles are going, its own page (27 Nov 2026): the pieces it draws with, and a circle's page's door to it.
+  "client/src/components/roleMeasures/parts.tsx",
+  "client/src/components/roleMeasures/CircleProgressLink.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",
   // The /quests example stamp and "Quests coming soon" (24 Nov 2026): born inside the rule.

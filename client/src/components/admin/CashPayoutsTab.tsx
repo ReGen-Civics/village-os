@@ -35,6 +35,7 @@ import {
   type CashQueueEntry,
 } from "@shared/cashOwed";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { CASH_ADMIN, type CashDeskLook } from "@/components/treasury/deskLooks";
 
 /** The moon-review Invoices view (decision 16), its own chunk. It draws a refusal's sentence when the module is off. */
 const InvoicesDesk = lazy(() => import("@/components/myMoon/InvoicesDesk"));
@@ -86,8 +87,32 @@ const keyWords = (body: { message?: unknown } | null | undefined) => {
 
 type Refused = { kind: "signed-out" } | { kind: "no-key"; text: string } | { kind: "failed"; text: string };
 
-export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true }: {
+/**
+ * The End of Moon review's settings on their own, for Governance's Treasury, which draws them folded at the end of its
+ * End of Moon pay section. Exported from here so the panel keeps this file as its one importer and its chunk.
+ */
+export function MoonReviewSettings(props: { password: string; look?: CashDeskLook; bare?: boolean }) {
+  return (
+    <Suspense fallback={null}>
+      <MoonReviewSettingsPanel {...props} />
+    </Suspense>
+  );
+}
+
+export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true, withHeading = true, withSettings = true, look = CASH_ADMIN }: {
   password: string;
+  /** Admin's light look by default; Governance's Treasury passes the sheet's (components/treasury/deskLooks.ts). */
+  look?: CashDeskLook;
+  /**
+   * Draw the End of Moon review's settings at the foot of the desk. Governance's Treasury draws them at the end of its
+   * End of Moon pay section, folded, and passes false.
+   */
+  withSettings?: boolean;
+  /**
+   * Draw the desk's own title and sentence. Governance's Treasury puts the desk under a section heading of its own
+   * that says the same, so it passes false and keeps one heading.
+   */
+  withHeading?: boolean;
   /**
    * Draw "Pay by member" (PayBoard) inside the desk. The Treasury page draws it
    * once in its own End of Moon section, for approve-alone holders as well, and
@@ -99,6 +124,8 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
 }) {
   const { t } = useLingui();
   const Heading = asPage ? "h1" : "h2";
+  // A member's name sits one level under the desk's heading: an h4 under Governance's Treasury's h2 and its h3s.
+  const Name = withHeading ? "h3" : "h4";
   const [data, setData] = useState<{ unpaid: CashQueueEntry[]; paid: CashQueueEntry[] } | null>(null);
   const [refused, setRefused] = useState<Refused | null>(null);
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -245,10 +272,10 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
   };
 
   if (refused) {
-    const link = "inline-flex min-h-[44px] items-center font-medium text-teal-deep underline";
+    const link = look.link;
     return (
-      <div className="rounded-xl border border-border bg-white p-6">
-        <Heading className="text-xl font-semibold text-foreground"><Trans context="CashPayoutsTab, Heading">Cash to pay out</Trans></Heading>
+      <div className={look.refusedBox}>
+        {withHeading && <Heading className="text-xl font-semibold text-foreground"><Trans context="CashPayoutsTab, Heading">Cash to pay out</Trans></Heading>}
         {refused.kind === "signed-out" ? (
           <>
             <p className="mt-2 text-sm text-muted-foreground">{SIGN_IN_WORDS}</p>
@@ -269,8 +296,8 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className={`flex flex-wrap items-start gap-3 ${withHeading ? "justify-between" : "justify-end"}`}>
+        {withHeading && <div>
           <Heading className="flex items-center gap-2 text-xl font-semibold text-foreground">
             <Trans context="CashPayoutsTab, Heading"><HandCoins className="h-5 w-5" aria-hidden="true" />
             Cash to pay out
@@ -279,11 +306,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
             <Trans context="CashPayoutsTab, p">What the village owes each member in cash, for their roles, quests and accepted proposals. The village pays
             by bank transfer itself. Record each transfer here and its lines become paid.
           </Trans></p>
-        </div>
+        </div>}
         <button
           type="button"
           onClick={exportCsv}
-          className="min-h-9 rounded-lg border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground"
+          className={look.exportBtn}
         >
           <Trans context="CashPayoutsTab, button">Export CSV
         </Trans></button>
@@ -299,7 +326,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
         </Suspense>
       )}
 
-      <section aria-label={t({ message: "Totals", context: "CashPayoutsTab, aria-label" })} className="rounded-xl border border-border bg-white p-4">
+      <section aria-label={t({ message: "Totals", context: "CashPayoutsTab, aria-label" })} className={look.totals}>
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {view === "unpaid" ? "Still to pay" : "Paid"}
         </p>
@@ -314,7 +341,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
       </section>
 
       <div className="flex flex-wrap items-end gap-3">
-        <div role="tablist" aria-label={t({ message: "Which lines", context: "CashPayoutsTab, aria-label" })} className="flex rounded-lg border border-border bg-white p-0.5">
+        <div role="tablist" aria-label={t({ message: "Which lines", context: "CashPayoutsTab, aria-label" })} className={look.tabs}>
           {(["unpaid", "paid"] as const).map((v) => (
             <button
               key={v}
@@ -322,7 +349,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
               role="tab"
               aria-selected={view === v}
               onClick={() => { setView(v); cancelTransfer(); }}
-              className={`min-h-9 rounded-md px-3 py-1.5 text-sm font-medium ${view === v ? "bg-teal-deep text-white" : "text-foreground"}`}
+              className={`${look.tab} ${view === v ? look.tabOn : look.tabOff}`}
             >
               {v === "unpaid" ? `To pay (${data.unpaid.length})` : "Paid"}
             </button>
@@ -334,7 +361,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
             <select
               value={claimFilter}
               onChange={(e) => setClaimFilter(e.target.value as ClaimFilter)}
-              className="mt-1 block rounded-lg border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+              className={look.field}
             >
               <option value="all">All lines</option>
               <option value="claimed">Claimed by the member</option>
@@ -347,7 +374,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            className="mt-1 block rounded-lg border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+            className={look.field}
           >
             <option value="all">Every currency</option>
             {currencies.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -373,9 +400,9 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
             const paying = payingFor === g.userId;
             const chosen = pickedRows(g);
             return (
-              <li key={g.userId} className="rounded-xl border border-border bg-white p-4">
+              <li key={g.userId} className={look.group}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="font-semibold text-foreground">{g.name}</h3>
+                  <Name className="font-semibold text-foreground">{g.name}</Name>
                   <p className="text-sm font-semibold text-foreground">
                     {view === "unpaid" ? "Owed " : "Paid "}{totalsText(g.rows)}
                   </p>
@@ -389,7 +416,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           aria-label={`Include ${r.workTitle}`}
                           checked={picked.has(r.id)}
                           onChange={() => toggle(r.id)}
-                          className="mt-1"
+                          className={look.tick}
                         />
                       )}
                       <div className="min-w-0 flex-1">
@@ -413,19 +440,19 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                   <button
                     type="button"
                     onClick={() => startTransfer(g)}
-                    className="mt-3 min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white"
+                    className={`mt-3 ${look.rowAct}`}
                   >
                     <Trans context="CashPayoutsTab, button">Record a bank transfer
                   </Trans></button>
                 )}
 
                 {paying && (
-                  <div className="mt-3 space-y-3 rounded-lg bg-gray-50 p-3">
+                  <div className={`mt-3 ${look.payingBox}`}>
                     <div className="flex flex-wrap gap-3 text-xs">
-                      <button type="button" onClick={() => setPicked(new Set(g.rows.map((r) => r.id)))} className="underline text-foreground">
+                      <button type="button" onClick={() => setPicked(new Set(g.rows.map((r) => r.id)))} className={look.textBtn}>
                         <Trans context="CashPayoutsTab, button">Pick every line
                       </Trans></button>
-                      <button type="button" onClick={() => setPicked(new Set())} className="underline text-foreground">
+                      <button type="button" onClick={() => setPicked(new Set())} className={look.textBtn}>
                         <Trans context="CashPayoutsTab, button">Clear
                       </Trans></button>
                     </div>
@@ -437,7 +464,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           value={transferDate}
                           max={today()}
                           onChange={(e) => { setTransferDate(e.target.value); setConfirming(false); }}
-                          className="mt-1 block rounded-lg border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+                          className={look.field}
                         />
                       </label>
                       <label className="min-w-[14rem] flex-1 text-xs font-medium text-muted-foreground">
@@ -447,7 +474,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           maxLength={CASH_REFERENCE_MAX}
                           onChange={(e) => { setReference(e.target.value); setConfirming(false); }}
                           placeholder={t({ message: "The reference on the bank transfer", context: "CashPayoutsTab, placeholder" })}
-                          className="mt-1 block w-full rounded-lg border border-border bg-white px-2 py-1.5 text-sm text-foreground"
+                          className={`${look.field} w-full`}
                         />
                       </label>
                     </div>
@@ -462,11 +489,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                             type="button"
                             disabled={busy}
                             onClick={() => submit(g)}
-                            className="min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+                            className={look.primary}
                           >
                             <Trans context="CashPayoutsTab, button">Yes, record it
                           </Trans></button>
-                          <button type="button" onClick={() => setConfirming(false)} className="min-h-9 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground">
+                          <button type="button" onClick={() => setConfirming(false)} className={look.secondary}>
                             <Trans context="CashPayoutsTab, button">Back
                           </Trans></button>
                         </div>
@@ -477,11 +504,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
                           type="button"
                           disabled={chosen.length === 0 || !reference.trim() || !transferDate}
                           onClick={() => setConfirming(true)}
-                          className="min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+                          className={look.primary}
                         >
                           <Trans context="CashPayoutsTab, button">Review the transfer
                         </Trans></button>
-                        <button type="button" onClick={cancelTransfer} className="min-h-9 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground">
+                        <button type="button" onClick={cancelTransfer} className={look.secondary}>
                           <Trans context="CashPayoutsTab, button">Cancel
                         </Trans></button>
                       </div>
@@ -494,9 +521,11 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
         </ul>
       )}
 
-      <Suspense fallback={null}>
-        <MoonReviewSettingsPanel password={password} />
-      </Suspense>
+      {withSettings && (
+        <Suspense fallback={null}>
+          <MoonReviewSettingsPanel password={password} />
+        </Suspense>
+      )}
     </div>
   );
 }

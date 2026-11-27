@@ -51,8 +51,9 @@ export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   "Change Requests": msg({ message: "Change Requests", context: "site menu" }),
   "Your work": msg({ message: "Your work", context: "site menu" }),
   "What We Look After": msg({ message: "What We Look After", context: "site menu" }),
-  "\ud83c\udf33 Launch Plan": msg({ message: "\ud83c\udf33 Launch Plan", context: "site menu" }),
-  "\ud83d\udee0 Command Centre": msg({ message: "\ud83d\udee0 Command Centre", context: "site menu" }),
+  // The emoji came off (the lead, 27 Nov 2026: "Drop them").
+  "Launch Plan": msg({ message: "Launch Plan", context: "site menu" }),
+  "Command Centre": msg({ message: "Command Centre", context: "site menu" }),
   "Join": msg({ message: "Join", context: "site menu" }),
   "Investor": msg({ message: "Investor", context: "site menu" }),
   "Capital Contributor": msg({ message: "Capital Contributor", context: "site menu" }),
