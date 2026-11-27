@@ -30,7 +30,11 @@ vi.mock("@/lib/gameApi", () => ({
   }),
 }));
 vi.mock("@/lib/navVisits", () => ({ mostVisited: () => (session.most ? [session.most] : []) }));
-vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: session.modules, loaded: true, failed: false }) }));
+vi.mock("@/modules/ModuleProvider", () => ({
+  useModules: () => ({ modules: session.modules, loaded: true, failed: false }),
+  // The Pull a card speed card reads the Gene Keys module through useMyGeneKeys (speedCards/registered.ts).
+  useModule: (id: string) => (session.modules ?? []).find((m: { id: string }) => m.id === id) ?? null,
+}));
 vi.mock("@/lib/newcomer", () => ({ useNewcomer: () => false }));
 vi.mock("@/i18n/LanguagePicker", () => ({ LanguagePicker: () => <span>language</span> }));
 vi.mock("@/components/ThemeSwitch", () => ({ default: () => <span>mode</span> }));
