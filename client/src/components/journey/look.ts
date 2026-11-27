@@ -97,7 +97,7 @@ export const CHIP_SOFT = "inline-flex items-center gap-1 rounded-full border bor
 
 /** A text field or textarea (the bio editor). */
 export const FIELD =
-  "w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+  "min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
 
 /** A field's label. */
 export const LABEL = "text-sm font-semibold text-foreground";

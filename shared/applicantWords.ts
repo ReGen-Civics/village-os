@@ -371,7 +371,7 @@ export interface ApplicantMessages {
     };
     private: string;
     /** The quiet "withdraw my application" button, with its confirm step (the lead, 27 Nov 2026). */
-    withdraw: { button: string; ask: string; yes: string; keep: string; failed: string };
+    withdraw: { button: string; ask: string; yes: string; keep: string; failed: string; /** The card's eyebrow once withdrawn (QA pass 1 read "FIRST REPLY"). */ step: string };
     /** What the circle raised in its consent round, naming nobody (the lead, 27 Nov 2026). */
     objections: { heading: string; line: string };
     wait: { heading: string; line: string; quests: string; map: string; events: string };
@@ -738,6 +738,7 @@ const en: ApplicantMessages = {
       line: "Their reasons, in their words. Nobody is named.",
     },
     withdraw: {
+      step: "Withdrawn",
       button: "Withdraw my application",
       ask: "Withdraw it? This closes your application, and you can apply again any time.",
       yes: "Yes, withdraw it",
@@ -1098,6 +1099,7 @@ const es: ApplicantMessages = {
       line: "Sus razones, en sus palabras. No se nombra a nadie.", // needs-native-review: the objections' reasons, 27 Nov 2026
     },
     withdraw: {
+      step: "Retirada", // needs-native-review: QA round 4, 27 Nov 2026
       button: "Retirar mi postulación",
       ask: "¿La retira? Esto cierra su postulación, y puede postularse de nuevo cuando quiera.",
       yes: "Sí, retirarla",
@@ -1491,7 +1493,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     heading: s.reviewFirst ? w.headingApplication : w.heading,
     notInvited,
     closed: quietlyClosed,
-    stepWords: quietlyClosed ? w.closed.step : ((w.step as Record<string, string>)[stepKey] ?? s.step),
+    stepWords: quietlyClosed ? w.closed.step : s.outcome === "withdrawn" ? w.withdraw.step : ((w.step as Record<string, string>)[stepKey] ?? s.step),
     move,
     path,
     booking,

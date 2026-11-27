@@ -186,7 +186,8 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
             <p className="whitespace-pre-wrap break-words text-foreground">{r.ours}</p>
             <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t({ message: `What you answered`, context: "applicant's application status, terms" })}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">
-              {r.theirsText ? r.theirsText : r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : t`You did not answer this one.`}
+              {/* Their latest answer to this change first (QA pass 1: "You did not answer this one" stayed after sending). */}
+              {r.reply ? `${choice(r.reply.choice)}${r.reply.note ? `: ${r.reply.note}` : ""}` : r.theirsText ? r.theirsText : r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : t`You did not answer this one.`}
             </p>
             {offer.mayAnswer && (
               <fieldset className="mt-3">
@@ -278,7 +279,8 @@ export default function ApplicationStatus() {
   const token = typeof window === "undefined" ? "" : (new URLSearchParams(window.location.search).get("token") ?? "");
 
   // The words this page owns follow the language the person is reading the site in, else the one kept on their proposal.
-  const lang = chooseApplicantLanguage({ chosenOnSite: i18n.locale, profile: s?.locale ?? null }).language;
+  // The application's own language first (QA pass 1): the page speaks as its letters do, then the site's.
+  const lang = chooseApplicantLanguage({ chosenOnSite: s?.locale ?? i18n.locale, profile: i18n.locale }).language;
   const w = wordsIn(lang);
   const view = s ? statusView(lang, s) : null;
   // The review window, 1 to 2 weeks after the role's deadline (a week after it, as the server counts): not yet open.
