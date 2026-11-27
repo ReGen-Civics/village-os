@@ -130,6 +130,15 @@
   -webkit-mask-box-image: var(--wm-tear) 18 fill / 9px round;
   mask-border: var(--wm-tear) 18 fill / 9px round;
 }
+/* The menus (the header's dropdowns and the account menu) are weathered pages too, but solid: a menu floats over the
+   page, and a see-through page let the headline under it show through its labels (the menu's QA, round 3). The same
+   foxing and stain, laid on the solid paper the dialogs use. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-nav-dropdown], #account-menu) {
+  background:
+    radial-gradient(circle at var(--wm-fox), rgb(150 92 34 / 0.16), transparent 6%),
+    radial-gradient(ellipse 58% 42% at var(--wm-stain), rgb(168 110 44 / 0.13), transparent 70%),
+    linear-gradient(rgb(250 236 204), rgb(240 220 180)) !important;
+}
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is(.bg-white, .bg-white\/95, .bg-white\/90, .bg-white\/80, .bg-cream, .bg-cream\/90):not(input, select, textarea) {
   background-color: var(--pal-day-panel) !important;
 }

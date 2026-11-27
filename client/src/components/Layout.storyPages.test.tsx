@@ -10,7 +10,7 @@
  * the same switch, and it must still be there.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 
 const switches = { brochurePages: true, brochureHidden: [] as string[] };
@@ -41,7 +41,10 @@ const linksTo = (href: string) => Array.from(document.querySelectorAll(`a[href="
 const footer = () => document.querySelector("footer")!;
 const footerLinksTo = (href: string) => Array.from(footer().querySelectorAll(`a[href="${href}"]`));
 
-/** The shell, with the Village dropdown opened the way a visitor opens it. */
+/**
+ * The shell, with the Village dropdown opened the way a visitor opens it, and its "Places and homes" folder, where
+ * Housing sits since round 2 (27 Nov 2026), opened where it is a folder.
+ */
 function openVillage() {
   render(
     <Router>
@@ -52,6 +55,8 @@ function openVillage() {
   );
   const before = { housing: linksTo("/housing").length };
   fireEvent.click(screen.getAllByRole("button", { name: /Village/i })[0]!);
+  const folder = screen.queryAllByRole("button", { name: /Places and homes/ });
+  if (folder[0]) fireEvent.click(folder[0]);
   return { addedHousing: linksTo("/housing").length - before.housing };
 }
 
@@ -77,6 +82,18 @@ describe("a story page switched off on its own", () => {
     expect(footerLinksTo("/team")).toHaveLength(1);
   });
 
+  it("takes a chapter's entry with it: Good Neighbor's switch still governs /rights#good-neighbor (fold 3, #1857)", () => {
+    // The menu's entry and the footer's link, both to the chapter since the footer follows the menu (QA round 2).
+    openVillage();
+    expect(linksTo("/rights#good-neighbor")).toHaveLength(2);
+    expect(footerLinksTo("/rights#good-neighbor")).toHaveLength(1);
+    cleanup();
+    switches.brochureHidden = ["/good-neighbor"];
+    openVillage();
+    expect(linksTo("/rights#good-neighbor")).toHaveLength(0);
+    expect(linksTo("/housing").length).toBeGreaterThan(0);
+  });
+
   it("drops from the phone's menu drawer too", () => {
     switches.brochureHidden = ["/housing"];
     render(
@@ -95,12 +112,14 @@ describe("a story page switched off on its own", () => {
     expect(drawer.querySelectorAll('a[href="/quests"]')).toHaveLength(1);
     expect(drawer.querySelectorAll('a[href="/housing"]')).toHaveLength(0);
     fireEvent.click(group("Join"));
+    // Plan a Visit is a row of Join again since round 2 (the Love Letter moved to Community).
     expect(drawer.querySelectorAll('a[href="/visit"]')).toHaveLength(1);
   });
 
-  it("takes a whole dropdown entry with it once every story page in it is off", () => {
-    // The four journeys and the other Join pages are all story pages; with
-    // them off only the module-gated entries remain, and those are off here.
+  it("takes its story-page folders with it once every story page in them is off, and keeps the rest", () => {
+    // The four journeys and the other Join pages are all story pages. With them off, Join keeps what is not a story
+    // page (27 Nov 2026): Open Roles, and Become a partner and Propose a quest in their folder. The module-gated
+    // entries are off here.
     switches.brochureHidden = ["/investor", "/steward", "/resident", "/prosperity", "/opportunities", "/visit", "/love-letter", "/work-with-us"];
     render(
       <Router>
@@ -109,6 +128,10 @@ describe("a story page switched off on its own", () => {
         </Layout>
       </Router>,
     );
-    expect(screen.queryAllByRole("button", { name: /^Join/i })).toHaveLength(0);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    const join = document.getElementById("nav-menu-join")!;
+    expect(Array.from(join.querySelectorAll("[data-nav-folder]")).map((f) => f.getAttribute("data-nav-folder"))).toEqual(["Build with us"]);
+    fireEvent.click(within(join).getByRole("button", { name: /Build with us/ }));
+    expect(Array.from(join.querySelectorAll("a[href]")).map((a) => a.getAttribute("href"))).toEqual(["/roles", "/partner", "/propose-quest"]);
   });
 });

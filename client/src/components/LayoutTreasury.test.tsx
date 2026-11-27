@@ -46,17 +46,24 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
+/**
+ * The account menu, with its "Running the village" folder opened where the reader has one (27 Nov 2026). The entry is
+ * "Treasury desk" since round 2, so it does not read as Govern's Treasury tab.
+ */
 async function openAccountMenu() {
   render(<Router><Layout><p>page body</p></Layout></Router>);
   await act(async () => {});
   fireEvent.click(screen.getByRole("button", { name: "Your account, Ada" }));
+  await act(async () => {});
+  const folder = screen.queryAllByRole("button", { name: /Running the village/ });
+  if (folder[0]) fireEvent.click(folder[0]);
 }
 
 describe("Treasury in the account menu", () => {
   it("is offered to a token.mint holder who is not an admin, with no Village Settings beside it", async () => {
     env.doors = { mint: true, cashPay: false, pay: false };
     await openAccountMenu();
-    const link = await screen.findByRole("link", { name: "Treasury" });
+    const link = await screen.findByRole("link", { name: "Treasury desk" });
     expect(link.getAttribute("href")).toBe("/treasury");
     expect(screen.queryByRole("link", { name: "Village Settings" })).toBeNull();
   });
@@ -64,7 +71,7 @@ describe("Treasury in the account menu", () => {
   it("is offered to a cash.pay holder", async () => {
     env.doors = { mint: false, cashPay: true, pay: true };
     await openAccountMenu();
-    expect(await screen.findByRole("link", { name: "Treasury" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: "Treasury desk" })).toBeInTheDocument();
   });
 
   it("is not offered to a member who holds none of the treasury's powers", async () => {
@@ -72,6 +79,6 @@ describe("Treasury in the account menu", () => {
     await openAccountMenu();
     await act(async () => {});
     expect(screen.getByRole("link", { name: "My Profile" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Treasury" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Treasury desk" })).toBeNull();
   });
 });

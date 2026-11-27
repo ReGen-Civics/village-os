@@ -77,6 +77,7 @@ const PAGES = [
   "client/src/pages/Quests.tsx",
   // The season, one page (the season fold, 27 Nov 2026): it took in Your season, the village's season, Join the Season and Aligned.
   "client/src/pages/Season.tsx",
+  "client/src/pages/TodayCard.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
   "client/src/pages/SeasonalFestivals.tsx",

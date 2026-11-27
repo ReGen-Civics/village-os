@@ -490,13 +490,15 @@ export default function Profile() {
               </div>
             ) : null}
             {/* The door to proposing. The next-season banner is one of the path's own rules now, so it is
-                drawn only where there is no path to say it. */}
-            <div className={`flex flex-col gap-4 empty:hidden ${tabOf(["today", "roles"])}`}>
+                drawn only where there is no path to say it. On a phone it sits with the member's own work and
+                roles (round 2, 27 Nov 2026): Today keeps only what is next. */}
+            <div className={`flex flex-col gap-4 empty:hidden ${tabOf(["quests", "roles"])}`}>
               {!path && !firstDays && <ProposeBanner />}
               {!firstDays && <ProposeRolesEntry />}
             </div>
             {/* WHO YOU ARE PLAYING, FIRST. No rung on the face (the prune): the hero
-                carries the person, their badges and their moons on the land. */}
+                carries the person, their badges and their moons on the land. It stays on Today (the menu's QA,
+                27 Nov 2026: the lead did not ask for it to move). */}
             <div className={tabOf("today")}>
               <ProfileHero
                 name={user.name}

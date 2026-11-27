@@ -21,6 +21,8 @@ import { viewOf } from "../../shared/geneKeys";
 import { evaluateEarnedBadges } from "../lib/badges";
 import { chartAt, zonedToUtc } from "../../shared/geneKeysSky";
 import { register } from "./geneKeys";
+import { usersRepo } from "../repos/users";
+import { MY_CARD_PREFS_KEY } from "../../shared/myCard";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
@@ -69,11 +71,25 @@ const call = async (handlers: Map<string, Handler>, key: string, req: any = {}) 
 /** Every notice the routes sent, newest last. */
 const notices: Array<{ userId: string; title: string; dedupeKey?: string }> = [];
 
-function deps(pool: any, who: () => string | null, limited = false) {
+/** A members repository that holds prefs in memory, for the doors that never reach a database. */
+const memoryMembers = () => {
+  const prefs = new Map<string, unknown>();
+  return {
+    update: async (id: string, mutate: (u: any) => void) => {
+      const u: any = { id, prefs: prefs.get(id) ?? {} };
+      mutate(u);
+      prefs.set(id, u.prefs);
+      return u;
+    },
+  };
+};
+
+function deps(pool: any, who: () => string | null, limited = false, members: any = memoryMembers()) {
   return {
     authedUser: async () => (who() ? { id: who() } : null),
     getPool: () => pool,
     overLimit: async () => limited,
+    members,
     notify: async (n: any) => {
       notices.push(n);
       return { sent: true };
@@ -182,7 +198,7 @@ describe.skipIf(!configured)("gene keys against a real schema", () => {
       ["m-wren", "Wren Alder", "wren@example.test", "wren", "m-kai", "Kai Moss", "kai@example.test", "kai", "m-juno", "Juno Ash", "juno@example.test", "juno"],
     );
     const c = collect();
-    register(c.app, deps(pool, () => whoami));
+    register(c.app, deps(pool, () => whoami, false, usersRepo(pool)));
     handlers = c.handlers;
   }, 180_000);
 
@@ -292,6 +308,25 @@ describe.skipIf(!configured)("gene keys against a real schema", () => {
     await setModuleLifecycle("gene-keys", "off", null, { sharedPasswordPosture: () => false });
     expect(await geneKeysForAssistant(pool, "m-wren")).toBeNull();
     await setModuleLifecycle("gene-keys", "members", null, { sharedPasswordPosture: () => false });
+  });
+
+  it("clears the daily cards when the lines change or go, and keeps them when the same lines are saved again", async () => {
+    const members = usersRepo(pool);
+    const keepACard = () => members.update("m-wren", (u: any) => {
+      u.prefs = { ...(u.prefs ?? {}), locale: "es", [MY_CARD_PREFS_KEY]: { "2026-11-27": { date: "2026-11-27" } } };
+    });
+    const cards = async () => ((await members.byId("m-wren")) as any)?.prefs?.[MY_CARD_PREFS_KEY];
+    await call(handlers, "PUT /api/gene-keys/me", { body: { chart: WREN, source: "exact" } });
+    await keepACard();
+    await call(handlers, "PUT /api/gene-keys/me", { body: { chart: WREN, source: "exact", maia: true } });
+    expect(await cards()).toBeTruthy();
+    // New lines: a card drawn from the old ones is not this member's card any more.
+    await call(handlers, "PUT /api/gene-keys/me", { body: { chart: KAI, source: "exact" } });
+    expect(await cards()).toBeUndefined();
+    expect(((await members.byId("m-wren")) as any).prefs.locale).toBe("es");
+    await keepACard();
+    await call(handlers, "DELETE /api/gene-keys/me");
+    expect(await cards()).toBeUndefined();
   });
 
   it("removes the row on the member's word, and on erasure", async () => {

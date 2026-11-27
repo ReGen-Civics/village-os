@@ -1,0 +1,159 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the speed cards' heading, untranslated in es.po until now and caught by the strict catalog check after the fold, 27 Nov 2026
+msgctxt "the phone's More sheet: heading"
+msgid "Yours"
+msgstr "Lo suyo"
+
+# needs-native-review: the speed cards, the picker's catch-all group, 27 Nov 2026
+msgctxt "the speed-card picker: a group for menu entries outside every group"
+msgid "More"
+msgstr "Más"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud when edit mode opens"
+msgid "Editing your cards. Drag a card, or use its arrows, to move it."
+msgstr "Editando sus tarjetas. Arrastre una tarjeta, o use sus flechas, para moverla."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud when edit mode closes"
+msgid "Your cards are saved."
+msgstr "Sus tarjetas están guardadas."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud after Reset"
+msgid "Your cards are back to the defaults. Press Done to keep them."
+msgstr "Sus tarjetas volvieron a las predeterminadas. Pulse Listo para conservarlas."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud after a card moves"
+msgid "{card} moved to place {place} of {total}."
+msgstr "{card} pasó al lugar {place} de {total}."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud after a card is removed"
+msgid "{card} removed."
+msgstr "Se quitó {card}."
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the phone's More sheet: read aloud after a card is added"
+msgid "{card} added."
+msgstr "Se añadió {card}."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: put the default cards back"
+msgid "Reset"
+msgstr "Restablecer"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: save the cards and leave edit mode"
+msgid "Done"
+msgstr "Listo"
+
+# needs-native-review: the speed cards, the Edit button, 27 Nov 2026
+msgctxt "the phone's More sheet: the Edit button, read aloud"
+msgid "Edit your cards"
+msgstr "Editar sus tarjetas"
+
+# needs-native-review: the speed cards, the Edit button, 27 Nov 2026
+msgctxt "the phone's More sheet: open edit mode for the cards"
+msgid "Edit"
+msgstr "Editar"
+
+# needs-native-review: the speed cards, the grid, 27 Nov 2026
+msgctxt "the phone's More sheet: the six cards, read aloud"
+msgid "Your cards"
+msgstr "Sus tarjetas"
+
+# needs-native-review: the speed cards, an open slot, 27 Nov 2026
+msgctxt "the phone's More sheet: an open slot, read aloud"
+msgid "Add a card, place {place} of {total}"
+msgstr "Añadir una tarjeta, lugar {place} de {total}"
+
+# needs-native-review: the speed cards, an open slot, 27 Nov 2026
+msgctxt "the phone's More sheet: an open slot's word"
+msgid "Add"
+msgstr "Añadir"
+
+# needs-native-review: the speed cards, a save that did not reach the server, 27 Nov 2026
+msgctxt "the phone's More sheet: a save of the cards did not reach the server"
+msgid "Saved on this device only. Your other devices keep your last cards."
+msgstr "Guardado solo en este dispositivo. Sus otros dispositivos conservan sus tarjetas anteriores."
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: a card's remove badge in edit mode, read aloud"
+msgid "Remove {label}"
+msgstr "Quitar {label}"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: move a card one place back, read aloud"
+msgid "Move {label} left"
+msgstr "Mover {label} a la izquierda"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+msgctxt "the phone's More sheet: move a card one place on, read aloud"
+msgid "Move {label} right"
+msgstr "Mover {label} a la derecha"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: the pages this device opens most"
+msgid "You open most"
+msgstr "Lo que más abre"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: its heading"
+msgid "Add a card"
+msgstr "Añadir una tarjeta"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: close button, read aloud"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: the search field's label"
+msgid "Find a page"
+msgstr "Buscar una página"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: the search field's hint"
+msgid "Find a page"
+msgstr "Buscar una página"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: a search with no match"
+msgid "Nothing matches. Try another word."
+msgstr "Nada coincide. Pruebe otra palabra."
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+msgctxt "the speed-card picker: this page is already one of the member's cards"
+msgid "On your cards"
+msgstr "Ya está en sus tarjetas"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move left"
+msgstr "Mover a la izquierda"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move right"
+msgstr "Mover a la derecha"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip, the picked card and its place"
+msgid "{label}, place {place} of {total}"
+msgstr "{label}, lugar {place} de {total}"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip's hint in edit mode"
+msgid "Drag a card, or use its arrows."
+msgstr "Arrastre una tarjeta, o use sus flechas."
+
+# needs-native-review: the speed cards, the picker, QA round 1, 27 Nov 2026
+msgctxt "the speed-card picker: the kicker over its heading"
+msgid "Your quick cards"
+msgstr "Sus tarjetas rápidas"

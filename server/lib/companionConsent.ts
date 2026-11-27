@@ -67,6 +67,12 @@ export interface CompanionDisclosure {
    */
   note?: boolean;
   geneKeys?: boolean;
+  /**
+   * Set on the daily card's own line (`cardDisclosure`). A yes is kept per scope: the card's yes covers the card
+   * alone and a companion's yes never covers the card, because the card sends what the companion's line does not
+   * name (counts of what waits on the member).
+   */
+  scope?: "card";
 }
 
 export interface CompanionConsent {
@@ -78,6 +84,8 @@ export interface CompanionConsent {
   note?: boolean;
   /** The line agreed to named the member's shared Gene Keys result. */
   geneKeys?: boolean;
+  /** A yes to the daily card's own line. */
+  scope?: "card";
 }
 
 /** The member's own key, as far as the line needs it. */
@@ -141,6 +149,28 @@ export function companionDisclosure(
 }
 
 /**
+ * The line for today's card (shared/myCard.ts): the guide writes the member's daily card from their lines, the
+ * day's sky and counts of what waits on them. The same provider, operator and key kind as the companion's line,
+ * kept as a yes OF ITS OWN (`scope: "card"`): the companion's line never names the counts the card sends, so a
+ * yes given to the companion never covers the card, and the card's yes never covers the companion (QA round 1,
+ * 27 Nov 2026: the stricter path). The member is asked once for the card, by the card.
+ */
+export function cardDisclosure(
+  source: KeySource,
+  memberKey: MemberKeyFacts | null,
+  villageName: string,
+  env: NodeJS.ProcessEnv = process.env,
+): CompanionDisclosure {
+  const d = companionDisclosure(source, memberKey, villageName, env, { geneKeys: true });
+  const key = d.sentence.slice(d.sentence.lastIndexOf(", on ") + 2);
+  return {
+    ...d,
+    scope: "card",
+    sentence: `To write your card in its own words, the guide sends your lines, today's sky and counts of what waits on you (never titles or names) to ${d.provider}, ${key}`,
+  };
+}
+
+/**
  * The line for a companion that speaks through the outside service. Its
  * operator is the service itself, so a yes here is its own line and never
  * carries to the village guide or back. `companionName` is the member's own
@@ -166,13 +196,19 @@ export function readConsents(prefs: unknown): CompanionConsent[] {
     const o = c as Record<string, unknown>;
     if (typeof o.provider !== "string" || typeof o.operator !== "string" || typeof o.at !== "string") continue;
     if (o.source !== "member" && o.source !== "village" && o.source !== "platform" && o.source !== "saberra") continue;
-    out.push({ provider: o.provider, operator: o.operator, source: o.source, at: o.at, ...(o.note === true ? { note: true } : {}), ...(o.geneKeys === true ? { geneKeys: true } : {}) });
+    out.push({
+      provider: o.provider, operator: o.operator, source: o.source, at: o.at,
+      ...(o.note === true ? { note: true } : {}), ...(o.geneKeys === true ? { geneKeys: true } : {}), ...(o.scope === "card" ? { scope: "card" as const } : {}),
+    });
   }
   return out;
 }
 
-function sameLine(c: { provider: string; operator: string; source: ConsentSource }, d: { provider: string; operator: string; source: ConsentSource }): boolean {
-  return c.provider === d.provider && c.operator === d.operator && c.source === d.source;
+type Line = { provider: string; operator: string; source: ConsentSource; scope?: "card" };
+
+/** The same provider, operator and key kind, for the same purpose: the companion's lines, or the daily card's. */
+function sameLine(c: Line, d: Line): boolean {
+  return c.provider === d.provider && c.operator === d.operator && c.source === d.source && (c.scope ?? null) === (d.scope ?? null);
 }
 
 /**
@@ -188,7 +224,10 @@ export function consentFor(prefs: unknown, d: CompanionDisclosure): CompanionCon
 export function withConsent(prefs: unknown, d: CompanionDisclosure, at: string): Record<string, unknown> {
   const base = prefs && typeof prefs === "object" && !Array.isArray(prefs) ? { ...(prefs as Record<string, unknown>) } : {};
   const kept = readConsents(base).filter((c) => !sameLine(c, d));
-  kept.push({ provider: d.provider, operator: d.operator, source: d.source, at, ...(d.note ? { note: true } : {}), ...(d.geneKeys ? { geneKeys: true } : {}) });
+  kept.push({
+    provider: d.provider, operator: d.operator, source: d.source, at,
+    ...(d.note ? { note: true } : {}), ...(d.geneKeys ? { geneKeys: true } : {}), ...(d.scope ? { scope: d.scope } : {}),
+  });
   base[CONSENT_PREFS_KEY] = kept.slice(-MAX_CONSENTS);
   return base;
 }

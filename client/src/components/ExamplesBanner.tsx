@@ -275,7 +275,7 @@ export function useShowingExamples(moduleId: string): boolean {
 export function useExampleModules(): { modules: string[]; loaded: boolean } {
   // `modules` may be seeded from the remembered answer so a caller that
   // renders banners from it paints them on the first frame. `loaded` never
-  // is: a hint is a guess, and FirstWalk changes what it SAYS based on this
+  // is: a hint is a guess, and a caller may change what it SAYS based on this
   // ("your examples have retired" is not a thing to guess at).
   const [state, setState] = useState<{ modules: string[]; loaded: boolean }>(() => ({
     modules: withoutRetired(cache ?? hint ?? EMPTY).modules,

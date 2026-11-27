@@ -31,6 +31,7 @@ clean codebase:
   that catches that class is `client/src/lib/doughnutLayout.test.ts`, which
   is arithmetic on the label geometry.
 - `link-targets.mjs` cannot tell a page's own route from a shared component
-  rendered on other pages. `FirstWalkInvite` is exported from
-  `pages/FirstWalk.tsx`, links to `/first-walk`, and renders on
-  `/map/circles`, so it reads as a self-link and is not one.
+  rendered on other pages. A component exported from one page that links to
+  that page and renders on another reads as a self-link and is not one (the
+  first walk's invitation on `/map/circles` was the case, until the page was
+  removed on 27 Nov 2026).

@@ -24,7 +24,6 @@ import { authToken } from "@/lib/gameApi";
 import { rememberMapAvailable } from "@/lib/landing";
 import { Download, Link2, List, Map as MapIcon, X } from "lucide-react";
 import { ExamplesBanner, useExampleModules } from "@/components/ExamplesBanner";
-import { FirstWalkInvite } from "@/pages/FirstWalk";
 import PowerMap from "@/components/power/PowerMap";
 import Breadcrumb from "@/components/power/Breadcrumb";
 import Legend from "@/components/power/Legend";
@@ -524,9 +523,6 @@ export default function VillageMap() {
               {EXAMPLE_SETS.filter((s) => exampleModules.includes(s.id)).map((s) => (
                 <ExamplesBanner key={s.id} moduleId={s.id} noun={s.noun} />
               ))}
-              <div className="max-w-2xl mx-auto text-left mt-4 mb-2">
-                <FirstWalkInvite />
-              </div>
 
               <SearchBar data={data} onPick={pickFromSearch} />
 

@@ -73,8 +73,9 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // /photographs redirect to /places#photos (the places fold, 26 Nov 2026), and the four old
     // addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights, redirects
     // to /rights since the rights fold, 27 Nov 2026), and the four old season addresses (/season-plans,
-    // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 28);
+    // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026), and the /first-walk redirect home (the page was
+    // removed on 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 29);
     expect(routes.length).toBeGreaterThan(60);
   });
 

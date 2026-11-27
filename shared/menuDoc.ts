@@ -66,7 +66,10 @@ export const MOVED_ENTRIES: Readonly<Record<string, string>> = {
   "/decisions": "/governance/decisions",
   "/governance": "/governance/how",
 };
-export const MOVED_GROUPS: Readonly<Record<string, string>> = { Decide: "Governance" };
+// Round 2 (the lead, 27 Nov 2026: "which we could just call govern"): Governance is Govern in the menu, and Decide,
+// carried to Governance before, carries on to Govern. About and Guides are gone as groups; their pages sit in the
+// other groups, so a name a village gave those groups has no group left to name.
+export const MOVED_GROUPS: Readonly<Record<string, string>> = { Governance: "Govern", Decide: "Govern" };
 
 function carriedOver(m: MenuDoc): MenuDoc {
   const labels = { ...m.labels };

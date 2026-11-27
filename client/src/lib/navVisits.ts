@@ -14,7 +14,7 @@
  * Every storage read and write is wrapped: a private window or blocked
  * storage gives the village's bar, never an error.
  */
-import { barTabs, choosePersonal, dayKey, PATH_PATH } from "@shared/navPopularity";
+import { barTabs, choosePersonal, dayKey, HOME_PATH, PATH_PATH } from "@shared/navPopularity";
 import { authToken } from "@/lib/gameApi";
 
 export const HISTORY_KEY = "village-nav-history";
@@ -116,6 +116,19 @@ export function personalFor(bar: readonly string[], excluded: readonly string[],
   const path = choosePersonal(h.counts, bar, excluded);
   writeHistory({ ...h, personal: path ? { path, day: today } : null });
   return path;
+}
+
+/**
+ * The pages this device has visited most, most first, leaving out home, the path and `excluded`. Read only: it
+ * writes nothing. The speed-card picker offers them first (components/mobile/SpeedCardPicker.tsx).
+ */
+export function mostVisited(excluded: readonly string[], n: number): string[] {
+  const off = new Set([HOME_PATH, PATH_PATH, ...excluded]);
+  return Object.entries(readHistory().counts)
+    .filter(([p, c]) => !off.has(p) && c > 0)
+    .sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))
+    .slice(0, n)
+    .map(([p]) => p);
 }
 
 let cached: { at: number; answer: BarAnswer } | null = null;

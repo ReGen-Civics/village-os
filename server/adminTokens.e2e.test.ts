@@ -191,6 +191,28 @@ describe.skipIf(!DB_CONFIGURED)("the tokens tab, and what a member sees afterwar
   });
 
   /**
+   * TODAY'S CARD QA, round 1 (27 Nov 2026). Changing a member's role answers with the member's user object, and a
+   * member's prefs hold their daily cards (their Human Design type, authority, gates and the day's sky) and their
+   * yeses to the guide's provider lines. The object carries the named prefs keys only (server/lib/publicPrefs.ts).
+   */
+  it("answers a role change with no daily card and no consents in the member's prefs", async () => {
+    const prefs = {
+      locale: "es",
+      todayCard: { "2026-11-27": { date: "2026-11-27", design: { type: "Projector", authority: "Emotional" }, card: { gate: 12, line: 2 } } },
+      companionConsent: [{ provider: "Anthropic", operator: "Op", source: "platform", at: "2026-11-27T00:00:00.000Z" }],
+      googleLink: { sub: "g-1" },
+    };
+    await testDb!.conn.query("UPDATE users SET prefs = ? WHERE id = ?", [JSON.stringify(prefs), oraId]); // module-review-ok: seeds the member's own prefs on this suite's scratch schema
+    const changed = await call("PUT", `/api/admin/users/${oraId}/role`, { role: "member", addressUnprovedOk: true }, founderToken);
+    expect(changed.status, changed.text.slice(0, 200)).toBe(200);
+    expect(changed.json?.user?.prefs).toEqual({ locale: "es" });
+    expect(changed.text).not.toMatch(/todayCard|companionConsent|Projector|googleLink/);
+    const own = await call("GET", "/api/profile", undefined, oraToken);
+    expect(own.json?.prefs).toEqual({ locale: "es" });
+    await testDb!.conn.query("UPDATE users SET prefs = ? WHERE id = ?", [JSON.stringify({}), oraId]); // module-review-ok: puts the member's prefs back for the cases after this one
+  });
+
+  /**
    * QA3-M4. The operator's sentence was "I renamed our currency to Seeds and
    * my wallet still calls it qa3needle."
    *
