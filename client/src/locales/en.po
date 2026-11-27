@@ -84,6 +84,11 @@ msgctxt "admin protocols editor"
 msgid "Archive"
 msgstr "Archive"
 
+#: client/src/components/review/SeraOnReview.tsx
+msgctxt "review page"
+msgid "Your work"
+msgstr "Your work"
+
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, p"
 msgid "Nothing is ticked, so there is nobody to set a share for. Screen 1 is where that starts."
@@ -401,6 +406,11 @@ msgctxt "Admin Today, needs you now"
 msgid "Nothing on the review list is waiting on you."
 msgstr "Nothing on the review list is waiting on you."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Your vote counts what the village's weight table says."
+msgstr "Your vote counts what the village's weight table says."
+
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, tension where"
 msgid "Raise one from the card of a holder of the role it is about."
@@ -592,6 +602,11 @@ msgstr "Gathering your page"
 msgctxt "role card"
 msgid "The earliest term among its holders."
 msgstr "The earliest term among its holders."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Put this draft to the village? A vote opens, and the village decides it."
+msgstr "Put this draft to the village? A vote opens, and the village decides it."
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.change_requests_gathering_per_member, description"
@@ -1178,6 +1193,11 @@ msgctxt "NeedsPanel, p"
 msgid "These are the only tags this screen can take off. No route returns a tag with its id, so a tag added before today can be counted here and cannot be removed here."
 msgstr "These are the only tags this screen can take off. No route returns a tag with its id, so a tag added before today can be counted here and cannot be removed here."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now"
+msgid "Nothing is waiting for your voice right now."
+msgstr "Nothing is waiting for your voice right now."
+
 #: client/src/components/GameDashboard.tsx
 msgctxt "GameDashboard, h2"
 msgid "Quests"
@@ -1325,6 +1345,11 @@ msgstr "Next: who you'll be"
 msgctxt "Mint, p"
 msgid "Nothing yet. Every faucet is still at zero."
 msgstr "Nothing yet. Every faucet is still at zero."
+
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "how it is made"
+msgstr "how it is made"
 
 #: client/src/pages/Opportunities.tsx
 msgctxt "Opportunities, h2"
@@ -1794,9 +1819,9 @@ msgid "Least one person may propose"
 msgstr "Least one person may propose"
 
 #: client/src/pages/Review.tsx
-msgctxt "Review, h1"
-msgid "Review"
-msgstr "Review"
+#~ msgctxt "Review, h1"
+#~ msgid "Review"
+#~ msgstr "Review"
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Everything a member reads about this map comes from here. Saved now, it shows the moment the module is on."
@@ -1806,6 +1831,11 @@ msgstr "Everything a member reads about this map comes from here. Saved now, it 
 msgctxt "change request step"
 msgid "In review"
 msgstr "In review"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Copy link"
+msgstr "Copy link"
 
 #. placeholder {0}: pageVarsFrom(cfg ?? {}).commitment
 #: client/src/pages/Quests.tsx
@@ -1944,6 +1974,11 @@ msgstr "Open the Sera board"
 msgctxt "YourCompanions, span"
 msgid "Speaks through the guide you chose: {0}"
 msgstr "Speaks through the guide you chose: {0}"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "There is no draft at this address that you can read. Drafts are read by whoever may decide the org chart and by the person who made them."
+msgstr "There is no draft at this address that you can read. Drafts are read by whoever may decide the org chart and by the person who made them."
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -2603,6 +2638,11 @@ msgctxt "live session room: youFacilitate"
 msgid "You are facilitating."
 msgstr "You are facilitating."
 
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Your work"
+msgstr "Your work"
+
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable unit"
 msgid "per credit"
@@ -2683,6 +2723,11 @@ msgctxt "game variable hiddenmap.vouches_per_pin, description"
 msgid "How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet."
 msgstr "How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: kind"
+msgid "Change request"
+msgstr "Change request"
+
 #. placeholder {0}: natureArt(slug)?.name ?? slug
 #: client/src/components/admin/ArtLibraryTab.tsx
 msgctxt "admin art library: the automatic choice"
@@ -2727,6 +2772,11 @@ msgstr "The village's own rows"
 msgctxt "BridgePanel, p"
 msgid "For a steward to look at ({0})"
 msgstr "For a steward to look at ({0})"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Put it to the village"
+msgstr "Put it to the village"
 
 #: client/src/pages/Feedback.tsx
 msgctxt "feedback page: after sending, shared"
@@ -3598,6 +3648,11 @@ msgctxt "game variable feed.max_post_length, description"
 msgid "Posts longer than this are cut off in the feed with the rest behind the post itself. Nothing is deleted; this only decides how much of a long piece takes over the page."
 msgstr "Posts longer than this are cut off in the feed with the rest behind the post itself. Nothing is deleted; this only decides how much of a long piece takes over the page."
 
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Reading what an outside service proposes, and witnessing finished quests, are jobs the village hands to somebody."
+msgstr "Reading what an outside service proposes, and witnessing finished quests, are jobs the village hands to somebody."
+
 #. placeholder {0}: stageNameOf(i.minStage)
 #: client/src/pages/Library.tsx
 msgctxt "Library, InfoTip"
@@ -3623,6 +3678,11 @@ msgstr "About me? Hide this sentence"
 msgctxt "HandoverTab, p"
 msgid "You can bring it back to the admin panel from this tab later, and the village sees that on its feed too."
 msgstr "You can bring it back to the admin panel from this tab later, and the village sees that on its feed too."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Waiting for a decision"
+msgstr "Waiting for a decision"
 
 #: client/src/components/NotifyPrefsPanel.tsx
 msgctxt "NotifyPrefsPanel, a"
@@ -4021,6 +4081,11 @@ msgctxt "VotingWeightsPanel, span"
 msgid "(none)"
 msgstr "(none)"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page"
+msgid "The terms on offer change in this draft. Only people who may read a role's terms see how."
+msgstr "The terms on offer change in this draft. Only people who may read a role's terms see how."
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, label"
 msgid "Status"
@@ -4324,6 +4389,11 @@ msgctxt "open proposal side by side"
 msgid "(done when {doneWhen})"
 msgstr "(done when {doneWhen})"
 
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "Members decide together here."
+msgstr "Members decide together here."
+
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card heading"
 msgid "What {villageInSentence} needs from you"
@@ -4390,6 +4460,11 @@ msgstr "<0/>Seats and slots"
 msgctxt "EventsAdminPanel, toast"
 msgid "Detached"
 msgstr "Detached"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Put to the village. A vote is open."
+msgstr "Put to the village. A vote is open."
 
 #: client/src/components/power/RoleCardParams.tsx
 msgctxt "full role card: the pay range heading"
@@ -4722,6 +4797,11 @@ msgstr "The time this covers"
 msgctxt "live session room: toolSend"
 msgid "Send the idea"
 msgstr "Send the idea"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a list line, read aloud"
+msgid "Added:"
+msgstr "Added:"
 
 #: client/src/pages/Journal.tsx
 msgctxt "Journal, aria-label"
@@ -5464,6 +5544,11 @@ msgstr "That did not save. Please try again."
 msgctxt "ModuleConfigPanels, aria-label"
 msgid "Forum category a spending request is filed under"
 msgstr "Forum category a spending request is filed under"
+
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "who approves it"
+msgstr "who approves it"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -6502,8 +6587,8 @@ msgid "The line holds the name of someone in this village, so the public page hi
 msgstr "The line holds the name of someone in this village, so the public page hides it. Write it again with the role in place of the name."
 
 #: client/src/pages/Governance.tsx
-msgid "Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come from the rules this village runs on today, so they change when the village changes them."
-msgstr "Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come from the rules this village runs on today, so they change when the village changes them."
+#~ msgid "Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come from the rules this village runs on today, so they change when the village changes them."
+#~ msgstr "Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come from the rules this village runs on today, so they change when the village changes them."
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "How it is doing"
@@ -6745,6 +6830,11 @@ msgctxt "approval inbox"
 msgid "What a connector proposed and only a person may do. Read each one before you answer it."
 msgstr "What a connector proposed and only a person may do. Read each one before you answer it."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Voting now"
+msgstr "Voting now"
+
 #: client/src/components/sessions/sessionWords.ts
 msgctxt "live sessions: gratitudeLede"
 msgid "Thank someone for what they brought today."
@@ -6854,6 +6944,11 @@ msgstr "How I hold my roles"
 #~ msgctxt "founding application, when we reply"
 #~ msgid "We reply within 1 day."
 #~ msgstr "We reply within 1 day."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "(you can)"
+msgstr "(you can)"
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "That could not be withdrawn"
@@ -7331,6 +7426,11 @@ msgctxt "open proposal card"
 msgid "Your target, e.g. 13 of 13 Mondays"
 msgstr "Your target, e.g. 13 of 13 Mondays"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the way back, read aloud"
+msgid "Where you are"
+msgstr "Where you are"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable hiddenmap.default_precision, description"
 msgid "The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin."
@@ -7493,15 +7593,20 @@ msgctxt "shape the role"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Your voice"
+msgstr "Your voice"
+
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
 msgid "What the Digital Companion does for this role"
 msgstr "What the Digital Companion does for this role"
 
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "Decide"
-msgstr "Decide"
+#~ msgctxt "site menu"
+#~ msgid "Decide"
+#~ msgstr "Decide"
 
 #. placeholder {0}: o.by.map(nameOf).join(" and ")
 #. placeholder {1}: o.text
@@ -7806,6 +7911,11 @@ msgctxt "Decision, p"
 msgid "These numbers froze when this ballot opened. Changing the village's settings now does nothing to this vote, open or closed."
 msgstr "These numbers froze when this ballot opened. Changing the village's settings now does nothing to this vote, open or closed."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Not mine to hold"
+msgstr "Not mine to hold"
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgctxt "hidden map settings"
 msgid "The map's name"
@@ -7875,6 +7985,11 @@ msgstr "Open a round for ideas"
 msgctxt "LetterComposer, aria-label"
 msgid "Audience"
 msgstr "Audience"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "You are a guest"
+msgstr "You are a guest"
 
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -8997,6 +9112,11 @@ msgctxt "Admin, h3"
 msgid "Add a recording"
 msgstr "Add a recording"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: kind"
+msgid "Village vote"
+msgstr "Village vote"
+
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
 msgid "Close"
@@ -9082,6 +9202,11 @@ msgstr "Accepts the terms on offer"
 msgctxt "the bell: several notices of one kind batched into a line, kind session_action_held"
 msgid "{n} actions from live sessions are held by you or your roles."
 msgstr "{n} actions from live sessions are held by you or your roles."
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "How we decide"
+msgstr "How we decide"
 
 #. placeholder {0}: d.default || "blank"
 #: client/src/pages/Mint.tsx
@@ -10044,9 +10169,9 @@ msgid "🌳 Launch Plan"
 msgstr "🌳 Launch Plan"
 
 #: client/src/pages/Review.tsx
-msgctxt "Review, p"
-msgid "Reviewing what an outside service proposes, and witnessing finished quests, are jobs this village hands to somebody. Ask whoever looks after the village queues, and they can pass one on."
-msgstr "Reviewing what an outside service proposes, and witnessing finished quests, are jobs this village hands to somebody. Ask whoever looks after the village queues, and they can pass one on."
+#~ msgctxt "Review, p"
+#~ msgid "Reviewing what an outside service proposes, and witnessing finished quests, are jobs this village hands to somebody. Ask whoever looks after the village queues, and they can pass one on."
+#~ msgstr "Reviewing what an outside service proposes, and witnessing finished quests, are jobs this village hands to somebody. Ask whoever looks after the village queues, and they can pass one on."
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, li"
@@ -10727,6 +10852,11 @@ msgctxt "NeedsPanel, button"
 msgid "Add this need"
 msgstr "Add this need"
 
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: the canvas"
+msgid "They cover who decides, how conflict is held and how resources move."
+msgstr "They cover who decides, how conflict is held and how resources move."
+
 #: client/src/components/journal/GuidePanel.tsx
 msgctxt "GuidePanel, p"
 msgid "Kept as your reflection. You can change it when you read the page back."
@@ -10987,6 +11117,11 @@ msgstr "Nobody has photographed this place yet."
 msgctxt "MapVocabularyPanel, h3"
 msgid "The map's words"
 msgstr "The map's words"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Circle"
+msgstr "Circle"
 
 #: client/src/components/sessions/sessionWords.ts
 msgctxt "live sessions: agendaMinutesLabel"
@@ -11393,6 +11528,12 @@ msgctxt "voice transcription provider"
 msgid "Groq"
 msgstr "Groq"
 
+#. placeholder {0}: r.leftOut
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: a revision"
+msgid "Left out: {0}"
+msgstr "Left out: {0}"
+
 #: client/src/components/roleCard/cardWordsT.ts
 msgctxt "role fill"
 msgid "{held}% held · {open}% open"
@@ -11544,6 +11685,11 @@ msgstr "Live"
 msgctxt "ProfileImport, p"
 msgid "Each role is tagged with its own needs once the role exists, and only with needs your village has taken on."
 msgstr "Each role is tagged with its own needs once the role exists, and only with needs your village has taken on."
+
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "who is asked first"
+msgstr "who is asked first"
 
 #. placeholder {0}: filed.join(", ")
 #: client/src/components/notebook/NotebookDocument.tsx
@@ -12325,6 +12471,11 @@ msgctxt "Places, p"
 msgid "Every place on the land that somebody has stood in front of with a camera."
 msgstr "Every place on the land that somebody has stood in front of with a camera."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Time it takes"
+msgstr "Time it takes"
+
 #. placeholder {0}: new Date(d.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", })
 #: client/src/components/governance/DraftCards.tsx
 msgctxt "DraftCards, span"
@@ -12369,6 +12520,11 @@ msgstr "Join the Core Team"
 msgctxt "notice season plan reminder, body"
 msgid "{daysLeft, plural, one {# day left.} other {# days left.}}"
 msgstr "{daysLeft, plural, one {# day left.} other {# days left.}}"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page"
+msgid "The live card changed here after this draft was written. Publishing writes the draft's words over these newer ones."
+msgstr "The live card changed here after this draft was written. Publishing writes the draft's words over these newer ones."
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module resources, benefit 3"
@@ -12908,6 +13064,11 @@ msgctxt "proposed changes: conflict"
 msgid "{0, plural, one {One waiting change was drafted before a later accept.} other {# waiting changes were drafted before a later accept.}}"
 msgstr "{0, plural, one {One waiting change was drafted before a later accept.} other {# waiting changes were drafted before a later accept.}}"
 
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: lede"
+msgid "What the village is deciding, what your voice is here, and what waits on you."
+msgstr "What the village is deciding, what your voice is here, and what waits on you."
+
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: ADMIN_WORDS: payers.authorityKind"
 msgid "Kind"
@@ -13338,6 +13499,12 @@ msgctxt "FaqSection, span"
 msgid "FAQ"
 msgstr "FAQ"
 
+#. placeholder {0}: r.fields.map((f) => label(f.field, f.label)).join(", ")
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: a revision"
+msgid "What changed: {0}"
+msgstr "What changed: {0}"
+
 #. placeholder {0}: pieceText(id)
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -13488,6 +13655,11 @@ msgstr "About this role"
 msgctxt "AdminGate, label"
 msgid "Opening the admin"
 msgstr "Opening the admin"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the header"
+msgid "Writes every change below onto the org chart at once, or none of them. A role card's history keeps the old words, so a change can be put back."
+msgstr "Writes every change below onto the org chart at once, or none of them. A role card's history keeps the old words, so a change can be put back."
 
 #: client/src/components/admin/VotingWeightsPanel.tsx
 msgctxt "VotingWeightsPanel, placeholder"
@@ -14897,6 +15069,11 @@ msgctxt "admin protocols editor"
 msgid "version {0}"
 msgstr "version {0}"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field's old words"
+msgid "Before"
+msgstr "Before"
+
 #. placeholder {0}: i + 1
 #. placeholder {1}: groups.length
 #: client/src/components/roleCard/RolePieces.tsx
@@ -15067,6 +15244,11 @@ msgstr "Delete my data"
 #~ msgctxt "open proposal review"
 #~ msgid "{refsGiven} references"
 #~ msgstr "{refsGiven} references"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now"
+msgid "Make a proposal"
+msgstr "Make a proposal"
 
 #: client/src/components/roleCard/OrgChartTile.tsx
 msgctxt "roles page org chart legend: a held role"
@@ -15435,6 +15617,11 @@ msgctxt "Admin, button"
 msgid "Edit"
 msgstr "Edit"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "What I do regularly"
+msgstr "What I do regularly"
+
 #: client/src/components/admin/AdminGate.tsx
 msgctxt "AdminGate, p"
 msgid "Sign in with your admin account"
@@ -15750,6 +15937,12 @@ msgctxt "rites"
 msgid "Yes"
 msgstr "Yes"
 
+#. placeholder {0}: view.changeIds.length
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "{0, plural, one {One change} other {# changes}}"
+msgstr "{0, plural, one {One change} other {# changes}}"
+
 #: client/src/components/OnchainCard.tsx
 msgctxt "OnchainCard, p"
 msgid "<0/> and governance tokens live on Base and are shown here only against a wallet you have PROVEN you control: one free signature, no transaction, no cost."
@@ -15909,6 +16102,11 @@ msgstr "Retry"
 msgctxt "PlayersTab, toast"
 msgid "Sessions revoked"
 msgstr "Sessions revoked"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the header"
+msgid "Who must act"
+msgstr "Who must act"
 
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
@@ -16211,6 +16409,11 @@ msgctxt "health metric quests_consented_cycle, label"
 msgid "Quests consented"
 msgstr "Quests consented"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who proposed it"
+msgid "An agent"
+msgstr "An agent"
+
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: editKeysOneLine"
 msgid "Enter saves. Escape cancels."
@@ -16310,6 +16513,11 @@ msgstr "This is the last of the {0} powers. Once it crosses, this village looks 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "What would it change?"
 msgstr "What would it change?"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: heading"
+msgid "What you brought"
+msgstr "What you brought"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, toast"
@@ -17171,6 +17379,11 @@ msgstr "How many people one group thread may hold, the creator included. Every m
 msgid "{count, plural, one {# idea so far.} other {# ideas so far.}}"
 msgstr "{count, plural, one {# idea so far.} other {# ideas so far.}}"
 
+#: client/src/pages/Review.tsx
+msgctxt "Review, h1"
+msgid "Your work"
+msgstr "Your work"
+
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgid "Say: the village's answer on {name}"
 msgstr "Say: the village's answer on {name}"
@@ -17430,6 +17643,11 @@ msgstr "This season has no goals yet. Add them in Admin, Season."
 msgid "If the circle says yes, an invitation to make your account comes to your email."
 msgstr "If the circle says yes, an invitation to make your account comes to your email."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a field"
+msgid "Save as a new revision"
+msgstr "Save as a new revision"
+
 #: client/src/components/profile/PathsPanel.tsx
 msgctxt "PathsPanel, h2"
 msgid "Paths"
@@ -17439,6 +17657,11 @@ msgstr "Paths"
 msgctxt "admin budgets tab"
 msgid "Cash budget"
 msgstr "Cash budget"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the header"
+msgid "Publishing"
+msgstr "Publishing"
 
 #: client/src/components/calendar/MoonTurnings.tsx
 msgctxt "calendar turnings heading"
@@ -17776,6 +17999,11 @@ msgstr "How many different members must answer a pulse question in a week before
 msgctxt "JourneyToLaunch, p"
 msgid "Turn this village's moons over quickly and read what its rules would pay, who a settlement would thank, when Claims Week opens, and what you could give each moon. It writes nothing. The launch checklist and the ballot belong to the team running the village, so they are not on your copy of this page."
 msgstr "Turn this village's moons over quickly and read what its rules would pay, who a settlement would thank, when Claims Week opens, and what you could give each moon. It writes nothing. The launch checklist and the ballot belong to the team running the village, so they are not on your copy of this page."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Accepted"
+msgstr "Accepted"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: noCircle"
@@ -18263,6 +18491,11 @@ msgctxt "task board: datePick"
 msgid "Or pick a date"
 msgstr "Or pick a date"
 
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Decisions"
+msgstr "Decisions"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card window"
 msgid "Weekday mornings"
@@ -18474,6 +18707,11 @@ msgctxt "open proposal: where the contract's pay comes from"
 msgid "From our counter-offer on the price, at {pct}% commitment."
 msgstr "From our counter-offer on the price, at {pct}% commitment."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Your vote counts your {token} balance when each vote opens."
+msgstr "Your vote counts your {token} balance when each vote opens."
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module rites, benefit 4"
 msgid "Every newcomer walks with a member beside them, the one who invited them first"
@@ -18508,6 +18746,11 @@ msgstr "Search players"
 msgctxt "week strip, the new moon on a day"
 msgid "New moon"
 msgstr "New moon"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: door"
+msgid "Vote"
+msgstr "Vote"
 
 #: client/src/components/admin/PowerAffinityPanel.tsx
 msgctxt "PowerAffinityPanel, caption"
@@ -18627,6 +18870,11 @@ msgstr "Details"
 msgctxt "heading on the change requests page"
 msgid "Your change requests"
 msgstr "Your change requests"
+
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Preview the draft it goes into, then publish it."
+msgstr "Preview the draft it goes into, then publish it."
 
 #: client/src/pages/GeneKeys.tsx
 msgctxt "GeneKeys, p"
@@ -19114,6 +19362,11 @@ msgctxt "Admin, th"
 msgid "From"
 msgstr "From"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now"
+msgid "Nothing yet. A change request or a raised hand you bring shows here, with where it stands."
+msgstr "Nothing yet. A change request or a raised hand you bring shows here, with where it stands."
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable roles.prerequisites, label"
 msgid "What a role asks for before anyone applies"
@@ -19192,6 +19445,11 @@ msgstr "Your post"
 msgctxt "circle card, clears"
 msgid "Clears what is written now"
 msgstr "Clears what is written now"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/components/QuestCrews.tsx
 msgctxt "QuestCrews, placeholder"
@@ -19953,6 +20211,12 @@ msgctxt "Admin, p"
 msgid "Exit is a process, never a delete. Blocking state settles through its own domain (loans, stays, orders, debts); positive balances sweep by an explicit act; the tombstone comes last. Value rows are never deleted. The economy conserves through every departure."
 msgstr "Exit is a process, never a delete. Blocking state settles through its own domain (loans, stays, orders, debts); positive balances sweep by an explicit act; the tombstone comes last. Value rows are never deleted. The economy conserves through every departure."
 
+#. placeholder {0}: decide.holderCount
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who must act"
+msgid "{0, plural, one {The one person who holds the power to change the org chart, or a village vote.} other {One of the # people who hold the power to change the org chart, or a village vote.}}"
+msgstr "{0, plural, one {The one person who holds the power to change the org chart, or a village vote.} other {One of the # people who hold the power to change the org chart, or a village vote.}}"
+
 #: client/src/pages/Review.tsx
 msgctxt "Review, h1"
 msgid "This queue is not open to you yet"
@@ -20539,6 +20803,16 @@ msgctxt "approved writes, the memory record"
 msgid "Waiting to send"
 msgstr "Waiting to send"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Sign in"
+msgstr "Sign in"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now"
+msgid "Reading what waits for your voice."
+msgstr "Reading what waits for your voice."
+
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor, who sees the listed price hint"
 msgid "The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it."
@@ -20705,6 +20979,11 @@ msgctxt "commitment on the roles card: the note and history disclosure"
 msgid "A note, and what you said before"
 msgstr "A note, and what you said before"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "A retired role keeps its id, and the chart only lists live roles, which is why nothing with this name shows there. Leave this one out to publish the rest, then add the role again under a new id."
+msgstr "A retired role keeps its id, and the chart only lists live roles, which is why nothing with this name shows there. Leave this one out to publish the rest, then add the role again under a new id."
+
 #. placeholder {0}: season.goals.length
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
@@ -20787,6 +21066,11 @@ msgctxt "cycle clock: a village on calendar months, the day the month turns"
 msgid "Allowances<0/> refill when this calendar month turns, on {date}."
 msgstr "Allowances<0/> refill when this calendar month turns, on {date}."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the way back"
+msgid "Review"
+msgstr "Review"
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The key is stored unsealed, so it travels in every database dump. Set VILLAGE_SECRETS_KEY and restart to seal it in place; that keeps the same key."
@@ -20824,6 +21108,11 @@ msgstr "Week {0}, {1}: {2}"
 msgctxt "live session room: openProposalsTitle"
 msgid "Proposals still open"
 msgstr "Proposals still open"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Publish"
+msgstr "Publish"
 
 #: client/src/components/hiddenMap/SevenMeter.tsx
 #: client/src/pages/HiddenMap.tsx
@@ -20993,6 +21282,11 @@ msgstr "{keptFor} ticks this one."
 msgctxt "module canvas, for whom"
 msgid "Villages that want to see where their governance stands before they ask members to start."
 msgstr "Villages that want to see where their governance stands before they ask members to start."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: a read"
+msgid "change requests"
+msgstr "change requests"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Approval of AI agents touching applicant data"
@@ -21618,6 +21912,11 @@ msgctxt "Admin, button"
 msgid "Publish to forum"
 msgstr "Publish to forum"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: a change's kind"
+msgid "Removed"
+msgstr "Removed"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module moon-review, setup"
 msgid "Seat someone in a power group that approves the work, choose who holds the cash power, and fill in the payers document before the first invoice."
@@ -21991,6 +22290,11 @@ msgctxt "aligned page, signed out"
 msgid "Create an account"
 msgstr "Create an account"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "This role exists while"
+msgstr "This role exists while"
+
 #: client/src/components/WhyCostaRica.tsx
 msgctxt "WhyCostaRica, p"
 msgid "Location & Context"
@@ -22010,6 +22314,11 @@ msgstr "{roles} · {time}"
 msgctxt "Admin, li"
 msgid "Tokens never convert back to money here. Fiat comes IN only; the platform has no path out, by design, and adding one is not a setting."
 msgstr "Tokens never convert back to money here. Fiat comes IN only; the platform has no path out, by design, and adding one is not a setting."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: door"
+msgid "Answer"
+msgstr "Answer"
 
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -22589,6 +22898,11 @@ msgctxt "StartTheGame, title"
 msgid "Opening this vote is a founder's act"
 msgstr "Opening this vote is a founder's act"
 
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "The answers come from the village's rules today, and change when the village changes them."
+msgstr "The answers come from the village's rules today, and change when the village changes them."
+
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "Keep the vote"
@@ -22756,6 +23070,11 @@ msgctxt "role card"
 msgid "Suggested"
 msgstr "Suggested"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field's new words"
+msgid "After"
+msgstr "After"
+
 #: client/src/components/playerCard/roleSignMessages.ts
 msgctxt "role sign sheet, draft waiting"
 msgid "Org chart draft open, still inside 2 business days"
@@ -22786,6 +23105,11 @@ msgstr "Role audit"
 msgctxt "admin portal visitors"
 msgid "Only the people who said yes to keeping in touch"
 msgstr "Only the people who said yes to keeping in touch"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "What I decide on my own"
+msgstr "What I decide on my own"
 
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
@@ -24797,6 +25121,11 @@ msgctxt "role card: a figure's label"
 msgid "Taken"
 msgstr "Taken"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "In a vote"
+msgstr "In a vote"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exit.remainder_account, choice burn, hint"
 msgid "Choosing this makes the supply figures on the Mint panel and in the token document read as 'outstanding' instead of 'released to date'. That is a real change to what those numbers mean. Choose it only if you mean it. A token with no faucet has nowhere to go back to, and saving this refuses and names that token."
@@ -25031,6 +25360,11 @@ msgstr "Hours until someone who reaches out hears back"
 msgid "Proposed through the connector"
 msgstr "Proposed through the connector"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Yes, publish it"
+msgstr "Yes, publish it"
+
 #: client/src/components/mobile/MoreSheet.tsx
 msgctxt "the phone's More sheet: close button"
 msgid "Close More"
@@ -25178,6 +25512,11 @@ msgstr "A role you added isn't open yet, so it can't be part of this application
 #~ msgctxt "companion corner: the button, read aloud"
 #~ msgid "Your companions: {names}"
 #~ msgstr "Your companions: {names}"
+
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Your work"
+msgstr "Your work"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exit.remainder_account, choice settlement, hint"
@@ -25447,6 +25786,11 @@ msgstr "{first} is still a draft from Sera. Edit it or press \"Keep this\", then
 #~ msgctxt "voice note, consent line"
 #~ msgid "Your recording is transcribed by an AI service so the team can read it."
 #~ msgstr "Your recording is transcribed by an AI service so the team can read it."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the header"
+msgid "Came from"
+msgstr "Came from"
 
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Work out this role's pay with the valuation engine"
@@ -25823,6 +26167,11 @@ msgstr "An outside reading of how your village is organised, offered back as sug
 msgid "Waiting to be given"
 msgstr "Waiting to be given"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "What you can count on me for"
+msgstr "What you can count on me for"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exit.remainder_account, description"
 msgid "The account that receives whatever a departing member does not keep. Exit settlement is where it goes today: a holding account nothing spends, so the village can decide later without deciding now. The treasury is an ordinary vault the village spends from. The last two choices change what a number several pages already print MEANS, and each of them says so on itself. The settle act sends every remainder to the account chosen here, one posting per token, and records on the exit which account received it."
@@ -26099,6 +26448,11 @@ msgctxt "work with us, set up for a venture: help under the second question"
 msgid "Space, water, power, access, people, time or decisions, and by when."
 msgstr "Space, water, power, access, people, time or decisions, and by when."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Not taken up"
+msgstr "Not taken up"
+
 #: client/src/components/admin/exitPolicyEditing.tsx
 msgctxt "exitPolicyEditing, button"
 msgid "Up"
@@ -26237,6 +26591,11 @@ msgctxt "price popup choice"
 msgid "Propose my own compensation"
 msgstr "Propose my own compensation"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: door"
+msgid "Accept it"
+msgstr "Accept it"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h2"
 msgid "Cycle Close"
@@ -26293,6 +26652,11 @@ msgstr "More arrived since this card was read. Check the new count and confirm a
 msgctxt "test run button, busy"
 msgid "Running"
 msgstr "Running"
+
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: the canvas"
+msgid "The workbook prints each block on its own page, with room to write."
+msgstr "The workbook prints each block on its own page, with room to write."
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "These are the platform's starting terms. The community has not yet written its own. Treat them as a draft to be decided together, not a contract."
@@ -26665,6 +27029,12 @@ msgctxt "moon recap: MY_MOON_WORDS: noLines"
 msgid "This role card lists no accountabilities yet."
 msgstr "This role card lists no accountabilities yet."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Not yet"
+msgstr "Not yet"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module gene-keys, setup"
 msgid "Nothing to set up. Members find their lines from their character page."
@@ -26859,6 +27229,11 @@ msgctxt "privacy settings: the roles switch"
 msgid "On your profile and the village's pages."
 msgstr "On your profile and the village's pages."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: closes"
+msgid "Closes {day}"
+msgstr "Closes {day}"
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "label before a decision's note"
 msgid "The note:"
@@ -27006,6 +27381,11 @@ msgctxt "game variable comms.open_tracking, description"
 msgid "Off by default. Some mail apps open every email by themselves, so an open count misleads, and counting needs a hidden image in every email."
 msgstr "Off by default. Some mail apps open every email by themselves, so an open count misleads, and counting needs a hidden image in every email."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "The live card changed after this draft was written."
+msgstr "The live card changed after this draft was written."
+
 #: client/src/pages/Home.tsx
 msgctxt "landing, founding team card body"
 msgid "Hold a whole domain of the village, from the foundation through to completion."
@@ -27119,6 +27499,11 @@ msgstr "Paid by the moon"
 msgctxt "WordsEditor, p"
 msgid "Put in a field"
 msgstr "Put in a field"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: kind"
+msgid "Done work for your role to accept"
+msgstr "Done work for your role to accept"
 
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, proposal sent"
@@ -27301,6 +27686,11 @@ msgstr "Proposed by {0}."
 msgctxt "thanks composer heading"
 msgid "Carry a thanks"
 msgstr "Carry a thanks"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "Signed out"
+msgstr "Signed out"
 
 #: client/src/components/admin/MemberAdminView.tsx
 msgctxt "MemberAdminView, p"
@@ -28024,6 +28414,17 @@ msgctxt "open proposal decide: pending"
 msgid "That address already has an application waiting for one of these roles. Decide that one on its page first."
 msgstr "That address already has an application waiting for one of these roles. Decide that one on its page first."
 
+#. placeholder {0}: change.holders
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: a role being retired"
+msgid "{0, plural, =0 {Nobody holds this role now.} one {One person holds this role now. Retiring it ends their holding.} other {# people hold this role now. Retiring it ends their holdings.}}"
+msgstr "{0, plural, =0 {Nobody holds this role now.} one {One person holds this role now. Retiring it ends their holding.} other {# people hold this role now. Retiring it ends their holdings.}}"
+
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Your work"
+msgstr "Your work"
+
 #: client/src/components/openProposal/onboardingWords.ts
 msgctxt "applicant onboarding: whatNext"
 msgid "What happens next"
@@ -28276,6 +28677,11 @@ msgctxt "game variable redemption.rate_per_token, label"
 msgid "Rate set here, per whole token"
 msgstr "Rate set here, per whole token"
 
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "Sign in"
+msgstr "Sign in"
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: mail.lastTried"
 msgid "Tried {when} by {name}. No email went out."
@@ -28346,6 +28752,11 @@ msgstr "Description"
 msgctxt "SittingFlow, button"
 msgid "Choose another practice"
 msgstr "Choose another practice"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Cannot be published yet"
+msgstr "Cannot be published yet"
 
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, p"
@@ -28764,6 +29175,11 @@ msgstr "Light"
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
 msgstr "Adopted. Members read it on the exit policy page, and the launch checklist counts it."
+
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "For each kind of decision:"
+msgstr "For each kind of decision:"
 
 #: client/src/components/roleProposal/consentWords.ts
 msgctxt "circle consent: notCarried"
@@ -29236,6 +29652,11 @@ msgstr "keystone"
 #~ msgctxt "admin compare"
 #~ msgid "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
 #~ msgstr "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Leave this one out"
+msgstr "Leave this one out"
 
 #: client/src/pages/Feedback.tsx
 msgctxt "feedback page: why Send waits"
@@ -29904,6 +30325,11 @@ msgctxt "game variable stage choice quest-seeker"
 msgid "Quest Seeker"
 msgstr "Quest Seeker"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Withdrawn"
+msgstr "Withdrawn"
+
 #: client/src/pages/Mint.tsx
 msgctxt "Mint, h2"
 msgid "Your Hypha space"
@@ -30255,6 +30681,12 @@ msgctxt "the reason for a change request"
 msgid "Why"
 msgstr "Why"
 
+#. placeholder {0}: others.length
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "{0, plural, one {Another open draft changes the same role or circle:} other {# other open drafts change the same role or circle:}}"
+msgstr "{0, plural, one {Another open draft changes the same role or circle:} other {# other open drafts change the same role or circle:}}"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "Save the change"
@@ -30284,6 +30716,11 @@ msgstr "Portal entrance: background video on phones"
 #: client/src/components/journey/EconomicsView.tsx
 msgid "{0}: {1} received ({2} {tokenLower} + {3} acknowledgments) from {4} member(s)"
 msgstr "{0}: {1} received ({2} {tokenLower} + {3} acknowledgments) from {4} member(s)"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "How to become a member"
+msgstr "How to become a member"
 
 #: client/src/components/RewardMoment.tsx
 msgctxt "RewardMoment, p"
@@ -31065,6 +31502,11 @@ msgctxt "protocols page"
 msgid "Start a run, tick each step as it is done, and the village keeps who ticked what and when."
 msgstr "Start a run, tick each step as it is done, and the village keeps who ticked what and when."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Yes, withdraw it"
+msgstr "Yes, withdraw it"
+
 #: client/src/pages/InvestorJourney.tsx
 msgctxt "InvestorJourney, DialogDescription"
 msgid "Request the full investor pack with financials and development timeline."
@@ -31378,9 +31820,9 @@ msgstr "The quest page shows a blank box when…"
 #~ msgstr "Just inside are the village's roles, its game and the work of building it together. Tell us who you are and the way opens."
 
 #: client/src/pages/Review.tsx
-msgctxt "Review, p"
-msgid "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
-msgstr "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
+#~ msgctxt "Review, p"
+#~ msgid "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
+#~ msgstr "What an outside service has proposed about this village. Nothing here is true yet. Read it, change anything you want, and accept what the village agrees with. What you accept goes into a draft you preview before it goes live."
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: SELF_APPROVED_WORDS"
@@ -31713,6 +32155,11 @@ msgstr "Gather"
 msgctxt "task board: duePast"
 msgid "The date was {date}"
 msgstr "The date was {date}"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "A short note on why (optional)"
+msgstr "A short note on why (optional)"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -32862,6 +33309,11 @@ msgstr "The account could not be opened."
 msgid "Adopted on {adoptedDay} by the village's vote."
 msgstr "Adopted on {adoptedDay} by the village's vote."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Link copied"
+msgstr "Link copied"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.onboarding_role, label"
 msgid "The role that sends first replies to applicants"
@@ -32911,6 +33363,11 @@ msgstr "Somebody said thank you, and put their name to it."
 msgctxt "circle card, waiting"
 msgid "{n, plural, =0 {Nothing waiting for the next meeting} one {# item waiting for the next meeting} other {# items waiting for the next meeting}}"
 msgstr "{n, plural, =0 {Nothing waiting for the next meeting} one {# item waiting for the next meeting} other {# items waiting for the next meeting}}"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "Vote on village decisions"
+msgstr "Vote on village decisions"
 
 #: client/src/components/admin/pages/PagesEditor.tsx
 msgctxt "PagesEditor, title"
@@ -33258,6 +33715,11 @@ msgctxt "friday harvest, a priority that was done"
 msgid "Flowered"
 msgstr "Flowered"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Sign in to read this draft."
+msgstr "Sign in to read this draft."
+
 #: client/src/components/map/statChipWords.ts
 msgctxt "map chip seats_open, label"
 msgid "Openings"
@@ -33388,6 +33850,11 @@ msgstr "one list"
 msgctxt "sera changes"
 msgid "Read the list again"
 msgstr "Read the list again"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: a change's kind"
+msgid "Changed"
+msgstr "Changed"
 
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: section"
@@ -33596,6 +34063,11 @@ msgctxt "Admin, p"
 msgid "Nothing out."
 msgstr "Nothing out."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Bring me"
+msgstr "Bring me"
+
 #: client/src/pages/JourneyToLaunch.tsx
 msgctxt "JourneyToLaunch, ViewTab"
 msgid "Canvas"
@@ -33644,6 +34116,11 @@ msgstr "Move goal {n} up"
 msgctxt "the agenda library: confirm taking an item off"
 msgid "Remove"
 msgstr "Remove"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Under a village vote"
+msgstr "Under a village vote"
 
 #: client/src/components/admin/pages/VisitProgramEditor.tsx
 msgctxt "VisitProgramEditor, p"
@@ -34017,6 +34494,11 @@ msgstr "Once a month at most, and never again after three \"not now\" answers. A
 msgctxt "ResourcesAdminPanel, button"
 msgid "Withdraw that"
 msgstr "Withdraw that"
+
+#: client/src/pages/Review.tsx
+msgctxt "Review, p"
+msgid "What an outside service proposes about this village. Nothing here is true yet."
+msgstr "What an outside service proposes about this village. Nothing here is true yet."
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: sheets.handed_back.toast"
@@ -34818,6 +35300,11 @@ msgctxt "level-up moment, under the door"
 msgid "the village saw what you carried."
 msgstr "the village saw what you carried."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Your vote counts 1 on every village vote."
+msgstr "Your vote counts 1 on every village vote."
+
 #: client/src/components/roleCard/commitmentWords.ts
 #: client/src/components/roleCard/payBandWords.ts
 msgctxt "role card rewards: the pay band under the listed price, no period"
@@ -35154,6 +35641,11 @@ msgstr "Go to Adopt"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Changing this agreement opens a vote of the whole village, which takes somebody holding proposal.open as a member."
 msgstr "Changing this agreement opens a vote of the whole village, which takes somebody holding proposal.open as a member."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Published"
+msgstr "Published"
 
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -36612,6 +37104,11 @@ msgctxt "moon recap: MY_MOON_WORDS: routeHeading"
 msgid "Your pay route"
 msgstr "Your pay route"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a field"
+msgid "Cancel"
+msgstr "Cancel"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application choose, founding roles heading"
 #~ msgid "Hiring first: the founding team"
@@ -37721,6 +38218,11 @@ msgstr "Share link"
 #~ msgid "Approved by {0}"
 #~ msgstr "Approved by {0}"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Withdrawn. It can no longer be published."
+msgstr "Withdrawn. It can no longer be published."
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: the plain allowance line"
 msgid "Each cycle every member receives an allowance to send."
@@ -38144,6 +38646,11 @@ msgstr "Your value"
 #~ msgctxt "open proposal why starter"
 #~ msgid "What I have tended before:"
 #~ msgstr "What I have tended before:"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the way back"
+msgid "Org chart draft"
+msgstr "Org chart draft"
 
 #: client/src/components/admin/SubmissionHandling.tsx
 msgctxt "SubmissionHandling, button"
@@ -38570,6 +39077,11 @@ msgstr "Your name and email come from your account."
 msgctxt "SetPassword, p"
 msgid "Password set. Taking you to your dashboard…"
 msgstr "Password set. Taking you to your dashboard…"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a field"
+msgid "This changes the draft only. The live role card changes when the draft is published."
+msgstr "This changes the draft only. The live role card changes when the draft is published."
 
 #: client/src/pages/AdminReview.tsx
 msgctxt "review inbox: find"
@@ -39272,6 +39784,11 @@ msgctxt "TokensTab, p"
 msgid "The {0} module is off. Members cannot see this token, and every balance in it is still here."
 msgstr "The {0} module is off. Members cannot see this token, and every balance in it is still here."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "What it looks after"
+msgstr "What it looks after"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "The helper runs on Claude, using an Anthropic key that belongs to your village. It turns on by itself as soon as the key is saved, and the key never comes back to your browser."
@@ -39296,6 +39813,11 @@ msgstr "Base URL"
 msgctxt "ModuleDetail, span"
 msgid "Optional"
 msgstr "Optional"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: where it came from"
+msgid "A person made it in the role editor or the org chart."
+msgstr "A person made it in the role editor or the org chart."
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind session_coming_up"
@@ -39421,6 +39943,11 @@ msgstr "Book a time"
 msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
 msgstr "Propose a new role"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who must act"
+msgid "Nobody holds the power to change the org chart, so a village vote decides it."
+msgstr "Nobody holds the power to change the org chart, so a village vote decides it."
 
 #: client/src/components/NotificationBell.tsx
 msgctxt "NotificationBell, p"
@@ -40152,6 +40679,11 @@ msgctxt "task board: duePassed"
 msgid "The date was {date}. Done, not yet, or let go?"
 msgstr "The date was {date}. Done, not yet, or let go?"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: a read"
+msgid "votes"
+msgstr "votes"
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season"
 msgid "This season"
@@ -40291,6 +40823,11 @@ msgstr "quests"
 msgctxt "a season week's date, between its number and its title"
 msgid ", {0}: "
 msgstr ", {0}: "
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "Raise a tension with any role"
+msgstr "Raise a tension with any role"
 
 #: client/src/pages/Messages.tsx
 msgctxt "Messages, p"
@@ -40985,6 +41522,11 @@ msgstr "Which rung of the ladder grants \"companion.use\" by progression alone. 
 msgctxt "game variable ops.crash_keep_days, description"
 msgid "Browser crash reports older than this are deleted each day, and a crash nobody has reported since is forgotten with them. They hold no names and no addresses; this keeps the record short."
 msgstr "Browser crash reports older than this are deleted each day, and a crash nobody has reported since is forgotten with them. They hold no names and no addresses; this keeps the record short."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Put back"
+msgstr "Put back"
 
 #: client/src/components/profileDash/TreasuryPanel.tsx
 msgctxt "TreasuryPanel, Link"
@@ -41934,6 +42476,11 @@ msgctxt "open the proposal just made"
 msgid "See your proposal"
 msgstr "See your proposal"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Reading the draft…"
+msgstr "Reading the draft…"
+
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
 msgid "Your stewards' words for what Village OS asks you to set yourself. This screen sets none of them. Tick each as you go; the ticks are for you and are saved nowhere."
@@ -42179,6 +42726,11 @@ msgctxt "game variable progression.unlock.map.viewPeople, description"
 msgid "Which rung of the ladder grants \"map.viewPeople\" by progression alone. Roles and badges can still grant it at any stage; \"never by stage\" makes it role/badge-only. This is the constitution's parameter table, so move rungs deliberately."
 msgstr "Which rung of the ladder grants \"map.viewPeople\" by progression alone. Roles and badges can still grant it at any stage; \"never by stage\" makes it role/badge-only. This is the constitution's parameter table, so move rungs deliberately."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: a read"
+msgid "what waits on your role"
+msgstr "what waits on your role"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module canvas, setup"
 msgid "Nothing to set up. Record the first reading when you are ready; while it is on, every block needs one before the Game starts."
@@ -42267,6 +42819,11 @@ msgctxt "game variable org.reassignment_cadence, choice annual, label"
 msgid "Once a year"
 msgstr "Once a year"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: a change's kind"
+msgid "Change"
+msgstr "Change"
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price ask"
 msgid "Choose your commitment to see a suggested compensation."
@@ -42291,6 +42848,11 @@ msgstr "All quiet for now. Open the room when your circle is ready."
 msgctxt "SeatClaimCard, button"
 msgid "<0/> Not me"
 msgstr "<0/> Not me"
+
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Accept what the village agrees with."
+msgstr "Accept what the village agrees with."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group's summary"
@@ -43321,6 +43883,12 @@ msgstr "Clear the examples now"
 msgctxt "open proposal: the split's two totals"
 msgid "Offered at the suggested price, {0}; proposed at their price, {1}."
 msgstr "Offered at the suggested price, {0}; proposed at their price, {1}."
+
+#. placeholder {0}: change.unchanged.length
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: the fold"
+msgid "{0, plural, one {# field unchanged} other {# fields unchanged}}"
+msgstr "{0, plural, one {# field unchanged} other {# fields unchanged}}"
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: accountTold"
@@ -44358,6 +44926,11 @@ msgstr "Approve"
 msgid "Its {n} roles come with it, and leaving the circle out leaves them out too."
 msgstr "Its {n} roles come with it, and leaving the circle out leaves them out too."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: kind"
+msgid "Raised hand"
+msgstr "Raised hand"
+
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "(including {nested} roles inside a new circle)"
@@ -44546,6 +45119,11 @@ msgstr "What the hidden map is drawn on"
 msgctxt "the bell: why a notice of this kind matters, kind redemption_refused"
 msgid "A redemption was not confirmed, and the tokens it held are back in your wallet."
 msgstr "A redemption was not confirmed, and the tokens it held are back in your wallet."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Each change to the table is written down with its reason, and each vote shows what yours counts."
+msgstr "Each change to the table is written down with its reason, and each vote shows what yours counts."
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -45915,6 +46493,11 @@ msgstr "Reach is the share of members who opened a module this cycle. Opening it
 msgid "You can also bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr "You can also bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now"
+msgid "Some of this did not load: {failedNames}. Something may be waiting there."
+msgstr "Some of this did not load: {failedNames}. Something may be waiting there."
+
 #: client/src/components/admin/ProposedChangesLink.tsx
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -45997,6 +46580,11 @@ msgstr "Send my objection"
 msgctxt "StructureReview, p"
 msgid "This arrival carries circles and no roles."
 msgstr "This arrival carries circles and no roles."
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "Members vote on village decisions, and each vote counts the same."
+msgstr "Members vote on village decisions, and each vote counts the same."
 
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable category"
@@ -46904,6 +47492,11 @@ msgctxt "admin quest safety"
 msgid "Minimum age"
 msgstr "Minimum age"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "It is fixed for that vote, and each vote shows what yours counts. Changing how votes are weighed takes a village vote where almost everyone takes part and agrees."
+msgstr "It is fixed for that vote, and each vote shows what yours counts. Changing how votes are weighed takes a village vote where almost everyone takes part and agrees."
+
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
 msgid "Every role has an end. Leave the date empty and the role ends with the season."
@@ -47175,6 +47768,11 @@ msgctxt "application backup file"
 msgid "Your notes on the role card"
 msgstr "Your notes on the role card"
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Pay and terms"
+msgstr "Pay and terms"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application review"
 msgid "No start date given"
@@ -47204,6 +47802,12 @@ msgstr "Payment guardrails"
 msgctxt "password field: the eye button"
 msgid "Show password"
 msgstr "Show password"
+
+#. placeholder {0}: stageName(r.opensAt)
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right not yet held"
+msgid "Opens at {0}."
+msgstr "Opens at {0}."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
@@ -47643,6 +48247,11 @@ msgctxt "player card, load roles"
 msgid "{n, plural, one {# role} other {# roles}}"
 msgstr "{n, plural, one {# role} other {# roles}}"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a field"
+msgid "New words for {label}"
+msgstr "New words for {label}"
+
 #: client/src/components/admin/comms/CommsSetupWords.tsx
 msgctxt "CommsSetupWords, p"
 msgid "It goes in the footer of every email the village sends in bulk, the way it would on an envelope."
@@ -47747,6 +48356,11 @@ msgstr "Check in on how {role} is going"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "We'll write to you to find a time."
 msgstr "We'll write to you to find a time."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: state"
+msgid "Withdrawn"
+msgstr "Withdrawn"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable stay.autopay_default, label"
@@ -48045,6 +48659,11 @@ msgctxt "ArchetypesPanel, p"
 msgid "This village already has a class with the identifier {trimmedNewKey}."
 msgstr "This village already has a class with the identifier {trimmedNewKey}."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Withdraw"
+msgstr "Withdraw"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "move a step earlier"
 msgid "Move up"
@@ -48133,6 +48752,11 @@ msgstr "Your stay: nights posting, credits arriving, or a balance running low."
 msgctxt "roles page, the open ventures' eyebrow"
 msgid "Build with us"
 msgstr "Build with us"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Revisions"
+msgstr "Revisions"
 
 #: client/src/components/openProposal/onboardingWords.ts
 msgctxt "applicant onboarding: shortlistDone"
@@ -48426,6 +49050,11 @@ msgctxt "SeasonalFestivals, h2"
 msgid "The year's turning"
 msgstr "The year's turning"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: where it came from"
+msgid "An agent proposed it. A person reads it before anything changes."
+msgstr "An agent proposed it. A person reads it before anything changes."
+
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
 msgid "{n, plural, one {One change} other {# changes}}"
@@ -48666,9 +49295,9 @@ msgid "The name for the {0} group"
 msgstr "The name for the {0} group"
 
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Review Queue"
-msgstr "Review Queue"
+#~ msgctxt "Layout, Link"
+#~ msgid "Review Queue"
+#~ msgstr "Review Queue"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
@@ -48863,6 +49492,11 @@ msgstr "Turn the bell on"
 msgctxt "role card"
 msgid "Cancel"
 msgstr "Cancel"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now"
+msgid "This did not load. Something may be waiting for your voice."
+msgstr "This did not load. Something may be waiting for your voice."
 
 #. placeholder {0}: counts.circleName
 #. placeholder {1}: counts.held
@@ -50079,6 +50713,11 @@ msgctxt "sessions coming up, add a rhythm to a circle"
 msgid "Add another meeting"
 msgstr "Add another meeting"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "Open a village vote yourself"
+msgstr "Open a village vote yourself"
+
 #: client/src/components/admin/MapChipsPanel.tsx
 msgctxt "MapChipsPanel, title"
 msgid "Earlier on the bar"
@@ -50150,6 +50789,11 @@ msgctxt "LookPanel, label"
 msgid "Your place, in one sentence"
 msgstr "Your place, in one sentence"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right not yet held"
+msgid "Given by a role or a badge."
+msgstr "Given by a role or a badge."
+
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: noInvitation"
 msgid "There is no invitation to replace: they already made their account, or this proposal was not adopted."
@@ -50191,6 +50835,11 @@ msgstr "The village has not set its rates yet. Set them on the economics page, t
 msgctxt "ModuleDetail, p"
 msgid "The library could not load just now. Try again in a moment."
 msgstr "The library could not load just now. Try again in a moment."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "This draft was written before drafts kept the card they were written against, so \"Before\" is the card as it stands now."
+msgstr "This draft was written before drafts kept the card they were written against, so \"Before\" is the card as it stands now."
 
 #: client/src/components/power/Legend.tsx
 msgctxt "Legend, span"
@@ -51162,6 +51811,11 @@ msgctxt "founding application, the send failed"
 msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
 msgstr "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a list"
+msgid "One line for each item."
+msgstr "One line for each item."
+
 #: client/src/pages/Feedback.tsx
 msgctxt "feedback page: after sending"
 msgid "Your village's team has it and will take it from here."
@@ -51348,6 +52002,11 @@ msgstr "People who asked for a home. Marking one Reserved counts it against its 
 #~ msgid "Take the suggested price, {0}"
 #~ msgstr "Take the suggested price, {0}"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: door"
+msgid "Answer it"
+msgstr "Answer it"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Held for the village's vote"
@@ -51465,8 +52124,8 @@ msgid "Close"
 msgstr "Close"
 
 #: client/src/pages/Governance.tsx
-msgid "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
-msgstr "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
+#~ msgid "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
+#~ msgstr "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
 
 #: client/src/components/pay/ReceivePanel.tsx
 msgctxt "pay page, receive"
@@ -51930,6 +52589,11 @@ msgstr "Sign in to stage changes and propose. Reading is open to everyone."
 msgid "Likely {0} to {1}. {2}: {3}."
 msgstr "Likely {0} to {1}. {2}: {3}."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: editing a field"
+msgid "A short note on why (shown in the draft's history)"
+msgstr "A short note on why (shown in the draft's history)"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application lede"
 #~ msgid "Six steps, and no account needed."
@@ -52080,6 +52744,11 @@ msgstr "Why this change, in a sentence or more"
 msgctxt "Review, a door to the one list"
 msgid "Find it here"
 msgstr "Find it here"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "Your vote is yours. It is never bought, sold or traded."
+msgstr "Your vote is yours. It is never bought, sold or traded."
 
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, p"
@@ -53074,6 +53743,11 @@ msgctxt "game variable resources.circle_cap_bonus_pct, label"
 msgid "Bonus for a circle that finished under its cap"
 msgstr "Bonus for a circle that finished under its cap"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: where it came from"
+msgid "A person accepted waiting proposals into this draft."
+msgstr "A person accepted waiting proposals into this draft."
+
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, placeholder"
 msgid "greenhouse, commons"
@@ -53802,6 +54476,11 @@ msgctxt "founding application check, a box over its limit"
 msgid "Link {n}: web address"
 msgstr "Link {n}: web address"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "What changes"
+msgstr "What changes"
+
 #: client/src/components/journey/EconomicsView.tsx
 msgid "The economy conserves: every token sums to zero, no drift, no illegal negatives."
 msgstr "The economy conserves: every token sums to zero, no drift, no illegal negatives."
@@ -54051,6 +54730,11 @@ msgstr "rate coming soon"
 msgctxt "Admin, aria-label"
 msgid "Move this question up"
 msgstr "Move this question up"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Not recorded"
+msgstr "Not recorded"
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.weight_cap_cash_on, label"
@@ -54825,6 +55509,11 @@ msgctxt "proposed changes: a list row"
 msgid "Moved up from {0}"
 msgstr "Moved up from {0}"
 
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Now"
+msgstr "Now"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing waits for you, and no draft is open."
 msgstr "Nothing waits for you, and no draft is open."
@@ -54858,6 +55547,11 @@ msgstr "Agreement"
 msgctxt "game variable progression.multiplier.guest, label"
 msgid "Sending-budget multiplier: Guest"
 msgstr "Sending-budget multiplier: Guest"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who must act"
+msgid "The village, in the vote that is open now."
+msgstr "The village, in the vote that is open now."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
@@ -55096,6 +55790,11 @@ msgctxt "open proposal: one role's price ask"
 msgid "Negotiate on the first call if chosen."
 msgstr "Negotiate on the first call if chosen."
 
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Governance"
+msgstr "Governance"
+
 #: client/src/components/priorities/MyWeekCard.tsx
 msgctxt "profile, change your top priority for this week"
 msgid "Change it"
@@ -55105,6 +55804,11 @@ msgstr "Change it"
 msgctxt "Housing, h2"
 msgid "Housing Options"
 msgstr "Housing Options"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Purpose"
+msgstr "Purpose"
 
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header"
@@ -55141,6 +55845,11 @@ msgstr "Phone / WhatsApp (optional)"
 msgctxt "roles page, other ways to join"
 msgid "Live here one day? Start on the resident path."
 msgstr "Live here one day? Start on the resident path."
+
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Read it."
+msgstr "Read it."
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 #: client/src/components/voice/VoiceHeard.tsx
@@ -55619,6 +56328,11 @@ msgctxt "moon recap: SPLIT_PAY_WORDS: share"
 msgid "Share of time"
 msgstr "Share of time"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Leave this change out"
+msgstr "Leave this change out"
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
 msgid "The text below is not valid JSON yet, so there is nothing to preview."
@@ -55697,6 +56411,11 @@ msgstr "The village's circles that are active or forming. Dormant circles and ex
 msgctxt "role card front: the cash share of the pay mix"
 msgid "{cash}% cash"
 msgstr "{cash}% cash"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: h1"
+msgid "Governance"
+msgstr "Governance"
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Set aside. The suggestion and your note are listed under Decided lately on this block, and the member who made it is told."
@@ -55917,6 +56636,11 @@ msgctxt "live session room: noteTaking"
 msgid "Taking notes"
 msgstr "Taking notes"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now"
+msgid "{s, plural, one {One closes within two days.} other {# close within two days.}}"
+msgstr "{s, plural, one {One closes within two days.} other {# close within two days.}}"
+
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
 msgid "Ask the village to let a role do something it cannot do yet."
@@ -55932,6 +56656,11 @@ msgstr "How long, in minutes"
 msgctxt "role proposal: sendToOps"
 msgid "Send to {who} to finish the terms together"
 msgstr "Send to {who} to finish the terms together"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "This change cannot be applied as the village stands."
+msgstr "This change cannot be applied as the village stands."
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: this day is today"
@@ -56192,6 +56921,11 @@ msgstr "Received"
 msgctxt "moon recap: LET_GO_NEEDS_REASON"
 msgid "Say why it was let go, in a few words."
 msgstr "Say why it was let go, in a few words."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who must act"
+msgid "Whoever holds the power to change the org chart."
+msgstr "Whoever holds the power to change the org chart."
 
 #: client/src/pages/Profile.tsx
 msgctxt "Profile, p"
@@ -56484,6 +57218,11 @@ msgctxt "game variable unit"
 msgid "photos"
 msgstr "photos"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "That did not go through. Reload and try again."
+msgstr "That did not go through. Reload and try again."
+
 #: client/src/pages/Quests.tsx
 msgctxt "Quests, p"
 msgid "Take a Quest, do the work, turn it in."
@@ -56647,9 +57386,9 @@ msgid "Not read: {0}."
 msgstr "Not read: {0}."
 
 #: client/src/components/review/SeraOnReview.tsx
-msgctxt "review page"
-msgid "Review"
-msgstr "Review"
+#~ msgctxt "review page"
+#~ msgid "Review"
+#~ msgstr "Review"
 
 #: client/src/pages/VillageEmail.tsx
 msgctxt "VillageEmail, p"
@@ -57510,6 +58249,11 @@ msgctxt "proposal wizard"
 msgid "Only dials the village governs appear here. Founder-held dials and the constitution are not on this list."
 msgstr "Only dials the village governs appear here. Founder-held dials and the constitution are not on this list."
 
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: who decides what"
+msgid "who is told"
+msgstr "who is told"
+
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: ADMIN_WORDS: payers.newPayer"
 msgid "A new payer"
@@ -57765,6 +58509,11 @@ msgctxt "game variable progression.multiplier.guest, description"
 msgid "Multiplies the base Gratitude sending allowance for members at the Guest stage, so a member here gives this many times 'Base sending allowance per cycle' each cycle. Set it to 0 and members at this stage cannot send yet. It moves the per-person ceiling too, because that is a share of the allowance this produces. Works with: 'Base sending allowance per cycle' and 'Share of an allowance any one person can receive', both under Gratitude."
 msgstr "Multiplies the base Gratitude sending allowance for members at the Guest stage, so a member here gives this many times 'Base sending allowance per cycle' each cycle. Set it to 0 and members at this stage cannot send yet. It moves the per-person ceiling too, because that is a share of the allowance this produces. Works with: 'Base sending allowance per cycle' and 'Share of an allowance any one person can receive', both under Gratitude."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Edit"
+msgstr "Edit"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting answer"
 msgid "I accept"
@@ -57858,6 +58607,11 @@ msgstr "Adopting or declining a proposal is for a live holder of the power to pl
 msgctxt "sera answers"
 msgid "pay is set by a person"
 msgstr "pay is set by a person"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "Propose a change to the village's rules"
+msgstr "Propose a change to the village's rules"
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
@@ -57973,6 +58727,11 @@ msgctxt "QuestActions, p"
 msgid "This quest rewards you with {0}."
 msgstr "This quest rewards you with {0}."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "This draft did not load. Reload the page to try again."
+msgstr "This draft did not load. Reload the page to try again."
+
 #: client/src/components/badges/BadgeRoster.tsx
 msgctxt "BadgeRoster, title"
 msgid "You have picked {max}. Take one off first."
@@ -58068,6 +58827,11 @@ msgstr "As much as, for {0}"
 msgctxt "role proposal: fromHolder"
 msgid "From whoever holds it now"
 msgstr "From whoever holds it now"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: read aloud before added words"
+msgid "added:"
+msgstr "added:"
 
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: the label font field"
@@ -58292,6 +59056,11 @@ msgctxt "SaberraConfigPanel, placeholder"
 msgid "https://"
 msgstr "https://"
 
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: the views, read aloud"
+msgid "Governance views"
+msgstr "Governance views"
+
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"
 msgid "What this season is trying to achieve"
@@ -58375,6 +59144,11 @@ msgstr "Do you consent to this proposal?"
 msgctxt "review inbox: a row, the door"
 msgid "Read the proposal"
 msgstr "Read the proposal"
+
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "How we decide"
+msgstr "How we decide"
 
 #. placeholder {0}: o.current ?? 0
 #. placeholder {1}: o.target
@@ -58717,6 +59491,11 @@ msgstr "Pay"
 msgctxt "circle consent: tally"
 msgid "Consented"
 msgstr "Consented"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Publishing waits until every change can be applied. Fix or leave out the ones marked above."
+msgstr "Publishing waits until every change can be applied. Fix or leave out the ones marked above."
 
 #. placeholder {0}: timeWords(s.moonVoidUntil)
 #: client/src/components/sessionCard/PullACard.tsx
@@ -60071,6 +60850,11 @@ msgctxt "game variable village.satellite_provider, choice esri, label"
 msgid "Esri World Imagery"
 msgstr "Esri World Imagery"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: a read"
+msgid "raised hands"
+msgstr "raised hands"
+
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
 msgid "What you are asking for, and why it is worth the village's attention."
@@ -60796,6 +61580,11 @@ msgstr "The line could not be saved just now."
 msgid "e.g. night-sea teal, deck green, parchment, lantern gold"
 msgstr "e.g. night-sea teal, deck green, parchment, lantern gold"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "What you can do"
+msgstr "What you can do"
+
 #. placeholder {0}: d.termStarts
 #. placeholder {1}: d.termEnds
 #: client/src/components/admin/CompareTab.tsx
@@ -60897,6 +61686,11 @@ msgstr "This form is an invitation to propose and does not constitute an offer, 
 msgctxt "site menu"
 msgid "Leaving Well"
 msgstr "Leaving Well"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
+msgstr "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
 
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card heading, tensions"
@@ -61051,6 +61845,11 @@ msgstr "I consent"
 msgctxt "QuestCrews, button"
 msgid "<0/>Leave"
 msgstr "<0/>Leave"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice"
+msgid "The village decides one person, one vote. Changing that takes a village vote where almost everyone takes part and agrees."
+msgstr "The village decides one person, one vote. Changing that takes a village vote where almost everyone takes part and agrees."
 
 #: client/src/components/sessions/rhythmWords.ts
 msgctxt "live sessions: weekdayLabel"
@@ -61340,6 +62139,11 @@ msgstr "No words yet"
 msgctxt "EventsAdminPanel, button"
 msgid "Cancel"
 msgstr "Cancel"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a list line, read aloud"
+msgid "Removed:"
+msgstr "Removed:"
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module journal, data"
@@ -61657,6 +62461,11 @@ msgctxt "Bootstrap, p"
 msgid "This page only ever creates the first founder, or recovers the account named in BREAK_GLASS_ADMIN_EMAIL. Once a village has a founder, the shared password stops authenticating anyone."
 msgstr "This page only ever creates the first founder, or recovers the account named in BREAK_GLASS_ADMIN_EMAIL. Once a village has a founder, the shared password stops authenticating anyone."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Leave \"{target}\" out of this draft? The rest stays, and can be published without it. Its words are kept in the draft's history."
+msgstr "Leave \"{target}\" out of this draft? The rest stays, and can be published without it. Its words are kept in the draft's history."
+
 #: client/src/pages/Modules.tsx
 msgctxt "Modules, aria-label"
 msgid "Show"
@@ -61889,6 +62698,11 @@ msgstr "Claim this on the hub <0/>"
 msgctxt "SpringPackets, dt"
 msgid "Live check"
 msgstr "Live check"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Open"
+msgstr "Open"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -62209,9 +63023,9 @@ msgid "Sera board"
 msgstr "Sera board"
 
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "Review Queue"
-msgstr "Review Queue"
+#~ msgctxt "site menu"
+#~ msgid "Review Queue"
+#~ msgstr "Review Queue"
 
 #: client/src/components/journal/EntryCard.tsx
 msgctxt "EntryCard, button"
@@ -62673,6 +63487,11 @@ msgctxt "live sessions: startTitle"
 msgid "Start a session"
 msgstr "Start a session"
 
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: the canvas"
+msgid "It can be saved as a Markdown file too."
+msgstr "It can be saved as a Markdown file too."
+
 #: client/src/components/governance/decisionNounWords.ts
 msgctxt "proposal wizard"
 msgid "Agreement"
@@ -62937,6 +63756,11 @@ msgctxt "admin portal visitors"
 msgid "That did not go through."
 msgstr "That did not go through."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "\"{target}\" is out of this draft."
+msgstr "\"{target}\" is out of this draft."
+
 #. placeholder {0}: counts.hours
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -63165,6 +63989,11 @@ msgctxt "role proposal: sentToOps"
 msgid "Sent. {who} can open the link."
 msgstr "Sent. {who} can open the link."
 
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Ask whoever looks after the village queues to pass one on to you."
+msgstr "Ask whoever looks after the village queues to pass one on to you."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 #~ msgctxt "founding application refusal"
 #~ msgid "Send up to 3 recordings."
@@ -63208,6 +64037,11 @@ msgstr "Remove this decision"
 msgctxt "founding application refusal"
 msgid "Choose the role you are applying for."
 msgstr "Choose the role you are applying for."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: the header"
+msgid "Proposed by"
+msgstr "Proposed by"
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint form, amount box"
@@ -63397,6 +64231,11 @@ msgctxt "proposal wizard"
 msgid "Which of the village's goals for the season your work serves"
 msgstr "Which of the village's goals for the season your work serves"
 
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "Until you are a member, you can read how the village decides."
+msgstr "Until you are a member, you can read how the village decides."
+
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Its role is gone from the org chart"
 msgstr "Its role is gone from the org chart"
@@ -63577,6 +64416,11 @@ msgctxt "pricing desk"
 msgid "Quest"
 msgstr "Quest"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Confirm"
+msgstr "Confirm"
+
 #: client/src/components/power/cardViewWords.ts
 msgctxt "role card rows: where"
 msgid "On the land or remote"
@@ -63651,6 +64495,11 @@ msgstr "Connect Claude to turn on your helper"
 msgctxt "profile, show my first name to visitors"
 msgid "Show my first name to visitors"
 msgstr "Show my first name to visitors"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Sent"
+msgstr "Sent"
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: what is on a day"
@@ -64570,6 +65419,11 @@ msgstr "Tag it"
 msgctxt "EventsAdminPanel, button"
 msgid "Approve"
 msgstr "Approve"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: read aloud before removed words"
+msgid "removed:"
+msgstr "removed:"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "That was not saved. Check your signal and try again."
@@ -65840,6 +66694,11 @@ msgctxt "Decision Matrix column"
 msgid "Who is told"
 msgstr "Who is told"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Until it is fixed or left out, the whole draft waits. Leave it out to publish the rest."
+msgstr "Until it is fixed or left out, the whole draft waits. Leave it out to publish the rest."
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Cancel"
@@ -66211,6 +67070,11 @@ msgstr "Ask anything about what you have written, or let the guide reflect it ba
 msgctxt "NeedsPanel, p"
 msgid "Six screens. Say which needs this village is taking on, how far it means to get on each, for how many, and what does the meeting. You can change any of it later."
 msgstr "Six screens. Say which needs this village is taking on, how far it means to get on each, for how many, and what does the meeting. You can change any of it later."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "{n, plural, one {Publish this draft? Its one change goes onto the org chart now.} other {Publish this draft? Its # changes go onto the org chart now.}}"
+msgstr "{n, plural, one {Publish this draft? Its one change goes onto the org chart now.} other {Publish this draft? Its # changes go onto the org chart now.}}"
 
 #. placeholder {0}: data?.reconciliation?.actual
 #. placeholder {1}: data?.reconciliation?.expected
@@ -67108,6 +67972,11 @@ msgctxt "sera answers"
 msgid "Retire it here"
 msgstr "Retire it here"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: a revision"
+msgid "The draft as it was made"
+msgstr "The draft as it was made"
+
 #. placeholder {0}: out.renewed?.length ?? 0
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Renewed {0} role(s) for the next moon."
@@ -67660,6 +68529,11 @@ msgstr "A card purchase reserves an order the moment checkout opens, before the 
 msgctxt "game variable calendar.hemisphere, choice north, label"
 msgid "Northern"
 msgstr "Northern"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: door"
+msgid "Take part"
+msgstr "Take part"
 
 #: client/src/components/calendar/MonthView.tsx
 msgctxt "MonthView, span"
@@ -68568,6 +69442,11 @@ msgctxt "the bell: several notices of one kind batched into a line, kind ballot_
 msgid "{n} votes carried."
 msgstr "{n} votes carried."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Why it matters"
+msgstr "Why it matters"
+
 #: client/src/components/roleDraft/DiscoverStep.tsx
 msgid "Optional. You can skip it."
 msgstr "Optional. You can skip it."
@@ -69268,6 +70147,11 @@ msgctxt "quest goal thread editor"
 msgid "Saved."
 msgstr "Saved."
 
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page"
+msgid "Empty"
+msgstr "Empty"
+
 #: client/src/components/ContributorRoutes.tsx
 #: client/src/pages/WorkWithUs.tsx
 msgctxt "four ways to build: a venture"
@@ -69593,6 +70477,11 @@ msgstr "The post office and the journeys run by themselves every few minutes. Pr
 msgctxt "task board: statusLabels.open"
 msgid "Holding"
 msgstr "Holding"
+
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: eyebrow"
+msgid "How the village decides"
+msgstr "How the village decides"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: waitingCard.button"
@@ -70369,6 +71258,11 @@ msgctxt "game variable ledger.org_redemption_rate, label"
 msgid "What one credit is worth when a venture redeems"
 msgstr "What one credit is worth when a venture redeems"
 
+#: client/src/pages/Governance.tsx
+msgctxt "governance page: the canvas"
+msgid "Twelve blocks, from purpose to impact, for a group to talk through together."
+msgstr "Twelve blocks, from purpose to impact, for a group to talk through together."
+
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, h2"
 msgid "Read it back"
@@ -70914,6 +71808,11 @@ msgstr "For a line that is not on a sheet. It counts as soon as it is saved."
 msgid "The cover role, which hears a request when the care role cannot"
 msgstr "The cover role, which hears a request when the care role cannot"
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page: a change's kind"
+msgid "New"
+msgstr "New"
+
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
 msgid "He has run the tool library's lending desk every Saturday since spring, and the stewards already send him the questions it gets."
@@ -71455,6 +72354,11 @@ msgstr "Continue with Google"
 msgid "Nothing has moved yet."
 msgstr "Nothing has moved yet."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Yes, open the vote"
+msgstr "Yes, open the vote"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.change_set_cap, label"
 msgid "Changes one proposal may carry"
@@ -71523,6 +72427,11 @@ msgstr "credits per Voice"
 msgctxt "a role choice that keeps the current role"
 msgid "Leave it as it is"
 msgstr "Leave it as it is"
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: who must act"
+msgid "You may publish it. A village vote is the other way."
+msgstr "You may publish it. A village vote is the other way."
 
 #: client/src/components/setupGame/JourneyView.tsx
 msgctxt "JourneyView, button"
@@ -71938,6 +72847,11 @@ msgctxt "thanks wall lede"
 msgid "Each thanks is a thread between two people. The wall keeps the words and never a count."
 msgstr "Each thanks is a thread between two people. The wall keeps the words and never a count."
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page: where it came from"
+msgid "Sera suggested it. A person reads it before anything changes."
+msgstr "Sera suggested it. A person reads it before anything changes."
+
 #: client/src/components/power/ResourcesPanel.tsx
 msgctxt "ResourcesPanel, aria-label"
 msgid "The pots"
@@ -72127,6 +73041,11 @@ msgstr "This moon"
 msgctxt "CommunityCalendarCard, label"
 msgid "What"
 msgstr "What"
+
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "That did not go through. Try again."
+msgstr "That did not go through. Try again."
 
 #: client/src/components/fireflyPath/ReviewPromises.tsx
 msgctxt "founding application review, in short"
@@ -72580,6 +73499,11 @@ msgctxt "NeedsPanel, p"
 msgid "No role is tagged to any of these needs, so there is no role count to give. Screen 5 is where a role is tagged."
 msgstr "No role is tagged to any of these needs, so there is no role count to give. Screen 5 is where a role is tagged."
 
+#: client/src/components/orgDraft/DraftChangeCard.tsx
+msgctxt "draft page"
+msgid "Yes, leave it out"
+msgstr "Yes, leave it out"
+
 #: client/src/components/admin/comms/WordsEditor.tsx
 msgctxt "WordsEditor, button"
 msgid "Undo my changes"
@@ -72777,6 +73701,11 @@ msgctxt "EmailPages, button"
 msgid "Send"
 msgstr "Send"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: kind"
+msgid "A tension for your role"
+msgstr "A tension for your role"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Sera's range is in the form. Read it, change it if you like, then save."
@@ -72903,6 +73832,11 @@ msgstr "Write a letter"
 msgctxt "applicant onboarding: referencesHeading"
 msgid "References and follow-ups"
 msgstr "References and follow-ups"
+
+#: client/src/components/orgDraft/FieldDiff.tsx
+msgctxt "draft page: a field"
+msgid "Role title"
+msgstr "Role title"
 
 #: client/src/pages/AdminReview.tsx
 msgctxt "review inbox: decided"
@@ -73241,6 +74175,11 @@ msgctxt "live sessions: skipRhythm"
 msgid "Skip the rhythm's meeting {when}"
 msgstr "Skip the rhythm's meeting {when}"
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: stage"
+msgid "Being read"
+msgstr "Being read"
+
 #. placeholder {0}: me.needed
 #: client/src/pages/HiddenMap.tsx
 msgid "It opens to you once {0} of yours are vouched."
@@ -73465,6 +74404,11 @@ msgstr "Nothing in this view."
 #~ msgid "Only admins see this. Nothing is sent from it."
 #~ msgstr "Only admins see this. Nothing is sent from it."
 
+#: client/src/pages/Review.tsx
+msgctxt "Review, a step"
+msgid "Change anything you want."
+msgstr "Change anything you want."
+
 #: client/src/components/openProposal/onboardingWords.ts
 msgctxt "applicant onboarding: followedUp"
 msgid "Followed up"
@@ -73494,6 +74438,11 @@ msgstr "The site just grew"
 #~ msgid "See the quests"
 #~ msgstr "See the quests"
 
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Each field where that happened is marked below with what changed. Read them before publishing, so nothing newer is written over."
+msgstr "Each field where that happened is marked below with what changed. Read them before publishing, so nothing newer is written over."
+
 #: client/src/components/admin/ModuleConfigPanels.tsx
 #~ msgctxt "ModuleConfigPanels, toast"
 #~ msgid "Linked campaigns saved"
@@ -73503,6 +74452,11 @@ msgstr "The site just grew"
 msgctxt "role proposal: picked"
 msgid "{n} of at most {max} picked."
 msgstr "{n} of at most {max} picked."
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: closes"
+msgid "{hours, plural, one {Closes within the hour} other {Closes in # hours}}"
+msgstr "{hours, plural, one {Closes within the hour} other {Closes in # hours}}"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application split line: a later part, Earned Equity"
@@ -74235,6 +75189,11 @@ msgstr "We changed some of the terms"
 msgctxt "companion welcome"
 msgid "Companion<0/>bonded"
 msgstr "Companion<0/>bonded"
+
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: heading"
+msgid "{n, plural, =0 {Waiting for your voice} one {Waiting for your voice · #} other {Waiting for your voice · #}}"
+msgstr "{n, plural, =0 {Waiting for your voice} one {Waiting for your voice · #} other {Waiting for your voice · #}}"
 
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module introductions, benefit 1"
@@ -75884,6 +76843,11 @@ msgctxt "ModuleConfigPanels, p"
 msgid "Nothing synced yet. The sync runs every ten minutes."
 msgstr "Nothing synced yet. The sync runs every ten minutes."
 
+#: client/src/components/governance/now/NowView.tsx
+msgctxt "governance now: your voice, a right"
+msgid "Raise your hand to hold a power"
+msgstr "Raise your hand to hold a power"
+
 #. placeholder {0}: p.questTitle
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -76115,6 +77079,11 @@ msgstr "Open it on your task board: {what}"
 msgctxt "thanks composer: the allowance tooltip"
 msgid "Your allowance refills when the cycle turns. Sending moves it from your allowance to the person you thank; it never costs you anything you earned."
 msgstr "Your allowance refills when the cycle turns. Sending moves it from your allowance to the person you thank; it never costs you anything you earned."
+
+#: client/src/pages/OrgDraft.tsx
+msgctxt "draft page"
+msgid "Published. The org chart has changed."
+msgstr "Published. The org chart has changed."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "edit one change"
@@ -76402,6 +77371,12 @@ msgstr "Tools Hub"
 msgctxt "open proposal decide: adoptedAccountMoon"
 msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon."
 msgstr "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon."
+
+#: client/src/components/governance/now/NowView.tsx
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now"
+msgid "Try again"
+msgstr "Try again"
 
 #: client/src/components/governance/VoteResult.tsx
 msgctxt "VoteResult, span"
