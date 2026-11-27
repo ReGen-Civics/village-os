@@ -1,0 +1,61 @@
+# Which tests fail and then pass on the same code, ranked (scripts/flake-report.mjs).
+#
+# On 26 Nov 2026 thirteen pull requests were red at once and lanes re-diagnosed the
+# same reds one by one. A flake costs a whole CI cycle every time it fires, and
+# nobody fixes what nobody has counted. This counts, once a day and on demand,
+# and writes the ranking to the run's summary page.
+#
+# Reads only: `actions: read` to list runs, jobs and logs. It changes nothing,
+# comments nowhere and blocks nothing. Fix the cause of what it names; never skip,
+# quarantine or loosen a test to make it leave the list.
+name: flake-report
+
+on:
+  schedule:
+    # 06:17 UTC daily, off the hour so it does not queue behind every other cron.
+    - cron: "17 6 * * *"
+  # A change to the report runs it on real data before it lands.
+  pull_request:
+    paths:
+      - "scripts/flake-report.mjs"
+      - "scripts/flake-report.test.mjs"
+      - ".github/workflows/flake-report.yml"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days of ci.yml runs to read"
+        required: false
+        default: "3"
+
+permissions:
+  actions: read
+  contents: read
+
+# Per ref: a newer run of the SAME ref replaces an older one, and two pull
+# requests that both change the report do not cancel each other (they did, on
+# the first live run, #1790 against #1797).
+concurrency:
+  group: flake-report-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: The report refuses what it should
+        run: node scripts/flake-report.test.mjs
+
+      - name: Flaky tests, ranked
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DAYS: ${{ inputs.days || '3' }}
+        run: node scripts/flake-report.mjs --days "$DAYS"

@@ -18,7 +18,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
-import { FOLLOWUP_NOTE_MAX, TRACK_WORDS, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
+import { FOLLOWUP_NOTE_MAX, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
+import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import type { GuideView } from "@shared/conversationGuide";
 import { GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, type GutAnswer, type InterviewState, type ScoreLevel } from "@shared/applicationReview";
@@ -143,7 +144,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   return (
     <section id="walkthrough" aria-labelledby="walk-heading" className={`scroll-mt-24 ${CARD}`} data-walkthrough={t.now}>
-      <p className={EYEBROW}>{TRACK_WORDS[t.now]}</p>
+      <p className={EYEBROW}>{trackStageWords()[t.now]}</p>
       <h2 id="walk-heading" className={H2}>{OW.heading}</h2>
       <p className={`mt-1 ${HINT}`}>{OW.intro}</p>
 
@@ -294,7 +295,7 @@ function Gathered({ w }: { w: ServedWalkthrough }) {
             <div key={iv.position} className={TILE} data-walk-card={iv.position}>
               <p className="font-semibold text-foreground">
                 {iv.roleName}
-                {iv.final ? ` · ${TRACK_WORDS.final_interview}` : ""}
+                {iv.final ? ` · ${trackStageWords().final_interview}` : ""}
                 <span className="font-normal text-muted-foreground"> · {IV_STATE[iv.state] ?? iv.state}</span>
               </p>
               {iv.gut && <p className="mt-1 text-foreground">{PANEL_WORDS.gutRead}: {GUT_WORDS[iv.gut.answer]}{iv.gut.note ? `, ${iv.gut.note}` : ""}</p>}

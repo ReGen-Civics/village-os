@@ -47,7 +47,15 @@ describe("the rows behind a sign", () => {
       org_role_assignments: [],
     };
     const sheet = signSheetRows("roles-with-card-and-term", rows, W)!;
-    expect(sheet).toEqual([{ at: null, words: "Water Keeper: missing domain, what it answers for, a term", personId: null }]);
+    expect(sheet).toEqual([
+      {
+        at: null,
+        words: "Water Keeper: missing domain, what it answers for, a term",
+        personId: null,
+        // What the row was made of, so the server can say it in the reader's language (shared/roleSignMessages.ts).
+        said: { k: "missing", a: ["Water Keeper", ["domain", "answers", "term"]] },
+      },
+    ]);
   });
 
   it("returns null for an unknown key or an unread table, never an empty sheet", () => {

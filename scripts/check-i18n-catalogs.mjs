@@ -13,7 +13,10 @@
  *      origin is in the REVIEWED SCOPE. Outside the scope a missing string
  *      falls back to English, which is honest, so it is not a failure.
  *      Each catalog is read with its fragments (`<tag>.d/*.po`) folded in, and two
- *      fragments that give one message different text fail here.
+ *      fragments that give one message different text fail here. A fragment entry
+ *      for a message en.po does not hold yet (one a pull request adds) is held to
+ *      rule 4 against its own msgid, so it fails its own pull request rather than
+ *      main after the fold.
  *   4. Every translation, in or out of scope:
  *      - parses as ICU MessageFormat;
  *      - names exactly the source's arguments (a dropped `{count}` or a
@@ -201,6 +204,19 @@ export async function checkCatalogs({ dir, scope, skipExtract }) {
     for (const c of clash) problems.push(`${locale}: "${c.key}" is given different text by ${c.files.join(" and ")}`);
     if (clash.length) continue;
     const cat = await po.parse(mergedPoText(dir, locale), { locale, sourceLocale: "en", filename: path.join(dir, `${locale}.po`) });
+    // A FRAGMENT'S NEW MESSAGES ARE HELD TO THE SAME RULES NOW, NOT AFTER THE FOLD (the coordinator, 26 Nov 2026).
+    // en.po is main's, so a message a pull request adds is not in it yet, and the loop below, which walks en.po,
+    // never reached the fragment's translation of it. main extracted and folded, the loop reached it there, and
+    // main went red twice (the guide's label words; the player card's count word with no `one` in Spanish). Every
+    // fragment entry whose message en.po does not hold yet is checked against its own msgid, the English it will
+    // have once main extracts.
+    for (const f of frags) {
+      const entries = await po.parse(f.text, { locale, sourceLocale: "en", filename: path.join(dir, f.name) });
+      for (const [id, e] of Object.entries(entries)) {
+        if (e.obsolete || !e.translation || (id in en && !en[id].obsolete)) continue;
+        for (const p of translationProblems(e.message ?? id, e.translation, locale)) problems.push(`${locale} (${f.name}, new message): "${e.message ?? id}": ${p}`);
+      }
+    }
     for (const [id, source] of Object.entries(en)) {
       if (source.obsolete) continue;
       const t = cat[id];

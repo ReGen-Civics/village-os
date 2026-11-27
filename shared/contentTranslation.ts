@@ -43,7 +43,7 @@ import type { FieldSpec } from "./pageContent/types";
 import { SECTION_LIMITS } from "./roleCardSections";
 import { isVillageDocRef, VILLAGE_DOC_FIELD_CHARS, villageDocFieldOk } from "./villageDocTranslation";
 
-export const CONTENT_KINDS = ["role_card", "role_card_sections", "page_section", "village_doc"] as const;
+export const CONTENT_KINDS = ["role_card", "role_card_sections", "page_section", "village_doc", "reading_copy"] as const;
 export type ContentKind = (typeof CONTENT_KINDS)[number];
 
 /** ai_draft: a machine wrote it, readers see it marked. approved: a person with the power stands behind it. */
@@ -86,6 +86,11 @@ const HUMAN_ONLY_FIELDS: ReadonlySet<string> = new Set(["compensation_reality", 
 /**
  * Pages that are themselves binding text. No stored translation here: a binding
  * translation is adopted by the village's highest vote (6 Nov), elsewhere.
+ *
+ * A READING COPY IS NOT A TRANSLATION OF RECORD (the lead, 26 Nov 2026). Kind `reading_copy` holds a
+ * Spanish copy of a binding page for reading only, addressed like the page's own sections. The page shows it
+ * under a note, in both languages, that the English text is the binding version, and one tap shows the
+ * English. A person writes every line of it (`human_only`): a machine's wording of binding text never stands.
  */
 export const PROTECTED_PAGES: readonly string[] = ["love-letter", "rights-resident", "rights-steward", GOOD_NEIGHBOR_PAGE_ID];
 
@@ -143,12 +148,26 @@ export function translationTarget(kind: string, refKey: string, field: string): 
     return { ok: true, cap: VILLAGE_DOC_FIELD_CHARS, protection: "open" };
   }
 
+  if (kind === "reading_copy") {
+    if (!refKey.startsWith(PAGE_SECTION_PREFIX) || !PROTECTED_PAGES.includes(refKey.slice(PAGE_SECTION_PREFIX.length))) {
+      return { ok: false, reason: "A reading copy is only for a binding page." };
+    }
+    const t = pageFieldTarget(refKey, field);
+    return t.ok ? { ...t, protection: "human_only" } : t;
+  }
+
   // page_section
   if (!refKey.startsWith(PAGE_SECTION_PREFIX)) return { ok: false, reason: "Only a page's sections take a translation here." };
-  const pageId = refKey.slice(PAGE_SECTION_PREFIX.length);
-  if (PROTECTED_PAGES.includes(pageId)) {
+  if (PROTECTED_PAGES.includes(refKey.slice(PAGE_SECTION_PREFIX.length))) {
     return { ok: false, reason: "This page is binding text. Its translation is adopted by the village's vote, not stored here." };
   }
+  return pageFieldTarget(refKey, field);
+}
+
+/** A page field's limit, by its address on the page (`<section>.<field>` or `<section>.<list>.<row>.<field>`). */
+function pageFieldTarget(refKey: string, field: string): Target {
+  const parts = field.split(".");
+  const pageId = refKey.slice(PAGE_SECTION_PREFIX.length);
   const spec = pageSpecForSection(refKey);
   if (!spec) return { ok: false, reason: `There is no page called "${pageId}".` };
   const section = spec.sections.find((s) => s.id === parts[0]);
@@ -212,7 +231,9 @@ export function contentTranslationProblem(t: TranslationInput): string | null {
   if (!target.ok) return target.reason;
   if (!translatableLocales().includes(t.locale)) return `"${t.locale}" is not a language this village offers a translation into.`;
   if (!(TRANSLATION_STATUSES as readonly string[]).includes(t.status)) return `"${t.status}" is not a translation status.`;
-  if (t.status === "ai_draft" && target.protection === "human_only") return "Pay words are translated by a person, never drafted by a machine.";
+  if (t.status === "ai_draft" && target.protection === "human_only") {
+    return t.kind === "reading_copy" ? "A binding page's reading copy is written by a person, never drafted by a machine." : "Pay words are translated by a person, never drafted by a machine.";
+  }
   if (typeof t.source !== "string" || !t.source.trim()) return "There is no English here to translate.";
   if (typeof t.text !== "string") return "Write the translation.";
   const text = t.text.trim();

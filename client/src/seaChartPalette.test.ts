@@ -57,6 +57,12 @@ describe("the Sea chart's palette", () => {
     expect(contrastRatio("#ffffff", c("brand"))).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("draws the lit branch's rule on the band and the lit entry's edge on a menu's panel at 3:1 (Layout.tsx, MoreSheet.tsx)", () => {
+    expect(contrastRatio(c("accent"), c("band"))).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(c("accent"), c("panel"))).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(c("accent"), c("panel-raised"))).toBeGreaterThanOrEqual(3);
+  });
+
   it("keeps the header band's ink readable", () => {
     expect(contrastRatio(c("band-ink"), c("band"))).toBeGreaterThanOrEqual(4.5);
   });

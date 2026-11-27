@@ -16,9 +16,11 @@ import {
 } from "@shared/membershipLetter";
 import { useVillageContent } from "@/hooks/useVillageContent";
 import { useVillageName } from "@/hooks/useVillageName";
-import { usePageVars } from "@/hooks/usePageContent";
+import { usePageTranslationFields, usePageVars } from "@/hooks/usePageContent";
+import ReadingCopyNote from "@/components/ReadingCopyNote";
+import { overlayPageRaw } from "@shared/contentTranslationOverlay";
 import { LETTER_PATH_IDS, LOVE_LETTER_PAGE } from "@shared/pageContent/loveLetter";
-import { resolvePage } from "@shared/pageContent/resolve";
+import { fillPage, resolvePageRaw } from "@shared/pageContent/resolve";
 import { withPathNames } from "@shared/pageContent/pathNames";
 import { servedPathsFrom } from "@/hooks/useVillagePaths";
 import { useStoryPageShown } from "@/lib/brochure";
@@ -189,12 +191,15 @@ export default function LoveLetter() {
   // arrived, so the defaults never flash first. A path choice the village left
   // as the platform's words carries its path name (Admin, Paths & Stages); the
   // choices are no part of the letter, so its version never moves with them.
+  // A reading copy of this page's words in the reader's language, where the village accepted one: the
+  // English stays the binding text (ReadingCopyNote). The letter itself is served by the server and stays English.
+  const copy = usePageTranslationFields(LOVE_LETTER_PAGE);
   const page = useMemo(
     () =>
       pageVars && !pageLoading
-        ? withPathNames(LOVE_LETTER_PAGE, pageDoc, resolvePage(LOVE_LETTER_PAGE, pageDoc, { ...pageVars, entity: entityName }), servedPathsFrom(cfg))
+        ? withPathNames(LOVE_LETTER_PAGE, pageDoc, fillPage(overlayPageRaw(resolvePageRaw(LOVE_LETTER_PAGE, pageDoc), copy), { ...pageVars, entity: entityName }), servedPathsFrom(cfg))
         : null,
-    [pageVars, pageLoading, pageDoc, entityName, cfg],
+    [pageVars, pageLoading, pageDoc, entityName, cfg, copy],
   );
   const hero = page?.hero.fields;
   const words = page?.form;
@@ -438,6 +443,8 @@ export default function LoveLetter() {
     <Layout>
       <section className={`${WORLD} py-12 sm:py-16`}>
         <div className="container max-w-3xl mx-auto">
+          {/* A reading copy in the reader's language says so, and that the English is binding. */}
+          <ReadingCopyNote spec={LOVE_LETTER_PAGE} />
 
           {/* Header */}
           <m.div

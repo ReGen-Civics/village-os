@@ -130,3 +130,31 @@ describe("the More sheet", () => {
     expect(container.querySelector("[data-more-sheet]")).toBeNull();
   });
 });
+
+describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", () => {
+  it("opens with that group expanded, the group and the entry marked", async () => {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    const { hook } = memoryLocation({ path: "/events/7" });
+    render(
+      <Router hook={hook}>
+        <MoreSheet entries={[COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} lit={{ group: "Community", href: "/events", exact: false, item: EVENTS }} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    const button = screen.getByRole("button", { name: "Community" });
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(button.getAttribute("aria-current")).toBe("true");
+    const link = screen.getByRole("link", { name: /Events/ });
+    expect(link.getAttribute("aria-current")).toBe("true");
+    expect(link.className).toContain("border-notice");
+  });
+
+  it("opens with every group closed and nothing marked on a page in no entry", async () => {
+    await draw();
+    const button = screen.getByRole("button", { name: "Community" });
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(document.querySelector("[aria-current]")).toBeNull();
+  });
+});

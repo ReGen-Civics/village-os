@@ -285,12 +285,15 @@ export function SharedRoleProposal() {
   const [shared, setShared] = useState<SharedOut | null>(null);
   const [error, setError] = useState<{ status: number; text: string } | null>(null);
   const signedIn = !!user;
+  // The card is said in the reader's language on the server, so a change of language reads it again.
+  const { i18n } = useLingui();
+  const locale = i18n.locale;
   useEffect(() => {
     if (gate || loading) return;
     let alive = true;
     setShared(null);
     setError(null);
-    void fetchShared(token).then((r) => {
+    void fetchShared(token, locale).then((r) => {
       if (!alive) return;
       if (r.ok) setShared(r.data);
       else setError({ status: r.status, text: r.error });
@@ -298,7 +301,7 @@ export function SharedRoleProposal() {
     return () => {
       alive = false;
     };
-  }, [token, gate, loading, signedIn]);
+  }, [token, gate, loading, signedIn, locale]);
   if (gate) return <>{gate}</>;
   if (error?.status === 401) return <Notice heading={RW.sharedSignIn} next={signedIn ? undefined : `/role-proposals/shared/${encodeURIComponent(token)}`} />;
   if (error) return <Notice heading={error.status === 404 ? RW.linkOff : error.text} />;

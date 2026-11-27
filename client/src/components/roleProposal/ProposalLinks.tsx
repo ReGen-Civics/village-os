@@ -11,11 +11,11 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { authToken } from "@/lib/gameApi";
 import { fetchMine, type ProposalOut } from "./proposalApi";
-import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
+import { consentHeadings } from "./consentWords";
 import { proposalWords, useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
 const stateOf = (p: ProposalOut): string =>
-  p.status === "draft" ? proposalWords().draftWords : p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : "";
+  p.status === "draft" ? proposalWords().draftWords : p.decided ? consentHeadings().adopted : p.consent ? consentHeadings().states[p.consent.state] : "";
 
 export default function ProposalLinks() {
   const RW = useProposalWords();

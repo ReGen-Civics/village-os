@@ -1,0 +1,11 @@
+-- 0436: each change in an org draft remembers what its role or circle held when the change was added
+-- (the draft page, PR C; the lead, 26 Nov 2026: a clear before and after). Two weeks can pass between
+-- writing a draft and publishing it, and the card can be edited in between. With this the draft page shows
+-- three versions: what the draft was written against, the card as it stands now, and the draft, so a publish
+-- never writes over newer words without the person seeing them first.
+--
+-- It is a picture for a reader and nothing else. `before_json` stays the revert data, captured at publish.
+--
+-- Expand only: one nullable column, no default. The previous release names its own columns on every INSERT
+-- and never reads this one, and a change added by it simply has no base, which the page says in words.
+ALTER TABLE `org_draft_changes` ADD COLUMN `base_json` json NULL;

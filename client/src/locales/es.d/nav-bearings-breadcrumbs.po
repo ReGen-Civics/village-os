@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the breadcrumb's name, read aloud by a screen reader, 2026-11-26
+#: client/src/components/nav/Breadcrumbs.tsx
+msgctxt "the trail at the top of a page: where it sits in the menu, read aloud"
+msgid "Breadcrumb"
+msgstr "Ruta de navegación"

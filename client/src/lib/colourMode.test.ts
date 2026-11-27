@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_MODE, FOLLOW_DEVICE, MODES_LIVE, MODE_KEY, applyMode, resolveMode } from "./colourMode";
+import { DEFAULT_MODE, FOLLOW_DEVICE, MODES_LIVE, MODE_KEY, VILLAGE_MODE_ATTR, applyMode, resolveMode } from "./colourMode";
 
 const shell = readFileSync(path.resolve(__dirname, "../../index.html"), "utf8");
 /** The shell parsed as a document, so the script is found as an element and never by matching HTML text. */
@@ -27,6 +27,7 @@ function runShellScript(live: boolean, device: boolean) {
 beforeEach(() => {
   localStorage.clear();
   document.documentElement.removeAttribute("data-mode");
+  document.documentElement.removeAttribute(VILLAGE_MODE_ATTR);
   document.documentElement.removeAttribute("style");
   prefers(null);
 });
@@ -40,10 +41,10 @@ describe("resolveMode", () => {
     expect(resolveMode(false)).toBe("dark");
   });
 
-  it("opens in dark whatever the device says, while FOLLOW_DEVICE is off", () => {
+  it("opens in light whatever the device says, while FOLLOW_DEVICE is off", () => {
     expect(FOLLOW_DEVICE).toBe(false);
-    prefers("light");
-    expect(resolveMode(true)).toBe("dark");
+    prefers("dark");
+    expect(resolveMode(true)).toBe("light");
   });
 
   it("follows the device when nobody has chosen, once FOLLOW_DEVICE is on", () => {
@@ -51,9 +52,22 @@ describe("resolveMode", () => {
     expect(resolveMode(true, true)).toBe("dark");
   });
 
-  it("falls back to dark when the device says nothing (the lead, 26 Nov 2026)", () => {
-    expect(DEFAULT_MODE).toBe("dark");
+  it("falls back to light, the platform default, when the device and the village say nothing (the lead, 26 Nov 2026)", () => {
+    expect(DEFAULT_MODE).toBe("light");
+    expect(resolveMode(true)).toBe("light");
+  });
+
+  it("opens in the village's own default, under the visitor's own choice", () => {
+    document.documentElement.setAttribute(VILLAGE_MODE_ATTR, "dark");
+    prefers("light");
     expect(resolveMode(true)).toBe("dark");
+    localStorage.setItem(MODE_KEY, "light");
+    expect(resolveMode(true)).toBe("light");
+  });
+
+  it("ignores a village default that is not a mode", () => {
+    document.documentElement.setAttribute(VILLAGE_MODE_ATTR, "sepia");
+    expect(resolveMode(true)).toBe(DEFAULT_MODE);
   });
 
   it("sets nothing before modes are live, so the site looks as it did", () => {
@@ -93,11 +107,12 @@ describe("the first-paint script in client/index.html agrees with colourMode.ts"
     expect(firstPaint).toContain(`fallback = "${DEFAULT_MODE}"`);
   });
 
-  const cases: { stored: string | null; device: "dark" | "light" | null; live: boolean; follow: boolean }[] = [];
-  for (const stored of [null, "light", "dark", "sepia"]) for (const device of [null, "light", "dark"] as const) for (const live of [true, false]) for (const follow of [true, false]) cases.push({ stored, device, live, follow });
+  const cases: { stored: string | null; device: "dark" | "light" | null; village: string | null; live: boolean; follow: boolean }[] = [];
+  for (const stored of [null, "light", "dark", "sepia"]) for (const device of [null, "light", "dark"] as const) for (const village of [null, "light", "dark", "sepia"]) for (const live of [true, false]) for (const follow of [true, false]) cases.push({ stored, device, village, live, follow });
 
-  it.each(cases)("stored $stored, device $device, live $live, follow $follow", ({ stored, device, live, follow }) => {
+  it.each(cases)("stored $stored, device $device, village $village, live $live, follow $follow", ({ stored, device, village, live, follow }) => {
     if (stored) localStorage.setItem(MODE_KEY, stored);
+    if (village) document.documentElement.setAttribute(VILLAGE_MODE_ATTR, village);
     prefers(device);
     const want = resolveMode(live, follow);
     runShellScript(live, follow);

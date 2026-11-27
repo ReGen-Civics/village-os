@@ -40,6 +40,46 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.86 (2026-11-26)
+
+### What changed for your village
+
+- **Pay stays with those who may read terms.** The proposed-changes list showed a role's pay to anyone who could open it. It now shows pay only to people with the right to read terms; everyone else sees that pay changes, with no figure, and nothing they save can erase it.
+- **A fix to the platform's own checks:** the step that tidies generated files after each release no longer stops on a missing test database.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.85 still works.
+
+---
+
+## 1.3.85 (2026-11-26)
+
+### What changed for your village
+
+- **The menu shows where you are.** The section a page belongs to lights up in the menu bar and on the phone, and deeper pages carry a short trail back.
+- **Faces on Roles.** A founding role shows its holder's portrait when that person has chosen to show it on their profile, and the initial otherwise.
+- **Each village chooses its first-visit look.** A new setting picks light or dark for someone arriving for the first time; the platform default is light.
+- **Reading copies of binding pages.** The Love Letter's sections, both rights pages and Good Neighbor can carry a Spanish reading copy, clearly marked: the English text stays the binding version.
+- **"Join the Core Team"** on the team path's cards.
+- **More Spanish:** the player card's role health, open proposals and signs, the role words' headings, role-proposal reads, circle consent, consent round answers and application stages, the digest's batched line, and the voting day on the decide doors.
+- **Drafts remember what they changed.** A role or circle change now records the card as it stood when the change was drafted, ready for a page that shows each draft's before and after.
+- **Steadier checks.** Fixes to how the platform checks its own changes, so a release cannot leave the main line broken, and a reservation test that miscounted emails now counts only its own.
+
+### What you must do
+
+Nothing. A village that wants dark for first visits sets it under the look settings.
+
+### Does it touch your data
+
+One new optional column, `org_draft_changes.base_json`, added on the way up (migration 0436). Nothing is removed or changed, so going back to 1.3.84 still works.
+
+---
+
 ## 1.3.84 (2026-11-26)
 
 ### What changed for your village

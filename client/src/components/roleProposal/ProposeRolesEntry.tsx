@@ -18,12 +18,12 @@ import { authToken } from "@/lib/gameApi";
 import { draftFill } from "@shared/roleProposalProgress";
 import { BTN_GOLD, KICKER, PANEL } from "@/components/profileDash/dashUi";
 import { fetchMine, type MineOut, type ProposalOut } from "./proposalApi";
-import { ADOPTED_HEADING, STATE_HEADINGS } from "./proposalWords";
+import { consentHeadings } from "./consentWords";
 import DownloadCardText from "./DownloadCardText";
 import { MY_CARD_TEXT_URL } from "./roleCardApi";
 import { proposalWords, useProposalWords } from "@/components/roleProposal/proposalWordsMirror";
 
-const standingLine = (p: ProposalOut): string => (p.decided ? ADOPTED_HEADING : p.consent ? STATE_HEADINGS[p.consent.state] : proposalWords().submitted);
+const standingLine = (p: ProposalOut): string => (p.decided ? consentHeadings().adopted : p.consent ? consentHeadings().states[p.consent.state] : proposalWords().submitted);
 
 export default function ProposeRolesEntry() {
   const RW = useProposalWords();
