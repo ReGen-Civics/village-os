@@ -1,7 +1,8 @@
 /**
  * The pricing desk inside the admin panel (quest re-price Q3), beside the
- * other books a treasurer keeps. The same desk a Treasurer opens at /pricing;
- * the server holds both to the pay-setting power.
+ * other books a treasurer keeps. The same desk a Treasurer opens under
+ * Governance, Treasury (/governance/treasury#prices, 27 Nov 2026); the server
+ * holds both to the pay-setting power.
  */
 import { lazy, Suspense } from "react";
 import { Trans } from "@lingui/react/macro";
@@ -23,7 +24,7 @@ export default function PricingDeskTab({ password }: { password: string }) {
   return (
     <Suspense fallback={<p className="text-sm text-muted-foreground"><Trans context="pricing desk">Opening the pricing desk…</Trans></p>}>
       <PricingDesk call={call} />
-      <p className="mt-4 text-sm"><a className="underline font-semibold text-emerald-800" href="/pricing"><Trans context="pricing desk">Open the desk as its own page, for a Treasurer who is not an admin</Trans></a></p>
+      <p className="mt-4 text-sm"><a className="underline font-semibold text-emerald-800" href="/governance/treasury#prices"><Trans context="pricing desk">A Treasurer who is not an admin opens this desk under Governance, Treasury</Trans></a></p>
     </Suspense>
   );
 }

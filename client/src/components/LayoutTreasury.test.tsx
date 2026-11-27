@@ -64,7 +64,8 @@ describe("Treasury in the account menu", () => {
     env.doors = { mint: true, cashPay: false, pay: false };
     await openAccountMenu();
     const link = await screen.findByRole("link", { name: "Treasury desk" });
-    expect(link.getAttribute("href")).toBe("/treasury");
+    // The desk board of the one Treasury under Govern (the treasury fold, 27 Nov 2026).
+    expect(link.getAttribute("href")).toBe("/governance/treasury#desks");
     expect(screen.queryByRole("link", { name: "Village Settings" })).toBeNull();
   });
 
