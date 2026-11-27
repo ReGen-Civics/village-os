@@ -240,7 +240,14 @@ export function register(app: Express, deps: SearchDeps): void {
 
   app.post("/api/search/guide", async (req, res) => {
     // Before the limits and before any place is read: behind the entrance, a stranger gets nothing of the village.
-    if (!(await deps.entrancePasses(req))) {
+    // A check that cannot read its own record fails closed with 503, as the gate does.
+    let passes = false;
+    try {
+      passes = await deps.entrancePasses(req);
+    } catch {
+      return res.status(503).json({ error: "unavailable", message: "This page is not available right now. Try again in a moment." });
+    }
+    if (!passes) {
       return res.status(401).json({ error: "entrance_required", message: "Enter the portal first: a name and an email address are all it asks." });
     }
     const { viewer, reader } = await readerOf(deps, req);
@@ -272,6 +279,8 @@ export function register(app: Express, deps: SearchDeps): void {
     if (!call.ok) {
       // A day slice spent (the account's share, an address's, or the strangers' pool) is the day, never the hour.
       if (call.status === 429) return res.status(429).json(call.error === SHARE_SPENT ? DAY_SPENT : HOUR_SPENT);
+      // The mode's whole day spent, for the village: the same "rested for today", never "can't answer right now".
+      if (call.reason === "day") return res.status(429).json(DAY_SPENT);
       return res.json(unavailable);
     }
     const kept = destinations.map((d) => allowed.find((e) => e.path === d.path)!).filter(Boolean);

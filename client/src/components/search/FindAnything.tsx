@@ -17,7 +17,8 @@
  */
 import { lazy, Suspense, useEffect, useRef, useSyncExternalStore } from "react";
 import { Search } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { LeafCompass } from "@/components/sacred/livingCore";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { FIND_ANYTHING_EVENT, setFindAnythingReady } from "./findAnythingDoor";
 
 const loadDialog = () => import("./FindAnythingDialog");
@@ -78,8 +79,12 @@ function onKey(e: KeyboardEvent): void {
   openFind(null);
 }
 
-/** The search icon. `className` replaces the default look, which takes the ink of whatever bar it sits in. */
-export function FindAnything({ className }: { className?: string }) {
+/**
+ * The door to the search. `variant="icon"` (the default) is the header's icon; `variant="row"` is a full row with
+ * the guide's compass and words, for the first row of the phone's More sheet. `className` replaces the default look
+ * of either: the icon takes the ink of whatever bar it sits in, the row draws in the sheet's tokens.
+ */
+export function FindAnything({ className, variant = "icon" }: { className?: string; variant?: "icon" | "row" }) {
   const { t } = useLingui();
   const s = useSyncExternalStore(subscribe, snapshot, snapshot);
   const id = useRef(0);
@@ -122,12 +127,28 @@ export function FindAnything({ className }: { className?: string }) {
         aria-haspopup="dialog"
         aria-expanded={s.open}
         aria-keyshortcuts="Control+K Meta+K"
-        aria-label={t({ message: "Find anything", context: "site header: opens the site search" })}
-        title={t({ message: "Find anything (Ctrl K)", context: "site header: the site search button's tooltip" })}
-        data-find-anything=""
-        className={className ?? "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-current hover:opacity-80 focus-visible:outline-2 focus-visible:outline-current"}
+        // The row says its own name in words; the icon needs one spoken.
+        aria-label={variant === "row" ? undefined : t({ message: "Find anything", context: "site header: opens the site search" })}
+        title={variant === "row" ? undefined : t({ message: "Find anything (Ctrl K)", context: "site header: the site search button's tooltip" })}
+        data-find-anything={variant}
+        className={
+          className ??
+          (variant === "row"
+            ? "flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2 text-left font-medium text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+            : "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-current hover:opacity-80 focus-visible:outline-2 focus-visible:outline-current")
+        }
       >
-        <Search aria-hidden="true" className="size-5" />
+        {variant === "row" ? (
+          <>
+            <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-notice text-notice">
+              <LeafCompass className="size-4" />
+            </span>
+            <span className="min-w-0 flex-1"><Trans context="the phone's More sheet: the search's row">Find a page, a role, a quest</Trans></span>
+            <Search aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
+          </>
+        ) : (
+          <Search aria-hidden="true" className="size-5" />
+        )}
       </button>
       {s.open && s.owner === id.current && (
         <Suspense fallback={null}>

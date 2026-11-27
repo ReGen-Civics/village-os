@@ -97,9 +97,21 @@ msgstr "{resultCount, plural, one {# resultado} other {# resultados}}"
 
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx
-msgctxt "find anything: nothing matches, the door to the guide"
-msgid "Nothing here matches. Ask {guideName}, or open the menu."
-msgstr "Nada coincide aquí. Pregunte a {guideName}, o abra el menú."
+msgctxt "find anything: nothing matches, the guide's row"
+msgid "Nothing here matches. Ask {guideName} where to find it."
+msgstr "Nada coincide aquí. Pregunte a {guideName} dónde encontrarlo."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: nothing matches, the menu's door"
+msgid "Open the menu"
+msgstr "Abrir el menú"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnything.tsx
+msgctxt "the phone's More sheet: the search's row"
+msgid "Find a page, a role, a quest"
+msgstr "Busque una página, un rol, una misión"
 
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx
@@ -152,8 +164,8 @@ msgstr "Solo las palabras que escribió llegan a {guideName}."
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx
 msgctxt "find anything: no results"
-msgid "Nothing here matches “{q}”. Try another word, or open the menu for every page."
-msgstr "Nada coincide con “{q}”. Pruebe otra palabra, o abra el menú para ver todas las páginas."
+msgid "Nothing here matches “{q}”. Try another word."
+msgstr "Nada coincide con “{q}”. Pruebe otra palabra."
 
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx

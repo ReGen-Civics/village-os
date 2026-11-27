@@ -23,6 +23,7 @@ import { plural } from "@lingui/core/macro";
 import { ArrowRight, Search, X } from "lucide-react";
 import { LeafCompass } from "@/components/sacred/livingCore";
 import { useGuideName } from "@/hooks/useGuideName";
+import { openVillageMenu, useVillageMenuReady } from "./findAnythingDoor";
 import { authToken } from "@/lib/gameApi";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { EYEBROW, HINT } from "@/components/journey/look";
@@ -99,6 +100,8 @@ function lookFor(admin: boolean) {
       : "inline-flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-notice text-notice",
     // The guide's picks lie on a warm tile under the gold heading (look.ts TILE, edged in gold).
     picks: admin ? "rounded-xl border border-border bg-muted p-1" : "rounded-xl border border-notice/50 bg-muted p-1",
+    // A second act, edged (look.ts BTN_SECONDARY), full width so it reads as the other way out.
+    door: "jw-btn inline-flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted",
   };
 }
 
@@ -124,6 +127,22 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
   const entries = index && index !== "failed" ? index.entries : [];
   // The guide's name the way every surface reads it (hooks/useGuideName.ts), worded for this reader.
   const guideName = useGuideName().name;
+  // "Open the menu" only while the shell listens for it (findAnythingDoor.ts): never a door that does not open.
+  const menuReady = useVillageMenuReady();
+
+  // ESCAPE CLOSES THIS AND NOTHING UNDER IT. The phone's More sheet closes on Escape from a window listener, and the
+  // search opens over it, so Escape is taken here first, at the window's capture, and goes no further: the dialog
+  // closes and the reader is back on the sheet they came from.
+  useEffect(() => {
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.isComposing) return;
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    };
+    window.addEventListener("keydown", onEscape, true);
+    return () => window.removeEventListener("keydown", onEscape, true);
+  }, [onClose]);
   const guideOn = !!(index && index !== "failed" && index.guide.available);
   const people = !!(index && index !== "failed" && index.people);
   const Guide = guideNameAtSentenceStart(guideName);
@@ -231,7 +250,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
   return (
     <DialogPrimitive.Root open onOpenChange={(open) => !open && onClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/50" /* design-ok: the scrim behind a modal, as the More and Paths sheets draw theirs */ />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-black/50" /* design-ok: the scrim behind a modal, as the More and Paths sheets draw theirs */ />
         <DialogPrimitive.Content
           data-slot="dialog-content"
           // The opener takes the focus back (FindAnything.tsx), so Radix's own return is not wanted.
@@ -240,7 +259,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
             e.preventDefault();
             input.current?.focus();
           }}
-          className={`fixed inset-x-0 top-0 z-[60] flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-none sm:inset-x-auto sm:left-1/2 sm:top-[10vh] sm:max-h-[75vh] sm:w-[40rem] sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:rounded-2xl ${look.panel}`}
+          className={`fixed inset-x-0 top-0 z-[80] flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-none sm:inset-x-auto sm:left-1/2 sm:top-[10vh] sm:max-h-[75vh] sm:w-[40rem] sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:rounded-2xl ${look.panel}`}
         >
           <DialogPrimitive.Title className="sr-only"><Trans context="find anything: the dialog's name">Find anything</Trans></DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
@@ -317,7 +336,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
                     <span aria-hidden="true" className={look.ring}><LeafCompass className="size-4" /></span>
                     <span className={`min-w-0 flex-1 font-medium ${look.title}`}>
                       {ranked.length === 0
-                        ? <Trans context="find anything: nothing matches, the door to the guide">Nothing here matches. Ask {guideName}, or open the menu.</Trans>
+                        ? <Trans context="find anything: nothing matches, the guide's row">Nothing here matches. Ask {guideName} where to find it.</Trans>
                         : <Trans context="find anything: ask the guide, the row's words">Ask {guideName} where to find it</Trans>}
                     </span>
                     <ArrowRight aria-hidden="true" className={`size-4 shrink-0 ${look.icon}`} />
@@ -332,8 +351,24 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
 
             {q && index !== null && index !== "failed" && ranked.length === 0 && !answeredHere?.picks.length && !askable && (
               <p className={`px-3 py-2 ${look.hint}`}>
-                <Trans context="find anything: no results">Nothing here matches “{q}”. Try another word, or open the menu for every page.</Trans>
+                <Trans context="find anything: no results">Nothing here matches “{q}”. Try another word.</Trans>
               </p>
+            )}
+            {/* The second door when nothing matches: the whole menu, opened by the shell over the page. */}
+            {q && index !== null && ranked.length === 0 && menuReady && (
+              <div className="px-1 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openVillageMenu();
+                  }}
+                  className={look.door}
+                >
+                  <Trans context="find anything: nothing matches, the menu's door">Open the menu</Trans>
+                  <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
+                </button>
+              </div>
             )}
             <div aria-live="polite" className="px-3">
               {guide.phase === "asking" && (

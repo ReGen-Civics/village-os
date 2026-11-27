@@ -9,7 +9,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import userEvent from "@testing-library/user-event";
 import { FindAnything, isFindShortcut } from "./FindAnything";
 import { forgetFindIndex } from "./FindAnythingDialog";
-import { FIND_ANYTHING_READY_EVENT, openFindAnything, useFindAnythingReady } from "./findAnythingDoor";
+import { FIND_ANYTHING_READY_EVENT, MENU_OPEN_EVENT, openFindAnything, setVillageMenuReady, useFindAnythingReady } from "./findAnythingDoor";
 import type { FindIndex } from "@shared/findAnything";
 
 let index: FindIndex;
@@ -119,8 +119,8 @@ describe("Find anything", () => {
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
     const d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
-    // Nothing matches, so the guide's row is the door: "Nothing here matches. Ask Sol, or open the menu."
-    const ask = await within(d).findByRole("option", { name: "Nothing here matches. Ask Sol, or open the menu." });
+    // Nothing matches, so the guide's row is the first door.
+    const ask = await within(d).findByRole("option", { name: "Nothing here matches. Ask Sol where to find it." });
     expect(within(d).getByText("Only the words you typed go to Sol.")).toBeTruthy();
     await userEvent.click(ask);
     const group = await within(d).findByRole("group", { name: "Sol suggests" });
@@ -136,7 +136,9 @@ describe("Find anything", () => {
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
     const d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
-    await waitFor(() => expect(within(d).getByText(/Try another word, or open the menu for every page/)).toBeTruthy());
+    await waitFor(() => expect(within(d).getByText("Nothing here matches “plantas”. Try another word.")).toBeTruthy());
+    // No shell listens for the menu here, so no button promises one.
+    expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
     expect(within(d).queryByRole("option", { name: /Ask Sol/ })).toBeNull();
     expect(calls.some((c) => c.method === "POST")).toBe(false);
     expect(within(d).queryByRole("alert")).toBeNull();
@@ -202,5 +204,66 @@ describe("Find anything", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(heard).toEqual([true, false]);
     window.removeEventListener(FIND_ANYTHING_READY_EVENT, listen);
+  });
+
+  it("opens above the phone's More sheet, and Escape closes it alone: a window listener standing in for the sheet never hears it", async () => {
+    let sheetHeard = 0;
+    const sheet = (e: KeyboardEvent) => {
+      if (e.key === "Escape") sheetHeard += 1;
+    };
+    window.addEventListener("keydown", sheet);
+    render(<FindAnything />);
+    const button = screen.getByRole("button", { name: "Find anything" });
+    await userEvent.click(button);
+    const d = await dialog();
+    // Above the sheet's z-[65] scrim and z-[70] panel.
+    expect(d.className).toContain("z-[80]");
+    await waitFor(() => expect(within(d).getByRole("combobox")).toHaveFocus());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(sheetHeard).toBe(0);
+    await waitFor(() => expect(button).toHaveFocus());
+    // With the dialog gone, Escape reaches the sheet again.
+    await userEvent.keyboard("{Escape}");
+    expect(sheetHeard).toBe(1);
+    window.removeEventListener("keydown", sheet);
+  });
+
+  it("draws a full row with words for the More sheet, 44px or more, and the icon alone for the header", async () => {
+    render(
+      <>
+        <FindAnything variant="row" />
+        <FindAnything />
+      </>,
+    );
+    const row = screen.getByRole("button", { name: "Find a page, a role, a quest" });
+    expect(row.className).toContain("min-h-12");
+    expect(row.getAttribute("data-find-anything")).toBe("row");
+    expect(screen.getByRole("button", { name: "Find anything" }).getAttribute("data-find-anything")).toBe("icon");
+    await userEvent.click(row);
+    expect(await dialog()).toBeTruthy();
+  });
+
+  it("offers 'Open the menu' when nothing matches, only while the shell listens, and asks the shell to open it", async () => {
+    let opened = 0;
+    const shell = () => void (opened += 1);
+    window.addEventListener(MENU_OPEN_EVENT, shell);
+    render(<FindAnything />);
+    await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
+    let d = await dialog();
+    await userEvent.type(within(d).getByRole("combobox"), "plantas");
+    await within(d).findByRole("option", { name: /Ask Sol/ });
+    expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
+    act(() => setVillageMenuReady(true));
+    await userEvent.click(await within(d).findByRole("button", { name: "Open the menu" }));
+    expect(opened).toBe(1);
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    act(() => setVillageMenuReady(false));
+    await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
+    d = await dialog();
+    await userEvent.type(within(d).getByRole("combobox"), "plantas");
+    await within(d).findByRole("option", { name: /Ask Sol/ });
+    expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
+    window.removeEventListener(MENU_OPEN_EVENT, shell);
   });
 });

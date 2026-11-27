@@ -50,3 +50,49 @@ function subscribe(onChange: () => void): () => void {
 export function useFindAnythingReady(): boolean {
   return useSyncExternalStore(subscribe, findAnythingReady, () => false);
 }
+
+// ── The menu, opened from the search (the same pattern, the other way round) ─────────────────────────────────
+//
+// When nothing matches, the search offers the menu. The menu belongs to the shell (the nav lane's Layout and
+// MoreSheet), so the search only asks: it dispatches MENU_OPEN_EVENT, and draws its "Open the menu" button only
+// while the shell has said, with `setVillageMenuReady(true)`, that it is listening. A shell that never says so
+// gets no button, so the search never promises a door that does not open.
+
+/** Dispatched on `window` to open the site's menu. */
+export const MENU_OPEN_EVENT = "village:open-menu";
+/** Dispatched on `window` whenever the menu's listener comes or goes; `detail` is the new state. */
+export const MENU_READY_EVENT = "village:open-menu-ready";
+
+declare global {
+  interface Window {
+    __villageMenuReady?: boolean;
+  }
+}
+
+/** Ask the shell to open its menu. */
+export function openVillageMenu(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(MENU_OPEN_EVENT));
+}
+
+/** For the shell: say the menu is listening for MENU_OPEN_EVENT (true on mount), or no longer (false on unmount). */
+export function setVillageMenuReady(ready: boolean): void {
+  if (typeof window === "undefined") return;
+  if (ready) window.__villageMenuReady = true;
+  else delete window.__villageMenuReady;
+  window.dispatchEvent(new CustomEvent(MENU_READY_EVENT, { detail: ready }));
+}
+
+function villageMenuReady(): boolean {
+  return typeof window !== "undefined" && window.__villageMenuReady === true;
+}
+
+function subscribeMenu(onChange: () => void): () => void {
+  window.addEventListener(MENU_READY_EVENT, onChange);
+  return () => window.removeEventListener(MENU_READY_EVENT, onChange);
+}
+
+/** True while the shell listens for MENU_OPEN_EVENT; the search's "Open the menu" shows only then. */
+export function useVillageMenuReady(): boolean {
+  return useSyncExternalStore(subscribeMenu, villageMenuReady, () => false);
+}

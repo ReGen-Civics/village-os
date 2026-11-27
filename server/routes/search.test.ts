@@ -16,7 +16,7 @@ type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
 const MODULES: Record<string, string> = { map: "public", forum: "public", library: "members", messaging: "members", "hidden-map": "members", governance: "members", journal: "members", stays: "off" };
 
-function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; story?: boolean; entrance?: boolean } = {}) {
+function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; story?: boolean; entrance?: boolean; entranceBroken?: boolean } = {}) {
   const handlers = new Map<string, Handler>();
   const app = {
     get: (p: string, h: Handler) => handlers.set(`GET ${p}`, h),
@@ -25,7 +25,14 @@ function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; st
   const usage: Array<{ mode: string; userId: string | null }> = [];
   const deps: SearchDeps = {
     // The entrance gate's own check (server/lib/entrance.ts), with the dial as the test sets it and no entry cookie.
-    entrancePasses: entrancePasses({ boolVar: (k: string) => k === "entrance.required" && !!opts.entrance, authedUser: async () => viewer }, async () => false),
+    entrancePasses: entrancePasses(
+      { boolVar: (k: string) => k === "entrance.required" && !!(opts.entrance || opts.entranceBroken), authedUser: async () => viewer },
+      // A broken entry record: the database read behind the cookie throws.
+      async () => {
+        if (opts.entranceBroken) throw new Error("db down");
+        return false;
+      },
+    ),
     authedUser: async () => viewer,
     isAdmin: async () => !!opts.admin,
     mayStillSee: async (_req: any, cap: string) => (opts.holds ?? []).includes(cap),
@@ -63,11 +70,12 @@ const newcomer = { id: "u-new", role: "member", membershipGranted: false, stageG
 let reply = '{"picks":[]}';
 const sent: any[] = [];
 let daySpent = false;
+let modeDaySpent = false;
 function wire(key: string) {
   wireAssistant({
     villageKey: () => key,
     // A spent day slice: every `assistant-day:find:slice:` bucket reads over.
-    rateLimited: async (bucket: string) => daySpent && bucket.includes(":slice:"),
+    rateLimited: async (bucket: string) => (daySpent && bucket.includes(":slice:")) || (modeDaySpent && /^assistant-day:find:\d/.test(bucket)),
     fetchImpl: (async (_u: string, init: any) => {
       sent.push(JSON.parse(init.body));
       return { ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: reply }], stop_reason: "end_turn" }), text: async () => "" };
@@ -77,6 +85,7 @@ function wire(key: string) {
 beforeEach(() => {
   sent.length = 0;
   daySpent = false;
+  modeDaySpent = false;
   reply = '{"picks":[]}';
   delete process.env.PLATFORM_ASSISTANT_KEY;
   wire("village-key");
@@ -153,6 +162,23 @@ describe("POST /api/search/guide", () => {
     expect(s.usage).toEqual([]);
     // A member passes the same entrance.
     expect((await setup(member, { entrance: true }).ask("compost")).status).toBe(200);
+  });
+
+  it("answers 503 when the entrance cannot read its own record, and calls no provider", async () => {
+    const out = await setup(null, { entranceBroken: true }).ask("compost");
+    expect(out.status).toBe(503);
+    expect(out.body.error).toBe("unavailable");
+    expect(sent).toEqual([]);
+  });
+
+  it("says the guide has rested for today when the village's whole day for the guide is spent", async () => {
+    modeDaySpent = true;
+    for (const who of [null, member]) {
+      const out = await setup(who).ask("garden");
+      expect(out.status).toBe(429);
+      expect(out.body).toEqual({ error: "The guide has rested for today. The search still works on its own.", limit: "day" });
+    }
+    expect(sent).toEqual([]);
   });
 
   it("tells a spent day from a spent hour", async () => {

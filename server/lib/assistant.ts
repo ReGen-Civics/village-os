@@ -571,7 +571,18 @@ export type AssistantResult =
       /** Reader keys actually called, in order, for the transparency line. */
       toolsUsed: string[];
     }
-  | { ok: false; status: number; error: string; spent?: AssistantSpend };
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      spent?: AssistantSpend;
+      /**
+       * Set when the refusal is the mode's whole day spent, so a caller can say "today" where it would otherwise
+       * say "not now" (Find anything, server/routes/search.ts). Additive: the status and the error are unchanged.
+       * Set on the village and platform keys' road; the Sera road keeps its answer as it was.
+       */
+      reason?: "day";
+    };
 
 /**
  * The endpoint and the reply shape live in `assistantProviders.ts` now (round
@@ -715,7 +726,7 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
         // Serving what we have would hand a caller their own fallback sentence
         // at HTTP 200 with nothing in the log.
         if (i > 0) console.warn(`[assistant:${req.mode}] day budget ran out mid-loop after ${iterations} call(s)`);
-        return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
+        return { ok: false, status: 503, error: "assistant-unavailable", reason: "day", ...spent() };
       }
       // A borrowed key spends someone else's allowance, so it carries a second,
       // smaller ceiling on top of the mode's own.
