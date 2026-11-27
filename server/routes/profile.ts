@@ -9,6 +9,8 @@
  *   PUT  /api/profile/booking-link     save it (https only), or clear it with ""
  *   GET  /api/profile/speed-cards      their own six quick cards on the phone's More sheet, or null
  *   PUT  /api/profile/speed-cards      save them (shared/speedCards.ts), or clear them with null
+ *   GET  /api/profile/how-we-work-read when they ticked "I've read this" under How we work together, or null
+ *   PUT  /api/profile/how-we-work-read tick it ({ read: true }) or clear it ({ read: false }) (shared/howWeWorkRead.ts)
  *
  * Lifted out of server/index.ts with the handlers unchanged apart from the
  * path validation named below. `HANDLE_RE` came with them: server/index.ts
@@ -49,6 +51,7 @@ import type { Express } from "express";
 import { claimPaths } from "../../shared/gameConfig";
 import { MEMBER_BOOKING_PREF, memberBookingUrl, parseMemberBookingInput } from "../../shared/interviewBooking";
 import { SPEED_CARDS_PREF, parseSpeedCardSlots, readSpeedCards } from "../../shared/speedCards";
+import { HOW_WE_WORK_READ_PREF, parseReadInput, readHowWeWorkRead } from "../../shared/howWeWorkRead";
 import type { AppDeps } from "../lib/appDeps";
 import { isTombstone } from "../lib/oauthAccounts";
 import { subscriptionsState } from "../lib/exit";
@@ -253,5 +256,35 @@ export function register(app: Express, deps: Deps): void {
     if (gone) return res.status(401).json({ error: "auth_required" });
     if (!updated) return res.status(404).json({ error: "User not found" });
     res.json({ slots: readSpeedCards(updated.prefs) });
+  });
+
+  /**
+   * "I'VE READ THIS" UNDER HOW WE WORK TOGETHER (shared/howWeWorkRead.ts; the lead, 27 Nov 2026). The moment a member
+   * ticked it, kept in their own prefs so the first chapter folds for them on every device and their profile lists
+   * it as read. The server stamps the moment; the member only says yes or no. Answers only for the signed-in member,
+   * writes only their own row, and keeps every other pref they hold.
+   */
+  app.get("/api/profile/how-we-work-read", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    res.set("Cache-Control", "no-store").json({ readAt: readHowWeWorkRead(authed.prefs) });
+  });
+
+  app.put("/api/profile/how-we-work-read", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    const parsed = parseReadInput(req.body?.read);
+    if (!parsed.ok) return res.status(400).json({ error: parsed.problem });
+    let gone = false;
+    const updated = await members.update(authed.id, (u: any) => {
+      if ((gone = sessionGone(u, authed))) return;
+      const prefs = { ...(u.prefs ?? {}) };
+      if (parsed.read) prefs[HOW_WE_WORK_READ_PREF] = new Date().toISOString();
+      else delete prefs[HOW_WE_WORK_READ_PREF];
+      u.prefs = prefs;
+    });
+    if (gone) return res.status(401).json({ error: "auth_required" });
+    if (!updated) return res.status(404).json({ error: "User not found" });
+    res.json({ readAt: readHowWeWorkRead(updated.prefs) });
   });
 }

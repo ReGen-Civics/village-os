@@ -1023,3 +1023,106 @@ describe("the first chapter's heading", () => {
     expect(screen.getByRole("heading", { level: 2, name: "How we work together" })).toBeInTheDocument();
   });
 });
+
+/*
+ * "I'VE READ THIS" (the lead, 27 Nov 2026): a tick box at the end of the first chapter; ticked, the chapter folds
+ * to one line for that member with the day they read it, and the read is kept server side so it survives a reload.
+ * Here the server is a small in-memory stand-in for `GET`/`PUT /api/profile/how-we-work-read`; the route itself is
+ * held by server/routes/profile.howWeWorkRead.test.ts on a real schema.
+ */
+describe("I've read this, under How we work together", () => {
+  let readAt: string | null;
+  let puts: unknown[];
+  beforeEach(() => {
+    readAt = null;
+    puts = [];
+    window.localStorage.setItem("village-auth-token", "t");
+    const base = fetch as unknown as (url: string, init?: RequestInit) => Promise<Response>;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: RequestInit) => {
+        if (String(url) !== "/api/profile/how-we-work-read") return base(url, init);
+        if (init?.method === "PUT") {
+          const read = JSON.parse(String(init.body)).read;
+          puts.push(read);
+          readAt = read ? "2026-11-27T10:00:00.000Z" : null;
+        }
+        return new Response(JSON.stringify({ readAt }), { status: 200 });
+      }),
+    );
+  });
+  afterEach(() => {
+    window.localStorage.removeItem("village-auth-token");
+    window.history.replaceState(null, "", "/");
+  });
+  const asMember = () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+  };
+  const box = () => within(screen.getByTestId("how-we-work-tick")).getByRole("checkbox", { name: "I've read this" });
+
+  it("offers a member a real, labelled box at the end of the chapter, unticked before they read it", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    expect(tick).not.toBeChecked();
+    // At the END of the first chapter, before the mechanics.
+    const chapter = document.getElementById("how-we-work")!;
+    expect(chapter.contains(tick)).toBe(true);
+    expect(chapter.lastElementChild?.contains(tick)).toBe(true);
+  });
+
+  it("stores the read on a tick, folds the chapter to one line with the day, and the fold survives a reload", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    fireEvent.click(await waitFor(() => box()));
+    await waitFor(() => expect(screen.getByTestId("how-we-work-read")).toBeInTheDocument());
+    expect(puts).toEqual([true]);
+    const line = screen.getByTestId("how-we-work-read");
+    expect(line).toHaveTextContent(/How we work together, read on .*2026/);
+    expect(screen.queryByTestId("how-we-work-tick")).toBeNull();
+    expect(screen.queryByRole("heading", { name: said("principles") })).toBeNull();
+    // The mechanics move up: they now follow the one line directly.
+    expect(line.compareDocumentPosition(document.getElementById("game-mechanics")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    cleanup();
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("how-we-work-read")).toHaveTextContent(/read on/);
+  });
+
+  it("opens again on Read it again, still ticked, and an untick clears the read", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    renderPage();
+    await headline();
+    fireEvent.click(within(await screen.findByTestId("how-we-work-read")).getByRole("button", { name: "Read it again" }));
+    expect(screen.getByRole("heading", { name: said("principles") })).toBeInTheDocument();
+    expect(box()).toBeChecked();
+    fireEvent.click(box());
+    await waitFor(() => expect(puts).toEqual([false]));
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("opens the chapter for the profile's link to it, even once read", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    window.history.replaceState(null, "", "/governance/how#how-we-work");
+    renderPage();
+    await headline();
+    await waitFor(() => expect(box()).toBeChecked());
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("gives a signed-out visitor the chapter as before, with no box and no read asked for", async () => {
+    window.localStorage.removeItem("village-auth-token");
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(screen.queryByTestId("how-we-work-tick")).toBeNull();
+    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect((fetch as unknown as { mock: { calls: unknown[][] } }).mock.calls.some(([u]) => u === "/api/profile/how-we-work-read")).toBe(false);
+  });
+});
