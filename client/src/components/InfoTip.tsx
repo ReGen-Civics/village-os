@@ -69,18 +69,25 @@
  * screen reader's list of headings. Under `hidden` it was "Your weight What
  * voting weight is", and with the word as the trigger it is "Your weight".
  *
- * A portal was the other candidate, and the probe ruled it out: a portalled
- * `sr-only` description was still a static-text node, merely relocated to the
- * end of the document, so it is read out of nowhere instead of mid-sentence.
- * A portal only helps if the node is ALSO hidden, and once it is hidden the
- * portal adds nothing. Clipping needs no portal either, since the open plaque
- * is already position:fixed. And the open plaque sets no font family or font
- * variant of its own, so moving it would make its face depend on the body
- * instead of on the host it opens from.
+ * A portal was the other candidate FOR THE DESCRIPTION, and the probe ruled
+ * it out: a portalled `sr-only` description was still a static-text node,
+ * merely relocated to the end of the document, so it is read out of nowhere
+ * instead of mid-sentence. So the description stays where it is, `hidden`,
+ * beside the word, and it is what aria-describedby names, open or closed.
  *
- * The OPEN plaque stays where it is, beside its trigger: that is the expected
- * DOM position for role="tooltip", and the open state is always
- * user-initiated.
+ * THE OPEN PLAQUE IS PORTALLED, and that is a different node (27 Nov 2026).
+ * position:fixed does not escape everything: the Weathered map draws each card
+ * as a torn page with a CSS mask on its border box (client/src/seaChart.css),
+ * and a mask paints away every descendant outside that box, fixed ones too.
+ * Measured on /governance/decisions at 375 on the Weathered map: "Your weight"
+ * opened a 264px plaque at x 8, and its left 14px, border and first letters,
+ * were cut off by the card it opened from. So while open, the visible plaque
+ * is drawn in the page's night sheet (`.sheet-night`, so it keeps that sheet's
+ * tokens) or the body, the way the moon word's tip is (WordTip.tsx). While it
+ * shows, the word's aria-describedby names it (the ARIA tooltip pattern); the
+ * in-place copy stays display:none, so the words are in the tree once. It
+ * wears the body face, so a tip opened from a display heading reads in the
+ * reading face at the plaque's own size.
  *
  * The plaque takes the page's own colours (`.info-plaque`: --card,
  * --card-foreground, --border), the same tokens the moon word's tip wears, so
@@ -89,6 +96,7 @@
  */
 import { decayReachSentence } from "@shared/tokenScale";
 import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 const PLAQUE_MAX_W = 264;
 
@@ -167,6 +175,11 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
   }, [open]);
 
   const w = typeof window !== "undefined" ? Math.min(PLAQUE_MAX_W, window.innerWidth - 16) : PLAQUE_MAX_W;
+  // The open plaque's home: out of the card it opens from (a torn card's mask cuts a fixed child), into the night
+  // sheet so it keeps that sheet's tokens, or the body.
+  const into = open && pos && typeof document !== "undefined" ? (triggerRef.current?.closest(".sheet-night") ?? document.body) : null;
+  const shown = into && pos ? { ...pos, into } : null;
+  const plaqueId = `${id}-open`;
 
   return (
     <span>
@@ -175,7 +188,8 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
         tabIndex={0}
         ref={triggerRef}
         aria-expanded={open}
-        aria-describedby={id}
+        // The open plaque while it shows (the ARIA tooltip pattern), the in-place description otherwise: the same words.
+        aria-describedby={shown ? plaqueId : id}
         onPointerDown={() => {
           pointerDown.current = true;
         }}
@@ -203,30 +217,31 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
       >
         {children}
       </span>
-      <span
-        id={id}
-        role="tooltip"
-        // display:none while closed. The node stays in the DOM so the
-        // aria-describedby above still resolves; see the header for what was
-        // measured and why `sr-only` was the defect.
-        hidden={!(open && pos)}
-        style={
-          open && pos
-            ? {
-                // Fixed and above the page here as well as in the stylesheet, so no ancestor's overflow clips it.
-                position: "fixed",
-                zIndex: 80,
-                top: pos.above ? undefined : pos.top,
-                bottom: pos.above ? window.innerHeight - pos.top : undefined,
-                left: pos.left,
-                width: w,
-              }
-            : undefined
-        }
-        className={open && pos ? "info-plaque" : undefined}
-      >
+      {/* The description, always display:none and always here, so aria-describedby resolves without it ever being
+          read mid-sentence; see the header for what was measured and why `sr-only` was the defect. */}
+      <span id={id} role="tooltip" hidden>
         {tip}
       </span>
+      {shown &&
+        createPortal(
+          <span
+            id={plaqueId}
+            role="tooltip"
+            style={{
+              // Fixed and above the page here as well as in the stylesheet, so no ancestor's overflow clips it.
+              position: "fixed",
+              zIndex: 80,
+              top: shown.above ? undefined : shown.top,
+              bottom: shown.above ? window.innerHeight - shown.top : undefined,
+              left: shown.left,
+              width: w,
+            }}
+            className="info-plaque"
+          >
+            {tip}
+          </span>,
+          shown.into,
+        )}
     </span>
   );
 }

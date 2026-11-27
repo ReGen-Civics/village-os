@@ -141,7 +141,7 @@ describe("InfoTip, open", () => {
     await user.click(trigger);
 
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    const plaque = within(host).getByRole("tooltip");
+    const plaque = screen.getByRole("tooltip");
     expect(plaque).toBeVisible();
     expect(plaque).toHaveTextContent(TIP);
     expect(plaque.id).toBe(trigger.getAttribute("aria-describedby"));
@@ -149,6 +149,25 @@ describe("InfoTip, open", () => {
     // Fixed from the measured rect, so an overflow-hidden ancestor cannot
     // clip it. Asserted as a computed style, not as a class.
     expect(plaque.style.position).toBe("fixed");
+    // And drawn outside the host: a torn card's mask on the Weathered map cut
+    // a fixed plaque that stayed inside it (measured at 375, 27 Nov 2026).
+    expect(host.contains(plaque)).toBe(false);
+    // The words are in the accessibility tree once while it is open.
+    expect(screen.getAllByRole("tooltip")).toHaveLength(1);
+  });
+
+  it("opens inside the night sheet when there is one, so the plaque keeps its tokens", async () => {
+    const user = userEvent.setup();
+    render(
+      <div className="sheet-night" data-testid="sheet">
+        <p>
+          A <InfoTip tip={TIP}>crowdpool</InfoTip> here.
+        </p>
+      </div>,
+    );
+    await user.click(screen.getByRole("button", { name: "crowdpool" }));
+    const plaque = screen.getByRole("tooltip");
+    expect(plaque.parentElement).toBe(screen.getByTestId("sheet"));
   });
 
   it("closes on a second tap, and the description survives the round trip", async () => {
@@ -157,11 +176,11 @@ describe("InfoTip, open", () => {
     const trigger = screen.getByRole("button", { name: "crowdpool" });
 
     await user.click(trigger);
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
 
     await user.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
     expect(readingOrder(host)).toBe(HOST_SENTENCE);
     expect(trigger).toHaveAccessibleDescription(TIP);
   });
@@ -172,10 +191,10 @@ describe("InfoTip, open", () => {
     const trigger = screen.getByRole("button", { name: "crowdpool" });
 
     await user.hover(trigger);
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
 
     await user.unhover(trigger);
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 });
 
@@ -188,7 +207,7 @@ describe("InfoTip, keyboard", () => {
     await user.tab();
 
     expect(trigger).toHaveFocus();
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
   });
 
   it("Escape closes it and leaves the sentence whole again", async () => {
@@ -197,12 +216,12 @@ describe("InfoTip, keyboard", () => {
     const trigger = screen.getByRole("button", { name: "crowdpool" });
 
     await user.tab();
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
 
     await user.keyboard("{Escape}");
 
     expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
     expect(readingOrder(host)).toBe(HOST_SENTENCE);
     expect(trigger).toHaveFocus();
   });
@@ -214,13 +233,13 @@ describe("InfoTip, keyboard", () => {
 
     await user.tab();
     await user.keyboard("{Escape}");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
 
     await user.keyboard("{Enter}");
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
 
     await user.keyboard("{Enter}");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
   it("Space toggles the plaque", async () => {
@@ -230,13 +249,13 @@ describe("InfoTip, keyboard", () => {
 
     await user.tab();
     await user.keyboard("{Escape}");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
 
     await user.keyboard(" ");
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
 
     await user.keyboard(" ");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 });
 
@@ -284,10 +303,10 @@ describe("the word is the trigger (the lead, 27 Nov 2026: tooltips on the word, 
     const trigger = screen.getByRole("button", { name: "crowdpool" });
     await user.pointer({ keys: "[TouchA]", target: trigger });
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(within(host).getByRole("tooltip")).toBeVisible();
+    expect(screen.getByRole("tooltip")).toBeVisible();
     await user.pointer({ keys: "[TouchA]", target: trigger });
     expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(within(host).queryByRole("tooltip")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
   it("closes on a tap anywhere else", async () => {

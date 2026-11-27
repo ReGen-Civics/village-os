@@ -3033,8 +3033,9 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * not next to it"). The word stays inline and keeps the sentence's own font, size, colour and line, so a paragraph
  * wraps exactly as it does with no tip. A thin dotted underline in a muted share of the text's own colour says it
  * opens, and firms up on hover, while open and on focus. The 44px touch target is the `::before`, centred on the word
- * and absolutely placed, so it takes no room in the line. The open plaque (`.info-plaque`) wears the page's tokens, as
- * the moon word's tip does, so it follows the light page, the Weathered map's paper and the dark.
+ * and absolutely placed, so it takes no room in the line. The open plaque (`.info-plaque`, portalled out of the card it
+ * opens from, since a torn card's mask cuts a fixed child) wears the page's tokens and the reading face, as the moon
+ * word's tip does, so it follows the light page, the Weathered map's paper and the dark.
  */
 .info-word {
   position: relative;
@@ -3078,6 +3079,7 @@ html:has(#sera-changes [data-sera-strip-on]) {
   background: var(--card);
   color: var(--card-foreground);
   box-shadow: 0 2px 10px rgb(0 0 0 / 0.25);
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 400;
   font-style: normal;
