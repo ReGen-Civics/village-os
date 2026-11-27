@@ -17,26 +17,35 @@
  * phone. The page opens on a list of the four, and the chapter you pick is the
  * one drawn below it; the address carries its anchor, so a link, a bookmark and
  * the back button all land on the same chapter. Every chapter is still in the
- * document, so printing the page prints all four.
+ * document, so printing the page prints all four (calendar/print.css hides the
+ * page only around a calendar sheet or a rites packet).
  *
  * WHAT EACH CHAPTER FOLLOWS. The three story chapters keep their own Admin,
  * Pages switches, keyed by their old addresses (shared/brochure.ts), so a
  * village that switched one off still has it off. Leaving Well has no switch:
  * "Leaving well is guaranteed" (shared/constitution.ts), so this page is always
  * served and Leaving Well is always one of its chapters.
+ *
+ * QA round 1 (27 Nov 2026): a config that never loads shows the try-again card
+ * where the story chapters go, never Leaving Well in their place; a pick drops
+ * `?focus=`, so arriving from the delete screen no longer pins the page; an
+ * address naming a chapter this village does not publish is rewritten to the
+ * chapter shown, with one quiet line; the title is focused once its words have
+ * arrived; the tab names the chapter; and a phone keeps the chapter's name and
+ * "All agreements" in a slim bar under the site header.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
-import { ArrowRight, ArrowUp, ChevronRight, DoorOpen } from "lucide-react";
+import { ArrowRight, ArrowUp, ChevronRight, DoorOpen, RotateCcw } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { BreathingLoader } from "@/components/natural";
 import { Vesica } from "@/components/sacred/glyphs";
 import { SeedPodHome, TendingHands } from "@/components/sacred/living";
-import { useConfigFailed, useGameConfig } from "@/lib/gameApi";
+import { retryGameConfig, useConfigFailed, useGameConfig } from "@/lib/gameApi";
 import { storyPageShown } from "@/lib/brochure";
 import { focusTargetId } from "@/lib/useFocusTarget";
 import { useGoodNeighborName } from "@/hooks/useGoodNeighborName";
-import { CHIP_SOFT, DOOR, EYEBROW, H1, LEDE, RING, WORLD } from "@/components/journey/look";
+import { BTN_SECONDARY, CARD, CHIP_SOFT, DOOR, EYEBROW, H1, HINT, LEDE, QUIET, RING, WORLD } from "@/components/journey/look";
 import { chapterHeadingId } from "@/components/rights/chapterParts";
 import GoodNeighborChapter from "@/components/rights/GoodNeighborChapter";
 import ResidentRightsChapter from "@/components/rights/ResidentRightsChapter";
@@ -88,7 +97,78 @@ export function chapterInAddress(hash: string, search: string): RightsChapter | 
   return focus && INNER[focus] ? INNER[focus] : null;
 }
 
+/** The query with `focus` taken out: it named a card on arrival, and must not pin every move after. */
+export function searchWithoutFocus(search: string): string {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  params.delete("focus");
+  const rest = params.toString();
+  return rest ? `?${rest}` : "";
+}
+
 const readAddress = () => (typeof window === "undefined" ? { hash: "", search: "" } : { hash: window.location.hash, search: window.location.search });
+
+/**
+ * Run `then` once `find` returns an element, now or as soon as it is drawn: a
+ * chapter's title is in the document before its words arrive, and invisible
+ * until they do. Gives up quietly after a while, so a chapter whose words never
+ * come costs nothing.
+ */
+function whenDrawn(find: () => HTMLElement | null, then: (el: HTMLElement) => void): () => void {
+  const ready = () => {
+    const el = find();
+    return el && !el.classList.contains("invisible") ? el : null;
+  };
+  const now = ready();
+  if (now) {
+    then(now);
+    return () => {};
+  }
+  const watch = new MutationObserver(() => {
+    const el = ready();
+    if (!el) return;
+    stop();
+    then(el);
+  });
+  const timer = window.setTimeout(() => stop(), 10_000);
+  const stop = () => {
+    watch.disconnect();
+    window.clearTimeout(timer);
+  };
+  watch.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+  return stop;
+}
+
+/** Where the story chapters go when the village's config would not load: the try-again card, in the page. */
+function StoryChaptersUnavailable() {
+  const [trying, setTrying] = useState(false);
+  return (
+    <div role="alert" className={`${CARD} space-y-3`}>
+      <p className="font-display text-2xl text-card-foreground">
+        <Trans>We couldn't reach the village just now</Trans>
+      </p>
+      <p className={HINT}>
+        <Trans>Check your connection, then try again.</Trans>
+      </p>
+      <button
+        type="button"
+        disabled={trying}
+        onClick={async () => {
+          setTrying(true);
+          await retryGameConfig();
+          setTrying(false);
+        }}
+        className={BTN_SECONDARY}
+      >
+        <RotateCcw className="size-4" aria-hidden="true" />
+        {trying ? (
+          <Trans context="config card: asking the server again">Trying again...</Trans>
+        ) : (
+          <Trans context="config card: ask the server again">Try again</Trans>
+        )}
+      </button>
+    </div>
+  );
+}
 
 export default function RightsAndAgreements() {
   const { t } = useLingui();
@@ -97,6 +177,8 @@ export default function RightsAndAgreements() {
   const goodNeighborName = useGoodNeighborName();
   // A story chapter waits for the config: switched-off chapters never flash. Leaving Well never waits for it.
   const ready = !!config || configFailed;
+  // The config would not load: the story chapters cannot be known, and their place holds the try-again card.
+  const storiesUnknown = !config && configFailed;
   const served = useMemo(
     () => RIGHTS_CHAPTERS.filter((id) => STORY[id] === null || (!!config && storyPageShown(config, STORY[id]!))),
     [config],
@@ -119,30 +201,50 @@ export default function RightsAndAgreements() {
   }, []);
   const named = chapterInAddress(address.hash, address.search);
   const active: RightsChapter = named && served.includes(named) ? named : served[0];
+  // The try-again card stands wherever a story chapter would: always, unless Leaving Well is the one asked for.
+  const retryHere = storiesUnknown && named !== "leaving-well";
 
-  // Bring the chapter to the reader when the address names one: on arrival, and on every pick after.
-  // A `?focus=` target is brought by its own chapter (useFocusTarget), so the page leaves that one alone.
-  const scrolledFor = useRef<string | null>(null);
+  // An address naming a chapter this village does not publish (switched off in Admin, Pages) is rewritten to
+  // the chapter actually shown, and one quiet line says the part asked for is not published here.
+  const [notPublished, setNotPublished] = useState(false);
   useEffect(() => {
-    if (!ready || !named || !served.includes(named)) return;
+    if (!config || !named || served.includes(named)) return;
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${active}`);
+    setAddress(readAddress());
+    setNotPublished(true);
+  }, [config, named, served, active]);
+
+  // Bring the chapter to the reader when the address names one: on arrival, and on every pick after. Its
+  // title takes focus once its words are drawn. A `?focus=` target is brought by its own chapter
+  // (useFocusTarget) on arrival; a pick drops the parameter, so it never holds the page after that.
+  const handled = useRef<string | null>(null);
+  useEffect(() => {
+    if (!ready || retryHere || !named || !served.includes(named)) return;
     const key = `${address.hash}|${address.search}`;
-    if (scrolledFor.current === key) return;
-    scrolledFor.current = key;
+    if (handled.current === key) return;
+    handled.current = key;
     if (focusTargetId(address.search)) return;
-    const inner = INNER[address.hash.replace(/^#/, "")] ? document.getElementById(address.hash.replace(/^#/, "")) : null;
-    const target = inner ?? document.getElementById(named);
-    target?.scrollIntoView({ block: "start" });
-    if (!inner) document.getElementById(chapterHeadingId(named))?.focus({ preventScroll: true });
-  }, [ready, named, served, address]);
+    const innerId = address.hash.replace(/^#/, "");
+    if (INNER[innerId]) return whenDrawn(() => document.getElementById(innerId), (el) => el.scrollIntoView({ block: "start" }));
+    return whenDrawn(
+      () => document.getElementById(chapterHeadingId(named)),
+      (heading) => {
+        document.getElementById(named)?.scrollIntoView({ block: "start" });
+        heading.focus({ preventScroll: true });
+      },
+    );
+  }, [ready, retryHere, named, served, address]);
 
   const pick = useCallback((id: RightsChapter) => {
-    window.history.pushState(null, "", `${window.location.pathname}${window.location.search}#${id}`);
+    window.history.pushState(null, "", `${window.location.pathname}${searchWithoutFocus(window.location.search)}#${id}`);
+    setNotPublished(false);
     setAddress(readAddress());
   }, []);
   const toList = useCallback(() => {
     document.getElementById("rights-chapters")?.scrollIntoView({ block: "start" });
   }, []);
 
+  const pageName = t({ message: "Rights and agreements", context: "rights and agreements page: the title" });
   const title: Record<RightsChapter, string> = {
     "good-neighbor": goodNeighborName ?? "",
     "resident-rights": t({ message: "Resident rights", context: "rights and agreements page: a chapter's name" }),
@@ -163,13 +265,36 @@ export default function RightsAndAgreements() {
     "leaving-well": t({ message: "Anyone leaving", context: "rights and agreements page: who a chapter is for" }),
   };
 
+  // The tab names the chapter: "Leaving Well · Rights and agreements · <village>". The shell's own title
+  // (App.tsx, PageTitle) knows only the path, so this holds the tab while the page is open.
+  const village = config?.project?.name?.trim() ?? "";
+  const shown = retryHere ? "" : title[active];
+  const tabTitle = [shown, pageName, village].filter(Boolean).join(" · ");
+  useEffect(() => {
+    if (!ready) return;
+    const hold = () => {
+      if (document.title !== tabTitle) document.title = tabTitle;
+    };
+    hold();
+    const el = document.querySelector("title");
+    if (!el) return;
+    const watch = new MutationObserver(hold);
+    watch.observe(el, { childList: true, characterData: true, subtree: true });
+    return () => watch.disconnect();
+  }, [ready, tabTitle]);
+
+  const ActiveEmblem = EMBLEM[active];
+
   return (
     <Layout>
       <div className={WORLD}>
         <div className="container max-w-6xl pb-24 pt-8 sm:pt-12">
-          <header className="max-w-3xl">
+          {/* A div, not a <header>: calendar/print.css takes every header off paper, and this one belongs on it. */}
+          <div className="max-w-3xl">
+            {/* Where the reader stands: this village's own promises. */}
             <p className={EYEBROW}>
-              <Trans context="rights and agreements page: the small label over the title">Agreements</Trans>
+              {village ? `${village} · ` : ""}
+              <Trans context="rights and agreements page: the small label over the title, after the village's name">What we promise each other</Trans>
             </p>
             <h1 className={`${H1} mt-2`}>
               <Trans context="rights and agreements page: the title">Rights and agreements</Trans>
@@ -179,24 +304,24 @@ export default function RightsAndAgreements() {
                 What the village promises you, what it asks of you, and how leaving works. Choose one to read.
               </Trans>
             </p>
-          </header>
+          </div>
 
           {!ready ? (
             <div className="mt-10 flex justify-center" aria-busy="true">
               <BreathingLoader />
             </div>
           ) : (
-            <div className="mt-6 lg:mt-10 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-10">
+            <div className="mt-6 lg:mt-10 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-10 print:block">
               {/* The list of chapters: the page's table of contents, and on a wide screen it stays beside the chapter. */}
               <nav
                 id="rights-chapters"
                 aria-label={t({ message: "Agreements on this page", context: "rights and agreements page: the list of chapters" })}
-                className="scroll-mt-32 print:hidden lg:sticky lg:top-24 lg:self-start"
+                className="scroll-mt-28 print:hidden lg:sticky lg:top-24 lg:self-start"
               >
                 <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                   {served.map((id) => {
                     const Emblem = EMBLEM[id];
-                    const here = id === active;
+                    const here = id === active && !retryHere;
                     return (
                       <li key={id}>
                         <a
@@ -216,7 +341,7 @@ export default function RightsAndAgreements() {
                             <Emblem className="size-5" />
                           </span>
                           {/* On a phone and in the side list: the name and who it is for, so all four fit the first
-                              screen and Leaving well is never below it. The two-column list has room for the line. */}
+                              screen and Leaving Well is never below it. The two-column list has room for the line. */}
                           <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
                             <span className={`block font-display text-lg leading-tight text-foreground break-words${title[id] ? "" : " invisible"}`}>
                               {title[id] || " "}
@@ -232,7 +357,37 @@ export default function RightsAndAgreements() {
                 </ol>
               </nav>
 
-              <div className="mt-8 min-w-0 lg:mt-0">
+              <div className="mt-6 min-w-0 lg:mt-0">
+                {/* On a phone the chapter's name and the way back to the list stay in reach under the site header
+                    (the ProfileTabs pattern: sticky under the header, never over the tab bar). */}
+                {!retryHere && (
+                  <div
+                    data-testid="rights-chapter-bar"
+                    className="sticky top-24 z-30 mb-4 flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card/95 py-1 pl-2 pr-1 shadow-sm backdrop-blur print:hidden lg:hidden"
+                  >
+                    <span className={`${RING} size-8 border`} aria-hidden="true">
+                      <ActiveEmblem className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate font-display text-lg text-foreground" aria-hidden="true">
+                      {title[active] || " "}
+                    </span>
+                    <button type="button" onClick={toList} className="jw-btn inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-notice hover:bg-muted">
+                      <Trans context="rights and agreements page: back to the list of chapters">All agreements</Trans>
+                      <ArrowUp className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
+
+                {notPublished && !retryHere && (
+                  <p role="status" className={`${QUIET} ${HINT} mb-4`}>
+                    <Trans context="rights and agreements page: a link named a chapter this village switched off">
+                      The part you asked for is not published here. Here is what is.
+                    </Trans>
+                  </p>
+                )}
+
+                {retryHere && <StoryChaptersUnavailable />}
+
                 {served.map((id, i) => {
                   const Body = BODY[id];
                   const next = served[(i + 1) % served.length];
@@ -241,9 +396,13 @@ export default function RightsAndAgreements() {
                       key={id}
                       id={id}
                       data-chapter={id}
-                      aria-labelledby={chapterHeadingId(id)}
-                      className={`scroll-mt-32 ${id === active ? "" : "hidden print:mt-12 print:block"}`}
+                      // The list's name for the chapter, then its own title: two chapters may share a heading.
+                      aria-labelledby={`${id}-name ${chapterHeadingId(id)}`}
+                      className={`scroll-mt-40 lg:scroll-mt-28 ${id === active && !retryHere ? "" : "hidden print:mt-12 print:block"}`}
                     >
+                      <span id={`${id}-name`} className="sr-only">
+                        {title[id]}
+                      </span>
                       <Body />
                       {served.length > 1 && (
                         <nav

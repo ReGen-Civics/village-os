@@ -147,7 +147,7 @@ export default function LeavingWellChapter() {
       >
         {/* Somebody who has decided to go reaches their own card in one tap. */}
         {user && (
-          <a href="#begin-departure" className={`${BTN_NOTICE} mt-5`}>
+          <a href="#begin-departure" className={`${BTN_NOTICE} mt-5 print:hidden`}>
             <ArrowDown className="size-4" aria-hidden="true" />
             <Trans context="Leaving Well: a jump to the member's own departure card">Start your own departure</Trans>
           </a>
@@ -268,7 +268,7 @@ export default function LeavingWellChapter() {
               </p>
             )}
             {user && hasIntake && (
-              <div className="border-t border-border pt-3 space-y-2">
+              <div className="border-t border-border pt-3 space-y-2 print:hidden">
                 <p className="text-xs text-muted-foreground">
                   <Trans>
                     Start a private intake. It reaches only the people holding
@@ -294,7 +294,7 @@ export default function LeavingWellChapter() {
 
           {user && (
             // The delete screen's "Leave the village instead" lands here (`?focus=begin-departure`).
-            <div id="begin-departure" className={`${CARD} scroll-mt-24`}>
+            <div id="begin-departure" className={`${CARD} scroll-mt-40 print:hidden lg:scroll-mt-28`}>
               <h3 className="font-display text-xl font-bold text-card-foreground mb-2"><Trans>Begin your own departure</Trans></h3>
               <p className="text-xs text-muted-foreground mb-3">
                 <Trans>

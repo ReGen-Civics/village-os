@@ -86,8 +86,9 @@ export default function GoodNeighborChapter() {
         </section>
       )}
 
-      {/* The criteria, numbered as they always were */}
-      <section className={PANEL}>
+      {/* The criteria, numbered as they always were. On a phone the panel's own frame comes off, so each
+          criterion is one tile on the ground and never three boxes deep (QA round 1). */}
+      <section className={`${PANEL} max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none`}>
         <PanelHead heading={criteria.fields.heading} intro={criteria.fields.intro} />
         <ol className="space-y-4">
           {criteria.lists.items.map((criterion, index) => {

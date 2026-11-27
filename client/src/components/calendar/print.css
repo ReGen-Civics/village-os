@@ -16,8 +16,12 @@
   /* Only the wrapped view prints. The visibility pattern beats hunting the
      page's chrome selector by selector: everything vanishes, then the print
      area and its children come back. The page around it (tabs, steppers,
-     cards, toasts) needs no cooperation and no markup changes. */
-  body * {
+     cards, toasts) needs no cooperation and no markup changes.
+     Only on a page that HOLDS a print sheet (the calendar's, or the rites
+     packet, rites.css): unscoped, this hid every other page in the app on
+     paper, and Rights and agreements printed blank (fold QA, 27 Nov 2026). */
+  body:has(.calendar-print) *,
+  body:has(.rites .packtable) * {
     visibility: hidden;
   }
 
@@ -43,6 +47,12 @@
 
   body {
     background: #fff !important;
+  }
+
+  /* A scroll-driven entrance (.m-germ, index.css) has no scroll on paper, so a
+     card below the first page printed half faded. Every card prints whole. */
+  .m-germ {
+    animation: none !important;
   }
 
   .print-header {

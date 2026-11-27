@@ -53,7 +53,7 @@ export function ChapterHead({
 }) {
   const hide = waiting ? " invisible" : "";
   return (
-    <header className="rounded-2xl border border-notice/40 bg-card p-5 shadow-sm sm:p-8">
+    <div className="rounded-2xl border border-notice/40 bg-card p-5 shadow-sm sm:p-8">
       <div className="flex items-start gap-4">
         <span className={`${RING} size-14`} aria-hidden="true">
           <Icon className="size-7" />
@@ -71,7 +71,7 @@ export function ChapterHead({
       </div>
       {intro ? <div className={`${LEDE} mt-4 max-w-none sm:text-lg${hide}`}>{intro}</div> : null}
       {children}
-    </header>
+    </div>
   );
 }
 

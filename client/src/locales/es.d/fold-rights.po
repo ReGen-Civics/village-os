@@ -4,9 +4,14 @@ msgstr ""
 "Language: es\n"
 
 # needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
-msgctxt "rights and agreements page: the small label over the title"
-msgid "Agreements"
-msgstr "Acuerdos"
+msgctxt "rights and agreements page: the small label over the title, after the village's name"
+msgid "What we promise each other"
+msgstr "Lo que nos prometemos"
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+msgctxt "rights and agreements page: a link named a chapter this village switched off"
+msgid "The part you asked for is not published here. Here is what is."
+msgstr "La parte que buscaba no está publicada aquí. Esto es lo que hay."
 
 # needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
 msgctxt "rights and agreements page: the title"

@@ -322,7 +322,7 @@ export default function MobileFab() {
       <div
         // Rides up clear of the living map's circle peek while one shows (index.css).
         data-mobile-fab
-        className="fixed right-4 bottom-[var(--fab-bottom)] md:right-6 md:bottom-6 z-[60] flex flex-col items-end pointer-events-none"
+        className="fixed right-4 bottom-[var(--fab-bottom)] md:right-6 md:bottom-6 z-[60] flex flex-col items-end pointer-events-none print:hidden"
         // Tab bar is h-16 (4rem) of content plus the safe-area pad. Offsetting
         // by that same pad + 3.5rem leaves the trigger's lower edge exactly
         // 0.5rem over the bar's top edge on EVERY phone: the safe area
