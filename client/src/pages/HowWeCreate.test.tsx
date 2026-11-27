@@ -160,7 +160,7 @@ describe("the token section (Rye, 2026-10-22)", () => {
 
     expect(screen.getByRole("heading", { name: "Our Tokens" })).toBeInTheDocument();
     expect(screen.getByText("Willowbrook keeps its own tokens, Thanks among them. Their rules are the community's to design.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /See how they work here/ })).toHaveAttribute("href", "/game-mechanics");
+    expect(screen.getByRole("link", { name: /See how they work here/ })).toHaveAttribute("href", "/governance/how#game-mechanics");
     expect(screen.getByRole("heading", { name: "Thanks" })).toBeInTheDocument();
   });
 
@@ -172,7 +172,7 @@ describe("the token section (Rye, 2026-10-22)", () => {
     expect(panel).not.toBeNull();
     expect(panel.querySelectorAll("h3")).toHaveLength(0);
     expect(panel.textContent).toContain(filled(fieldDefault("tokens", "intro")));
-    expect(panel.querySelector('a[href="/game-mechanics"]')).not.toBeNull();
+    expect(panel.querySelector('a[href="/governance/how#game-mechanics"]')).not.toBeNull();
   });
 
   it("says nothing about what a token does", async () => {
