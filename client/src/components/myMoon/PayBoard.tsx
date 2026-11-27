@@ -305,11 +305,15 @@ function PayBoardLoader({ password }: { password: string }) {
 }
 
 /** Closed until opened, so the desk reads no pay it was not asked for. */
-export default function PayBoard({ password }: { password: string }) {
+export default function PayBoard({ password, className = "flex flex-col gap-3 rounded-xl border border-border bg-card p-4" }: {
+  password: string;
+  /** Its own bordered box by default; Governance's Treasury draws it as a part of its End of Moon card. */
+  className?: string;
+}) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
   return (
-    <section id="pay-board" aria-label={t({ message: "Pay by member", context: "pay board" })} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+    <section id="pay-board" aria-label={t({ message: "Pay by member", context: "pay board" })} className={className}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <h3 className="m-0 text-lg font-semibold text-foreground"><Trans context="pay board">Pay by member</Trans></h3>

@@ -1851,6 +1851,12 @@ msgstr "Primero escriba o elija algo, y luego guarde."
 msgid "These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then."
 msgstr "Estas misiones quedan en espera hasta que la aldea decida, en una votación que cierra {closes}. El fondo les guarda el dinero hasta entonces."
 
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "What the village plans to pay this moon, and what is left."
+msgstr "Lo que la aldea planea pagar esta luna, y lo que queda."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Home.tsx
 msgctxt "Home, a"
@@ -2042,6 +2048,12 @@ msgstr "{n, plural, =0 {No hay tensiones abiertas en los roles de este círculo}
 msgctxt "CommsSetupWords, label"
 msgid "Business Inquiries (Prosperity / Contact)"
 msgstr "Consultas de negocios (Prosperidad / Contacto)"
+
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: signed out"
+msgid "The treasury"
+msgstr "La tesorería"
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
@@ -2849,7 +2861,7 @@ msgid "Agenda items"
 msgstr "Puntos de agenda"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Treasury.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "link to the powers page"
 msgid "What We Look After"
 msgstr "Lo que cuidamos"
@@ -5789,6 +5801,12 @@ msgctxt "agent paths, search hint"
 msgid "A word, a path or GET"
 msgstr "Una palabra, una ruta o GET"
 
+# needs-native-review: the Treasury, the budget section's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: budget"
+msgid "Every member reads it. Whoever holds the budget power changes it."
+msgstr "Cada miembro lo lee. Quien tiene el poder del presupuesto lo cambia."
+
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: buttons.reopened"
@@ -6411,9 +6429,9 @@ msgstr "{0} en la lista, {1} de peso entre todos<0/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Treasury.tsx
-msgctxt "link to the cash budget page"
-msgid "The cash budget for this moon"
-msgstr "El presupuesto en efectivo de esta luna"
+#~ msgctxt "link to the cash budget page"
+#~ msgid "The cash budget for this moon"
+#~ msgstr "El presupuesto en efectivo de esta luna"
 
 # needs-native-review: player card health, 26 Nov 2026
 #: client/src/components/playerCard/playerCardHealthMessages.ts
@@ -8248,6 +8266,12 @@ msgstr "Tono de piel"
 #~ msgid "Saved. The next sync calls this address"
 #~ msgstr "Guardado. La próxima sincronización llama a esta dirección"
 
+# needs-native-review: the hand mint's rules, no second signer set, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the second signer"
+msgid "Any amount goes through on your signature alone"
+msgstr "Cualquier monto se aprueba solo con su firma"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board status"
@@ -8872,6 +8896,12 @@ msgstr "Use {nameToken} donde debe aparecer el nombre de su guía."
 msgctxt "the bell: why a notice of this kind matters, kind wallet"
 msgid "Somebody sent you credits, and they are in your balance now."
 msgstr "Alguien le envió créditos, y ya están en su saldo."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion error"
+msgid "The suggestion was not sent. Try again in a moment."
+msgstr "La sugerencia no se envió. Inténtelo de nuevo en un momento."
 
 # needs-native-review: the circle card, 26 Nov 2026
 #: client/src/components/circleCard/circleWords.ts
@@ -10351,9 +10381,9 @@ msgstr "Para quién es"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
-msgstr "El dinero que la aldea planea para el pago de roles y misiones en esta luna, línea por línea, y lo que queda después de restar el pago ya prometido. Todos los miembros pueden leerlo. Quienes tienen el poder del presupuesto lo cambian."
+#~ msgctxt "budget page"
+#~ msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
+#~ msgstr "El dinero que la aldea planea para el pago de roles y misiones en esta luna, línea por línea, y lo que queda después de restar el pago ya prometido. Todos los miembros pueden leerlo. Quienes tienen el poder del presupuesto lo cambian."
 
 # needs-native-review: the live sessions pages and the meeting rhythm, 26 Nov 2026
 #: client/src/components/sessions/sessionWords.ts
@@ -10438,6 +10468,12 @@ msgstr "el nombre nuevo del token"
 msgctxt "budget line button"
 msgid "Edit {0}"
 msgstr "Editar {0}"
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
+msgstr "Un periodo es una luna, un mes como 2026-11, una temporada o dos fechas. Usted lee lo que cambia antes de que se guarde nada."
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
@@ -11894,6 +11930,12 @@ msgctxt "Admin, aria-label"
 msgid "Question"
 msgstr "Pregunta"
 
+# needs-native-review: the Treasury, the mint form's failed read, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "treasury: mint"
+msgid "The mint form did not load. Try again in a moment."
+msgstr "El formulario de emisión no se cargó. Inténtelo de nuevo en un momento."
+
 #. needs-native-review
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Answers for 1 thing"
@@ -12524,9 +12566,9 @@ msgstr "No hay nada retenido. Cuando se retiene una sugerencia, espera aquí has
 
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "🌳 Launch Plan"
-msgstr "🌳 Plan de lanzamiento"
+#~ msgctxt "site menu"
+#~ msgid "🌳 Launch Plan"
+#~ msgstr "🌳 Plan de lanzamiento"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Review.tsx
@@ -12747,6 +12789,7 @@ msgstr "El depósito retenido mientras un artículo está prestado, como parte d
 #. placeholder {0}: notCounted.length
 #. placeholder {1}: reasons.join("; ")
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk lines not counted"
 msgid "{0} lines touch this moon and do not count yet: {1}."
 msgstr "{0} líneas tocan esta luna y todavía no cuentan: {1}."
@@ -13558,6 +13601,12 @@ msgstr "ejemplo"
 msgid "Hide how this was worked out"
 msgstr "Ocultar cómo se calculó esto"
 
+# needs-native-review: the one Treasury under Governance, the lede, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: lede"
+msgid "The village's money in one place: what it can pay this moon, and the desks that pay it."
+msgstr "El dinero de la aldea en un solo lugar: lo que puede pagar esta luna, y los escritorios que lo pagan."
+
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: forSeason, no season named"
@@ -13682,6 +13731,12 @@ msgstr "Trabajo de la luna pasada aprobado y su bono definido"
 msgctxt "MapVocabularyPanel, h3"
 msgid "The map's words"
 msgstr "Las palabras del mapa"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Amount"
+msgstr "Monto"
 
 # needs-native-review: the season page, 27 Nov 2026
 #: client/src/components/season/AlignedPanel.tsx
@@ -13811,6 +13866,12 @@ msgstr "Una lectura colectiva que nombra a todas las personas presentes, y una l
 msgctxt "GameMechanics, proposal path"
 msgid "Support gathers here. {supportThreshold} supporters send a proposal to the vote."
 msgstr "El apoyo se reúne aquí. {supportThreshold} apoyos llevan una propuesta a votación."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Quest prices"
+msgstr "Precios de las misiones"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/power/ShapePicker.tsx
@@ -16534,6 +16595,12 @@ msgstr "Trasladar"
 msgid "Edit the name or the why"
 msgstr "Editar el nombre o el porqué"
 
+# needs-native-review: the Treasury, the desk board read aloud, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desk board, read aloud"
+msgid "Your desks"
+msgstr "Sus escritorios"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Places.tsx
 #~ msgctxt "Places, Link"
@@ -17254,6 +17321,12 @@ msgctxt "open proposal: an agent's proposal"
 msgid "Proposed by the member who keeps it. The circle decides by consent, as for a person."
 msgstr "Propuesto por el miembro que lo cuida. El círculo decide por consentimiento, igual que con una persona."
 
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: who keeps the books, for a reader without these powers"
+msgid "Each opens for whoever holds its power, which the village gives by its vote."
+msgstr "Cada uno se abre para quien tiene su poder, que la aldea da por su voto."
+
 # needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: twice.map(pieceText).join("; ")
 #: client/src/components/admin/CompareTab.tsx
@@ -17793,6 +17866,12 @@ msgstr "Sera no respondió a tiempo. Lo que llegó está abajo; agregue el resto
 msgctxt "admin compare"
 msgid "Saved splits"
 msgstr "Repartos guardados"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The treasurer's desks"
+msgstr "Los escritorios del tesorero"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/prosperity/PacketRequestForm.tsx
@@ -19966,9 +20045,9 @@ msgstr "Una sugerencia de Sera o de un servicio externo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "Sign in to read the village's cash budget."
-msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea."
+#~ msgctxt "budget page"
+#~ msgid "Sign in to read the village's cash budget."
+#~ msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/sessions/WaitingForCircle.tsx
@@ -20221,6 +20300,12 @@ msgstr "Un agente"
 msgctxt "live session room: editKeysOneLine"
 msgid "Enter saves. Escape cancels."
 msgstr "Enter guarda. Escape cancela."
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Send what is owed by bank transfer, then record it here."
+msgstr "Envíe lo que se debe por transferencia bancaria y luego regístrelo aquí."
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/roleCard/FoundingTeam.tsx
@@ -23836,6 +23921,12 @@ msgctxt "PowerHand, label"
 msgid "Why this power calls to you (optional)"
 msgstr "Por qué le llama este poder (opcional)"
 
+# needs-native-review: the Treasury, a member's one act, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member's one act"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
+
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind quest_idea_declined"
@@ -26630,9 +26721,9 @@ msgstr "% del día"
 
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "🛠 Command Centre"
-msgstr "🛠 Centro de mando"
+#~ msgctxt "site menu"
+#~ msgid "🛠 Command Centre"
+#~ msgstr "🛠 Centro de mando"
 
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
@@ -29116,9 +29207,9 @@ msgstr "Aquí no hay ningún círculo."
 
 # needs-native-review: Governance's Treasury view, the door to the books, 27 Nov 2026
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
-msgid "The village's books: mint, End of Moon pay and cash to send"
-msgstr "Las cuentas de la aldea: emitir, el pago de Fin de Luna y el efectivo por enviar"
+#~ msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
+#~ msgid "The village's books: mint, End of Moon pay and cash to send"
+#~ msgstr "Las cuentas de la aldea: emitir, el pago de Fin de Luna y el efectivo por enviar"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
@@ -29150,6 +29241,13 @@ msgstr "Agregar cinco minutos"
 msgctxt "founding application review"
 msgid "{n} recordings, sent with your application"
 msgstr "{n} grabaciones, enviadas con su solicitud"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+#. placeholder {0}: read.villageCurrency
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Amount, in {0}"
+msgstr "Monto, en {0}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: plural(done, "check")
@@ -29345,6 +29443,12 @@ msgstr "{agent} todavía no respondió a las {askedAt}."
 msgctxt "ProfileJourney, p"
 msgid "Your signing"
 msgstr "Su firma"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Reason"
+msgstr "Motivo"
 
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup nudge, one"
@@ -30720,6 +30824,7 @@ msgstr "Ajustes"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
 msgstr "Todavía no cuenta ninguna línea de pago por rol ni por misión en esta luna, así que el presupuesto no pone límite al pago."
@@ -31436,6 +31541,12 @@ msgstr "Clave de estructura del mapa, p. ej. ridgeA"
 msgctxt "connector setup panel, the switch"
 msgid "Our agent may make the changes we approve in the chat"
 msgstr "Nuestro agente puede hacer los cambios que aprobemos en el chat"
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Cash budget"
+msgstr "Presupuesto en efectivo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -33020,6 +33131,12 @@ msgstr "Usaré la lectura que ya hiciste: <0>{0}</0>, {1}."
 msgctxt "sera answers"
 msgid "Changed since it was taken"
 msgstr "Cambió desde que se tomó"
+
+# needs-native-review: the Treasury, the pricing desk's refusal, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: prices refused"
+msgid "The pricing desk is for whoever holds the pay-setting power, such as the Treasurer."
+msgstr "El escritorio de precios es para quien tiene el poder de fijar pagos, como el Tesorero."
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/roleEdit/SectionsFields.tsx
@@ -35108,6 +35225,12 @@ msgstr "A usted le toca dar seguimiento a una referencia. En la solicitud verá 
 msgctxt "founding card fact"
 msgid "Track"
 msgstr "Modalidad"
+
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Name one line and what it should pay this moon."
+msgstr "Nombre una línea y lo que debería pagar esta luna."
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
@@ -37672,6 +37795,12 @@ msgstr "Puerta del sótano"
 msgctxt "CrowdpoolCampaign, h2"
 msgid "From blueprint to walls"
 msgstr "Del plano a las paredes"
+
+# needs-native-review: the Treasury, the first screen's heading for a power holder, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder of a treasury power"
+msgid "Your treasury desks"
+msgstr "Sus escritorios de tesorería"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Events.tsx
@@ -40269,6 +40398,12 @@ msgctxt "review inbox: a row, the door"
 msgid "Answer"
 msgstr "Responder"
 
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Token"
+msgstr "Token"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, label"
@@ -40280,6 +40415,12 @@ msgstr "Noche"
 msgctxt "module profiles, benefit 4"
 msgid "Members choose what their profile shows"
 msgstr "Cada miembro elige lo que muestra su perfil"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Amount"
+msgstr "Monto"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ReserveHome.tsx
@@ -40298,6 +40439,12 @@ msgstr "Cada correo que envía la aldea, y cuándo. Abra cualquiera para leer su
 msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} esperando"
+
+# needs-native-review: a member's budget suggestion, sent, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion sent"
+msgid "Sent. It goes to whoever holds the budget power, or to a village vote when nobody does."
+msgstr "Enviada. Va a quien tiene el poder del presupuesto, o a una votación de la aldea cuando nadie lo tiene."
 
 # needs-native-review: entrance copy, 2026-11-25
 #: client/src/pages/Entrance.tsx
@@ -40850,6 +40997,12 @@ msgstr "Todavía no tiene tokens"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "The agreements are not given"
 #~ msgstr ""
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Pay a request or give a bonus in the village's tokens."
+msgstr "Pague una solicitud o dé un bono en los tokens de la aldea."
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 msgctxt "role draft discover"
@@ -43710,6 +43863,12 @@ msgctxt "agent proposal: sent"
 msgid "Sent to the circle"
 msgstr "Enviado al círculo"
 
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Price each open quest beside the suggested figure."
+msgstr "Ponga precio a cada misión abierta junto a la cifra sugerida."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Wallet.tsx
 msgctxt "Wallet, span"
@@ -44561,6 +44720,7 @@ msgstr "Su lugar en el anillo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Planned"
 msgstr "Planeado"
@@ -45082,6 +45242,12 @@ msgstr "{0}{1}. Retirarlos los pone en reposo, guarda su historial y nunca saca 
 msgctxt "review response"
 msgid "Suggest an edit"
 msgstr "Sugerir un cambio"
+
+# needs-native-review: the Treasury, the purses read aloud, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the purses, read aloud"
+msgid "This moon's cash"
+msgstr "El efectivo de esta luna"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -46492,6 +46658,12 @@ msgctxt "moon recap: GOAL_STATUS_WORDS: let_go"
 msgid "Let go"
 msgstr "Soltado"
 
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion button"
+msgid "Close"
+msgstr "Cerrar"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/StageFloorPicker.tsx
 msgctxt "StageFloorPicker, label"
@@ -46679,6 +46851,12 @@ msgstr "¿Quién ve sus líneas?"
 msgctxt "moon recap: QUEUE_WORDS: empty"
 msgid "Nothing is waiting on you this moon."
 msgstr "Nada le espera esta luna."
+
+# needs-native-review: the hand mint's rules, the second signer, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the second signer"
+msgid "Over {cosignWords} waits for a second signer"
+msgstr "Más de {cosignWords} espera a una segunda firma"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ReserveHome.tsx
@@ -47268,6 +47446,12 @@ msgctxt "circle consent: state heading"
 msgid "Waiting for a holder of the power"
 msgstr "A la espera de quien tenga el poder"
 
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: signed out"
+msgid "Sign in to read the village's cash budget, and any treasury desk the village has given you."
+msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea y cualquier escritorio de tesorería que la aldea le haya dado."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: v.value === v.default ? `It starts as "${v.default}", which is where the platform starts and not something anybody here said.` : ""
 #: client/src/components/admin/ModuleSettingsSection.tsx
@@ -47561,6 +47745,12 @@ msgstr "Mostrando los {total} {noun}."
 msgctxt "your work: approvals, how many wait"
 msgid "{0} waiting"
 msgstr "{0} en espera"
+
+# needs-native-review: the hand mint's form, a picker's placeholder, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a picker's placeholder"
+msgid "Choose…"
+msgstr "Elija…"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
@@ -48312,6 +48502,12 @@ msgstr "Marcar todos los que se muestran"
 msgctxt "Admin, placeholder"
 msgid "Value (large text)"
 msgstr "Valor (texto largo)"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Confirm what was agreed against what was delivered."
+msgstr "Confirme lo acordado frente a lo entregado."
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ExamplesBanner.tsx
@@ -49640,6 +49836,12 @@ msgctxt "module quests, benefit 3"
 msgid "Crews form around the bigger quests"
 msgstr "Se forman equipos alrededor de las misiones más grandes"
 
+# needs-native-review: the Treasury, the first screen's heading for a member, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member"
+msgid "The village's cash, in the open"
+msgstr "El efectivo de la aldea, a la vista"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/StructureReview.tsx
 msgid "Another role with this name already updates {liveName}"
@@ -50305,9 +50507,9 @@ msgstr "La fotografía más grande que un miembro puede subir"
 
 # needs-native-review: Governance's Treasury view, the lede, 27 Nov 2026
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "governance treasury: lede"
-msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
-msgstr "El efectivo de la aldea, a la vista: lo que planea pagar esta luna y lo que queda."
+#~ msgctxt "governance treasury: lede"
+#~ msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
+#~ msgstr "El efectivo de la aldea, a la vista: lo que planea pagar esta luna y lo que queda."
 
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
@@ -50413,6 +50615,12 @@ msgstr "Configuración del correo"
 msgctxt "game variable governance.sensing_days, label"
 msgid "How long a topic stays open for sensing"
 msgstr "Cuánto tiempo queda abierto un tema para el sondeo"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "What the line is for"
+msgstr "Para qué es la línea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasFrameSay.tsx
@@ -50953,6 +51161,12 @@ msgctxt "funding round stage"
 msgid "Grow"
 msgstr "Crecer"
 
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion button"
+msgid "Send the suggestion"
+msgstr "Enviar la sugerencia"
+
 # needs-native-review: proposal wizard checks, usted, 2026-11-26
 #: client/src/components/governance/wizardValidators.ts
 msgctxt "proposal wizard: check"
@@ -51373,6 +51587,12 @@ msgstr "<0/>Su peso<1/>"
 msgctxt "sera answers"
 msgid "Added to the draft. It goes live when the draft is published."
 msgstr "Agregado al borrador. Se publica cuando se publique el borrador."
+
+# needs-native-review: a member's budget suggestion, the form's heading, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
 
 # needs-native-review: the investor interest form, 27 Nov 2026
 #: client/src/components/investor/InvestorInterest.tsx
@@ -51861,6 +52081,12 @@ msgctxt "proposed changes"
 msgid "Working"
 msgstr "Trabajando"
 
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like."
+msgstr "La primera fila nombra las columnas: periodo, etiqueta, categoría y planificado, y luego círculo, rol, moneda y nota si lo desea."
+
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind gratitude"
@@ -52287,6 +52513,7 @@ msgstr "De $100.000 a $500.000"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk no figure"
 msgid "The village has no currency set yet, so there is no figure to work out. An admin sets it in the setup wizard."
 msgstr "La aldea aún no tiene una moneda definida, así que no hay cifra que calcular. Un administrador la define en el asistente de configuración."
@@ -53754,9 +53981,9 @@ msgstr "Plataforma"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, member picker placeholder"
-msgid "Member…"
-msgstr "Miembro…"
+#~ msgctxt "hand-mint form, member picker placeholder"
+#~ msgid "Member…"
+#~ msgstr "Miembro…"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -54589,6 +54816,12 @@ msgctxt "guide feedback: a screenshot that does not decode"
 msgid "That picture could not be opened. Try another one."
 msgstr "No se pudo abrir esa imagen. Pruebe con otra."
 
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Cash to pay out"
+msgstr "Efectivo por pagar"
+
 # needs-native-review: Mail settings, 2026-11-25
 #: client/src/components/admin/comms/MailNow.tsx
 msgctxt "Mail settings, pause refused"
@@ -55397,6 +55630,12 @@ msgstr "Reportar este mensaje"
 msgctxt "game variable hiddenmap.default_precision, choice km, hint"
 msgid "Close enough to find the area, too coarse to find the spot."
 msgstr "Lo bastante cerca para encontrar la zona, demasiado general para encontrar el sitio."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion error"
+msgid "The server could not be reached, so nothing was sent. Check the connection and try again."
+msgstr "No se pudo contactar al servidor, así que no se envió nada. Revise la conexión e inténtelo de nuevo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -57716,6 +57955,12 @@ msgctxt "game variable stay.credit_expiry_days, label"
 msgid "Credit expiry (0 = never)"
 msgstr "Vencimiento de créditos (0 = nunca)"
 
+# needs-native-review: the Treasury, a member's link to the budget lines, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member's link to the lines"
+msgid "Read the budget, line by line"
+msgstr "Lea el presupuesto, línea por línea"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -58012,6 +58257,12 @@ msgctxt "live session room: facilitationSent"
 msgid "Thanks. The facilitator reads it unsigned."
 msgstr "Gracias. Quien facilita lo lee sin firma."
 
+# needs-native-review: the hand mint's rules, self, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, self"
+msgid "You can't mint to yourself"
+msgstr "No puede emitir para usted mismo"
+
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind session_item_taken"
@@ -58115,6 +58366,12 @@ msgstr "Horas antes de un encuentro en que su hora ya no sigue la votación. Una
 msgctxt "PlanEditor, aria-label"
 msgid "Remove the option {opt}"
 msgstr "Quitar la opción {opt}"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Kind"
+msgstr "Tipo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ArchetypesPanel.tsx
@@ -59682,6 +59939,7 @@ msgstr "Sus datos ya no están aquí. {0} no ha confirmado que borró su propia 
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Already promised"
 msgstr "Ya comprometido"
@@ -61164,9 +61422,9 @@ msgstr "Solo se agrega. Nadie puede editar ni quitar nada aquí, y todo miembro 
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, token picker placeholder"
-msgid "Token…"
-msgstr "Token…"
+#~ msgctxt "hand-mint form, token picker placeholder"
+#~ msgid "Token…"
+#~ msgstr "Token…"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -61324,9 +61582,12 @@ msgstr "{name}, un agente, propuesto por quien lo cuida para {roles}"
 #~ msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
+#. placeholder {0}: dayOf(budget.moon.startsOn)
 #. placeholder {0}: dayOf(moon.startsOn)
+#. placeholder {1}: dayOf(budget.moon.endsOn)
 #. placeholder {1}: dayOf(moon.endsOn)
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk moon dates"
 msgid "{0} to {1}"
 msgstr "{0} a {1}"
@@ -65061,9 +65322,9 @@ msgstr "Una nota breve sobre el porqué (se muestra en el historial del borrador
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PricingDeskTab.tsx
-msgctxt "pricing desk"
-msgid "Open the desk as its own page, for a Treasurer who is not an admin"
-msgstr "Abrir la mesa como página aparte, para un Tesorero que no es administrador"
+#~ msgctxt "pricing desk"
+#~ msgid "Open the desk as its own page, for a Treasurer who is not an admin"
+#~ msgstr "Abrir la mesa como página aparte, para un Tesorero que no es administrador"
 
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
@@ -65284,6 +65545,12 @@ msgstr "Escribir la suya"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "Which of {roleName}'s outcomes will you move? Pick up to {0}, each with a target."
 #~ msgstr ""
+
+# needs-native-review: the Treasury, the quiet link to the budget under a holder's desks, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the quiet link to the budget, under a holder's desks"
+msgid "The cash budget, line by line"
+msgstr "El presupuesto en efectivo, línea por línea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/PinPanel.tsx
@@ -65921,6 +66188,12 @@ msgstr "Detener el dictado"
 msgctxt "database export"
 msgid "Downloading..."
 msgstr "Descargando..."
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Member"
+msgstr "Miembro"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -67145,6 +67418,12 @@ msgstr "Compromiso"
 #: client/src/components/LookPanel.tsx
 msgid "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
 msgstr "Ponga cualquier color con exactitud. Un color de texto que deje vacío se elige para que se lea sobre el fondo que definió. Cada par se mide abajo, y un color que usted defina puede fallar: el informe lo dice."
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Why"
+msgstr "Por qué"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -69002,6 +69281,12 @@ msgctxt "Housing, h2"
 msgid "Housing Options"
 msgstr "Opciones de vivienda"
 
+# needs-native-review: the site menu, the emoji taken off (the lead, 27 Nov 2026: "Drop them")
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Command Centre"
+msgstr "Centro de mando"
+
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/components/orgDraft/FieldDiff.tsx
 msgctxt "draft page: a field"
@@ -70812,6 +71097,7 @@ msgstr "Su respuesta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Left this moon"
 msgstr "Queda esta luna"
@@ -70836,9 +71122,9 @@ msgstr "Reemplazo: enlace de propuestas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/valuation/PricingDesk.tsx
-msgctxt "pricing desk"
-msgid "Earned Equity meaning"
-msgstr "Significado de Equidad Ganada"
+#~ msgctxt "pricing desk"
+#~ msgid "Earned Equity meaning"
+#~ msgstr "Significado de Equidad Ganada"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tabs"
@@ -73645,9 +73931,9 @@ msgstr "La prueba no se envió."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, token picker"
-msgid "Token to mint"
-msgstr "Token a emitir"
+#~ msgctxt "hand-mint form, token picker"
+#~ msgid "Token to mint"
+#~ msgstr "Token a emitir"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/asks/AsksPanel.tsx
@@ -74379,6 +74665,12 @@ msgstr "Intentar de nuevo"
 msgctxt "change request: where it stands, in review"
 msgid "In review · review ends {ends}"
 msgstr "En revisión · la revisión termina el {ends}"
+
+# needs-native-review: the pricing desk, the first step on the Treasurer's path, 27 Nov 2026
+#: client/src/components/valuation/PricingDesk.tsx
+msgctxt "pricing desk, the first step on the Treasurer's path"
+msgid "What {equity} means"
+msgstr "Qué significa {equity}"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: new words, 20 Nov 2026
@@ -76033,6 +76325,12 @@ msgctxt "module comms, for whom"
 msgid "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
 msgstr "Aldeas que quieren mantenerse en contacto por correo con todas las personas que conocen, desde la propia plataforma de la aldea."
 
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Whoever holds the budget power decides, or the village votes."
+msgstr "Decide quien tiene el poder del presupuesto, o vota la aldea."
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: PACK_REFUSAL_WORDS: too_many_goals"
@@ -76769,6 +77067,13 @@ msgstr "En los pendientes hasta ahora"
 msgid "{0, plural, one {# photo ready.} other {# photos ready.}}"
 msgstr "{0, plural, one {# foto lista.} other {# fotos listas.}}"
 
+# needs-native-review: the Treasury, a holder of several desks, 27 Nov 2026
+#. placeholder {0}: held.length
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the powers behind these {0} desks by its vote."
+msgstr "La aldea le dio, por su voto, los poderes detrás de estos {0} escritorios."
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page goals"
 msgid "Show fewer goals"
@@ -77134,6 +77439,12 @@ msgctxt "economics view heading"
 msgid "Milestones going quiet"
 msgstr "Hitos que se quedan en silencio"
 
+# needs-native-review: the Treasury, the End of Moon review's settings folded, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the End of Moon review's settings, folded"
+msgid "End of Moon review settings"
+msgstr "Ajustes de la revisión de Fin de Luna"
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "Keep each recording under 7 minutes."
@@ -77221,6 +77532,12 @@ msgstr "Agregar una hora"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopt this new version"
 msgstr "Adoptar esta nueva versión"
+
+# needs-native-review: the hand mint's rules, the cap, 27 Nov 2026
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the cap"
+msgid "At most {capWords} a moon"
+msgstr "Como máximo {capWords} por luna"
 
 # needs-native-review: the rows of /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/sourceWords.ts
@@ -79399,9 +79716,9 @@ msgstr "Aprobado, se emite en el lanzamiento"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, member picker"
-msgid "Member to mint to"
-msgstr "Miembro que recibe la emisión"
+#~ msgctxt "hand-mint form, member picker"
+#~ msgid "Member to mint to"
+#~ msgstr "Miembro que recibe la emisión"
 
 #: client/src/components/map/MapMembersDoor.tsx
 #, needs-native-review
@@ -82717,6 +83034,12 @@ msgctxt "JourneyDetail, button"
 msgid "Walk through"
 msgstr "Recorrer"
 
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The other desks"
+msgstr "Los otros escritorios"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: filled.unoffered.map(tokenName).join(", ")
 #: client/src/components/valuation/QuestEnginePrice.tsx
@@ -83065,6 +83388,12 @@ msgstr "predeterminado {0}"
 msgctxt "GuidePanel, p"
 msgid "Ask anything about what you have written, or let the guide reflect it back to you. It asks; it never answers for you."
 msgstr "Pregunte lo que quiera sobre lo que ha escrito, o deje que la guía se lo refleje. Ella pregunta; nunca responde por usted."
+
+# needs-native-review: the site menu, the emoji taken off (the lead, 27 Nov 2026: "Drop them")
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Launch Plan"
+msgstr "Plan de lanzamiento"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/NeedsPanel.tsx
@@ -83812,6 +84141,12 @@ msgstr "Lo que muestra el mapa"
 msgctxt "work with us: help under a question"
 msgid "What materials, supplies, or inputs are required, and what do they cost? Note anything the village may already have."
 msgstr "¿Qué materiales, suministros o insumos se necesitan, y cuánto cuestan? Anote lo que la aldea ya podría tener."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "End of Moon pay"
+msgstr "Pago de Fin de Luna"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/asks/AsksPanel.tsx
@@ -84600,9 +84935,9 @@ msgstr "La barra tiene {MAX_MAP_CHIPS} fichas y la luna, que es lo que cabe a lo
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "Cash budget"
-msgstr "Presupuesto de efectivo"
+#~ msgctxt "budget page"
+#~ msgid "Cash budget"
+#~ msgstr "Presupuesto de efectivo"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
@@ -85503,6 +85838,12 @@ msgstr "Su escalera en esta temporada"
 msgctxt "moon recap: QUEUE_WORDS: approveWork"
 msgid "Approve the work"
 msgstr "Aprobar el trabajo"
+
+# needs-native-review: Admin's pricing desk, the door for a Treasurer who is not an admin, 27 Nov 2026
+#: client/src/components/admin/PricingDeskTab.tsx
+msgctxt "pricing desk"
+msgid "A Treasurer who is not an admin opens this desk under Governance, Treasury"
+msgstr "Un Tesorero que no es administrador abre este escritorio en Gobernanza, Tesorería"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/QuestRootsEditor.tsx
@@ -88474,6 +88815,12 @@ msgctxt "rites"
 msgid "Your own code opens once you may vouch for somebody."
 msgstr "Su propio código se abre cuando ya pueda avalar a alguien."
 
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Mint tokens"
+msgstr "Emitir tokens"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AppointToRole.tsx
 msgctxt "AppointToRole, button"
@@ -89890,6 +90237,12 @@ msgstr "Ya no guardamos esta solicitud. Guárdela de nuevo para crear un enlace 
 msgctxt "an ask raised with a role, the day it was raised"
 msgid "Raised {0}"
 msgstr "Planteado el {0}"
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "Save the sheet as CSV, or paste its cells below."
+msgstr "Guarde la hoja como CSV, o pegue sus celdas abajo."
 
 #: client/src/components/admin/GlossaryPanel.tsx
 msgctxt "admin identity: save the explanations"
@@ -92881,6 +93234,12 @@ msgctxt "settings: page title"
 msgid "Profile settings"
 msgstr "Ajustes del perfil"
 
+# needs-native-review: the Treasury, a holder of one desk, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the power behind this desk by its vote."
+msgstr "La aldea le dio, por su voto, el poder detrás de este escritorio."
+
 # needs-native-review: player card, 26 Nov 2026
 #: client/src/components/playerCard/cardHeadings.ts
 #: client/src/components/playerCard/playerCardMessages.ts
@@ -92964,6 +93323,12 @@ msgstr "Qué decisiones puede detener una persona custodia"
 msgctxt "player card, full time"
 msgid "Full-time"
 msgstr "Tiempo completo"
+
+# needs-native-review: the Treasury, the first screen's eyebrow, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero eyebrow"
+msgid "The treasury, this moon"
+msgstr "La tesorería, esta luna"
 
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts

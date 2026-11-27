@@ -161,7 +161,7 @@ Account menu (your name)
     Journal  `/journal`
     Protocols  `/protocols`
     Badges  `/badges`
-  🌳 Launch Plan  `/journey-to-launch`
+  Launch Plan  `/journey-to-launch`
 ```
 
 ### Role holder with a treasury power
@@ -251,7 +251,7 @@ Account menu (your name)
     Protocols  `/protocols`
     Badges  `/badges`
   Running the village ▸
-    🌳 Launch Plan  `/journey-to-launch`
+    Launch Plan  `/journey-to-launch`
     Treasury desk  `/treasury`
 ```
 
@@ -342,9 +342,9 @@ Account menu (your name)
     Protocols  `/protocols`
     Badges  `/badges`
   Running the village ▸
-    🌳 Launch Plan  `/journey-to-launch`
+    Launch Plan  `/journey-to-launch`
     Treasury desk  `/treasury`
-    🛠 Command Centre  `/project-history`
+    Command Centre  `/project-history`
     Review  `/admin/review`
     Village Settings  `/admin`
 ```
@@ -371,10 +371,10 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 | Route | Page | Who | Menu on main | Menu now | Decision | Note |
 |---|---|---|---|---|---|---|
 | `/` |  | V N M R I A | - | - | STAY | Home: the logo and the phone's Home tab |
-| `/journey-to-launch` | Journey to launch | M R A | Governance / 🌳 Launch Plan | Account menu / Running the village / 🌳 Launch Plan | STAY | the village test run |
+| `/journey-to-launch` | Journey to launch | M R A | Governance / Launch Plan | Account menu / Running the village / Launch Plan | STAY | the village test run |
 | `/setup-game` | The Setup Game | A | - | - | STAY | the Setup Game (Rye, 2026-10-31), reached from Village Settings |
 | `/canvas/workbook` | Canvas workbook | A | - | - | STAY | reached from the Governance canvas |
-| `/project-history` | Command Centre | A | Governance / 🛠 Command Centre | Account menu / Running the village / 🛠 Command Centre | STAY | the first village's build history |
+| `/project-history` | Command Centre | A | Governance / Command Centre | Account menu / Running the village / Command Centre | STAY | the first village's build history |
 | `/claim` | Claim this village | A | - | - | STAY | a new village's first step, reached by link |
 | `/feedback` | Feedback | V N M R I A | Community / Share Feedback | Community / Conversations / Share Feedback | FOLD? | could become a row in the guide's corner panel (Scarlet) |
 | `/network` | Village network | V N M R I A | About / Village Network | Community / Our story / Village Network | STAY |  |

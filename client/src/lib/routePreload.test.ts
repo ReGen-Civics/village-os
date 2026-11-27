@@ -66,6 +66,7 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), the /budget redirect
     // to /governance/treasury#cash-budget (the cash budget folded into Governance, the lead, 27 Nov 2026), the
     // /role-measures redirect to /admin/role-progress#role-measures (its own page, 27 Nov 2026), the
+    // /treasury, /cash-payouts and /pricing redirects to their sections of the one Treasury (27 Nov 2026), and the
     // /game-mechanics redirect to /governance/how#game-mechanics (Game Mechanics folded into How we work together,
     // 26 Nov 2026), and the /approvals, /changes, /changes/:id and /governance/decisions/changes redirects into Your
     // work and Decisions (the lead, 27 Nov 2026: the folds), and the /feedback redirect into the guide's panel (the
@@ -75,7 +76,8 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // to /rights since the rights fold, 27 Nov 2026), and the four old season addresses (/season-plans,
     // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026), and the /first-walk redirect home (the page was
     // removed on 27 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 29);
+    // The treasury's three (/treasury, /cash-payouts, /pricing) are counted above, beside /budget.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 32);
     expect(routes.length).toBeGreaterThan(60);
   });
 

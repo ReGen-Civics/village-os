@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import type { RhythmDoc } from "@shared/moonRhythm";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
-import { buttonClass, inputClass, labelClass, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { useSettingsDocument, useSettingsKit } from "./useSettingsDocument";
 import { useMoonWords } from "@/components/myMoon/moonWords";
 
 
@@ -39,6 +39,8 @@ export const fromDraft = (d: Draft): RhythmDoc => ({
 });
 
 export default function RhythmEditor({ password }: { password: string }) {
+  // Admin's classes unless Governance's Treasury provides the sheet's (useSettingsDocument.ts, SettingsKit).
+  const { input: inputClass, label: labelClass, button: buttonClass, primary: primaryClass, box } = useSettingsKit();
   const W = useMoonWords().admin.rhythm;
   const { state, save, saving, message } = useSettingsDocument<RhythmDoc>("rhythm", password);
   const [d, setD] = useState<Draft | null>(null);
@@ -57,13 +59,13 @@ export default function RhythmEditor({ password }: { password: string }) {
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-2">
+      <section className={`grid gap-3 sm:grid-cols-2 ${box}`}>
         <label className={labelClass}>{W.sendHour}<input type="number" min={0} max={23} className={inputClass} value={d.sendHour} onChange={(e) => set({ sendHour: e.target.value })} /></label>
         <label className={labelClass}>{W.guideUrl}<input type="url" className={inputClass} value={d.guideUrl} onChange={(e) => set({ guideUrl: e.target.value })} /></label>
         {!d.guideUrl.trim() && <p className="text-sm text-muted-foreground sm:col-span-2">{W.guideEmpty}</p>}
       </section>
 
-      <section className="space-y-3 rounded-xl border border-border bg-white p-4">
+      <section className={`space-y-3 ${box}`}>
         <p className={labelClass}>{W.overrides}</p>
         <p className="text-sm text-muted-foreground">{W.overridesHint}</p>
         {d.overrides.map((o, i) => (

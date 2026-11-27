@@ -205,7 +205,7 @@ export default function CashOwedPanel() {
         <section aria-labelledby="cash-books" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 id="cash-books" className="font-semibold text-card-foreground"><Trans context="CashOwedPanel, h4">What the village owes</Trans></h4>
-            <a href="/cash-payouts" className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2">
+            <a href="/governance/treasury#cash" className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2">
               <Trans context="CashOwedPanel, a">Record a bank transfer
             </Trans></a>
           </div>

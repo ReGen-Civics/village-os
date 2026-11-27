@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { INVOICING_ROUTES, type MoonReviewSettings, type PayRoute } from "@shared/moonRecap";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
-import { buttonClass, inputClass, labelClass, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { useSettingsDocument, useSettingsKit } from "./useSettingsDocument";
 import { useMoonWords } from "@/components/myMoon/moonWords";
 
 
@@ -59,6 +59,8 @@ export const fromDraft = (d: Draft): Record<string, unknown> => ({
 });
 
 export default function VillageSettingsEditor({ password }: { password: string }) {
+  // Admin's classes unless Governance's Treasury provides the sheet's (useSettingsDocument.ts, SettingsKit).
+  const { input: inputClass, label: labelClass, button: buttonClass, primary: primaryClass, box } = useSettingsKit();
   const W = useMoonWords().admin.settings;
   const MW = useMoonWords();
   const { state, save, saving, message, decideInbox } = useSettingsDocument<MoonReviewSettings>("settings", password);
@@ -78,7 +80,7 @@ export default function VillageSettingsEditor({ password }: { password: string }
 
   return (
     <div className="space-y-4">
-      <section className="space-y-3 rounded-xl border border-border bg-white p-4">
+      <section className={`space-y-3 ${box}`}>
         {gap("country") && <p data-testid="country-gap" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-foreground">{W.hostMissing}</p>}
         <div className="grid gap-3 sm:grid-cols-2">
           <label className={labelClass}>{W.hostCode}<input className={inputClass} maxLength={2} value={d.hostCode} onChange={(e) => set({ hostCode: e.target.value.toUpperCase() })} /></label>
@@ -99,13 +101,13 @@ export default function VillageSettingsEditor({ password }: { password: string }
         </div>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-border bg-white p-4">
+      <section className={`space-y-3 ${box}`}>
         {gap("pilotAck") && <p data-testid="ack-gap" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-foreground">{W.ackMissing}</p>}
         <label className={labelClass}>{W.ackText}<textarea className={inputClass} rows={3} value={d.ackText} onChange={(e) => set({ ackText: e.target.value })} /></label>
         <label className={labelClass}>{W.ackVersion}<input className={inputClass} value={d.ackVersion} onChange={(e) => set({ ackVersion: e.target.value })} /></label>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-border bg-white p-4">
+      <section className={`space-y-3 ${box}`}>
         <p className={labelClass}>{W.taxForms}</p>
         {d.taxForms.map((f, i) => (
           <div key={i} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
@@ -126,7 +128,7 @@ export default function VillageSettingsEditor({ password }: { password: string }
         </div>
       </section>
 
-      <section className="space-y-3 rounded-xl border border-border bg-white p-4">
+      <section className={`space-y-3 ${box}`}>
         <p className={labelClass}>{W.holds}</p>
         {d.holds.map((h, i) => (
           <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_2fr_auto]">

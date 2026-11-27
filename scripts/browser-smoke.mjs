@@ -71,7 +71,7 @@ export const DEFAULT_ROUTES = [
   "/resident-rights",
   "/steward-rights",
   "/opportunities",
-  "/pricing",
+  "/governance/treasury",
   "/request-membership",
   "/login",
   "/register",
