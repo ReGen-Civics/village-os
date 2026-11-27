@@ -47,6 +47,10 @@ interface LineForm {
 
 export default function BudgetEditor({ call, read, look, reload }: Props) {
   const { t, i18n } = useLingui();
+  const Heading = look.hTag;
+  // Folded on the sheet: the two ways to add start closed, each behind its own button.
+  const [uploadOpen, setUploadOpen] = useState(!look.fold);
+  const [addOpen, setAddOpen] = useState(!look.fold);
   const village = read.villageCurrency ?? "";
   /** Every refused or held row as "Row 3, planned: <the server's sentence>". Row 0 is the upload's own name or scope. */
   const rowSentences = (a: Partial<ImportAnswer>): string[] =>
@@ -295,11 +299,31 @@ export default function BudgetEditor({ call, read, look, reload }: Props) {
 
   return (
     <>
+      {look.fold ? (
+        <div className="flex flex-wrap gap-3" data-budget-acts>
+          <button type="button" className={look.secondary} aria-expanded={uploadOpen} onClick={() => setUploadOpen((v) => !v)}>
+            {t({ message: "Upload a budget sheet", context: "budget upload" })}
+          </button>
+          <button type="button" className={look.secondary} aria-expanded={addOpen} onClick={() => setAddOpen((v) => !v)}>
+            {t({ message: "Add one line by hand", context: "budget add line" })}
+          </button>
+        </div>
+      ) : null}
+
+      {uploadOpen ? (
       <section className={look.panel} aria-labelledby="budget-upload" data-budget-upload>
-        <h2 id="budget-upload" className={`${look.h2} mb-1`}>{t({ message: "Upload a budget sheet", context: "budget upload" })}</h2>
-        <p className={`${look.hint} mb-4`}>
-          {t({ message: "Save the sheet as CSV, or copy its cells and paste them below. The first row names the columns: period, label, category and planned, and if you like circle, role, currency and note. A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved.", context: "budget upload" })}
-        </p>
+        <Heading id="budget-upload" className={`${look.h2} mb-1`}>{t({ message: "Upload a budget sheet", context: "budget upload" })}</Heading>
+        {look.fold ? (
+          <ul className={`${look.hint} mb-4 list-disc space-y-1 pl-5`}>
+            <li>{t({ message: "Save the sheet as CSV, or paste its cells below.", context: "budget upload" })}</li>
+            <li>{t({ message: "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like.", context: "budget upload" })}</li>
+            <li>{t({ message: "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved.", context: "budget upload" })}</li>
+          </ul>
+        ) : (
+          <p className={`${look.hint} mb-4`}>
+            {t({ message: "Save the sheet as CSV, or copy its cells and paste them below. The first row names the columns: period, label, category and planned, and if you like circle, role, currency and note. A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved.", context: "budget upload" })}
+          </p>
+        )}
         <div className="flex flex-col gap-3">
           <label className={look.label}>
             {t({ message: "The sheet", context: "budget upload field" })}
@@ -365,9 +389,11 @@ export default function BudgetEditor({ call, read, look, reload }: Props) {
         )}
         <OutcomeNote o={uploadOutcome} />
       </section>
+      ) : null}
 
+      {addOpen ? (
       <section className={look.panel} aria-labelledby="budget-add" data-budget-add>
-        <h2 id="budget-add" className={`${look.h2} mb-1`}>{t({ message: "Add one line by hand", context: "budget add line" })}</h2>
+        <Heading id="budget-add" className={`${look.h2} mb-1`}>{t({ message: "Add one line by hand", context: "budget add line" })}</Heading>
         <p className={`${look.hint} mb-4`}>{t({ message: "For a line that is not on a sheet. It counts as soon as it is saved.", context: "budget add line" })}</p>
         {fields(form, setForm, "budget-add", true)}
         <div className="mt-4">
@@ -377,9 +403,10 @@ export default function BudgetEditor({ call, read, look, reload }: Props) {
         </div>
         <OutcomeNote o={addOutcome} />
       </section>
+      ) : null}
 
       <section className={look.panel} aria-labelledby="budget-lines">
-        <h2 id="budget-lines" className={`${look.h2} mb-1`}>{t({ message: "The lines", context: "budget desk" })}</h2>
+        <Heading id="budget-lines" className={`${look.h2} mb-1`}>{t({ message: "The lines", context: "budget desk" })}</Heading>
         <p className={`${look.hint} mb-4`}>{t({ message: "Every line that touches this moon. A withdrawn line stays on the record and can be restored.", context: "budget desk" })}</p>
         {read.lines.length === 0 ? (
           <p className={look.hint}>{t({ message: "No budget line touches this moon yet.", context: "budget desk empty" })}</p>

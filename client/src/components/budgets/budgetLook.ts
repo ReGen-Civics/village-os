@@ -8,6 +8,13 @@
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 
 export interface BudgetLook {
+  /** The tag a part's heading takes: h2 in Admin, h3 under Governance's Treasury's own section heading. */
+  hTag: "h2" | "h3";
+  /**
+   * Start the upload and the hand line closed, behind two edged buttons, and tell the upload in three short lines
+   * (Governance's Treasury, fold QA round 2). Admin, which is the budget's own desk, shows both open.
+   */
+  fold?: boolean;
   panel: string;
   tile: string;
   eyebrow: string;
@@ -23,6 +30,8 @@ export interface BudgetLook {
 }
 
 export const SHEET_LOOK: BudgetLook = {
+  hTag: "h3",
+  fold: true,
   panel: CARD,
   tile: TILE,
   eyebrow: EYEBROW,
@@ -30,7 +39,7 @@ export const SHEET_LOOK: BudgetLook = {
   hint: HINT,
   chip: CHIP_SOFT,
   label: LABEL,
-  field: FIELD,
+  field: `${FIELD} min-h-11`,
   primary: BTN_PRIMARY,
   secondary: BTN_SECONDARY,
   error: "rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive",
@@ -38,6 +47,7 @@ export const SHEET_LOOK: BudgetLook = {
 };
 
 export const ADMIN_LOOK: BudgetLook = {
+  hTag: "h2",
   panel: "rounded-xl border border-border bg-white p-6",
   tile: "rounded-xl border border-border bg-white p-4",
   eyebrow: "text-xs font-medium uppercase tracking-wide text-muted-foreground",

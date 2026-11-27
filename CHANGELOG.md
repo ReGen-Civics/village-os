@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.1 (2026-11-27)
+
+### What changed for your village
+
+- **One Treasury in Govern.** The treasury pages (/treasury, /cash-payouts, /pricing) are now one tab at /governance/treasury, opening on this moon's purse and what is left. A treasurer gets one door per desk they hold: End of Moon pay with its review queue and settings, cash to pay out, quest prices, and minting. A member reads the budget line by line and can suggest a change to it. The old addresses open the right desk.
+- **Plain menu labels.** Launch Plan and Command Centre lose their emoji.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.4.0 still works.
+
+---
+
 ## 1.4.0 (2026-11-27)
 
 ### What changed for your village

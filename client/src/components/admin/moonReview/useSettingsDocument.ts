@@ -7,7 +7,8 @@
  * answer. A 404 means the moon review module is off, and the panel then
  * renders nothing.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { SettingsKitContext, type SettingsKit } from "@/components/treasury/deskLooks";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 
 import type { SaveResult } from "@/components/SaveBar";
@@ -101,3 +102,13 @@ export const inputClass = "mt-1 w-full rounded-lg border border-border bg-white 
 export const labelClass = "block text-sm font-medium text-foreground";
 export const buttonClass = "min-h-9 rounded-lg border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground";
 export const primaryClass = "min-h-9 rounded-lg bg-teal-deep px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40";
+
+/**
+ * THE EDITORS' CLASSES, AS A KIT (fold QA round 1, 27 Nov 2026). Admin draws the three settings editors light, by
+ * ruling, and Governance's Treasury draws them on the night sheet inside its End of Moon pay section. The kit is read
+ * from context (SettingsKitContext, components/treasury/deskLooks.ts, so the page providing it carries no part of this
+ * file), and each editor keeps one body. Admin provides nothing and keeps exactly the classes above (ADMIN_KIT).
+ */
+export type { SettingsKit } from "@/components/treasury/deskLooks";
+
+export const useSettingsKit = (): SettingsKit => useContext(SettingsKitContext);

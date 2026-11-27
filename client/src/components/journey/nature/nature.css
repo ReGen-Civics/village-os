@@ -196,3 +196,21 @@
 .nk-bloom path {
   transform: rotate(var(--nk-r));
 }
+
+/* ---------- MoonPhase in each mode (fold QA round 1, 27 Nov 2026) ----------
+ * The lit side is the light one in both modes. On the night ground the ink is
+ * light, so the lit side takes it; by day the ink is dark, and drawing the lit
+ * side in it made a dark disc. By day the lit side takes the panel's cream and
+ * the dark side the ink, softened, so the moon still reads as the moon. */
+.nk-moon-lit {
+  color: var(--foreground);
+}
+.nk-moon-dark {
+  color: var(--muted);
+}
+:root[data-mode="light"] .nk-moon-lit {
+  color: var(--card);
+}
+:root[data-mode="light"] .nk-moon-dark {
+  color: color-mix(in srgb, var(--foreground) 78%, var(--card));
+}
