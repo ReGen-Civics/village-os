@@ -79,11 +79,9 @@ describe("the menu by membership", () => {
         for (const h of twice) expect(["/quests", "/roles"], h).toContain(h);
       });
 
-      it(a.newcomer ? "meets Join first" : "meets the village first, and Join before Govern", () => {
-        const labels = barFor(a).map((g) => g.group.label);
-        if (a.newcomer) expect(labels[0]).toBe("Join");
-        else expect(labels).toEqual(["Village", "Community", "Join", "Govern"]);
-        if (a.newcomer) expect(labels).toEqual(["Join", "Village", "Community", "Govern"]);
+      // Join first for every reader (the lead, 27 Nov 2026: "Join should be first on the list"), Govern last.
+      it("meets Join first, then Village and Community, and Govern last", () => {
+        expect(barFor(a).map((g) => g.group.label)).toEqual(["Join", "Village", "Community", "Govern"]);
       });
     });
   }

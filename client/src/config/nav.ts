@@ -152,9 +152,9 @@ export const isGroup = (entry: NavEntry): entry is NavGroup => "items" in entry;
  * 2026): a row is a link or a folder (`sub`), and a folder
  * opens to five links at most. navNest.test.ts holds both counts for every audience.
  *
- *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health.
+ *   Join        ways in. First for every reader (the lead, 27 Nov 2026: "Join should be first on the list").
+ *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health, Tools.
  *   Community   the people and the story: Our story, conversations, Gratitude, gatherings, welcoming.
- *   Join        ways in. First for a visitor or a newcomer (`leads`), third for a member.
  *   Govern      how the village is run and how we work: deciding, circles and roles, the season (Quests again,
  *               the one page in two groups on purpose), the guides, how we work, and the Module Library last.
  *
@@ -166,6 +166,38 @@ export const NAV: readonly NavEntry[] = [
    * No "Home" entry (Rye, 2026-10-09). The village name or logo at the left of the bar is already the home link,
    * and on a phone the bottom tab bar carries Home.
    */
+  {
+    label: "Join",
+    holds: "Ways in",
+    // First for every reader (the lead, 27 Nov 2026, on the phone's More sheet: "Join should be first on the list"), so
+    // the desktop bar and the phone show one order. `leads` stays: it says why a newcomer meets Join first.
+    leads: "newcomers",
+    // A newcomer opens Join to the paths, the first thing a stranger chooses.
+    opens: "Choose your path",
+    items: [
+      // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
+      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand, sub: "Choose your path" },
+      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown, sub: "Choose your path" },
+      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome, sub: "Choose your path" },
+      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf, sub: "Choose your path" },
+      // The founding team and the open ventures. Also in Govern's Circles & Roles, on purpose: here it is the way in.
+      { href: "/roles", label: "Open Roles" },
+      // Come and see (the Love Letter moved to Community, round 2).
+      { href: "/visit", brochure: true, label: "Plan a Visit" },
+      // The other three of the four ways to build (components/ContributorRoutes.tsx).
+      { href: "/partner", label: "Become a partner", sub: "Build with us" },
+      { href: "/propose-quest", label: "Propose a quest", sub: "Build with us" },
+      { href: "/opportunities", brochure: true, label: "Business Opportunities", sub: "Build with us" },
+      { href: "/work-with-us", brochure: true, label: "Work With Us", sub: "Build with us" },
+      // The two ways to put money in.
+      { href: "/contribute", label: "Contribute", module: "commerce", sub: "Fund the village" },
+      /**
+       * The crowdpool bridge. It shipped with no entry anywhere, so the only link to /campaigns in the whole
+       * client sat on the campaign page, reachable only from /campaigns: a closed loop with no door in.
+       */
+      { href: "/campaigns", label: "Crowd pooling", module: "crowdpool", newcomers: "in-use", sub: "Fund the village" },
+    ],
+  },
   {
     label: "Village",
     holds: "The place",
@@ -216,36 +248,6 @@ export const NAV: readonly NavEntry[] = [
       // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
       { href: "/rites", label: "Rites", module: "rites", newcomers: "never", sub: "Welcoming" },
       { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never", sub: "Welcoming" },
-    ],
-  },
-  {
-    label: "Join",
-    holds: "Ways in",
-    leads: "newcomers",
-    // A newcomer opens Join to the paths, the first thing a stranger chooses.
-    opens: "Choose your path",
-    items: [
-      // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
-      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand, sub: "Choose your path" },
-      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown, sub: "Choose your path" },
-      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome, sub: "Choose your path" },
-      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf, sub: "Choose your path" },
-      // The founding team and the open ventures. Also in Govern's Circles & Roles, on purpose: here it is the way in.
-      { href: "/roles", label: "Open Roles" },
-      // Come and see (the Love Letter moved to Community, round 2).
-      { href: "/visit", brochure: true, label: "Plan a Visit" },
-      // The other three of the four ways to build (components/ContributorRoutes.tsx).
-      { href: "/partner", label: "Become a partner", sub: "Build with us" },
-      { href: "/propose-quest", label: "Propose a quest", sub: "Build with us" },
-      { href: "/opportunities", brochure: true, label: "Business Opportunities", sub: "Build with us" },
-      { href: "/work-with-us", brochure: true, label: "Work With Us", sub: "Build with us" },
-      // The two ways to put money in.
-      { href: "/contribute", label: "Contribute", module: "commerce", sub: "Fund the village" },
-      /**
-       * The crowdpool bridge. It shipped with no entry anywhere, so the only link to /campaigns in the whole
-       * client sat on the campaign page, reachable only from /campaigns: a closed loop with no door in.
-       */
-      { href: "/campaigns", label: "Crowd pooling", module: "crowdpool", newcomers: "in-use", sub: "Fund the village" },
     ],
   },
   {

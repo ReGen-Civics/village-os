@@ -99,3 +99,9 @@ msgstr "Lo que espera su respuesta"
 msgctxt "the breadcrumb: a group or folder that opens the menu there, read aloud"
 msgid "Open {words} in the menu"
 msgstr "Abrir {words} en el menú"
+
+# needs-native-review: a + opens edit mode for every card, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud when a + opens edit mode and the picker"
+msgid "Editing your cards. Pick one to add, or drag a card to move it."
+msgstr "Editando sus tarjetas. Elija una para añadir, o arrastre una tarjeta para moverla."
