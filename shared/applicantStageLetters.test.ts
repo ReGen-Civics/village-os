@@ -5,6 +5,8 @@ import { describe, expect, it } from "vitest";
 import { stageLetter, stageLetterKey, type StageLetterInput } from "./applicantStageLetters";
 import { parseRoleShortLabels, roleShortLabel } from "./roleShortLabel";
 import { bookingLinksText, roleBookingFor } from "./interviewBooking";
+import { adoptedAccountLetter, adoptedInviteLetter, closedLetter, invitedLetter } from "./openProposalDecide";
+import { sayOnProfile } from "./applicantWords";
 
 const base: StageLetterInput = {
   kind: "references",
@@ -73,5 +75,36 @@ describe("the booking button, by role only", () => {
     // CONTROL: no role link, the holders' links, still unnamed.
     expect(roleBookingFor("Ops", [...holders, { firstName: "Ben", bookingUrl: "https://cal.example.test/ben" }], null).links.map((l) => l.who)).toEqual([null, null]);
     expect(bookingLinksText([{ who: null, url: "https://a.test" }, { who: null, url: "https://b.test" }])).toBe("\n1: https://a.test\n2: https://b.test");
+  });
+});
+
+describe("the letters already on main, in the same shape (the lead, 27 Nov 2026)", () => {
+  it("the invitation: the next step with only the first conversation's link, who acts by role, and the six-stage path", () => {
+    const l = invitedLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], statusLink: null, lang: "en", conversations: [
+      { role: "Operations Role", label: "Ops", minutes: 30, bookingLinks: [{ who: null, url: "https://cal.example.test/ops" }] },
+      { role: "Community Role", label: "Community", minutes: 30, bookingLinks: [{ who: null, url: "https://cal.example.test/community" }] },
+    ] });
+    expect(l.text).toContain("Next step:\nBook a time with Ops for your first conversation: https://cal.example.test/ops");
+    expect(l.text).toContain("Who acts next:\nYou book the time, then Ops holds the conversation.");
+    expect(l.text).not.toContain("cal.example.test/community");
+    expect(l.text).not.toContain("decides by consent");
+    expect(l.text).toContain("then your final conversation, then our answer to your proposal.");
+  });
+
+  it("the adoption letters and the closed letter say who acts next, with no booking link", () => {
+    const base = { firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en" as const };
+    for (const l of [adoptedInviteLetter({ ...base, link: "https://v.example.test/join", days: 14 } as any), adoptedAccountLetter({ ...base, signIn: "https://v.example.test/profile" } as any)]) {
+      expect(l.text).toContain("Who acts next:\nYou. Once your profile is made, it shows what to align with before your role starts.");
+      expect(l.text).not.toContain("cal.example.test");
+    }
+    const c = closedLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], site: "https://v.example.test", team: "Ops", statusLink: null, lang: "en" });
+    expect(c.text).toContain("Next step:\nNothing more is needed from you.");
+    expect(c.text).toContain("Who acts next:\nYou, only if you choose to apply again.");
+    expect(closedLetter({ firstName: null, village: "V", roleNames: [], site: "https://v.example.test", team: "Ops", statusLink: null, lang: "es" }).text).toContain("Quién actúa ahora:");
+  });
+
+  it("the profile says the page's 'below' as the application's page", () => {
+    expect(sayOnProfile("en", "Book your conversation with Ops below.")).toBe("Book your conversation with Ops on your application's page.");
+    expect(sayOnProfile("es", "Reserve abajo su conversación.")).toBe("Reserve en la página de su postulación su conversación.");
   });
 });

@@ -61,6 +61,9 @@ describe("the applicant's next step on their profile", () => {
     await screen.findByRole("heading", { name: "References and proposal" });
     expect(screen.queryByRole("link", { name: "Book with Visionary" })).toBeNull();
     expect(document.body.innerHTML).not.toContain("cal.example.test/v");
+    // The page's "below" points to the application's page from here.
+    expect(document.querySelector("[data-application-next-move]")?.textContent).not.toMatch(/\bbelow\b/);
+    expect(document.querySelector("[data-application-next-move]")?.textContent).toContain("on your application's page");
   });
 
   it("draws nothing when no application of theirs waits", async () => {

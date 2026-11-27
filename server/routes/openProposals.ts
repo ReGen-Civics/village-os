@@ -81,7 +81,6 @@ import {
   limiterAddressKey,
   APPLY_EMAIL_WORDS,
   stepsAfterSubmit,
-  stepsAsLines,
   safeGreeting,
 } from "../../shared/openProposals";
 import { againLetter } from "../../shared/applicationAgain";
@@ -119,6 +118,7 @@ import { deleteReferencesOf, memberReferencesDecidedBefore } from "../repos/appl
 import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
+import { receivedNextLines } from "../lib/applicantStageLetters";
 import { recordEvent } from "../lib/events";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { loadEmailVillage } from "../lib/comms/render";
@@ -958,9 +958,11 @@ export function register(app: Express, deps: Deps): void {
       if (confirmed.proposal.email) {
         const lang = languageOf(confirmed.proposal);
         const apply = APPLY_EMAIL_WORDS[lang];
-        // The steps after submit (lane A2's one list, through the slot in shared/openProposals.ts), when there are any.
-        const steps = stepsAsLines(stepsAfterSubmit(lang, replyMoons));
-        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyMoons))}${steps ? `\n\n${steps}` : ""}`;
+        // The next step and who acts by role, in the shape of every applicant letter (the lead, 27 Nov 2026: "each step
+        // should come with an email for next steps"), with a booking link only when a conversation is open now. Sent
+        // as before: at confirm, once, under the same key.
+        const next = await receivedNextLines(getPool(), confirmed.proposal.id, lang);
+        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyMoons))}\n\n${next.join("\n")}`;
         try {
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,

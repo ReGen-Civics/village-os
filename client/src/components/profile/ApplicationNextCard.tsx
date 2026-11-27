@@ -13,7 +13,7 @@ import { useLingui } from "@lingui/react/macro";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { BTN_NOTICE, BTN_PRIMARY, CARD_FEATURED, DOOR, EYEBROW } from "@/components/journey/look";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
-import { statusView, type StatusServedForView } from "@shared/applicantWords";
+import { sayOnProfile, statusView, type StatusServedForView } from "@shared/applicantWords";
 
 type Next = { ref: string; status: StatusServedForView & { locale?: string } };
 
@@ -47,7 +47,8 @@ export default function ApplicationNextCard() {
       <h2 id="application-next-heading" className="mt-1 font-display text-2xl font-bold text-foreground">
         {view.stepWords}
       </h2>
-      <p className="mt-1 text-lg text-foreground" data-application-next-move="">{view.move}</p>
+      {/* The page's line points "below"; here it points to the application's page, where the form is. */}
+      <p className="mt-1 text-lg text-foreground" data-application-next-move="">{sayOnProfile(lang, view.move)}</p>
       {(view.primary || book.length > 0) && (
         <div className="mt-4 flex flex-wrap gap-2">
           {view.primary && (

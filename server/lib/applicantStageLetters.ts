@@ -31,6 +31,9 @@ import { stepBookingOf } from "./applicationReview";
 import { plainLetterHtml } from "./letterHtml";
 import { statusLinkFor, withoutStatusLink, type TellDeps } from "./applicantUpdates";
 import { stringVar } from "./variables";
+import { wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
+import { bookingLinksText } from "../../shared/interviewBooking";
+import type { Pool } from "mysql2/promise";
 
 /** A letter that went now; a duplicate is a letter that had already gone. */
 const WENT_NOW: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered"]);
@@ -112,6 +115,23 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
     console.error(`[open-proposals] the stage letter for ${ref} was not sent`, e);
     return false;
   }
+}
+
+/**
+ * THE CONFIRMATION LETTER'S NEXT STEP (Received), in the same shape as every stage letter: the next step, who acts by
+ * role, and the booking link only when a conversation is open now (a village that opens the first conversation as
+ * the address confirms). With our review first, nothing is open yet, and the letter says our review comes next.
+ */
+export async function receivedNextLines(pool: Pool, ref: string, lang: ApplicantLanguage): Promise<string[]> {
+  const w = wordsIn(lang);
+  const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && !i.final);
+  if (open) {
+    const step = await stepBookingOf(pool, ref, open.roleId);
+    const links = bookingLinksText(step.links);
+    return [w.shape.next, links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label), "", w.shape.who, w.shape.youBook(step.label)];
+  }
+  const welcome = await roleWord({ getPool: () => pool }, stringVar("org.onboarding_role"));
+  return [w.shape.next, w.shape.receivedReview, "", w.shape.who, w.shape.receivedWho(welcome)];
 }
 
 /** The one letter after the applicant first refines their proposal. True when it went now. */

@@ -95,6 +95,28 @@ export interface ApplicantMessages {
     after: string;
   };
 
+  /**
+   * EVERY LETTER IN ONE SHAPE (the lead, 27 Nov 2026: "each step should come with an email for next steps"): the next
+   * step, who acts next by role, and a booking link only when the step is a conversation open now. Used by the
+   * confirmation, invitation, adoption and closed letters, beside the stage letters (shared/applicantStageLetters.ts).
+   */
+  shape: {
+    next: string;
+    who: string;
+    /** At Received with no conversation open yet: our review comes next. */
+    receivedReview: string;
+    receivedBook(role: string, link: string): string;
+    receivedWrite(role: string): string;
+    receivedWho(role: string | null): string;
+    youBook(role: string): string;
+    /** The invitation's last line: the path after the conversations, in the six stages. */
+    inviteAfter: string;
+    adoptWho: string;
+    closedNext: string;
+    closedAgain: string;
+    closedWho: string;
+  };
+
   /** THE NOT-INVITED LETTER (build list 6.6): warm, clear, never personal, with open ways to stay close. */
   notInvited: {
     subject(village: string): string;
@@ -387,6 +409,21 @@ const en: ApplicantMessages = {
     after: "After the last conversation, the circle decides by consent, and we write to you with its answer.",
   },
 
+  shape: {
+    next: "Next step:",
+    who: "Who acts next:",
+    receivedReview: "Our review: we read your proposal. If we invite you to the conversations, the invitation brings your first conversation to book.",
+    receivedBook: (role, link) => `Book your first conversation with ${role}: ${link}`,
+    receivedWrite: (role) => `We'll write to you with times for your first conversation, with ${role}.`,
+    receivedWho: (role) => (role ? `${role}, who reads your proposal and writes to you.` : "The team, who reads your proposal and writes to you."),
+    youBook: (role) => `You book the time, then ${role} holds the conversation.`,
+    inviteAfter: "After your conversations come your references and your proposal, then your final conversation, then our answer to your proposal.",
+    adoptWho: "You. Once your profile is made, it shows what to align with before your role starts.",
+    closedNext: "Nothing more is needed from you. If you'd like to stay close:",
+    closedAgain: "You are welcome to apply again whenever a role calls to you.",
+    closedWho: "You, only if you choose to apply again.",
+  },
+
   notInvited: {
     subject: (v) => `Thank you for applying to ${v}`,
     thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}, and for the care you put into it.`,
@@ -675,6 +712,22 @@ const es: ApplicantMessages = {
     after: "Después de la última conversación, el círculo decide por consentimiento, y le escribimos con su respuesta.",
   },
 
+  // needs-native-review: every letter in one shape, 27 Nov 2026
+  shape: {
+    next: "Siguiente paso:",
+    who: "Quién actúa ahora:",
+    receivedReview: "Nuestra revisión: leemos su propuesta. Si le invitamos a las conversaciones, la invitación trae su primera conversación para reservar.",
+    receivedBook: (role, link) => `Reserve su primera conversación con ${role}: ${link}`,
+    receivedWrite: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`,
+    receivedWho: (role) => (role ? `${role}, que lee su propuesta y le escribe.` : "El equipo, que lee su propuesta y le escribe."),
+    youBook: (role) => `Usted reserva el horario y luego ${role} sostiene la conversación.`,
+    inviteAfter: "Después de sus conversaciones vienen sus referencias y su propuesta, luego su conversación final, y luego nuestra respuesta a su propuesta.",
+    adoptWho: "Usted. Cuando su perfil esté creado, muestra con qué alinearse antes de que empiece su rol.",
+    closedNext: "No necesita hacer nada más. Si quiere seguir cerca:",
+    closedAgain: "Puede postularse de nuevo cuando un rol le llame.",
+    closedWho: "Usted, solo si decide postularse de nuevo.",
+  },
+
   notInvited: {
     subject: (v) => `Gracias por postularse a ${v}`,
     thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}, y por el cuidado que puso en ello.`,
@@ -952,6 +1005,22 @@ export function applicantSteps(lang: ApplicantLanguage | null | undefined, reply
 export const LANGUAGES: Record<ApplicantLanguage, ApplicantMessages> = { en, es };
 
 export const wordsIn = (lang: ApplicantLanguage | null | undefined): ApplicantMessages => LANGUAGES[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
+
+/** "Below" said from the applicant's profile, where the form and the button are on the application's own page. */
+const ON_PAGE: Record<ApplicantLanguage, [RegExp, string]> = {
+  en: [/\bbelow\b/g, "on your application's page"],
+  es: [/\babajo\b/g, "en la página de su postulación"],
+};
+
+/**
+ * A status page line read on the applicant's PROFILE (components/profile/ApplicationNextCard.tsx): the page's words
+ * point "below", to the form or the button on that page; on the profile they point to the application's page. Only
+ * our own words pass through here, so the swap is exact.
+ */
+export function sayOnProfile(lang: ApplicantLanguage | null | undefined, line: string): string {
+  const [word, said] = ON_PAGE[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
+  return line.replace(word, said);
+}
 
 /** How every language's "your status page link" line begins, so a notice can drop it whichever language wrote it. */
 export const STATUS_LINK_STARTS: readonly string[] = APPLICANT_LANGUAGES.flatMap((l) => [LANGUAGES[l].keepStatusLink.slice(0, 21), LANGUAGES[l].statusLinkLine("").slice(0, 21)]);

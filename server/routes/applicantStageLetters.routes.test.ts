@@ -211,7 +211,13 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
   it("one next-step email per stage, with only the step's own role link, by role, and nothing private", async () => {
     const id = await confirmed("stages@example.test");
     // Received: the confirmation letter is the stage's email. No later link rides on it.
-    expect(state.fresh.some((m) => m.idempotencyKey === `open-proposal:${id}:status`)).toBe(true);
+    const receivedMail = state.fresh.find((m) => m.idempotencyKey === `open-proposal:${id}:status`)!;
+    expect(receivedMail).toBeTruthy();
+    // In the same shape as every letter: the next step, who acts by role, and the link of the conversation open now
+    // (this village opens the first one as the address confirms). The old step list is gone.
+    expect(receivedMail.text).toContain(`Next step:\nBook your first conversation with Ops: ${LINK.ops}`);
+    expect(receivedMail.text).toContain("Who acts next:\nYou book the time, then Ops holds the conversation.");
+    expect(receivedMail.text).not.toContain("decides by consent");
     for (const later of [LINK.community, LINK.final]) expect(everything()).not.toContain(later);
 
     expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);

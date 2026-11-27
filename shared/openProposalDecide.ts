@@ -403,6 +403,9 @@ export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: num
       ...nextSteps(i, "create"),
       ...signFirst(i),
       "",
+      w.shape.who,
+      w.shape.adoptWho,
+      "",
     ].join("\n"),
   };
 }
@@ -426,6 +429,9 @@ export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { s
       i.signIn,
       ...nextSteps(i, "signIn"),
       ...signFirst(i),
+      "",
+      w.shape.who,
+      w.shape.adoptWho,
       "",
     ].join("\n"),
   };
@@ -497,10 +503,14 @@ export function invitedLetter(i: {
         ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.label || c.role, c.minutes)}`),
         w.invite.total(total),
         "",
-        w.invite.booking,
-        // The first conversation's own way in. The later ones open in order, each with its own role's link then.
+        // The next step, who acts by role, and only the first conversation's way in: it is the one open now. The
+        // later ones open in order, each with its own role's link then (the lead, 27 Nov 2026).
+        w.shape.next,
         firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role),
         ...(i.conversations.length > 1 ? [w.invite.laterOpen] : []),
+        "",
+        w.shape.who,
+        w.shape.youBook(first.label || first.role),
       ]
     : [];
   return {
@@ -512,7 +522,8 @@ export function invitedLetter(i: {
       ...noteLines(i.lang, i.note),
       ...talks,
       "",
-      w.invite.after,
+      // The path after the conversations, in the six stages (no longer "the circle decides by consent").
+      w.shape.inviteAfter,
       "",
       i.statusLink ? w.statusLinkLine(i.statusLink) : w.keepStatusLink,
       "",
@@ -605,7 +616,13 @@ export function closedLetter(i: {
       "",
       w.closed.closed,
       "",
+      w.shape.next,
+      w.shape.closedNext,
       w.closed.quest(letterHref(i.site, "/quests")),
+      w.shape.closedAgain,
+      "",
+      w.shape.who,
+      w.shape.closedWho,
       ...(i.statusLink ? ["", w.closed.page(i.statusLink)] : []),
       "",
       w.closed.signed(i.team),
