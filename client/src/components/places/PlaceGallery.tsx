@@ -21,6 +21,7 @@ import Fireflies from "@/components/journey/nature/Fireflies";
 import PhotoGrid from "@/components/places/PhotoGrid";
 import { jsonHeaders, placeName, uploadHeaders } from "@/components/places/placesApi";
 import { prepareImageForUpload } from "@/lib/imagePrep";
+import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { ALT_TEXT_MAX, CAPTION_MAX, remainingForPlace, type PlacePhoto } from "@shared/placePhotos";
 import {
   BTN_PRIMARY,
@@ -199,7 +200,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
   const form = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    form.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    form.current?.scrollIntoView?.({ block: "nearest", behavior: scrollBehavior() });
     input.current?.focus();
   }, []);
 
