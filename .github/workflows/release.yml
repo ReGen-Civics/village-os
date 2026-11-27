@@ -216,9 +216,6 @@ jobs:
         if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
         with:
           ref: ${{ steps.decide.outputs.sha }}
-          # The commit and its parents, so the tested-twin fallback below can
-          # compare the tagged tree with its second parent's.
-          fetch-depth: 2
 
       - name: The tag, package.json and the platform version agree
         # 1.1.0 stayed the answer of /api/platform/info for 236 commits after
