@@ -113,7 +113,7 @@ describe("the letters already on main, in the same shape (the lead, 27 Nov 2026)
     ] });
     expect(l.text).toContain("Your conversations, in order:\n- A conversation with Ops\n- A conversation with Community\n- A final conversation with Visionary\nAbout 90 minutes in all, or longer if needed.");
     expect(l.text).not.toMatch(/30 minutes/);
-    expect(l.text).toContain("Next step:\nBook your first conversation, with Ops: https://cal.example.test/ops");
+    expect(l.text).toContain("Next step:\n- Book your first conversation, with Ops: https://cal.example.test/ops");
     expect(l.text).toContain("Who acts next:\nYou book the time. Then Ops meets with you.");
     expect(l.text).not.toContain("cal.example.test/community");
     expect(l.text).not.toContain("decides by consent");

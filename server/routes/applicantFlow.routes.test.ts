@@ -216,7 +216,8 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     const s = await status(id);
     expect(s.sixStages.stages.map((x: any) => x.key)).toEqual(["received", "review", "references", "final_interview", "agreement", "start"]);
     expect(s.sixStages.now).toBe("review");
-    expect(s.sixStages.refine.open).toBe(false);
+    // Refining is open from the start (the lead, 27 Nov 2026: "they can refine proposal in each stage").
+    expect(s.sixStages.refine.open).toBe(true);
     await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id);
     // Shortlisted, the first conversation not yet written up: still our review.
     expect(await nowOf(id)).toBe("review");
@@ -228,10 +229,11 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     expect(s.sixStages.next).toBeNull();
   });
 
-  it("refining is refused before References and proposal, saves there with the earlier version kept, and the team reads what changed", async () => {
+  it("refining saves at every stage before Agreement, with the earlier version kept, and the team reads what changed", async () => {
+    // From Received on (the lead, 27 Nov 2026: "they can refine proposal in each stage").
     const early = await confirmed("flow-early@example.test");
     const before = await refine(early, { why: "New why.", aim: "New aim." });
-    expect([before.status, before.body.error]).toEqual([409, "closed"]);
+    expect([before.status, before.body.versions]).toEqual([200, 1]);
 
     const id = await atReferences("flow-refine@example.test");
     expect((await status(id)).sixStages.refine).toMatchObject({ open: true, frozen: false, why: "I want to hold the money well.", aim: "A clear budget.", versions: 0 });

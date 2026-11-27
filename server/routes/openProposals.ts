@@ -119,6 +119,7 @@ import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
 import { receivedNextLines } from "../lib/applicantStageLetters";
+import * as reviewRepo from "../repos/applicationReview";
 import { recordEvent } from "../lib/events";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { loadEmailVillage } from "../lib/comms/render";
@@ -962,7 +963,10 @@ export function register(app: Express, deps: Deps): void {
         // should come with an email for next steps"), with a booking link only when a conversation is open now. Sent
         // as before: at confirm, once, under the same key.
         const next = await receivedNextLines(getPool(), confirmed.proposal.id, lang);
-        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyMoons))}\n\n${next.join("\n")}`;
+        // With a role's application deadline (0445), when review happens; else the one-moon promise, unchanged.
+        const deadline = await reviewRepo.applicationDeadline(getPool(), confirmed.proposal.id).catch(() => null);
+        const promise = deadline ? wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline)) : wordsIn(lang).replyPromise(replyMoons);
+        const text = `${apply.statusText(`${site()}${statusPath}`, promise)}\n\n${next.join("\n")}`;
         try {
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,

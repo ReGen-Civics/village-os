@@ -692,7 +692,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -735,6 +735,8 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   const mayEdit = refsGiven && !decidedStep && kindOfRef(ref) === "open" ? await referencesEditable(pool, ref) : false;
   // Each reference reached or not, by its place in the list: never a name, a contact or a note (the lead, 27 Nov 2026).
   const reached = refsGiven ? (await storedReferencesOf(pool, ref)).map((r) => !!r.followedUpAt) : [];
+  // The roles' application deadline, when one is set (0445): the page says when review happens.
+  const reviewAfter = await repo.applicationDeadline(pool, ref).catch(() => null);
   const referencesAsked = refsAsked ? { given: refsGiven ? reached.length : null, mayAdd: !refsGiven && !decidedStep, mayEdit, ...(refsGiven ? { reached } : {}) } : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
@@ -757,6 +759,7 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     afterFounding: !firstReplied && (await afterFounding(pool, d?.roleIds ?? [])),
     referencesGiven,
     referencesAsked,
+    reviewAfter,
     locale: own ? languageOf(own) : "en",
     note: own?.body.note ?? null,
     offer: outcome ? null : await applicantOffer(pool, ref),
@@ -827,6 +830,8 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
     }
   };
   for (const r of await repo.openReviews(pool)) {
+    // Waiting for its role's review window (1 to 2 weeks after the deadline, the lead): not stalled, so no reminder.
+    if (!repo.reviewWindowOpen(await repo.applicationDeadline(pool, r.ref).catch(() => null), now)) continue;
     const names = await roleNamesOf(deps, r.ref);
     if (!r.firstReplyAt) {
       // Reviewed first, the first reply IS our review's answer, and the reminder says what to do.

@@ -85,6 +85,19 @@ export function mayReadConversationNotes(r: NoteReader): boolean {
   return r.holdsPower || r.isFinalCall || r.holdsConversationRole;
 }
 
+/**
+ * VOICE REFLECTIONS BETWEEN CONVERSATIONS (the lead, 27 Nov 2026: "so that the visionary at the end can listen to these
+ * before her call (and community can listen to mine before their call...)"). A later conversation's holder hears an
+ * earlier conversation's RECORDINGS before their own call, and nothing else of it: its written notes and files stay
+ * with its own readers. An earlier holder never hears a later one this way (they read it only by the power or the
+ * final call, `mayReadConversationNotes`). Never the applicant, never anyone who stepped out. Record and play only:
+ * nothing here transcribes, summarises or judges.
+ */
+export function mayHearReflection(r: { isApplicant: boolean; recused: boolean; holdsLaterConversationRole: boolean }, kind: ConversationNoteKind): boolean {
+  if (r.isApplicant || r.recused) return false;
+  return kind === "recording" && r.holdsLaterConversationRole;
+}
+
 /** Only the person who wrote a note or added a file takes it off. */
 export function mayRemoveNote(authorUserId: string, viewerId: string): boolean {
   return authorUserId === viewerId;

@@ -7,8 +7,11 @@ describe("when the applicant may refine their proposal", () => {
     // The lead, 27 Nov 2026: "one more opportunity to refine their proposal before it's up for anchor circle review".
     expect(mayRefine({ stage: "references", decided: false, finalFrozen: false })).toBe(true);
     expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: false })).toBe(true);
-    // CONTROLS: every other stage, a decision, or the proposal sent to the circle closes it.
-    for (const stage of ["received", "review", "agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
+    // "they can refine proposal in each stage" (the lead, 27 Nov 2026): Received and Our review too.
+    expect(mayRefine({ stage: "received", decided: false, finalFrozen: false })).toBe(true);
+    expect(mayRefine({ stage: "review", decided: false, finalFrozen: false })).toBe(true);
+    // CONTROLS: Agreement and Start, a decision, or the proposal sent to the circle closes it.
+    for (const stage of ["agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
     expect(mayRefine({ stage: "references", decided: true, finalFrozen: false })).toBe(false);
     expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: true })).toBe(false);
   });

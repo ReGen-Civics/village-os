@@ -430,6 +430,29 @@ export async function anchorCircleName(db: Db): Promise<string | null> {
   return name || null;
 }
 
+/**
+ * WHEN AN APPLICATION'S ROLES STOP TAKING APPLICATIONS (0445, the lead, 27 Nov 2026: "we review 1-2 weeks after the
+ * application deadline"): the latest `apply_by` among its roles, YYYY-MM-DD, or null when none sets one.
+ */
+export async function applicationDeadline(db: Db, ref: string): Promise<string | null> {
+  const [steps] = await db.query<RowDataPacket[]>("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'confirmed' LIMIT 1", [ref]);
+  const detail = steps[0]?.detail_json;
+  const parsed = typeof detail === "string" ? (() => { try { return JSON.parse(detail); } catch { return null; } })() : detail;
+  const ids = Array.isArray(parsed?.roleIds) ? (parsed.roleIds as unknown[]).map(String) : [];
+  if (!ids.length) return null;
+  const [cols] = await db.query<RowDataPacket[]>("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'org_roles' AND COLUMN_NAME = 'apply_by' LIMIT 1");
+  if (!cols.length) return null;
+  const [rows] = await db.query<RowDataPacket[]>("SELECT DATE_FORMAT(MAX(apply_by), '%Y-%m-%d') AS d FROM org_roles WHERE id IN (?)", [ids]);
+  return rows[0]?.d ? String(rows[0].d) : null;
+}
+
+/** The review window opens a week after the deadline (the lead: "1-2 weeks after"); before that nothing is stalled. */
+export const REVIEW_WINDOW_DAYS = 7;
+export function reviewWindowOpen(deadline: string | null, now: Date): boolean {
+  if (!deadline) return true;
+  return now.getTime() >= new Date(`${deadline}T00:00:00Z`).getTime() + REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+}
+
 export async function bookingUrlsById(db: Db, ids: readonly string[]): Promise<Map<string, string | null>> {
   if (!ids.length) return new Map();
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, booking_url FROM org_roles WHERE id IN (?)", [[...ids]]);

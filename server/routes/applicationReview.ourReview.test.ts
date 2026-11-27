@@ -286,12 +286,14 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:invited`)!;
     expect(letter.subject).toBe("An invitation to talk with Test Village");
     const lines = letter.text.split("\n");
-    // Each conversation is named "Role (First)" with the person holding it (shared/roleHolderLabel.ts).
-    expect(lines).toContain("1. Channel Role (Iva), 60 minutes");
-    expect(lines).toContain("2. Data Role (Ivo), 30 minutes");
-    expect(lines).toContain("3. Build Role (Ida), 30 minutes");
-    expect(letter.text, "never the holder's last name").not.toContain("Alder");
-    expect(letter.text).toContain("About 120 minutes in all.");
+    // Each conversation is named by its ROLE only, as a list (the lead, 27 Nov 2026: "Book with Ops/Community/Visionary"),
+    // in order, with one total for all of them ("~90 min in all or longer if needed").
+    const at = lines.indexOf("Your conversations, in order:");
+    expect(lines.slice(at + 1, at + 4)).toEqual(["- A conversation with Channel Role", "- A conversation with Data Role", "- A final conversation with Build Role"]);
+    const next = lines.indexOf("Next step:");
+    expect(lines.slice(next + 1, next + 4).every((l: string) => l.startsWith("- ")), "the next step is a list").toBe(true);
+    for (const person of ["Iva", "Ivo", "Ida", "Alder"]) expect(letter.text, "no holder's name").not.toContain(person);
+    expect(letter.text).toContain("About 120 minutes in all, or longer if needed.");
     expect(letter.text).toContain("We loved your budget.");
     // The second answer is refused: one answer per application.
     const again = await call("POST", `/api/governance/open-proposals/${id}/not-invited`, {}, FOUNDER.id);

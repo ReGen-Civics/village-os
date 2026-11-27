@@ -84,3 +84,28 @@ msgstr "Es suya. Agregue sus notas y márquela como hecha."
 msgctxt "applicant onboarding: referencesPage"
 msgid "Open the references page"
 msgstr "Abrir la página de referencias"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: a voice reflection's player"
+msgid "{role}'s reflection"
+msgstr "Reflexión de {role}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: play a voice reflection"
+msgid "Listen to {role}'s reflection"
+msgstr "Escuchar la reflexión de {role}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: a voice reflection failed"
+msgid "That recording did not open."
+msgstr "Esa grabación no se abrió."
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: the earlier holders' voice reflections, heading"
+msgid "Before your call: listen to {roles}"
+msgstr "Antes de su llamada: escuche a {roles}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: what the reflections are"
+msgid "Their voice reflections from their own conversations. Never shown to the applicant."
+msgstr "Sus reflexiones de voz de sus propias conversaciones. Nunca se muestran a la persona que postula."

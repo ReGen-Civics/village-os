@@ -301,6 +301,8 @@ export const ROLE_COLS =
   "listed, " +
   // 0362: the parameters of the full card (shared/roleParams.ts).
   "village_goals, track, selection_criteria, conversations, conversation_mode, where_worked, languages, budget_line, funded_from, review_after_days, access_bundle, booking_url, always_checked, " +
+  // 0445: the last day applications are taken (the lead, 27 Nov 2026).
+  "apply_by, " +
   // 0374: who may hold the role, a person, an agent or either (shared/agentHolders.ts). NULL reads as either.
   "held_by, " +
   // 0383: the commitment the role asks as a stored value, and whether it needs all of it.

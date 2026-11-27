@@ -30,9 +30,13 @@ export function finalFreezes(finals: ReadonlyArray<{ state: string; booked: bool
   return finals.some((i) => i.state === "scored" || i.state === "skipped");
 }
 
-/** Whether the applicant may refine their proposal now: at References and proposal, or at the Final conversation. */
+/**
+ * Whether the applicant may refine their proposal now: at every stage until it goes to the anchor circle (the lead,
+ * 27 Nov 2026: "they can refine proposal in each stage"): Received, Our review, References and proposal, and the Final
+ * conversation.
+ */
 export function mayRefine(f: { stage: TrackStage; decided: boolean; finalFrozen: boolean }): boolean {
-  return !f.decided && !f.finalFrozen && (f.stage === "references" || f.stage === "final_interview");
+  return !f.decided && !f.finalFrozen && (f.stage === "received" || f.stage === "review" || f.stage === "references" || f.stage === "final_interview");
 }
 
 const clean = (v: unknown, max: number): string => (typeof v === "string" ? v.replace(/\r\n/g, "\n").trim() : "").slice(0, max + 1);

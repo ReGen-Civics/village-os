@@ -48,6 +48,9 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
   const closeDays = daysOf(APPLICATION_CLOSE_DAYS_VARIABLE, 90);
   const out = { applicant: 0, team: 0, warned: 0 };
   for (const r of await repo.openReviews(pool)) {
+    // Before its role's review window opens, nothing waits on the team (the lead: "we review 1-2 weeks after the
+    // application deadline so a stage that waits more than 3 days would nudge").
+    const teamWaits = repo.reviewWindowOpen(await repo.applicationDeadline(pool, r.ref).catch(() => null), now);
     const recused = new Set(await repo.recusedUsers(pool, r.ref));
     const notifyRole = async (roleId: string, title: string, key: string) => {
       for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
@@ -63,7 +66,7 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
       // The applicant: once per conversation, while it is still open.
       if (age >= bookDays && kindOfRef(r.ref) === "open" && (await deps.tellApplicant?.nudge?.(r.ref, iv.id))) out.applicant++;
       // The role up next: once per conversation.
-      if (age >= stepDays) {
+      if (age >= stepDays && teamWaits) {
         await notifyRole(iv.roleId, NUDGE_WORDS.conversation(await rolesNow(), age), `app:${r.ref}:nudge:conversation:${iv.id}`);
         out.team++;
       }
@@ -73,7 +76,7 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
       for (const ref of await referencesOf(pool, r.ref)) {
         if (ref.followedUpAt || !ref.addedAt) continue;
         const age = Math.floor((now.getTime() - ref.addedAt.getTime()) / DAY);
-        if (age < stepDays) continue;
+        if (age < stepDays || !teamWaits) continue;
         const key = `app:${r.ref}:nudge:reference:${ref.id}`;
         if (ref.ownerUserId && !recused.has(ref.ownerUserId)) {
           await deps.notify({ userId: ref.ownerUserId, type: "application_interview_turn", title: NUDGE_WORDS.reference(await rolesNow(), age), link: scorecardHref(r.ref), actorUserId: null, dedupeKey: `${key}:${ref.ownerUserId}` });

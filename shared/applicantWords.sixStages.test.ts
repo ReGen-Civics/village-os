@@ -60,6 +60,18 @@ describe("the applicant's six stages", () => {
     expect(statusView("en", served({ sixStages: six("review") })).refine).toBeNull();
   });
 
+  it("REFINE AT EVERY STAGE (the lead, 27 Nov 2026): Received and Our review offer the refine button too, the open conversation's first", () => {
+    const refine = { open: true, frozen: false, why: "a", aim: "b", versions: 0 };
+    const received = statusView("en", served({ sixStages: six("received", refine) }));
+    expect(received.tasks?.map((t) => [t.key, t.action])).toEqual([["proposal", "Refine your proposal"]]);
+    expect(received.refine).not.toBeNull();
+    const bookNow = { role: "Operations Role", label: "Ops", url: "https://cal.example.test/ops", links: [{ who: null, url: "https://cal.example.test/ops" }] };
+    const review = statusView("en", served({ sixStages: six("review", refine), bookNow }));
+    expect(review.tasks?.map((t) => [t.key, t.action])).toEqual([["conversation", "Book with Ops"], ["proposal", "Refine your proposal"]]);
+    // Not yet invited: the refine button alone, no conversation row.
+    expect(statusView("en", served({ sixStages: six("review", refine) })).tasks?.map((t) => t.key)).toEqual(["proposal"]);
+  });
+
   it("an adopted applicant reads Start as done; a declined one keeps its own answer and the older path", () => {
     const adopted = statusView("en", served({ outcome: "adopted", sixStages: { ...six("start")!, stages: KEYS.map((key) => ({ key, state: "done" as const })) } }));
     expect(adopted.path.every((p) => p.state === "done")).toBe(true);

@@ -45,10 +45,12 @@ import { REFERENCE_QUESTIONS_VARIABLE } from "../../shared/referenceQuestions";
 import { finalFreezes, mayRefine, PROPOSAL_VERSIONS_MAX, readRefined, readVersions, REFINE_ERRORS, type ProposalVersion, type RefineView } from "../../shared/proposalRefine";
 import { kindOfRef, parseCriteria, reviewStageOf } from "../../shared/applicationReview";
 import * as review from "../repos/applicationReview";
+import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import * as repo from "../repos/applicantOnboarding";
 import * as notesRepo from "../repos/applicationConversationNotes";
 import {
   CONVERSATION_NOTE_KINDS,
+  mayHearReflection,
   mayReadConversationNotes,
   mayRemoveNote,
   NOTES_NOTICES,
@@ -496,6 +498,8 @@ export interface Walkthrough {
   guide: GuideView | null;
   /** Each conversation's private notes and files, only the conversations this viewer may read (shared/conversationNotes.ts). */
   conversations: ConversationNotesView[];
+  /** Before your call: the earlier conversations' voice reflections this reader may hear (the lead, 27 Nov 2026). */
+  reflections?: Array<{ interviewId: number; role: string; notes: ServedNote[] }>;
   /** The proposal's earlier versions, oldest first, when the applicant refined it (shared/proposalRefine.ts). */
   proposalVersions: ProposalVersion[];
   /** The proposal's words now, beside the earlier versions; null when there are none. */
@@ -587,6 +591,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     scorecards: await scorecardsFor(deps, ref, viewerId),
     guide: await guideFor(deps, ref, s, viewerId),
     conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
+    reflections: await reflectionsFor(deps, ref, s, interviews),
     ...(await versionsView(deps, ref, s.isReviewer || s.isFinalCall)),
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
@@ -655,6 +660,37 @@ export const notesHref = (ref: string): string => walkthroughHref(ref).replace(/
 
 /** The file door for one note: it asks who the reader is again on every read. */
 export const noteFileHref = (ref: string, id: number): string => `/api/governance/applications/${encodeURIComponent(ref)}/conversation-notes/${id}/file`;
+
+/** Whether this viewer holds the role of a conversation that comes after this one (the reflections' rule). */
+function holdsLaterRole(s: Standing, interview: review.StoredInterview, interviews: readonly review.StoredInterview[]): boolean {
+  return interviews.some((j) => j.position > interview.position && s.roles.has(j.roleId));
+}
+
+/**
+ * BEFORE YOUR CALL (the lead, 27 Nov 2026): the voice reflections of every conversation before this reader's own, by
+ * role ("listen to Ops's and Community's reflections"). Recordings only; never for the applicant or anyone who stepped
+ * out. The file opens through the same door as every note (`conversationFileFor`), which asks again.
+ */
+async function reflectionsFor(deps: ReviewDeps, ref: string, s: Standing, interviews: review.StoredInterview[]): Promise<Array<{ interviewId: number; role: string; notes: ServedNote[] }>> {
+  if (s.isApplicant || s.recused) return [];
+  const earlier = interviews.filter((i) => !s.roles.has(i.roleId) && holdsLaterRole(s, i, interviews));
+  if (!earlier.length) return [];
+  const pool = deps.getPool();
+  const stored = (await notesRepo.conversationNotesOf(pool, ref)).filter((n) => n.kind === "recording" && n.fileName);
+  const names = await review.roleNamesById(pool, earlier.map((i) => i.roleId));
+  const out: Array<{ interviewId: number; role: string; notes: ServedNote[] }> = [];
+  for (const i of earlier) {
+    const notes = stored.filter((n) => n.interviewId === i.id && mayHearReflection({ isApplicant: s.isApplicant, recused: s.recused, holdsLaterConversationRole: true }, n.kind));
+    if (!notes.length) continue;
+    const name = names.get(i.roleId) ?? i.roleId;
+    out.push({
+      interviewId: i.id,
+      role: roleShortLabel(i.roleId, name, stringVar(ROLE_SHORT_LABELS_VARIABLE)),
+      notes: notes.map((n) => ({ id: n.id, kind: n.kind, body: null, fileName: n.originalName, fileHref: noteFileHref(ref, n.id), author: "", on: n.createdAt.toISOString().slice(0, 10), mine: false })),
+    });
+  }
+  return out;
+}
 
 /** Each conversation this viewer may read, with its notes, oldest first. Never for the applicant or anyone who stepped out. */
 async function conversationNotesFor(deps: ReviewDeps, ref: string, s: Standing, viewerId: string, interviews: review.StoredInterview[]): Promise<ConversationNotesView[]> {
@@ -756,7 +792,9 @@ export async function conversationFileFor(deps: ReviewDeps, ref: string, viewerI
   const interview = await review.interviewById(pool, note.interviewId);
   if (!interview || interview.ref !== ref) return null;
   const s = await standingOf(deps, ref, viewerId);
-  if (!readsConversation(s, interview.roleId)) return null;
+  // Its own readers; or, for a voice reflection, a later conversation's holder (the lead, 27 Nov 2026).
+  const later = holdsLaterRole(s, interview, await review.interviewsOf(pool, ref));
+  if (!readsConversation(s, interview.roleId) && !mayHearReflection({ isApplicant: s.isApplicant, recused: s.recused, holdsLaterConversationRole: later }, note.kind)) return null;
   return { fileName: note.fileName, originalName: note.originalName ?? "file" };
 }
 

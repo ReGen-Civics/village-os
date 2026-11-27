@@ -136,10 +136,10 @@ export async function receivedNextLines(pool: Pool, ref: string, lang: Applicant
   if (open) {
     const step = await stepBookingOf(pool, ref, open.roleId);
     const links = bookingLinksText(step.links);
-    return [w.shape.next, links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label), "", w.shape.who, w.shape.youBook(step.label)];
+    return [w.shape.next, `- ${links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label)}`, `- ${w.shape.refineAnyTime}`, "", w.shape.who, w.shape.youBook(step.label)];
   }
   const welcome = await roleWord({ getPool: () => pool }, stringVar("org.onboarding_role"));
-  return [w.shape.next, w.shape.receivedReview, "", w.shape.who, w.shape.receivedWho(welcome)];
+  return [w.shape.next, `- ${w.shape.receivedReview}`, `- ${w.shape.refineAnyTime}`, "", w.shape.who, w.shape.receivedWho(welcome)];
 }
 
 /**

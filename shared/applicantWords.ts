@@ -41,6 +41,8 @@ export interface ApplicantMessages {
   replyPromise(moons: number | null): string;
   /** Introduces a decider's note in an email or a notice. */
   noteIntro: string;
+  /** With a role's application deadline (0445): when review happens, in place of the one-moon promise. */
+  reviewWindow(day: string): string;
   day(iso: string): string;
 
   confirm: {
@@ -108,6 +110,8 @@ export interface ApplicantMessages {
     who: string;
     /** At Received with no conversation open yet: our review comes next. */
     receivedReview: string;
+    /** Refining is open from the first day (the lead, 27 Nov 2026: "they can refine proposal in each stage"). */
+    refineAnyTime: string;
     receivedBook(role: string, link: string): string;
     receivedWrite(role: string): string;
     receivedWho(role: string | null): string;
@@ -392,6 +396,7 @@ const en: ApplicantMessages = {
   replyPromise: (moons) =>
     moons === null ? "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk." : moons === 1 ? "You'll hear from us within one moon cycle." : `You'll hear from us within ${moons} moon cycles.`,
   noteIntro: "A note from us:",
+  reviewWindow: (day) => `We review applications 1 to 2 weeks after ${day}, when applications close.`,
   day: dayIn("en-GB"),
 
   confirm: {
@@ -449,6 +454,7 @@ const en: ApplicantMessages = {
     next: "Next step:",
     who: "Who acts next:",
     receivedReview: "We read your proposal. If we invite you to the conversations, the invitation brings your first one to book.",
+    refineAnyTime: "You can refine your proposal on your page at any step, until it goes to the circle for review.",
     receivedBook: (role, link) => `Book your first conversation, with ${role}: ${link}`,
     receivedWrite: (role) => `We'll write to you with times for your first conversation, with ${role}.`,
     receivedWho: (role) => (role ? `${role}. They read your proposal and write to you.` : "The team. They read your proposal and write to you."),
@@ -725,6 +731,7 @@ const es: ApplicantMessages = {
       ? "Primero estamos completando nuestro equipo fundador, así que puede pasar un tiempo antes de que respondamos. Le escribiremos en cuanto estemos listos para conversar." // needs-native-review: new words, 14 Nov 2026
       : moons === 1 ? "Tendrá noticias nuestras dentro de un ciclo lunar." : `Tendrá noticias nuestras dentro de ${moons} ciclos lunares.`, // needs-native-review: new words, 24 Nov 2026
   noteIntro: "Una nota de parte nuestra:",
+  reviewWindow: (day) => `Revisamos las postulaciones de 1 a 2 semanas después del ${day}, cuando cierran las postulaciones.`, // needs-native-review: the review window, 27 Nov 2026
   day: dayIn("es"),
 
   confirm: {
@@ -784,6 +791,7 @@ const es: ApplicantMessages = {
     next: "Siguiente paso:",
     who: "Quién actúa ahora:",
     receivedReview: "Leemos su propuesta. Si le invitamos a las conversaciones, la invitación trae la primera para reservar.",
+    refineAnyTime: "Puede mejorar su propuesta en su página en cualquier paso, hasta que pase al círculo para su revisión.",
     receivedBook: (role, link) => `Reserve su primera conversación, con ${role}: ${link}`,
     receivedWrite: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`,
     receivedWho: (role) => (role ? `${role}. Lee su propuesta y le escribe.` : "El equipo. Lee su propuesta y le escribe."),
@@ -1392,7 +1400,11 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
           ]
         : atFinal
           ? [conversationTask, proposalTask]
-          : null;
+          : // Received and Our review offer refining too (the lead, 27 Nov 2026: "they can refine proposal in each
+            // stage"), with the open conversation's button first once there is one.
+            (six.now === "received" || six.now === "review") && refineOpen
+            ? [...(bookable ? [conversationTask] : []), proposalTask]
+            : null;
     return {
       heading: s.reviewFirst ? w.headingApplication : w.heading,
       notInvited: false,
@@ -1405,7 +1417,9 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
       references,
       // The form while the proposal can still change (References and proposal, and the Final conversation); its fixed
       // line once it is with the circle for review (Agreement).
-      refine: (six.now === "references" || atFinal) && refineOpen ? six.refine : six.now === "agreement" && six.refine.frozen && !hasOffer ? six.refine : null,
+      // The form at every stage until the anchor circle (the lead, 27 Nov 2026: "they can refine proposal in each
+      // stage"); its fixed line once the proposal is with the circle (Agreement).
+      refine: refineOpen ? six.refine : six.now === "agreement" && six.refine.frozen && !hasOffer ? six.refine : null,
       six: true,
       applicantActs,
       // One gold act: at References and proposal the references form holds it while it waits.

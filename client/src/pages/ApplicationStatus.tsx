@@ -72,6 +72,8 @@ interface Served {
   invitation?: "none" | "expired" | "asked";
   /** References asked of a shortlisted applicant (shared/applicantOnboarding.ts): the form while it waits, a count once given. */
   referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean; reached?: boolean[] } | null;
+  /** The roles' application deadline (0445): review happens 1 to 2 weeks after it. */
+  reviewAfter?: string | null;
   /** The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note. */
   sixStages?: StatusServedForView["sixStages"];
 }
@@ -419,7 +421,7 @@ export default function ApplicationStatus() {
                   {view.average && <p className="mt-1 text-sm text-muted-foreground" data-stage-average="">{view.average}</p>}
                   {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
                   {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
-                  {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
+                  {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{s.reviewAfter ? w.reviewWindow(w.day(s.reviewAfter)) : w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
                   {/* The stage's own gold act (QA round 2): "Add your references" while they wait, the booking gold-edged beside it. */}
                   {view.six && (view.primary || (view.booking?.book && "links" in view.booking.book)) && (
                     <div className="mt-4 flex flex-wrap gap-2" data-stage-book="">

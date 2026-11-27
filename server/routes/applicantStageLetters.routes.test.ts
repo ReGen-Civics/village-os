@@ -215,7 +215,7 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(receivedMail).toBeTruthy();
     // In the same shape as every letter: the next step, who acts by role, and the link of the conversation open now
     // (this village opens the first one as the address confirms). The old step list is gone.
-    expect(receivedMail.text).toContain(`Next step:\nBook your first conversation, with Ops: ${LINK.ops}`);
+    expect(receivedMail.text).toContain(`Next step:\n- Book your first conversation, with Ops: ${LINK.ops}`);
     expect(receivedMail.text).toContain("Who acts next:\nYou book the time. Then Ops meets with you.");
     expect(receivedMail.text).not.toContain("decides by consent");
     for (const later of [LINK.community, LINK.final]) expect(everything()).not.toContain(later);
@@ -421,6 +421,43 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     // Nothing moved.
     expect(await steps()).toEqual(before);
     expect(String((await ivs(id))[0].state)).toBe("open");
+  });
+
+  it("REFINE AT EVERY STAGE (the lead: 'they can refine proposal in each stage'): from Received on, until the circle", async () => {
+    const id = await confirmed("refine-early@example.test");
+    const saved = await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "Early why.", aim: "Early aim." });
+    expect(saved.status, saved.text).toBe(200);
+    const page = await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`);
+    expect(page.body.status.sixStages.refine.open).toBe(true);
+    // The first letter offers it too.
+    const first = state.posted.find((m) => m.idempotencyKey === `open-proposal:${id}:status`)!;
+    expect(first.text).toContain("You can refine your proposal on your page at any step");
+  });
+
+  it("THE REVIEW WINDOW (the lead: 'we review 1-2 weeks after the application deadline'): said when a role sets a deadline, and the team is nudged only once it opens", async () => {
+    const { nudgeTick } = await import("../lib/applicantNudges");
+    const deadline = new Date(Date.now() + 10 * 86_400_000).toISOString().slice(0, 10);
+    await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [deadline, gate]);
+    try {
+      const id = await confirmed("window@example.test");
+      const first = state.posted.find((m) => m.idempotencyKey === `open-proposal:${id}:status`)!;
+      expect(first.text).toContain("We review applications 1 to 2 weeks after");
+      expect(first.text).not.toContain("within one moon cycle");
+      expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.reviewAfter).toBe(deadline);
+      // A conversation open four days, before the window: not stalled, no heads-up to the team.
+      const [iv] = await ivs(id);
+      await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 4 * 86_400_000), iv.id]);
+      const deps: any = { getPool: () => pool, notify: async (n: any) => { state.notices.push(n); return { fresh: true }; }, notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id], now: () => new Date(), members: usersRepo(pool) };
+      state.notices.length = 0;
+      await nudgeTick(deps);
+      expect(state.notices.filter((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`))).toEqual([]);
+      // The window opens (the deadline 30 days back): the role up next hears it.
+      await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10), gate]);
+      await nudgeTick(deps);
+      expect(state.notices.some((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`))).toBe(true);
+    } finally {
+      await q("UPDATE org_roles SET apply_by = NULL WHERE id = ?", [gate]);
+    }
   });
 
   describe("the 90-day close", () => {

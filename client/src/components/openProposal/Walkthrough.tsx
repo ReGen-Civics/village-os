@@ -24,6 +24,7 @@ import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import ConversationNotes from "@/components/openProposal/ConversationNotes";
 import ProposalVersions from "@/components/openProposal/ProposalVersions";
+import Reflections, { type Reflection } from "@/components/openProposal/Reflections";
 import PrivacyNote from "@/components/openProposal/PrivacyNote";
 import { useDayWords } from "@/components/openProposal/ConversationNotes";
 import type { ProposalVersion } from "@shared/proposalRefine";
@@ -53,6 +54,8 @@ interface ServedWalkthrough {
   track: { stages: Array<{ key: TrackStage; label: string; state: TrackState }>; now: TrackStage; who: string; next: string; primary: PrimaryAction };
   shortlist: ShortlistAnswer | null;
   references: { asked: boolean; given: boolean; list: ServedReference[]; total: number; mayAssign: boolean; questions?: string; mayClaim?: boolean };
+  /** Before your call: the earlier holders' voice reflections (the lead, 27 Nov 2026). */
+  reflections?: Reflection[];
   roles: Array<{ id: string; name: string }>;
   members: Array<{ id: string; name: string }>;
   scorecards: {
@@ -275,6 +278,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         <References w={w} busy={busy} act={act} />
       )}
 
+      {w.reflections && w.reflections.length > 0 && <Reflections items={w.reflections} />}
       {/* One place for notes (QA round 1): the guide's questions fold into each conversation; alone only when there is none. */}
       {w.conversations && w.conversations.length > 0 ? (
         <ConversationNotes base={base} conversations={w.conversations} guide={w.guide ?? null} onSaved={() => void load()} />

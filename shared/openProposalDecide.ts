@@ -531,9 +531,11 @@ export function invitedLetter(i: {
         "",
         // The next step, who acts by role, and only the first conversation's way in: it is the one open now. The
         // later ones open in order, each with its own role's link then (the lead, 27 Nov 2026).
+        // As a list, like every multi-step line (the lead, 27 Nov 2026).
         w.shape.next,
-        firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role),
-        ...(i.conversations.length > 1 ? [w.invite.laterOpen] : []),
+        `- ${firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role)}`,
+        ...(i.conversations.length > 1 ? [`- ${w.invite.laterOpen}`] : []),
+        `- ${w.shape.refineAnyTime}`,
         "",
         w.shape.who,
         w.shape.youBook(first.label || first.role),
