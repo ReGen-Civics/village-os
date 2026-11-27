@@ -18687,7 +18687,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // the one route here that rasters for an anonymous caller, so it refuses
     // when the guard cannot check rather than serving unguarded (Rye, 2026-09-23).
     limitState: (bucket: string, max: number, windowMs: number) => limitState(getPool(), bucket, max, windowMs),
-    questNextStep,
+    questNextStep, circles: () => circlesRepo.all() as any[], lapseContext, // circles + lapseContext: the quests suited to a member's seats (routes/questSteps.ts)
   });
 
   // Quests: team consent (value release is always human-gated)

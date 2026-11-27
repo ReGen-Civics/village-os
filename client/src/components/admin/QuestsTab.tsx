@@ -29,6 +29,7 @@ import QuestEnginePrice, { type EngineUse } from "@/components/valuation/QuestEn
 import { usePrefill } from "@/lib/profilePrefill";
 import { linesToList, listToLines } from "@/lib/questBoard";
 import QuestRootsEditor from "./QuestRootsEditor";
+import QuestStepNeedsEditor from "./QuestStepNeedsEditor";
 import QuestSafetyEditor from "@/components/admin/QuestSafetyEditor";
 
 export default function QuestsTab({ password }: { password: string }) {
@@ -391,6 +392,23 @@ export default function QuestsTab({ password }: { password: string }) {
                         questId={q.id}
                         roots={Array.isArray(q.archetypes) ? q.archetypes : []}
                         suggested={q.archetypesSuggested === true}
+                        password={password}
+                      />
+                    </div>
+                  </details>
+                )}
+                {/* Which steps need their own submission (0439): its own Save, like the roots. */}
+                {!q.isExample && (
+                  <details className="mt-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
+                    <summary className="text-xs font-semibold text-muted-foreground cursor-pointer select-none min-h-11 flex items-center">
+                      <Trans context="admin quest step needs">Steps that need a photo, document or words</Trans>
+                      {Array.isArray(q.stepNeeds) && q.stepNeeds.some(Boolean) ? ` (${q.stepNeeds.filter(Boolean).length})` : ""}
+                    </summary>
+                    <div className="mt-3">
+                      <QuestStepNeedsEditor
+                        questId={q.id}
+                        steps={Array.isArray(q.steps) ? q.steps : []}
+                        stepNeeds={Array.isArray(q.stepNeeds) ? q.stepNeeds : []}
                         password={password}
                       />
                     </div>

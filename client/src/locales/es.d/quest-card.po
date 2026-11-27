@@ -38,11 +38,6 @@ msgctxt "quest page: after putting a quest back"
 msgid "Put back. It has left your quests and is open for someone else."
 msgstr "Devuelta. Salió de sus misiones y está abierta para otra persona."
 
-# needs-native-review: quest card, put a quest back, 2026-11-27
-msgctxt "quest page: a turned-in quest cannot be put back by its doer"
-msgid "Want it back? Ask the steward to hand it back."
-msgstr "¿La quiere recuperar? Pida al custodio que se la devuelva."
-
 # needs-native-review: quest card, the strip for a member holding the quest, 2026-11-27
 msgctxt "quest page: the strip for a member holding the quest"
 msgid "You took this quest. Turn in your work when it is done, or put it back."
