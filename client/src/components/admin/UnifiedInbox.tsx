@@ -22,6 +22,8 @@ export interface InboxItem {
   detail: string;
   next: string;
   tab: string;
+  /** A page outside the admin panel that handles it (quest work: /review). Absent, the tab opens. */
+  href?: string;
 }
 
 const NEXT: Record<InboxItem["kind"], string> = {
@@ -73,7 +75,9 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
       fetch(`${API_BASE}/admin/submissions`, { headers: authHeaders(password) }).then((r) => (r.ok ? r.json() : [])),
       fetch(`${API_BASE}/admin/feedback`, { headers: authHeaders(password) }).then((r) => (r.ok ? r.json() : { items: [] })),
       fetch(`${API_BASE}/admin/member-tasks/bridge`, { headers: authHeaders(password) }).then((r) => (r.ok ? r.json() : { review: [] })),
-    ]).then(([subs, feedback, bridge]) => {
+      // Quest work turned in and waiting for a check (the lead, 27 Nov 2026), from the consent queue itself.
+      fetch(`${API_BASE}/admin/quest-claims`, { headers: authHeaders(password) }).then((r) => (r.ok ? r.json() : [])),
+    ]).then(([subs, feedback, bridge, claims]) => {
       if (gone) return;
       const requests = (Array.isArray(subs) ? subs : []).slice(0, 30).map((s: { id?: string; type?: string; status?: string; submittedAt?: string; data?: { name?: string } }) => {
         const row = requestRow({ id: s.id, name: s.data?.name, type: s.type, status: s.status, submittedAt: s.submittedAt });
@@ -83,7 +87,17 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
         inboxItem("feedback", String(f.id ?? ""), String(f.body || f.message || "A note"), "feedback"));
       const tasks = (Array.isArray(bridge?.review) ? bridge.review : []).slice(0, 30).map((t: { feedbackId?: string; title?: string }) =>
         inboxItem("sera", String(t.feedbackId ?? ""), String(t.title || "A Sera task"), "modules"));
-      setItems([...requests, ...notes, ...tasks]);
+      // Only work waiting on a check shows; a quest still in somebody's hands asks nothing of an admin.
+      const work = (Array.isArray(claims) ? claims : [])
+        .filter((c: { status?: string }) => c.status === "submitted")
+        .slice(0, 30)
+        .map((c: { id?: string; questTitle?: string; userName?: string }) => ({
+          ...inboxItem("requests", `quest-${String(c.id ?? "")}`, String(c.questTitle || t({ message: "A quest", context: "admin inbox: quest work with no title" })), "review"),
+          detail: c.userName ? t({ message: `Turned in by ${String(c.userName)}`, context: "admin inbox: who turned in quest work" }) : "",
+          next: t({ message: "Read the work and consent on the review page.", context: "admin inbox: what to do with quest work" }),
+          href: "/review",
+        }));
+      setItems([...work, ...requests, ...notes, ...tasks]);
     }).catch(() => { if (!gone) setProblem("The inbox did not load. Try again in a moment."); });
     return () => { gone = true; };
   }, [password]);
@@ -108,7 +122,7 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
       <ul className="mt-3 space-y-2">
         {shown.length === 0 && !problem ? <li className="text-sm text-gray-700"><Trans context="UnifiedInbox, li">Nothing in this view.</Trans></li> : shown.map((item) => (
           <li key={item.id}>
-            <button type="button" onClick={() => item.kind === "sera" ? window.location.assign("/modules/saberra") : onOpen(item.tab)} className="flex min-h-[44px] w-full flex-col items-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-left">
+            <button type="button" onClick={() => item.href ? window.location.assign(item.href) : item.kind === "sera" ? window.location.assign("/modules/saberra") : onOpen(item.tab)} className="flex min-h-[44px] w-full flex-col items-start rounded-xl border border-gray-200 bg-white px-3 py-2 text-left">
               <span className="text-base font-medium text-gray-900">{item.title}</span>
               {item.detail ? <span className="text-sm text-gray-700">{item.detail}</span> : null}
               <span className="text-sm text-gray-700">{item.next}</span>

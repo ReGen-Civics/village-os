@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import GameDashboard from "@/components/GameDashboard";
+import YourQuests from "@/components/profileDash/YourQuests";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
 import ProfileSheet from "@/components/ProfileSheet";
@@ -664,6 +665,7 @@ export default function Profile() {
                   </div>
                 )}
                 <div className={tabOf("quests")}>
+                  {me && <YourQuests claims={me.quests ?? []} />}{/* in full: doing, and suited to your roles (the lead, 27 Nov 2026) */}
                   <GameDashboard me={me} meFailed={meFailed} showNextStep={false} onAdvance={setAdvance} />
                 </div>
                 {/* Deeds: stage turns, firsts, recognition flows, the ledger. */}
