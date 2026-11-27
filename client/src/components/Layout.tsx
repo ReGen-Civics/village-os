@@ -829,7 +829,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 {mapModule && showsHref("/places") && (
                   <li>
                     <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Places, Photographed</Trans>
+                      <Trans context="Layout, footer link to the places page">Places</Trans>
                     </Link>
                   </li>
                 )}

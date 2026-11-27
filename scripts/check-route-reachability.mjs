@@ -98,6 +98,8 @@ const ALLOWLIST = {
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
   "/feedback": "a redirect to the page the member came from with the guide's panel open on Share feedback (lib/guideFeedback.ts); the footer and the corner open the panel in place",
+  // The old all-photos page (the places fold, 26 Nov 2026). It redirects to /places#photos; old bookmarks and links already sent are its doors.
+  "/photographs": "a redirect to /places#photos, the all-photos page's old address, kept for old links",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.
