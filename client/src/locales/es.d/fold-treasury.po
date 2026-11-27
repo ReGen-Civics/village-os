@@ -5,8 +5,8 @@ msgstr ""
 
 # needs-native-review: the one Treasury under Governance, the lede, 27 Nov 2026
 msgctxt "governance treasury: lede"
-msgid "The village's money in one place: the cash budget every member reads, and the desks where the people the village chose pay what is owed."
-msgstr "El dinero de la aldea en un solo lugar: el presupuesto en efectivo que lee cada miembro, y los escritorios donde las personas que la aldea eligió pagan lo que se debe."
+msgid "The village's money in one place: what it can pay this moon, and the desks that pay it."
+msgstr "El dinero de la aldea en un solo lugar: lo que puede pagar esta luna, y los escritorios que lo pagan."
 
 # needs-native-review: the Treasury, a desk's name, 27 Nov 2026
 msgctxt "treasury: a desk"

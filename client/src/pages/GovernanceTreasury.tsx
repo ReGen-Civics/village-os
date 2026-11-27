@@ -153,7 +153,7 @@ function Purses({ read }: { read: BudgetRead | null }) {
   const { figure, villageCurrency } = read;
   if (!figure) {
     return (
-      <p className={`${NOTE} mt-5`} data-treasury-purses="none">
+      <p className={NOTE} data-treasury-purses="none">
         {villageCurrency
           ? t({ message: "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay.", context: "budget desk no figure" })
           : t({ message: "The village has no currency set yet, so there is no figure to work out. An admin sets it in the setup wizard.", context: "budget desk no figure" })}
@@ -172,17 +172,17 @@ function Purses({ read }: { read: BudgetRead | null }) {
   );
   return (
     <>
-      <dl className="mt-5 grid gap-2 sm:grid-cols-3 sm:gap-3" data-treasury-purses aria-label={t({ message: "This moon's cash", context: "treasury: the purses, read aloud" })}>
+      <dl className="grid gap-2 sm:grid-cols-3 sm:gap-3" data-treasury-purses aria-label={t({ message: "This moon's cash", context: "treasury: the purses, read aloud" })}>
         {purse(t({ message: "Planned", context: "budget figure" }), figure.plannedMinor)}
         {purse(t({ message: "Already promised", context: "budget figure" }), figure.committedMinor)}
         {purse(t({ message: "Left this moon", context: "budget figure" }), figure.leftMinor, true)}
       </dl>
       {notCounted.length > 0 ? (
-        <p className={`${HINT} mt-3`}>
+        <p className={HINT}>
           {t({ message: `${notCounted.length} lines touch this moon and do not count yet: ${reasons.join("; ")}.`, context: "budget desk lines not counted" })}
         </p>
       ) : null}
-      {read.note?.note ? <p className={`${HINT} mt-3`}>{read.note.note}</p> : null}
+      {read.note?.note ? <p className={HINT}>{read.note.note}</p> : null}
     </>
   );
 }
@@ -262,7 +262,7 @@ export default function GovernanceTreasury() {
   return (
     <Layout>
       <div className={WORLD} data-world="night">
-        <div className="mx-auto max-w-4xl space-y-8 px-4 py-8 sm:py-12 xl:max-w-[1200px]">
+        <div className="mx-auto max-w-4xl space-y-6 px-4 py-6 sm:space-y-8 sm:py-12 xl:max-w-[1200px]">
           <header className="space-y-2">
             <p className={EYEBROW}>
               <Trans context="governance now: eyebrow">How the village decides</Trans>
@@ -271,7 +271,7 @@ export default function GovernanceTreasury() {
               <Trans context="governance now: h1">Governance</Trans>
             </h1>
             <p className={LEDE}>
-              <Trans context="governance treasury: lede">The village's money in one place: the cash budget every member reads, and the desks where the people the village chose pay what is owed.</Trans>
+              <Trans context="governance treasury: lede">The village's money in one place: what it can pay this moon, and the desks that pay it.</Trans>
             </p>
           </header>
           <GovernanceTabs signedIn={!!authToken()} />
@@ -307,52 +307,55 @@ export default function GovernanceTreasury() {
                   </div>
                 </div>
 
-                <Purses read={budget} />
+                {/* On a phone the next act comes before the purses, so it is on the first screen; on a desktop it follows them. */}
+                <div className="mt-5 flex flex-col gap-4 sm:mt-6 sm:gap-6">
+                  <Purses read={budget} />
 
-                {doors === undefined ? null : held.length > 0 ? (
-                  <nav aria-label={t({ message: "Your desks", context: "treasury: the desk board, read aloud" })} className="mt-6 space-y-3">
-                    <p className={HINT} data-treasury-keys>
-                      {held.length === 1
-                        ? t({ message: "The village gave you the power behind this desk by its vote.", context: "treasury: hero, a holder" })
-                        : t({ message: `The village gave you the powers behind these ${held.length} desks by its vote.`, context: "treasury: hero, a holder" })}
-                    </p>
-                    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {[...held, "budget" as const].map((k, i) => {
-                        const Glyph = GLYPH[k];
-                        const section = SECTION_OF[k];
-                        return (
-                          <li key={k}>
-                            {/* The first desk is the next door: gold-edged, the one lit act on this panel. */}
-                            <a href={`#${section}`} onClick={jump(section)} className={`${DOOR} h-full py-3 ${i === 0 ? "border-notice bg-notice/10" : ""}`} data-treasury-door={k}>
-                              <span className="flex min-w-0 items-center gap-3">
-                                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-notice text-notice" aria-hidden="true">
-                                  <Glyph className="size-5" />
+                  {doors === undefined ? null : held.length > 0 ? (
+                    <nav aria-label={t({ message: "Your desks", context: "treasury: the desk board, read aloud" })} className="space-y-3 max-sm:order-first">
+                      <p className={HINT} data-treasury-keys>
+                        {held.length === 1
+                          ? t({ message: "The village gave you the power behind this desk by its vote.", context: "treasury: hero, a holder" })
+                          : t({ message: `The village gave you the powers behind these ${held.length} desks by its vote.`, context: "treasury: hero, a holder" })}
+                      </p>
+                      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {[...held, "budget" as const].map((k, i) => {
+                          const Glyph = GLYPH[k];
+                          const section = SECTION_OF[k];
+                          return (
+                            <li key={k}>
+                              {/* The first desk is the next door: gold-edged, the one lit act on this panel. */}
+                              <a href={`#${section}`} onClick={jump(section)} className={`${DOOR} h-full py-3 ${i === 0 ? "border-notice bg-notice/10" : ""}`} data-treasury-door={k}>
+                                <span className="flex min-w-0 items-center gap-3">
+                                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-notice text-notice" aria-hidden="true">
+                                    <Glyph className="size-5" />
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="block text-foreground">{words[k].title}</span>
+                                    <span className="block text-sm font-normal text-muted-foreground">{words[k].line}</span>
+                                  </span>
                                 </span>
-                                <span className="min-w-0">
-                                  <span className="block text-foreground">{words[k].title}</span>
-                                  <span className="block text-sm font-normal text-muted-foreground">{words[k].line}</span>
-                                </span>
-                              </span>
-                              <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-notice transition-transform group-hover:translate-x-0.5" />
-                            </a>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </nav>
-                ) : (
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
-                    <a href={`#${TREASURY_SECTIONS.budget}`} onClick={jump(TREASURY_SECTIONS.budget)} className={BTN_PRIMARY}>
-                      <Trans context="treasury: hero, a member's one act">Read the budget, line by line</Trans>
-                    </a>
-                  </div>
-                )}
+                                <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-notice transition-transform group-hover:translate-x-0.5" />
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </nav>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-3 max-sm:order-first">
+                      <a href={`#${TREASURY_SECTIONS.budget}`} onClick={jump(TREASURY_SECTIONS.budget)} className={BTN_PRIMARY}>
+                        <Trans context="treasury: hero, a member's one act">Read the budget, line by line</Trans>
+                      </a>
+                    </div>
+                  )}
+                </div>
               </section>
 
               {doors === undefined ? <BreathingLoader /> : null}
 
               {open.endOfMoon ? (
-                <section id={TREASURY_SECTIONS.endOfMoon} aria-labelledby="end-of-moon-h" className="scroll-mt-28 space-y-4" data-governance-treasury="end-of-moon">
+                <section id={TREASURY_SECTIONS.endOfMoon} aria-labelledby="end-of-moon-h" className="scroll-mt-28 space-y-4 [&_#pay-board]:scroll-mt-28" data-governance-treasury="end-of-moon">
                   <SectionHead desk="endOfMoon" id="end-of-moon-h" title={words.endOfMoon.title} line={words.endOfMoon.line} />
                   <Suspense fallback={<BreathingLoader />}>
                     {moonReviewOn ? (
