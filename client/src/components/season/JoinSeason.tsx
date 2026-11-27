@@ -3,22 +3,23 @@
  * the page `/season-places` until the season fold (27 Nov 2026).
  *
  *   PICKED        "You're in this season!" once a circle's picker picks you
- *   YOUR STEPS    applied, the picker picks, you're in, as three stones
  *   APPLICATION   the circles picking this season (or any), what you bring, apply
  *   PLACES        circles taking part against the season's cap
  *   YOU PICK      for a picker: spots, and everyone who applied, to pick or release
  *   GATHERINGS    each one that takes circles, and where your circle stands
  *   PATHS         what the picking role asks first, and every circle this season
  *
- * The season's goals left this panel: the page draws them once, on its
+ * Where the application stands (applied, picked) is the Join stone in the
+ * page's hero, so the three-step row left with the fold. The season's goals left this panel: the page draws them once, on its
  * Season tab. Every colour is a semantic token, and no village's words live
  * here: circle names, gathering titles and role titles come from its data.
  */
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Check } from "lucide-react";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 import { BreathingLoader } from "@/components/natural";
+import ReadFailed from "./ReadFailed";
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
@@ -46,56 +47,6 @@ export type JoinState =
   "loading" | "members" | "error" | "none" | "applied" | "picked" | "no-season";
 
 const BAR = "mt-2 h-2 overflow-hidden rounded-full bg-muted";
-
-/** Three stones: applied, the picker picks, you're in. The one you stand on is gold; a passed one is a gold ring. */
-function Steps({ applied, picked }: { applied: boolean; picked: boolean }) {
-  const { t } = useLingui();
-  const steps = [
-    {
-      title: W.stepApplied,
-      line: W.stepAppliedLine,
-      done: applied,
-      here: !applied,
-    },
-    {
-      title: W.stepPicks,
-      line: W.stepPicksLine,
-      done: picked,
-      here: applied && !picked,
-    },
-    { title: W.stepIn, line: W.stepInLine, done: picked, here: false },
-  ];
-  return (
-    <ol
-      className="grid grid-cols-3 gap-2"
-      aria-label={t({
-        message: "Where your application stands",
-        context: "season join, the three steps",
-      })}
-    >
-      {steps.map((s, i) => (
-        <li
-          key={s.title}
-          className="flex flex-col items-center gap-1.5 text-center"
-          aria-current={s.here ? "step" : undefined}
-        >
-          <span
-            aria-hidden="true"
-            className={`grid size-10 place-items-center rounded-full border-2 font-display text-lg ${s.done ? "border-notice text-notice" : s.here ? "border-notice bg-notice text-background" : "border-border text-muted-foreground"}`}
-          >
-            {s.done ? <Check className="size-5" /> : i + 1}
-          </span>
-          <span
-            className={`text-sm font-semibold ${s.done || s.here ? "text-foreground" : "text-muted-foreground"}`}
-          >
-            {s.title}
-          </span>
-          <span className="text-xs text-muted-foreground">{s.line}</span>
-        </li>
-      ))}
-    </ol>
-  );
-}
 
 export default function JoinSeason({
   onStatus,
@@ -178,20 +129,7 @@ export default function JoinSeason({
   }
   if (state === "error" || !crew) {
     return (
-      <div
-        className={`${TILE} flex flex-wrap items-center justify-between gap-3`}
-      >
-        <p role="alert" className="text-foreground">
-          {message || W.failed}
-        </p>
-        <button
-          type="button"
-          className={BTN_SECONDARY}
-          onClick={() => void load()}
-        >
-          <Trans context="season page, a read that failed">Try again</Trans>
-        </button>
-      </div>
+      <ReadFailed message={message || W.failed} onRetry={() => void load()} />
     );
   }
   if (!crew.season) {
@@ -279,10 +217,6 @@ export default function JoinSeason({
             </div>
           </div>
         )}
-
-        <div className="mt-5">
-          <Steps applied={Boolean(mine)} picked={picked} />
-        </div>
 
         {!picked && (
           <fieldset className="mt-6 space-y-2">

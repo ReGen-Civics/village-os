@@ -5,11 +5,6 @@ msgstr ""
 "Language: es\n"
 
 # needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, plan step"
-msgid "The window has closed. You can still file."
-msgstr "La ventana se cerró. Aún puede presentarlo."
-
-# needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, aligned tab heading"
 msgid "What you align with"
 msgstr "Con lo que usted se alinea"
@@ -23,11 +18,6 @@ msgstr "Dónde está usted"
 msgctxt "season page, tab"
 msgid "Join"
 msgstr "Unirse"
-
-# needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, signed out line"
-msgid "Join the season, plan your part, and align with what the village asks."
-msgstr "Únase a la temporada, planee su parte y alinéese con lo que pide la aldea."
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, step"
@@ -45,19 +35,9 @@ msgid "Each of these starts once every party aligns. Read the words, then align.
 msgstr "Cada uno empieza cuando todas las partes se alinean. Lea las palabras y luego alinéese."
 
 # needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, waiting on others"
-msgid "Waiting on the village."
-msgstr "Esperando a la aldea."
-
-# needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, a read that failed"
 msgid "Try again"
 msgstr "Intentar de nuevo"
-
-# needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, step"
-msgid "Align"
-msgstr "Alinearse"
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, goals met beside the ring"
@@ -66,8 +46,8 @@ msgstr "{met} de {0} metas cumplidas"
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, aligned tab eyebrow"
-msgid "Where you stand"
-msgstr "Dónde está usted"
+msgid "Asked of you"
+msgstr "Lo que se le pide"
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, signed out"
@@ -90,11 +70,6 @@ msgid "Changes not filed yet"
 msgstr "Cambios sin presentar"
 
 # needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, no goals set"
-msgid "The village has not set this season's goals yet."
-msgstr "La aldea aún no ha fijado las metas de esta temporada."
-
-# needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, aligned tab heading while texts wait"
 msgid "Waiting on you"
 msgstr "Esperándole a usted"
@@ -103,16 +78,6 @@ msgstr "Esperándole a usted"
 msgctxt "season page, the aligned register heading"
 msgid "The register"
 msgstr "El registro"
-
-# needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, next act"
-msgid "Apply for this season"
-msgstr "Solicite esta temporada"
-
-# needs-native-review: the season page, 27 Nov 2026
-msgctxt "season join, the three steps"
-msgid "Where your application stands"
-msgstr "En qué punto está su solicitud"
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, aligned tab, no texts wait"
@@ -125,11 +90,6 @@ msgid "{n} wait on you"
 msgstr "{n} le esperan"
 
 # needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, next act"
-msgid "Plan your season"
-msgstr "Planee su temporada"
-
-# needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, plan step"
 msgid "Not filed yet"
 msgstr "Aún sin presentar"
@@ -138,11 +98,6 @@ msgstr "Aún sin presentar"
 msgctxt "season page, align step"
 msgid "One waits on you"
 msgstr "Uno le espera"
-
-# needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, next act"
-msgid "Read and align"
-msgstr "Lea y alinéese"
 
 # needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, title with no focus set"
@@ -200,11 +155,6 @@ msgid "Join the season"
 msgstr "Únase a la temporada"
 
 # needs-native-review: the season page, 27 Nov 2026
-msgctxt "season page, aligned tab loading"
-msgid "Reading what you align with"
-msgstr "Leyendo con lo que usted se alinea"
-
-# needs-native-review: the season page, 27 Nov 2026
 msgctxt "season page, every step done"
 msgid "Your season is set."
 msgstr "Su temporada está lista."
@@ -243,3 +193,9 @@ msgstr "Qué pasa con {0}"
 msgctxt "season page, your plan eyebrow"
 msgid "Your plan"
 msgstr "Su plan"
+
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, step"
+msgid "Read and align"
+msgstr "Lea y alinéese"

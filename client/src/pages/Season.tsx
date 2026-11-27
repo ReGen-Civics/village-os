@@ -84,7 +84,6 @@ interface Step {
   title: string;
   line: string;
   state: StepState;
-  act: string;
 }
 
 /**
@@ -102,15 +101,11 @@ export function seasonSteps(
     join: string;
     plan: string;
     align: string;
-    joinActs: string;
-    planActs: string;
-    alignActs: string;
     joinLine: Record<"none" | "applied" | "picked", string>;
     planLine: {
       filed: string;
       changed: string;
       notFiled: string;
-      closed: string;
       before: (on: string) => string;
     };
     alignLine: {
@@ -129,7 +124,6 @@ export function seasonSteps(
       title: words.join,
       line: words.joinLine[j],
       state: j === "picked" ? "done" : j === "applied" ? "wait" : "now",
-      act: words.joinActs,
     });
   }
   const p = input.plan;
@@ -145,11 +139,8 @@ export function seasonSteps(
           ? words.planLine.changed
           : before && opensOn
             ? words.planLine.before(opensOn)
-            : p.window === "closed"
-              ? words.planLine.closed
-              : words.planLine.notFiled,
+            : words.planLine.notFiled,
       state: done ? "done" : before ? "wait" : "now",
-      act: words.planActs,
     });
   }
   const a = input.aligned;
@@ -165,7 +156,6 @@ export function seasonSteps(
             ? words.alignLine.agreement
             : words.alignLine.waiting(waiting),
       state: waiting === 0 ? "done" : "now",
-      act: words.alignActs,
     });
   }
   return out;
@@ -300,19 +290,7 @@ export default function Season() {
             message: "Plan your season",
             context: "season page, step",
           }),
-          align: t({ message: "Align", context: "season page, step" }),
-          joinActs: t({
-            message: "Apply for this season",
-            context: "season page, next act",
-          }),
-          planActs: t({
-            message: "Plan your season",
-            context: "season page, next act",
-          }),
-          alignActs: t({
-            message: "Read and align",
-            context: "season page, next act",
-          }),
+          align: t({ message: "Read and align", context: "season page, step" }),
           joinLine: {
             none: t({
               message: "Not applied yet",
@@ -335,10 +313,6 @@ export default function Season() {
             }),
             notFiled: t({
               message: "Not filed yet",
-              context: "season page, plan step",
-            }),
-            closed: t({
-              message: "The window has closed. You can still file.",
               context: "season page, plan step",
             }),
             before: (on: string) =>
@@ -458,12 +432,6 @@ export default function Season() {
                   Sign in to take part in the season.
                 </Trans>
               </h2>
-              <p className={`${HINT} mx-auto mt-2 max-w-md`}>
-                <Trans context="season page, signed out line">
-                  Join the season, plan your part, and align with what the
-                  village asks.
-                </Trans>
-              </p>
               <div className="mt-5">
                 <SignInDoors next="/season" />
               </div>
@@ -491,13 +459,9 @@ export default function Season() {
                           <Trans context="season page, every step done">
                             Your season is set.
                           </Trans>
-                        ) : next ? (
+                        ) : (
                           <Trans context="season page, the steps heading">
                             Where you stand
-                          </Trans>
-                        ) : (
-                          <Trans context="season page, waiting on others">
-                            Waiting on the village.
                           </Trans>
                         )}
                       </h2>
@@ -510,7 +474,7 @@ export default function Season() {
                           onClick={() => open(next.tab)}
                           data-season-next=""
                         >
-                          {next.act}
+                          {next.title}
                           <ArrowRight className="size-4" aria-hidden="true" />
                         </button>
                       </Fireflies>
@@ -590,15 +554,7 @@ export default function Season() {
                       }
                     />
                   </section>
-                ) : (
-                  <section id="goals" className={CARD}>
-                    <p className={HINT}>
-                      <Trans context="season page, no goals set">
-                        The village has not set this season's goals yet.
-                      </Trans>
-                    </p>
-                  </section>
-                )}
+                ) : null}
                 {governance ? (
                   <div id="everyone">
                     <VillagePlans />

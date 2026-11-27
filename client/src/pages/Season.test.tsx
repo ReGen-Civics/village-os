@@ -38,7 +38,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("@/modules/ModuleProvider", () => ({
   useModules: () => ({
     loaded: true,
-    modules: [...modulesOn].map(id => ({ id, lifecycle: "members" })),
+    modules: Array.from(modulesOn).map(id => ({ id, lifecycle: "members" })),
   }),
   useModule: (id: string) =>
     modulesOn.has(id) ? { id, lifecycle: "members" } : null,
@@ -315,15 +315,11 @@ describe("seasonSteps", () => {
     join: "Join",
     plan: "Plan",
     align: "Align",
-    joinActs: "j",
-    planActs: "p",
-    alignActs: "a",
     joinLine: { none: "none", applied: "applied", picked: "picked" },
     planLine: {
       filed: "filed",
       changed: "changed",
       notFiled: "not filed",
-      closed: "closed",
       before: (on: string) => `before ${on}`,
     },
     alignLine: {

@@ -8,8 +8,9 @@
  *   HOW MANY       how many have filed, and the planning window
  *   ONE CARD EACH  every present member, ordered by name and never by progress
  *                  (PlanCard)
- *   WAITING        a filter to the members with an application the village has
- *                  not answered yet
+ *   (The "Waiting on the village" filter left with the season fold: each card
+ *   already names where its applications stand, and the village answers them
+ *   on its work queue, /governance/work.)
  *   NOT FILED YET  the members who have not filed, by name (Rye, 2026-10-09)
  *
  * No terms and no money reach this panel. An application's terms are read on
@@ -18,15 +19,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { CalendarDays } from "lucide-react";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
 import { BreathingLoader } from "@/components/natural";
+import ReadFailed from "./ReadFailed";
 import PlanCard from "@/components/seasonPlans/PlanCard";
 import {
   fetchVillage,
   type VillagePayload,
 } from "@/components/seasonPlans/seasonPlansApi";
 import {
-  BTN_SECONDARY,
   CARD,
   CHIP_SOFT,
   EYEBROW,
@@ -48,9 +49,6 @@ export const SEASON_PLANS_WORDS = {
   filed: (n: number, of: number) => `${n} of ${of} have filed`,
   window: (opens: string, closes: string) =>
     `Planning runs from ${civilDayWords(opens)} to ${civilDayWords(closes)}.`,
-  everyone: "Everyone",
-  waiting: "Waiting on the village",
-  noneWaiting: "Nobody is waiting on the village right now.",
   notFiled: "Not filed yet",
   allFiled: "Everyone has filed.",
 } as const;
@@ -62,7 +60,6 @@ export default function VillagePlans() {
     "loading"
   );
   const [error, setError] = useState("");
-  const [onlyWaiting, setOnlyWaiting] = useState(false);
 
   const [tries, setTries] = useState(0);
   useEffect(() => {
@@ -120,23 +117,13 @@ export default function VillagePlans() {
   }
   if (state === "error" || !data) {
     return (
-      <div
-        className={`${TILE} flex flex-wrap items-center justify-between gap-3`}
-      >
-        <p role="alert" className="text-foreground">
-          {error}
-        </p>
-        <button
-          type="button"
-          className={BTN_SECONDARY}
-          onClick={() => {
-            setState("loading");
-            setTries(n => n + 1);
-          }}
-        >
-          <Trans context="season page, a read that failed">Try again</Trans>
-        </button>
-      </div>
+      <ReadFailed
+        message={error}
+        onRetry={() => {
+          setState("loading");
+          setTries(n => n + 1);
+        }}
+      />
     );
   }
   if (!data.season) {
@@ -152,18 +139,6 @@ export default function VillagePlans() {
   }
 
   const people = data.people ?? [];
-  const shown = onlyWaiting ? people.filter(p => p.waiting) : people;
-  const toggle = (on: boolean, label: string, pick: () => void) => (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={pick}
-      className={`jw-btn inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-semibold ${on ? "border-notice bg-notice text-background" : "border-border text-foreground hover:bg-muted"}`}
-    >
-      {label}
-    </button>
-  );
-
   return (
     <section aria-labelledby="everyone-h" className={`${CARD} space-y-5`}>
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -179,24 +154,9 @@ export default function VillagePlans() {
         </p>
       )}
 
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label={t({ message: "Show", context: "SeasonPlans, aria-label" })}
-      >
-        {toggle(!onlyWaiting, SEASON_PLANS_WORDS.everyone, () =>
-          setOnlyWaiting(false)
-        )}
-        {toggle(onlyWaiting, SEASON_PLANS_WORDS.waiting, () =>
-          setOnlyWaiting(true)
-        )}
-      </div>
-
-      {shown.length === 0 ? (
-        <p className={HINT}>{SEASON_PLANS_WORDS.noneWaiting}</p>
-      ) : (
+      {people.length > 0 && (
         <ul className="grid gap-4 lg:grid-cols-2">
-          {shown.map(card => (
+          {people.map(card => (
             <li key={card.userId}>
               <PlanCard card={card} headingLevel={3} />
             </li>

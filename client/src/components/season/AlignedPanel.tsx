@@ -24,7 +24,7 @@ import {
   type FormEvent,
 } from "react";
 import { Search } from "lucide-react";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro";
 import { BreathingLoader } from "@/components/natural";
 import AlignmentCard from "@/components/alignment/AlignmentCard";
 import RegisterEntry from "@/components/alignment/RegisterEntry";
@@ -305,7 +305,6 @@ export default function AlignedPanel({
 }: {
   onStatus?: (s: AlignedStatus) => void;
 }) {
-  const { t } = useLingui();
   const [mine, setMine] = useState<ServedAlignment[] | null>(null);
   const [agreement, setAgreement] = useState<ConfidentialityState | null>(null);
 
@@ -338,7 +337,7 @@ export default function AlignedPanel({
       >
         <p className={EYEBROW}>
           <Trans context="season page, aligned tab eyebrow">
-            Where you stand
+            Asked of you
           </Trans>
         </p>
         <h2 id="aligned-standing-h" className={`${H2} mt-1`}>
@@ -352,16 +351,7 @@ export default function AlignedPanel({
             </Trans>
           )}
         </h2>
-        {mine === null ? (
-          <div className="flex justify-center py-6">
-            <BreathingLoader
-              label={t({
-                message: "Reading what you align with",
-                context: "season page, aligned tab loading",
-              })}
-            />
-          </div>
-        ) : waiting && waiting.length > 0 ? (
+        {mine === null ? null : waiting && waiting.length > 0 ? (
           <>
             <p className={`${HINT} mt-2`}>
               <Trans context="season page, aligned tab, why these wait">

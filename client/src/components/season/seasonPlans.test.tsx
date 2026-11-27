@@ -6,8 +6,7 @@
  *
  *   - a guest answered 401 reads the members line and no plan;
  *   - the village page draws the cards in the order the server sends (by name),
- *     "7 of 9 have filed", "Not filed yet" by name, and the "Waiting on the
- *     village" filter;
+ *     "7 of 9 have filed" and "Not filed yet" by name;
  *   - your page offers Carry on into the member door for this season, Hand it
  *     back, and files with one button;
  *   - another member's profile section draws nothing on a 401;
@@ -241,19 +240,6 @@ describe("the village page", () => {
     expect(document.body.textContent).not.toMatch(/Recorded here|XTS/);
   });
 
-  it("filters to the members waiting on the village", async () => {
-    render(<SeasonPlans />);
-    await screen.findByText("2 of 3 have filed");
-    fireEvent.click(
-      screen.getByRole("button", { name: "Waiting on the village" })
-    );
-    expect(
-      screen
-        .getAllByRole("heading", { level: 3 })
-        .map(h => h.textContent)
-        .filter(n => n !== "Not filed yet")
-    ).toEqual(["Ana Quillfeather"]);
-  });
 });
 
 describe("your own season", () => {

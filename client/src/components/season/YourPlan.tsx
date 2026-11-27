@@ -31,6 +31,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Plus, Trash2 } from "lucide-react";
 import { BreathingLoader } from "@/components/natural";
+import ReadFailed from "./ReadFailed";
 import { ApplicationChip, QuestPips } from "@/components/seasonPlans/PlanCard";
 import RoleCarryOn from "@/components/seasonPlans/RoleCarryOn";
 import {
@@ -68,13 +69,11 @@ import {
   FIELD,
   H2,
   HINT,
-  TILE,
 } from "@/components/journey/look";
 import type { SeasonGoalView } from "@shared/seasonGoalsView";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 export const MY_SEASON_WORDS = {
-  title: "Your season",
   noSeason: "There is no season to plan yet.",
   noSeasonLine:
     "Planning opens one moon before the next season starts. You will get a notice.",
@@ -130,8 +129,6 @@ export const MY_SEASON_WORDS = {
   notFiled: "Not filed yet.",
   commonsEyebrow: "What we tend together",
   commonsHeading: "The commons",
-  commonsLine:
-    "The village's goals for this season. Tick the ones your work serves in Your plan. Moss spreads into a goal when the whole village reaches it.",
 } as const;
 
 interface Measure {
@@ -499,22 +496,7 @@ export default function YourPlan({
     );
   }
   if (state === "error") {
-    return (
-      <div
-        className={`${TILE} flex flex-wrap items-center justify-between gap-3`}
-      >
-        <p role="alert" className="text-foreground">
-          {error}
-        </p>
-        <button
-          type="button"
-          className={BTN_SECONDARY}
-          onClick={() => void load()}
-        >
-          <Trans context="season page, a read that failed">Try again</Trans>
-        </button>
-      </div>
-    );
+    return <ReadFailed message={error} onRetry={() => void load()} />;
   }
   if (!season || !data) {
     return (
@@ -601,7 +583,10 @@ export default function YourPlan({
                     <div
                       className="mt-3 flex flex-wrap gap-2"
                       role="group"
-                      aria-label={t({ message: `What happens to ${seat.name}`, context: "season page, the choices for a role you hold" })}
+                      aria-label={t({
+                        message: `What happens to ${seat.name}`,
+                        context: "season page, the choices for a role you hold",
+                      })}
                     >
                       <Link
                         href={applyHref({
