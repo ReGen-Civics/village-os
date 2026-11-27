@@ -240,16 +240,6 @@ msgstr "No puede emitir para usted mismo"
 
 # needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
 msgctxt "hand-mint form, a field's label"
-msgid "Token"
-msgstr "Token"
-
-# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
-msgctxt "hand-mint form, a field's label"
-msgid "Member"
-msgstr "Miembro"
-
-# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
-msgctxt "hand-mint form, a field's label"
 msgid "Amount"
 msgstr "Monto"
 
@@ -257,11 +247,6 @@ msgstr "Monto"
 msgctxt "hand-mint form, a field's label"
 msgid "Reason"
 msgstr "Motivo"
-
-# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
-msgctxt "hand-mint form, a field's label"
-msgid "What stood behind it"
-msgstr "Qué lo respalda"
 
 # needs-native-review: the Treasury, the budget section's line, 27 Nov 2026
 msgctxt "treasury: budget"

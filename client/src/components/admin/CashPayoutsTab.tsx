@@ -87,6 +87,18 @@ const keyWords = (body: { message?: unknown } | null | undefined) => {
 
 type Refused = { kind: "signed-out" } | { kind: "no-key"; text: string } | { kind: "failed"; text: string };
 
+/**
+ * The End of Moon review's settings on their own, for Governance's Treasury, which draws them folded at the end of its
+ * End of Moon pay section. Exported from here so the panel keeps this file as its one importer and its chunk.
+ */
+export function MoonReviewSettings(props: { password: string; look?: CashDeskLook; bare?: boolean }) {
+  return (
+    <Suspense fallback={null}>
+      <MoonReviewSettingsPanel {...props} />
+    </Suspense>
+  );
+}
+
 export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true, withHeading = true, withSettings = true, look = CASH_ADMIN }: {
   password: string;
   /** Admin's light look by default; Governance's Treasury passes the sheet's (components/treasury/deskLooks.ts). */

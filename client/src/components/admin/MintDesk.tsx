@@ -27,7 +27,11 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { smallestUnit } from "@/lib/tokenAmount";
 import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
-import { MINT_ADMIN, type MintDeskLook } from "@/components/treasury/deskLooks";
+import { MINT_ADMIN, MINT_SHEET, type MintDeskLook } from "@/components/treasury/deskLooks";
+import { useModules } from "@/modules/ModuleProvider";
+import { HINT } from "@/components/journey/look";
+import { visibleTokens } from "@/components/admin/tokenCatalog";
+import type { ModuleLifecycle } from "@shared/modules";
 
 /** One token the picker may offer: platform-governed, real, and never Gratitude. */
 export interface MintToken {
@@ -182,24 +186,18 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
         </p>
         )}
         <div className="flex flex-wrap items-end gap-2">
-          <label className={look.label}>
-            <Trans context="hand-mint form, a field's label">Token</Trans>
           <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
             aria-label={t({ message: "Token to mint", context: "hand-mint form, token picker" })}
             className={look.select}>
             <option value=""><Trans context="hand-mint form, token picker placeholder">Token…</Trans></option>
             {tokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
           </select>
-          </label>
-          <label className={look.label}>
-            <Trans context="hand-mint form, a field's label">Member</Trans>
           <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
             aria-label={t({ message: "Member to mint to", context: "hand-mint form, member picker" })}
             className={look.select}>
             <option value=""><Trans context="hand-mint form, member picker placeholder">Member…</Trans></option>
             {members.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
           </select>
-          </label>
           <label className={look.label}>
             <Trans context="hand-mint form, a field's label">Amount</Trans>
           <input value={mint.amount} onChange={(e) => setMint({ ...mint, amount: e.target.value })}
@@ -210,14 +208,11 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
           <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
             placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className={look.reason} />
           </label>
-          <label className={look.label}>
-            <Trans context="hand-mint form, a field's label">What stood behind it</Trans>
           <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
             aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className={look.select}>
             <option value="other">{t({ message: "Contributed: work or other", context: "admin mint form, what stood behind a grant" })}</option>
             <option value="cash">{t({ message: "Contributed: cash", context: "admin mint form, what stood behind a grant" })}</option>
           </select>
-          </label>
           <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
             className={look.primary}>
             <Trans context="hand-mint form, submit button">Mint</Trans>
@@ -278,4 +273,51 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
       )}
     </div>
   );
+}
+
+interface MintOptions {
+  tokens: Array<MintToken & { kind?: string }>;
+  members: MintMember[];
+  mintCapPerCycle: number;
+}
+
+/**
+ * THE TREASURY'S MINT: the hand mint and its grants for a holder of `token.mint` who need not be an admin, as
+ * Governance's Treasury draws it (moved whole from the old /treasury page, 27 Nov 2026). The picker reads
+ * `GET /api/treasury/mint-options`, a name and a token for each choice, so a treasurer never reads the admin roster's
+ * emails. In this file so it rides MintDesk's own privileged chunk and costs no chunk of its own.
+ */
+export function MintFromTreasury({ password }: { password: string }) {
+  const { t } = useLingui();
+  const [options, setOptions] = useState<MintOptions | null>(null);
+  const [failed, setFailed] = useState(false);
+  const { modules, loaded } = useModules();
+  useEffect(() => {
+    let live = true;
+    fetch(`${API_BASE}/treasury/mint-options`, { headers: authHeaders(password) })
+      .then(async (r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        const d = await r.json();
+        if (live) {
+          setOptions({
+            tokens: Array.isArray(d?.tokens) ? d.tokens : [],
+            members: Array.isArray(d?.members) ? d.members : [],
+            mintCapPerCycle: Number(d?.mintCapPerCycle) || 0,
+          });
+        }
+      })
+      .catch(() => {
+        if (live) setFailed(true);
+      });
+    return () => {
+      live = false;
+    };
+  }, [password]);
+  if (failed) return <p className={HINT}>{t({ message: "The mint form could not load just now. Try again in a moment.", context: "treasury: mint" })}</p>;
+  // Nothing while the picker reads: the section's heading and line already say what is coming.
+  if (!options) return null;
+  // A module's own token is offered while its module is on, the same rule the admin picker follows.
+  const lifecycles: Record<string, ModuleLifecycle> | null = loaded ? Object.fromEntries(modules.map((m) => [m.id, m.lifecycle as ModuleLifecycle])) : null;
+  const tokens: MintToken[] = visibleTokens(options.tokens, lifecycles);
+  return <MintDesk password={password} tokens={tokens} members={options.members} mintCap={options.mintCapPerCycle} look={MINT_SHEET} />;
 }

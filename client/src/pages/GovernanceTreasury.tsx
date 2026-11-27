@@ -59,9 +59,10 @@ const ReviewQueue = lazy(() => import("@/components/myMoon/ReviewQueue"));
 const PayBoard = lazy(() => import("@/components/myMoon/PayBoard"));
 const CashPayoutsTab = lazy(() => import("@/components/admin/CashPayoutsTab"));
 const PricingDesk = lazy(() => import("@/components/valuation/PricingDesk"));
-const MintSection = lazy(() => import("@/components/treasury/MintSection"));
-/** The End of Moon review's settings (payers, village settings, the moon's rhythm), Admin's panel in the sheet's look. */
-const MoonReviewSettingsPanel = lazy(() => import("@/components/admin/moonReview/MoonReviewSettingsPanel"));
+/** The mint for a holder who is not an admin: MintDesk's own privileged chunk. */
+const MintSection = lazy(() => import("@/components/admin/MintDesk").then((m) => ({ default: m.MintFromTreasury })));
+/** The End of Moon review's settings (payers, village settings, the moon's rhythm), through the cash desk's chunk. */
+const MoonReviewSettings = lazy(() => import("@/components/admin/CashPayoutsTab").then((m) => ({ default: m.MoonReviewSettings })));
 
 /** `MOON_REVIEW_MODULE` in shared/moonRecap.ts, spelled here so this chunk does not carry that file. */
 const MOON_REVIEW_MODULE = "moon-review";
@@ -442,7 +443,7 @@ export default function GovernanceTreasury() {
                         <div className="mt-4">
                           {/* The editors read the sheet's kit from context; Admin provides none and keeps its own. */}
                           <SettingsKitContext.Provider value={SETTINGS_SHEET_KIT}>
-                            <MoonReviewSettingsPanel password={bearer} look={CASH_SHEET} bare />
+                            <MoonReviewSettings password={bearer} look={CASH_SHEET} bare />
                           </SettingsKitContext.Provider>
                         </div>
                       </details>

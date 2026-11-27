@@ -84,8 +84,8 @@ vi.mock("@/components/admin/CashPayoutsTab", () => ({
     env.cashProps.push(props);
     return <p>cash payouts drawn{props.withPayBoard === false ? "" : " with its own pay board"}</p>;
   },
+  MoonReviewSettings: () => <p>moon settings drawn</p>,
 }));
-vi.mock("@/components/admin/moonReview/MoonReviewSettingsPanel", () => ({ default: () => <p>moon settings drawn</p> }));
 vi.mock("@/components/valuation/PricingDesk", async () => {
   const { useEffect } = await import("react");
   return {

@@ -10,10 +10,13 @@
  */
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { BUDGET_CATEGORIES, type BudgetCategory } from "@shared/budgets";
+import type { BudgetCategory } from "@shared/budgets";
 import { sentenceOf, type BudgetRead } from "./budgetApi";
 import type { BudgetLook } from "./budgetLook";
 import { CATEGORY_WORDS } from "./budgetWords";
+
+/** The kinds of line, read off the words keyed by the union (budgetWords.ts), so no shared/budgets chunk is fetched. */
+const KINDS = Object.keys(CATEGORY_WORDS) as BudgetCategory[];
 
 export interface BudgetSuggestDoor {
   path: string;
@@ -93,7 +96,7 @@ export default function BudgetSuggest({ read, door, bearer, look, onClose }: {
         <label className={`${look.label} flex flex-col gap-1`}>
           {t({ message: "Kind", context: "budget suggestion field" })}
           <select className={look.field} value={category} onChange={(e) => setCategory(e.target.value as BudgetCategory)}>
-            {BUDGET_CATEGORIES.map((c) => <option key={c} value={c}>{i18n._(CATEGORY_WORDS[c])}</option>)}
+            {KINDS.map((c) => <option key={c} value={c}>{i18n._(CATEGORY_WORDS[c])}</option>)}
           </select>
         </label>
         <label className={`${look.label} flex flex-col gap-1`}>
