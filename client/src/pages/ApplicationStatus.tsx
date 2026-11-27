@@ -27,7 +27,8 @@ import { BreathingLoader, useReducedMotion } from "@/components/natural";
 import { gameFetch } from "@/lib/gameApi";
 import { DECLINED_PAGE_WORDS } from "@shared/openProposalDecide";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
-import { applicantSteps, statusView, wordsIn } from "@shared/applicantWords";
+import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
+import RefineProposal from "@/components/openProposal/RefineProposal";
 import { useLingui } from "@lingui/react/macro";
 import { TERM_NOTE_MAX } from "@shared/termsWords";
 import GrowingField from "@/components/form/GrowingField";
@@ -67,6 +68,8 @@ interface Served {
   invitation?: "none" | "expired" | "asked";
   /** References asked of a shortlisted applicant (shared/applicantOnboarding.ts): the form while it waits, a count once given. */
   referencesAsked?: { given: number | null; mayAdd: boolean } | null;
+  /** The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note. */
+  sixStages?: StatusServedForView["sixStages"];
 }
 
 export { ReferenceForm } from "@/components/openProposal/ReferenceForm";
@@ -474,7 +477,7 @@ export default function ApplicationStatus() {
             {view.booking && (
               <section aria-label={w.status.booking.label} className={TILE}>
                 {/* One story whatever the role's conversationMode holds: the applicant books each conversation at times they choose, in order. */}
-                <p className="text-foreground">{view.booking.text}</p>
+                {view.booking.text ? <p className="text-foreground">{view.booking.text}</p> : null}
                 {view.booking.book && "links" in view.booking.book && view.booking.book.links.length > 1 && (
                   <p className="mt-3 font-semibold text-foreground" data-book-heading="">{view.booking.book.label}</p>
                 )}
@@ -491,6 +494,14 @@ export default function ApplicationStatus() {
                 )}
                 {view.booking.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
               </section>
+            )}
+            {view.refine && (
+              <RefineProposal
+                refine={view.refine}
+                words={w.status.six.refine}
+                url={token ? `/api/application-status/${encodeURIComponent(ref)}/proposal?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/proposal`}
+                onSaved={(versions) => setS((cur) => (cur?.sixStages ? { ...cur, sixStages: { ...cur.sixStages, refine: { ...cur.sixStages.refine, versions } } } : cur))}
+              />
             )}
             {s.outcome == null && (
               <section aria-labelledby="while-you-wait" className={CARD} data-while-you-wait="">

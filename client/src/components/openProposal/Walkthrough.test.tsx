@@ -26,7 +26,7 @@ const stages = (now: string) => TRACK.map((key, i) => ({ key, label: TRACK_WORDS
 const you = { mayShortlist: false, mayAskReferences: false, mayAddFinal: false, isFinalCall: false, holdsPower: false };
 const walk = (over: Record<string, unknown> = {}) => ({
   walkthrough: {
-    track: { stages: stages("shortlist"), now: "shortlist", who: "the holders of the power to place people in roles", next: "Shortlist this application, or say it is not shortlisted.", primary: "shortlist" },
+    track: { stages: stages("review"), now: "review", who: "the holders of the power to place people in roles", next: "Shortlist this application, or say it is not shortlisted.", primary: "shortlist" },
     shortlist: null,
     references: { asked: false, given: false, list: [], total: 0, mayAssign: false },
     roles: [],
@@ -70,7 +70,7 @@ describe("the walkthrough", () => {
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
     expect(await screen.findByRole("heading", { level: 2, name: ONBOARDING_WORDS.heading })).toBeTruthy();
     expect(document.querySelectorAll("[data-walk-stage]")).toHaveLength(TRACK.length);
-    expect(document.querySelector('[data-walk-stage="shortlist"]')?.getAttribute("aria-current")).toBe("step");
+    expect(document.querySelector('[data-walk-stage="review"]')?.getAttribute("aria-current")).toBe("step");
     expect(screen.getByText("the holders of the power to place people in roles")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: ONBOARDING_WORDS.primary.shortlist }));
     await screen.findByText("Done.");
@@ -88,7 +88,7 @@ describe("the walkthrough", () => {
     served = {
       status: 200,
       body: walk({
-        track: { stages: stages("followups"), now: "followups", who: "People and Operations and the other follow-up owners, and the conversation roles", next: "x", primary: "follow_up" },
+        track: { stages: stages("references"), now: "references", who: "People and Operations and the other follow-up owners, and the conversation roles", next: "x", primary: "follow_up" },
         references: { asked: true, given: true, list: [{ ...REF, mine: true }], total: 1, mayAssign: false },
       }),
     };
@@ -106,7 +106,7 @@ describe("the walkthrough", () => {
     served = {
       status: 200,
       body: walk({
-        track: { stages: stages("decision"), now: "decision", who: "Lead Steward", next: "x", primary: "decide" },
+        track: { stages: stages("agreement"), now: "agreement", who: "Lead Steward", next: "x", primary: "decide" },
         references: { asked: true, given: true, list: [{ ...REF, notes: "Warm and keen.", followedUp: true }], total: 1, mayAssign: false },
         scorecards: {
           criteria: [{ id: "c1", text: "Keeps the pace" }],

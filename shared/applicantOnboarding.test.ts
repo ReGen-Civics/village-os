@@ -15,6 +15,7 @@ import {
   parseShortlistAnswer,
   shortlistOf,
   trackOf,
+  trackStates,
   type TrackFacts,
 } from "./applicantOnboarding";
 import { mayReadScorecards } from "./applicationReview";
@@ -85,7 +86,7 @@ describe("the scorecards are gathered for the final-call role", () => {
   });
 });
 
-describe("the stage track", () => {
+describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
   const facts = (over: Partial<TrackFacts> = {}): TrackFacts => ({
     decided: null,
     reviewStage: "invited",
@@ -94,11 +95,16 @@ describe("the stage track", () => {
     refsAsked: false,
     refsGiven: false,
     references: [],
-    interviews: [{ state: "open", final: false }],
+    interviews: [{ state: "open", final: false, role: "Operations Role" }, { state: "waiting", final: false, role: "Community Role" }],
     ...over,
   });
   const roles = { welcome: "Welcome Role", followup: "People and Operations", finalCall: "Lead Steward" };
   const stateOf = (t: ReturnType<typeof trackOf>) => Object.fromEntries(t.stages.map((s) => [s.key, s.state]));
+
+  it("draws the six stages in the lead's order, in the lead's words", () => {
+    const t = trackOf(facts(), roles);
+    expect(t.stages.map((s) => s.label)).toEqual(["Received", "Our review", "References and proposal", "Final conversation", "Agreement", "Start"]);
+  });
 
   it("starts at our review while it waits, with the power to place people acting", () => {
     const t = trackOf(facts({ reviewStage: "review", firstReplied: false, interviews: [{ state: "waiting", final: false }] }), roles);
@@ -107,30 +113,37 @@ describe("the stage track", () => {
     expect(t.who).toMatch(/power to place people in roles/);
   });
 
-  it("asks for the shortlist once our review invited, then for references", () => {
-    expect(trackOf(facts(), roles).primary).toBe("shortlist");
-    const asked = trackOf(facts({ shortlist: "yes" }), roles);
-    expect(asked.now).toBe("references");
-    expect(asked.primary).toBe("ask_references");
-    expect(trackOf(facts({ shortlist: "yes", refsAsked: true }), roles)).toMatchObject({ primary: "wait_applicant", who: "The applicant" });
+  it("asks for the shortlist inside our review, then the first conversation with its role, before references", () => {
+    expect(trackOf(facts(), roles)).toMatchObject({ now: "review", primary: "shortlist" });
+    // Shortlisted: still our review, until the first conversation (the operations role's) is written up.
+    const talking = trackOf(facts({ shortlist: "yes" }), roles);
+    expect(talking).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
+    expect(stateOf(talking)).toMatchObject({ review: "now", references: "later" });
+    const passed = trackOf(facts({ shortlist: "yes", interviews: [{ state: "scored", final: false }, { state: "open", final: false }] }), roles);
+    expect(passed).toMatchObject({ now: "references", primary: "ask_references" });
+    expect(trackOf(facts({ shortlist: "yes", refsAsked: true, interviews: [{ state: "scored", final: false }, { state: "open", final: false }] }), roles)).toMatchObject({ primary: "wait_applicant", who: "The applicant" });
   });
 
-  it("runs the follow-ups beside the intuition conversations: neither waits for the other", () => {
-    const t = trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "open", final: false }] }), roles);
-    expect(t.now).toBe("followups");
+  it("runs the follow-ups beside the community conversation in one stage: neither waits for the other", () => {
+    const t = trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "open", final: false }] }), roles);
+    expect(t.now).toBe("references");
     expect(t.who).toContain("People and Operations");
     expect(t.who).toContain("conversation roles");
-    // CONTROL: with the conversations done and one reference still open, it is still the follow-ups.
-    expect(trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }] }), roles).now).toBe("followups");
+    // CONTROL: with every conversation done and one reference still open, it is still References and proposal.
+    expect(trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "scored", final: false }] }), roles).now).toBe("references");
+    // And with the references done and the community conversation still open, it waits for that too.
+    expect(trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "open", final: false }] }), roles).now).toBe("references");
   });
 
-  it("moves to the final conversation, held by the final-call role, then to the decision", () => {
-    const gathered = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }] });
+  it("moves to the final conversation, held by the final-call role, then to the agreement", () => {
+    const gathered = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: false }] });
     expect(trackOf(gathered, roles)).toMatchObject({ now: "final_interview", primary: "add_final", who: "Lead Steward" });
-    const withFinal = { ...gathered, interviews: [{ state: "scored", final: false }, { state: "open", final: true }] };
+    const withFinal = { ...gathered, interviews: [...gathered.interviews, { state: "open", final: true }] };
     expect(trackOf(withFinal, roles).primary).toBe("final_conversation");
-    const held = { ...gathered, interviews: [{ state: "scored", final: false }, { state: "scored", final: true }] };
-    expect(trackOf(held, roles)).toMatchObject({ now: "decision", primary: "decide", who: "Lead Steward" });
+    const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }] };
+    const t = trackOf(held, roles);
+    expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "Lead Steward" });
+    expect(t.next).toMatch(/counter/i);
   });
 
   it("says the power to place people decides when no final-call role is named", () => {
@@ -138,24 +151,39 @@ describe("the stage track", () => {
     expect(trackOf(held, { ...roles, finalCall: null }).who).toMatch(/power to place people in roles/);
   });
 
-  it("a not shortlisted application skips to the decision and declines nobody by itself", () => {
+  it("a not shortlisted application stays in our review, skips the rest and declines nobody by itself", () => {
     const t = trackOf(facts({ shortlist: "no" }), roles);
-    expect(t.now).toBe("decision");
-    expect(stateOf(t)).toMatchObject({ references: "skipped", followups: "skipped", final_interview: "skipped", decision: "now" });
+    expect(t.now).toBe("review");
+    expect(stateOf(t)).toMatchObject({ references: "skipped", final_interview: "skipped", agreement: "skipped", start: "later" });
     expect(t.primary).toBe("decide");
   });
 
-  it("once decided, nothing is left and the stages that never happened read as skipped", () => {
+  it("adopted reads Start; the stages that never happened read as skipped", () => {
     const t = trackOf(facts({ decided: "adopted", shortlist: "yes" }), roles);
     expect(t.primary).toBe("none");
-    expect(stateOf(t)).toMatchObject({ decision: "done", references: "skipped" });
+    expect(t.now).toBe("start");
+    expect(stateOf(t)).toMatchObject({ agreement: "done", start: "done", references: "skipped" });
+  });
+
+  it("declined ends at the stage it reached, and Start never happens", () => {
+    const t = trackOf(facts({ decided: "declined", shortlist: "no" }), roles);
+    expect(t.now).toBe("review");
+    expect(stateOf(t)).toMatchObject({ review: "done", references: "skipped", start: "skipped" });
+  });
+
+  it("an application in flight keeps its place: the same facts read under the old stage names map one to one", () => {
+    // Old "shortlist" (invited, not yet answered) and old "followups" (references in, conversations on) fold in.
+    expect(trackStates(facts()).now).toBe("review");
+    expect(trackStates(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "open", final: false }] })).now).toBe("references");
+    // Old "decision" after the final conversation reads Agreement.
+    expect(trackStates(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: true }] })).now).toBe("agreement");
   });
 });
 
 describe("the admin list order", () => {
   it("is by stage, then by the day it arrived: nothing about the person", () => {
     const rows = [
-      { id: "c", stage: "decision" as const, confirmedAt: "2026-11-01T00:00:00Z" },
+      { id: "c", stage: "agreement" as const, confirmedAt: "2026-11-01T00:00:00Z" },
       { id: "b", stage: "review" as const, confirmedAt: "2026-11-05T00:00:00Z" },
       { id: "a", stage: "review" as const, confirmedAt: "2026-11-02T00:00:00Z" },
     ];
@@ -170,16 +198,17 @@ describe("references for a member's first long-term role (the lead, 19 Nov 2026)
     // CONTROL: a member who already holds a role is not asked.
     expect(asksReferences("member", 1)).toBe(false);
   });
-  it("walks the references, the follow-ups and the decision, never a shortlist or a final conversation", () => {
+  it("walks the references and the agreement, never a shortlist or a final conversation", () => {
     const facts = { decided: null, refsAsked: false, refsGiven: false, references: [] as Array<{ followedUp: boolean }> };
     const ask = memberTrackOf(facts);
-    expect(ask.stages.map((s) => s.key)).toEqual(["received", "references", "followups", "decision"]);
+    expect(ask.stages.map((s) => s.key)).toEqual(["received", "references", "agreement", "start"]);
     expect([ask.now, ask.primary]).toEqual(["references", "ask_references"]);
     expect(memberTrackOf({ ...facts, refsAsked: true }).primary).toBe("wait_applicant");
     expect(memberTrackOf({ ...facts, refsAsked: true, refsGiven: true, references: [{ followedUp: false }] }).primary).toBe("follow_up");
     expect(memberTrackOf({ ...facts, refsAsked: true, refsGiven: true, references: [{ followedUp: true }] }).primary).toBe("decide");
     const decided = memberTrackOf({ ...facts, decided: "adopted" });
     expect(decided.primary).toBe("none");
+    expect(decided.now).toBe("start");
     expect(decided.stages.find((s) => s.key === "references")?.state).toBe("skipped");
   });
   it("doubles the status page's references to ten", () => {

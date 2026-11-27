@@ -237,7 +237,9 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const [p] = await q("SELECT status FROM open_role_proposals WHERE id = ?", [id]);
       expect(p.status).toBe("confirmed");
       const w = await walk(id, FOUNDER.id);
-      expect(w.body.walkthrough.track.now).toBe("decision");
+      // Not shortlisted: it stays in our review, with the decline as the next act (six stages, 27 Nov 2026).
+      expect(w.body.walkthrough.track.now).toBe("review");
+      expect(w.body.walkthrough.track.primary).toBe("decide");
       expect(state.sent.filter((m) => m.idempotencyKey.includes(id) && m.idempotencyKey.includes("declined"))).toEqual([]);
     });
   });
@@ -406,7 +408,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const desk = await call("GET", "/api/admin/open-proposals", undefined, FOUNDER.id);
       expect(desk.status).toBe(200);
       const row = desk.body.proposals.find((p: any) => p.id === id);
-      expect(row.stage).toMatchObject({ key: "followups", label: "Follow-ups and intuition conversations" });
+      expect(row.stage).toMatchObject({ key: "references", label: "References and proposal" });
       expect(row.stage.who).toContain("People and Operations");
     });
   });
@@ -446,7 +448,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       // Before anyone asks: the walkthrough shows the references step, and the member's own read says nothing is asked.
       const before = await walk(id, FOUNDER.id);
       expect(before.status, JSON.stringify(before.body)).toBe(200);
-      expect(before.body.walkthrough.track.stages.map((x: any) => x.key)).toEqual(["received", "references", "followups", "decision"]);
+      expect(before.body.walkthrough.track.stages.map((x: any) => x.key)).toEqual(["received", "references", "agreement", "start"]);
       expect(before.body.walkthrough.track.primary).toBe("ask_references");
       expect(before.body.walkthrough.you).toMatchObject({ mayAskReferences: true, mayShortlist: false, mayAddFinal: false });
       expect((await mine(id, NEWBIE.id)).body.references).toBeNull();
@@ -476,7 +478,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(rows.map((r: any) => r.owner_role_id)).toEqual([roleHR, roleHR]);
       const w = await walk(id, FOUNDER.id);
       expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(REFS.map((r) => r.contact));
-      expect(w.body.walkthrough.track.now).toBe("followups");
+      expect(w.body.walkthrough.track.now).toBe("references");
       expect((await walk(id, NEWBIE.id)).status).toBe(404);
       expect((await walk(id, OUTSIDER.id)).status).toBe(404);
       // A shortlist or a final conversation has no place on a member application.

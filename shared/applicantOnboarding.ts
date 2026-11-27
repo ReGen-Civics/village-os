@@ -178,22 +178,35 @@ export function mayAssignOwners(f: Pick<ReferenceReader, "isApplicant" | "recuse
 
 // ── The stage track ─────────────────────────────────────────────────────────
 
-export const TRACK = ["received", "review", "shortlist", "references", "followups", "final_interview", "decision"] as const;
+/**
+ * THE SIX STAGES, IN THE LEAD'S ORDER (27 Nov 2026): "Received: Our review (where I can review and then move to
+ * shortlist, when I do they can book a meeting with me ... if it passes me we move to references and them refining
+ * their proposal while they're doing their next conversation with community role ... they move to their final
+ * conversation ... we'll either counter their proposal or accept it outright we'll counter until we find agreement
+ * then they start."
+ *
+ * Folded from the seven stages before it: "Shortlist" is now part of Our review (shortlisting opens the first
+ * conversation), and "Follow-ups and intuition conversations" is part of References and proposal. The stage is
+ * DERIVED on every read from the steps and conversations the application already has, so an application in flight
+ * keeps its place with no data change: shortlisted and in its first conversation reads Our review; references asked,
+ * given or followed up, or a later conversation, reads References and proposal; the final conversation reads Final
+ * conversation; a final conversation written up and no decision yet reads Agreement; adopted reads Start.
+ */
+export const TRACK = ["received", "review", "references", "final_interview", "agreement", "start"] as const;
 export type TrackStage = (typeof TRACK)[number];
 export type TrackState = "done" | "now" | "later" | "skipped";
 
 export const TRACK_WORDS: Record<TrackStage, string> = {
   received: "Received",
   review: "Our review",
-  shortlist: "Shortlist",
-  references: "References",
-  followups: "Follow-ups and intuition conversations",
+  references: "References and proposal",
   final_interview: "Final conversation",
-  decision: "Decision",
+  agreement: "Agreement",
+  start: "Start",
 };
 
 /** The one obvious act at a stage. `none` when the stage waits on somebody outside the team, or nothing is left. */
-export const PRIMARY_ACTIONS = ["review", "shortlist", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "decide", "none"] as const;
+export const PRIMARY_ACTIONS = ["review", "shortlist", "conversation", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "decide", "none"] as const;
 export type PrimaryAction = (typeof PRIMARY_ACTIONS)[number];
 
 export interface TrackFacts {
@@ -206,8 +219,8 @@ export interface TrackFacts {
   refsGiven: boolean;
   /** Each reference's follow-up: written up or still open. */
   references: ReadonlyArray<{ followedUp: boolean }>;
-  /** The application's conversations, in order, with the final one marked. */
-  interviews: ReadonlyArray<{ state: string; final: boolean }>;
+  /** The application's conversations, in order, with the final one marked, and the role holding each when known. */
+  interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null }>;
 }
 
 export interface TrackRoles {
@@ -234,73 +247,95 @@ const done = (s: string) => s === "scored" || s === "skipped";
 /** The power that places people in roles, said the same way everywhere it stands for a role nobody named. */
 export const PLACING_POWER_WORDS = "the holders of the power to place people in roles";
 
-/**
- * WHERE ONE APPLICATION STANDS, as a track of seven stages, with who acts next
- * and the one act that moves it. The intuition conversations and the reference
- * follow-ups run side by side in one stage: neither waits for the other.
- */
-export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
-  const deciders = roles.finalCall ?? PLACING_POWER_WORDS;
-  const reviewDone = f.reviewStage === "invited" || f.reviewStage === "not_invited" || (f.reviewStage === null && f.firstReplied) || f.shortlist !== null || f.decided !== null;
+/** Where each stage stands, from the facts. Shared by the team's track and the applicant's own page. PURE. */
+export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackState>; now: TrackStage } {
   const talks = f.interviews.filter((i) => !i.final);
   const finals = f.interviews.filter((i) => i.final);
+  const firstTalkDone = talks.length === 0 || done(talks[0].state);
   const talksDone = talks.every((i) => done(i.state));
   const followedUp = f.refsGiven && f.references.every((r) => r.followedUp);
   const finalDone = finals.length > 0 && finals.every((i) => done(i.state));
   const no = f.shortlist === "no" || f.reviewStage === "not_invited";
   const yes = f.shortlist === "yes";
+  // Our review ends when the first conversation is written up, or sooner when the team has already asked for references.
+  const reviewDone = yes && (firstTalkDone || f.refsAsked);
+  // References and proposal is done once the references are given and followed up and every conversation before the
+  // final one is written up, as the final conversation always waited for before.
+  const referencesDone = reviewDone && talksDone && followedUp;
 
   const state: Record<TrackStage, TrackState> = {
     received: "done",
     review: reviewDone ? "done" : "now",
-    shortlist: f.shortlist ? "done" : f.reviewStage === "not_invited" ? "skipped" : reviewDone ? "now" : "later",
-    references: no ? "skipped" : f.refsGiven ? "done" : yes ? "now" : "later",
-    followups: no ? "skipped" : followedUp && talksDone ? "done" : f.refsGiven || (yes && talks.some((i) => i.state === "open" || done(i.state))) ? "now" : "later",
-    final_interview: no ? "skipped" : finalDone ? "done" : yes && ((f.refsGiven && followedUp && talksDone) || finals.some((i) => i.state === "open")) ? "now" : "later",
-    decision: f.decided ? "done" : no || finalDone ? "now" : "later",
+    references: no ? "skipped" : referencesDone ? "done" : reviewDone ? "now" : "later",
+    final_interview: no ? "skipped" : finalDone ? "done" : referencesDone || finals.some((i) => i.state === "open") ? "now" : "later",
+    agreement: no ? "skipped" : f.decided === "adopted" ? "done" : finalDone ? "now" : "later",
+    start: f.decided === "adopted" ? "done" : "later",
   };
   if (f.decided) {
-    // Once decided, a stage that never happened reads as skipped, and the decision is the last word.
-    for (const k of TRACK) if (state[k] === "now" || state[k] === "later") state[k] = k === "decision" ? "done" : "skipped";
+    // Once decided, a stage that never happened reads as skipped. Adopted: they start. Declined or withdrawn: the
+    // stage it ended at reads done, and Start never happened.
+    const endedAt = TRACK.find((k) => state[k] === "now") ?? "agreement";
+    for (const k of TRACK) if (state[k] === "now" || state[k] === "later") state[k] = "skipped";
+    if (f.decided === "adopted") {
+      state.agreement = "done";
+      state.start = "done";
+      return { state, now: "start" };
+    }
+    state[endedAt] = "done";
+    return { state, now: endedAt };
   }
+  return { state, now: TRACK.find((k) => state[k] === "now") ?? "agreement" };
+}
+
+/**
+ * WHERE ONE APPLICATION STANDS, as a track of six stages, with who acts next and the one act that moves it. The
+ * reference follow-ups, the applicant's refining of their proposal and the community conversation run side by side in
+ * one stage: none waits for the others.
+ */
+export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
+  const deciders = roles.finalCall ?? PLACING_POWER_WORDS;
+  const { state, now } = trackStates(f);
   const stages = TRACK.map((key) => ({ key, label: TRACK_WORDS[key], state: state[key] }));
-  const now: TrackStage = f.decided ? "decision" : (TRACK.find((k) => state[k] === "now") ?? "decision");
+  const talks = f.interviews.filter((i) => !i.final);
+  const finals = f.interviews.filter((i) => i.final);
+  const no = f.shortlist === "no" || f.reviewStage === "not_invited";
 
   if (f.decided) return { stages, now, who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
   switch (now) {
     case "review":
+      if (no) return { stages, now, who: deciders, next: "Not shortlisted. Send the decline with its letter, or reopen by talking it through with the team.", primary: "decide" };
+      if (f.reviewStage === "review")
+        return { stages, now, who: PLACING_POWER_WORDS, next: "Read the application, then invite the applicant to the conversations or send the not-invited letter.", primary: "review" };
+      if (f.reviewStage === null && !f.firstReplied) return { stages, now, who: roles.welcome ?? PLACING_POWER_WORDS, next: "Send the applicant a first reply.", primary: "review" };
+      if (f.shortlist === null) return { stages, now, who: PLACING_POWER_WORDS, next: "Shortlist this application, or say it is not shortlisted. Shortlisting opens the first conversation to book.", primary: "shortlist" };
       return {
         stages,
         now,
-        who: f.reviewStage === "review" ? PLACING_POWER_WORDS : (roles.welcome ?? PLACING_POWER_WORDS),
-        next: f.reviewStage === "review" ? "Read the application, then invite the applicant to the conversations or send the not-invited letter." : "Send the applicant a first reply.",
-        primary: "review",
+        who: talks[0]?.role ? `${talks[0].role}` : PLACING_POWER_WORDS,
+        next: "The applicant books the first conversation. Hold it, then write the notes and the scorecard.",
+        primary: "conversation",
       };
-    case "shortlist":
-      return { stages, now, who: PLACING_POWER_WORDS, next: "Shortlist this application, or say it is not shortlisted.", primary: "shortlist" };
     case "references":
-      return f.refsAsked
-        ? { stages, now, who: "The applicant", next: "The applicant adds their references from their status page.", primary: "wait_applicant" }
-        : { stages, now, who: PLACING_POWER_WORDS, next: "Ask the applicant for references. The letter goes in their language.", primary: "ask_references" };
-    case "followups":
+      if (!f.refsAsked) return { stages, now, who: PLACING_POWER_WORDS, next: "Ask the applicant for references. The letter goes in their language. They refine their proposal and book the next conversation meanwhile.", primary: "ask_references" };
+      if (!f.refsGiven) return { stages, now, who: "The applicant", next: "The applicant adds their references, refines their proposal and books the next conversation, from their status page.", primary: "wait_applicant" };
       return {
         stages,
         now,
         who: `${roles.followup ? `${roles.followup} and the other follow-up owners` : "The follow-up owners"}, and the conversation roles`,
-        next: "Each owner follows up with their reference and writes notes. The intuition conversations go on alongside.",
+        next: "Each owner follows up with their reference and writes notes. The next conversation goes on alongside.",
         primary: "follow_up",
       };
     case "final_interview":
       return finals.length
-        ? { stages, now, who: deciders, next: "Hold the final conversation and write the scorecard.", primary: "final_conversation" }
+        ? { stages, now, who: deciders, next: "Hold the final conversation, where the applicant delivers their proposal, then write the notes and the scorecard.", primary: "final_conversation" }
         : { stages, now, who: deciders, next: "Add the final conversation, then hold it.", primary: "add_final" };
-    case "decision":
+    case "agreement":
     default:
       return {
         stages,
-        now: "decision",
+        now: "agreement",
         who: deciders,
-        next: no ? "Send the decline with its letter, or reopen by talking it through with the team." : "Read what is gathered here, then adopt or decline with the existing doors.",
+        next: "Accept the proposal as it is, or counter it. Counter until both sides agree, then adopt with the existing doors.",
         primary: "decide",
       };
   }
@@ -313,11 +348,11 @@ export interface MemberTrackFacts {
   references: ReadonlyArray<{ followedUp: boolean }>;
 }
 
-/** The stages a member's first-role application walks here: no review, shortlist or conversations, which its own page holds. */
-export const MEMBER_TRACK: readonly TrackStage[] = ["received", "references", "followups", "decision"];
+/** The stages a member's first-role application walks here: no review or conversations, which its own page holds. */
+export const MEMBER_TRACK: readonly TrackStage[] = ["received", "references", "agreement", "start"];
 
 /**
- * WHERE A MEMBER'S FIRST-ROLE APPLICATION STANDS on its references: asked, given, followed up, then the decision on
+ * WHERE A MEMBER'S FIRST-ROLE APPLICATION STANDS on its references: asked, given, followed up, then the agreement on
  * the application's own page. Who acts is said as a role, never a person, never a score.
  */
 export function memberTrackOf(f: MemberTrackFacts): Track {
@@ -325,22 +360,25 @@ export function memberTrackOf(f: MemberTrackFacts): Track {
   const state: Record<TrackStage, TrackState> = {
     received: "done",
     review: "skipped",
-    shortlist: "skipped",
-    references: f.refsGiven ? "done" : "now",
-    followups: !f.refsGiven ? "later" : followedUp ? "done" : "now",
+    references: followedUp ? "done" : "now",
     final_interview: "skipped",
-    decision: f.decided ? "done" : followedUp ? "now" : "later",
+    agreement: f.decided === "adopted" ? "done" : followedUp ? "now" : "later",
+    start: f.decided === "adopted" ? "done" : "later",
   };
-  if (f.decided) for (const k of MEMBER_TRACK) if (state[k] === "now" || state[k] === "later") state[k] = k === "decision" ? "done" : "skipped";
+  if (f.decided) {
+    for (const k of MEMBER_TRACK) if (state[k] === "now" || state[k] === "later") state[k] = "skipped";
+    if (f.decided === "adopted") state.agreement = state.start = "done";
+    else state.agreement = "done";
+  }
   const stages = MEMBER_TRACK.map((key) => ({ key, label: TRACK_WORDS[key], state: state[key] }));
-  if (f.decided) return { stages, now: "decision", who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
+  if (f.decided) return { stages, now: f.decided === "adopted" ? "start" : "agreement", who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
   if (!f.refsGiven) {
     return f.refsAsked
       ? { stages, now: "references", who: "The applicant", next: "The member adds their references on their application's page.", primary: "wait_applicant" }
       : { stages, now: "references", who: PLACING_POWER_WORDS, next: "Ask the member for references. This is their first long-term role.", primary: "ask_references" };
   }
-  if (!followedUp) return { stages, now: "followups", who: "The follow-up owners", next: "Each owner follows up with their reference and writes notes.", primary: "follow_up" };
-  return { stages, now: "decision", who: "The people who adopt this application", next: "Read the follow-up notes, then adopt or decline on this page.", primary: "decide" };
+  if (!followedUp) return { stages, now: "references", who: "The follow-up owners", next: "Each owner follows up with their reference and writes notes.", primary: "follow_up" };
+  return { stages, now: "agreement", who: "The people who adopt this application", next: "Read the follow-up notes, then adopt or decline on this page.", primary: "decide" };
 }
 
 /** The order of the admin list: by stage, then by the day the application arrived. Never by anything about the person. */
@@ -360,6 +398,7 @@ export const ONBOARDING_WORDS = {
   primary: {
     review: "Go to our review",
     shortlist: "Shortlist",
+    conversation: "Go to the conversation",
     ask_references: "Ask for references",
     wait_applicant: "Waiting on the applicant",
     follow_up: "Go to the follow-ups",

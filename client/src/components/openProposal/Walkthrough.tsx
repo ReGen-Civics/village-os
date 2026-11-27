@@ -1,8 +1,8 @@
 /**
  * THE WALKTHROUGH on an application's page: one place to walk an applicant
  * from "proposal received" to a decision. The stage track (received, our
- * review, shortlist, references, follow-ups and intuition conversations, the
- * final conversation, the decision), who acts next (a role, never a person),
+ * review with its shortlist and first conversation, references and proposal with the follow-ups and the next
+ * conversation, the final conversation, the agreement, the start), who acts next (a role, never a person),
  * the one obvious act for the stage, the references with their follow-up
  * owners and notes, and everything gathered for the role that makes the final
  * call.
@@ -22,6 +22,8 @@ import { FOLLOWUP_NOTE_MAX, type PrimaryAction, type ShortlistAnswer, type Track
 import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import ConversationNotes from "@/components/openProposal/ConversationNotes";
+import ProposalVersions from "@/components/openProposal/ProposalVersions";
+import type { ProposalVersion } from "@shared/proposalRefine";
 import type { GuideView } from "@shared/conversationGuide";
 import type { ConversationNotesView } from "@shared/conversationNotes";
 import { GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, type GutAnswer, type InterviewState, type ScoreLevel } from "@shared/applicationReview";
@@ -59,6 +61,8 @@ interface ServedWalkthrough {
   guide?: GuideView | null;
   /** Each conversation's private notes and files this reader may read (0442). Never served to the applicant. */
   conversations?: ConversationNotesView[];
+  /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts). */
+  proposalVersions?: ProposalVersion[];
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -136,6 +140,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         return <p className={HINT}>{label}</p>;
       case "follow_up":
         return <a className={BTN_PRIMARY} href="#walk-references">{label}</a>;
+      case "conversation":
       case "final_conversation":
         return <a className={BTN_PRIMARY} href="#scorecards">{label}</a>;
       case "review":
@@ -178,6 +183,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
       {w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />}
       {w.conversations && w.conversations.length > 0 && <ConversationNotes base={base} conversations={w.conversations} onSaved={() => void load()} />}
+      {w.proposalVersions && w.proposalVersions.length > 0 && <ProposalVersions versions={w.proposalVersions} />}
       {gathered && <Gathered w={w} />}
     </section>
   );

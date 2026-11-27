@@ -219,6 +219,24 @@ export interface ApplicantMessages {
       bookNow(role: string): string;
       writeNow(role: string): string;
     };
+    /**
+     * THE SIX STAGES (the lead, 27 Nov 2026), as the applicant reads them: each stage's name, what to do next at the
+     * stage they stand at, and the form to refine their proposal (shared/proposalRefine.ts).
+     */
+    six: {
+      names: Record<"received" | "review" | "references" | "final_interview" | "agreement" | "start", string>;
+      move: {
+        received: string;
+        review: string;
+        reviewBook(role: string): string;
+        references: string;
+        referencesTalk(role: string): string;
+        final(role: string | null): string;
+        agreement: string;
+        start: string;
+      };
+      refine: { heading: string; line: string; why: string; aim: string; save: string; saved: string; frozen: string; failed: string; versions(n: number): string };
+    };
     references: {
       none: string;
       some(n: number): string;
@@ -469,6 +487,30 @@ const en: ApplicantMessages = {
       bookNow: (role) => `Book a time with ${role}`,
       writeNow: (role) => `We'll write to you with times for your conversation with ${role}.`,
     },
+    six: {
+      names: { received: "Received", review: "Our review", references: "References and proposal", final_interview: "Final conversation", agreement: "Agreement", start: "Start" },
+      move: {
+        received: "We have your proposal. Our review comes next.",
+        review: "We are reading your proposal. If we shortlist it, you book your first conversation here.",
+        reviewBook: (role) => `You are shortlisted. Book your conversation with ${role} below.`,
+        references: "Add your references and refine your proposal below. Your next conversation opens here when it is ready.",
+        referencesTalk: (role) => `Add your references, refine your proposal below, and book your conversation with ${role}.`,
+        final: (role) => (role ? `Book your final conversation with ${role}. Bring your proposal: you present it there.` : "Your final conversation opens here soon. Bring your proposal: you present it there."),
+        agreement: "We answer your proposal: we accept it, or we counter it. Answer each line below. We go back and forth until we agree.",
+        start: "Welcome. You start on the terms we agreed. Your tasks appear on your profile.",
+      },
+      refine: {
+        heading: "Refine your proposal",
+        line: "Make it solid before your final conversation. We keep each earlier version. Once your final conversation opens, it is fixed.",
+        why: "Why you, and why now",
+        aim: "Your aim in this role, in a line",
+        save: "Save my proposal",
+        saved: "Saved. We keep your earlier version too.",
+        frozen: "Your proposal is fixed now that your final conversation has opened. A change goes through our answer to your proposal.",
+        failed: "That did not save. Try again.",
+        versions: (n) => (n === 1 ? "1 earlier version kept." : `${n} earlier versions kept.`),
+      },
+    },
     references: {
       none: "You gave no references, so we run a background check. You agreed to it when you proposed. We cover its cost, and we contact no one before our first conversation with you.",
       some: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. We contact references only after our first conversation, and only with your OK.`,
@@ -714,6 +756,31 @@ const es: ApplicantMessages = {
       bookNow: (role) => `Reserve un horario con ${role}`, // needs-native-review: new words, 16 Nov 2026
       writeNow: (role) => `Le escribiremos con horarios para su conversación con ${role}.`,
     },
+    // needs-native-review: the six stages, 27 Nov 2026
+    six: {
+      names: { received: "Recibida", review: "Nuestra revisión", references: "Referencias y propuesta", final_interview: "Conversación final", agreement: "Acuerdo", start: "Inicio" },
+      move: {
+        received: "Tenemos su propuesta. Sigue nuestra revisión.",
+        review: "Estamos leyendo su propuesta. Si la preseleccionamos, usted reserva aquí su primera conversación.",
+        reviewBook: (role) => `Su propuesta está preseleccionada. Reserve abajo su conversación con ${role}.`,
+        references: "Agregue sus referencias y mejore su propuesta abajo. Su siguiente conversación se abre aquí cuando esté lista.",
+        referencesTalk: (role) => `Agregue sus referencias, mejore su propuesta abajo y reserve su conversación con ${role}.`,
+        final: (role) => (role ? `Reserve su conversación final con ${role}. Traiga su propuesta: usted la presenta allí.` : "Su conversación final se abre aquí pronto. Traiga su propuesta: usted la presenta allí."),
+        agreement: "Respondemos a su propuesta: la aceptamos o hacemos una contraoferta. Responda cada línea abajo. Seguimos hasta llegar a un acuerdo.",
+        start: "Le damos la bienvenida. Usted empieza con los términos acordados. Sus tareas aparecen en su perfil.",
+      },
+      refine: {
+        heading: "Mejore su propuesta",
+        line: "Déjela firme antes de su conversación final. Guardamos cada versión anterior. Cuando se abre su conversación final, queda fija.",
+        why: "Por qué usted, y por qué ahora",
+        aim: "Su objetivo en este rol, en una línea",
+        save: "Guardar mi propuesta",
+        saved: "Guardada. También guardamos su versión anterior.",
+        frozen: "Su propuesta quedó fija porque se abrió su conversación final. Un cambio pasa por nuestra respuesta a su propuesta.",
+        failed: "No se pudo guardar. Inténtelo de nuevo.",
+        versions: (n) => (n === 1 ? "Se guarda 1 versión anterior." : `Se guardan ${n} versiones anteriores.`),
+      },
+    },
     references: {
       none: "No dio referencias, así que haremos una verificación de antecedentes. Usted aceptó cuando envió su propuesta. Nosotros cubrimos su costo y no contactamos a nadie antes de nuestra primera conversación con usted.",
       some: (n) => `Dio ${n} ${n === 1 ? "referencia" : "referencias"}. Contactamos a las referencias solo después de nuestra primera conversación, y solo con su visto bueno.`,
@@ -850,7 +917,18 @@ export interface StatusServedForView {
   notInvited?: boolean;
   /** Closed by the tidy job because nobody answered it in time (server/lib/applicantFollowups.ts). */
   closed?: boolean;
+  /**
+   * THE SIX STAGES (the lead, 27 Nov 2026; server/lib/applicantOnboarding.ts `applicantStagesOf`): stage keys and
+   * states, the stage now, and the refine form's state. Open proposals only. Absent: the older path is read.
+   */
+  sixStages?: {
+    stages: ReadonlyArray<{ key: SixStageKey; state: "done" | "now" | "later" | "skipped" }>;
+    now: SixStageKey;
+    refine: { open: boolean; frozen: boolean; why: string; aim: string; versions: number };
+  } | null;
 }
+
+export type SixStageKey = "received" | "review" | "references" | "final_interview" | "agreement" | "start";
 
 export interface StatusView {
   heading: string;
@@ -867,6 +945,8 @@ export interface StatusView {
    */
   booking: { text: string; book: { label: string; links: Array<{ label: string; url: string }> } | { text: string } | null } | null;
   references: string | null;
+  /** The refine form at References and proposal, or its frozen line after; null on the older path. */
+  refine: { open: boolean; frozen: boolean; why: string; aim: string; versions: number } | null;
 }
 
 /** The status page's booking doors: "Book a time with Role (First, First)", and each person's link under it when there are several. */
@@ -956,6 +1036,46 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   const references = closed || typeof s.referencesGiven !== "number" ? null : s.referencesGiven === 0 ? w.references.none : w.references.some(s.referencesGiven);
 
   const stepKey = s.reviewFirst && s.step === "consent" ? "decided" : notInvited ? "not_invited" : s.step;
+
+  // THE SIX STAGES (the lead, 27 Nov 2026): only the stage, what to do next, and that stage's booking button. A
+  // declined or withdrawn application keeps its own answer card and the older path.
+  const six = s.sixStages;
+  if (six && !closed) {
+    const sw = w.six;
+    const sixPath: StatusView["path"] = [];
+    for (const st of six.stages) {
+      if (st.state === "skipped") continue;
+      sixPath.push({ label: sw.names[st.key], state: st.state === "done" ? "done" : st.state === "now" && s.outcome !== "adopted" ? "now" : st.state === "now" ? "done" : "later" });
+    }
+    const role = s.bookNow ? s.bookNow.label || s.bookNow.role : null;
+    const sixMove =
+      s.outcome === "adopted"
+        ? w.move.adopted
+        : six.now === "received"
+          ? sw.move.received
+          : six.now === "review"
+            ? role ? sw.move.reviewBook(role) : sw.move.review
+            : six.now === "references"
+              ? role ? sw.move.referencesTalk(role) : sw.move.references
+              : six.now === "final_interview"
+                ? sw.move.final(role)
+                : six.now === "agreement"
+                  ? sw.move.agreement
+                  : sw.move.start;
+    return {
+      heading: s.reviewFirst ? w.headingApplication : w.heading,
+      notInvited: false,
+      closed: false,
+      stepWords: sw.names[six.now],
+      move: sixMove,
+      path: sixPath,
+      // Only the conversation open now, and only its button: no order list, no later conversations.
+      booking: s.bookNow && !decided ? { text: "", book: bookDoors(w, s.bookNow) } : null,
+      references,
+      refine: six.refine.open || six.refine.frozen ? six.refine : null,
+    };
+  }
+
   return {
     heading: s.reviewFirst ? w.headingApplication : w.heading,
     notInvited,
@@ -965,5 +1085,6 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     path,
     booking,
     references,
+    refine: null,
   };
 }

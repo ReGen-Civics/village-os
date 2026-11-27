@@ -29,6 +29,7 @@ export const ONBOARDING_MIRROR: WordMirror<typeof ONBOARDING_WORDS> = {
   primary: {
     review: msg({ message: "Go to our review", context: "applicant onboarding: primary.review" }),
     shortlist: msg({ message: "Shortlist", context: "applicant onboarding: primary.shortlist" }),
+    conversation: msg({ message: "Go to the conversation", context: "applicant onboarding: primary.conversation" }),
     ask_references: msg({ message: "Ask for references", context: "applicant onboarding: primary.ask_references" }),
     wait_applicant: msg({ message: "Waiting on the applicant", context: "applicant onboarding: primary.wait_applicant" }),
     follow_up: msg({ message: "Go to the follow-ups", context: "applicant onboarding: primary.follow_up" }),

@@ -1,0 +1,39 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "References and proposal"
+msgstr "Referencias y propuesta"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "Agreement"
+msgstr "Acuerdo"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "Start"
+msgstr "Inicio"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "applicant onboarding: primary.conversation"
+msgid "Go to the conversation"
+msgstr "Ir a la conversación"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the heading"
+msgid "Earlier versions of the proposal"
+msgstr "Versiones anteriores de la propuesta"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: what they are"
+msgid "The applicant refined their proposal. The proposal above is the current one; these are the words it replaced."
+msgstr "La persona que postula mejoró su propuesta. La propuesta de arriba es la actual; estas son las palabras que reemplazó."
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: when one was replaced"
+msgid "Replaced on {0}"
+msgstr "Reemplazada el {0}"

@@ -30,10 +30,16 @@ import {
   parseShortlistAnswer,
   shortlistOf,
   trackOf,
+  trackStates,
+  TRACK,
   type ReferenceError,
   type ShortlistAnswer,
   type Track,
+  type TrackFacts,
+  type TrackStage,
+  type TrackState,
 } from "../../shared/applicantOnboarding";
+import { finalFreezes, mayRefine, PROPOSAL_VERSIONS_MAX, readRefined, readVersions, REFINE_ERRORS, type ProposalVersion, type RefineView } from "../../shared/proposalRefine";
 import { kindOfRef, parseCriteria, reviewStageOf } from "../../shared/applicationReview";
 import * as review from "../repos/applicationReview";
 import * as repo from "../repos/applicantOnboarding";
@@ -439,6 +445,8 @@ export interface Walkthrough {
   guide: GuideView | null;
   /** Each conversation's private notes and files, only the conversations this viewer may read (shared/conversationNotes.ts). */
   conversations: ConversationNotesView[];
+  /** The proposal's earlier versions, oldest first, when the applicant refined it (shared/proposalRefine.ts). */
+  proposalVersions: ProposalVersion[];
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -468,7 +476,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
   const followRole = stringVar(FOLLOWUP_ROLE_VARIABLE).trim();
   const finalRole = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
   const welcomeRole = stringVar("org.onboarding_role").trim();
-  const names = await review.roleNamesById(pool, [followRole, finalRole, welcomeRole, ...stored.map((r) => r.ownerRoleId)].filter(Boolean));
+  const names = await review.roleNamesById(pool, [followRole, finalRole, welcomeRole, ...stored.map((r) => r.ownerRoleId), ...interviews.map((i) => i.roleId)].filter(Boolean));
   const shortlist = member ? null : shortlistOf(steps);
   const track = member
     ? memberTrackOf({ decided: member.decided, refsAsked: steps.some((x) => x.kind === "refs_asked"), refsGiven: steps.some((x) => x.kind === "refs_given"), references: stored.map((r) => ({ followedUp: !!r.followedUpAt })) })
@@ -481,7 +489,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       refsAsked: steps.some((x) => x.kind === "refs_asked"),
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: stored.map((r) => ({ followedUp: !!r.followedUpAt })),
-      interviews: interviews.map((i) => ({ state: i.state, final: i.final })),
+      interviews: interviews.map((i) => ({ state: i.state, final: i.final, role: names.get(i.roleId) ?? null })),
     },
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
   );
@@ -518,6 +526,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     scorecards: await scorecardsFor(deps, ref, viewerId),
     guide: await guideFor(deps, ref, s, viewerId),
     conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
+    proposalVersions: s.isReviewer || s.isFinalCall ? await proposalVersionsFor(deps, ref) : [],
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
@@ -690,4 +699,90 @@ async function tellNotesAdded(deps: ReviewDeps, ref: string, interview: review.S
     told.add(userId);
     await deps.notify({ userId, type: "application_conversation_notes", title: NOTES_NOTICES.title(names), body: NOTES_NOTICES.body, link: walkthroughHref(ref), actorUserId: authorId, dedupeKey: `app:${ref}:conv-note:${noteId}:${userId}` });
   }
+}
+
+// ── The applicant's own view of the six stages, and refining their proposal ─
+
+/** The facts the track reads, for one application, from what is stored. Null for a ref with no confirmed step. */
+async function trackFactsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Promise<{ facts: TrackFacts; finals: Array<{ state: string; booked: boolean }> } | null> {
+  const pool = deps.getPool();
+  const steps = await review.stepsOf(pool, ref);
+  if (!steps.some((s) => s.kind === "confirmed")) return null;
+  const decidedStep = steps.find((x) => x.kind === "decided");
+  const how = decidedStep?.detail?.how;
+  const interviews = await review.interviewsOf(pool, ref);
+  const follow = await repo.followUpsOf(pool, [ref]);
+  return {
+    facts: {
+      decided: how === "adopted" || how === "declined" || how === "withdrawn" ? how : decidedStep ? "declined" : null,
+      reviewStage: reviewStageOf(steps),
+      firstReplied: steps.some((x) => x.kind === "first_reply"),
+      shortlist: shortlistOf(steps),
+      refsAsked: steps.some((x) => x.kind === "refs_asked"),
+      refsGiven: steps.some((x) => x.kind === "refs_given"),
+      references: follow.get(ref) ?? [],
+      interviews: interviews.map((i) => ({ state: i.state, final: i.final })),
+    },
+    finals: interviews.filter((i) => i.final).map((i) => ({ state: i.state, booked: !!i.bookedAt })),
+  };
+}
+
+/**
+ * WHAT THE APPLICANT'S OWN PAGE READS OF THE SIX STAGES: each stage's key and state, the stage they stand at, and
+ * whether they may refine their proposal. Stage keys and states only: never a note, a score, a reference or a name.
+ * Open proposals only; a member's own application keeps its own page. Null otherwise.
+ */
+export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<{ stages: Array<{ key: TrackStage; state: TrackState }>; now: TrackStage; refine: RefineView } | null> {
+  if (kindOfRef(ref) !== "open") return null;
+  const read = await trackFactsOf(deps, ref);
+  if (!read) return null;
+  const { state, now } = trackStates(read.facts);
+  const own = await proposals.readOpenProposal(deps.getPool(), ref);
+  const finalFrozen = finalFreezes(read.finals);
+  const decided = read.facts.decided !== null;
+  const open = mayRefine({ stage: now, decided, finalFrozen });
+  return {
+    stages: TRACK.map((key) => ({ key, state: state[key] })),
+    now,
+    refine: {
+      open,
+      // Frozen is said only once there was a time to refine: from References and proposal on.
+      frozen: !decided && finalFrozen,
+      why: open ? (own?.body.why ?? "") : "",
+      aim: open ? (own?.body.aim ?? "") : "",
+      versions: readVersions(await proposals.proposalVersionsOf(deps.getPool(), ref)).length,
+    },
+  };
+}
+
+export type RefineOutcome = { ok: true; versions: number } | { ok: false; status: number; error: keyof typeof REFINE_ERRORS };
+
+/**
+ * THE APPLICANT REFINES THEIR PROPOSAL, while at References and proposal and before the final conversation opens.
+ * The words they replace are kept as an earlier version. The team reads what changed on the walkthrough.
+ */
+export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown): Promise<RefineOutcome> {
+  if (kindOfRef(ref) !== "open") return { ok: false, status: 404, error: "not_found" };
+  const read = await trackFactsOf(deps, ref);
+  if (!read) return { ok: false, status: 404, error: "not_found" };
+  const { now } = trackStates(read.facts);
+  if (!mayRefine({ stage: now, decided: read.facts.decided !== null, finalFrozen: finalFreezes(read.finals) })) return { ok: false, status: 409, error: "closed" };
+  const words = readRefined(raw);
+  if (!words.ok) return { ok: false, status: 400, error: words.error };
+  const pool = deps.getPool();
+  const at = deps.now();
+  return inTransaction(pool, async (conn) => {
+    const p = await proposals.readOpenProposal(conn, ref, true);
+    if (!p || p.status !== "confirmed") return { ok: false, status: 409, error: "closed" } as RefineOutcome;
+    if (p.body.why === words.why && p.body.aim === words.aim) return { ok: false, status: 400, error: "unchanged" } as RefineOutcome;
+    const versions = [...readVersions(await proposals.proposalVersionsOf(conn, ref)), { at: at.toISOString(), why: p.body.why, aim: p.body.aim }].slice(-PROPOSAL_VERSIONS_MAX);
+    if (!(await proposals.refineOpenProposal(conn, ref, words.why, words.aim, versions))) return { ok: false, status: 409, error: "closed" } as RefineOutcome;
+    return { ok: true, versions: versions.length } as RefineOutcome;
+  });
+}
+
+/** The earlier versions of a proposal, for the team's walkthrough. Never the applicant's read of anybody else's. */
+export async function proposalVersionsFor(deps: Pick<ReviewDeps, "getPool">, ref: string): Promise<ProposalVersion[]> {
+  if (kindOfRef(ref) !== "open") return [];
+  return readVersions(await proposals.proposalVersionsOf(deps.getPool(), ref));
 }
