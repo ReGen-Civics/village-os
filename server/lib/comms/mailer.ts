@@ -106,6 +106,7 @@ export const FORM_TYPE_TO_PATHWAY: Record<string, "investor" | "steward" | "resi
   "investor-pack": "investor",
   "investor-call": "investor",
   "investor-doc-request": "investor",
+  "investor-interest": "investor", // the investor gate's interest form (server/routes/investorAccess.ts)
   steward: "steward",
   resident: "resident",
   prosperity: "prosperity",

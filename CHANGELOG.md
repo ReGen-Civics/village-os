@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.92 (2026-11-27)
+
+### What changed for your village
+
+- **An investor gate, off until you turn it on.** With the village variable `investors.gate` on, the investor page shows only a welcome line and an interest form to anyone the village has not let in. The form asks for a name and an email (filled in from the entrance when the visitor already gave them) and offers optional questions: investor type, country, accreditation (self-reported), check size, structure, time horizon, thesis, interests, experience and how they heard. Answers land on the Form Submissions desk. Accepting a request only opens the investor page to that person: no account, no invite, no email. The server holds back every investor word, the summary, the packet, the investor FAQ and the page's own default text from anyone not let in.
+
+### What you must do
+
+Nothing. To gate your investor page, turn on `investors.gate` in Admin, Game Mechanics.
+
+### Does it touch your data
+
+One new table, `investor_access`, added on the way up (migration 0440). Nothing is removed or changed, so going back to 1.3.91 still works.
+
+---
+
 ## 1.3.91 (2026-11-27)
 
 ### What changed for your village

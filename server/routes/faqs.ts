@@ -29,13 +29,19 @@
  * The pathway vocabulary lives here too, with the domain that defines it,
  * and server/index.ts imports it back for the seed type.
  */
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import type { AppDeps } from "../lib/appDeps";
 
 export const FAQ_PATHWAYS = ["investor", "steward", "resident", "prosperity"] as const;
 export type FaqPathway = (typeof FAQ_PATHWAYS)[number];
 
-type Deps = Pick<AppDeps, "isAdmin" | "guardCapability" | "faqsRepo">;
+type Deps = Pick<AppDeps, "isAdmin" | "guardCapability" | "faqsRepo"> & {
+  /**
+   * Whether this reader may read one pathway's questions. The investor pathway's answer is the investor gate's
+   * (server/routes/investorAccess.ts, the lead, 27 Nov 2026): its questions are investor words. Absent, all may.
+   */
+  mayRead?(pathway: FaqPathway, req: Request): Promise<boolean>;
+};
 
 export function register(app: Express, deps: Deps): void {
   const { isAdmin, guardCapability, faqsRepo } = deps;
@@ -43,6 +49,10 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/faqs/:pathway", async (req, res) => {
     const pathway = req.params.pathway;
     if (!FAQ_PATHWAYS.includes(pathway as FaqPathway)) return res.status(404).json({ error: "Unknown pathway" });
+    if (deps.mayRead && !(await deps.mayRead(pathway as FaqPathway, req))) {
+      res.setHeader("Cache-Control", "no-store");
+      return res.status(403).json({ error: "investor_only" });
+    }
     const all = faqsRepo.get();
     res.json(all[pathway] ?? []);
   });
