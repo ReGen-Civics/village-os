@@ -526,7 +526,7 @@ function Router() {
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
       <Route path="/training" component={Training} />
-      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we decide at /governance/how. */}
+      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we work together at /governance/how. */}
       <Route path="/governance" component={GovernanceNow} />
       <Route path="/governance/how" component={Governance} />
       <Route path="/governance/treasury" component={GovernanceTreasury} />

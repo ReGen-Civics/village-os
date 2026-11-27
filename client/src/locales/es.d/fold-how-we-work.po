@@ -256,3 +256,57 @@ msgstr "Lléveselo consigo"
 msgctxt "how we work together: section kicker"
 msgid "On chain"
 msgstr "En cadena"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, aria-label"
+msgid "Where the platform enforces this law"
+msgstr "Dónde hace cumplir la plataforma esta ley"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: newcomer act"
+msgid "Take part in how the village decides."
+msgstr "Participe en cómo decide la aldea."
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: mechanics locked"
+msgid "The game mechanics are for members. They open when the village admits you."
+msgstr "Las mecánicas del juego son para miembros. Se abren cuando la aldea lo admite."
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: mechanics locked"
+msgid "The game mechanics are for members."
+msgstr "Las mecánicas del juego son para miembros."
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: mechanics locked"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "{0} in play"
+msgstr "{0} en juego"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "Nothing proposed yet"
+msgstr "Nada propuesto todavía"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
+
+# needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: newcomer"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"

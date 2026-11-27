@@ -488,8 +488,14 @@ export default function GameMechanics() {
   const [answersFor, setAnswersFor] = useState<Record<string, string>>({});
   const alignment = usePurposeAlignment(); // 0219: the judgement line, per proposal
 
-  // A notification about a proposal lands ON the proposal; the target arrives with the fetch.
-  useFocusTarget([proposals.length]);
+  /*
+   * A notification about a proposal lands ON the proposal. The card exists only
+   * once BOTH reads are in (the list, and the snapshot the folds wait for), and
+   * either can arrive second, so the hook looks again on each (QA round 1: with
+   * the rules arriving last, a notification left the reader at the top).
+   */
+  const [proposalsRead, setProposalsRead] = useState(false);
+  useFocusTarget([proposals.length, !!snapshot, proposalsRead]);
 
   const loadHistory = useCallback(() => {
     fetch("/api/game/mechanics/history", { headers: historyHeaders() })
@@ -510,37 +516,62 @@ export default function GameMechanics() {
    * section is drawn only once the snapshot lands, so the browser's own jump
    * found nothing; it is made here once there is something to land on.
    */
+  /*
+   * A jump inside the page: a hash link (hashchange), a router link to this
+   * page's own anchor such as the footer's (wouter's pushState, which fires no
+   * hashchange), or the contents column pressed again on a fold the reader shut
+   * (the page re-sends the hashchange for that).
+   */
   useEffect(() => {
-    const onHash = () => {
+    const onJump = () => {
+      if (window.location.pathname !== "/governance/how") return;
       const fold = foldFromUrl(window.location.hash, "");
       if (!fold) return;
       setOpenFolds((s) => ({ ...s, [fold]: true }));
       if (fold === "mechanics-history" && history === null) loadHistory();
-      window.requestAnimationFrame(() => document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ block: "start" }));
+      window.requestAnimationFrame(() => document.getElementById(window.location.hash.slice(1))?.scrollIntoView?.({ block: "start" }));
     };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    window.addEventListener("hashchange", onJump);
+    window.addEventListener("pushState", onJump);
+    return () => {
+      window.removeEventListener("hashchange", onJump);
+      window.removeEventListener("pushState", onJump);
+    };
   }, [history, loadHistory]);
 
+  /* Arriving with an anchor or a dial: once the rules land, go where the address asked. */
   useEffect(() => {
     if (!snapshot) return;
     const id = window.location.hash.slice(1);
     if (id === "mechanics-history" && history === null) loadHistory();
-    // A notification's focus lands on its own card (useFocusTarget), so nothing here pulls the page away from it.
+    // A notification's focus is answered below, once the list is in too.
     if (focusTargetId(window.location.search)) return;
-    // A fold the address names by anchor, or by query (`?dial=` from the old address), is where the reader lands.
     const fold = foldFromUrl(window.location.hash, window.location.search);
-    const target = (MECHANICS_FOLDS as readonly string[]).includes(id) ? id : fold ?? (id === "game-mechanics" ? id : null);
-    if (target) window.requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: "start" }));
+    const target = (MECHANICS_FOLDS as readonly string[]).includes(id) || id.startsWith("proposal-") ? id : fold ?? (id === "game-mechanics" ? id : null);
+    if (!target) return;
+    window.requestAnimationFrame(() => (document.getElementById(target) ?? (fold ? document.getElementById(fold) : null))?.scrollIntoView?.({ block: "start" }));
     // Once, when the snapshot lands: the reader's later scrolling is theirs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snapshot]);
+
+  /*
+   * A notification's proposal that is not on the page any more (withdrawn,
+   * settled, or never this reader's to see): useFocusTarget finds nothing, so
+   * the reader is brought to the Proposals fold, never left at the top.
+   */
+  useEffect(() => {
+    if (!snapshot || !proposalsRead) return;
+    const focus = focusTargetId(window.location.search);
+    if (!focus?.startsWith("proposal-") || document.getElementById(focus)) return;
+    window.requestAnimationFrame(() => document.getElementById("mechanics-proposals")?.scrollIntoView?.({ block: "start" }));
+  }, [snapshot, proposalsRead]);
 
   const loadProposals = useCallback(() => {
     fetch("/api/game/mechanics/proposals")
       .then((r) => (r.ok ? r.json() : []))
       .then((d) => setProposals(Array.isArray(d) ? d : []))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setProposalsRead(true));
   }, []);
 
   const loadStanding = useCallback(() => {
@@ -797,9 +828,12 @@ export default function GameMechanics() {
               {/* The laws arrive in English; the platform's own words are drawn in the reader's language. */}
               {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                 <li key={law.title} className={TILE}>
-                  <h4 className="mb-1.5 font-semibold text-foreground">{law.title}</h4>
+                  <h4 className="mb-1.5 font-semibold text-foreground">
+                    {law.title}
+                    {/* Where the platform holds it, for whoever wants to check: behind a tip, out of the reading line. */}
+                    <InfoTip tip={law.enforcedBy} label={t({ message: "Where the platform enforces this law", context: "GameMechanics, aria-label" })} tapBox className="ml-1 font-normal text-muted-foreground" />
+                  </h4>
                   <p className="text-sm leading-relaxed text-muted-foreground">{law.plain}</p>
-                  <p className="mt-2 break-words text-xs text-muted-foreground">{law.enforcedBy}</p>
                 </li>
               ))}
             </ul>
@@ -976,9 +1010,14 @@ export default function GameMechanics() {
             icon={<Triad className="size-6" />}
             title={<Trans context="GameMechanics, h2">Proposals</Trans>}
             line={
+              // A zero is left unsaid ("0 settled" read as a fault; QA round 1).
               activeProposals.length > 0
-                ? <Trans context="GameMechanics, fold summary">{activeProposals.length} in play, {settledProposals.length} settled</Trans>
-                : <Trans context="GameMechanics, fold summary">Nothing in play, {settledProposals.length} settled</Trans>
+                ? settledProposals.length > 0
+                  ? <Trans context="GameMechanics, fold summary">{activeProposals.length} in play, {settledProposals.length} settled</Trans>
+                  : <Trans context="GameMechanics, fold summary">{activeProposals.length} in play</Trans>
+                : settledProposals.length > 0
+                  ? <Trans context="GameMechanics, fold summary">Nothing in play, {settledProposals.length} settled</Trans>
+                  : <Trans context="GameMechanics, fold summary">Nothing proposed yet</Trans>
             }
             open={openFolds["mechanics-proposals"]}
             onToggle={() => toggleFold("mechanics-proposals")}

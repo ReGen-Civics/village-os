@@ -932,3 +932,59 @@ describe("the game mechanics under How we work together", () => {
     expect(doors.filter((h) => h === "#game-mechanics" || h?.startsWith("#mechanics-"))).toEqual(["#game-mechanics", "#mechanics-constitution", "#mechanics-dials", "#mechanics-proposals", "#mechanics-history"]);
   });
 });
+
+/*
+ * SOMEBODY WHO IS NOT A MEMBER, ARRIVING FOR THE MECHANICS (QA round 1). The
+ * old address, a notification or a dial link all ask for them; the page says
+ * in one quiet row that they are for members and what opens them, and draws
+ * none of them. Every newcomer also gets the village's way in on the first
+ * screen, where a member's jump sits.
+ */
+describe("a newcomer and the game mechanics", () => {
+  afterEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+  const asks = ["/governance/how#game-mechanics", "/governance/how#mechanics-dials", "/governance/how#proposal-p1", "/governance/how?dial=comms.daily_cap", "/governance/how?focus=proposal-p1"];
+
+  for (const url of asks) {
+    it(`tells a visitor arriving at ${url} that they are for members, with the way to sign in, and draws none of them`, async () => {
+      window.history.replaceState(null, "", url);
+      renderPage();
+      await headline();
+      const row = screen.getByTestId("mechanics-locked");
+      expect(row).toHaveTextContent("The game mechanics are for members.");
+      expect(within(row).getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe(`/login?next=${encodeURIComponent("/governance/how#game-mechanics")}`);
+      expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+      expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+      cleanup();
+    });
+  }
+
+  it("tells a signed-in account the village has not admitted that they open on admission, with no sign-in", async () => {
+    viewer = { id: "u2", name: "Nell", role: "member" };
+    window.history.replaceState(null, "", "/governance/how#game-mechanics");
+    renderPage();
+    await headline();
+    const row = screen.getByTestId("mechanics-locked");
+    expect(row).toHaveTextContent("The game mechanics are for members. They open when the village admits you.");
+    expect(within(row).queryByRole("link")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+  });
+
+  it("draws no locked row for a visitor who did not ask for the mechanics (CONTROL), and still the way in", async () => {
+    renderPage();
+    await headline();
+    expect(screen.queryByTestId("mechanics-locked")).toBeNull();
+    expect(within(screen.getByTestId("join-act")).getByRole("link").getAttribute("href")).toBe("/steward");
+  });
+
+  it("offers a member the jump, never the way in or the locked row", async () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+    window.history.replaceState(null, "", "/governance/how#game-mechanics");
+    renderPage();
+    await headline();
+    expect(screen.getByTestId("mechanics-jump")).toBeInTheDocument();
+    expect(screen.queryByTestId("join-act")).toBeNull();
+    expect(screen.queryByTestId("mechanics-locked")).toBeNull();
+  });
+});

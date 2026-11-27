@@ -74,15 +74,23 @@ const PROPOSAL = {
 };
 
 let calls: string[];
+/** Held open to make the rules arrive AFTER the proposals, as they did on QA round 1's slow read. */
+let snapshotWaitsFor: Promise<void> | null;
+let proposalList: unknown[];
 beforeEach(() => {
   calls = [];
+  snapshotWaitsFor = null;
+  proposalList = [PROPOSAL];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
       calls.push(String(url));
       const u = String(url);
-      if (u === "/api/game/mechanics") return new Response(JSON.stringify(SNAPSHOT), { status: 200 });
-      if (u === "/api/game/mechanics/proposals") return new Response(JSON.stringify([PROPOSAL]), { status: 200 });
+      if (u === "/api/game/mechanics") {
+        if (snapshotWaitsFor) await snapshotWaitsFor;
+        return new Response(JSON.stringify(SNAPSHOT), { status: 200 });
+      }
+      if (u === "/api/game/mechanics/proposals") return new Response(JSON.stringify(proposalList), { status: 200 });
       if (u === "/api/game/mechanics/history") return new Response("[]", { status: 200 });
       return new Response("null", { status: 404 });
     }),
@@ -140,7 +148,7 @@ describe("the four folds", () => {
     await renderAt("/governance/how");
     expect(toggle(/The Constitution/)).toHaveTextContent("1 laws that no vote can change");
     expect(toggle(/The Dials/)).toHaveTextContent("1 dials in 1 groups");
-    await waitFor(() => expect(toggle(/Proposals/)).toHaveTextContent("1 in play, 0 settled"));
+    await waitFor(() => expect(toggle(/Proposals/)).toHaveTextContent(/1 in play$/));
   });
 
   it("read the amendment history only once its fold is opened", async () => {
@@ -181,6 +189,58 @@ describe("each fold opens from its own anchor", () => {
     await renderAt("/governance/how?dial=membership.vouches_required");
     expect(toggle(/The Dials/)).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("searchbox")).toHaveValue("membership.vouches_required");
+  });
+});
+
+describe("a notification's link, whichever read lands last (QA round 1)", () => {
+  it("lands on the proposal when the rules arrive AFTER the proposals", async () => {
+    let release!: () => void;
+    snapshotWaitsFor = new Promise<void>((r) => (release = r));
+    window.history.replaceState(null, "", "/governance/how?focus=proposal-p1");
+    render(
+      <Router>
+        <GameMechanics />
+      </Router>,
+    );
+    // The list is in, the rules are not: no card to land on yet.
+    await waitFor(() => expect(calls).toContain("/api/game/mechanics/proposals"));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(document.getElementById("proposal-p1")).toBeNull();
+    release();
+    await waitFor(() => expect(document.activeElement?.id).toBe("proposal-p1"));
+    expect(toggle(/Proposals/)).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("brings the reader to Proposals when the proposal it names is not on the page any more", async () => {
+    proposalList = [];
+    const scrolled: string[] = [];
+    window.HTMLElement.prototype.scrollIntoView = vi.fn(function (this: HTMLElement) {
+      scrolled.push(this.id);
+    });
+    await renderAt("/governance/how?focus=proposal-gone");
+    await waitFor(() => expect(scrolled).toContain("mechanics-proposals"));
+    expect(toggle(/Proposals/)).toHaveAttribute("aria-expanded", "true");
+  });
+});
+
+describe("jumps inside the page", () => {
+  it("opens a fold again from a door pressed on the anchor already in the address, after the reader shut it", async () => {
+    await renderAt("/governance/how#mechanics-dials");
+    fireEvent.click(toggle(/The Dials/));
+    expect(toggle(/The Dials/)).toHaveAttribute("aria-expanded", "false");
+    act(() => {
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    });
+    expect(toggle(/The Dials/)).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("opens the fold a router link names (the footer's, sent by pushState with no hashchange)", async () => {
+    await renderAt("/governance/how");
+    act(() => {
+      window.history.pushState(null, "", "/governance/how#mechanics-history");
+      window.dispatchEvent(new Event("pushState"));
+    });
+    expect(toggle(/Amendment History/)).toHaveAttribute("aria-expanded", "true");
   });
 });
 

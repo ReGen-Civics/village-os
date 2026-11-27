@@ -6,7 +6,7 @@ import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import VillageConflictSteps from "@/components/governance/VillageConflictSteps";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import VoiceSpreadBand from "@/components/governance/VoiceSpreadBand";
-import { Eye, MessageSquare, CheckCircle2, Network, ArrowRight, ArrowDown, Scale, Printer } from "lucide-react";
+import { Eye, MessageSquare, CheckCircle2, Network, ArrowRight, ArrowDown, Lock, Scale, Printer } from "lucide-react";
 import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Triad } from "@/components/sacred/glyphs";
 import { GROUP_BREAK, GROUP_H2 } from "@/components/roleCard/groupLook";
 import { Canopy, CouncilCircle, Gathering, MushroomNetwork, Seed, Sprout, TendingHands } from "@/components/sacred/living";
@@ -135,10 +135,17 @@ export default function Governance() {
    */
   useEffect(() => {
     if (!page) return;
-    const id = window.location.hash.slice(1);
-    if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
-    window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
-    // Once, when the words land.
+    const go = () => {
+      if (window.location.pathname !== "/governance/how") return;
+      const id = window.location.hash.slice(1);
+      if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
+      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({ block: "start" }));
+    };
+    // Once, when the words land; then again for a router link to this page's own anchor (the footer's
+    // "Game Mechanics" is one), which wouter sends by pushState and so fires no hashchange.
+    go();
+    window.addEventListener("pushState", go);
+    return () => window.removeEventListener("pushState", go);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!page]);
 
@@ -184,6 +191,30 @@ export default function Governance() {
     { id: "mechanics-history", label: t({ message: "Amendment History", context: "how we work together: contents" }), icon: <Labyrinth className="size-4" /> },
   ];
   const contentsLink = "flex min-h-11 items-center rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  /*
+   * A door pressed again on the anchor already in the address changes nothing
+   * the browser reports, so a fold the reader shut since would stay shut. The
+   * page says it again; the fold opens and comes into view.
+   */
+  const again = (id: string) => () => {
+    if (window.location.hash === `#${id}`) window.setTimeout(() => window.dispatchEvent(new HashChangeEvent("hashchange")), 0);
+  };
+  /*
+   * Somebody who is not a member, arriving on a link that asked for the
+   * mechanics (the old address, a notification, a dial): one quiet locked row
+   * that says so and what opens it, and nothing of the mechanics themselves.
+   */
+  const askedForMechanics = (() => {
+    const hash = window.location.hash.slice(1);
+    const query = new URLSearchParams(window.location.search);
+    return hash === GAME_MECHANICS_ANCHOR || hash.startsWith("mechanics-") || hash.startsWith("proposal-") || query.has("dial") || (query.get("focus") ?? "").startsWith("proposal-");
+  })();
+  /* A newcomer's one act on the first screen: the village's own way in, as the closing invitation names it. */
+  const joinAct = storyShown("/steward") && !cta.hidden
+    ? { href: "/steward", label: <>{cta.fields.stewardLabel}</> }
+    : storyShown("/love-letter") && !cta.hidden
+      ? { href: "/love-letter", label: <>{cta.fields.commitmentLabel}</> }
+      : { href: "/request-membership", label: <Trans context="governance now: newcomer">How to become a member</Trans> };
 
   return (
     <Layout>
@@ -207,15 +238,48 @@ export default function Governance() {
           {/* THE JUMP, for a member who has read the first part before. On a
               phone it is the first thing under the tabs; on a desktop the
               contents beside the page carry it too. */}
-          {member && (
+          {member ? (
             <div className={`${QUIET} mt-6 flex flex-wrap items-center justify-between gap-3 bg-card`} data-testid="mechanics-jump">
               <p className={`${NOTE} min-w-0`}>
                 <Trans context="how we work together: the jump">Read how we work together before?</Trans>
               </p>
-              <a href={`#${GAME_MECHANICS_ANCHOR}`} className={BTN_PRIMARY}>
+              <a href={`#${GAME_MECHANICS_ANCHOR}`} onClick={again(GAME_MECHANICS_ANCHOR)} className={BTN_PRIMARY}>
                 <Trans context="how we work together: the jump">Skip to the game mechanics</Trans>
                 <ArrowDown className="size-4" aria-hidden="true" />
               </a>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-3">
+              {askedForMechanics && (
+                <div id={GAME_MECHANICS_ANCHOR} className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3`} data-testid="mechanics-locked">
+                  <p className={`${NOTE} flex min-w-0 items-center gap-2`}>
+                    <Lock className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    {user ? (
+                      <span>
+                        <Trans context="how we work together: mechanics locked">The game mechanics are for members. They open when the village admits you.</Trans>
+                      </span>
+                    ) : (
+                      <span>
+                        <Trans context="how we work together: mechanics locked">The game mechanics are for members.</Trans>
+                      </span>
+                    )}
+                  </p>
+                  {!user && (
+                    <Link href={`/login?next=${encodeURIComponent(`/governance/how#${GAME_MECHANICS_ANCHOR}`)}`} className={BTN_SECONDARY}>
+                      <Trans context="how we work together: mechanics locked">Sign in</Trans>
+                    </Link>
+                  )}
+                </div>
+              )}
+              {/* A newcomer's one act on the first screen, where a member's jump sits. */}
+              <div className={`${QUIET} flex flex-wrap items-center justify-between gap-3 bg-card`} data-testid="join-act">
+                <p className={`${NOTE} min-w-0`}>
+                  <Trans context="how we work together: newcomer act">Take part in how the village decides.</Trans>
+                </p>
+                <Link href={joinAct.href} className={BTN_PRIMARY}>
+                  {joinAct.label} <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           )}
 
@@ -341,13 +405,16 @@ export default function Governance() {
                 {!conflict.hidden && (
                   <Panel id="conflict" icon={<TendingHands className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">When it gets hard</Trans>} heading={conflict.fields.heading}>
                     {conflictParagraphs.length > 0 && (
-                      <div className={`${NOTE} mb-5 space-y-3`}>
+                      // One tile per paragraph, the village's words as written: a list a phone reads one at a time.
+                      <ul className="mb-5 list-none space-y-3 p-0">
                         {conflictParagraphs.map((text, i) => (
-                          <p key={i} className="break-words">
-                            <Emphasized text={text} />
-                          </p>
+                          <li key={i} className={TILE}>
+                            <p className={`${NOTE} break-words`}>
+                              <Emphasized text={text} />
+                            </p>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                     {/* THE ADOPTED CONFLICT AGREEMENT'S PUBLIC VIEW (plan 4.6 and 6.2), roles
                         only. Before the village saves one, or when it cannot be read,
@@ -370,13 +437,15 @@ export default function Governance() {
                     `governance.veto_hours`, held back until it is known. */}
                 {showStewards && (
                   <Panel id="stewards" icon={<Canopy className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">Who can stop a decision</Trans>} heading={stewards.fields.heading}>
-                    <div className={`${NOTE} space-y-3`}>
+                    <ul className="list-none space-y-3 p-0">
                       {stewardParagraphs.map((text, i) => (
-                        <p key={i} className="break-words">
-                          <Emphasized text={text} />
-                        </p>
+                        <li key={i} className={TILE}>
+                          <p className={`${NOTE} break-words`}>
+                            <Emphasized text={text} />
+                          </p>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </Panel>
                 )}
 
@@ -488,8 +557,8 @@ export default function Governance() {
             </div>
 
             {/* The contents, beside the page on a desktop. */}
-            <aside className="hidden lg:block">
-              <nav aria-label={t({ message: "On this page", context: "how we work together: contents" })} className="sticky top-24 rounded-2xl border border-border bg-card p-3 shadow-sm">
+            <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+              <nav aria-label={t({ message: "On this page", context: "how we work together: contents" })} className="rounded-2xl border border-border bg-card p-3 shadow-sm">
                 <p className={`${EYEBROW} px-3 pb-2 pt-1`}>
                   <Trans context="how we work together: contents">On this page</Trans>
                 </p>
@@ -509,13 +578,13 @@ export default function Governance() {
                   {member && (
                     <>
                       <li className="mt-2 border-t border-border pt-2">
-                        <a href={`#${GAME_MECHANICS_ANCHOR}`} className={`${contentsLink} font-semibold text-foreground`}>
+                        <a href={`#${GAME_MECHANICS_ANCHOR}`} onClick={again(GAME_MECHANICS_ANCHOR)} className={`${contentsLink} font-semibold text-foreground`}>
                           <Trans context="how we work together: the mechanics">Game mechanics</Trans>
                         </a>
                       </li>
                       {mechanicsContents.map((m) => (
                         <li key={m.id}>
-                          <a href={`#${m.id}`} className={`${contentsLink} gap-2 pl-6`}>
+                          <a href={`#${m.id}`} onClick={again(m.id)} className={`${contentsLink} gap-2 pl-6`}>
                             <span className="text-notice">{m.icon}</span>
                             <span className="min-w-0 truncate">{m.label}</span>
                           </a>
