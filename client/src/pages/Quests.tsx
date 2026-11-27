@@ -722,7 +722,7 @@ export default function Quests() {
               <Trans context="Quests, p">{villageName} sets its own rules for {currencyName}, {valueName} and its other tokens.
               {conversionNote ? ` ${conversionNote}` : ""}</Trans>
             </p>
-            <Link href="/game-mechanics" className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2">
+            <Link href="/governance/how#game-mechanics" className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2">
               <Trans context="Quests, Link">See this village's rules
             </Trans></Link>
           </div>

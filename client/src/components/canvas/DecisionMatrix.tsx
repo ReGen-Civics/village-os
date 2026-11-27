@@ -70,8 +70,8 @@ function Cell({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
       {/* Named above the answer in the stacked layout; the header row names it in the table. */}
-      <dt className="text-xs font-medium text-stone-500 @min-[40rem]:sr-only">{label}</dt>
-      <dd className="m-0 text-stone-800">{children}</dd>
+      <dt className="text-xs font-medium text-muted-foreground @min-[40rem]:sr-only">{label}</dt>
+      <dd className="m-0 text-foreground">{children}</dd>
     </div>
   );
 }
@@ -79,7 +79,7 @@ function Cell({ label, children }: { label: string; children: ReactNode }) {
 function Lines({ lines }: { lines: readonly string[] }) {
   if (lines.length === 0)
     return (
-      <p className="text-stone-600">
+      <p className="text-muted-foreground">
         <Trans context="nobody is asked or told, by design">Nobody, on purpose.</Trans>
       </p>
     );
@@ -94,14 +94,14 @@ function Lines({ lines }: { lines: readonly string[] }) {
 
 function MatrixRow({ row }: { row: DecisionMatrixRow }) {
   return (
-    <dl className={`${ROW_GRID} border-t border-stone-100 py-3`} data-testid={`matrix-row-${row.key}`}>
+    <dl className={`${ROW_GRID} border-t border-border py-3`} data-testid={`matrix-row-${row.key}`}>
       <Cell label={SUBJECT}>
-        <p className="font-medium text-stone-900">{row.decision}</p>
-        {row.detail && <p className="mt-1 text-xs text-stone-600">{row.detail}</p>}
+        <p className="font-medium text-foreground">{row.decision}</p>
+        {row.detail && <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>}
         {row.riskTags.length > 0 && (
           <p className="mt-1 flex flex-wrap gap-1">
             {row.riskTags.map((tag) => (
-              <span key={tag} className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700">
+              <span key={tag} className="rounded-full border border-border px-2 py-0.5 text-xs text-foreground">
                 <Trans context="a risk tag on a decision">Risk: {tag}</Trans>
               </span>
             ))}
@@ -163,8 +163,8 @@ export default function DecisionMatrix({
   };
 
   return (
-    <div className="mt-4 border-t border-stone-100 pt-3 text-sm" data-testid="decision-matrix">
-      <p className="text-xs font-medium text-stone-600">
+    <div className="mt-4 border-t border-border pt-3 text-sm" data-testid="decision-matrix">
+      <p className="text-xs font-medium text-muted-foreground">
         <Trans context="the platform's half of the Decision Matrix">The Decision Matrix</Trans>
       </p>
       <button
@@ -172,14 +172,14 @@ export default function DecisionMatrix({
         onClick={toggle}
         aria-expanded={open}
         aria-controls="decision-matrix-body"
-        className="mt-1 text-sm font-medium rounded-lg px-3 py-1.5 text-teal-deep border border-teal-deep bg-white hover:bg-stone-50"
+        className="mt-1 text-sm font-medium rounded-lg px-3 py-1.5 text-notice border border-notice bg-card hover:bg-muted"
       >
         {open ? "Hide who decides what" : "Show who decides what"}
       </button>
 
       {open && (
         <section id="decision-matrix-body" aria-label={t({ message: "The Decision Matrix", context: "the platform's half of the Decision Matrix" })} className="@container mt-3 space-y-5">
-          <p className="text-stone-700">
+          <p className="text-foreground">
             <Trans>
               For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is
               made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this
@@ -188,20 +188,20 @@ export default function DecisionMatrix({
           </p>
 
           {failed ? (
-            <div role="alert" className="text-sm text-red-700 bg-red-50 rounded-lg px-4 py-3 space-y-2">
+            <div role="alert" className="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3 space-y-2">
               <p>{failed.message}</p>
               {failed.retry && (
                 <button
                   type="button"
                   onClick={load}
-                  className="text-sm font-medium rounded-lg px-3 py-1.5 text-teal-deep border border-teal-deep bg-white hover:bg-stone-50"
+                  className="text-sm font-medium rounded-lg px-3 py-1.5 text-notice border border-notice bg-card hover:bg-muted"
                 >
                   <Trans context="retry a failed read">Try again</Trans>
                 </button>
               )}
             </div>
           ) : !matrix ? (
-            <p className="text-sm text-stone-600 py-4 text-center">
+            <p className="text-sm text-muted-foreground py-4 text-center">
               <BreathingLoader decorative size={16} className="mr-2 align-middle" />
               <Trans context="loading the Decision Matrix">Reading the matrix</Trans>
             </p>
@@ -209,7 +209,7 @@ export default function DecisionMatrix({
             <>
               {matrix.groups.map((group) => (
                 <div key={group.id} data-testid={`matrix-group-${group.id}`}>
-                  <h4 className="font-semibold text-stone-900">
+                  <h4 className="font-semibold text-foreground">
                     <button
                       type="button"
                       aria-expanded={!!shown[group.id]}
@@ -224,12 +224,12 @@ export default function DecisionMatrix({
                       {group.title}
                     </button>
                   </h4>
-                  <p className="text-xs text-stone-600 mt-0.5 pl-5">{group.intro}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 pl-5">{group.intro}</p>
                   {shown[group.id] && (
                     <div id={`matrix-rows-${group.id}`}>
                       <div
                         aria-hidden="true"
-                        className={`hidden @min-[40rem]:grid ${ROW_GRID} mt-2 text-xs font-semibold uppercase tracking-wide text-stone-500`}
+                        className={`hidden @min-[40rem]:grid ${ROW_GRID} mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground`}
                       >
                         {CANVAS_DECISION_MATRIX_COLUMNS.map((column) => (
                           <span key={column}>{column}</span>
@@ -247,7 +247,7 @@ export default function DecisionMatrix({
                 </div>
               ))}
 
-              <ul className="space-y-1 text-xs text-stone-700 list-disc pl-5" data-testid="decision-matrix-notes">
+              <ul className="space-y-1 text-xs text-foreground list-disc pl-5" data-testid="decision-matrix-notes">
                 {matrix.notes.map((note) => (
                   <li key={note}>{note}</li>
                 ))}
@@ -255,11 +255,11 @@ export default function DecisionMatrix({
             </>
           )}
 
-          <p className="text-xs text-stone-600" data-testid="decision-matrix-credit">
+          <p className="text-xs text-muted-foreground" data-testid="decision-matrix-credit">
             {/* Inline, like the baseline's credit, so the full stop stays on its line on a phone. */}
             <Trans>
               The five columns are the Decision Matrix of the{" "}
-              <a href={creditUrl} target="_blank" rel="noreferrer" className="font-medium text-stone-800 hover:underline">
+              <a href={creditUrl} target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">
                 {creditText}
                 <ExternalLink className="inline w-3 h-3 ml-0.5 align-[-1px]" aria-hidden="true" />
               </a>

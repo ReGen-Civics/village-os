@@ -73,7 +73,7 @@ const headers = (): Record<string, string> => {
 /** Where the server held something back, the page says so in the same place. */
 function Withheld() {
   return (
-    <em className="text-stone-500">
+    <em className="text-muted-foreground">
       <Trans>Names a person, so members only.</Trans>
     </em>
   );
@@ -184,8 +184,8 @@ export function AgreementBody({ a }: { a: PublicAgreement }) {
   const powerHolder = show(a.whenPowerInvolved.role !== "" ? a.whenPowerInvolved.role : a.whenPowerInvolved.outsideContact);
   const appealShown = show(a.consequencesLadder.appeal);
   return (
-    <div className="space-y-5 text-stone-700 leading-relaxed">
-      <p className="text-sm text-stone-600">
+    <div className="space-y-5 text-foreground leading-relaxed">
+      <p className="text-sm text-muted-foreground">
         {a.adoptedAt ? (
           a.adoptedHow === "ballot" ? (
             <Trans>Adopted on {adoptedDay} by the village's vote.</Trans>
@@ -206,21 +206,21 @@ export function AgreementBody({ a }: { a: PublicAgreement }) {
       </p>
 
       <div>
-        <h3 className="font-semibold text-stone-900">
+        <h3 className="font-semibold text-foreground">
           <Trans>When two of us disagree</Trans>
         </h3>
         <ol className="mt-2 space-y-2 list-decimal pl-6">
           {a.steps.map((s, i) => (
             <li key={i}>
               {show(s.what)}
-              {s.whoInRoom !== "" && <span className="block text-sm text-stone-600"><Trans context="who is present at a conflict step">In the room: {show(s.whoInRoom)}</Trans></span>}
+              {s.whoInRoom !== "" && <span className="block text-sm text-muted-foreground"><Trans context="who is present at a conflict step">In the room: {show(s.whoInRoom)}</Trans></span>}
             </li>
           ))}
         </ol>
       </div>
 
       <div>
-        <h3 className="font-semibold text-stone-900">
+        <h3 className="font-semibold text-foreground">
           <Trans>Who hears it first</Trans>
         </h3>
         <p className="mt-1">
@@ -245,7 +245,7 @@ export function AgreementBody({ a }: { a: PublicAgreement }) {
       {/* A withheld name is null, and still a clause: it prints the withheld marker. */}
       {(a.whenPowerInvolved.role !== "" || a.whenPowerInvolved.outsideContact !== "" || a.whenPowerInvolved.words !== "") && (
         <div>
-          <h3 className="font-semibold text-stone-900">
+          <h3 className="font-semibold text-foreground">
             <Trans>When it involves someone who holds power here</Trans>
           </h3>
           {(a.whenPowerInvolved.role !== "" || a.whenPowerInvolved.outsideContact !== "") && (
@@ -259,25 +259,25 @@ export function AgreementBody({ a }: { a: PublicAgreement }) {
 
       {a.consequencesLadder.rungs.length > 0 && (
         <div>
-          <h3 className="font-semibold text-stone-900">
+          <h3 className="font-semibold text-foreground">
             <Trans>Consequences, and how to appeal</Trans>
           </h3>
           <ul className="mt-2 space-y-2">
             {a.consequencesLadder.rungs.map((r) => (
               <li key={r.rung}>
-                <span className="font-medium text-stone-900">{LADDER_RUNGS[r.rung as LadderRungNumber]?.name}: </span>
+                <span className="font-medium text-foreground">{LADDER_RUNGS[r.rung as LadderRungNumber]?.name}: </span>
                 {show(r.words)}
               </li>
             ))}
           </ul>
           {a.consequencesLadder.appeal !== "" && <p className="mt-2"><Trans context="how someone appeals a consequence">Appeal: {appealShown}</Trans></p>}
-          <p className="mt-2 text-sm text-stone-600">{APPEAL_NOT_ENFORCED}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{APPEAL_NOT_ENFORCED}</p>
         </div>
       )}
 
       {a.practices.length > 0 && (
         <div>
-          <h3 className="font-semibold text-stone-900">
+          <h3 className="font-semibold text-foreground">
             <Trans>What keeps small tensions small</Trans>
           </h3>
           <ul className="mt-2 space-y-1 list-disc pl-6">
@@ -291,7 +291,7 @@ export function AgreementBody({ a }: { a: PublicAgreement }) {
         </div>
       )}
 
-      {a.withheld && <p className="text-sm text-stone-600"><Trans>Parts of this agreement name people, so they show to members only.</Trans></p>}
+      {a.withheld && <p className="text-sm text-muted-foreground"><Trans>Parts of this agreement name people, so they show to members only.</Trans></p>}
     </div>
   );
 }
@@ -339,8 +339,8 @@ function OmbudsDoor({
   };
 
   return (
-    <div className="rounded-lg border border-stone-200 p-3 space-y-2">
-      <p className="font-medium text-stone-900">
+    <div className="rounded-lg border border-border p-3 space-y-2">
+      <p className="font-medium text-foreground">
         {contact.name}
         {label ? `, ${label}` : ""}
       </p>
@@ -352,16 +352,16 @@ function OmbudsDoor({
         </p>
       ) : (
         <>
-          <p className="text-xs text-stone-600">
+          <p className="text-xs text-muted-foreground">
             <Trans>Asking records that you asked, when, and which contact, and then shows you how to reach them. No words go anywhere, and nobody is sent a notice.</Trans>
           </p>
-          <button type="button" disabled={busy} onClick={() => void ask()} className="min-h-[44px] rounded-lg border border-teal-deep px-3 text-sm font-medium text-teal-deep hover:bg-stone-50 disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={() => void ask()} className="min-h-[44px] rounded-lg border border-notice px-3 text-sm font-medium text-notice hover:bg-muted disabled:opacity-50">
             <Trans context="button that asks an outside contact to talk">Ask to talk</Trans>
           </button>
         </>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-800">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
@@ -373,7 +373,7 @@ function OmbudsDoor({
 function SafetyContacts({ contacts }: { contacts: readonly SafetyContact[] }) {
   return (
     <div>
-      <h3 className="font-semibold text-stone-900">
+      <h3 className="font-semibold text-foreground">
         <Trans>If it is not something to mediate</Trans>
       </h3>
       <p className="mt-1 text-sm">
@@ -401,14 +401,14 @@ function OpenVote({ vote, roles }: { vote: NonNullable<MembersView["openBallot"]
   const closesOn = day(vote.closesAt);
   const voteId = vote.id;
   return (
-    <div className="rounded-lg border border-stone-200 p-3 space-y-2">
-      <h3 className="font-semibold text-stone-900">
+    <div className="rounded-lg border border-border p-3 space-y-2">
+      <h3 className="font-semibold text-foreground">
         <Trans>A vote to change this agreement is open</Trans>
       </h3>
       <p className="text-sm">
         <Trans>
           Voting closes on {closesOn}.{" "}
-          <a className="font-medium text-teal-deep underline" href={`/governance/decisions/${voteId}`}>
+          <a className="font-medium text-notice underline" href={`/governance/decisions/${voteId}`}>
             Read the vote and cast yours
           </a>
           . The vote's page holds back anything that names a person, and the members-only parts. All of what it would adopt is here.
@@ -416,7 +416,7 @@ function OpenVote({ vote, roles }: { vote: NonNullable<MembersView["openBallot"]
       </p>
       {p ? (
         <details className="text-sm">
-          <summary className="cursor-pointer min-h-[44px] py-2 font-medium text-teal-deep">
+          <summary className="cursor-pointer min-h-[44px] py-2 font-medium text-notice">
             <Trans>The agreement this vote would adopt</Trans>
           </summary>
           <div className="mt-2 space-y-4">
@@ -424,7 +424,7 @@ function OpenVote({ vote, roles }: { vote: NonNullable<MembersView["openBallot"]
             {p.safetyContacts.length > 0 ? <SafetyContacts contacts={p.safetyContacts} /> : <p><Trans>It names no safety contacts.</Trans></p>}
             {p.outsideContacts.length > 0 && (
               <div>
-                <h3 className="font-semibold text-stone-900">
+                <h3 className="font-semibold text-foreground">
                   <Trans>The people outside the village it names</Trans>
                 </h3>
                 <ul className="mt-2 space-y-1 list-disc pl-6">
@@ -439,7 +439,7 @@ function OpenVote({ vote, roles }: { vote: NonNullable<MembersView["openBallot"]
           </div>
         </details>
       ) : (
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-muted-foreground">
           <Trans>What this vote would adopt could not be read just now. The vote's page shows it, with names held back.</Trans>
         </p>
       )}
@@ -468,19 +468,19 @@ function ForMembers({ view, reload }: { view: MembersView; reload: () => void })
     .join("; ");
 
   return (
-    <div className="space-y-4 border-t border-stone-200 pt-4">
+    <div className="space-y-4 border-t border-border pt-4">
       {a.safetyContacts.length > 0 && <SafetyContacts contacts={a.safetyContacts} />}
 
       {a.outsideContacts.length > 0 && (
         <div className="space-y-2">
-          <h3 className="font-semibold text-stone-900">
+          <h3 className="font-semibold text-foreground">
             <Trans>Talk to someone outside the village</Trans>
           </h3>
           {a.outsideContacts.map((c) => (
             <OmbudsDoor key={c.id} contact={c} asked={view.yourAsks.some((x) => x.contactId === c.id)} onAsked={reload} />
           ))}
           {view.yourAsks.length > 0 && (
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-muted-foreground">
               <Trans>You asked: {askedList}. Only you see this list.</Trans>
             </p>
           )}
@@ -494,13 +494,13 @@ function ForMembers({ view, reload }: { view: MembersView; reload: () => void })
           type="button"
           aria-expanded={editing}
           onClick={() => setEditing(!editing)}
-          className="min-h-[44px] rounded-lg border border-teal-deep px-3 text-sm font-medium text-teal-deep hover:bg-stone-50"
+          className="min-h-[44px] rounded-lg border border-notice px-3 text-sm font-medium text-notice hover:bg-muted"
         >
           {editing ? t`Close the agreement's frames` : openLabel}
         </button>
         {editing && (
           <div className="mt-3">
-            <Suspense fallback={<p role="status" className="text-sm text-stone-600"><Trans context="the conflict agreement editor is loading">Loading the frames…</Trans></p>}>
+            <Suspense fallback={<p role="status" className="text-sm text-muted-foreground"><Trans context="the conflict agreement editor is loading">Loading the frames…</Trans></p>}>
               <ConflictAgreementEditor onDone={reload} />
             </Suspense>
           </div>
@@ -534,7 +534,7 @@ export default function ConflictAgreementPublic() {
   if (failed) return <VillageConflictSteps />;
   if (!pub) {
     return (
-      <p role="status" className="text-stone-600">
+      <p role="status" className="text-muted-foreground">
         <Trans>Loading this village's conflict agreement…</Trans>
       </p>
     );

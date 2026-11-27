@@ -720,7 +720,7 @@ function DetailPage({ id }: { id: string }) {
           <p className="mt-1 text-sm text-stone-700">
             <Trans>
               No changes yet. Open any setting with a Suggest button, such as those in{" "}
-              <Link href="/game-mechanics" className="font-medium text-teal-deep underline">
+              <Link href="/governance/how#mechanics-dials" className="font-medium text-teal-deep underline">
                 Game Mechanics
               </Link>
               , and add it here.
