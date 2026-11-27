@@ -648,3 +648,24 @@ export async function setCounterOffer(db: Db, id: string, counterOffer: unknown)
   );
   return Number(result.affectedRows ?? 0) === 1;
 }
+
+/**
+ * THE APPLICANT REFINES THEIR PROPOSAL (shared/proposalRefine.ts): the earlier versions kept beside the body, oldest
+ * first. Never read by an AI.
+ */
+export async function proposalVersionsOf(db: Db, id: string): Promise<unknown> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT JSON_EXTRACT(body_json, '$.proposalVersions') AS v FROM open_role_proposals WHERE id = ?", [id]);
+  return rows.length ? json(rows[0].v) : null;
+}
+
+/**
+ * Write the refined why and aim, and the versions with the one they replace appended. Guarded on `confirmed`, so a
+ * decided proposal never changes under its decision. The caller holds the row lock and has checked the stage.
+ */
+export async function refineOpenProposal(db: Db, id: string, why: string, aim: string, versions: unknown[]): Promise<boolean> {
+  const [result] = await db.query<ResultSetHeader>(
+    "UPDATE open_role_proposals SET body_json = JSON_SET(COALESCE(body_json, JSON_OBJECT()), '$.why', ?, '$.aim', ?, '$.proposalVersions', JSON_EXTRACT(?, '$')) WHERE id = ? AND status = 'confirmed'",
+    [why, aim, JSON.stringify(versions), id],
+  );
+  return Number(result.affectedRows ?? 0) === 1;
+}

@@ -21,7 +21,7 @@ import { runSeraTool, SERA_TOOLS, type SeraActor } from "./seraAgent";
 const ROOT = path.resolve(__dirname, "..", "..");
 
 /** What a model-facing source must never name. */
-const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "applicantOnboarding", "scorecards", "walkthrough", "/applications/", "interviewer_roles", "selection_criteria", "application_guide_notes", "conversationGuide", "applicationGuide", "guide-notes"];
+const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "applicantOnboarding", "scorecards", "walkthrough", "/applications/", "interviewer_roles", "selection_criteria", "application_guide_notes", "conversationGuide", "applicationGuide", "guide-notes", "application_conversation_notes", "conversationNotes", "applicationConversationNotes", "conversation-notes", "conversationNoteFiles"];
 
 export function namesForbidden(source: string): string[] {
   return FORBIDDEN.filter((f) => source.includes(f));
@@ -56,6 +56,11 @@ describe("the scan sees what it is told to look for", () => {
     expect(namesForbidden('import { guideItems } from "../../shared/conversationGuide"')).toContain("conversationGuide");
     expect(namesForbidden('import * as g from "../repos/applicationGuide"')).toContain("applicationGuide");
     expect(namesForbidden("POST /api/governance/applications/:ref/guide-notes")).toContain("guide-notes");
+    // Each conversation's private notes (0444): the table, its rules, its repo, its files and its door.
+    expect(namesForbidden("SELECT body FROM application_conversation_notes")).toContain("application_conversation_notes");
+    expect(namesForbidden('import { NOTES_WORDS } from "../../shared/conversationNotes"')).toContain("conversationNotes");
+    expect(namesForbidden('import * as n from "../repos/applicationConversationNotes"')).toContain("applicationConversationNotes");
+    expect(namesForbidden("GET /api/governance/applications/:ref/conversation-notes/:id/file")).toContain("conversation-notes");
   });
 });
 

@@ -8,6 +8,7 @@ describe("the applicant's walk in the reader's language (lane ES-A)", () => {
     expectMirrorMatches(ONBOARDING_WORDS, ONBOARDING_MIRROR, {
       ownerDefault: [["Treasurer"]],
       gatheredIntro: [["Treasurer"]],
+      gatheredShort: [["Treasurer"]],
       arrivedOn: [["2026-11-03"]],
     });
   });

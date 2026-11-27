@@ -182,6 +182,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "You follow up with a reference for an applicant. Read how to reach them on the application, then write your notes.",
     many: "{n} references wait for your follow-up.",
   },
+  application_conversation_notes: {
+    blurb: "An interviewer added notes to a conversation with an applicant. Read them on the application. The applicant never sees them.",
+    many: "{n} conversations have new notes.",
+  },
   application_references_asked: {
     blurb: "Your application is for your first long-term role, so references are asked. Add them on your application's page.",
     many: "{n} of your applications ask for references.",

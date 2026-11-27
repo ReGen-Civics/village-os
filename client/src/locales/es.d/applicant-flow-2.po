@@ -1,0 +1,179 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "References and proposal"
+msgstr "Referencias y propuesta"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "Agreement"
+msgstr "Acuerdo"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "application stage"
+msgid "Start"
+msgstr "Inicio"
+
+# needs-native-review: the six application stages, 27 Nov 2026
+msgctxt "applicant onboarding: primary.conversation"
+msgid "Go to the conversation"
+msgstr "Ir a la conversación"
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: primary.add_final"
+msgid "Move to the final conversation"
+msgstr "Pasar a la conversación final"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the kicker"
+msgid "The proposal"
+msgstr "La propuesta"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the heading"
+msgid "Earlier versions of the proposal"
+msgstr "Versiones anteriores de la propuesta"
+
+# needs-native-review: the proposal's earlier versions, QA round 2
+msgctxt "proposal versions: what they are"
+msgid "The applicant refined their proposal. Their words now come first, then each earlier version, newest first."
+msgstr "La persona que postula mejoró su propuesta. Primero van sus palabras actuales y luego cada versión anterior, de la más reciente a la más antigua."
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the words until that day"
+msgid "Before {0}"
+msgstr "Antes del {0}"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the current words"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: the kicker"
+msgid "Private to the team"
+msgstr "Privado para el equipo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: the guide's questions, folded in"
+msgid "Questions to talk through"
+msgstr "Preguntas para conversar"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: opens the note box and the file picker"
+msgid "Add a note or file"
+msgstr "Agregar una nota o un archivo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: closes the note box"
+msgid "Done"
+msgstr "Listo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: confirm before deleting"
+msgid "Take this off for good?"
+msgstr "¿Quitarla para siempre?"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: confirm the delete"
+msgid "Yes, take it off"
+msgstr "Sí, quitarla"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: cancel the delete"
+msgid "Keep it"
+msgstr "Conservarla"
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and their proposal is fixed."
+msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y su propuesta queda fija."
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalExists"
+msgid "The final conversation is already open or done."
+msgstr "La conversación final ya está abierta o terminada."
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalTalksFirst"
+msgid "Write up the conversations before it first. Then move the application to the final conversation."
+msgstr "Primero escriba las conversaciones anteriores. Después pase la postulación a la conversación final."
+
+# needs-native-review: the move to the final conversation only once References and proposal is done, QA round 4
+msgctxt "applicant onboarding: finalAtReferences"
+msgid "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up."
+msgstr "La conversación final llega cuando Referencias y propuesta está completa: la postulación preseleccionada, sus conversaciones escritas y cada referencia entregada y contactada."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: referencesKicker"
+msgid "Who vouches for them"
+msgstr "Quién responde por esta persona"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: referencesShort"
+msgid "Private to the team, and deleted with the application."
+msgstr "Privado para el equipo, y se borra con la postulación."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: whoReads"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredKicker"
+msgid "Before the final conversation"
+msgstr "Antes de la conversación final"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredShort"
+msgid "Everything {role} reads, as written."
+msgstr "Todo lo que lee {role}, tal como se escribió."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredMore"
+msgid "What this holds"
+msgstr "Qué contiene"
+
+# needs-native-review: the phone's decide panel holds the choice, QA round 4
+msgctxt "applicant onboarding: decideBelow"
+msgid "Adopt or decline below."
+msgstr "Adopte o decline abajo."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation notes: the one line under the heading"
+msgid "Never shown to the applicant."
+msgstr "Nunca se muestran a la persona que postula."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation notes: opens who reads them"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation guide: the one line under the heading"
+msgid "Notes only: nothing here is scored or ranked."
+msgstr "Solo notas: aquí nada se puntúa ni se clasifica."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation guide: opens what it is"
+msgid "What this holds"
+msgstr "Qué contiene"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above the roles asked for"
+msgid "What they ask to hold"
+msgstr "Lo que pide sostener"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above the two cards side by side"
+msgid "The cards"
+msgstr "Las tarjetas"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above why and what they would do"
+msgid "Why they apply"
+msgstr "Por qué se postula"

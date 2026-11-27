@@ -557,5 +557,5 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 1. **Good Neighbor Criteria on Amora.** The platform's menu name for the page is now "Good Neighbor Criteria", but Amora's stored site settings still say "Good Neighbor", so set Admin > Pages > Whole site > the menu name for /good-neighbor to "Good Neighbor Criteria". "How we co-create" is your word for How We Create; rename it the same way if you want it.
 2. **Tools.** Village Tools (the village's grid of outside tools: chat, calendar, Hypha) sits in Community's Conversations, as where the village talks and meets. Village is the other choice.
 3. **The portal's next moves.** On My work, the quest board summary (GameDashboard) repeats the village's Quests page; it could become one link to it. On My roles, Your roles and the player card could merge into one card per role.
-4. **Spanish.** "Govern" is "Gobernar" and the portal tabs "Mi trabajo", "Mis roles", "Mi tesorería", "Ficha"; all marked for native review, in `client/src/locales/es.po` since main folded the `menu-levels` fragment in.
+4. **Spanish.** "Govern" is "Gobernar" and the portal tabs "Mi trabajo", "Mis roles", "Mi tesorería", "Ficha"; all marked for native review; main has folded them into `client/src/locales/es.po`.
 

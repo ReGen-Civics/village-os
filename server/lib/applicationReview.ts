@@ -208,7 +208,9 @@ export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify"
  */
 export async function stepBookingOf(db: Db, ref: string, roleId: string): Promise<StepBooking> {
   const recused = new Set(await repo.recusedUsers(db, ref));
-  const holders = (await repo.liveHoldersOfRole(db, roleId)).filter((u) => !recused.has(u));
+  // The applicant never books with themselves, even when they hold the role (QA round 2).
+  const applicant = (await confirmedDetail(db, ref))?.applicantUserId ?? null;
+  const holders = (await repo.liveHoldersOfRole(db, roleId)).filter((u) => !recused.has(u) && u !== applicant);
   const people = await repo.bookingLinksOfMembers(db, holders);
   const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
   const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;
@@ -316,7 +318,9 @@ export async function submitScore(deps: ReviewDeps, p: { ref: string; interviewI
     await repo.stampStep(conn, { ref: p.ref, kind: "interview", subject: String(iv.position), at, actorUserId: null });
     const after = list.map((i) => (i.id === iv.id ? { ...i, state: "scored" as const } : i));
     const next = nextAfter(after, iv.position);
-    if (next && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
+    // The final conversation never opens by itself (the lead, 27 Nov 2026: "once they have their proposal solid and
+    // they passed this step they move to their final conversation"): a person moves the application there.
+    if (next && !next.final && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
     else if (interviewsDone(after)) {
       scoresIn = await repo.stampStep(conn, { ref: p.ref, kind: "scores_in", at });
     }
@@ -508,7 +512,8 @@ export async function recuse(deps: ReviewDeps, p: { ref: string; userId: string;
     }
     list = await repo.interviewsOf(conn, p.ref, true);
     if (!list.some((i) => i.state === "open") && !interviewsDone(list)) {
-      const next = [...list].sort((a, b) => a.position - b.position).find((i) => i.state === "waiting");
+      // Never the final conversation: a person moves the application there.
+      const next = [...list].sort((a, b) => a.position - b.position).find((i) => i.state === "waiting" && !i.final);
       if (next && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
     } else if (interviewsDone(list) && list.length) {
       scoresIn = await repo.stampStep(conn, { ref: p.ref, kind: "scores_in", at });
@@ -576,7 +581,7 @@ export async function inviteToConversations(deps: ReviewDeps, ref: string, actor
   const won = await inTransaction(pool, async (conn) => {
     if (!(await repo.stampStep(conn, { ref, kind: "review", at, actorUserId: actorId, detail: { answer: "invited" } }))) return false;
     await repo.stampStep(conn, { ref, kind: "first_reply", at, actorUserId: actorId });
-    const first = [...(await repo.interviewsOf(conn, ref, true))].sort((a, b) => a.position - b.position).find((i) => i.state === "waiting");
+    const first = [...(await repo.interviewsOf(conn, ref, true))].sort((a, b) => a.position - b.position).find((i) => i.state === "waiting" && !i.final);
     if (first && (await repo.openInterview(conn, first.id, at))) opened = { position: first.position, roleId: first.roleId, minutes: first.minutes };
     return true;
   });
@@ -657,7 +662,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -703,10 +708,12 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   // When several people hold the role and each keeps a link, each is listed by first name so the applicant can pick.
   const openNow = bookingShown && !outcome ? interviews.find((i) => i.state === "open") ?? null : null;
   const now = openNow ? await stepBookingOf(pool, ref, openNow.roleId) : null;
-  const bookNow = openNow && now ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links } : null;
+  const bookNow = openNow && now ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links, ...(openNow.final ? { final: true } : {}) } : null;
   return {
     ...s,
     roles: (d?.roleIds ?? []).map((id) => roleNames.get(id) ?? id),
+    // The roles' ids, so the page can hang each role's own painting beside its name (QA round 3). Public on /roles.
+    roleIds: d?.roleIds ?? [],
     booking: bookingShown,
     bookNow,
     mode,

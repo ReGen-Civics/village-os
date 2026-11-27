@@ -13,7 +13,9 @@
  *   "door"    an inline door, where it is placed.
  *   "sticky"  on a phone, a bar fixed under the thumb, just above the tab
  *             bar; from `lg` up, the same door sits where it is placed (the
- *             decider's side panel), in view beside the words.
+ *             decider's side panel), in view beside the words. While a text
+ *             field has focus the phone's bar steps aside, so it never sits
+ *             over the note being written (QA round 2).
  *
  * Callers decide WHEN it shows (the reader is asked and has not answered); this
  * component only draws it. It changes nothing about the vote or the round.
@@ -24,6 +26,7 @@ import { ArrowDown, ArrowRight } from "lucide-react";
 import { Fireflies } from "@/components/journey/nature";
 import { BTN_PRIMARY } from "@/components/journey/look";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
+import { useTypingOnPage } from "@/lib/keyboardInset";
 
 export interface YourTurnProps {
   /** Where the door leads: "#id" for the round on this page, or a path. */
@@ -47,6 +50,7 @@ function goTo(e: MouseEvent<HTMLAnchorElement>, hash: string) {
 }
 
 export default function YourTurn({ to, label, line, shape = "door", className = "" }: YourTurnProps) {
+  const typing = useTypingOnPage();
   const local = to.startsWith("#");
   const Icon = local ? ArrowDown : ArrowRight;
   const inner = (
@@ -69,8 +73,9 @@ export default function YourTurn({ to, label, line, shape = "door", className = 
     shape === "sticky"
       ? "fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] z-40 border-t md:bottom-0 border-border bg-card px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-sm lg:static lg:z-auto lg:rounded-2xl lg:border lg:p-5"
       : "";
+  const aside = shape === "sticky" && typing ? "hidden lg:block" : "";
   return (
-    <div className={`${placed} ${className}`.trim()} data-your-turn={shape}>
+    <div className={`${placed} ${aside} ${className}`.replace(/\s+/g, " ").trim()} data-your-turn={aside ? "sticky-aside" : shape}>
       {line && <p className="mb-2 text-sm text-muted-foreground">{line}</p>}
       <Fireflies block>{door}</Fireflies>
     </div>
