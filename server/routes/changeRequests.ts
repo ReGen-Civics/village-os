@@ -48,6 +48,7 @@ import {
   type ListResult,
 } from "../../shared/changeRequests";
 import { changeSetCapFrom, CHANGE_SET_CAP_KEY } from "../../shared/changeSetCap";
+import { changeRequestHref } from "../../shared/changeRequestAddress";
 import { leftTheVillage } from "../lib/formerMember";
 import { numberVar } from "../lib/variables";
 import { rolesHeldBy } from "../repos/companions";
@@ -139,7 +140,7 @@ export function register(app: Express, deps: Deps): void {
           type: "change_request_review",
           title: `You are asked to review "${cr.title}"`,
           body: `It changes ${cr.changes.length} setting${cr.changes.length === 1 ? "" : "s"}, and some touch what your role looks after. Ask, raise a concern or an objection, suggest an edit, or say you can live with it.`,
-          link: `/changes/${cr.id}`,
+          link: changeRequestHref(cr.id),
           dedupeKey: `cr-review:${cr.id}:r${cr.revision}:${userId}`,
         } as any)
         .catch(() => undefined);
@@ -149,7 +150,7 @@ export function register(app: Express, deps: Deps): void {
   /** Tells one member about somebody else's act. Never the person who did it. */
   async function tellUser(userId: string | null, actorId: string, title: string, body: string, crId: string, dedupeKey: string): Promise<void> {
     if (!userId || userId === actorId || !deps.notify) return;
-    await deps.notify({ userId, type: "change_request", title, body, link: `/changes/${crId}`, dedupeKey } as any).catch(() => undefined);
+    await deps.notify({ userId, type: "change_request", title, body, link: changeRequestHref(crId), dedupeKey } as any).catch(() => undefined);
   }
 
   async function signedIn(req: any, res: any): Promise<any | null> {

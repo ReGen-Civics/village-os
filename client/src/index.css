@@ -2751,6 +2751,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root {
   --jw-gold: var(--sheet-notice, #8d5e19);
 }
+/* On the sheet, the gold is the sheet's own. A custom property that names another resolves where it is declared, so
+   the :root line above kept the light gold inside .sheet-night: the current stone measured 2.35:1 in dark and 3.81:1
+   in light, and a stone read one colour while the water and the ring beside it read another (fold QA, 27 Nov 2026).
+   Declared again here, every stone, the water's fill and the ring take the gold of the sheet they stand on. */
+.sheet-night {
+  --jw-gold: var(--sheet-notice, #8d5e19);
+}
 @keyframes jw-ripple {
   from { opacity: 0.75; transform: scale(0.97); }
   to { opacity: 0; transform: scale(1.1); }

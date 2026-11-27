@@ -20,8 +20,11 @@
  *                     "How things work here" (/map/circles#ask), and for an
  *                     admin "Admin help" (/admin?helper=open, where the Admin
  *                     helper opens; it is never mounted over a member page).
- *                     A member with no chat and no Admin goes straight to the
- *                     guide's help; a visitor to the guide on Work with us.
+ *                     And "Share feedback" (the fold of /feedback, 26 Nov
+ *                     2026): a bug, an idea or how something felt, with a
+ *                     screenshot drawn on, into the village's own queue. So
+ *                     the row opens the panel for everybody now, a visitor
+ *                     too, whose help door leads to Work with us.
  *   Sign in           for a visitor.
  *
  * A member with no companions yet, and a visitor, see the guide's spiral in the
@@ -70,6 +73,7 @@ import { SCARLET_LOOK, type CompanionLook, type CompanionView } from "@shared/co
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 import { useLingui } from "@lingui/react/macro";
 import { useEntranceStands } from "@/lib/entranceStatus";
+import { FEEDBACK_HASH, OPEN_FEEDBACK_EVENT, feedbackHeldFor, holdFeedbackOpen, releaseFeedback, rememberPage } from "@/lib/guideFeedback";
 
 /**
  * The founding team's pages: the steward front door, the roles page that
@@ -140,23 +144,39 @@ export function cornerRows(o: { signedIn: boolean; admin: boolean; army: readonl
     if (c === personal) continue;
     rows.push({ key: `companion-${c.id}`, label: c.name, sub: waitingWords(draftsWaiting([c]), o.t), companion: c, face: { look: c.look, url: c.lookUrl } });
   }
-  const panel = o.signedIn && (!!personal || o.admin);
+  // The guide's row opens its panel for everybody since "Share feedback" moved in (the fold of /feedback,
+  // 26 Nov 2026): the guide's help, the feedback door, and Admin's helper for an admin sit there together.
   rows.push({
     key: "guide",
     label: o.guide,
-    sub: (personal ? waitingWords(draftsWaiting([personal]), o.t) : undefined) ?? o.t({ message: "How things work here, and who to ask", context: "the corner: under the help row" }),
-    href: panel ? undefined : o.signedIn ? ASK_GUIDE_HREF : "/work-with-us",
-    guidePanel: panel || undefined,
-    face: personal ? { look: personal.look, url: personal.lookUrl } : { look: SCARLET_LOOK, url: null },
+    sub: (personal ? waitingWords(draftsWaiting([personal]), o.t) : undefined) ?? o.t({ message: "Help, and a place to share feedback", context: "the corner: under the guide's row" }),
+    guidePanel: true,
+    face: guideFace(o.army),
   });
   if (!o.signedIn) rows.push({ key: "signin", label: o.t({ message: "Sign in", context: "the corner: a visitor's row" }), href: "/login" });
   return rows;
 }
 
-/** The doors the guide's panel opens on: its help for everyone, and Admin's helper for an admin. Pure. */
-export function guideDoors(o: { admin: boolean; t: T }): GuideDoor[] {
+/** The face the guide wears: the member's personal companion's, or the village's macaw. Pure. */
+export function guideFace(army: readonly CompanionView[] | null): { look: CompanionLook; url: string | null } {
+  const personal = personalCompanion(army);
+  return personal ? { look: personal.look, url: personal.lookUrl } : { look: SCARLET_LOOK, url: null };
+}
+
+/**
+ * The doors the guide's panel opens on, pure: its help (on Work with us for a visitor), "Share
+ * feedback" for everyone (a bug, an idea or how something felt, with a screenshot), and Admin's
+ * helper for an admin.
+ */
+export function guideDoors(o: { admin: boolean; signedIn?: boolean; t: T }): GuideDoor[] {
   const doors: GuideDoor[] = [
-    { key: "ask", label: o.t({ message: "How things work here", context: "the guide's panel: the door to the guide's help" }), sub: o.t({ message: "Who to ask, and where things are", context: "the guide's panel: under the help door" }), href: ASK_GUIDE_HREF },
+    { key: "ask", label: o.t({ message: "How things work here", context: "the guide's panel: the door to the guide's help" }), sub: o.t({ message: "Who to ask, and where things are", context: "the guide's panel: under the help door" }), href: o.signedIn === false ? "/work-with-us" : ASK_GUIDE_HREF },
+    {
+      key: "feedback",
+      label: o.t({ message: "Share feedback", context: "the guide's panel: the door to the feedback form" }),
+      sub: o.t({ message: "A bug, an idea or how something felt, with a screenshot", context: "the guide's panel: under the feedback door" }),
+      opens: "feedback",
+    },
   ];
   if (o.admin) {
     doors.push({
@@ -180,8 +200,13 @@ export default function MobileFab() {
   const { name: guideName } = useGuideName();
   const { army, reread } = useCompanions(!!user);
   const entrance = useEntranceStands(location, !!user);
-  // Which panel is open: the companions', or the guide's (its chat, its help, Admin's helper for an admin).
-  const [panel, setPanel] = useState<false | "companions" | "guide">(false);
+  // Which panel is open: the companions', or the guide's (its chat, its help, feedback, Admin's helper for an
+  // admin), or the guide's opened straight on the feedback form.
+  // A corner arriving on a page where the form is open opens on it (lib/guideFeedback.ts: a loading screen's
+  // corner may have heard the request and been unmounted since).
+  const [panel, setPanel] = useState<false | "companions" | "guide" | "feedback">(() =>
+    feedbackHeldFor(window.location.pathname) ? "feedback" : false,
+  );
   const rows = cornerRows({ signedIn: !!user, admin, army, guide: guideName, t });
   const standing = (army ?? []).slice(0, STANDING);
   const waiting = draftsWaiting(army ?? []);
@@ -189,6 +214,30 @@ export default function MobileFab() {
   useEffect(() => {
     if (army?.length && window.location.hash === "#companions") setPanel("companions");
   }, [army]);
+  // "Share feedback" from anywhere: the footer's button, `#feedback` on an address, and /feedback (lib/guideFeedback.ts).
+  useEffect(() => {
+    rememberPage(location);
+    // A request held for another page lapses when the member moves on.
+    if (!feedbackHeldFor(window.location.pathname)) releaseFeedback();
+    const openFeedback = () => {
+      setOpen(false);
+      setPanel("feedback");
+    };
+    const fromHash = () => {
+      if (window.location.hash !== FEEDBACK_HASH) return;
+      holdFeedbackOpen();
+      openFeedback();
+      // The hash has done its work; a reload or a shared link should not open the form again.
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    };
+    fromHash();
+    window.addEventListener(OPEN_FEEDBACK_EVENT, openFeedback);
+    window.addEventListener("hashchange", fromHash);
+    return () => {
+      window.removeEventListener(OPEN_FEEDBACK_EVENT, openFeedback);
+      window.removeEventListener("hashchange", fromHash);
+    };
+  }, [location]);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -295,18 +344,40 @@ export default function MobileFab() {
   useEffect(() => setTucked(false), [location]);
   const hidden = tucked && !open;
 
+  const guidePanel = panel ? (
+    <CompanionsDialog
+      onClose={() => {
+        setPanel(false);
+        releaseFeedback();
+        reread(); // a yes in the panel changes what waits; the count follows
+        window.setTimeout(() => triggerRef.current?.focus(), 0);
+      }}
+      {...(panel === "guide" || panel === "feedback"
+        ? {
+            title: guideName,
+            doors: guideDoors({ admin, signedIn: !!user, t }),
+            companions: !!personalCompanion(army),
+            feedback: { guide: guideName, face: guideFace(army) },
+            startOn: panel === "feedback" ? ("feedback" as const) : undefined,
+          }
+        : {})}
+    />
+  ) : null;
+
+  // The portal entrance in front of the page: it is the page then, with its own "I have an account: sign in", and
+  // every row here leads behind it (1.3.75's live check: the corner drew over the entrance). The feedback form
+  // still opens there when the footer asks: its two reads and its one write are open to a visitor (fold QA round 1).
+  if (entrance) return panel === "feedback" ? guidePanel : null;
   // The screens that render no tab bar render no FAB either: the trigger is a
   // 56px circle in the bottom-right, and on /login it sat over the right end
   // of the full-width sign-in button. Same list, same reason (mobileNav.ts).
-  if (isBareRoute(location)) return null;
+  // The pages that draw no corner still open the guide's panel when asked for feedback (the footer's door).
+  if (isBareRoute(location)) return guidePanel;
   // The founding team's pages keep their own quiet register and their one act;
   // the button sat over their hero words on a phone (go-live pass, M4).
-  if (isFoundingRoute(location)) return null;
+  if (isFoundingRoute(location)) return guidePanel;
   // Inside Admin its own Ask button and phone bar hold this corner (the Admin evolution lane).
-  if (isAdminRoute(location)) return null;
-  // The portal entrance in front of the page: it is the page then, with its own "I have an account: sign in", and
-  // every row here leads behind it (1.3.75's live check: the corner drew over the entrance).
-  if (entrance) return null;
+  if (isAdminRoute(location)) return guidePanel;
 
   return (
     <>
@@ -467,18 +538,7 @@ export default function MobileFab() {
           )}
         </button>
       </div>
-      {panel ? (
-        <CompanionsDialog
-          onClose={() => {
-            setPanel(false);
-            reread(); // a yes in the panel changes what waits; the count follows
-            window.setTimeout(() => triggerRef.current?.focus(), 0);
-          }}
-          {...(panel === "guide"
-            ? { title: guideName, doors: guideDoors({ admin, t }), companions: !!personalCompanion(army) }
-            : {})}
-        />
-      ) : null}
+      {guidePanel}
     </>
   );
 }

@@ -17,7 +17,8 @@
  */
 import { matchesFind, normalizeCode } from "./proposedChanges";
 import { draftPageHref } from "./orgDraftView";
-import { expiresAt } from "./approvalInbox";
+import { APPROVALS_HREF, expiresAt } from "./approvalInbox";
+import { changeRequestHref } from "./changeRequestAddress";
 
 import { INBOX_ORDER, INBOX_SOURCES, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_SOURCES, type InboxSource };
@@ -182,7 +183,7 @@ export function fromApprovals(body: unknown): InboxItem[] {
       summary: line(c.title, "An approval"),
       filedAt: str(c.at),
       batch: null,
-      decideAt: id.startsWith("draft:") ? draftPageHref(id.slice("draft:".length)) : "/approvals",
+      decideAt: id.startsWith("draft:") ? draftPageHref(id.slice("draft:".length)) : APPROVALS_HREF,
       touchesPerson: kind === "seating",
       // A draft waits until it is decided; an approval lapses seven days after it was filed.
       lapsesAt: !id.startsWith("draft:") && str(c.at) ? expiresAt(String(c.at)).toISOString() : null,
@@ -201,7 +202,7 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
   const seatings = list(b?.seatings).flatMap((x) => {
     const s = obj(x);
     if (!s || !str(s.id)) return [];
-    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: "/approvals", touchesPerson: true, lapsesAt: str(s.createdAt) ? expiresAt(String(s.createdAt)).toISOString() : null }];
+    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: APPROVALS_HREF, touchesPerson: true, lapsesAt: str(s.createdAt) ? expiresAt(String(s.createdAt)).toISOString() : null }];
   });
   return [...drafts, ...seatings];
 }
@@ -308,7 +309,7 @@ export function fromChangeRequests(body: unknown): InboxItem[] {
   return list(obj(body)?.open).flatMap((x) => {
     const c = obj(x);
     if (!c || !str(c.id) || c.yours) return [];
-    return [{ key: `change:${c.id}`, source: "change" as const, kind: `change_${String(c.state ?? "review")}`, code: null, summary: line(c.title, "A change request"), filedAt: str(c.updatedAt), batch: null, decideAt: `/changes/${c.id}`, touchesPerson: false }];
+    return [{ key: `change:${c.id}`, source: "change" as const, kind: `change_${String(c.state ?? "review")}`, code: null, summary: line(c.title, "A change request"), filedAt: str(c.updatedAt), batch: null, decideAt: changeRequestHref(String(c.id)), touchesPerson: false }];
   });
 }
 

@@ -14,7 +14,7 @@
  * a seating lapses; every other kind gives its title.
  */
 import type { Pool } from "mysql2/promise";
-import { EXPIRES_AFTER_MS } from "../../shared/approvalInbox";
+import { APPROVALS_HREF, EXPIRES_AFTER_MS } from "../../shared/approvalInbox";
 import { listFiledBetween } from "../repos/agentProposals";
 import { registerJob } from "./scheduler";
 import { READERS } from "../routes/approvalInbox";
@@ -47,7 +47,7 @@ export async function noticeLapsingApprovals(deps: LapseNoticeDeps): Promise<num
   for (const p of lapsing) {
     for (const userId of people) {
       try {
-        await deps.notify({ userId, type: "approval_lapsing", title: lapseNoticeTitle(p), link: "/approvals", dedupeKey: `approval-lapse:${p.id}:${userId}` });
+        await deps.notify({ userId, type: "approval_lapsing", title: lapseNoticeTitle(p), link: APPROVALS_HREF, dedupeKey: `approval-lapse:${p.id}:${userId}` });
         sent += 1;
       } catch (e) {
         // One person's bell failing never stops the rest hearing.

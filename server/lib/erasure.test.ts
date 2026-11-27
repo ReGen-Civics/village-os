@@ -118,6 +118,7 @@ function deps(broken?: "role-holdings" | "tombstone", beforeTombstone?: () => Pr
     withRoleHolderLock: (fn) => fn(),
     loadRoleHolders: () => [],
     uploadsDir,
+    feedbackShotDir: path.join(uploadsDir, "feedback-shots"),
   };
 }
 
@@ -549,6 +550,7 @@ describe.skipIf(!configured)("an erasure that stops part way", () => {
       "quest-crews-after-tombstone",
       "quest-claims-after-tombstone",
       "quest-step-submissions-after-tombstone",
+      "feedback-screenshots-after-tombstone",
       "photo-report-reasons-after-tombstone",
       "session-cards-after-tombstone",
       "member-asks-after-tombstone",
@@ -862,6 +864,43 @@ describe.skipIf(!configured)("an erasure that stops part way", () => {
     // The village's own pick is never a member's.
     expect(await resourcePicksFor(pool, VILLAGE_PICK)).toContain("governance-canvas");
     expect((await erasureRecord(pool, id))?.stepsDone).toContain("notebook-after-tombstone");
+  });
+
+  /*
+   * A FEEDBACK SCREENSHOT IS A PICTURE OF THE MEMBER'S OWN SCREEN (0443). It can show their dashboard or
+   * other people's names, so it leaves with them: the file off the private folder, the name off the row.
+   * The report's words stay (the village's record of what broke), and a neighbour's screenshot stays.
+   */
+  it("takes their feedback screenshots off the private folder and keeps the reports and a neighbour's picture (0443)", async () => {
+    const id = "er-feedback-shot-1";
+    const neighbour = "er-feedback-shot-n";
+    const target = await seedMember(id);
+    await q("INSERT INTO `users` (`id`, `name`, `email`, `password_hash`) VALUES (?,?,?,'x') ON DUPLICATE KEY UPDATE `name` = VALUES(`name`)", [neighbour, "Ash Neighbour", `${neighbour}@examples.invalid`]);
+    const dir = path.join(uploadsDir, "feedback-shots");
+    fs.mkdirSync(dir, { recursive: true });
+    const theirs = "feedbackshot-1764100000000-aaaa1111.webp";
+    const others = "feedbackshot-1764100000001-bbbb2222.webp";
+    fs.writeFileSync(path.join(dir, theirs), Buffer.from("their screen"));
+    fs.writeFileSync(path.join(dir, others), Buffer.from("a neighbour's screen"));
+    for (const [fid, who, file] of [["fb-er-1", id, theirs], ["fb-er-2", neighbour, others]]) {
+      await q(
+        "INSERT INTO `feedback_items` (`id`, `kind`, `title`, `detail`, `submitted_by`, `fingerprint`, `may_relay`, `screenshot_file`) VALUES (?,?,?,?,?,?,0,?)",
+        [fid, "bug", "The wall is blank", "The gratitude wall shows nothing after a week.", who, `fp-${fid}`, file],
+      );
+    }
+    // A fixture with nothing on disk would let the assertions below pass over nothing.
+    expect(fs.existsSync(path.join(dir, theirs))).toBe(true);
+
+    await anonymizeMember(pool, target, "admin-1", deps());
+
+    expect(fs.existsSync(path.join(dir, theirs))).toBe(false);
+    expect(fs.existsSync(path.join(dir, others))).toBe(true);
+    const rows = await q("SELECT `id`, `title`, `screenshot_file` FROM `feedback_items` WHERE `id` IN ('fb-er-1','fb-er-2') ORDER BY `id`");
+    expect(rows).toEqual([
+      { id: "fb-er-1", title: "The wall is blank", screenshot_file: null },
+      { id: "fb-er-2", title: "The wall is blank", screenshot_file: others },
+    ]);
+    expect((await erasureRecord(pool, id))?.stepsDone).toContain("feedback-screenshots-after-tombstone");
   });
 
   it("keeps every ombuds-door record and blanks only who asked, and a second run changes nothing (D10a)", async () => {

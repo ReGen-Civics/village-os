@@ -15,6 +15,7 @@ import { useJourneyContent } from "@/hooks/useJourneyContent";
 import { buttonAction, stepPoints, type TargetContext } from "@/lib/journeyPage";
 import { STEWARD_JOURNEY, STEWARD_STAGE_CIRCLE, STEWARD_STAGE_YOURS } from "@shared/pageContent/journeys";
 import { FOUNDING_ROLES_WORD, withFoundingRoles } from "@shared/foundingTeam";
+import { APPROVALS_HREF } from "@shared/approvalInbox";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { useIsAdmin } from "@/contexts/AuthContext";
 import { Link } from "wouter";
@@ -355,7 +356,7 @@ export default function StewardJourney() {
               </div>
               <p className={`${HINT} mb-4`}><Trans>For stewards and admins: proposals waiting on you, and the tools behind the roles.</Trans></p>
               <div className="grid gap-2 sm:grid-cols-2">
-                <Link href="/approvals" className={DOOR}><Trans>Open the approval inbox</Trans><ArrowRight className="h-4 w-4" /></Link>
+                <Link href={APPROVALS_HREF} className={DOOR}><Trans>Open the approval inbox</Trans><ArrowRight className="h-4 w-4" /></Link>
                 <Link href={adminPath} className={DOOR}><Trans context="steward front door">Open admin</Trans><ArrowRight className="h-4 w-4" /></Link>
               </div>
             </div>
