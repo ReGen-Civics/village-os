@@ -1,4 +1,4 @@
--- 9999 (the integrator gives it the next number): feedback moves into the village guide's panel
+-- 0443: feedback moves into the village guide's panel
 -- (the lead, 26 Nov 2026: "share with scarlet and that goes into our own queue").
 --
 -- THE CONTRACT IS shared/feedbackItems.ts; the SQL is server/lib/feedback.ts and the routes sit in

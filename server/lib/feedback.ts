@@ -20,6 +20,7 @@
  * without needing any identity to do it.
  */
 import { createHash, randomUUID } from "crypto";
+import path from "node:path";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import { guardedFetchJson } from "./toolcheck";
 import { boolVar } from "./variables";
@@ -61,6 +62,27 @@ export interface FeedbackInput {
    * which can show other members' names, never leaves the village.
    */
   screenshotFile?: string | null;
+}
+
+/**
+ * THE SCREENSHOT'S FOLDER, beside the uploads volume and never inside it (the guide's panel,
+ * 26 Nov 2026). `/api/uploads/:filename` answers anybody holding a name, and a picture of a page
+ * can show a member's own dashboard or other people's names, so it lives where a form's
+ * attachment lives (server/lib/submissionAttachments.ts): written through the strip, served to an
+ * admin alone, `private, no-store`, and taken off when its sender is erased (server/lib/erasure.ts).
+ */
+export const FEEDBACK_SHOT_DIRNAME = "private-feedback-shots";
+/** The prefix every stored screenshot carries, so the admin door reads only names the route minted. */
+export const FEEDBACK_SHOT_PREFIX = "feedbackshot";
+
+export function feedbackShotsDir(uploadsDir: string): string {
+  return path.join(path.dirname(uploadsDir), FEEDBACK_SHOT_DIRNAME);
+}
+
+/** A stored name the route minted, basenamed, or null. Pure. */
+export function feedbackShotName(raw: unknown): string | null {
+  const name = path.basename(String(raw ?? "").trim());
+  return /^feedbackshot-\d+-[a-z0-9]{1,8}\.(jpg|png|webp|avif|gif)$/.test(name) ? name : null;
 }
 
 export function feedbackFingerprint(kind: string, title: string, detail: string): string {

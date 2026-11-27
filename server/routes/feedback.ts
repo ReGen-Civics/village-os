@@ -30,36 +30,27 @@ import multer from "multer";
 import type { AppDeps } from "../lib/appDeps";
 import { boolVar } from "../lib/variables";
 import { recordEvent } from "../lib/events";
-import { feedbackHubUrl, feedbackIsShared, feedbackStatusNotice, recordFeedback } from "../lib/feedback";
+import {
+  FEEDBACK_SHOT_PREFIX,
+  feedbackHubUrl,
+  feedbackIsShared,
+  feedbackShotName,
+  feedbackShotsDir,
+  feedbackStatusNotice,
+  recordFeedback,
+} from "../lib/feedback";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume, stampedName, writeToVolume } from "../lib/uploads";
 import { attachmentHeaders } from "../lib/submissionAttachments";
 import { FEEDBACK_DETAIL_MIN, FEEDBACK_SHOT_MAX_BYTES, FEEDBACK_TITLE_MIN, isFeedbackKind, suggestTitle } from "../../shared/feedbackItems";
+
+// The screenshot's folder and its names live beside the rest of the feedback spine (server/lib/feedback.ts),
+// because erasure takes the files off too.
+export { FEEDBACK_SHOT_DIRNAME, feedbackShotName, feedbackShotsDir } from "../lib/feedback";
 
 type Deps = Pick<
   AppDeps,
   "isAdmin" | "authedUser" | "getPool" | "notify" | "overLimit" | "clientIp" | "projectName" | "uploadsDir"
 >;
-
-/**
- * THE SCREENSHOT'S FOLDER, beside the uploads volume and never inside it (the guide's panel,
- * 26 Nov 2026). `/api/uploads/:filename` answers anybody holding a name, and a picture of a page
- * can show a member's own dashboard or other people's names, so it lives where a form's
- * attachment lives (server/lib/submissionAttachments.ts): written through the strip, served to an
- * admin alone, `private, no-store`.
- */
-export const FEEDBACK_SHOT_DIRNAME = "private-feedback-shots";
-/** The prefix every stored screenshot carries, so the admin door reads only names this route minted. */
-export const FEEDBACK_SHOT_PREFIX = "feedbackshot";
-
-export function feedbackShotsDir(uploadsDir: string): string {
-  return path.join(path.dirname(uploadsDir), FEEDBACK_SHOT_DIRNAME);
-}
-
-/** A stored name this route minted, basenamed, or null. Pure. */
-export function feedbackShotName(raw: unknown): string | null {
-  const name = path.basename(String(raw ?? "").trim());
-  return /^feedbackshot-\d+-[a-z0-9]{1,8}\.(jpg|png|webp|avif|gif)$/.test(name) ? name : null;
-}
 
 /** multipart/form-data with one `screenshot`; JSON goes on through as it always did. */
 const takeShot = multer({ storage: multer.memoryStorage(), limits: { fileSize: FEEDBACK_SHOT_MAX_BYTES, files: 1 } }).single("screenshot");
