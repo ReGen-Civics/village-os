@@ -39,6 +39,10 @@ import { SeedOfLife } from "@/components/sacred/glyphs";
 import type { Share } from "@shared/roleMeasures";
 import { isEmptyRow, percent, rowsFor, seasonsOf, span, type ServedRow } from "./measuresView";
 
+/** The chosen season: BTN_SECONDARY's shape, held in a gold ring (a gold fill would read as earned). */
+const SEASON_ON =
+  "jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border-2 border-notice bg-notice/10 px-4 py-2 text-sm font-medium text-foreground disabled:opacity-50";
+
 /** The section's id, which the old address and each circle's row land on. */
 export const MEASURES_ANCHOR = "role-measures";
 
@@ -94,7 +98,7 @@ function Measures({ circleId }: { circleId?: string }) {
   const list = rowsFor(mine, shown, circleId);
 
   return (
-    <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} @container scroll-mt-24`} data-testid="role-measures-panel">
+    <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} @container scroll-mt-44`} data-testid="role-measures-panel">
       <div className="flex items-center gap-4">
         <span className={RING} aria-hidden="true">
           <SeedOfLife className="size-6" />
@@ -138,9 +142,7 @@ function Measures({ circleId }: { circleId?: string }) {
                   type="button"
                   aria-pressed={s === shown}
                   onClick={() => setPicked(s)}
-                  className={`jw-btn inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium ${
-                    s === shown ? "border-2 border-notice bg-notice/10 text-foreground" : "border-border text-foreground hover:bg-muted"
-                  }`}
+                  className={s === shown ? SEASON_ON : BTN_SECONDARY}
                 >
                   {seasonName(s)}
                 </button>
@@ -303,7 +305,10 @@ const STONE_DIM = "inline-flex size-11 shrink-0 items-center justify-center roun
 function Chain({ title, steps }: { title: string; steps: readonly Step[] }) {
   return (
     <div>
-      <h3 className={EYEBROW}>{title}</h3>
+      {/* The span carries the kicker's face (`font-body`, the village's body face): the sheet sets every heading in the display face (index.css). */}
+      <h3>
+        <span className={`font-body ${EYEBROW}`}>{title}</span>
+      </h3>
       <div className="relative mt-3">
       <span aria-hidden="true" className="absolute bottom-6 left-[21px] top-6 w-px bg-border @2xl:bottom-auto @2xl:left-[10%] @2xl:right-[10%] @2xl:top-[21px] @2xl:h-px @2xl:w-auto" />
       <ol className="relative grid gap-3 @2xl:grid-cols-5 @2xl:gap-2">
