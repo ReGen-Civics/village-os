@@ -21,7 +21,8 @@ import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
-const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More (phone doors v4, 25 Nov 2026)
+const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More and the header's menu button (27 Nov 2026)
+const PathsSheet = lazy(() => import("./mobile/PathsSheet")); // the village's paths, opened by the phone header's Paths (27 Nov 2026)
 const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
@@ -48,6 +49,7 @@ interface LayoutProps {
 
 export default function Layout({ children, headerScrollsOnPhone = false }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pathsOpen, setPathsOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
@@ -419,18 +421,32 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
             )}
           </div>
 
-          {/* Mobile Menu Button (bell beside it when signed in) */}
+          {/* Mobile Menu Button (bell beside it when signed in). On a phone the bar reads Paths, the bell, Menu (the
+              lead, 27 Nov 2026: "one button for paths ... and another button for menu to then open up the same thing
+              that the bottom right more button opens up"): Menu opens the very sheet More opens (MoreSheet), so the
+              two doors can never show different menus, and a visitor with no More tab still has one. */}
           <div className="lg:hidden flex items-center gap-2 text-white">
             <span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
+            <button
+              type="button"
+              onClick={() => { setMobileMenuOpen(false); setPathsOpen(true); }}
+              aria-haspopup="dialog"
+              aria-expanded={pathsOpen}
+              data-header-paths=""
+              className="md:hidden inline-flex min-h-11 items-center rounded-full border border-white/40 px-4 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <Trans context="site header: the phone's Paths button">Paths</Trans>
+            </button>
             {user && <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>}
-            {/* Icon-only, so it needs a spoken name and a state. Phones use the bar's More instead (MoreSheet). */}
+            {/* Icon-only, so it needs a spoken name and a state. On a phone it opens More's sheet (MoreSheet). */}
             <button
               ref={menuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? t({ message: "Close menu", context: "site header" }) : t({ message: "Open menu", context: "site header" })}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="text-white hidden md:inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
+              data-header-menu=""
+              className="text-white inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -928,6 +944,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
       <MobileTabBar inMenu={!!lit} />
+      {pathsOpen && <Suspense fallback={null}><PathsSheet onClose={() => setPathsOpen(false)} /></Suspense>}
       {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} lit={lit} /></Suspense>}
       <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
