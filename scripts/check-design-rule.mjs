@@ -91,7 +91,7 @@ const PAGES = [
   "client/src/pages/EmailPages.tsx",
   "client/src/pages/ProposeQuest.tsx",
   "client/src/pages/Crowdpool.tsx",
-  "client/src/pages/Approvals.tsx",
+  "client/src/pages/ChangeRequest.tsx",
   "client/src/pages/VerifyEmail.tsx",
   "client/src/pages/SetPassword.tsx",
   "client/src/pages/Register.tsx",
@@ -226,7 +226,8 @@ const JOURNEY = [
   "client/src/components/review/ConsentQueue.tsx",
   "client/src/components/review/OwedPostings.tsx",
   "client/src/components/review/OwedCancels.tsx",
-  "client/src/components/review/AgentProposalsCard.tsx",
+  "client/src/components/governance/ChangeRequestsSection.tsx",
+  "client/src/components/governance/work/ApprovalsSection.tsx",
   "client/src/components/review/QuestProposalCard.tsx",
   // The review page's batch and change cards, in the role card's hand (2026-11-16).
   "client/src/components/proposals/BatchCard.tsx",

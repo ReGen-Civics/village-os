@@ -134,6 +134,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/training/steward": "Steward training",
   "/training/resident": "Resident training",
   "/governance": "Governance",
+  // One change request, a kind of decision since 27 Nov 2026; /changes above stays for links already sent.
+  "/governance/decisions/changes": "Change request",
   "/decisions": "Decisions",
   "/propose": "Start a proposal",
   "/propose-a-role": "Apply", // the founding application (QA P1-17); without it the prefix read "Start a proposal"

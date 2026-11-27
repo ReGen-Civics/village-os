@@ -21,6 +21,7 @@ import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
 import { useConfigFailed, useGameConfig } from "./lib/gameApi";
 import ConfigUnavailable from "./components/ConfigUnavailable";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
+import { changeRequestHref } from "@shared/changeRequestAddress";
 
 /**
  * "/" means the welcome page, for everyone, every time. The map was going to
@@ -227,7 +228,8 @@ const EmailPreferences = lazyPage(() => import("./pages/EmailPages").then((m) =>
 const EmailUnsubscribe = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailUnsubscribe })));
 const EmailAction = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailAction })));
 const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword"));
-const ChangeRequests = lazyPage(() => import("./pages/ChangeRequests"));
+// One change request, a kind of decision under Decisions since 27 Nov 2026 (the lead). The list is a section of Decisions.
+const ChangeRequest = lazyPage(() => import("./pages/ChangeRequest"));
 const VillageEmail = lazyPage(() => import("./pages/VillageEmail"));
 const GoodNeighbor = brochurePage(() => import("./pages/GoodNeighbor"));
 const JourneyToLaunch = lazyPage(() => import("./pages/JourneyToLaunch"));
@@ -289,7 +291,6 @@ const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
 // Treasury view since 27 Nov 2026 (the lead). /budget redirects there.
 const GovernanceTreasury = lazyPage(() => import("./pages/GovernanceTreasury"));
 const Review = lazyPage(() => import("./pages/Review"));
-const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
 const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
@@ -340,8 +341,8 @@ export function PageLoading() {
   return <Layout>{quiet}</Layout>;
 }
 
-/** The pages that draw without the site's header and bar (Admin, OAuthAuthorize, ChangeRequests, Reset). */
-const SHELL_LESS = /^\/(?:admin|oauth\/authorize|changes|reset)(?:\/|$)/;
+/** The pages that draw without the site's header and bar (Admin, OAuthAuthorize, Reset). */
+const SHELL_LESS = /^\/(?:admin|oauth\/authorize|reset)(?:\/|$)/;
 
 /**
  * The responsive bottom bar's visit count (client/src/lib/navVisits.ts): after a
@@ -432,7 +433,9 @@ function Router() {
       {/* The cash budget's old address, in links and notices already sent, lands on its Governance section. */}
       <Route path="/budget">{() => <Redirect to="/governance/treasury#cash-budget" replace />}</Route>
       <Route path="/review/structure/:batchId" component={StructureReview} />
-      <Route path="/approvals" component={Approvals} />
+      {/* The approval inbox is the Approvals section of Your work (the lead, 27 Nov 2026). Its old address, in
+          notices and links already sent, lands there. */}
+      <Route path="/approvals">{() => <Redirect to={`/governance/work${window.location.search}#approvals`} replace />}</Route>
       {/* Governance (the lead, 26 Nov 2026: "Don't call it review, call it governance"). The deciders' queue is Your work
           under /governance; the old address keeps working, with its query and anchor (#witness). */}
       <Route path="/governance/work" component={Review} />
@@ -515,8 +518,10 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       {/* Game Mechanics folded into How we work together (26 Nov 2026). Old links keep their query (?dial=, ?focus=) and anchor; with none, they land on the mechanics. */}
       <Route path="/game-mechanics">{() => <Redirect to={`/governance/how${window.location.search}${window.location.hash || "#game-mechanics"}`} replace />}</Route>
-      <Route path="/changes" component={ChangeRequests} />
-      <Route path="/changes/:id" component={ChangeRequests} />
+      {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list is the Change requests section of
+          Decisions, and one change request is under it. The old addresses, in notices already sent, keep working. */}
+      <Route path="/changes">{() => <Redirect to={`/governance/decisions${window.location.search}#changes`} replace />}</Route>
+      <Route path="/changes/:id">{(p) => <Redirect to={`${changeRequestHref(p.id)}${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/village-email" component={VillageEmail} />
       <Route path="/good-neighbor" component={GoodNeighbor} />
       <Route path="/steward-rights" component={StewardRights} />
@@ -537,6 +542,9 @@ function Router() {
       <Route path="/governance/decisions" component={Decisions} />
       {/* One org chart draft, before and after, with its revisions and the acts its decide answer allows. */}
       <Route path="/governance/decisions/drafts/:draftId" component={OrgDraft} />
+      {/* One change request, before :id for the same reason. The bare list address goes to its section. */}
+      <Route path="/governance/decisions/changes">{() => <Redirect to="/governance/decisions#changes" replace />}</Route>
+      <Route path="/governance/decisions/changes/:id" component={ChangeRequest} />
       <Route path="/governance/decisions/:id" component={Decision} />
       {/* The old addresses, in links already sent (notifications, emails), keep working. */}
       <Route path="/decisions">{() => <Redirect to={`/governance/decisions${window.location.search}${window.location.hash}`} replace />}</Route>

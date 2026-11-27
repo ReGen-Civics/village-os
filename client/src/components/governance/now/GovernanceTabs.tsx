@@ -30,7 +30,8 @@ export default function GovernanceTabs({ signedIn }: { signedIn: boolean }) {
     else if (a.left < n.left) nav.scrollLeft -= n.left - a.left + 8;
   }, [here]);
   const tab = (href: string, label: React.ReactNode) => {
-    const on = here === href;
+    // A view's own pages keep its tab lit (a change request or a draft under Decisions); Now is /governance alone.
+    const on = here === href || (href !== "/governance" && here.startsWith(`${href}/`));
     return (
       <Link
         href={href}
