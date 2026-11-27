@@ -4330,6 +4330,12 @@ msgstr "Las publicaciones más largas que esto se cortan en las novedades, y el 
 #~ msgid "{0} opening next"
 #~ msgstr "{0} se abren después"
 
+# needs-native-review: the phone's Paths sheet, its close button, 27 Nov 2026
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: close button"
+msgid "Close paths"
+msgstr "Cerrar caminos"
+
 # needs-native-review: Governance step 1, the lead's bullets rule, 26 Nov 2026
 #: client/src/pages/Review.tsx
 msgctxt "Review, a step"
@@ -11739,6 +11745,12 @@ msgstr "Eso no llegó al servidor. El hito sigue aquí."
 msgctxt "ProfileImportDoor, p"
 msgid "Opening..."
 msgstr "Abriendo..."
+
+# needs-native-review: the phone's top bar, the Paths button, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "site header: the phone's Paths button"
+msgid "Paths"
+msgstr "Caminos"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -21550,6 +21562,12 @@ msgstr "Las metas de la aldea para la próxima temporada"
 msgctxt "PoolStatement, p"
 msgid "No module has been opened this cycle, so the whole pool carries forward."
 msgstr "Ningún módulo se ha abierto en este ciclo, así que todo el fondo pasa al siguiente."
+
+# needs-native-review: the phone's Paths sheet, when the village shows no path, 27 Nov 2026
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: when the village shows none"
+msgid "No paths are open yet."
+msgstr "Todavía no hay caminos abiertos."
 
 #: client/src/components/CycleClock.tsx
 msgctxt "cycle clock: the clock has not answered yet"
@@ -74045,6 +74063,12 @@ msgctxt "review inbox: a row, the door"
 msgid "Read and approve"
 msgstr "Leer y aprobar"
 
+# needs-native-review: the phone's Paths sheet, its heading when the village set none, 27 Nov 2026
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: heading when the village has none"
+msgid "Paths"
+msgstr "Caminos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: mine.profile
 #. placeholder {0}: view.profile
@@ -85712,6 +85736,12 @@ msgstr "Traducción automática, aún sin revisar por una persona"
 msgctxt "PowerGroupDialogs, p"
 msgid "{memberName} sees the same ladder, with what opens each stage, on their own profile. Their stage today shows on the <0>Players tab</0>, and nobody was appointed."
 msgstr "{memberName} ve la misma escalera, con lo que abre cada etapa, en su propio perfil. Su etapa de hoy aparece en la <0>pestaña Jugadores</0>, y no se nombró a nadie."
+
+# needs-native-review: the phone's Paths sheet, while the paths load, 27 Nov 2026
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: while the paths load"
+msgid "Loading the paths"
+msgstr "Cargando los caminos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Protocols.tsx
