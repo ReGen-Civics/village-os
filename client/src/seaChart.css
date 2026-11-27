@@ -162,6 +162,50 @@
   mask-border: none;
 }
 
+/*
+ * THE BANDS AND SHEETS (the coordinator's live probe of 1.3.93: the "Set up your village" strip under the header drew as
+ * a plain cream band). Every full-width band is a strip of the same weathered paper laid on the map, torn along its open
+ * side with the dealt edge and its burnt line: the path strip under the header and its placeholder (torn below), the
+ * phone's More and Paths sheets (torn above), and the footer (torn above, its teal darkened by the same mottle, which only
+ * raises its white text's contrast). No new image: they reuse the dealt --wm-tear and --wm-burn.
+ */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-root-line] .nk, [data-root-slot] > div) {
+  background: radial-gradient(ellipse 70% 120% at var(--wm-stain), rgb(168 110 44 / 0.1), transparent 70%), linear-gradient(rgb(250 236 204 / 0.82), rgb(240 220 180 / 0.7)) !important;
+  border-bottom-color: transparent !important;
+  border-image: var(--wm-burn) 18 / 0 0 14px 0 / 0 round;
+  -webkit-mask-box-image: var(--wm-tear) 18 fill / 0 0 14px 0 round;
+  mask-border: var(--wm-tear) 18 fill / 0 0 14px 0 round;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-more-sheet], [data-paths-sheet]) [role="dialog"] {
+  background: radial-gradient(ellipse 60% 40% at var(--wm-stain), rgb(168 110 44 / 0.12), transparent 70%), linear-gradient(rgb(250 236 204), rgb(238 216 172)) !important;
+  border-radius: 0 !important;
+  border-image: var(--wm-burn) 18 / 14px 0 0 0 / 0 round;
+  -webkit-mask-box-image: var(--wm-tear) 18 fill / 14px 0 0 0 round;
+  mask-border: var(--wm-tear) 18 fill / 14px 0 0 0 round;
+}
+/* The sheet's sticky top row keeps covering what scrolls under it, in the sheet's own paper. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-more-sheet], [data-paths-sheet]) [role="dialog"] .sticky.bg-card {
+  background: rgb(250 236 204) !important;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) footer.bg-teal-deep {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006' numOctaves='3' seed='12' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 .02 0 0 0 0 .08 0 0 0 0 .06 1.4 0 0 0 -.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)' opacity='.45'/%3E%3C/svg%3E");
+  border-image: var(--wm-burn) 18 / 14px 0 0 0 / 0 round;
+  -webkit-mask-box-image: var(--wm-tear) 18 fill / 14px 0 0 0 round;
+  mask-border: var(--wm-tear) 18 fill / 14px 0 0 0 round;
+}
+
+/* Dialogs, the bell's toasts, the app's toaster and the standing-examples note are weathered pages too. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-slot="dialog-content"], [data-sonner-toast], .bg-white.border.rounded-2xl.shadow-xl, aside[aria-labelledby^="standing-examples-"]) {
+  background: radial-gradient(circle at var(--wm-fox), rgb(150 92 34 / 0.16), transparent 6%), radial-gradient(ellipse 58% 42% at var(--wm-stain), rgb(168 110 44 / 0.13), transparent 70%), linear-gradient(rgb(250 236 204), rgb(240 220 180)) !important;
+  color: var(--pal-day-ink) !important;
+  box-shadow: inset 0 0 6px rgb(70 32 6 / 0.5), inset 0 0 22px rgb(128 66 16 / 0.34) !important;
+  border-style: solid;
+  border-radius: 0 !important;
+  border-image: var(--wm-burn) 18 / 9px / 0 round;
+  -webkit-mask-box-image: var(--wm-tear) 18 fill / 9px round;
+  mask-border: var(--wm-tear) 18 fill / 9px round;
+}
+
 /* A rhumb line with a compass point under each page's display heading: decoration, drawn as a pseudo-element, so no reader meets it. */
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) main h1.font-display::after {
   content: "";

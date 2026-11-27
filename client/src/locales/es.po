@@ -1679,6 +1679,12 @@ msgctxt "module canvas, benefit 4"
 msgid "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
 msgstr "Una Matriz de decisiones de quién aprueba, a quién se consulta y a quién se informa, y una línea pública por bloque"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, a row"
+msgid "Roles not in a circle"
+msgstr "Roles que no están en un círculo"
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MOON_WORDS: externalKey"
@@ -11812,6 +11818,12 @@ msgctxt "YourCompanions, p"
 msgid "Your companions"
 msgstr "Sus compañeros"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, the size a share was measured on"
+msgid "{yes} of {all}"
+msgstr "{yes} de {all}"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/setupGame/FieldNotes.tsx
 msgctxt "FieldNotes, th"
@@ -14663,6 +14675,12 @@ msgctxt "Admin, p"
 msgid "Your Stripe webhook URL"
 msgstr "La URL de su webhook de Stripe"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, failed"
+msgid "Could not read the measures."
+msgstr "No se pudieron leer las medidas."
+
 # needs-native-review: the light mode paper dial, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable look.light_paper, choice plain, hint"
@@ -17164,6 +17182,12 @@ msgctxt "live session room: doneLabel"
 msgid "Done"
 msgstr "Hecho"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, holding chain"
+msgid "Renewed at each moon"
+msgstr "Renovó en cada luna"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: i18n._(PRECISION_WORDS[pin.precision])
 #: client/src/components/hiddenMap/PinPanel.tsx
@@ -17916,6 +17940,12 @@ msgctxt "moon recap: ADMIN_WORDS: save"
 msgid "Save"
 msgstr "Guardar"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, a withheld number"
+msgid "too few"
+msgstr "muy pocos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/SetPassword.tsx
 msgctxt "SetPassword, p"
@@ -18400,6 +18430,12 @@ msgstr "“{summary}” se redactó antes de que se aceptara “{other}”. Revi
 msgctxt "the bell: why a notice of this kind matters, kind stage_advanced"
 msgid "A door opened for you, and the notice names what you can now do."
 msgstr "Se le abrió una puerta, y el aviso dice lo que ahora puede hacer."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, failed read"
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/MenuPanel.tsx
@@ -22158,6 +22194,12 @@ msgctxt "MonthView, aria-label"
 msgid "Month and moon"
 msgstr "Mes y luna"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, holding chain"
+msgid "Path done by day 30"
+msgstr "Camino completo al día 30"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/NeedCard.tsx
 msgctxt "NeedCard, placeholder"
@@ -25005,6 +25047,12 @@ msgctxt "map chip members_active, what it counts"
 msgid "Members who did something the village heard about since this cycle began."
 msgstr "Miembros que hicieron algo de lo que la aldea se enteró desde que empezó este ciclo."
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, door to a circle"
+msgid "Open this circle"
+msgstr "Abrir este círculo"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{unoffered} roles you picked are not open any more. Pick from the roles below."
 #~ msgstr "{unoffered} de los roles que elegiste ya no están abiertos. Elige entre los roles de abajo."
@@ -27641,6 +27689,11 @@ msgctxt "admin portal visitors"
 msgid "Only the people who said yes to keeping in touch"
 msgstr "Solo las personas que dijeron que sí a seguir en contacto"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgid "{n, plural, one {# day} other {# days}}"
+msgstr "{n, plural, one {# día} other {# días}}"
+
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/components/orgDraft/FieldDiff.tsx
 msgctxt "draft page: a field"
@@ -29846,8 +29899,8 @@ msgstr "Ese archivo no se pudo leer."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/RoleMeasures.tsx
-msgid "This page is for administrators."
-msgstr "Esta página es para quienes administran."
+#~ msgid "This page is for administrators."
+#~ msgstr "Esta página es para quienes administran."
 
 # needs-native-review: visitor pages, 26 Nov 2026
 #: client/src/pages/WorkWithUs.tsx
@@ -31838,6 +31891,12 @@ msgctxt "Modules, button"
 msgid "Clear"
 msgstr "Limpiar"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, applying chain"
+msgid "Decision"
+msgstr "Decisión"
+
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: the optional note"
@@ -32329,6 +32388,12 @@ msgstr "Comuníquese con {reachName} aquí: <0>{reachHow}</0>. La aldea tiene un
 msgctxt "game variable org.public_people, description"
 msgid "On, anyone can read the first names of the people holding each role on the Team, Roles and Circles pages, and a visitor reads members by first name elsewhere. Off, a visitor who is not signed in reads no member's name, handle, address or portrait on any page: the pulse, the decisions, profiles and role cards included. Signed-in members whose role or badge grants map.viewPeople still read who holds each role, and a visitor still sees every circle, every role, and how many of them are filled. This is the secret society setting. It moves names only: the shape of the village stays public at both settings."
 msgstr "Encendido, cualquiera puede leer los nombres de pila de las personas que ocupan cada rol en las páginas de Equipo, Roles y Círculos, y un visitante lee a los miembros por su nombre de pila en otras partes. Apagado, un visitante sin sesión iniciada no lee el nombre, usuario, dirección ni retrato de ningún miembro en ninguna página: el pulso, las decisiones, los perfiles y las tarjetas de rol incluidos. Los miembros con sesión iniciada cuyo rol o insignia otorga map.viewPeople siguen leyendo quién ocupa cada rol, y un visitante sigue viendo cada círculo, cada rol y cuántos están ocupados. Este es el ajuste de sociedad secreta. Solo mueve nombres: la forma de la aldea sigue siendo pública con ambos ajustes."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, refused"
+msgid "Only administrators can see how roles are going."
+msgstr "Solo las personas administradoras pueden ver cómo van los roles."
 
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
@@ -33573,6 +33638,12 @@ msgstr "En la memoria"
 msgctxt "HomeBase, aria-label"
 msgid "What needs you now"
 msgstr "Lo que lo necesita ahora"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, applying chain"
+msgid "First reply"
+msgstr "Primera respuesta"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -35995,6 +36066,12 @@ msgctxt "Events, aria-label"
 msgid "Grid by months or by moons"
 msgstr "Cuadrícula por meses o por lunas"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, empty circle"
+msgid "Nothing has been stamped for this circle yet."
+msgstr "Todavía no hay nada registrado para este círculo."
+
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card fact"
 msgid "Languages"
@@ -38359,6 +38436,12 @@ msgstr "Una reapertura al año, hagan lo que hagan las temporadas."
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
 msgstr "Ver: lo que la aldea muestra sobre {name}"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, holding chain"
+msgid "First quest by day 14"
+msgstr "Primera misión al día 14"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: weightText(standing.held)
@@ -40757,6 +40840,12 @@ msgstr "Lienzo"
 msgctxt "SetPassword, label"
 msgid "Repeat the new password"
 msgstr "Repita la nueva contraseña"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, a kind of number"
+msgid "median"
+msgstr "mediana"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/ExportByVote.tsx
@@ -45963,6 +46052,12 @@ msgstr "Rechazando"
 msgctxt "first fourteen days strip, when a step is done"
 msgid "Done when: {0}"
 msgstr "Hecho cuando: {0}"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, nobody to count yet"
+msgid "not yet"
+msgstr "aún no"
 
 # needs-native-review: player card, 26 Nov 2026
 #: client/src/components/playerCard/playerCardMessages.ts
@@ -52814,7 +52909,7 @@ msgid "Nothing has been changed yet."
 msgstr "Todavía no se ha cambiado nada."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/RoleMeasures.tsx
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
 msgid "How roles are going"
 msgstr "Cómo van los roles"
 
@@ -53053,6 +53148,11 @@ msgstr "El trabajo"
 msgctxt "Training, p"
 msgid "No lessons yet. They appear here once the village adds them."
 msgstr "Aún no hay lecciones. Aparecen aquí cuando la aldea las agregue."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgid "{n, plural, one {# hour} other {# hours}}"
+msgstr "{n, plural, one {# hora} other {# horas}}"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: new words, 24 Nov 2026
@@ -53404,6 +53504,12 @@ msgstr "¿Ninguna de estas va con su don? <0>Proponga su propia misión</0>."
 msgctxt "companion welcome"
 msgid "Everything you do lands in your tasks, even the ones nobody planned. At End of Moon we add it all up, and if it's far from what you agreed, your pay follows what you actually delivered."
 msgstr "Todo lo que hace queda en sus tareas, incluso lo que nadie planeó. En el Fin de Luna lo sumamos todo, y si está lejos de lo que acordamos, su pago sigue lo que de verdad entregó."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, a circle's page"
+msgid "How roles are going here"
+msgstr "Cómo van los roles aquí"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
@@ -55371,6 +55477,12 @@ msgctxt "the bell: why a notice of this kind matters, kind role_proposal_review_
 msgid "One of your roles is due its review. Propose how you will hold it next season."
 msgstr "A uno de sus roles le toca revisión. Proponga cómo lo va a llevar la próxima temporada."
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, holding chain"
+msgid "Seated"
+msgstr "En el rol"
+
 # needs-native-review: first pass, admin guide review and save, 26 Nov 2026
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, opens the setting's own place"
@@ -56448,6 +56560,12 @@ msgstr "Sur"
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "The rule a voucher reads"
 msgstr "La regla que lee un vale"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, applying chain"
+msgid "First interview"
+msgstr "Primera entrevista"
 
 #: client/src/components/roleCard/cardWordsT.ts
 msgctxt "role track"
@@ -58254,6 +58372,12 @@ msgstr "Subir"
 msgid "Place on your list"
 msgstr "Lugar en su lista"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, how to read"
+msgid "Counts and medians from stamped times. No names."
+msgstr "Cuentas y medianas a partir de horas registradas. Sin nombres."
+
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module progression, benefit 3"
@@ -59657,6 +59781,12 @@ msgstr "El bloque al que se refiere"
 msgctxt "the bell: why a notice of this kind matters, kind approval_lapsing"
 msgid "Something an agent proposed lapses tomorrow if nobody decides it. Read it on the approvals page and say yes or no."
 msgstr "Algo que propuso un agente caduca mañana si nadie lo decide. Léalo en la página de aprobaciones y diga sí o no."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, applying chain"
+msgid "Answered"
+msgstr "Respondidas"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgChartTab.tsx
@@ -63500,6 +63630,12 @@ msgstr "Quitar"
 msgctxt "module profiles, setup"
 msgid "Nothing to set up. Core, on from the first day."
 msgstr "Nada que configurar. Es parte del núcleo, encendido desde el primer día."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, a season chip"
+msgid "No season"
+msgstr "Sin temporada"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: Math.round(average)
@@ -69332,6 +69468,12 @@ msgctxt "Admin, p"
 msgid "Settle these first"
 msgstr "Resuelva esto primero"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, eyebrow"
+msgid "Only administrators see this"
+msgstr "Solo lo ven las personas administradoras"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/GameDashboard.tsx
 msgctxt "GameDashboard, span"
@@ -72472,8 +72614,8 @@ msgstr "Asignación personalizada"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/RoleMeasures.tsx
-msgid "Nothing has been stamped yet."
-msgstr "Todavía no se ha sellado nada."
+#~ msgid "Nothing has been stamped yet."
+#~ msgstr "Todavía no se ha sellado nada."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: c.roleName
@@ -73387,6 +73529,12 @@ msgctxt "role sign sheet, first names note"
 msgid "First names only. Listed in the order it happened."
 msgstr "Solo nombres de pila. En el orden en que ocurrió."
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, chain heading"
+msgid "Holding the role"
+msgstr "Sostener el rol"
+
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/profile/onboardingPathWords.ts
 msgctxt "onboarding path: retry"
@@ -74161,6 +74309,12 @@ msgstr "Tiene {mine} cosas por hacer"
 msgctxt "module canvas, benefit 2"
 msgid "Five frames for each block: sense it, see what the village already runs, learn, say the village's answer, adopt a change"
 msgstr "Cinco marcos para cada bloque: sentirlo, ver lo que la aldea ya hace, aprender, decir la respuesta de la aldea, adoptar un cambio"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, season picker"
+msgid "Season"
+msgstr "Temporada"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profile/InvitePanel.tsx
@@ -76176,6 +76330,12 @@ msgctxt "GameMechanics, button"
 msgid "I've taken it to Hypha"
 msgstr "Ya lo llevé a Hypha"
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, holding chain"
+msgid "Still in the role at day 90"
+msgstr "Sigue en el rol al día 90"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 #~ msgctxt "pay board"
@@ -77036,8 +77196,8 @@ msgstr "Se paga en {village} como {token} y luego se reclama fuera de la platafo
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/RoleMeasures.tsx
-msgid "This page is for administrators. Sign in with an administrator account to see it."
-msgstr "Esta página es para administradores. Inicie sesión con una cuenta de administrador para verla."
+#~ msgid "This page is for administrators. Sign in with an administrator account to see it."
+#~ msgstr "Esta página es para administradores. Inicie sesión con una cuenta de administrador para verla."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: volumeSize(report.tally.referenced.bytes)
@@ -77771,6 +77931,12 @@ msgstr "Para qué es esta aldea"
 msgctxt "Admin, placeholder"
 msgid "Credits"
 msgstr "Créditos"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, applying chain"
+msgid "Applied"
+msgstr "Postularon"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/ExitPolicy.tsx
@@ -79362,6 +79528,12 @@ msgstr "Noticias y oportunidades por correo"
 #: client/src/components/priorities/PlaceInLine.tsx
 msgid "Say where it sits on your list, so whoever raised it knows."
 msgstr "Diga en qué lugar está en su lista, para que quien lo planteó lo sepa."
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, empty"
+msgid "Nothing has been stamped yet."
+msgstr "Todavía no hay nada registrado."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/EditRoleButton.tsx
@@ -85011,6 +85183,12 @@ msgctxt "SaberraBridgeBoard, p"
 msgid "The list tables are not in this database yet."
 msgstr "Las tablas de listas todavía no están en esta base de datos."
 
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, how to read"
+msgid "Too few means under three people, so the number stays hidden."
+msgstr "Muy pocos significa menos de tres personas, así que el número queda oculto."
+
 #: client/src/i18n/LanguagePicker.tsx
 #, fuzzy
 msgctxt "language picker"
@@ -86109,8 +86287,8 @@ msgstr "La aldea dijo que sí. Lo votado ya aplica, y quien cerró la votación 
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/RoleMeasures.tsx
-msgid "Counts and medians per season and circle, from stamped times. No names. \"Too few\" means fewer than three people, so the number is withheld."
-msgstr "Conteos y medianas por temporada y círculo, a partir de horas registradas. Sin nombres. \"Muy pocos\" significa menos de tres personas, así que el número no se muestra."
+#~ msgid "Counts and medians per season and circle, from stamped times. No names. \"Too few\" means fewer than three people, so the number is withheld."
+#~ msgstr "Conteos y medianas por temporada y círculo, a partir de horas registradas. Sin nombres. \"Muy pocos\" significa menos de tres personas, así que el número no se muestra."
 
 # needs-native-review: the proposal wizard, 26 Nov 2026
 #: client/src/components/governance/wizardWords.ts
@@ -91194,6 +91372,12 @@ msgstr "No"
 msgctxt "lantern: the person a thanks is going to, when no name is known"
 msgid "them"
 msgstr "esa persona"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+msgctxt "role measures, chain heading"
+msgid "Applying"
+msgstr "Postular"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Badges.tsx
