@@ -8,7 +8,9 @@
  *   1. What kind: something broke, an idea, or how something felt.
  *   2. What happened, in their words (the mic, and "Talk it out" with their guide for a member).
  *   3. A screenshot, if they want one: this screen captured on a computer, or one picked from the
- *      phone's photos, then marked with an arrow or a pen (ShotEditor, loaded only now).
+ *      phone's photos, then marked with an arrow or a pen (ShotEditor). The form and its drawing tools
+ *      share one lazy chunk that loads when the door opens: a chunk of their own cost a 4 KB block of
+ *      the dist ceiling for code that only ever loads with this form.
  *   4. What the guide heard: the kind and the page said back, and a title from their own first line
  *      that they can change. The guide repeats and suggests. It never ranks, sorts or weighs a report,
  *      and it never judges who sent it; the village's team decides what happens next.
@@ -18,9 +20,9 @@
  * The two honesty rules of the old page hold: the disclosure is real and comes before Send, and the
  * name stays in the village.
  */
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { Bug, ImagePlus, Monitor } from "lucide-react";
+import { ArrowLeft, Bug, ImagePlus, Monitor } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { Seed } from "@/components/sacred/living";
@@ -40,8 +42,7 @@ import {
   suggestTitle,
   type FeedbackKind,
 } from "@shared/feedbackItems";
-
-const ShotEditor = lazy(() => import("./ShotEditor"));
+import ShotEditor, { captureScreen } from "./ShotEditor";
 
 /** A computer whose browser offers its own "share this tab" picker. iOS Safari has none, nor does a phone's Chrome. */
 function canCaptureScreen(): boolean {
@@ -55,13 +56,19 @@ function canCaptureScreen(): boolean {
 export default function GuideFeedback({
   guide,
   face,
+  aside,
   onAside,
+  onBack,
   onClose,
 }: {
   guide: string;
   face: { look: CompanionLook; url: string | null };
+  /** Whether the panel stands aside now (companionStanding.tsx hides it and keeps the draft). */
+  aside?: false | "pill" | "hidden";
   /** Step the panel aside: "pill" while the member takes a phone screenshot, "hidden" while the browser captures. */
   onAside: (mode: false | "pill" | "hidden") => void;
+  /** Back to the guide's doors, when the panel has any. */
+  onBack?: () => void;
   onClose: () => void;
 }) {
   const { t } = useLingui();
@@ -92,6 +99,10 @@ export default function GuideFeedback({
   useEffect(() => {
     if (sent) received.current?.focus();
   }, [sent]);
+  const backFromShot = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (aside === "pill") backFromShot.current?.focus();
+  }, [aside]);
 
   const suggested = suggestTitle(detail);
   const shownTitle = titleTouched ? title : suggested;
@@ -108,7 +119,6 @@ export default function GuideFeedback({
     // Two frames, so the panel is gone from the screen before the browser reads it.
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     try {
-      const { captureScreen } = await import("./ShotEditor");
       const blob = await captureScreen();
       if (blob) setShot(blob);
     } catch {
@@ -199,6 +209,28 @@ export default function GuideFeedback({
 
   return (
     <div className="space-y-5" data-guide-feedback="">
+      {onBack ? (
+        // Back sits in the panel's top row, level with its close button (which is 44px and 0.5rem above this).
+        <div className="-mt-13 flex">
+          <button type="button" onClick={onBack} className="jw-btn inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted">
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            {t({ message: "Back", context: "guide feedback: back to the guide's doors" })}
+          </button>
+        </div>
+      ) : null}
+      {aside === "pill" ? (
+        // The one thing drawn while the member takes their screenshot: a way back, low on the screen. `visible`
+        // shows it inside the panel the dialog has made invisible.
+        <button
+          ref={backFromShot}
+          type="button"
+          onClick={() => onAside(false)}
+          data-feedback-back=""
+          className="jw-btn visible pointer-events-auto fixed bottom-[max(calc(env(safe-area-inset-bottom,0px)+1rem),1rem)] left-1/2 z-[71] inline-flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full border border-notice bg-card px-4 text-sm font-semibold text-card-foreground shadow-sm"
+        >
+          {t({ message: "Back to my feedback", context: "guide feedback: the button that brings the panel back after a screenshot" })}
+        </button>
+      ) : null}
       {/* The guide, in its circle, asking. */}
       <div className="flex items-center gap-3">
         <Face look={face.look} url={face.url} size="lg" />
@@ -249,10 +281,10 @@ export default function GuideFeedback({
       <div className={`${TILE} space-y-3`}>
         <p className={LABEL}>{t({ message: "A screenshot, if it helps", context: "guide feedback: the screenshot's heading" })}</p>
         {shot ? (
-          <Suspense fallback={<BreathingLoader />}>
+          <>
             <ShotEditor source={shot} exportRef={exportShot} onMarks={onMarks} onRemove={() => { setShot(null); setMarks(0); }} />
             <p className={HINT}>{t({ message: "Draw an arrow to the spot, or circle it with the pen.", context: "guide feedback: how to mark the screenshot" })}</p>
-          </Suspense>
+          </>
         ) : (
           <>
             <div className="flex flex-wrap gap-2">

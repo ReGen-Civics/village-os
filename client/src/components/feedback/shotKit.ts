@@ -16,7 +16,7 @@
  * are drawn in the sheet's warning ink (`--color-destructive`) over a dark halo, so they read on a
  * light page and a dark one.
  *
- * Loaded with ShotEditor only when a member adds a picture, so no page pays for it.
+ * It ships in the feedback form's lazy chunk (with ShotEditor), so no page pays for it until that door opens.
  */
 import { fitWithin, prepareImageForUpload } from "@/lib/imagePrep";
 import { FEEDBACK_SHOT_EDGE } from "@shared/feedbackItems";

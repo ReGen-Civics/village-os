@@ -32,7 +32,14 @@ vi.mock("@/lib/gameApi", () => ({
   ),
 }));
 vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
-vi.mock("@/components/feedback/GuideFeedback", () => ({ default: ({ guide }: { guide: string }) => <p>the feedback form for {guide}</p> }));
+vi.mock("@/components/feedback/GuideFeedback", () => ({
+  default: ({ guide, onBack }: { guide: string; onBack?: () => void }) => (
+    <>
+      <p>the feedback form for {guide}</p>
+      {onBack ? <button type="button" onClick={onBack}>Back</button> : null}
+    </>
+  ),
+}));
 
 import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows, guideDoors } from "./MobileFab";
 import { openGuideFeedback } from "@/lib/guideFeedback";

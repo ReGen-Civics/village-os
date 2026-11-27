@@ -10,7 +10,7 @@
  */
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ArrowLeft, ArrowRight, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { Link } from "wouter";
 import { gameFetch } from "@/lib/gameApi";
 import { natureArtUrl } from "@shared/natureArt";
@@ -126,7 +126,6 @@ export function CompanionsDialog({
   // Stepping aside for a screenshot: the panel stays mounted (the draft is kept) and is not drawn. "pill" leaves a
   // way back for a member taking a phone screenshot; "hidden" draws nothing while the browser captures the screen.
   const [aside, setAside] = useState<false | "pill" | "hidden">(false);
-  const back = useRef<HTMLButtonElement>(null);
   const asideNow = useRef(aside);
   asideNow.current = aside;
   useEffect(() => {
@@ -140,23 +139,8 @@ export function CompanionsDialog({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-  useEffect(() => {
-    if (aside === "pill") back.current?.focus();
-  }, [aside]);
   return (
     <div className={`fixed inset-0 z-[70] ${aside ? "pointer-events-none" : ""}`} data-companion-panel="">
-      {aside === "pill" ? (
-        // The one thing drawn while the member takes their screenshot: a small way back, low on the screen.
-        <button
-          ref={back}
-          type="button"
-          onClick={() => setAside(false)}
-          data-feedback-back=""
-          className="jw-btn pointer-events-auto absolute bottom-[max(calc(env(safe-area-inset-bottom,0px)+1rem),1rem)] left-1/2 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full border border-notice bg-card px-4 text-sm font-semibold text-card-foreground shadow-sm"
-        >
-          {t({ message: "Back to my feedback", context: "guide feedback: the button that brings the panel back after a screenshot" })}
-        </button>
-      ) : null}
       <button type="button" tabIndex={-1} aria-hidden="true" onClick={onClose} className={`absolute inset-0 h-full w-full cursor-default bg-black/40 ${aside ? "invisible" : ""}`} />
       <div
         role="dialog"
@@ -164,17 +148,7 @@ export function CompanionsDialog({
         aria-label={title ?? t({ message: "Your companions", context: "companion corner: the panel, read aloud" })}
         className={`sheet-night absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-sm sm:p-6 md:inset-y-0 md:left-auto md:max-h-none md:w-[34rem] md:rounded-none md:rounded-l-2xl ${aside ? "invisible" : ""}`}
       >
-        <div className={`mb-2 flex ${view === "feedback" ? "justify-between" : "justify-end"}`}>
-          {view === "feedback" && doors.length ? (
-            <button
-              type="button"
-              onClick={() => setView("doors")}
-              className="jw-btn inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              {t({ message: "Back", context: "guide feedback: back to the guide's doors" })}
-            </button>
-          ) : null}
+        <div className="mb-2 flex justify-end">
           <button
             ref={close}
             type="button"
@@ -187,7 +161,8 @@ export function CompanionsDialog({
         </div>
         {view === "feedback" && feedback ? (
           <Suspense fallback={<BreathingLoader />}>
-            <GuideFeedback guide={feedback.guide} face={feedback.face} onAside={setAside} onClose={onClose} />
+            {/* The form draws its own Back and the way back from a screenshot, so that code loads with it. */}
+            <GuideFeedback guide={feedback.guide} face={feedback.face} aside={aside} onAside={setAside} onBack={doors.length ? () => setView("doors") : undefined} onClose={onClose} />
           </Suspense>
         ) : null}
         {view === "doors" && doors.length ? (

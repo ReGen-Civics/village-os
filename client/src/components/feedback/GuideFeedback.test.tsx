@@ -14,6 +14,7 @@ vi.mock("@/components/voice/VoiceArea", () => ({ default: ({ children }: { child
 vi.mock("@/lib/gameApi", () => ({ authToken: () => "tok" }));
 // The editor's canvas has no pixels in jsdom: the stand-in hands Send a finished file, as the real one does.
 vi.mock("./ShotEditor", () => ({
+  captureScreen: vi.fn(async () => null),
   default: ({ exportRef, onMarks }: { exportRef: MutableRefObject<(() => Promise<File | null>) | null>; onMarks: (n: number) => void }) => {
     exportRef.current = async () => new File([new Uint8Array([1, 2, 3])], "screenshot.webp", { type: "image/webp" });
     onMarks(2);
@@ -126,5 +127,18 @@ describe("the feedback form in the guide's panel", () => {
     // jsdom has no getDisplayMedia: the phone's way.
     fireEvent.click(screen.getByRole("button", { name: "Step aside to take one" }));
     expect(onAside).toHaveBeenCalledWith("pill");
+  });
+
+  it("draws the way back while stepped aside, focused, and goes back to the guide's doors on Back", async () => {
+    stubFetch();
+    const onAside = vi.fn();
+    const onBack = vi.fn();
+    render(<GuideFeedback guide="Ceiba" face={face} aside="pill" onAside={onAside} onBack={onBack} onClose={() => {}} />);
+    const way = screen.getByRole("button", { name: "Back to my feedback" });
+    expect(document.activeElement).toBe(way);
+    fireEvent.click(way);
+    expect(onAside).toHaveBeenCalledWith(false);
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(onBack).toHaveBeenCalled();
   });
 });

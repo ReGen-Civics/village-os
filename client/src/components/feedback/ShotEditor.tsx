@@ -7,7 +7,8 @@
  * width, so a pointer's place is mapped back through the canvas's own box. `touch-action: none` keeps a
  * finger drawing from scrolling the panel.
  *
- * Loaded only when a member adds a picture (GuideFeedback.tsx), with its machinery beside it.
+ * It ships in the feedback form's lazy chunk (GuideFeedback.tsx), with its machinery beside it, so no page pays
+ * for it until the door opens.
  */
 import { useEffect, useRef, useState, type MutableRefObject, type PointerEvent as ReactPointerEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
