@@ -1,36 +1,43 @@
 /**
- * One place's photographs: the gallery, the upload, and every control that
- * acts on a picture.
- *
- * Written as a component and not a page because it has two homes. It renders
- * at `/places/:key` today, and the Living Map's place panel mounts the same
- * component in its Photos tab, so the two can never drift into showing
- * different things about one place.
+ * One place: its name, how many photos it holds, the way to add one, and the
+ * wall of photos itself.
  *
  * Ordering, attribution and the wording of a report all live in
  * `shared/placePhotos.ts`, shared with the server. Read that file's header for
- * why a hero leads and everything under it is newest first.
+ * why the cover leads and everything under it is newest first.
+ *
+ * THE UPLOAD KEEPS EVERY GUARD IT HAD. The picture is shrunk in the browser
+ * first (`prepareImageForUpload`), the server strips every bit of metadata
+ * and refuses to store a file whose location data survived, and alt text is
+ * required at the door. Nothing on this page loosens any of them; it says
+ * the location line out loud beside the file picker.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera } from "lucide-react";
-import InfoTip from "@/components/InfoTip";
+import { Link } from "wouter";
+import { ArrowLeft, Camera, X } from "lucide-react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
-// The card and its two style constants live beside this file so the place
-// page, the map panel and /photographs render one card and not three.
-import PhotoCard, { BTN, TAP, jsonHeaders } from "@/components/places/PhotoCard";
-import { authToken } from "@/lib/gameApi";
+import LoadFailed from "@/components/LoadFailed";
+import Fireflies from "@/components/journey/nature/Fireflies";
+import PhotoGrid from "@/components/places/PhotoGrid";
+import { jsonHeaders, placeName, uploadHeaders } from "@/components/places/placesApi";
 import { prepareImageForUpload } from "@/lib/imagePrep";
-import { ALT_TEXT_MAX, CAPTION_MAX, capacityLine, type PlacePhoto } from "@shared/placePhotos";
-import { Trans, useLingui } from "@lingui/react/macro";
-
-/**
- * No Content-Type for the upload: the browser has to set the multipart
- * boundary itself, and a hand-written header kills the parse on the far side.
- */
-const uploadHeaders = (): Record<string, string> => {
-  const t = authToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
-};
+import { ALT_TEXT_MAX, CAPTION_MAX, remainingForPlace, type PlacePhoto } from "@shared/placePhotos";
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  CARD,
+  CARD_FEATURED,
+  CHIP_SOFT,
+  EYEBROW,
+  FIELD,
+  H1,
+  H2,
+  HINT,
+  LABEL,
+  NOTE,
+  QUIET,
+} from "@/components/journey/look";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 
 export interface GalleryPayload {
   structureKey: string;
@@ -44,10 +51,11 @@ export interface GalleryPayload {
   maxMb: number;
 }
 
-export default function PlaceGallery({ structureKey, placeName }: { structureKey: string; placeName?: string }) {
+export default function PlaceGallery({ structureKey }: { structureKey: string }) {
   const { t } = useLingui();
   const [data, setData] = useState<GalleryPayload | null>(null);
   const [failed, setFailed] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [say, setSay] = useState("");
 
   const load = useCallback(async () => {
@@ -68,90 +76,145 @@ export default function PlaceGallery({ structureKey, placeName }: { structureKey
     void load();
   }, [load]);
 
-  if (failed) {
-    return (
-      <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-        <Trans context="PlaceGallery, p">The photographs for this place did not load. Reload the page to try again.
-      </Trans></p>
-    );
-  }
-  if (!data) return <BreathingLoader label={t({ message: "Opening this place's photographs", context: "PlaceGallery, label" })} />;
-
-  const live = data.photos.filter((p) => !p.hiddenAt);
-  const name = placeName || structureKey;
+  const name = placeName(structureKey);
+  const live = data ? data.photos.filter((p) => !p.hiddenAt).length : 0;
+  const room = data ? remainingForPlace(live, data.perPlace) : 0;
+  const mayAdd = !!data?.canContribute && (data?.remaining ?? 0) > 0;
+  // The place's portrait beside its name: the picture it leads with.
+  const cover = data?.photos.find((p) => !p.hiddenAt) ?? null;
 
   return (
-    <section aria-label={t({ message: `Photographs of ${name}`, context: "PlaceGallery, aria-label" })} className="space-y-5">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <p className="text-sm text-muted-foreground">{capacityLine(live.length, data.perPlace)}</p>
-        <InfoTip
-          label={t({ message: "What a photograph does here", context: "PlaceGallery, label" })}
-          tip="Every other number on this map is something a person could have typed from anywhere. A photograph is somebody standing on the land with a camera, so it carries their name and the month it was taken. Location data is removed from the file before it is stored."
-        />
-      </div>
+    <div className="space-y-6">
+      <Link href="/places" className="jw-btn -ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        <Trans context="place page">All places</Trans>
+      </Link>
 
-      {data.canContribute && data.remaining > 0 && (
-        <AddPhoto structureKey={structureKey} maxMb={data.maxMb} onAdded={() => { setSay(""); void load(); }} onSay={setSay} />
-      )}
-      {data.signedIn && !data.canContribute && (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-          <Trans context="PlaceGallery, p">Adding a photograph opens at the member stage, or with a role or badge that grants it. The pictures below are yours to read meanwhile.
-        </Trans></p>
-      )}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex items-center gap-4">
+          {cover && (
+            <span className="relative block aspect-[3/4] w-14 shrink-0 overflow-hidden rounded-xl border border-notice/40 shadow-sm sm:w-16">
+              <img src={cover.thumbUrl ?? cover.url} alt="" className="absolute inset-0 size-full object-cover" />
+            </span>
+          )}
+          <div className="min-w-0 space-y-2">
+          <p className={EYEBROW}><Trans context="place page">A place on the land</Trans></p>
+          <h1 className={`${H1} break-words`}>{name}</h1>
+          {data && (
+            <div className="flex flex-wrap gap-2">
+              <span className={CHIP_SOFT}>
+                <Plural context="place page" value={live} one="# photo" other="# photos" />
+              </span>
+              <span className={CHIP_SOFT}>
+                {room === 0 ? (
+                  <Trans context="place page">Full</Trans>
+                ) : (
+                  <Trans context="place page">Room for {room} more</Trans>
+                )}
+              </span>
+            </div>
+          )}
+          </div>
+        </div>
+        {mayAdd && !adding && (
+          <Fireflies className="self-start sm:self-auto">
+            <button type="button" className={BTN_PRIMARY} onClick={() => { setSay(""); setAdding(true); }}>
+              <Camera className="size-5" aria-hidden="true" />
+              <Trans context="place page">Add a photo</Trans>
+            </button>
+          </Fireflies>
+        )}
+      </header>
 
-      <p role="status" aria-live="polite" className="text-sm text-teal-deep min-h-[20px]">{say}</p>
-
-      {data.photos.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border p-8 text-center text-muted-foreground">
-          <Trans context="PlaceGallery, p">Nobody has photographed this place yet.
-        </Trans></p>
+      {failed && !data ? (
+        <LoadFailed onRetry={() => { setFailed(false); void load(); }} />
+      ) : !data ? (
+        <BreathingLoader label={t({ message: "Opening this place's photos", context: "place page" })} />
       ) : (
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 list-none p-0">
-          {data.photos.map((photo) => (
-            <PhotoCard
-              key={photo.id}
-              photo={photo}
+        <>
+          {adding && mayAdd && (
+            <AddPhoto
+              structureKey={structureKey}
+              maxMb={data.maxMb}
+              onClose={() => setAdding(false)}
+              onAdded={() => {
+                setAdding(false);
+                setSay(t({ message: "Added. It is on this place now.", context: "place page" }));
+                void load();
+              }}
+            />
+          )}
+          {data.signedIn && !data.canContribute && (
+            <p className={`${QUIET} ${NOTE}`}>
+              <Trans context="place page">Adding photos opens at the member stage, or with a role or badge that grants it.</Trans>
+            </p>
+          )}
+
+          <p role="status" aria-live="polite" className="min-h-5 text-sm font-medium text-foreground">{say}</p>
+
+          {data.photos.length === 0 ? (
+            <section className={`${CARD} space-y-2 text-center`}>
+              <h2 className={H2}><Trans context="place page">No photos yet</Trans></h2>
+              <p className={NOTE}>
+                {mayAdd ? (
+                  <Trans context="place page">Be the first to add one.</Trans>
+                ) : (
+                  <Trans context="place page">Nobody has photographed this place yet.</Trans>
+                )}
+              </p>
+            </section>
+          ) : (
+            <PhotoGrid
+              photos={data.photos}
               canCurate={data.canCurate}
               signedIn={data.signedIn}
-              mine={!!data.viewerId && data.viewerId === photo.contributorId}
+              viewerId={data.viewerId}
+              lead
               onChanged={() => void load()}
-              onSay={setSay}
             />
-          ))}
-        </ul>
+          )}
+        </>
       )}
-    </section>
+    </div>
   );
 }
 
 /**
  * The upload form.
  *
- * Alt text is a required field with a real label, and it is required because
- * the platform already carries nine alt-text boxes that store nowhere. This
- * one is a NOT NULL column the server refuses to write without, and it is what
- * the img tag renders, so a member who cannot see the picture is told what is
- * in it.
+ * Alt text is required, with a real label: it is a NOT NULL column the server
+ * refuses to write without, and it is what the img tag renders, so a member
+ * who cannot see the picture is told what is in it.
  */
-function AddPhoto({
-  structureKey,
-  maxMb,
-  onAdded,
-  onSay,
-}: {
-  structureKey: string;
-  maxMb: number;
-  onAdded: () => void;
-  onSay: (s: string) => void;
-}) {
+function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: string; maxMb: number; onAdded: () => void; onClose: () => void }) {
   const { t } = useLingui();
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
   const [takenOn, setTakenOn] = useState("");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
   const input = useRef<HTMLInputElement | null>(null);
+  const form = useRef<HTMLFormElement | null>(null);
+
+  useEffect(() => {
+    form.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    input.current?.focus();
+  }, []);
+
+  // A local preview of the chosen file; its object URL is let go when it changes.
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const failedLine = t({ message: "That did not save. Try again in a moment.", context: "place page" });
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,89 +237,112 @@ function AddPhoto({
       });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setProblem(payload?.error || "That did not save. Try again in a moment.");
+        setProblem(payload?.error || failedLine);
         return;
       }
-      setFile(null);
-      setAltText("");
-      setCaption("");
-      setTakenOn("");
-      if (input.current) input.current.value = "";
-      onSay("Added. It is on this place now.");
       onAdded();
     } catch {
-      setProblem("That did not save. Try again in a moment.");
+      setProblem(failedLine);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-border bg-card p-4 space-y-3">
-      <div className="flex items-center gap-2 font-semibold">
-        <Trans context="PlaceGallery, div"><Camera className="w-4 h-4" aria-hidden="true" />
-        Add a photograph
-      </Trans></div>
-      <label className="block text-sm">
-        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Picture</Trans></span>
-        {/* A wrapping <label> names the control with every string inside it,
-            so the size limit and the location note read as part of the field
-            name. Both stay on screen as a description. */}
-        <input
-          ref={input}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          aria-label={t({ message: "Picture", context: "PlaceGallery, aria-label" })}
-          aria-describedby="place-photo-file-hint"
-          className={`${TAP} block w-full text-sm`}
-        />
-        <span id="place-photo-file-hint" className="block mt-1 text-xs text-muted-foreground">
-          <Trans context="PlaceGallery, span">Up to {maxMb} MB. Location data is removed before it is stored.
-        </Trans></span>
-      </label>
-      <label className="block text-sm">
-        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Describe it for someone who cannot see it</Trans></span>
-        <input
-          type="text"
-          value={altText}
-          onChange={(e) => setAltText(e.target.value)}
-          maxLength={ALT_TEXT_MAX}
-          required
-          placeholder={t({ message: "The north wall of the community kitchen, half built", context: "PlaceGallery, placeholder" })}
-          className={`${TAP} w-full rounded-lg border border-border px-3`}
-        />
-      </label>
-      <label className="block text-sm">
-        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">Say something about it, if you want to</Trans></span>
-        <input
-          type="text"
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          maxLength={CAPTION_MAX}
-          className={`${TAP} w-full rounded-lg border border-border px-3`}
-        />
-      </label>
-      <label className="block text-sm">
-        <span className="block mb-1 font-medium"><Trans context="PlaceGallery, span">When was it taken?</Trans></span>
-        {/* Same shape as the picture field above: the question is the name,
-            what a blank date does is a description. */}
-        <input
-          type="date"
-          value={takenOn}
-          onChange={(e) => setTakenOn(e.target.value)}
-          aria-label={t({ message: "When was it taken?", context: "PlaceGallery, aria-label" })}
-          aria-describedby="place-photo-taken-hint"
-          className={`${TAP} w-full rounded-lg border border-border px-3`}
-        />
-        <span id="place-photo-taken-hint" className="block mt-1 text-xs text-muted-foreground">
-          <Trans context="PlaceGallery, span">Left blank, the line under it says when it was added instead.
-        </Trans></span>
-      </label>
-      {problem && <p role="alert" className="text-sm text-red-700">{problem}</p>}
-      <button type="submit" disabled={busy || !file || !altText.trim()} className={`${BTN} bg-teal-deep text-white border-teal-deep disabled:opacity-50`}>
-        {busy ? "Adding..." : "Add to the village record"}
-      </button>
+    <form ref={form} onSubmit={submit} className={`${CARD_FEATURED} space-y-5`} aria-labelledby="add-photo-h">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1">
+          <p className={EYEBROW}><Trans context="add a photo form">Add to the record</Trans></p>
+          <h2 id="add-photo-h" className={H2}><Trans context="add a photo form">Add a photo</Trans></h2>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="jw-btn inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={t({ message: "Close the form", context: "add a photo form" })}
+        >
+          <X className="size-5" aria-hidden="true" />
+        </button>
+      </div>
+
+      <ul className={`${NOTE} m-0 list-disc space-y-1 pl-5`}>
+        <li><Trans context="add a photo form">Location data is removed before it is stored.</Trans></li>
+        <li><Trans context="add a photo form">Your name and the month ride with it.</Trans></li>
+        <li><Trans context="add a photo form">Up to {maxMb} MB.</Trans></li>
+      </ul>
+
+      <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <label className="block space-y-2">
+          <span className={LABEL}><Trans context="add a photo form">Picture</Trans></span>
+          {/* The native picker stays the control (keyboard, screen reader, a phone's camera); the box is what a person sees and presses. */}
+          <input
+            ref={input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="peer sr-only"
+          />
+          <span className="relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted hover:border-notice peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
+            {preview ? (
+              <img src={preview} alt="" className="absolute inset-0 size-full object-cover" />
+            ) : (
+              <span className="flex flex-col items-center gap-1 p-4 text-center text-sm text-muted-foreground">
+                <Camera className="size-7 text-notice" aria-hidden="true" />
+                <Trans context="add a photo form">Choose a picture</Trans>
+              </span>
+            )}
+          </span>
+          {file && <span className={`block truncate ${HINT}`}>{file.name}</span>}
+        </label>
+
+        <div className="space-y-4">
+          <label className="block space-y-1.5">
+            <span className={LABEL}><Trans context="add a photo form">What is in it?</Trans></span>
+            <span className={`block ${HINT}`}><Trans context="add a photo form">For someone who cannot see it. Required.</Trans></span>
+            <input
+              type="text"
+              value={altText}
+              onChange={(e) => setAltText(e.target.value)}
+              maxLength={ALT_TEXT_MAX}
+              required
+              placeholder={t({ message: "The north wall of the kitchen, half built", context: "add a photo form" })}
+              className={`${FIELD} min-h-11`}
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className={LABEL}><Trans context="add a photo form">A line about it</Trans></span>
+            <span className={`block ${HINT}`}><Trans context="add a photo form">Optional.</Trans></span>
+            <input
+              type="text"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              maxLength={CAPTION_MAX}
+              className={`${FIELD} min-h-11`}
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className={LABEL}><Trans context="add a photo form">When was it taken?</Trans></span>
+            <span className={`block ${HINT}`}><Trans context="add a photo form">Left blank, it says when it was added.</Trans></span>
+            <input type="date" value={takenOn} onChange={(e) => setTakenOn(e.target.value)} className={`${FIELD} min-h-11`} />
+          </label>
+        </div>
+      </div>
+
+      {problem && (
+        <p role="alert" className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">{problem}</p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <button type="submit" disabled={busy || !file || !altText.trim()} className={BTN_PRIMARY}>
+          {busy ? (
+            <Trans context="add a photo form">Adding...</Trans>
+          ) : (
+            <Trans context="add a photo form">Add it to this place</Trans>
+          )}
+        </button>
+        <button type="button" onClick={onClose} className={BTN_SECONDARY}>
+          <Trans context="add a photo form">Not now</Trans>
+        </button>
+      </div>
     </form>
   );
 }

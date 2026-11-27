@@ -182,9 +182,8 @@ const LoveLetter = brochurePage(() => import("./pages/LoveLetter"));
 const Circles = lazyPage(() => import("./pages/Circles"));
 const OAuthAuthorize = lazyPage(() => import("./pages/OAuthAuthorize"));
 const CircleCardPage = lazyPage(() => import("./pages/CircleCardPage"));
+// Places and their photos, one page (the fold, 26 Nov 2026): the shelf, one place, and every photo as a view.
 const Places = lazyPage(() => import("./pages/Places"));
-const PlacePhotos = lazyPage(() => import("./pages/PlacePhotos"));
-const Photographs = lazyPage(() => import("./pages/Photographs"));
 const Quests = lazyPage(() => import("./pages/Quests"));
 const QuestDetail = lazyPage(() => import("./pages/QuestDetail"));
 const ProposeQuest = lazyPage(() => import("./pages/ProposeQuest"));
@@ -407,17 +406,15 @@ function Router() {
           relay and raise-your-hand, which read live data behind the
           capability gate and have no equivalent in the artifact. */}
       <Route path="/map" component={LivingMap} />
-      {/* The photographs of the land, beside the map rather than inside it.
-          The list route is declared before the detail route for the reason
-          /decisions gives: wouter takes the first match, and a :key above the
-          shelf would swallow it. */}
+      {/* The photographs of the land, beside the map rather than inside it:
+          one page for the shelf of places, one place (its own shareable
+          address) and every photo (the #photos view). The list route is
+          declared before the detail route for the reason /decisions gives:
+          wouter takes the first match. /photographs was its own page until
+          the fold (26 Nov 2026) and now opens the All photos view. */}
       <Route path="/places" component={Places} />
-      <Route path="/places/:key" component={PlacePhotos} />
-      {/* Every photograph in the village on one page, so a person who wants a
-          picture of themselves down can find it without knowing which place
-          it was filed under. Top level and not under /places for the reason
-          PAGE_TITLES gives. */}
-      <Route path="/photographs" component={Photographs} />
+      <Route path="/places/:key" component={Places} />
+      <Route path="/photographs">{() => <Redirect to="/places#photos" replace />}</Route>
       <Route path="/map/circles" component={VillageMap} />
       <Route path="/events" component={Events} />
       <Route path="/first-walk" component={FirstWalk} />

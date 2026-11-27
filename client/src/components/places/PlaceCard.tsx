@@ -1,14 +1,16 @@
 /**
- * One place on the shelf of places that have been photographed.
+ * One place on the shelf: its cover photo filling the card, its name set on
+ * the card's own ground at the foot, and how many photos it holds.
  *
- * A card and not a row: the picture IS the content here, and a list of place
- * names with a count beside each one would say nothing a person wants to know.
- * The cover is whatever the place leads with, decided by the same rule the
- * gallery uses and computed on the server, so the shelf and the place never
- * open with different pictures.
+ * The cover is whatever the place leads with, chosen by the same rule the
+ * place page uses and computed on the server, so the shelf and the place never
+ * open with different pictures. The fade at the foot is the card's own token
+ * (`from-card`), so the name reads in light and dark mode on any photo.
  */
 import { Link } from "wouter";
 import { Image, uploadSrcSet } from "@/components/Image";
+import { placeName } from "@/components/places/placesApi";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 
 export interface PlaceCardData {
   structureKey: string;
@@ -19,27 +21,47 @@ export interface PlaceCardData {
   latestAt: string;
 }
 
+/** A place whose newest photo landed inside this many days carries a "New" mark. */
+const NEW_DAYS = 14;
+
+export function isFresh(latestAt: string, now: number = Date.now()): boolean {
+  const at = Date.parse(latestAt);
+  return Number.isFinite(at) && now - at < NEW_DAYS * 24 * 60 * 60 * 1000 && at <= now + 60000;
+}
+
 export default function PlaceCard({ place }: { place: PlaceCardData }) {
-  const count = place.photoCount === 1 ? "1 photograph" : `${place.photoCount} photographs`;
+  const { t } = useLingui();
+  const name = placeName(place.structureKey);
+  const count = place.photoCount;
   return (
-    <li className="rounded-xl border border-border bg-card overflow-hidden">
+    <li>
       <Link
         href={`/places/${encodeURIComponent(place.structureKey)}`}
-        className="block min-h-[44px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:border-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {place.coverUrl && (
+        {place.coverUrl ? (
           <Image
             src={place.coverUrl}
-            alt={place.coverAltText ?? `A photograph of ${place.structureKey}`}
+            alt={place.coverAltText ?? t({ message: `A photo of ${name}`, context: "places shelf" })}
             srcSet={uploadSrcSet(place.coverUrl, place.coverThumbUrl)}
-            sizes="(min-width: 1024px) 320px, (min-width: 640px) 45vw, 92vw"
-            ratio={4 / 3}
+            sizes="(min-width: 1024px) 280px, (min-width: 640px) 33vw, 50vw"
+            ratio={3 / 4}
+            imgClassName="transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
           />
+        ) : (
+          <span className="block aspect-[3/4] bg-muted" aria-hidden="true" />
         )}
-        <div className="p-3">
-          <p className="font-semibold">{place.structureKey}</p>
-          <p className="text-sm text-muted-foreground">{count}</p>
-        </div>
+        {isFresh(place.latestAt) && (
+          <span className="absolute right-2 top-2 rounded-full bg-notice px-2.5 py-0.5 text-xs font-semibold text-background shadow-sm">
+            <Trans context="places shelf">New</Trans>
+          </span>
+        )}
+        <span className="absolute inset-x-0 bottom-0 block bg-gradient-to-t from-card via-card/90 to-transparent px-3 pb-3 pt-10 sm:px-4 sm:pb-4">
+          <span className="block font-display text-lg leading-tight text-foreground sm:text-2xl">{name}</span>
+          <span className="mt-0.5 block text-xs font-medium text-muted-foreground sm:text-sm">
+            <Plural context="places shelf" value={count} one="# photo" other="# photos" />
+          </span>
+        </span>
       </Link>
     </li>
   );

@@ -88,7 +88,6 @@ const PAGES = [
   "client/src/pages/WorkWithUs.tsx",
   "client/src/pages/Modules.tsx",
   "client/src/pages/RequestMembership.tsx",
-  "client/src/pages/Photographs.tsx",
   "client/src/pages/EmailPages.tsx",
   "client/src/pages/ProposeQuest.tsx",
   "client/src/pages/Crowdpool.tsx",
@@ -126,6 +125,14 @@ const PAGES = [
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // What /places draws since the places fold (26 Nov 2026): the shelf, one place, the viewer, every photo and the queue.
+  "client/src/components/places/PlaceCard.tsx",
+  "client/src/components/places/PlaceGallery.tsx",
+  "client/src/components/places/PhotoGrid.tsx",
+  "client/src/components/places/PhotoViewer.tsx",
+  "client/src/components/places/PhotoIndex.tsx",
+  "client/src/components/places/PhotoReportsPanel.tsx",
+  "client/src/components/places/placesApi.ts",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",
