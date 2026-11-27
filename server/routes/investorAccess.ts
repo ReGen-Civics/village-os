@@ -27,7 +27,7 @@
 import type { Express, Request } from "express";
 import type { Pool } from "mysql2/promise";
 import { cleanLink, cleanWhatsapp, LINK_MAX } from "../../shared/entrance";
-import { CONSENT_MAX, cleanAnswers, contactProblem, INVESTOR_INTEREST_FORM, type InvestorAccessState, type InvestorIdentity } from "../../shared/investorInterest";
+import { CONSENT_MAX, cleanAnswers, contactProblem, INVESTOR_INTEREST_FORM, INVESTOR_PAGE_ID, type InvestorAccessState, type InvestorIdentity } from "../../shared/investorInterest";
 import { ipBucket } from "../../shared/openProposals";
 import { pageSectionKey } from "../../shared/pageContent/types";
 import { emailKeyOf } from "../../shared/comms/address";
@@ -57,7 +57,7 @@ export interface InvestorAccessDeps {
 export const INVESTOR_ONLY = { error: "investor_only", message: "This part of the investor page opens once the team has read your interest form." };
 
 /** The investor page's own words in the content store (shared/pageContent/journeys.ts, `INVESTOR_JOURNEY`). */
-export const INVESTOR_SECTION = pageSectionKey({ id: "investor" });
+export const INVESTOR_SECTION = pageSectionKey({ id: INVESTOR_PAGE_ID });
 
 /** Answers a visitor may send in an hour from one connection. */
 const PER_HOUR = 5;

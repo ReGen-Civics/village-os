@@ -23,6 +23,9 @@ export const INVESTOR_INTEREST_FORM = "investor-interest";
 /** The page the gate stands in front of. */
 export const INVESTOR_PAGE = "/investor";
 
+/** That page's id among the village's pages (shared/pageContent/journeys.ts, `INVESTOR_JOURNEY`): its words are kept too. */
+export const INVESTOR_PAGE_ID = "investor";
+
 /** Who the answer was tied to when it was sent, decided by the server, never by the form. */
 export type InvestorIdentity = "account" | "visitor" | "unverified";
 
