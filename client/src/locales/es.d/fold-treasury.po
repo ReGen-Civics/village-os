@@ -208,11 +208,6 @@ msgctxt "hand-mint rules, the second signer"
 msgid "Over {cosignWords} waits for a second signer"
 msgstr "Más de {cosignWords} espera a una segunda firma"
 
-# needs-native-review: the hand mint's rules, the second signer, 27 Nov 2026
-msgctxt "hand-mint rules, the second signer"
-msgid "No second signer is asked for at any amount"
-msgstr "No se pide una segunda firma para ningún monto"
-
 # needs-native-review: the hand mint's rules, self, 27 Nov 2026
 msgctxt "hand-mint rules, self"
 msgid "You can't mint to yourself"
@@ -240,8 +235,8 @@ msgstr "El efectivo de esta luna"
 
 # needs-native-review: the Treasury, the mint form's failed read, 27 Nov 2026
 msgctxt "treasury: mint"
-msgid "The mint form could not load just now. Try again in a moment."
-msgstr "El formulario de emisión no pudo cargarse en este momento. Inténtelo de nuevo en un momento."
+msgid "The mint form did not load. Try again in a moment."
+msgstr "El formulario de emisión no se cargó. Inténtelo de nuevo en un momento."
 
 # needs-native-review: Admin's pricing desk, the door for a Treasurer who is not an admin, 27 Nov 2026
 msgctxt "pricing desk"

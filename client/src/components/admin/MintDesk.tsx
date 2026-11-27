@@ -163,11 +163,8 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
           // The sheet's three lines (fold QA round 1): the rules a treasurer acts on, without the settings' keys.
           <ul className={look.rulesText} data-mint-rules>
             <li>{t({ message: `At most ${capWords} a moon`, context: "hand-mint rules, the cap" })}</li>
-            <li>
-              {cosignOver > 0
-                ? t({ message: `Over ${cosignWords} waits for a second signer`, context: "hand-mint rules, the second signer" })
-                : t({ message: "No second signer is asked for at any amount", context: "hand-mint rules, the second signer" })}
-            </li>
+            {/* With no second signer set, there is no rule to tell. */}
+            {cosignOver > 0 ? <li>{t({ message: `Over ${cosignWords} waits for a second signer`, context: "hand-mint rules, the second signer" })}</li> : null}
             <li>{t({ message: "You can't mint to yourself", context: "hand-mint rules, self" })}</li>
           </ul>
         ) : (
@@ -303,15 +300,10 @@ export function MintFromTreasury({ password }: { password: string }) {
     let live = true;
     fetch(`${API_BASE}/treasury/mint-options`, { headers: authHeaders(password) })
       .then(async (r) => {
-        if (!r.ok) throw new Error(String(r.status));
+        if (!r.ok) throw r.status;
         const d = await r.json();
-        if (live) {
-          setOptions({
-            tokens: Array.isArray(d?.tokens) ? d.tokens : [],
-            members: Array.isArray(d?.members) ? d.members : [],
-            mintCapPerCycle: Number(d?.mintCapPerCycle) || 0,
-          });
-        }
+        // The route answers both lists, always (server/routes/treasury.ts).
+        if (live) setOptions({ tokens: d?.tokens || [], members: d?.members || [], mintCapPerCycle: Number(d?.mintCapPerCycle) || 0 });
       })
       .catch(() => {
         if (live) setFailed(true);
@@ -320,7 +312,7 @@ export function MintFromTreasury({ password }: { password: string }) {
       live = false;
     };
   }, [password]);
-  if (failed) return <p className={HINT}>{t({ message: "The mint form could not load just now. Try again in a moment.", context: "treasury: mint" })}</p>;
+  if (failed) return <p className={HINT}>{t({ message: "The mint form did not load. Try again in a moment.", context: "treasury: mint" })}</p>;
   // Nothing while the picker reads: the section's heading and line already say what is coming.
   if (!options) return null;
   // A module's own token is offered while its module is on, the same rule the admin picker follows.

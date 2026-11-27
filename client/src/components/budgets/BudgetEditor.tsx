@@ -301,17 +301,17 @@ export default function BudgetEditor({ call, read, look, reload }: Props) {
     <>
       {look.fold ? (
         <div className="flex flex-wrap gap-3" data-budget-acts>
-          <button type="button" className={look.secondary} aria-expanded={uploadOpen} aria-controls="budget-upload-part" onClick={() => setUploadOpen((v) => !v)}>
+          <button type="button" className={look.secondary} aria-expanded={uploadOpen} onClick={() => setUploadOpen((v) => !v)}>
             {t({ message: "Upload a budget sheet", context: "budget upload" })}
           </button>
-          <button type="button" className={look.secondary} aria-expanded={addOpen} aria-controls="budget-add-part" onClick={() => setAddOpen((v) => !v)}>
+          <button type="button" className={look.secondary} aria-expanded={addOpen} onClick={() => setAddOpen((v) => !v)}>
             {t({ message: "Add one line by hand", context: "budget add line" })}
           </button>
         </div>
       ) : null}
 
       {uploadOpen ? (
-      <section id="budget-upload-part" className={look.panel} aria-labelledby="budget-upload" data-budget-upload>
+      <section className={look.panel} aria-labelledby="budget-upload" data-budget-upload>
         <Heading id="budget-upload" className={`${look.h2} mb-1`}>{t({ message: "Upload a budget sheet", context: "budget upload" })}</Heading>
         {look.fold ? (
           <ul className={`${look.hint} mb-4 list-disc space-y-1 pl-5`}>
@@ -392,7 +392,7 @@ export default function BudgetEditor({ call, read, look, reload }: Props) {
       ) : null}
 
       {addOpen ? (
-      <section id="budget-add-part" className={look.panel} aria-labelledby="budget-add" data-budget-add>
+      <section className={look.panel} aria-labelledby="budget-add" data-budget-add>
         <Heading id="budget-add" className={`${look.h2} mb-1`}>{t({ message: "Add one line by hand", context: "budget add line" })}</Heading>
         <p className={`${look.hint} mb-4`}>{t({ message: "For a line that is not on a sheet. It counts as soon as it is saved.", context: "budget add line" })}</p>
         {fields(form, setForm, "budget-add", true)}
