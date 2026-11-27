@@ -302,7 +302,7 @@ describe("Sync now", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Sync now" }));
     expect(await screen.findByText(/2 suggestions reached the review queue/)).toBeInTheDocument();
     expect(screen.getByText("This sync stored 5 facts from the service.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open the review queue (2 suggestions)" })).toHaveAttribute("href", "/review");
+    expect(screen.getByRole("link", { name: "Open the review queue (2 suggestions)" })).toHaveAttribute("href", "/governance/work");
     expect(screen.getByText("tension: not offered by the service yet")).toBeInTheDocument();
     expect(callsTo("/api/saberra/sync", "POST")[0]![1].headers.Authorization).toBe("Bearer secret");
   });
@@ -510,7 +510,7 @@ describe("the report of each run", () => {
     const toQueue = within(log).getAllByRole("link", { name: /^Open the review queue/ });
     expect(toQueue).toHaveLength(1);
     expect(toQueue[0]).toHaveAccessibleName("Open the review queue (19 suggestions)");
-    expect(toQueue[0]).toHaveAttribute("href", "/review");
+    expect(toQueue[0]).toHaveAttribute("href", "/governance/work");
   });
 
   it("SAYS SO WHEN THE SCHEDULE IS BACKING OFF, and how far", async () => {

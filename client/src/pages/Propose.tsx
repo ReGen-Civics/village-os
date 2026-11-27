@@ -76,7 +76,7 @@ export default function Propose() {
           </Link>
         ) : (
           <Link
-            href="/decisions"
+            href="/governance/decisions"
             className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Trans context="Propose, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -104,7 +104,7 @@ export default function Propose() {
 
         <div className="mt-8">
           {user ? (
-            <ProposalWizard start={start} leaveTo={from?.href ?? "/decisions"} />
+            <ProposalWizard start={start} leaveTo={from?.href ?? "/governance/decisions"} />
           ) : (
             <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
               <h2 className="font-display text-2xl font-bold text-card-foreground"><Trans context="Propose, h2">Sign in to write a proposal</Trans></h2>

@@ -39,9 +39,14 @@ import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 
 interface LayoutProps {
   children: React.ReactNode;
+  /**
+   * On a phone the header scrolls away with the page instead of following it (the entrance gate, the lead,
+   * 26 Nov 2026: "Header is following me on mobile"). A wide screen keeps it sticky.
+   */
+  headerScrollsOnPhone?: boolean;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, headerScrollsOnPhone = false }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -224,7 +229,9 @@ export default function Layout({ children }: LayoutProps) {
           header carries the sticky positioning now (a sticky child of a
           header only as tall as itself would scroll away with it). The
           contents keep their indentation so this stays a four-line change. */}
-      <header className="sticky top-0 z-50">
+      {/* The class stays one literal: designConsistency.test.ts reads it as the site header's known position. On a
+          phone, `data-header-scrolls-on-phone` lets the header scroll away (index.css). */}
+      <header className="sticky top-0 z-50" data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
       <nav className="bg-teal-deep text-white shadow-lg">
         <div className="container py-4 flex items-center justify-between">
           {/* One anchor, not two. wouter's Link renders the <a> itself, so a
@@ -664,7 +671,7 @@ export default function Layout({ children }: LayoutProps) {
               <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Governance</Trans></h2>
               <ul className="space-y-0">
                 <li>
-                  <Link href="/governance" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/governance/how" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">How we work together</Trans>
                   </Link>
                 </li>
@@ -738,10 +745,10 @@ export default function Layout({ children }: LayoutProps) {
                     looking may not open it, so a member who follows this link
                     without the capability gets a sentence and never a blank
                     screen. */}
-                {user && showsHref("/review") && (
+                {user && showsHref("/governance/work") && (
                   <li>
-                    <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Review Queue</Trans>
+                    <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Your work</Trans>
                     </Link>
                   </li>
                 )}

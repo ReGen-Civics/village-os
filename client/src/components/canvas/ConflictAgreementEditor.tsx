@@ -634,7 +634,7 @@ export function ConflictAgreementEditor({ onDone }: { onDone?: () => void }) {
         <p className="text-sm text-stone-700">
           <Trans>
             A vote on changing the agreement is open until {openUntil}.{" "}
-            <a className="font-medium text-teal-deep underline" href={`/decisions/${openBallotId}`}>
+            <a className="font-medium text-teal-deep underline" href={`/governance/decisions/${openBallotId}`}>
               Read it and vote
             </a>
             .

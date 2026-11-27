@@ -33,7 +33,7 @@ export default function ModuleHistoryStrip({ events }: { events: HistoryEvent[] 
             <span className="text-foreground">{day(e.at)}</span>
             <span>{historySentence(e)}</span>
             {e.ballot && (
-              <Link href={`/decisions/${e.ballot.id}`} className="text-teal-deep underline">
+              <Link href={`/governance/decisions/${e.ballot.id}`} className="text-teal-deep underline">
                 <Trans context="ModuleHistoryStrip, Link">Read the vote
               </Trans></Link>
             )}

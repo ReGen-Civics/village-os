@@ -55,7 +55,7 @@ export function AskForExport() {
     return (
       <p className="text-sm text-muted-foreground">
         <Trans>
-          The vote is open. <Link href={`/decisions/${opened}`} className="underline">Read it and vote</Link>.
+          The vote is open. <Link href={`/governance/decisions/${opened}`} className="underline">Read it and vote</Link>.
         </Trans>
       </p>
     );

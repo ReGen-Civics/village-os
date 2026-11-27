@@ -49,6 +49,7 @@ import type { RollNotice } from "../lib/ballotNotices";
 import { addChange, createDraft, getDraft, listDrafts, withdrawDraft } from "../lib/orgDrafts";
 import { overlappingOpenDrafts } from "../../shared/orgDraftOverlap";
 import { draftView } from "../lib/orgDraftView";
+import { reviseChange } from "../lib/orgDraftRevise";
 import { parseArrangement } from "../lib/circlePlacement";
 import {
   BALLOT_OPEN_REFUSAL,
@@ -181,6 +182,10 @@ export function register(app: Express, deps: Deps): void {
     circleName,
   });
 
+  /** Who may read a draft on its page and edit its words: whoever may decide drafts, and the person who made it. */
+  const mayWorkOn = async (req: any, draft: { createdBy: string | null }, userId: string): Promise<boolean> =>
+    draft.createdBy === userId || (await isAdmin(req)) || (await liveHoldersOf(ORG_DECIDE)).includes(userId);
+
   /**
    * THE DRAFT PAGE'S READ (shared/orgDraftView.ts): one draft, before and after, field by field.
    * Read by whoever may decide drafts (an admin, a live holder of `org.decide`) and by the person
@@ -191,9 +196,7 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to read this draft." });
     const pool = getPool();
     const draft = await getDraft(pool, String(req.params.id ?? ""));
-    const userId = String(user.id);
-    const mayRead = !!draft && (draft.createdBy === userId || (await isAdmin(req)) || (await liveHoldersOf(ORG_DECIDE)).includes(userId));
-    if (!draft || !mayRead) return res.status(404).json({ error: "no_such_draft", message: "There is no draft by that id." });
+    if (!draft || !(await mayWorkOn(req, draft, String(user.id)))) return res.status(404).json({ error: "no_such_draft", message: "There is no draft by that id." });
     res.json(await draftView(pool, draft, { readsTerms: await canReadTerms(req), circleName }));
   });
 
@@ -248,6 +251,24 @@ export function register(app: Express, deps: Deps): void {
   /** The per-person limiter on deciding a draft. A person who is a village admin skips it; an agent never does (server/lib/adminUncapped.ts). */
   const askedTooOften = async (req: any, bucket: string, userId: string): Promise<boolean> =>
     !(await adminUncapped(req, userId, isAdmin, getPool())) && (await overLimit(`${bucket}:${userId}`, ASKS_PER_WINDOW, ASK_WINDOW_MS));
+
+  /**
+   * EDIT A DRAFT'S WORDS (server/lib/orgDraftRevise.ts, 0437): one change's words, as a new revision with a note.
+   * The same readers as the page; anybody else hears there is no such draft. Never touches the live card.
+   */
+  app.post("/api/org/drafts/:id/revise", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to edit this draft." });
+    const userId = String(user.id);
+    const pool = getPool();
+    const draft = await getDraft(pool, String(req.params.id ?? ""));
+    if (!draft || !(await mayWorkOn(req, draft, userId))) return res.status(404).json({ error: "no_such_draft", message: "There is no draft by that id." });
+    if (await askedTooOften(req, "org-draft-revise", userId)) return res.status(429).json({ error: "too_many", message: "That is a lot of edits at once. Wait a few minutes and try again." });
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const r = await reviseChange(pool, draft.id, String(body.changeId ?? ""), { words: body.words, note: body.note, leaveOut: body.leaveOut }, userId);
+    if (!r.ok) return res.status(r.status).json({ error: "not_revised", message: r.error, ...(r.field ? { field: r.field } : {}) });
+    res.json({ ok: true, changeId: r.changeId, revision: r.revision });
+  });
 
   app.post("/api/org/drafts/:id/publish-by-power", async (req, res) => {
     const user = await authedUser(req);

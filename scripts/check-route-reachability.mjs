@@ -73,6 +73,12 @@ const ALLOWLIST = {
   // purpose. Excluded from the route list by the deriver too; belt and braces.
   "/404": "the not-found page, reached by failing to reach something else",
 
+  // One org chart draft's page (the lead, 26 Nov 2026). Every door to it is built by `draftPageHref(id)` in
+  // shared/orgDraftView.ts, because the address carries the draft's id: the review row's "Read the draft", every
+  // org draft in Your work and the Find box (shared/reviewInbox.ts), and another open draft on the same role. A
+  // literal-string scan cannot see a built address, so it counts none of them.
+  "/governance/decisions/drafts/:draftId": "one draft's page, linked by draftPageHref from the review row, Your work, Find and other drafts",
+
   // The rites module's joining doors (module `rites`, off by default). Each is reached from outside the app on purpose.
   "/door/:code": "what a member's printed code opens; its doors are paper QR codes",
   "/aboard/welcome": "where joining lands, once; reached from the joining form and the Google return",
@@ -91,6 +97,9 @@ const ALLOWLIST = {
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
+  "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
+  "/decisions": "a redirect to /governance/decisions, kept for links already sent",
+  "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

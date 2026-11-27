@@ -62,8 +62,9 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // Everything except the eager three (/, /login, /404), the /seat-applications/:id redirect
     // to /role-applications/:id (members say role, 2026-10-21) and the /roles/draft redirect
     // to /roles/select (the board is "select" now, 2026-11-10), the /join and /apply redirects to /roles
-    // and the /tokens redirect to /wallet (one page called Wallet, 2026-11-25) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 8);
+    // and the /tokens redirect to /wallet (one page called Wallet, 2026-11-25), and the /review, /decisions and
+    // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 11);
     expect(routes.length).toBeGreaterThan(60);
   });
 
@@ -76,7 +77,7 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
   it("keeps App.tsx's order, because wouter's Switch takes the first match", () => {
     const i = (p: string) => routes.findIndex((r) => r.path === p);
     expect(i("/profile/characters")).toBeLessThan(i("/profile/:handle"));
-    expect(i("/decisions")).toBeLessThan(i("/decisions/:id"));
+    expect(i("/governance/decisions")).toBeLessThan(i("/governance/decisions/:id"));
   });
 
   it("reads a route that renders a lazy page with props, and leaves a redirect out", () => {

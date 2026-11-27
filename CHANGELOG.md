@@ -40,6 +40,46 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.89 (2026-11-27)
+
+### What changed for your village
+
+- **The entrance on a phone.** The header scrolls away with the page, and the form's card drops its blur and its rise, so scrolling over the video is smooth. Wide screens are unchanged.
+- **Talk to your guide.** The chat box says one line: "<name> is your Village Guide". Where the words go is still said, with the Yes button, before a member agrees.
+- **The top of the roles page.** A reader there is already on the team's page, so the first tile is "Join the cap table", to the investor page. A village with that page switched off keeps "Join the Core Team".
+- **Gratitude first.** In the treasury the Gratitude purse sits at the top, above cash.
+- **One card per quest.** Each "Coming when you finish" quest in the treasury opens its own page. A member who took a quest reads "You took this quest" there, with a jump to the next step, and can put a quest back before turning it in.
+- **Goal and terms checks in the reader's language.** The checks on a role's goals and terms carry a code, so they read in Spanish too.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.88 still works.
+
+---
+
+## 1.3.88 (2026-11-27)
+
+### What changed for your village
+
+- **Governance is the village's dashboard.** Review is now Governance, with its own addresses; old links keep working. Its pages read in short steps and bullets.
+- **The Now view.** /governance opens on what the village is deciding now, and a guest first reads the village's own line about who owns and governs it, editable under Pages.
+- **Every draft has a page.** "Read the draft" opens the draft itself: what it changes, before and after for each field, edits kept as revisions with a note, leaving one change out, and the publish, vote and withdraw buttons.
+- **A lighter first page.** The first page's own code now ships as one file, so a visit loads less and the whole build takes 116 KB less room.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+One new table, `org_draft_revisions`, added on the way up (migration 0437), which keeps a draft's edits. Nothing is removed or changed, so going back to 1.3.87 still works.
+
+---
+
 ## 1.3.87 (2026-11-27)
 
 ### What changed for your village

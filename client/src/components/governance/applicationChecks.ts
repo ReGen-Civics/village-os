@@ -6,8 +6,8 @@
  * render, so it follows the page's language. The shared `blocked` stays English for the server; here the list of
  * drafted parts is joined by the sentence itself, never by English "and".
  *
- * Not here: the messages the shared parsers return (parseGoals, judgeTermsStep, parseSeatSettings). They arrive as
- * finished English with no key to translate them by, so they wait on the parsers carrying one.
+ * Not here: the messages the shared parsers return. parseGoals and judgeTermsStep carry a code now and are said in
+ * parsedChecks.ts; parseSeatSettings still arrives as finished English and waits on carrying one.
  */
 // A value import of the runtime: precompileEnglish compiles the messages of a file that imports it and skips one
 // that only uses `msg` (client/src/components/roleCard/payBandWords.ts says the same).
