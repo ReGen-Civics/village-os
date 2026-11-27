@@ -147,7 +147,8 @@ export default function RightsAndAgreements() {
     "good-neighbor": goodNeighborName ?? "",
     "resident-rights": t({ message: "Resident rights", context: "rights and agreements page: a chapter's name" }),
     "steward-rights": t({ message: "Steward rights", context: "rights and agreements page: a chapter's name" }),
-    "leaving-well": t({ message: "Leaving well", context: "rights and agreements page: a chapter's name" }),
+    // The chapter's own title, the same string its heading prints.
+    "leaving-well": t({ message: "Leaving Well", context: "exit policy page title" }),
   };
   const line: Record<RightsChapter, string> = {
     "good-neighbor": t({ message: "Who the village welcomes, and what it asks of every neighbor", context: "rights and agreements page: what a chapter holds" }),

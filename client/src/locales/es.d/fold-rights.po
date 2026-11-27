@@ -34,11 +34,6 @@ msgid "Steward rights"
 msgstr "Derechos de custodios"
 
 # needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
-msgctxt "rights and agreements page: a chapter's name"
-msgid "Leaving well"
-msgstr "Salir bien"
-
-# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
 msgctxt "rights and agreements page: what a chapter holds"
 msgid "Who the village welcomes, and what it asks of every neighbor"
 msgstr "A quién recibe la aldea y lo que le pide a cada vecino"

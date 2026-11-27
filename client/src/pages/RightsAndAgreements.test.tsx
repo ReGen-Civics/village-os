@@ -102,7 +102,7 @@ describe("Rights and agreements", () => {
 
   it("draws the picked chapter and writes its anchor into the address", () => {
     render(<RightsAndAgreements />);
-    fireEvent.click(within(list()).getByRole("link", { name: /Leaving well/ }));
+    fireEvent.click(within(list()).getByRole("link", { name: /Leaving Well/ }));
     expect(window.location.hash).toBe("#leaving-well");
     expect(shown("leaving-well")).toBe(true);
     expect(shown("good-neighbor")).toBe(false);
@@ -112,7 +112,7 @@ describe("Rights and agreements", () => {
     at("/rights#steward-rights");
     render(<RightsAndAgreements />);
     const doors = within(chapter("steward-rights")).getByRole("navigation", { name: "More agreements" });
-    fireEvent.click(within(doors).getByRole("link", { name: /Leaving well/ }));
+    fireEvent.click(within(doors).getByRole("link", { name: /Leaving Well/ }));
     expect(shown("leaving-well")).toBe(true);
   });
 
