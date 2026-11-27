@@ -406,6 +406,7 @@ export default function QuestsTab({ password }: { password: string }) {
                     </summary>
                     <div className="mt-3">
                       <QuestStepNeedsEditor
+                        key={JSON.stringify([q.id, q.steps ?? [], q.stepNeeds ?? []])}
                         questId={q.id}
                         steps={Array.isArray(q.steps) ? q.steps : []}
                         stepNeeds={Array.isArray(q.stepNeeds) ? q.stepNeeds : []}

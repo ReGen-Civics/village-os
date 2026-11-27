@@ -201,6 +201,28 @@ describe.skipIf(!configured)("the quest card, part 2 (MySQL)", () => {
     expect((await call("POST", "/api/game/quests/q-steps/steps/0", { body: "More." })).status).toBe(409);
   });
 
+  it("a save that reorders the steps clears the ticks; steps added at the end keep them (the lead, 27 Nov 2026)", async () => {
+    await quest("q-order", { steps: ["Dig", "Plant", "Water"] });
+    admin = true;
+    await call("PUT", "/api/admin/quests/q-order/step-needs", { stepNeeds: [false, true, false] });
+
+    // Added at the end: every step stays where it was, so the tick stays.
+    const added = await call("PUT", "/api/admin/quests/q-order", { steps: ["Dig", "Plant", "Water", "Mulch"] });
+    expect(added.status).toBe(200);
+    expect(added.body.stepNeeds).toEqual([false, true, false, false]);
+    expect((await quests.byId("q-order"))?.stepNeeds).toEqual([false, true, false, false]);
+
+    // Reordered through the quest's own save: the ticks go, for the admin to set again.
+    const moved = await call("PUT", "/api/admin/quests/q-order", { steps: ["Plant", "Dig", "Water", "Mulch"] });
+    expect(moved.status).toBe(200);
+    expect(moved.body.stepNeeds).toEqual([false, false, false, false]);
+    expect((await quests.byId("q-order"))?.stepNeeds).toEqual([false, false, false, false]);
+
+    // A body that carries ticks back writes none: only their own door does.
+    await call("PUT", "/api/admin/quests/q-order", { title: "Quest q-order", stepNeeds: [true, true, true, true] });
+    expect((await quests.byId("q-order"))?.stepNeeds).toEqual([false, false, false, false]);
+  });
+
   it("a quest put back takes its step submissions and their files", async () => {
     await quest("q-back", { steps: ["One"] });
     await call("POST", "/api/game/quests/q-back/claim");

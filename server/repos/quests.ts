@@ -17,7 +17,7 @@ import { rootsFrom } from "../../shared/archetypeRoots";
 import { parseRewardRange } from "../../shared/questRewards";
 import { readValueTokens, readWorkValue, valueTokensToStore, type TokenAmount } from "../../shared/workValue";
 import { storedCommitmentPct } from "../../shared/commitment";
-import { readStepNeeds } from "../../shared/questStepNeeds";
+import { anyStepNeeds, readStepNeeds, stepsMoved } from "../../shared/questStepNeeds";
 import { lostConcurrencyRace } from "../db/concurrency";
 import { calendarRemove, calendarUpsert } from "../lib/calendar";
 import { questCalendarInput } from "../lib/calendarProviders";
@@ -384,6 +384,9 @@ export function questsRepo(pool: Pool): QuestsRepo {
           return null;
         }
         const quest = rowToQuest(rows[0]);
+        const stepsBefore = [...(quest.steps ?? [])];
+        // The stored ticks, read before the save: a body that carries `stepNeeds` back does not write them (their own door does).
+        const ticked = anyStepNeeds(quest.stepNeeds);
         mutate(quest);
         const p = questParams({ ...quest, id });
         await conn.query(
@@ -393,6 +396,19 @@ export function questsRepo(pool: Pool): QuestsRepo {
             "value_minor=?, value_currency=?, value_tokens=?, cash_minor=?, cash_currency=?, commitment_pct=? WHERE id=?",
           [...p.slice(1), id],
         );
+        /*
+         * THE TICKS ARE KEPT BY POSITION, so a save that moves the steps clears
+         * them (the lead, 27 Nov 2026), whatever door the save came through: an
+         * admin sets them again on the steps as they now stand. Same transaction,
+         * so no read ever sees the new order under the old ticks.
+         */
+        if (ticked && stepsMoved(stepsBefore, quest.steps)) {
+          await conn.query("UPDATE quests SET step_needs = NULL WHERE id = ?", [id]);
+          quest.stepNeeds = (quest.steps ?? []).map(() => false);
+        } else {
+          // What is stored, laid over the steps as saved (steps added at the end start unticked).
+          quest.stepNeeds = readStepNeeds(rows[0].step_needs, (quest.steps ?? []).length);
+        }
         await conn.commit();
         await syncQuestCalendar(pool, { ...quest, id });
         return { ...quest, id };
