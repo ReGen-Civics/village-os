@@ -30,12 +30,14 @@ export interface RosterEntry {
   key: string;
   /** The first name as the village shows it to this reader, or null when it shows none. */
   name: string | null;
+  /** Their published portrait, where the village sent one (the first found across their roles); else null. */
+  face: string | null;
   agent: boolean;
   roles: RosterRole[];
 }
 
 export function rosterOf(
-  filled: readonly { id: string; name: string; holders: readonly string[]; recruiting?: boolean }[],
+  filled: readonly { id: string; name: string; holders: readonly string[]; faces?: readonly (string | null)[]; recruiting?: boolean }[],
   /** The word an agent holder arrives as: the page's own translated "An agent" (orgHolderName). */
   agentWord: string = SHEET_WORDS.agent,
 ): RosterEntry[] {
@@ -44,22 +46,27 @@ export function rosterOf(
   for (const f of filled) {
     const role: RosterRole = f.recruiting === true ? { id: f.id, name: f.name, recruiting: true } : { id: f.id, name: f.name };
     const names: string[] = [];
+    const faceBy = new Map<string, string>();
     let agent = false;
-    for (const h of f.holders ?? []) {
+    (f.holders ?? []).forEach((h, i) => {
       if (h === agentWord || h === SHEET_WORDS.agent) {
         agent = true;
-        continue;
+        return;
       }
       const n = holderFirstName(h);
-      if (n && !names.includes(n)) names.push(n);
-    }
+      if (!n) return;
+      if (!names.includes(n)) names.push(n);
+      const face = f.faces?.[i];
+      if (face && !faceBy.has(n)) faceBy.set(n, face);
+    });
     for (const n of names) {
-      const entry = people.get(n) ?? { key: `p:${n}`, name: n, agent: false, roles: [] };
+      const entry = people.get(n) ?? { key: `p:${n}`, name: n, face: null, agent: false, roles: [] };
+      if (!entry.face) entry.face = faceBy.get(n) ?? null;
       if (!entry.roles.some((r) => r.id === role.id)) entry.roles.push(role);
       people.set(n, entry);
     }
-    if (agent) rest.push({ key: `a:${f.id}`, name: null, agent: true, roles: [role] });
-    if (names.length === 0 && !agent) rest.push({ key: `r:${f.id}`, name: null, agent: false, roles: [role] });
+    if (agent) rest.push({ key: `a:${f.id}`, name: null, face: null, agent: true, roles: [role] });
+    if (names.length === 0 && !agent) rest.push({ key: `r:${f.id}`, name: null, face: null, agent: false, roles: [role] });
   }
   const named = Array.from(people.values()).sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", undefined, { sensitivity: "base" }));
   return [...named, ...rest];

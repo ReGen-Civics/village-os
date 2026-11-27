@@ -43,11 +43,13 @@ import { walkthroughDay, type RhythmDoc } from "./moonRhythm";
 import { civilDaysBetween, daysOfSpan, fullMoonsBetween, zonedTimeToUtc } from "./lunar";
 import { ALLOWANCE_WORDS, APPLICATION_STATUS_WORDS, PAY_WORDS, PER_WORDS } from "./playerCardWords";
 import { formatDay, type Read } from "./roleSheet";
-import { pruneCardSaid, recordingWords, sayDay, sayList, W } from "./playerCardSay";
+import { HANDOVER_PREFIX, HEALTH_PREFIX, PROPOSAL_PREFIX, pruneCardSaid, recordingWords, sayDay, sayJoin, sayList, sayTable, W } from "./playerCardSay";
 import type { Said } from "./saidWords";
 import type { PlayerCardWords } from "./playerCardSpeak";
+import type { ProposalWordsOut } from "./playerCardProposalMessages";
 import { cycleWindows, readSign, type SignReading, type SignRows } from "./roleSigns";
-import { roleHandover, roleHealth, type HandoverOut, type HealthOut } from "./playerCardHealth";
+import { HEALTH_WORDS, roleHandover, roleHealth, type HandoverOut, type HealthOut, type HealthSayIn } from "./playerCardHealth";
+import { HANDOVER_CHECK_WORDS } from "./roleHandover";
 import { roleCcos, roleTerm, type HoldingWellOut, type ListSectionOut, type TextSectionOut } from "./playerCardCcos";
 import type { RoleEditKey } from "./playerCardEdit";
 import { APPLICATION_STATUSES, OPEN_STATUSES, applicationHref, type ApplicationStatus } from "./seatApplications";
@@ -79,7 +81,7 @@ function nameOpenRowsOnce<T>(card: T, line: string): T {
 }
 import { MONEY_LINE, type SeatSettings } from "./seatSettings";
 import type { AccomplishmentMoon } from "./taskAccomplishments";
-import { roleProposalsOut, type RoleProposalIn, type RoleProposalOut } from "./playerCardProposals";
+import { ROLE_PROPOSAL_WORDS, roleProposalsOut, type RoleProposalIn, type RoleProposalOut } from "./playerCardProposals";
 import { heroOf, moonLineOf, moonNameOf, seatWithCommitment, trackOf, type HeroOut, type TrackOut } from "./playerCardHero";
 import { roleIcon, type RoleIcon } from "./roleIcons";
 
@@ -619,11 +621,24 @@ export interface PlayerCard {
    */
   words?: Partial<PlayerCardWords>;
   /**
+   * The role proposal words the components draw (shared/playerCardProposals.ts), in the reader's language, with the
+   * voting line as a template. Sent only beside `words`; absent, the components draw English.
+   */
+  proposalWords?: ProposalWordsOut;
+  /**
    * What the English above was made from, so the client can say it in the reader's language
    * (shared/saidWords.ts). Absent from an older server; the English is drawn as sent either way.
    */
   said?: Said;
 }
+
+/** The role health and handover words read through the card's recorder while it is built (shared/playerCardSay.ts). */
+const healthSay = (): HealthSayIn => ({
+  HW: sayTable(HEALTH_WORDS, HEALTH_PREFIX),
+  HC: sayTable(HANDOVER_CHECK_WORDS, HANDOVER_PREFIX),
+  day: sayDay,
+  join: sayJoin,
+});
 
 // ── Pieces ──────────────────────────────────────────────────────────────────
 
@@ -875,9 +890,9 @@ function roleOut(role: PlayerRoleIn, input: PlayerCardInput): RoleOut {
       : { heading: anyShared ? W.powersShared : W.powers, items: powers, note: null },
     tensions: tensionsFor(role, input),
     tensionDoor: tensionDoorFor(role, input),
-    handover: roleHandover(role),
+    handover: roleHandover(role, healthSay()),
     pending: role.pendingWords ?? [],
-    proposals: role.proposals ? roleProposalsOut(role.proposals, input.timeZone) : [],
+    proposals: role.proposals ? roleProposalsOut(role.proposals, input.timeZone, { PW: sayTable(ROLE_PROPOSAL_WORDS, PROPOSAL_PREFIX), day: sayDay }) : [],
   };
 }
 
@@ -1238,7 +1253,7 @@ function buildCard(input: PlayerCardInput): PlayerCard {
                 icon: roleIcon(r.name, r.domain),
                 anchor: ROLE_ANCHOR(r.id),
                 // A proposal holds nothing yet, so it has no health to read.
-                health: fromApplication(input) ? null : roleHealth(r, roleOuts[i].working.items, input.now, input.timeZone),
+                health: fromApplication(input) ? null : roleHealth(r, roleOuts[i].working.items, input.now, input.timeZone, healthSay()),
               })),
             )
           : empty(W.holdsNoRoles),

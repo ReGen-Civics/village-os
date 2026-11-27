@@ -97,7 +97,8 @@ export function useRouteWords(register: "plain" | "founding" = "plain"): Record<
   const questVerb = register === "founding" ? t({ message: "Offer a one-off piece of work", context: "four ways to build: a quest, on the application page and its thank-you pages" }) : t({ message: "Propose a quest", context: "four ways to build: a quest" });
   return {
     team: {
-      verb: t({ message: "Join the team", context: "four ways to build: a role" }),
+      // The lead, 26 Nov 2026: "Join the Core Team", the Village Steward path card's own line.
+      verb: t({ message: "Join the Core Team", context: "four ways to build: a role" }),
       line: t({ message: "Hold a role on the team, with its own accountabilities and terms.", context: "four ways to build: a role, in one line" }),
       short: t({ message: "A role on the team, with its own terms.", context: "four ways to build: a role, a compact tile" }),
       bring: t({ message: "Your time and skills, held in one role.", context: "four ways to build: a role, what you bring" }),

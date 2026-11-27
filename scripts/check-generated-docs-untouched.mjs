@@ -18,8 +18,7 @@
  * pull request (a new region needs its markers) is allowed.
  *
  * WHEN IT RUNS. On a pull_request, or locally with --base. On a push (main, where
- * the bot commits these files, and the integration branches) it says it did not
- * look and exits 0.
+ * the bot commits these files) it says it did not look and exits 0.
  *
  * WHAT IT CANNOT SEE. A hand edit that is byte-identical to what the generator would
  * write passes in spirit and fails here anyway, which is the intent: main writes it.

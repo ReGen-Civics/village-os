@@ -203,6 +203,10 @@ export const KIND_WORDS_MSG: Readonly<Record<string, Pair>> = {
     blurb: msg({ message: "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself.", context: "the bell: why a notice of this kind matters, kind role_access" }),
     many: msg({ message: "{n} access tasks are waiting for you.", context: "the bell: several notices of one kind batched into a line, kind role_access" }),
   },
+  "approval_lapsing": {
+    blurb: msg({ message: "Something an agent proposed lapses tomorrow if nobody decides it. Read it on the approvals page and say yes or no.", context: "the bell: why a notice of this kind matters, kind approval_lapsing" }),
+    many: msg({ message: "{n} proposals lapse tomorrow if nobody decides them.", context: "the bell: several notices of one kind batched into a line, kind approval_lapsing" }),
+  },
   "term_expiring": {
     blurb: msg({ message: "The agreement to keep holding your role is running out. In a role that carries permissions those end with the term (0171), so it is the moment to renew or hand it on.", context: "the bell: why a notice of this kind matters, kind term_expiring" }),
     many: msg({ message: "{n} of your terms are running out.", context: "the bell: several notices of one kind batched into a line, kind term_expiring" }),

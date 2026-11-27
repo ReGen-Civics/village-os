@@ -403,6 +403,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // An agent's seating or setting lapses tomorrow if nobody decides it (server/lib/approvalLapseNotice.ts). Bell only.
+  approval_lapsing: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
   submission: {
     group: "decisions",
     celebrate: false,

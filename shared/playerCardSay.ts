@@ -18,6 +18,25 @@ import { pruneSaid, sayRecorder, type Said } from "./saidWords";
 /** The key a joined list of names is noted under: not a table entry, said again with the reader's "and". */
 export const LIST_KEY = "$list";
 
+/** The key a list joined by a plain separator is noted under; its first argument is the items, its second the separator. */
+export const JOIN_KEY = "$join";
+
+/** The table keys the role health and handover words are noted under (shared/playerCardWords.ts, shared/roleHandover.ts). */
+export const HEALTH_PREFIX = "health";
+export const HANDOVER_PREFIX = "handover";
+/** The key the role proposal words are noted under (shared/playerCardProposals.ts). */
+export const PROPOSAL_PREFIX = "proposal";
+
+/**
+ * Another words table read through the recorder while the card is built, its keys noted under `prefix` (the role
+ * health and handover words, shared/playerCardHealth.ts). Outside a build it is the table itself. The caller hands
+ * the table in, so this file imports none of them and the client bundle's chunks stay as they were.
+ */
+export let sayTable = <T extends object>(table: T, _prefix: string): T => table;
+
+/** Items joined by `sep`, noted while recording so each item can be said again. */
+export let sayJoin = (items: string[], sep: string): string => items.join(sep);
+
 export let W: typeof CARD_WORDS = CARD_WORDS;
 
 /** `formatDay`, noted while recording. */
@@ -35,8 +54,22 @@ export let sayList = (items: string[], _bare?: string[]): string => joinList(ite
 /** Runs `build` with the words recorded, and returns what it built with the record. */
 export function recordingWords<T>(build: () => T): { out: T; said: Said } {
   const rec = sayRecorder(CARD_WORDS);
-  const was = { W, sayDay, noteDay, sayList };
+  const tables = new Map<string, { table: object; rec: ReturnType<typeof sayRecorder> }>();
+  const was = { W, sayDay, noteDay, sayList, sayTable, sayJoin };
   W = rec.W;
+  sayTable = <T extends object>(table: T, prefix: string): T => {
+    let t = tables.get(prefix);
+    if (!t || t.table !== table) {
+      t = { table, rec: sayRecorder(table) };
+      tables.set(prefix, t);
+    }
+    return t.rec.W as T;
+  };
+  sayJoin = (items, sep) => {
+    const out = items.join(sep);
+    if (items.length > 1 && !(out in rec.said.words)) rec.said.words[out] = { k: JOIN_KEY, a: [items.slice(), sep] };
+    return out;
+  };
   noteDay = rec.day;
   sayDay = (iso, withYear = true, timeZone) => rec.day(formatDay(iso, withYear, timeZone), iso, timeZone, withYear);
   sayList = (items, bare) => {
@@ -45,9 +78,17 @@ export function recordingWords<T>(build: () => T): { out: T; said: Said } {
     return out;
   };
   try {
-    return { out: build(), said: rec.said };
+    const out = build();
+    // The health and handover words join the card's record under their own prefix.
+    tables.forEach(({ rec: r }, prefix) => {
+      for (const english of Object.keys(r.said.words)) {
+        const w = r.said.words[english];
+        if (!(english in rec.said.words)) rec.said.words[english] = { ...w, k: `${prefix}.${w.k}` };
+      }
+    });
+    return { out, said: rec.said };
   } finally {
-    ({ W, sayDay, noteDay, sayList } = was);
+    ({ W, sayDay, noteDay, sayList, sayTable, sayJoin } = was);
   }
 }
 

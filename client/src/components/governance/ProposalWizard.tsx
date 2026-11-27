@@ -50,6 +50,7 @@ import { pickedSeats } from "./SeatPicksField";
 import { offerPrefill, renewalPrefill } from "./roleApplicationType";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { plural } from "@lingui/core/macro";
 import { useWizardWords } from "@/components/governance/wizardWords";
 
 const AUTOSAVE_PAUSE_MS = 1500;
@@ -646,7 +647,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             {problems.length > 0 && (
               <div role="alert" className="rounded-xl border-2 border-destructive bg-destructive/10 p-4">
                 <p className="text-sm font-bold text-destructive">
-                  {problems.length === 1 ? "One thing is not ready" : `${problems.length} things are not ready`}
+                  {t({ message: plural(problems.length, { one: "One thing is not ready", other: "# things are not ready" }), context: "proposal wizard: review" })}
                 </p>
                 <ul className="mt-2 space-y-2">
                   {problems.map((p) => (

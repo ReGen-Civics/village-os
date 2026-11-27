@@ -189,3 +189,12 @@ export async function rolesWithListing(db: Db): Promise<Array<{ id: string; name
   const [rows] = await db.query<RowDataPacket[]>("SELECT `id`, `name`, `listed` FROM `org_roles` WHERE `is_example` = 0");
   return rows.map((r) => ({ id: String(r.id), name: String(r.name), listed: r.listed === null || r.listed === undefined ? null : Number(r.listed) }));
 }
+
+/** Waiting proposals other than letters filed inside [from, to): the ones that lapse in the day ahead. */
+export async function listFiledBetween(db: Db, from: Date, to: Date): Promise<StoredProposal[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT * FROM `agent_proposals` WHERE `kind` <> 'letter' AND `status` = 'waiting' AND `created_at` >= ? AND `created_at` < ? ORDER BY `created_at` ASC LIMIT 200",
+    [from, to],
+  );
+  return rows.map(toProposal);
+}

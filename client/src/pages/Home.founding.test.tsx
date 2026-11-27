@@ -139,7 +139,7 @@ describe("the landing's first screen with the founding team on", () => {
       expect(a).not.toBeNull();
       return a as HTMLAnchorElement;
     });
-    expect(card.querySelector("h3")?.textContent).toBe("Join the team");
+    expect(card.querySelector("h3")?.textContent).toBe("Join the Core Team");
     expect(card.className).not.toContain("border-notice/60");
     expect(document.querySelector('[data-way="founding"]')).toBeNull();
   });
