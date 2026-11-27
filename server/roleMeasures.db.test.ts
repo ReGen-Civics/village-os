@@ -1,7 +1,7 @@
 /**
  * The role-journey measures on a real schema (L11). Tolerant of lanes that have
  * not landed: the application, onboarding and renewal tables may not exist here,
- * and that reads as nothing, never as an error. Admin only: a visitor is 401, a member
+ * and that reads as nothing, never as an error. A visitor is 401, a member who leads no circle
  * 403, and what an admin gets carries no person.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";

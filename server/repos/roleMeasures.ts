@@ -125,6 +125,14 @@ export async function holderFacts(pool: Pool): Promise<HolderFact[]> {
   });
 }
 
+/** Each circle's lead seat (`circles.lead_role_id`), for deciding which circles a lead reads. Standing examples never count. */
+export async function circleLeadSeats(pool: Pool): Promise<Array<{ id: string; leadRoleId: string | null }>> {
+  return (await rows(pool, "SELECT id, lead_role_id FROM circles WHERE is_example = 0 AND lead_role_id IS NOT NULL")).map((r) => ({
+    id: String(r.id),
+    leadRoleId: r.lead_role_id == null ? null : String(r.lead_role_id),
+  }));
+}
+
 /** Circle names by id, for the page. A circle is not a person. */
 export async function circleNames(pool: Pool): Promise<Map<string, string>> {
   const out = new Map<string, string>();

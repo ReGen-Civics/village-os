@@ -16,7 +16,7 @@
  *
  * A circle with no roles yet is a quiet hearth: the embers, one sentence and
  * one door. Below the card, for those who keep the circle, sits this season's
- * pulse from Live Sessions, and for an administrator how the circle's roles
+ * pulse from Live Sessions, and for an administrator or the circle's lead how the circle's roles
  * are going (components/roleMeasures, the fold of /role-measures).
  *
  * PHONE AND DESKTOP, each at its best.
@@ -40,9 +40,8 @@ import { LinkedCircles, QuietHearth, WeDecided, WeMeet, WeTend, WhoHolds } from 
 import { adoptionOf, hearthRoles, linkedCircles, meetFacts, stonesOf, threadsOf } from "@/components/circleCard/hearthModel";
 import { tendFor, useHearth } from "@/components/circleCard/useHearth";
 import CirclePulse from "@/components/sessions/CirclePulse";
-import { useIsAdmin } from "@/contexts/AuthContext";
 
-/** How this circle's roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
+/** How this circle's roles are going (the fold of /role-measures): its own chunk, fetched only for someone signed in; the server decides who sees it. */
 const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
 import { CARD, LINK, WORLD } from "@/components/journey/look";
 import { gameFetch } from "@/lib/gameApi";
@@ -159,7 +158,6 @@ function HearthPage({
   answer: ReturnType<typeof useHearth>["answer"];
 }) {
   const W = useCircleWords();
-  const admin = useIsAdmin();
   const roles = hearthRoles(card);
   const quiet = roles.kind === "none";
   const stones = roles.kind === "shown" ? stonesOf(roles.roles) : [];
@@ -219,8 +217,8 @@ function HearthPage({
                 lede={W.pulseLede}
               />
             ) : null}
-            {/* How this circle's roles are going (the fold of /role-measures): administrators only. */}
-            {admin ? (
+            {/* How this circle's roles are going (the fold of /role-measures): administrators and this circle's lead; signed in as the card read it. */}
+            {signedIn ? (
               <Suspense fallback={null}>
                 <RoleMeasuresPanel circleId={circleId} />
               </Suspense>

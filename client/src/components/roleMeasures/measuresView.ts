@@ -35,13 +35,13 @@ export function rowsFor(rows: readonly ServedRow[], season: string | null, circl
     });
 }
 
-/** A share as a whole percentage, or null where it was withheld. */
+/** A share as a whole percentage (0 is a real zero), or null where nothing was recorded (NO_DATA). */
 export const percent = (s: Share): number | null => (s.share === null ? null : Math.round(s.share * 100));
 
-/** A median length of time: hours under two days, whole days after; null where it was withheld. */
+/** A median length of time: hours under two days, whole days after; null where nothing was recorded (NO_DATA). */
 export function span(h: number | null): { unit: "hours" | "days"; n: number } | null {
   if (h === null) return null;
-  if (h < 48) return { unit: "hours", n: Math.max(1, Math.round(h)) };
+  if (h < 48) return { unit: "hours", n: Math.round(h) };
   return { unit: "days", n: Math.round(h / 24) };
 }
 

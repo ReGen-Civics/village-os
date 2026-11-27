@@ -23,7 +23,7 @@ import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/Se
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
-import { useIsAdmin } from "@/contexts/AuthContext";
+import { useOptionalAuth } from "@/contexts/AuthContext";
 import { GROUP_BREAK } from "@/components/roleCard/groupLook";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
@@ -41,7 +41,7 @@ import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
 
-/** How roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
+/** How roles are going (the fold of /role-measures): its own chunk, fetched only for someone signed in; the server decides who sees what. */
 const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
 
 /** The link from a circle's panel to its own card (`/circles/:id`). */
@@ -281,7 +281,7 @@ export default function Circles() {
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
   const authUser = useUserOrVisitor();
-  const admin = useIsAdmin();
+  const signedIn = !!useOptionalAuth()?.user;
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
   // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else
@@ -633,9 +633,9 @@ export default function Circles() {
           )}
 
           {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
-              here): the page's last chapter, for administrators only. It reads its own numbers, so a failed
+              here): the page's last chapter, for administrators (every circle) and circle leads (their own). It reads its own numbers, so a failed
               /api/org read never hides it. */}
-          {admin ? (
+          {signedIn ? (
             <div className={`mx-auto mt-16 max-w-4xl ${GROUP_BREAK}`}>
               <Suspense fallback={null}>
                 <RoleMeasuresPanel />

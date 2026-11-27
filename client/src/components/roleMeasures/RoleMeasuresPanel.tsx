@@ -15,10 +15,15 @@
  * Each chain is drawn as five stones on a thread, the way a quest chain reads:
  * on a phone the thread runs down the screen, from `sm` up it runs across.
  *
- * ADMIN ONLY, as the page was. For anybody else this renders nothing and asks
- * the server for nothing; the server (server/routes/roleMeasures.ts) refuses
- * everybody else whatever the client does. No names: a number built from fewer
- * than three people arrives withheld and reads "too few".
+ * WHO SEES IT (the lead, 27 Nov 2026): an administrator sees every circle; a
+ * circle's lead sees their own circle, on the circles page and on that circle's
+ * page, and never another's. The server decides (server/routes/roleMeasures.ts):
+ * a visitor asks nothing, and a signed-in member the server refuses sees
+ * nothing at all, not even an empty panel. No names.
+ *
+ * 0 AND NO DATA. Every number we have shows, however few people it counts. A
+ * real zero reads 0. A measure with nothing recorded arrives as null
+ * (`NO_DATA`) and reads "no data".
  *
  * `#role-measures` lands here: the old address redirects to
  * `/circles#role-measures`, and a circle's own row links to
@@ -30,7 +35,7 @@ import { useLingui } from "@lingui/react/macro";
 import { plural } from "@lingui/core/macro";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { BreathingLoader } from "@/components/natural";
-import { useIsAdmin } from "@/contexts/AuthContext";
+import { useIsAdmin, useOptionalAuth } from "@/contexts/AuthContext";
 import { gameFetch, useSeason } from "@/lib/gameApi";
 import { failureWords } from "@/lib/failureWords";
 import { goToSection, holdSection } from "@/lib/sectionAnchor";
@@ -47,13 +52,20 @@ const SEASON_ON =
 export const MEASURES_ANCHOR = "role-measures";
 
 export default function RoleMeasuresPanel({ circleId }: { circleId?: string }) {
-  const admin = useIsAdmin();
-  return admin ? <Measures circleId={circleId} /> : null;
+  const user = useOptionalAuth()?.user;
+  return user ? <Measures circleId={circleId} /> : null;
 }
+
+/** What the server let this reader see: the village (an admin) or the circles they lead. */
+type Scope = "village" | "circles";
 
 function Measures({ circleId }: { circleId?: string }) {
   const { t } = useLingui();
+  const admin = useIsAdmin();
   const [rows, setRows] = useState<ServedRow[] | null>(null);
+  const [scope, setScope] = useState<Scope>(admin ? "village" : "circles");
+  // Refused: a member who leads no circle here. They see nothing, and nothing says why.
+  const [refused, setRefused] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [picked, setPicked] = useState<string | null | undefined>(undefined);
   const [attempt, setAttempt] = useState(0);
@@ -62,19 +74,24 @@ function Measures({ circleId }: { circleId?: string }) {
   useEffect(() => {
     let live = true;
     setProblem(null);
-    gameFetch("/api/role-measures")
+    gameFetch(circleId === undefined ? "/api/role-measures" : `/api/role-measures?circle=${encodeURIComponent(circleId)}`)
       .then(async (r) => {
-        if (r.status === 401 || r.status === 403) throw new Error(t({ message: "Only administrators can see how roles are going.", context: "role measures, refused" }));
+        if (r.status === 401 || r.status === 403) return null;
         if (!r.ok) throw new Error(t({ message: "Could not read the measures.", context: "role measures, failed" }));
         return r.json();
       })
-      .then((j) => live && setRows(Array.isArray(j?.rows) ? j.rows : []))
+      .then((j) => {
+        if (!live) return;
+        if (j === null) return setRefused(true);
+        setScope(j?.scope === "village" ? "village" : "circles");
+        setRows(Array.isArray(j?.rows) ? j.rows : []);
+      })
       .catch((e) => live && setProblem(failureWords(e)));
     return () => {
       live = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt]);
+  }, [attempt, circleId]);
 
   // Arriving on #role-measures: land once the numbers are drawn, and hold while the page above finishes drawing.
   const ready = rows !== null || problem !== null;
@@ -97,6 +114,8 @@ function Measures({ circleId }: { circleId?: string }) {
   const seasonName = (id: string | null) => (id === null ? t({ message: "No season", context: "role measures, a season chip" }) : (names.get(id) ?? id));
   const list = rowsFor(mine, shown, circleId);
 
+  if (refused || (!admin && rows === null && problem === null)) return null;
+
   return (
     <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} @container scroll-mt-44`} data-testid="role-measures-panel">
       <div className="flex items-center gap-4">
@@ -104,7 +123,11 @@ function Measures({ circleId }: { circleId?: string }) {
           <SeedOfLife className="size-6" />
         </span>
         <div className="min-w-0">
-          <p className={EYEBROW}>{t({ message: "Only administrators see this", context: "role measures, eyebrow" })}</p>
+          <p className={EYEBROW}>
+            {scope === "village"
+              ? t({ message: "Only administrators see this", context: "role measures, eyebrow" })
+              : t({ message: "Only this circle's lead and administrators see this", context: "role measures, eyebrow for a circle's lead" })}
+          </p>
           <h2 id="role-measures-heading" tabIndex={-1} data-section-focus="" className={`${H2} mt-1 outline-none`}>
             {circleId === undefined ? t`How roles are going` : t({ message: "How roles are going here", context: "role measures, a circle's page" })}
           </h2>
@@ -112,7 +135,7 @@ function Measures({ circleId }: { circleId?: string }) {
       </div>
       <ul className={`${HINT} mt-3 list-disc space-y-1 pl-5`}>
         <li>{t({ message: "Counts and medians from stamped times. No names.", context: "role measures, how to read" })}</li>
-        <li>{t({ message: "Too few means under three people, so the number stays hidden.", context: "role measures, how to read" })}</li>
+        <li>{t({ message: "No data means nothing has been recorded yet. 0 means none.", context: "role measures, how to read" })}</li>
       </ul>
 
       {problem ? (
@@ -187,11 +210,7 @@ function CircleRow({ row }: { row: ServedRow }) {
           <span className="flex items-center gap-4">
             <span className="grid flex-1 grid-cols-3 gap-2 sm:w-80 sm:flex-none sm:gap-4">
               <Headline label={t({ message: "Applied", context: "role measures, applying chain" })} value={String(row.applications.count)} />
-              <Headline
-                label={t({ message: "Answered", context: "role measures, applying chain" })}
-                value={answered === null ? null : `${answered}%`}
-                why={row.applications.answered.eligible === 0 ? "none" : "few"}
-              />
+              <Headline label={t({ message: "Answered", context: "role measures, applying chain" })} value={answered === null ? null : `${answered}%`} />
               <Headline label={t({ message: "Seated", context: "role measures, holding chain" })} value={String(row.holders.count)} />
             </span>
             <ChevronDown className="hidden size-5 shrink-0 text-notice motion-safe:transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
@@ -219,26 +238,19 @@ const ROW = "rounded-xl border border-border bg-muted";
 /** Numerals that line up and never read as letters (the display face's old-style "1" reads as "I"). */
 const NUM = "lining-nums tabular-nums";
 
-/** Why a number is missing: nobody to count yet, or too few people to show it. */
-type Why = "none" | "few";
-
-/** The chip a missing number shows. */
-function Missing({ why }: { why: Why }) {
+/** What a measure with nothing recorded shows (NO_DATA, null). A real zero never reaches here: it reads 0. */
+function NoData() {
   const { t } = useLingui();
-  return (
-    <span className={CHIP_SOFT}>
-      {why === "none" ? t({ message: "not yet", context: "role measures, nobody to count yet" }) : t({ message: "too few", context: "role measures, a withheld number" })}
-    </span>
-  );
+  return <span className={CHIP_SOFT} data-no-data="">{t({ message: "no data", context: "role measures, nothing recorded" })}</span>;
 }
 
 /** One headline number on a circle's row, read as "Applied 7": its name small, the numeral large under it. */
-function Headline({ label, value, why = "few" }: { label: string; value: string | null; why?: Why }) {
+function Headline({ label, value }: { label: string; value: string | null }) {
   return (
     <span className="block min-w-0">
       <span className="block text-xs text-muted-foreground">{label}</span>{" "}
       <span className="mt-0.5 block">
-        {value === null ? <Missing why={why} /> : <span className={`font-display text-2xl leading-none text-foreground ${NUM}`}>{value}</span>}
+        {value === null ? <NoData /> : <span className={`font-display text-2xl leading-none text-foreground ${NUM}`}>{value}</span>}
       </span>
     </span>
   );
@@ -246,21 +258,19 @@ function Headline({ label, value, why = "few" }: { label: string; value: string 
 
 interface Step {
   label: string;
-  /** The number as read, or null where it was withheld. */
+  /** The number as read (0 included), or null where nothing was recorded. */
   value: string | null;
   /** The size it was measured on ("9 of 12"), or a word on what kind of number it is. */
   sub?: string;
-  /** Why the value is missing, when it is. */
-  why?: Why;
 }
 
 /** The two chains: from applying to a decision, and from a seat to a renewal. */
 function Chains({ row }: { row: ServedRow }) {
   const { t } = useLingui();
   const of = ({ yes, eligible: all }: Share) => (all === 0 ? undefined : t({ message: `${yes} of ${all}`, context: "role measures, the size a share was measured on" }));
-  const share = (s: Share): Pick<Step, "value" | "sub" | "why"> => {
+  const share = (s: Share): Pick<Step, "value" | "sub"> => {
     const p = percent(s);
-    return { value: p === null ? null : `${p}%`, sub: of(s), why: s.eligible === 0 ? "none" : "few" };
+    return { value: p === null ? null : `${p}%`, sub: of(s) };
   };
   const time = (h: number | null): Step["value"] => {
     const s = span(h);
@@ -271,8 +281,7 @@ function Chains({ row }: { row: ServedRow }) {
   const median = t({ message: "median", context: "role measures, a kind of number" });
   const a = row.applications;
   const h = row.holders;
-  // A median with no application to measure is "not yet"; with some, but under three, it is "too few".
-  const timed = (hours: number | null): Pick<Step, "value" | "sub" | "why"> => ({ value: time(hours), sub: median, why: a.count === 0 ? "none" : "few" });
+  const timed = (hours: number | null): Pick<Step, "value" | "sub"> => ({ value: time(hours), sub: median });
   const applying: Step[] = [
     { label: t({ message: "Applied", context: "role measures, applying chain" }), value: String(a.count) },
     { label: t({ message: "Answered", context: "role measures, applying chain" }), ...share(a.answered) },
@@ -320,7 +329,7 @@ function Chain({ title, steps }: { title: string; steps: readonly Step[] }) {
             <span className="min-w-0 flex-1 text-sm text-muted-foreground @2xl:order-3 @2xl:flex-none">{s.label}</span>
             <span className="shrink-0 text-right @2xl:order-2 @2xl:text-center">
               {s.value === null ? (
-                <Missing why={s.why ?? "few"} />
+                <NoData />
               ) : (
                 <span className={`block font-display text-2xl leading-tight text-foreground ${NUM}`}>{s.value}</span>
               )}

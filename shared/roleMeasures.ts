@@ -1,18 +1,25 @@
 /**
- * Measures of the role journey (L11): counts and medians per season and circle,
- * for members. Pure: it is handed anonymous facts and returns numbers.
+ * Measures of the role journey (L11): counts and medians per season and circle.
+ * Administrators read every circle; a circle's lead reads their own circle
+ * (`circlesLed` below; the server enforces it). Pure: it is handed anonymous
+ * facts and returns numbers.
  *
  * ── WHAT IT NEVER HOLDS ──────────────────────────────────────────────────
  * No name, no user id, no application ref, no email. An input fact is a season,
  * a circle and STAMPED TIMES; an output row is the same two keys and numbers.
  * `MEASURE_KEYS` below is the closed key set a test holds both sides to.
  *
- * ── WHEN A NUMBER IS WITHHELD ────────────────────────────────────────────
- * A median or a share of fewer than `MIN_GROUP` people points at a person in a
- * village this size, so it is null there. Counts are always shown.
+ * ── 0 AND NO DATA ARE DIFFERENT ──────────────────────────────────────────
+ * Every number built from at least one recorded fact is shown, however few
+ * people it counts (the lead, 27 Nov 2026: "show all data we have"). A real
+ * zero stays 0: a count of nobody, or a share where none of the people counted
+ * did it. NO DATA is `null`, and only that: a median with no recorded time, or
+ * a share with nobody yet to count (`eligible` 0). A reader shows "no data"
+ * for null and the number for anything else, 0 included (`NO_DATA`).
  */
 
-export const MIN_GROUP = 3;
+/** What a measure holds when nothing was recorded for it. Never 0: 0 is a measured zero. */
+export const NO_DATA = null;
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
@@ -44,7 +51,7 @@ export interface HolderFact {
 export interface Share {
   eligible: number;
   yes: number;
-  /** 0 to 1, or null when `eligible` is under MIN_GROUP. */
+  /** 0 to 1 (0 is a real zero: nobody counted did it), or NO_DATA when `eligible` is 0. */
   share: number | null;
 }
 
@@ -75,15 +82,16 @@ export const MEASURE_KEYS = {
   share: ["eligible", "yes", "share"],
 } as const;
 
+/** The median of what was recorded, or NO_DATA when nothing was. One value is its own median. */
 export function median(values: readonly number[]): number | null {
-  if (values.length < MIN_GROUP) return null;
+  if (values.length === 0) return NO_DATA;
   const v = [...values].sort((a, b) => a - b);
   const mid = Math.floor(v.length / 2);
   return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
 }
 
 function share(eligible: number, yes: number): Share {
-  return { eligible, yes, share: eligible >= MIN_GROUP ? Math.round((yes / eligible) * 100) / 100 : null };
+  return { eligible, yes, share: eligible === 0 ? NO_DATA : Math.round((yes / eligible) * 100) / 100 };
 }
 
 const hoursBetween = (from: number, to: number | null): number | null => (to === null || to < from ? null : Math.round(((to - from) / HOUR) * 10) / 10);
@@ -134,4 +142,34 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
     });
   }
   return out.sort((a, b) => String(b.seasonId ?? "").localeCompare(String(a.seasonId ?? "")) || String(a.circleId ?? "").localeCompare(String(b.circleId ?? "")));
+}
+
+/**
+ * WHO READS WHICH CIRCLE (the lead, 27 Nov 2026: "admin for the whole village
+ * and circle leads for their circle"). An administrator reads the village. Any
+ * other member reads the circles whose lead seat (`circles.lead_role_id`) they
+ * sit in now (`liveSeatIds`: live, held as a member, term not lapsed), and
+ * nothing else; with none, they read nothing. The seat is the circle's own
+ * record of who leads it, so a role named Steward that is a circle's lead seat
+ * counts, and a role named Lead that no circle names does not.
+ */
+export type MeasuresScope = { kind: "village" } | { kind: "circles"; circleIds: string[] } | { kind: "none" };
+
+export function circlesLed(circles: ReadonlyArray<{ id: string; leadRoleId: string | null }>, liveSeatIds: readonly string[]): string[] {
+  const seats = new Set(liveSeatIds);
+  return circles.filter((c) => c.leadRoleId !== null && seats.has(c.leadRoleId)).map((c) => c.id);
+}
+
+export function measuresScope(isAdmin: boolean, led: readonly string[]): MeasuresScope {
+  if (isAdmin) return { kind: "village" };
+  return led.length ? { kind: "circles", circleIds: Array.from(new Set(led)) } : { kind: "none" };
+}
+
+/** The rows a scope may read, narrowed to one circle when asked. A row in no circle is the village's: admins only. */
+export function rowsInScope<R extends { circleId: string | null }>(rows: readonly R[], scope: MeasuresScope, circleId: string | null = null): R[] {
+  const want = (r: R) => circleId === null || r.circleId === circleId;
+  if (scope.kind === "village") return rows.filter(want);
+  if (scope.kind === "none") return [];
+  const mine = new Set(scope.circleIds);
+  return rows.filter((r) => r.circleId !== null && mine.has(r.circleId) && want(r));
 }

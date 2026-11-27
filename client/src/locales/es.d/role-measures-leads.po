@@ -1,0 +1,19 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: how roles are going, circle leads and no data, 27 Nov 2026
+msgctxt "role measures, eyebrow for a circle's lead"
+msgid "Only this circle's lead and administrators see this"
+msgstr "Solo lo ven quien lidera este círculo y las personas administradoras"
+
+# needs-native-review: how roles are going, circle leads and no data, 27 Nov 2026
+msgctxt "role measures, how to read"
+msgid "No data means nothing has been recorded yet. 0 means none."
+msgstr "Sin datos significa que todavía no hay nada registrado. 0 significa ninguno."
+
+# needs-native-review: how roles are going, circle leads and no data, 27 Nov 2026
+msgctxt "role measures, nothing recorded"
+msgid "no data"
+msgstr "sin datos"

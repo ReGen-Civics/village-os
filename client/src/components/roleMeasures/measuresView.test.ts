@@ -23,11 +23,14 @@ describe("measuresView", () => {
     expect(rowsFor(rows, "s", "b").map((x) => x.circleId)).toEqual(["b"]);
   });
 
-  it("reads a withheld number as null, and time in hours under two days", () => {
-    expect(percent({ eligible: 2, yes: 1, share: null })).toBeNull();
+  it("keeps no data (null) apart from a real zero, and reads time in hours under two days", () => {
+    expect(percent({ eligible: 0, yes: 0, share: null })).toBeNull();
+    expect(percent({ eligible: 2, yes: 0, share: 0 })).toBe(0);
+    expect(percent({ eligible: 1, yes: 1, share: 1 })).toBe(100);
     expect(percent({ eligible: 4, yes: 3, share: 0.75 })).toBe(75);
     expect(span(null)).toBeNull();
-    expect(span(0.2)).toEqual({ unit: "hours", n: 1 });
+    expect(span(0)).toEqual({ unit: "hours", n: 0 });
+    expect(span(0.2)).toEqual({ unit: "hours", n: 0 });
     expect(span(47.4)).toEqual({ unit: "hours", n: 47 });
     expect(span(100)).toEqual({ unit: "days", n: 4 });
   });
