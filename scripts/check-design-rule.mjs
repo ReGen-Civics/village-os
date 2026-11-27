@@ -77,7 +77,6 @@ const PAGES = [
   "client/src/pages/ExitPolicy.tsx",
   "client/src/pages/Quests.tsx",
   "client/src/pages/MySeason.tsx",
-  "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
   "client/src/pages/SeasonalFestivals.tsx",
@@ -130,6 +129,8 @@ const JOURNEY = [
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",
   "client/src/components/journey/look.ts",
+  // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
+  "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",
   // The /quests example stamp and "Quests coming soon" (24 Nov 2026): born inside the rule.
