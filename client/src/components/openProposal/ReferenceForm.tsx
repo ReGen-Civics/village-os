@@ -19,7 +19,7 @@ import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import type { wordsIn } from "@shared/applicantWords";
 import { APPLY_COUNTS } from "@shared/applyLimits";
-import { ONBOARDING_REFERENCES_MAX, parseReferenceList, REF_ALLY_MAX, REF_CONTACT_MAX, REF_HOW_MAX, REF_NAME_MAX, type ReferenceError } from "@shared/applicantOnboarding";
+import { ONBOARDING_REFERENCES_MAX, parseReferenceList, REF_ALLY_MAX, REF_CONTACT_MAX, REF_HOW_MAX, REF_NAME_MAX, type ReferenceError, type ReferenceField } from "@shared/applicantOnboarding";
 
 type ReferenceRow = { name: string; email: string; whatsapp: string; usPhone: string; signal: string; how: string; ally: string };
 const EMPTY_ROW: ReferenceRow = { name: "", email: "", whatsapp: "", usPhone: "", signal: "", how: "", ally: "" };
@@ -32,10 +32,11 @@ export function ReferenceForm({ postUrl, words, onGiven, line, editing = false }
   const [error, setError] = useState<{ text: string; row: number | null } | null>(null);
   const set = (i: number, key: keyof ReferenceRow, value: string) => setRows((cur) => cur.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
   // Which reference and which field (QA pass 1): "Reference 2, WhatsApp: One of those numbers doesn't look right."
-  const fieldLabel: Record<string, string> = { name: words.name, email: words.email, whatsapp: words.whatsapp, usPhone: words.usPhone, signal: words.signal, how: words.how, ally: words.ally };
+  const fieldLabel: Record<ReferenceField, string> = { name: words.name, email: words.email, whatsapp: words.whatsapp, usPhone: words.usPhone, signal: words.signal, how: words.how, ally: words.ally };
   const say = (code: string, row: number | null, field?: string) => {
     const text = words.errors[code as ReferenceError] ?? words.failed;
-    const where = row === null ? "" : `${words.row(row + 1)}${field && fieldLabel[field] ? `, ${fieldLabel[field]}` : ""}: `;
+    const label = field && field in fieldLabel ? fieldLabel[field as ReferenceField] : null;
+    const where = row === null ? "" : `${words.row(row + 1)}${label ? `, ${label}` : ""}: `;
     setError({ text: `${where}${text}`, row });
   };
   const send = async () => {

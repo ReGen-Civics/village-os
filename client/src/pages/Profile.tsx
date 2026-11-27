@@ -468,8 +468,7 @@ export default function Profile() {
             {/* YOUR PATH, the one featured card (the Root): the next step, what comes after, and the walk so
                 far. The steps before a role starts and the texts waiting on the reader are drawn inside it, so
                 the page has one "next" and no second card. On a server older than the path, the two cards stand alone. */}
-            <div className={`empty:hidden ${tabOf(["today"])}`}><ApplicantCards /></div>{/* An application waiting: its next step first (the lead, 27 Nov 2026). */}
-            {path ? (
+            <div className={`empty:hidden ${tabOf(["today"])}`}><ApplicantCards /></div>{path ? (
               <div className={tabOf(["today", "roles"])}>
                 <YourPathCard path={path}>
                   <RoleStartSteps embedded skipHref={path.step.href} onShown={setStartStepsShown} />
