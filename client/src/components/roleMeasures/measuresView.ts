@@ -38,9 +38,13 @@ export function rowsFor(rows: readonly ServedRow[], season: string | null, circl
 /** A share as a whole percentage (0 is a real zero), or null where nothing was recorded (NO_DATA). */
 export const percent = (s: Share): number | null => (s.share === null ? null : Math.round(s.share * 100));
 
-/** A median length of time: hours under two days, whole days after; null where nothing was recorded (NO_DATA). */
-export function span(h: number | null): { unit: "hours" | "days"; n: number } | null {
+/**
+ * A median length of time: "under an hour" for anything above 0 and under 1, hours under two days, whole days
+ * after. Exactly 0 is a real zero ("0 hours"); null is NO_DATA, nothing recorded.
+ */
+export function span(h: number | null): { unit: "hours" | "days" | "under-an-hour"; n: number } | null {
   if (h === null) return null;
+  if (h > 0 && h < 1) return { unit: "under-an-hour", n: 0 };
   if (h < 48) return { unit: "hours", n: Math.round(h) };
   return { unit: "days", n: Math.round(h / 24) };
 }

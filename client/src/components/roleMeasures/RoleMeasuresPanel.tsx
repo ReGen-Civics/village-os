@@ -41,6 +41,7 @@ import { failureWords } from "@/lib/failureWords";
 import { goToSection, holdSection } from "@/lib/sectionAnchor";
 import { BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, H2, HINT, LINK, RING, TILE } from "@/components/journey/look";
 import { SeedOfLife } from "@/components/sacred/glyphs";
+import { GROUP_BREAK } from "@/components/roleCard/groupLook";
 import type { Share } from "@shared/roleMeasures";
 import { isEmptyRow, percent, rowsFor, seasonsOf, span, type ServedRow } from "./measuresView";
 
@@ -51,15 +52,20 @@ const SEASON_ON =
 /** The section's id, which the old address and each circle's row land on. */
 export const MEASURES_ANCHOR = "role-measures";
 
-export default function RoleMeasuresPanel({ circleId }: { circleId?: string }) {
+/**
+ * `chapter`: drawn as a page's own chapter (the circles page), under the gold
+ * rule. The rule belongs to the panel, so a reader the server refuses sees no
+ * empty wrapper either.
+ */
+export default function RoleMeasuresPanel({ circleId, chapter = false }: { circleId?: string; chapter?: boolean }) {
   const user = useOptionalAuth()?.user;
-  return user ? <Measures circleId={circleId} /> : null;
+  return user ? <Measures circleId={circleId} chapter={chapter} /> : null;
 }
 
 /** What the server let this reader see: the village (an admin) or the circles they lead. */
 type Scope = "village" | "circles";
 
-function Measures({ circleId }: { circleId?: string }) {
+function Measures({ circleId, chapter }: { circleId?: string; chapter: boolean }) {
   const { t } = useLingui();
   const admin = useIsAdmin();
   const [rows, setRows] = useState<ServedRow[] | null>(null);
@@ -86,7 +92,12 @@ function Measures({ circleId }: { circleId?: string }) {
         setScope(j?.scope === "village" ? "village" : "circles");
         setRows(Array.isArray(j?.rows) ? j.rows : []);
       })
-      .catch((e) => live && setProblem(failureWords(e)));
+      .catch((e) => {
+        if (!live) return;
+        // Only an admin is told a read failed. Anybody else may lead nothing here, so a failure draws nothing for them.
+        if (!admin) return setRefused(true);
+        setProblem(failureWords(e));
+      });
     return () => {
       live = false;
     };
@@ -116,7 +127,7 @@ function Measures({ circleId }: { circleId?: string }) {
 
   if (refused || (!admin && rows === null && problem === null)) return null;
 
-  return (
+  const panel = (
     <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} @container scroll-mt-44`} data-testid="role-measures-panel">
       <div className="flex items-center gap-4">
         <span className={RING} aria-hidden="true">
@@ -124,8 +135,8 @@ function Measures({ circleId }: { circleId?: string }) {
         </span>
         <div className="min-w-0">
           <p className={EYEBROW}>
-            {scope === "village"
-              ? t({ message: "Only administrators see this", context: "role measures, eyebrow" })
+            {circleId === undefined
+              ? t({ message: "Administrators see every circle; each lead sees their own", context: "role measures, eyebrow on the circles page" })
               : t({ message: "Only this circle's lead and administrators see this", context: "role measures, eyebrow for a circle's lead" })}
           </p>
           <h2 id="role-measures-heading" tabIndex={-1} data-section-focus="" className={`${H2} mt-1 outline-none`}>
@@ -184,7 +195,7 @@ function Measures({ circleId }: { circleId?: string }) {
           ) : (
             <ul className="mt-5 grid gap-3" data-testid="measures-circles">
               {list.map((r) => (
-                <CircleRow key={r.circleId ?? "none"} row={r} />
+                <CircleRow key={r.circleId ?? "none"} row={r} open={scope === "circles" && list.length === 1} />
               ))}
             </ul>
           )}
@@ -192,16 +203,17 @@ function Measures({ circleId }: { circleId?: string }) {
       )}
     </section>
   );
+  return chapter ? <div className={`mx-auto mt-16 max-w-4xl ${GROUP_BREAK}`}>{panel}</div> : panel;
 }
 
-/** One circle on the circles page: its name and three headline numbers, opening to both chains. */
-function CircleRow({ row }: { row: ServedRow }) {
+/** One circle on the circles page: its name and three headline numbers, opening to both chains (open from the start for a lead's one circle). */
+function CircleRow({ row, open = false }: { row: ServedRow; open?: boolean }) {
   const { t } = useLingui();
   const answered = percent(row.applications.answered);
   const name = row.circleId === null ? t({ message: "Roles not in a circle", context: "role measures, a row" }) : (row.circleName ?? row.circleId);
   return (
     <li>
-      <details className={`${ROW} group`} data-circle-measures={row.circleId ?? ""}>
+      <details className={`${ROW} group`} open={open} data-circle-measures={row.circleId ?? ""}>
         <summary className="grid cursor-pointer list-none gap-3 rounded-xl p-4 hover:bg-card/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center [&::-webkit-details-marker]:hidden">
           <span className="flex min-h-11 items-center justify-between gap-3">
             <span className="min-w-0 font-display text-xl text-foreground">{name}</span>
@@ -276,6 +288,7 @@ function Chains({ row }: { row: ServedRow }) {
     const s = span(h);
     if (!s) return null;
     const n = s.n;
+    if (s.unit === "under-an-hour") return t({ message: "under an hour", context: "role measures, a median shorter than an hour" });
     return s.unit === "hours" ? plural(n, { one: "# hour", other: "# hours" }) : plural(n, { one: "# day", other: "# days" });
   };
   const median = t({ message: "median", context: "role measures, a kind of number" });

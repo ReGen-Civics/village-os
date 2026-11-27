@@ -17,3 +17,13 @@ msgstr "Sin datos significa que todavía no hay nada registrado. 0 significa nin
 msgctxt "role measures, nothing recorded"
 msgid "no data"
 msgstr "sin datos"
+
+# needs-native-review: how roles are going, circle leads and no data, 27 Nov 2026
+msgctxt "role measures, eyebrow on the circles page"
+msgid "Administrators see every circle; each lead sees their own"
+msgstr "Las personas administradoras ven cada círculo; cada líder ve el suyo"
+
+# needs-native-review: how roles are going, circle leads and no data, 27 Nov 2026
+msgctxt "role measures, a median shorter than an hour"
+msgid "under an hour"
+msgstr "menos de una hora"

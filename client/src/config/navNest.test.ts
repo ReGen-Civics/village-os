@@ -86,6 +86,15 @@ describe("the menu by membership", () => {
   }
 });
 
+describe("how roles are going (the lead, 27 Nov 2026: admin for the whole village, leads for their circle)", () => {
+  const offeredTo = (a: Audience) => barFor(a).flatMap((g) => g.links).map((l) => l.href);
+  it("is a menu door for admins only; a lead reaches their circle's numbers from the circles pages", () => {
+    for (const a of AUDIENCES) {
+      expect(offeredTo(a).includes("/circles#role-measures"), a.name).toBe(a.role === "admin" || a.role === "founder");
+    }
+  });
+});
+
 describe("what a stranger is shown (the lead, round 2)", () => {
   // "we don't need to show a visitor the wallet, the health of the village, or the library", and "Signed out visitor
   // doesn't need to see game mechanics. Only a member needs to see that." The same for the other member tools.

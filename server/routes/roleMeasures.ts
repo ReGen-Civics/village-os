@@ -14,6 +14,12 @@
  *   - anybody else gets 403 and no rows.
  * `?circle=<id>` narrows the read to one circle; asked for a circle they do
  * not lead, a lead gets 403, the same as anybody else. Writes nothing.
+ *
+ * The scope is decided before anything else can answer, so a member who leads
+ * nothing only ever gets 403: never the rate limit's 429, and a database error
+ * while their seats are read is a refusal too, never a 500 that would draw the
+ * panel's error card for someone who may not see it. Only a reader the scope
+ * lets in can meet the rate limit or a failed read of the measures.
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
@@ -31,15 +37,22 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/role-measures", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "Sign in to see this." });
-    if (overLimit && (await overLimit(`role-measures:${user.id}`, 20, 60_000))) return res.status(429).json({ error: "Slow down a little." });
     const asked = typeof req.query?.circle === "string" && req.query.circle ? String(req.query.circle) : null;
+    const pool = getPool();
+    const admin = await isAdmin(req).catch(() => false);
+    let led: string[] = [];
+    if (!admin) {
+      try {
+        led = circlesLed(await circleLeadSeats(pool), liveSeatIdsFor(await listOrgAssignments(pool, lapseContext?.()), String(user.id)));
+      } catch {
+        led = [];
+      }
+    }
+    const scope = measuresScope(admin, led);
+    if (scope.kind === "none") return res.status(403).json(REFUSED);
+    if (asked !== null && scope.kind === "circles" && !scope.circleIds.includes(asked)) return res.status(403).json(REFUSED);
+    if (overLimit && (await overLimit(`role-measures:${user.id}`, 20, 60_000))) return res.status(429).json({ error: "Slow down a little." });
     try {
-      const pool = getPool();
-      const admin = await isAdmin(req);
-      const led = admin ? [] : circlesLed(await circleLeadSeats(pool), liveSeatIdsFor(await listOrgAssignments(pool, lapseContext?.()), String(user.id)));
-      const scope = measuresScope(admin, led);
-      if (scope.kind === "none") return res.status(403).json(REFUSED);
-      if (asked !== null && scope.kind === "circles" && !scope.circleIds.includes(asked)) return res.status(403).json(REFUSED);
       const [apps, holders] = await Promise.all([applicationFacts(pool), holderFacts(pool)]);
       const names = await circleNames(pool).catch(() => new Map<string, string>());
       const rows = rowsInScope(buildMeasures(apps, holders, Date.now()), scope, asked).map((r) => ({

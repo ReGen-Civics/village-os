@@ -30,7 +30,10 @@ describe("measuresView", () => {
     expect(percent({ eligible: 4, yes: 3, share: 0.75 })).toBe(75);
     expect(span(null)).toBeNull();
     expect(span(0)).toEqual({ unit: "hours", n: 0 });
-    expect(span(0.2)).toEqual({ unit: "hours", n: 0 });
+    // Eighteen minutes is under an hour, never 0.
+    expect(span(0.3)).toEqual({ unit: "under-an-hour", n: 0 });
+    expect(span(0.99)).toEqual({ unit: "under-an-hour", n: 0 });
+    expect(span(1)).toEqual({ unit: "hours", n: 1 });
     expect(span(47.4)).toEqual({ unit: "hours", n: 47 });
     expect(span(100)).toEqual({ unit: "days", n: 4 });
   });

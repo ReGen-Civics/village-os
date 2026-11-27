@@ -7,7 +7,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
   seatings: [] as Array<Record<string, unknown>>,
-  circles: [] as Array<{ id: string; leadRoleId: string | null }>,
+  circles: [] as Array<{ id: string; leadRoleId: string | null; leadActive: boolean; leadIsExample: boolean }>,
+  seatsFail: false,
+  limited: false,
 }));
 
 vi.mock("../repos/roleMeasures", () => {
@@ -28,7 +30,12 @@ vi.mock("../repos/roleMeasures", () => {
     circleNames: async () => new Map([["c-garden", "Garden"], ["c-kitchen", "Kitchen"]]),
   };
 });
-vi.mock("../lib/orgChart", () => ({ listOrgAssignments: async () => state.seatings }));
+vi.mock("../lib/orgChart", () => ({
+  listOrgAssignments: async () => {
+    if (state.seatsFail) throw new Error("db down");
+    return state.seatings;
+  },
+}));
 
 import { register } from "./roleMeasures";
 
@@ -39,7 +46,7 @@ register({ get: (_p: string, h: any) => (handler = h) } as any, {
   getPool: () => ({}) as any,
   authedUser: async () => (who ? ({ id: who } as any) : null),
   isAdmin: async () => !!who && admin,
-  overLimit: async () => false,
+  overLimit: async () => state.limited,
 });
 
 const call = async (query: Record<string, string> = {}) => {
@@ -56,9 +63,11 @@ describe("GET /api/role-measures: who reads which circle", () => {
     who = null;
     admin = false;
     state.circles = [
-      { id: "c-garden", leadRoleId: "r-garden-lead" },
-      { id: "c-kitchen", leadRoleId: "r-kitchen-lead" },
+      { id: "c-garden", leadRoleId: "r-garden-lead", leadActive: true, leadIsExample: false },
+      { id: "c-kitchen", leadRoleId: "r-kitchen-lead", leadActive: true, leadIsExample: false },
     ];
+    state.seatsFail = false;
+    state.limited = false;
     state.seatings = [seat("lead-g", "r-garden-lead"), seat("member", "r-planter")];
   });
 
@@ -99,6 +108,33 @@ describe("GET /api/role-measures: who reads which circle", () => {
     expect((await call()).status).toBe(403);
     state.seatings = [seat("lead-g", "r-garden-lead", { endedAt: "2026-11-01" })];
     expect((await call()).status).toBe(403);
+  });
+
+  it("refuses a live holder of a lead seat the circle has rested", async () => {
+    who = "lead-g";
+    state.circles[0] = { ...state.circles[0], leadActive: false };
+    expect((await call()).status).toBe(403);
+    expect((await call({ circle: "c-garden" })).status).toBe(403);
+  });
+
+  it("refuses a holder of an example lead seat", async () => {
+    who = "lead-g";
+    state.circles[0] = { ...state.circles[0], leadIsExample: true };
+    expect((await call()).status).toBe(403);
+  });
+
+  it("only ever refuses a member who leads nothing: never the rate limit, never a 500", async () => {
+    who = "member";
+    state.limited = true;
+    expect((await call()).status).toBe(403);
+    state.limited = false;
+    state.seatsFail = true;
+    expect((await call()).status).toBe(403);
+    // A lead the scope lets in does meet the rate limit.
+    state.seatsFail = false;
+    state.limited = true;
+    who = "lead-g";
+    expect((await call()).status).toBe(429);
   });
 
   it("shows counts under three, and a real zero as 0", async () => {

@@ -24,7 +24,6 @@ import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
 import { useOptionalAuth } from "@/contexts/AuthContext";
-import { GROUP_BREAK } from "@/components/roleCard/groupLook";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
@@ -634,13 +633,11 @@ export default function Circles() {
 
           {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
               here): the page's last chapter, for administrators (every circle) and circle leads (their own). It reads its own numbers, so a failed
-              /api/org read never hides it. */}
+              /api/org read never hides it. The chapter's gold rule is the panel's own, so a refused reader sees nothing. */}
           {signedIn ? (
-            <div className={`mx-auto mt-16 max-w-4xl ${GROUP_BREAK}`}>
-              <Suspense fallback={null}>
-                <RoleMeasuresPanel />
-              </Suspense>
-            </div>
+            <Suspense fallback={null}>
+              <RoleMeasuresPanel chapter />
+            </Suspense>
           ) : null}
         </div>
       </section>

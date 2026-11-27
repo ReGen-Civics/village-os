@@ -82,7 +82,9 @@ describe("RoleMeasuresPanel", () => {
     show();
     const list = await screen.findByTestId("measures-circles");
     expect(rowNames(list)).toEqual(["Anchor Circle", "Garden Circle", "Roles not in a circle"]);
-    expect(screen.getByText("Only administrators see this")).toBeTruthy();
+    expect(screen.getByText("Administrators see every circle; each lead sees their own")).toBeTruthy();
+    // An admin's rows start closed.
+    expect(list.querySelectorAll("details[open]")).toHaveLength(0);
     expect(screen.getByRole("button", { name: "Rains" }).getAttribute("aria-pressed")).toBe("true");
     expect(list.querySelector('[data-circle-measures="c-garden"] summary')!.textContent).toContain("Answered 75%");
     expect(list.querySelector("summary dl")).toBeNull();
@@ -94,7 +96,31 @@ describe("RoleMeasuresPanel", () => {
     show();
     const list = await screen.findByTestId("measures-circles");
     expect(rowNames(list)).toEqual(["Anchor Circle"]);
-    expect(screen.getByText("Only this circle's lead and administrators see this")).toBeTruthy();
+    expect(screen.getByText("Administrators see every circle; each lead sees their own")).toBeTruthy();
+    // A lead's one circle is open from the start.
+    expect(list.querySelectorAll("details[open]")).toHaveLength(1);
+  });
+
+  it("draws no chapter wrapper for a refused member on the circles page", async () => {
+    auth.signedIn = true;
+    gameFetch.mockResolvedValue(answer(403, { error: "no" }));
+    const { container } = render(
+      <I18nProvider i18n={i18n}>
+        <RoleMeasuresPanel chapter />
+      </I18nProvider>,
+    );
+    await waitFor(() => expect(gameFetch).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(container.innerHTML).toBe("");
+  });
+
+  it("draws nothing for a member whose read fails: only an admin is told", async () => {
+    auth.signedIn = true;
+    gameFetch.mockResolvedValue(answer(500));
+    const { container } = show();
+    await waitFor(() => expect(gameFetch).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 0));
+    expect(container.innerHTML).toBe("");
   });
 
   it("asks for one circle on its page, and draws nothing when the reader does not lead it", async () => {
@@ -126,7 +152,20 @@ describe("RoleMeasuresPanel", () => {
     expect(step("Decision").querySelector("[data-no-data]")?.textContent).toBe("no data");
     expect(step("Renewed at each moon").querySelector("[data-no-data]")?.textContent).toBe("no data");
     expect(panel.textContent).not.toMatch(/too few|not yet/);
+    expect(screen.getByText("Only this circle's lead and administrators see this")).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2 }).getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("reads eighteen minutes as under an hour, and only exactly 0 as 0 hours", async () => {
+    Object.assign(auth, { admin: true, signedIn: true });
+    const quick = { ...ROWS[3], applications: { ...ROWS[3].applications, medianHoursToReply: 0.3, medianHoursToInterview: 0 } };
+    gameFetch.mockResolvedValue(answer(200, { rows: [quick], scope: "village" }));
+    show("c-anchor");
+    const panel = await screen.findByTestId("role-measures-panel");
+    await waitFor(() => expect(panel.textContent).toContain("Applying"));
+    const step = (label: string) => Array.from(panel.querySelectorAll("li")).find((li) => li.textContent?.includes(label))!;
+    expect(step("First reply").textContent).toContain("under an hour");
+    expect(step("First interview").textContent).toContain("0 hours");
   });
 
   it("switches season and links each named circle to its own measures", async () => {

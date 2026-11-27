@@ -73,15 +73,20 @@ describe("buildMeasures", () => {
 });
 
 describe("who reads which circle", () => {
+  const kept = { leadActive: true, leadIsExample: false };
   const circles = [
-    { id: "c1", leadRoleId: "lead-1" },
-    { id: "c2", leadRoleId: "lead-2" },
-    { id: "c3", leadRoleId: null },
+    { id: "c1", leadRoleId: "lead-1", ...kept },
+    { id: "c2", leadRoleId: "lead-2", ...kept },
+    { id: "c3", leadRoleId: null, ...kept },
+    { id: "c4", leadRoleId: "lead-4", leadActive: false, leadIsExample: false },
+    { id: "c5", leadRoleId: "lead-5", leadActive: true, leadIsExample: true },
   ];
   const rows = [{ circleId: "c1" }, { circleId: "c2" }, { circleId: null }];
   it("a lead reads the circles whose lead seat they sit in, and no other", () => {
     expect(circlesLed(circles, ["lead-2", "planter"])).toEqual(["c2"]);
     expect(circlesLed(circles, ["planter"])).toEqual([]);
+    // A rested lead seat and an example lead seat open nothing.
+    expect(circlesLed(circles, ["lead-4", "lead-5"])).toEqual([]);
     const scope = measuresScope(false, ["c2"]);
     expect(rowsInScope(rows, scope)).toEqual([{ circleId: "c2" }]);
     expect(rowsInScope(rows, scope, "c1")).toEqual([]);

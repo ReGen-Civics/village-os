@@ -152,12 +152,28 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
  * nothing else; with none, they read nothing. The seat is the circle's own
  * record of who leads it, so a role named Steward that is a circle's lead seat
  * counts, and a role named Lead that no circle names does not.
+ *
+ * The lead seat must be one the circle still keeps: active (a seat the circle
+ * rested, `rest_seat` or a season roll, opens nothing) and not a standing
+ * example, the rule `keptSeat` in server/lib/circleStanding.ts applies to every
+ * seat a room reads. A seat-based read scope outside the one gate, recorded in
+ * shared/capabilities.ts and docs/ADR_2026-11_CIRCLE_LEADS_READ_MEASURES.md.
  */
 export type MeasuresScope = { kind: "village" } | { kind: "circles"; circleIds: string[] } | { kind: "none" };
 
-export function circlesLed(circles: ReadonlyArray<{ id: string; leadRoleId: string | null }>, liveSeatIds: readonly string[]): string[] {
+/** One circle and its lead seat, as the repo reads them: the seat's own active and example flags ride along. */
+export interface CircleLeadSeat {
+  id: string;
+  leadRoleId: string | null;
+  /** `org_roles.active` of the lead seat: false once the circle rests it. */
+  leadActive: boolean;
+  /** `org_roles.is_example` of the lead seat. */
+  leadIsExample: boolean;
+}
+
+export function circlesLed(circles: readonly CircleLeadSeat[], liveSeatIds: readonly string[]): string[] {
   const seats = new Set(liveSeatIds);
-  return circles.filter((c) => c.leadRoleId !== null && seats.has(c.leadRoleId)).map((c) => c.id);
+  return circles.filter((c) => c.leadRoleId !== null && c.leadActive && !c.leadIsExample && seats.has(c.leadRoleId)).map((c) => c.id);
 }
 
 export function measuresScope(isAdmin: boolean, led: readonly string[]): MeasuresScope {

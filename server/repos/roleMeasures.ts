@@ -12,7 +12,7 @@
  * UNIX_TIMESTAMP so the host's offset cannot shift them.
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import type { ApplicationFact, HolderFact } from "../../shared/roleMeasures";
+import type { ApplicationFact, CircleLeadSeat, HolderFact } from "../../shared/roleMeasures";
 
 async function rows(pool: Pool, sql: string, params: unknown[] = []): Promise<RowDataPacket[]> {
   try {
@@ -125,11 +125,23 @@ export async function holderFacts(pool: Pool): Promise<HolderFact[]> {
   });
 }
 
-/** Each circle's lead seat (`circles.lead_role_id`), for deciding which circles a lead reads. Standing examples never count. */
-export async function circleLeadSeats(pool: Pool): Promise<Array<{ id: string; leadRoleId: string | null }>> {
-  return (await rows(pool, "SELECT id, lead_role_id FROM circles WHERE is_example = 0 AND lead_role_id IS NOT NULL")).map((r) => ({
+/**
+ * Each circle's lead seat (`circles.lead_role_id`) with the seat's own active
+ * and example flags, for deciding which circles a lead reads (`circlesLed`
+ * refuses a rested or example seat). Example circles never count.
+ */
+export async function circleLeadSeats(pool: Pool): Promise<CircleLeadSeat[]> {
+  return (
+    await rows(
+      pool,
+      "SELECT c.id, c.lead_role_id, r.active AS lead_active, r.is_example AS lead_is_example " +
+        "FROM circles c JOIN org_roles r ON r.id = c.lead_role_id WHERE c.is_example = 0",
+    )
+  ).map((r) => ({
     id: String(r.id),
     leadRoleId: r.lead_role_id == null ? null : String(r.lead_role_id),
+    leadActive: Number(r.lead_active) === 1,
+    leadIsExample: Number(r.lead_is_example) === 1,
   }));
 }
 
