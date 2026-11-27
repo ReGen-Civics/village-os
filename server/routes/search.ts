@@ -1,5 +1,5 @@
 /**
- * FIND ANYTHING, the server half (shared/findAnything.ts holds the rules and the ranking).
+ * FIND ANYTHING, the server half (shared/findAnything.ts holds the rules and the ranking, shared/findPages.ts the pages).
  *
  *   GET  /api/search/index   every place THIS reader may open: pages, roles, circles, quests, and people for members
  *   POST /api/search/guide   the village's guide names one to three of those places for words the search missed
@@ -55,19 +55,15 @@ import { ipBucket } from "../../shared/openProposals";
 import { guideAudience, guideName } from "../../shared/guideName";
 import {
   FIND_HELP_MAX,
-  FIND_PAGES,
   FIND_QUERY_MAX,
-  audienceAdmits,
   findGuidePrompt,
   guideDestinations,
-  lifecycleAdmits,
-  pageEntry,
   pickDestinations,
   type FindEntry,
   type FindGuideAnswer,
   type FindIndex,
-  type FindReader,
 } from "../../shared/findAnything";
+import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry, type FindReader } from "../../shared/findPages";
 
 /** Where the roles, circles, quests and people come from. `searchSources` reads them; a test hands in its own. */
 export interface SearchSources {

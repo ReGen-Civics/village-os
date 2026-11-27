@@ -1,23 +1,20 @@
 /**
- * Find anything's rules (shared/findAnything.ts): the forgiving ranking, the page table against the tab names,
+ * Find anything's rules (shared/findAnything.ts) and its pages (shared/findPages.ts): the forgiving ranking, the page table against the tab names,
  * and the guide's answer held to the reader's own list.
  */
 import { describe, expect, it } from "vitest";
 import {
   FIND_GUIDE_LIST_MAX,
-  FIND_PAGES,
-  audienceAdmits,
   findGuidePrompt,
   groupFind,
   guideDestinations,
-  lifecycleAdmits,
-  pageEntry,
   pickDestinations,
   rankFind,
   weakFind,
   withinOneTypo,
   type FindEntry,
 } from "./findAnything";
+import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry } from "./findPages";
 import { PAGE_TITLES } from "./pageTitles";
 
 const pages = FIND_PAGES.map((p) => pageEntry(p, { commitment: "Love Letter" }));
