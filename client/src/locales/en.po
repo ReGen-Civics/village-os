@@ -19675,9 +19675,9 @@ msgid "The Thursday Crew"
 msgstr "The Thursday Crew"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, choice sea-chart, hint"
-msgid "Aged paper, torn cards and Garamond headings."
-msgstr "Aged paper, torn cards and Garamond headings."
+#~ msgctxt "game variable look.light_paper, choice sea-chart, hint"
+#~ msgid "Aged paper, torn cards and Garamond headings."
+#~ msgstr "Aged paper, torn cards and Garamond headings."
 
 #: client/src/components/modules/ConsentCard.tsx
 msgctxt "ConsentCard, aria-label"
@@ -27285,9 +27285,9 @@ msgid "edited"
 msgstr "edited"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.default_mode, choice light, hint"
-msgid "The day page, and Sea chart where the village chose it."
-msgstr "The day page, and Sea chart where the village chose it."
+#~ msgctxt "game variable look.default_mode, choice light, hint"
+#~ msgid "The day page, and Sea chart where the village chose it."
+#~ msgstr "The day page, and Sea chart where the village chose it."
 
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk error"
@@ -29046,6 +29046,11 @@ msgstr "{0}: {1} waiting"
 msgctxt "task board: dateChips.nextFullMoon"
 msgid "Next full moon"
 msgstr "Next full moon"
+
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, description"
+msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are."
+msgstr "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are."
 
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
@@ -35172,9 +35177,9 @@ msgid "Needs the address of a Sentinel-2 WMS service."
 msgstr "Needs the address of a Sentinel-2 WMS service."
 
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, choice sea-chart, label"
-msgid "Sea chart"
-msgstr "Sea chart"
+#~ msgctxt "game variable look.light_paper, choice sea-chart, label"
+#~ msgid "Sea chart"
+#~ msgstr "Sea chart"
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The public line for {name}"
@@ -54405,6 +54410,11 @@ msgctxt "approval inbox"
 msgid "Nothing is waiting."
 msgstr "Nothing is waiting."
 
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice light, hint"
+msgid "The day page, and Weathered map where the village chose it."
+msgstr "The day page, and Weathered map where the village chose it."
+
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
 msgid "Live preview"
@@ -59202,6 +59212,11 @@ msgctxt "TransferCeremony, p"
 msgid "Whoever carries this can {0}."
 msgstr "Whoever carries this can {0}."
 
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, hint"
+msgid "Weathered paper, pages torn each their own way, and Garamond headings."
+msgstr "Weathered paper, pages torn each their own way, and Garamond headings."
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "Edits not saved"
@@ -59861,6 +59876,11 @@ msgstr "Back"
 msgctxt "Mail settings, danger zone confirm"
 msgid "Confirm disconnecting delivery reports"
 msgstr "Confirm disconnecting delivery reports"
+
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, label"
+msgid "Weathered map"
+msgstr "Weathered map"
 
 #: client/src/pages/Characters.tsx
 msgctxt "Characters, h1"
@@ -64681,9 +64701,9 @@ msgid "Paths"
 msgstr "Paths"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, description"
-msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
-msgstr "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
+#~ msgctxt "game variable look.light_paper, description"
+#~ msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
+#~ msgstr "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -65837,9 +65857,9 @@ msgid "Never by stage (role or badge only)"
 msgstr "Never by stage (role or badge only)"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.default_mode, description"
-msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
-msgstr "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
+#~ msgctxt "game variable look.default_mode, description"
+#~ msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
+#~ msgstr "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
 
 #: client/src/components/governance/decisionNounWords.ts
 msgctxt "proposal wizard"
@@ -76859,6 +76879,11 @@ msgstr "as of {0}. The chain didn't answer just now, so this is the last true va
 msgctxt "ModuleStewardPanel, p"
 msgid "Supported by whoever runs this deployment. One bill, one number to call."
 msgstr "Supported by whoever runs this deployment. One bill, one number to call."
+
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, description"
+msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode."
+msgstr "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode."
 
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"
