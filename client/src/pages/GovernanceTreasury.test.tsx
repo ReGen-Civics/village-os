@@ -64,7 +64,7 @@ vi.mock("@/components/budgets/BudgetDesk", async () => {
     },
   };
 });
-vi.mock("@/components/myMoon/ReviewQueue", () => ({ default: () => <p>review queue drawn</p> }));
+vi.mock("@/components/myMoon/ReviewQueue", () => ({ default: ({ look }: { look?: unknown }) => <p data-queue-look={look ? "handed" : "own"}>review queue drawn</p> }));
 vi.mock("@/components/myMoon/PayBoard", async () => {
   const { useEffect, useState } = await import("react");
   // Its section (#pay-board) draws a moment after the page, as the real lazy board does once its read is back.
@@ -175,6 +175,8 @@ describe("a member who holds no treasury power", () => {
   it("suggests a change to the budget through the door the budget read names", async () => {
     draw();
     fireEvent.click(await screen.findByRole("button", { name: "Suggest a change to the budget" }));
+    // The form takes focus as it opens, on its heading.
+    await waitFor(() => expect(document.activeElement?.id).toBe("budget-suggest-h"));
     fireEvent.change(await screen.findByLabelText("What the line is for"), { target: { value: "Seed library shelves" } });
     fireEvent.change(screen.getByLabelText("Amount, in USD"), { target: { value: "120" } });
     fireEvent.change(screen.getByLabelText("Why"), { target: { value: "The seed swap needs somewhere to live." } });
@@ -195,7 +197,9 @@ describe("a member who holds no treasury power", () => {
       expect(document.querySelector(`[data-governance-treasury="${s}"]`), s).toBeNull();
       expect(document.getElementById(s)?.getAttribute("data-treasury-locked"), s).toBeTruthy();
     }
-    expect(document.getElementById("cash")?.textContent).toContain("opens for whoever holds the treasurer's power to pay cash");
+    // One line names the four, each name at its desk's own anchor, and says who they open for.
+    expect(document.getElementById("cash")?.textContent).toBe("Cash to pay out");
+    expect(document.querySelector('[data-governance-treasury="keepers"]')?.textContent).toContain("Each opens for whoever holds its power, which the village gives by its vote.");
     expect(document.querySelector('[data-governance-treasury="keepers"] a')?.getAttribute("href")).toBe("/powers");
     expect(screen.queryByRole("navigation", { name: "Your desks" })).toBeNull();
     expect(screen.getByText("The village's cash, in the open")).toBeTruthy();
@@ -207,7 +211,20 @@ describe("a member who holds no treasury power", () => {
     window.history.replaceState(null, "", "/governance/treasury#prices");
     try {
       draw();
-      await waitFor(() => expect(document.activeElement?.textContent).toContain("Quest prices open for whoever holds the power to set pay"), { timeout: 3000 });
+      await waitFor(() => expect(document.activeElement?.id).toBe("prices"), { timeout: 3000 });
+      expect(document.activeElement?.textContent).toBe("Quest prices");
+    } finally {
+      window.history.replaceState(null, "", "/");
+    }
+  });
+});
+
+describe("a member who follows an old link to Pay by member", () => {
+  it("lands on End of Moon pay's name in the line of desks it does not hold", async () => {
+    window.history.replaceState(null, "", "/governance/treasury#pay-board");
+    try {
+      draw();
+      await waitFor(() => expect(document.activeElement?.id).toBe("end-of-moon"), { timeout: 3000 });
     } finally {
       window.history.replaceState(null, "", "/");
     }
@@ -227,8 +244,7 @@ describe("a holder of a treasury power", () => {
     expect(rules).toContain("Over 200 waits for a second signer");
     expect(rules).toContain("You can't mint to yourself");
     expect(rules).not.toContain("ledger.");
-    expect(screen.getByLabelText("Amount")).toBeTruthy();
-    expect(screen.getByLabelText("Reason")).toBeTruthy();
+    for (const name of ["Token", "Member", "Amount", "Reason", "What was contributed"]) expect(screen.getByLabelText(name), name).toBeTruthy();
     expect(screen.queryByText("review queue drawn")).toBeNull();
     expect(screen.queryByText(/cash payouts drawn/)).toBeNull();
     expect(asked()).toContain("/api/treasury/mint-options");
@@ -239,7 +255,12 @@ describe("a holder of a treasury power", () => {
     env.doors = { mint: false, cashPay: true, pay: true };
     draw();
     expect(await screen.findByText("review queue drawn")).toBeTruthy();
+    expect(document.querySelector("[data-queue-look]")?.getAttribute("data-queue-look")).toBe("handed");
     expect(await screen.findAllByText("pay by member drawn")).toHaveLength(1);
+    // The queue, Pay by member and the settings are parts of one End of Moon card.
+    const card = document.querySelector('[data-governance-treasury="end-of-moon-card"]')!;
+    expect(card.contains(document.getElementById("pay-board"))).toBe(true);
+    expect(card.contains(document.querySelector('[data-governance-treasury="moon-settings"]'))).toBe(true);
     expect(await screen.findByText("cash payouts drawn")).toBeTruthy();
     expect(env.cashProps[0]).toMatchObject({ withPayBoard: false, withHeading: false, withSettings: false, look: CASH_SHEET });
     const settings = document.querySelector('[data-governance-treasury="moon-settings"]') as HTMLDetailsElement;
@@ -314,7 +335,7 @@ describe("a holder of a treasury power", () => {
 describe("the desks keep Admin's look in Admin", () => {
   it("draws nothing off the sheet's palette in the sheet's looks", async () => {
     const looks = await import("@/components/treasury/deskLooks");
-    for (const [name, look] of Object.entries({ CASH: looks.CASH_SHEET, MINT: looks.MINT_SHEET, PRICING: looks.PRICING_SHEET, KIT: looks.SETTINGS_SHEET_KIT })) {
+    for (const [name, look] of Object.entries({ CASH: looks.CASH_SHEET, MINT: looks.MINT_SHEET, PRICING: looks.PRICING_SHEET, KIT: looks.SETTINGS_SHEET_KIT, QUEUE: looks.QUEUE_SHEET, BOARD: looks.PAY_BOARD_SHEET })) {
       const text = JSON.stringify(look);
       for (const bad of ["bg-white", "teal-deep", "gray-", "sage", "coral", "amber", "aqua", "min-h-9", "min-h-[40px]"]) expect(text, `${name}: ${bad}`).not.toContain(bad);
     }

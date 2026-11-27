@@ -97,8 +97,11 @@ export interface MintDeskLook {
   /** How the mint's rules are told: Admin's full paragraph, or three short lines. */
   rules: "paragraph" | "bullets";
   rulesText: string;
-  /** A field's visible label, wrapping the field. */
+  /** The form's fields: in a wrapping row in Admin, two to a row from sm up on the sheet. */
+  formGrid: string;
+  /** A field's visible label, wrapping the field; the reason's label takes the row's room. */
   label: string;
+  reasonLabel: string;
   select: string;
   amount: string;
   reason: string;
@@ -116,7 +119,9 @@ export const MINT_ADMIN: MintDeskLook = {
   heading: "font-semibold text-foreground mb-1",
   rules: "paragraph",
   rulesText: "text-xs text-muted-foreground mb-3",
+  formGrid: "flex flex-wrap items-end gap-2",
   label: "flex flex-col gap-1 text-xs font-medium text-muted-foreground",
+  reasonLabel: "flex min-w-48 flex-1 flex-col gap-1 text-xs font-medium text-muted-foreground",
   select: "text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground",
   amount: "text-sm border border-border rounded-lg px-3 py-2 w-28 bg-background text-foreground",
   reason: "text-sm border border-border rounded-lg px-3 py-2 w-full bg-background text-foreground",
@@ -132,9 +137,11 @@ export const MINT_SHEET: MintDeskLook = {
   heading: "font-display text-xl text-card-foreground",
   rules: "bullets",
   rulesText: `${HINT} list-disc space-y-1 pl-5`,
+  formGrid: "grid items-end gap-3 sm:grid-cols-2",
   label: `${LABEL} flex flex-col gap-1`,
+  reasonLabel: `${LABEL} flex flex-col gap-1`,
   select: `${FIELD} min-h-11`,
-  amount: `${FIELD} min-h-11 w-32`,
+  amount: `${FIELD} min-h-11`,
   reason: `${FIELD} min-h-11`,
   primary: BTN_PRIMARY,
   row: `${TILE} flex flex-wrap items-center gap-3`,
@@ -184,6 +191,8 @@ export interface PricingDeskLook {
   reasonSelect: string;
   /** The note an admin setting pay reads (PayDoorNote); unset keeps its own amber. */
   doorNote?: string;
+  /** Draw no "use every suggestion" act while nothing is inside the band. */
+  hideEmptyBulk?: boolean;
 }
 
 const PRICE_BTN = "rounded-lg px-3 py-2 text-sm font-semibold min-h-[40px]";
@@ -243,7 +252,52 @@ export const PRICING_SHEET: PricingDeskLook = {
   flaggedBox: "rounded-lg border border-destructive/50 bg-destructive/10 text-destructive",
   reasonSelect: "min-h-11 rounded-lg border border-destructive/40 bg-background px-2 text-sm text-foreground",
   doorNote: "rounded-xl border border-notice/60 bg-muted px-3 py-2 text-sm text-foreground",
+  hideEmptyBulk: true,
 };
+
+// ── The End of Moon review queue (components/myMoon/ReviewQueue.tsx) ──────────
+
+/** The queue's classes. My Moon's look (MOON_QUEUE) lives beside the queue, so this file never carries moonUi. */
+export interface QueueLook {
+  /** The queue's own box; empty on a page that already sets it on a card. */
+  section: string;
+  headingTag: "h2" | "h3";
+  heading: string;
+  /** One member's recap. */
+  row: string;
+  /** One item inside it. */
+  item: string;
+  /** Open, Close. */
+  toggle: string;
+  /** An item's Approve, chosen and not. */
+  choiceOn: string;
+  choiceOff: string;
+  /** An item's Return with a note, chosen. */
+  returnOn: string;
+  /** The one main act: Approve the work. */
+  approveWork: string;
+  /** Return the whole recap with a note. */
+  secondary: string;
+  input: string;
+}
+
+export const QUEUE_SHEET: QueueLook = {
+  section: "flex flex-col gap-4",
+  headingTag: "h3",
+  heading: "font-display text-xl text-card-foreground",
+  row: `${TILE} flex flex-col gap-3`,
+  item: "flex flex-col gap-2 rounded-xl border border-border bg-card p-3",
+  toggle: `${BTN_SECONDARY} self-start`,
+  choiceOn: `${BTN_NOTICE} bg-notice/15`,
+  choiceOff: BTN_SECONDARY,
+  returnOn: `${BTN_SECONDARY} border-destructive text-destructive`,
+  approveWork: BTN_PRIMARY,
+  secondary: BTN_SECONDARY,
+  input: `${FIELD} min-h-11`,
+};
+
+/** Pay by member inside the End of Moon card: a part of the card, set off by a rule, never a panel of its own. */
+export const PAY_BOARD_SHEET = "flex scroll-mt-28 flex-col gap-3 border-t border-border pt-5";
 
 // ── The End of Moon review's settings (components/admin/moonReview) ─────────
 

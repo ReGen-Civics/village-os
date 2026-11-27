@@ -118,26 +118,6 @@ msgctxt "treasury: the quiet link to the budget, under a holder's desks"
 msgid "The cash budget, line by line"
 msgstr "El presupuesto en efectivo, línea por línea"
 
-# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
-msgctxt "treasury: a desk this reader does not hold"
-msgid "End of Moon pay opens for whoever holds the power to pay or to approve the moon alone."
-msgstr "El pago de Fin de Luna se abre para quien tiene el poder de pagar o de aprobar la luna por su cuenta."
-
-# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
-msgctxt "treasury: a desk this reader does not hold"
-msgid "Cash to pay out opens for whoever holds the treasurer's power to pay cash."
-msgstr "El efectivo por pagar se abre para quien tiene el poder del tesorero de pagar en efectivo."
-
-# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
-msgctxt "treasury: a desk this reader does not hold"
-msgid "Quest prices open for whoever holds the power to set pay, such as the Treasurer."
-msgstr "Los precios de las misiones se abren para quien tiene el poder de fijar pagos, como el Tesorero."
-
-# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
-msgctxt "treasury: a desk this reader does not hold"
-msgid "Mint tokens opens for whoever holds the power to mint."
-msgstr "Emitir tokens se abre para quien tiene el poder de emitir."
-
 # needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
 msgctxt "treasury: the desks this reader does not hold"
 msgid "The other desks"
@@ -253,11 +233,6 @@ msgctxt "treasury: budget"
 msgid "Every member reads it. Whoever holds the budget power changes it."
 msgstr "Cada miembro lo lee. Quien tiene el poder del presupuesto lo cambia."
 
-# needs-native-review: the Treasury, for a member who holds no treasury power, 27 Nov 2026
-msgctxt "treasury: who keeps the books, for a member who holds no treasury power"
-msgid "The treasurer's desks open here for whoever the village gives those powers by its vote."
-msgstr "Los escritorios del tesorero se abren aquí para quien la aldea dé esos poderes por su voto."
-
 # needs-native-review: the Treasury, the purses read aloud, 27 Nov 2026
 msgctxt "treasury: the purses, read aloud"
 msgid "This moon's cash"
@@ -272,3 +247,38 @@ msgstr "El formulario de emisión no pudo cargarse en este momento. Inténtelo d
 msgctxt "pricing desk"
 msgid "A Treasurer who is not an admin opens this desk under Governance, Treasury"
 msgstr "Un Tesorero que no es administrador abre este escritorio en Gobernanza, Tesorería"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: who keeps the books, for a reader without these powers"
+msgid "Each opens for whoever holds its power, which the village gives by its vote."
+msgstr "Cada uno se abre para quien tiene su poder, que la aldea da por su voto."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "Save the sheet as CSV, or paste its cells below."
+msgstr "Guarde la hoja como CSV, o pegue sus celdas abajo."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like."
+msgstr "La primera fila nombra las columnas: periodo, etiqueta, categoría y planificado, y luego círculo, rol, moneda y nota si lo desea."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
+msgstr "Un periodo es una luna, un mes como 2026-11, una temporada o dos fechas. Usted lee lo que cambia antes de que se guarde nada."
+
+# needs-native-review: the pricing desk, the first step on the Treasurer's path, 27 Nov 2026
+msgctxt "pricing desk, the first step on the Treasurer's path"
+msgid "{equity}: its meaning"
+msgstr "{equity}: su significado"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Token"
+msgstr "Token"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Member"
+msgstr "Miembro"

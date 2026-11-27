@@ -50,7 +50,7 @@ import { formatMoney } from "@shared/money";
 import type { BudgetRead } from "@/components/budgets/budgetApi";
 import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
 import { useTreasuryDoors, type TreasuryDoors } from "@/components/treasury/useTreasuryDoors";
-import { CASH_SHEET, PRICING_SHEET, SETTINGS_SHEET_KIT, SettingsKitContext } from "@/components/treasury/deskLooks";
+import { CASH_SHEET, PAY_BOARD_SHEET, PRICING_SHEET, QUEUE_SHEET, SETTINGS_SHEET_KIT, SettingsKitContext } from "@/components/treasury/deskLooks";
 import { goToSection, holdSection } from "@/lib/sectionAnchor";
 import { TREASURY_PATH, TREASURY_SECTIONS, isTreasurySection, treasuryHref, type TreasurySection } from "@/lib/treasuryAddress";
 
@@ -112,27 +112,22 @@ function useDeskWords() {
     budget: {
       title: t({ message: "Cash budget", context: "treasury: a desk" }),
       line: t({ message: "What the village plans to pay this moon, and what is left.", context: "treasury: a desk" }),
-      opensFor: "",
     },
     endOfMoon: {
       title: t({ message: "End of Moon pay", context: "treasury: a desk" }),
       line: t({ message: "Confirm what was agreed against what was delivered.", context: "treasury: a desk" }),
-      opensFor: t({ message: "End of Moon pay opens for whoever holds the power to pay or to approve the moon alone.", context: "treasury: a desk this reader does not hold" }),
     },
     cash: {
       title: t({ message: "Cash to pay out", context: "treasury: a desk" }),
       line: t({ message: "Send what is owed by bank transfer, then record it here.", context: "treasury: a desk" }),
-      opensFor: t({ message: "Cash to pay out opens for whoever holds the treasurer's power to pay cash.", context: "treasury: a desk this reader does not hold" }),
     },
     prices: {
       title: t({ message: "Quest prices", context: "treasury: a desk" }),
       line: t({ message: "Price each open quest beside the suggested figure.", context: "treasury: a desk" }),
-      opensFor: t({ message: "Quest prices open for whoever holds the power to set pay, such as the Treasurer.", context: "treasury: a desk this reader does not hold" }),
     },
     mint: {
       title: t({ message: "Mint tokens", context: "treasury: a desk" }),
       line: t({ message: "Pay a request or give a bonus in the village's tokens.", context: "treasury: a desk" }),
-      opensFor: t({ message: "Mint tokens opens for whoever holds the power to mint.", context: "treasury: a desk this reader does not hold" }),
     },
   } as const;
 }
@@ -209,7 +204,7 @@ function Purses({ read }: { read: BudgetRead | null }) {
 }
 
 /** Land on the section the address names once the page has drawn it, then hold it while the desks above load. */
-function useLandOnTreasury(ready: boolean): void {
+function useLandOnTreasury(ready: boolean, fallback: (h: TreasurySection) => TreasurySection = (h) => h): void {
   const landed = useRef(false);
   useEffect(() => {
     if (landed.current || !ready || typeof window === "undefined") return;
@@ -223,6 +218,7 @@ function useLandOnTreasury(ready: boolean): void {
       landed.current = true;
       return;
     }
+    const target = fallback(h);
     // A desk draws its own section late (Pay by member's #pay-board is inside a lazy chunk), so look again for a few
     // seconds until it is there, and stop the moment the reader takes the page over.
     let release = () => {};
@@ -233,10 +229,10 @@ function useLandOnTreasury(ready: boolean): void {
       for (const e of READER_INPUT) window.removeEventListener(e, stop, true);
     };
     const look = () => {
-      if (goToSection(h, { push: false })) {
+      if (goToSection(target, { push: false })) {
         landed.current = true;
         stop();
-        release = holdSection(h);
+        release = holdSection(target);
       } else if (++tries < LAND_TRIES) timer = setTimeout(look, LAND_EVERY_MS);
       else stop();
     };
@@ -308,7 +304,8 @@ export default function GovernanceTreasury() {
   const held = known ? DESK_ORDER.filter((k) => open[k]) : [];
   const notHeld = known ? DESK_ORDER.filter((k) => !open[k]) : [];
   const suggestDoor = suggestDoorOf(budget);
-  useLandOnTreasury(!!user && known);
+  // A member who follows an old link to Pay by member, which only a payer is drawn, lands on End of Moon pay's line.
+  useLandOnTreasury(!!user && known, (h) => (h === TREASURY_SECTIONS.payBoard && !open.endOfMoon ? TREASURY_SECTIONS.endOfMoon : h));
 
   const jump = (section: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (goToSection(section)) e.preventDefault();
@@ -425,19 +422,18 @@ export default function GovernanceTreasury() {
               {open.endOfMoon ? (
                 <section id={TREASURY_SECTIONS.endOfMoon} aria-labelledby="end-of-moon-h" className="scroll-mt-28 space-y-4 [&_#pay-board]:scroll-mt-28" data-governance-treasury="end-of-moon">
                   <SectionHead desk="endOfMoon" id="end-of-moon-h" title={words.endOfMoon.title} line={words.endOfMoon.line} />
+                  <div className={`${CARD} flex flex-col gap-5`} data-governance-treasury="end-of-moon-card">
                   <Suspense fallback={<BreathingLoader />}>
-                    {moonReviewOn ? (
-                      <div className={CARD}>
-                        <ReviewQueue />
-                      </div>
-                    ) : null}
+                    {moonReviewOn ? <ReviewQueue look={QUEUE_SHEET} /> : null}
                     {/* Each member's cash sent from escrow and the token pay to approve; asks cash.pay or moon.approve_alone. */}
-                    <PayBoard password={bearer} />
+                    <PayBoard password={bearer} className={moonReviewOn ? PAY_BOARD_SHEET : PAY_BOARD_SHEET.replace("border-t border-border pt-5", "")} />
                     {open.cash ? (
                       // The review's own rules (payers, village settings, the moon's rhythm), answered to the cash power: folded, last.
-                      <details className={`${CARD} group`} data-governance-treasury="moon-settings">
-                        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 font-semibold text-foreground">
-                          <Trans context="treasury: the End of Moon review's settings, folded">End of Moon review settings</Trans>
+                      <details className="group border-t border-border pt-5" data-governance-treasury="moon-settings">
+                        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3">
+                          <span className="font-display text-xl text-card-foreground">
+                            <Trans context="treasury: the End of Moon review's settings, folded">End of Moon review settings</Trans>
+                          </span>
                           <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-notice transition-transform group-open:rotate-90" />
                         </summary>
                         <div className="mt-4">
@@ -449,6 +445,7 @@ export default function GovernanceTreasury() {
                       </details>
                     ) : null}
                   </Suspense>
+                  </div>
                 </section>
               ) : null}
 
@@ -511,19 +508,24 @@ export default function GovernanceTreasury() {
                       ? t({ message: "The other desks", context: "treasury: the desks this reader does not hold" })
                       : t({ message: "The treasurer's desks", context: "treasury: the desks this reader does not hold" })}
                   </h2>
-                  <ul className="space-y-2">
-                    {notHeld.map((k) => (
-                      <li key={k} id={SECTION_OF[k]} className={`${QUIET} flex scroll-mt-28 items-start gap-3`} data-treasury-locked={k}>
-                        <Lock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                        <p className={`${HINT} outline-none`} data-section-focus tabIndex={-1}>{words[k].opensFor}</p>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className={HINT}>
-                    <Trans context="treasury: who keeps the books, for a member who holds no treasury power">The treasurer's desks open here for whoever the village gives those powers by its vote.</Trans>{" "}
-                    <Link href="/powers" className={LINK}>
-                      <Trans context="link to the powers page">What We Look After</Trans>
-                    </Link>
+                  <p className={`${QUIET} flex items-start gap-3`}>
+                    <Lock aria-hidden="true" className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                    <span className={HINT}>
+                      {notHeld.map((k, i) => (
+                        <span key={k}>
+                          {i > 0 ? " · " : null}
+                          {/* The desk's own anchor, so an old link to it lands on its name in this line. */}
+                          <span id={SECTION_OF[k]} className="scroll-mt-28 font-semibold text-foreground outline-none" data-treasury-locked={k}>
+                            {words[k].title}
+                          </span>
+                        </span>
+                      ))}
+                      {". "}
+                      <Trans context="treasury: who keeps the books, for a reader without these powers">Each opens for whoever holds its power, which the village gives by its vote.</Trans>{" "}
+                      <Link href="/powers" className={LINK}>
+                        <Trans context="link to the powers page">What We Look After</Trans>
+                      </Link>
+                    </span>
                   </p>
                 </section>
               ) : null}

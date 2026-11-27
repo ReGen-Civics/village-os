@@ -25,6 +25,7 @@ import { effortGuess } from "@/lib/questEffortGuess";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
 import NoSignBandNote from "./NoSignBandNote";
 import { PRICING_ADMIN, type PricingDeskLook } from "@/components/treasury/deskLooks";
+import { useShareNames } from "@/components/ContributionWord";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 
@@ -118,6 +119,8 @@ export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }
   bare?: boolean;
 }) {
   const { t } = useLingui();
+  // The village's own word for its contribution token, never the registry's (the lead, 19 Nov 2026).
+  const equity = useShareNames().equity;
   const input = look.hourInput;
   const primary = look.rowAct;
   const ghost = look.secondary;
@@ -234,7 +237,7 @@ export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }
 
       <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         <li className={step(read.eeMeaningWritten, eeNow)}>
-          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}<Trans context="pricing desk">Earned Equity meaning</Trans></b>
+          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}{t({ message: `${equity}: its meaning`, context: "pricing desk, the first step on the Treasurer's path" })}</b>
           <span className="text-sm text-muted-foreground">{read.eeMeaningWritten ? t({ message: `Written`, context: "pricing desk" }) : <a className={look.link} href="/admin?tab=tokens"><Trans context="pricing desk">Write what it means first</Trans></a>}</span>
         </li>
         <li className={step(read.modelAdopted, modelNow)}>
@@ -265,9 +268,12 @@ export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }
           <span className={look.chipQuiet}>{t({ message: `${counts.set} set`, context: "pricing desk" })}</span>
           {counts.waiting > 0 && <span className={look.chipQuiet}>{t({ message: `${counts.waiting} waiting for a signer`, context: "pricing desk" })}</span>}
         </div>
-        <button className={`${look.bulk} w-full md:w-auto`} disabled={!read.modelAdopted || bulkBusy || counts.ready === 0} onClick={() => void useAllInBand()}>
-          {t({ message: `Use the suggestion on all ${counts.ready} inside the band`, context: "pricing desk" })}
-        </button>
+        {/* With nothing inside the band the sheet draws no act at all, never "all 0" (fold QA round 2). */}
+        {look.hideEmptyBulk && counts.ready === 0 ? null : (
+          <button className={`${look.bulk} w-full md:w-auto`} disabled={!read.modelAdopted || bulkBusy || counts.ready === 0} onClick={() => void useAllInBand()}>
+            {t({ message: `Use the suggestion on all ${counts.ready} inside the band`, context: "pricing desk" })}
+          </button>
+        )}
       </div>
 
       <NoSignBandNote model={read.model} className="text-sm text-muted-foreground mb-3" />

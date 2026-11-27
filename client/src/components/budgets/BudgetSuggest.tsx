@@ -8,7 +8,7 @@
  * then routes it to whoever holds the budget power, or to a vote when the village holds it or nobody does
  * (`routeSuggestion`, shared/suggestions.ts). Nothing here decides where it goes or whether it counts.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { BudgetCategory } from "@shared/budgets";
 import { sentenceOf, type BudgetRead } from "./budgetApi";
@@ -44,6 +44,11 @@ export default function BudgetSuggest({ read, door, bearer, look, onClose }: {
   const [why, setWhy] = useState("");
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
+    heading.current?.scrollIntoView?.({ block: "start" });
+  }, []);
 
   const ready = label.trim() && planned.trim() && why.trim();
 
@@ -81,7 +86,7 @@ export default function BudgetSuggest({ read, door, bearer, look, onClose }: {
 
   return (
     <section className={look.panel} aria-labelledby="budget-suggest-h" data-budget-suggest>
-      <h3 id="budget-suggest-h" className={`${look.h2} mb-1`} data-section-focus tabIndex={-1}>
+      <h3 id="budget-suggest-h" ref={heading} className={`${look.h2} mb-1 scroll-mt-28 outline-none`} data-section-focus tabIndex={-1}>
         {t({ message: "Suggest a change to the budget", context: "budget suggestion" })}
       </h3>
       <ul className={`${look.hint} mb-4 list-disc space-y-1 pl-5`}>

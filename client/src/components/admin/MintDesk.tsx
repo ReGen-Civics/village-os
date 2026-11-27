@@ -185,34 +185,41 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
             : <Trans>A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0).</Trans>}
         </p>
         )}
-        <div className="flex flex-wrap items-end gap-2">
+        <div className={look.formGrid}>
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">Token</Trans>
           <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
-            aria-label={t({ message: "Token to mint", context: "hand-mint form, token picker" })}
             className={look.select}>
             <option value=""><Trans context="hand-mint form, token picker placeholder">Token…</Trans></option>
             {tokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
           </select>
+          </label>
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">Member</Trans>
           <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
-            aria-label={t({ message: "Member to mint to", context: "hand-mint form, member picker" })}
             className={look.select}>
             <option value=""><Trans context="hand-mint form, member picker placeholder">Member…</Trans></option>
             {members.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
           </select>
+          </label>
           <label className={look.label}>
             <Trans context="hand-mint form, a field's label">Amount</Trans>
           <input value={mint.amount} onChange={(e) => setMint({ ...mint, amount: e.target.value })}
             placeholder={t({ message: "Amount", context: "hand-mint form, amount box" })} type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className={look.amount} />
           </label>
-          <label className={`${look.label} min-w-48 flex-1`}>
+          <label className={look.reasonLabel}>
             <Trans context="hand-mint form, a field's label">Reason</Trans>
           <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
             placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className={look.reason} />
           </label>
+          <label className={look.label}>
+            {t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })}
           <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
-            aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className={look.select}>
+            className={look.select}>
             <option value="other">{t({ message: "Contributed: work or other", context: "admin mint form, what stood behind a grant" })}</option>
             <option value="cash">{t({ message: "Contributed: cash", context: "admin mint form, what stood behind a grant" })}</option>
           </select>
+          </label>
           <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
             className={look.primary}>
             <Trans context="hand-mint form, submit button">Mint</Trans>
