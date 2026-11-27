@@ -18,7 +18,10 @@
  *   bottom of the screen then, and the terms should be saved before deciding;
  * - once the card has been scrolled past;
  * - where IntersectionObserver is missing (tests, old browsers): the row
- *   simply stays in the card.
+ *   simply stays in the card;
+ * - before the application reaches Agreement, when the page says so (`float`
+ *   false; QA round 1: adopting is not the act before then);
+ * - while a text field has focus, so a note being written is never covered.
  *
  * While it floats it carries `data-hides-fab`: the guide button sat over the
  * dock's corner, so it steps out until the row is back in its card.
@@ -29,11 +32,13 @@ import { useUnsavedTotal } from "@/lib/unsavedChanges";
 
 const PHONE = "(max-width: 767px)";
 
-export default function DecideDock({ label, note, children }: {
+export default function DecideDock({ label, note, float = true, children }: {
   /** Words above the floating row, so it says what it is for. */
   label: string;
   /** A line under the label while floating, such as why Adopt waits. */
   note?: ReactNode;
+  /** False keeps the row in its card: the page is not at the agreement yet. */
+  float?: boolean;
   children: ReactNode;
 }) {
   const slot = useRef<HTMLDivElement | null>(null);
@@ -43,7 +48,22 @@ export default function DecideDock({ label, note, children }: {
   const [lift, setLift] = useState(0);
   const [height, setHeight] = useState<number | undefined>(undefined);
   const unsaved = useUnsavedTotal();
-  const docked = phone && below && unsaved === 0;
+  const [typing, setTyping] = useState(false);
+  const docked = phone && below && unsaved === 0 && float && !typing;
+
+  // A text field with focus keeps the row in its card: the phone's keyboard and the note come first.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const isText = (t: EventTarget | null) => t instanceof HTMLTextAreaElement || (t instanceof HTMLInputElement && /^(text|search|email|url|tel|number)$/.test(t.type));
+    const onIn = (e: FocusEvent) => setTyping(isText(e.target));
+    const onOut = () => setTyping(false);
+    document.addEventListener("focusin", onIn);
+    document.addEventListener("focusout", onOut);
+    return () => {
+      document.removeEventListener("focusin", onIn);
+      document.removeEventListener("focusout", onOut);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;

@@ -56,6 +56,9 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
+import { applicantStagesOf, refineProposal } from "../lib/applicantOnboarding";
+import { REFINE_ERRORS } from "../../shared/proposalRefine";
+import path from "node:path";
 
 /** A status token: the first email's random one is 32 characters, a signed link's is about 130. */
 const TOKEN_MAX = 300;
@@ -106,7 +109,29 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const s = ref && token ? await statusByToken(work, ref, token) : null;
     // One answer for an unknown ref and a wrong token, so a ref cannot be probed.
     if (!s) return res.status(404).json(NOT_HERE);
-    res.set("Cache-Control", "no-store").json({ status: s });
+    // The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note.
+    res.set("Cache-Control", "no-store").json({ status: { ...s, sixStages: await applicantStagesOf(work, ref as string) } });
+  });
+
+  /** The applicant refines their proposal at References and proposal, by their status link (shared/proposalRefine.ts). */
+  app.post("/api/application-status/:ref/proposal", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-refine:${deps.clientIp ? deps.clientIp(req) : "x"}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await refineProposal(work, ref, req.body);
+    out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
+  });
+
+  /** The same, signed in as the applicant. */
+  app.post("/api/governance/applications/:ref/proposal", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-refine:${String(viewer.id)}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
+    const out = await refineProposal(work, ref, req.body);
+    out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
   });
 
   app.get("/api/governance/applications/:ref/status", async (req, res) => {
@@ -117,7 +142,7 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
     const s = await statusOf(work, ref);
     if (!s) return res.status(404).json(NOT_HERE);
-    res.set("Cache-Control", "no-store").json({ status: s });
+    res.set("Cache-Control", "no-store").json({ status: { ...s, sixStages: await applicantStagesOf(work, ref) } });
   });
 
   // ── The applicant answers the terms we changed (joining lane PR 4) ────────
@@ -279,7 +304,9 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
   });
 
   // ── Shortlist, references, follow-ups and the final call (server/routes/applicantOnboarding.ts) ──
-  registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp });
+  // The conversations' files (0444) sit beside the proposals' private files, outside the public uploads volume.
+  const noteFilesDir = deps.proposalFileDir ? path.join(path.dirname(deps.proposalFileDir), "private-conversation-notes") : undefined;
+  registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp, noteFilesDir });
 
   // ── The clock: reminders only ─────────────────────────────────────────────
   registerJob(REVIEW_CLOCK_JOB, CLOCK_EVERY_MS, async () => {

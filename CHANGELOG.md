@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.0 (2026-11-27)
+
+### What changed for your village
+
+- **An applicant's path, end to end.** An application now moves through six clear stages: received, our review, references, your proposal, the final conversation and agreement. The applicant sees where they stand, who acts next and what happens after, can add their references and refine their proposal between conversations, and books each conversation from the link of the role that holds it.
+- **Private notes for each conversation.** The people who hold an applicant's conversations keep notes, transcripts, recordings and files with that conversation, and are told when new ones arrive. The applicant never sees them, and nobody outside the conversation's own interviewers and the people who decide does.
+- **The team walks each application one stage at a time.** A walkthrough names who acts next and the one act, keeps every version of the proposal with its time, and opens the final conversation only once the references are followed up and the conversations are written up. Nothing moves an application without a person, and nothing scores or ranks anyone.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+Yes, lightly. Migration 0444 adds one new table for the conversation notes. It only adds; going back to 1.3.99 still works, and the older version ignores the table.
+
+---
+
 ## 1.3.99 (2026-11-27)
 
 ### What changed for your village

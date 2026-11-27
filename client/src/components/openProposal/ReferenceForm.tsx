@@ -43,7 +43,7 @@ export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: stri
     }
   };
   return (
-    <section aria-labelledby="your-references" className={CARD_FEATURED} data-reference-form="">
+    <section id="reference-form" aria-labelledby="your-references" className={`scroll-mt-24 ${CARD_FEATURED}`} data-reference-form="">
       <p className={EYEBROW}>{words.step}</p>
       <h2 id="your-references" className={H2}>{words.heading}</h2>
       <p className="mt-1 text-foreground">{line ?? words.line}</p>

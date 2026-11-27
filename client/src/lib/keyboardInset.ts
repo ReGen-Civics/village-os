@@ -50,6 +50,26 @@ export function isTypedField(el: Element | null): el is HTMLElement {
   return !!el && typeof (el as HTMLElement).matches === "function" && (el as HTMLElement).matches(TYPED);
 }
 
+/**
+ * True while a field that brings up a keyboard has focus anywhere on the page, so a bar fixed to the bottom of a
+ * phone can step aside for the note being written (QA round 2: "Go to the circle's answer" sat over a note field).
+ */
+export function useTypingOnPage(): boolean {
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onIn = (e: FocusEvent) => setTyping(isTypedField(e.target as Element | null));
+    const onOut = () => setTyping(false);
+    document.addEventListener("focusin", onIn);
+    document.addEventListener("focusout", onOut);
+    return () => {
+      document.removeEventListener("focusin", onIn);
+      document.removeEventListener("focusout", onOut);
+    };
+  }, []);
+  return typing;
+}
+
 /** Keep the focused text field inside `ref` in view while the keyboard is up. */
 export function useFocusedFieldInView(ref: RefObject<HTMLElement | null>, enabled = true): void {
   useEffect(() => {
