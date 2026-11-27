@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.91 (2026-11-27)
+
+### What changed for your village
+
+- **Quests, end to end.** A member can take back work they turned in until it is approved, and the stewards are told. The profile lists every quest a member is doing and the open quests suited to their roles. A quest's steps can each ask for words, photos or documents, and a ticked step must be filled before the quest is turned in; reordering the steps clears the ticks. "Work to check" shows in Today, and in the admin inbox, only while something waits.
+- **The home page.** Every path picture fills its card. The season reads as one card: its name once, a ring of goals met, a time line to its close, and one Plan your season button. "Who comes here" is the last section.
+- **One guide in the corner.** The corner menu shows a member's own companions and one row for the village guide, in the guide's own name and picture, with Admin help inside it for an admin. Every animal picture is round. The guide's knowledge files no longer name a guide.
+- **A clean peek at the map.** The home page's map window shows the village's own map, with buildings sized to the window and no controls in it.
+
+### What you must do
+
+Nothing. An admin can tick which quest steps need a submission in the quest editor.
+
+### Does it touch your data
+
+One new column on quests and one new table for what members give per step (migration 0439), added on the way up. Nothing is removed or changed, so going back to 1.3.90 still works.
+
+---
+
 ## 1.3.90 (2026-11-27)
 
 ### What changed for your village

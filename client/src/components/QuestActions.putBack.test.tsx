@@ -64,9 +64,31 @@ describe("putting a quest back", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("a turned-in quest offers no put-back and names who can hand it back", () => {
+  it("a turned-in quest offers no put-back, and offers to take the work back instead", async () => {
+    gameFetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true, status: "claimed" }) });
     render(<QuestActions questId="q-1" signedIn claim={{ ...CLAIMED, status: "submitted" }} onChanged={onChanged} />);
     expect(screen.queryByRole("button", { name: "Put this quest back" })).toBeNull();
-    expect(screen.getByText("Want it back? Ask the steward to hand it back.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Take it back to change it" }));
+    await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
+    expect(gameFetch).toHaveBeenCalledWith("/api/game/quests/q-1/pull-back", { method: "POST" });
+  });
+
+  it("a refused take-back keeps the server's sentence", async () => {
+    const refusal = "This work was approved and paid, so it cannot be taken back.";
+    gameFetch.mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({ error: refusal }) });
+    render(<QuestActions questId="q-1" signedIn claim={{ ...CLAIMED, status: "submitted" }} onChanged={onChanged} />);
+    fireEvent.click(screen.getByRole("button", { name: "Take it back to change it" }));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toBe(refusal));
+  });
+
+  it("work taken back opens the form on what was given, and waits on a step that needs something", () => {
+    const back = { ...CLAIMED, note: "Dug ten metres.", submittedAt: "2026-11-27T10:00:00.000Z" };
+    const { rerender } = render(<QuestActions questId="q-1" signedIn claim={back} owedSteps={[1]} onChanged={onChanged} />);
+    expect(screen.getByText("Step 2 needs something from you first.")).toBeTruthy();
+    expect((screen.getByRole("button", { name: /Turn in your work/ }) as HTMLButtonElement).disabled).toBe(true);
+    rerender(<QuestActions questId="q-1" signedIn claim={back} owedSteps={[]} stepsCarryEvidence onChanged={onChanged} />);
+    fireEvent.click(screen.getByRole("button", { name: /Turn in your work/ }));
+    expect((screen.getByPlaceholderText("A few words about what you did") as HTMLTextAreaElement).value).toBe("Dug ten metres.");
+    expect(screen.getByText("Your steps hold your work. You can add a link or a few more words if you like.")).toBeTruthy();
   });
 });

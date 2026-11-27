@@ -17,7 +17,7 @@ class NoopIntersectionObserver {
 }
 vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver);
 
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 import { resolveVillagePathWords, servedPaths } from "@shared/villagePaths";
@@ -99,9 +99,11 @@ describe("the landing's first screen with the founding team on", () => {
     const doors = Array.from(document.querySelectorAll("[data-four-ways] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")]);
     // A visitor with the venture form off: the open ventures on /roles, never the member's new-role door (25 Nov 2026).
     expect(doors).toEqual([["team", "/roles#founding-team"], ["venture", "/roles#open-ventures"], ["partner", "/partner"], ["quest", "/propose-quest"]]);
-    // The four ways are the last section of the landing.
-    const sections = Array.from(document.querySelectorAll("[data-landing-hero] ~ section, section"));
-    expect(sections[sections.length - 1]?.hasAttribute("data-four-ways")).toBe(true);
+    // "Who comes to <village>" is the last section of the landing (the lead, 27 Nov 2026: "Put The Who comes to Amora
+    // at the end of the page"), and the four ways come just before it.
+    const sections = Array.from(document.querySelectorAll("[data-landing-hero] ~ section, section")).filter((s) => !s.closest("section section"));
+    expect(sections[sections.length - 1]?.hasAttribute("data-landing-personas")).toBe(true);
+    expect(sections[sections.length - 2]?.hasAttribute("data-four-ways")).toBe(true);
   });
 
   it("makes the Village Steward card the founding team's door, with a Paid role label, and draws no separate founding card (option B)", async () => {
@@ -181,5 +183,28 @@ describe("the pictures on the ways in", () => {
     expect(painting.parentElement?.className).toContain("aspect-square");
     expect(painting.parentElement?.className).toContain("lg:aspect-[4/5]");
     expect(painting.className).toContain("object-cover");
+  });
+
+  // The lead, 27 Nov 2026: "Fix the cropping in the resident picture". A portrait used to be shown whole when the
+  // crop would cut too much, and on a phone the Resident photo sat as a narrow column between two bands.
+  it("fills every path card's frame, even with a tall portrait in a wide frame, at the village's focal point", async () => {
+    brandImages = { hero: "", residentHero: "/api/uploads/sunset.webp", residentHeroFocus: "50% 60%" };
+    withPaths = true;
+    renderHome();
+    const resident = await waitFor(() => {
+      const img = document.querySelector('#choose-path a[href="/resident"] img') as HTMLImageElement | null;
+      expect(img).not.toBeNull();
+      return img as HTMLImageElement;
+    });
+    // A 2:3 portrait in a frame wider than it is tall: the old rule showed it whole.
+    Object.defineProperty(resident, "naturalWidth", { value: 640 });
+    Object.defineProperty(resident, "naturalHeight", { value: 960 });
+    Object.defineProperty(resident, "clientWidth", { value: 420 });
+    Object.defineProperty(resident, "clientHeight", { value: 340 });
+    fireEvent.load(resident);
+    expect(resident.className).toContain("object-cover");
+    expect(resident.className).not.toContain("object-contain");
+    expect(resident.getAttribute("data-art-fit")).toBe("cover");
+    expect(resident.style.objectPosition).toBe("50% 60%");
   });
 });

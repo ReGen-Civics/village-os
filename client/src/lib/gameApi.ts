@@ -709,6 +709,8 @@ export interface QuestClaim {
   claimedAt: string;
   /** When the circle consented (or declined) it; null while it is open. */
   resolvedAt?: string | null;
+  /** When the work was last turned in. Kept when it is taken back, so the page can say it was turned in before. */
+  submittedAt?: string | null;
   artifactUrl: string;
   note: string;
   /** What the witness granted for this piece of work. */

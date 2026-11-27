@@ -1,0 +1,19 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the guide's panel, one guide in the corner, 27 Nov 2026
+msgctxt "the guide's panel: the door to the guide's help"
+msgid "How things work here"
+msgstr "Cómo funcionan las cosas aquí"
+
+# needs-native-review: the guide's panel, one guide in the corner, 27 Nov 2026
+msgctxt "the guide's panel: under the help door"
+msgid "Who to ask, and where things are"
+msgstr "A quién preguntar y dónde están las cosas"
+
+# needs-native-review: the guide's panel, one guide in the corner, 27 Nov 2026
+msgctxt "the guide's panel: the door to Admin's helper, for an admin"
+msgid "Admin help"
+msgstr "Ayuda de administración"
