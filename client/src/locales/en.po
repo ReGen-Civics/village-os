@@ -16,6 +16,11 @@ msgctxt "module introductions, benefit 3"
 msgid "Every match shows its reasons, and you can correct any sentence about you"
 msgstr "Every match shows its reasons, and you can correct any sentence about you"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, where you are: roles and the season"
+msgid "Roles · {here}"
+msgstr "Roles · {here}"
+
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Full access is on for that role's agent."
 msgstr "Full access is on for that role's agent."
@@ -1337,6 +1342,11 @@ msgctxt "proposal wizard"
 msgid "The quest"
 msgstr "The quest"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the stage holding the longest wait"
+msgid "Longest wait"
+msgstr "Longest wait"
+
 #: client/src/pages/Home.tsx
 msgctxt "landing, the ways in heading when the paths are hidden"
 msgid "Ways in"
@@ -1431,7 +1441,7 @@ msgctxt "module canvas, benefit 4"
 msgid "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
 msgstr "A Decision Matrix of who approves, who is asked and who is told, and one public line per block"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, a row"
 msgid "Roles not in a circle"
 msgstr "Roles not in a circle"
@@ -1594,6 +1604,11 @@ msgstr "Reading the history"
 msgctxt "about you reference"
 msgid "Email or phone"
 msgstr "Email or phone"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the circles section"
+msgid "Each circle"
+msgstr "Each circle"
 
 #: client/src/components/playerCard/playerCardHealthMessages.ts
 msgctxt "player card health, handover check what it looks after missing"
@@ -6658,6 +6673,11 @@ msgctxt "feedback page: after sending"
 msgid "Received, thank you."
 msgstr "Received, thank you."
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Held and written up"
+msgstr "Held and written up"
+
 #. placeholder {0}: timezone ? ` Times are village time, ${timezone.replace(/_/g, " ")}.` : ""
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, p"
@@ -6826,6 +6846,11 @@ msgstr "Search by address or name"
 msgctxt "proposal wizard"
 msgid "Why the village is ready for this one"
 msgstr "Why the village is ready for this one"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, circle filter"
+msgid "Circle"
+msgstr "Circle"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -9732,6 +9757,11 @@ msgctxt "site menu"
 msgid "Become a partner"
 msgstr "Become a partner"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, an empty stage"
+msgid "Nobody waiting here"
+msgstr "Nobody waiting here"
+
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Turn modules on in <0>the Module Library</0>."
 msgstr "Turn modules on in <0>the Module Library</0>."
@@ -10283,6 +10313,11 @@ msgstr "This proposal was adopted, and its roles could not be set up. Nothing wa
 msgid "The blocks below are in canvas order until a season is loaded again."
 msgstr "The blocks below are in canvas order until a season is loaded again."
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, eyebrow"
+msgid "Circle by circle"
+msgstr "Circle by circle"
+
 #: client/src/components/ContributorRoutes.tsx
 msgctxt "four ways to build: a venture, in one line"
 msgid "Build and own a business on the land. The village shares in it through a lease or a profit share."
@@ -10356,7 +10391,7 @@ msgctxt "YourCompanions, p"
 msgid "Your companions"
 msgstr "Your companions"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, the size a share was measured on"
 msgid "{yes} of {all}"
 msgstr "{yes} of {all}"
@@ -12846,7 +12881,12 @@ msgctxt "Admin, p"
 msgid "Your Stripe webhook URL"
 msgstr "Your Stripe webhook URL"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the phone tabs"
+msgid "Which measures"
+msgstr "Which measures"
+
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, failed"
 msgid "Could not read the measures."
 msgstr "Could not read the measures."
@@ -14872,6 +14912,11 @@ msgctxt "the Adopt frame of a canvas block"
 msgid "Adopt: suggestions on {name}"
 msgstr "Adopt: suggestions on {name}"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, filters"
+msgid "Season and circle"
+msgstr "Season and circle"
+
 #: client/src/pages/EmailPages.tsx
 msgctxt "email preferences: a switch"
 msgid "Gathering reminders"
@@ -14916,6 +14961,11 @@ msgstr "Start again"
 msgctxt "review inbox: forbidden"
 msgid "This page is for people who decide suggestions. What you sent waits on"
 msgstr "This page is for people who decide suggestions. What you sent waits on"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, who sees it"
+msgid "Administrators see every circle; each lead sees their own."
+msgstr "Administrators see every circle; each lead sees their own."
 
 #. placeholder {0}: decides.label.toLowerCase()
 #: client/src/components/power/Legend.tsx
@@ -15029,7 +15079,7 @@ msgctxt "live session room: doneLabel"
 msgid "Done"
 msgstr "Done"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, holding chain"
 msgid "Renewed at each moon"
 msgstr "Renewed at each moon"
@@ -15681,10 +15731,15 @@ msgctxt "moon recap: ADMIN_WORDS: save"
 msgid "Save"
 msgstr "Save"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Adoption to start"
+msgstr "Adoption to start"
+
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, a withheld number"
-msgid "too few"
-msgstr "too few"
+#~ msgctxt "role measures, a withheld number"
+#~ msgid "too few"
+#~ msgstr "too few"
 
 #: client/src/components/openProposal/ProposalVersions.tsx
 msgctxt "proposal versions: the kicker"
@@ -16107,7 +16162,7 @@ msgctxt "the bell: why a notice of this kind matters, kind stage_advanced"
 msgid "A door opened for you, and the notice names what you can now do."
 msgstr "A door opened for you, and the notice names what you can now do."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, failed read"
 msgid "Try again"
 msgstr "Try again"
@@ -16822,6 +16877,11 @@ msgstr "This is what the village will see. Everything here is still yours to cha
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Choose a gathering with a seat fee"
 msgstr "Choose a gathering with a seat fee"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a group of measures"
+msgid "After adoption"
+msgstr "After adoption"
 
 #. placeholder {0}: supportThreshold > 0 ? ` (${supportThreshold} supporter${supportThreshold === 1 ? "" : "s"} sends one to the vote)` : ""
 #. placeholder {1}: onSite ? "; the binding vote runs here, on this village's own ballot, and a proposal that carries is" : "; the binding vote runs on the village's Hypha, and a proposal that carries is"
@@ -17653,6 +17713,11 @@ msgstr "From"
 msgctxt "module network, data"
 msgid "What this village chose to publish. Never member data."
 msgstr "What this village chose to publish. Never member data."
+
+#: client/src/components/roleMeasures/parts.tsx
+msgctxt "role measures, nothing recorded"
+msgid "no data"
+msgstr "no data"
 
 #. placeholder {0}: money(p.s.range.lowTotalMinor)
 #. placeholder {1}: money(p.s.range.highTotalMinor)
@@ -19379,7 +19444,8 @@ msgctxt "MonthView, aria-label"
 msgid "Month and moon"
 msgstr "Month and moon"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, holding chain"
 msgid "Path done by day 30"
 msgstr "Path done by day 30"
@@ -21454,6 +21520,11 @@ msgctxt "Admin, button"
 msgid "Open Settings →"
 msgstr "Open Settings →"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Withdrawn"
+msgstr "Withdrawn"
+
 #. placeholder {0}: r.from
 #: client/src/components/proposals/Diff.tsx
 msgctxt "proposed changes: a list row"
@@ -21865,7 +21936,7 @@ msgctxt "map chip members_active, what it counts"
 msgid "Members who did something the village heard about since this cycle began."
 msgstr "Members who did something the village heard about since this cycle began."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, door to a circle"
 msgid "Open this circle"
 msgstr "Open this circle"
@@ -22912,6 +22983,11 @@ msgctxt "PlayersTab, toast"
 msgid "Revoke failed"
 msgstr "Revoke failed"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, when it last read"
+msgid "Updated {updated}. It reads again every minute while open."
+msgstr "Updated {updated}. It reads again every minute while open."
+
 #: client/src/lib/noticeGroupWords.ts
 msgctxt "the bell: a section heading"
 msgid "The village"
@@ -23171,6 +23247,11 @@ msgctxt "role term preset platform:three-moons, blurb"
 msgid "Three moons from the day of seating, then a review."
 msgstr "Three moons from the day of seating, then a review."
 
+#: client/src/components/roleMeasures/parts.tsx
+msgctxt "role measures, a median shorter than an hour"
+msgid "under an hour"
+msgstr "under an hour"
+
 #: client/src/pages/ModuleDetail.tsx
 msgctxt "ModuleDetail, span"
 msgid "Not on yet"
@@ -23361,6 +23442,11 @@ msgstr "Location & Context"
 msgctxt "WalkEditorPanel, placeholder"
 msgid "drag the land to look around"
 msgstr "drag the land to look around"
+
+#: client/src/components/admin/HomeBase.tsx
+msgctxt "HomeBase, door to the role progress page"
+msgid "See how roles are going"
+msgstr "See how roles are going"
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, tagline time"
@@ -24188,7 +24274,7 @@ msgctxt "admin portal visitors"
 msgid "Only the people who said yes to keeping in touch"
 msgstr "Only the people who said yes to keeping in touch"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgid "{n, plural, one {# day} other {# days}}"
 msgstr "{n, plural, one {# day} other {# days}}"
 
@@ -24902,6 +24988,11 @@ msgstr "Reason"
 msgctxt "review inbox: held"
 msgid "Held for a reason this page does not know yet."
 msgstr "Held for a reason this page does not know yet."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, where you are"
+msgid "Roles"
+msgstr "Roles"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind session_night_settled"
@@ -26952,6 +27043,11 @@ msgctxt "founding application check"
 msgid "Say what value {n} brings."
 msgstr "Say what value {n} brings."
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, door to the review queue"
+msgid "See them in Review"
+msgstr "See them in Review"
+
 #: client/src/pages/RequestMembership.tsx
 msgctxt "voice field label: join request"
 msgid "What draws you here"
@@ -27087,6 +27183,11 @@ msgctxt "open work board: status mark, a carried quest"
 msgid "Underway: someone carries it"
 msgstr "Underway: someone carries it"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Final conversations adopted"
+msgstr "Final conversations adopted"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module progression, benefit 1"
 msgid "Stages mark how deep someone is in"
@@ -27185,6 +27286,11 @@ msgstr "Your Hypha links"
 msgctxt "LetterComposer, aria-label"
 msgid "Preview"
 msgstr "Preview"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, an unknown circle was asked for"
+msgid "No circle by that name."
+msgstr "No circle by that name."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece, short"
@@ -27854,7 +27960,7 @@ msgctxt "Modules, button"
 msgid "Clear"
 msgstr "Clear"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, applying chain"
 msgid "Decision"
 msgstr "Decision"
@@ -28192,6 +28298,11 @@ msgctxt "game variable org.stay_close_name, description"
 msgid "The name of the village's open way in for someone not invited to a role, such as its supporters' circle. The not-invited letter and the status page point to it first, then to quests and events. Leave it empty and they point to quests and events only."
 msgstr "The name of the village's open way in for someone not invited to a role, such as its supporters' circle. The not-invited letter and the status page point to it first, then to quests and events. Leave it empty and they point to quests and events only."
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, how long the oldest at a stage has waited"
+msgid "The oldest has waited {waited}"
+msgstr "The oldest has waited {waited}"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Interviewers, in order"
@@ -28288,9 +28399,9 @@ msgid "On, anyone can read the first names of the people holding each role on th
 msgstr "On, anyone can read the first names of the people holding each role on the Team, Roles and Circles pages, and a visitor reads members by first name elsewhere. Off, a visitor who is not signed in reads no member's name, handle, address or portrait on any page: the pulse, the decisions, profiles and role cards included. Signed-in members whose role or badge grants map.viewPeople still read who holds each role, and a visitor still sees every circle, every role, and how many of them are filled. This is the secret society setting. It moves names only: the shape of the village stays public at both settings."
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, refused"
-msgid "Only administrators can see how roles are going."
-msgstr "Only administrators can see how roles are going."
+#~ msgctxt "role measures, refused"
+#~ msgid "Only administrators can see how roles are going."
+#~ msgstr "Only administrators can see how roles are going."
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MY_MOON_WORDS: noLines"
@@ -28985,6 +29096,11 @@ msgctxt "OpenProposal, Link"
 msgid "<0/>Your profile"
 msgstr "<0/>Your profile"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the stage timing section"
+msgid "Time at each stage"
+msgstr "Time at each stage"
+
 #: client/src/components/roleCard/focusLine.ts
 msgctxt "role card focus line, 100%"
 msgid "All in: {village} is your full-time work"
@@ -29407,7 +29523,8 @@ msgctxt "HomeBase, aria-label"
 msgid "What needs you now"
 msgstr "What needs you now"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, applying chain"
 msgid "First reply"
 msgstr "First reply"
@@ -30234,6 +30351,11 @@ msgstr "Places"
 msgctxt "game variable library.escrow_pct, label"
 msgid "Borrowing escrow, % of value"
 msgstr "Borrowing escrow, % of value"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Conversations booked"
+msgstr "Conversations booked"
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: door"
@@ -31507,9 +31629,9 @@ msgid "Grid by months or by moons"
 msgstr "Grid by months or by moons"
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, empty circle"
-msgid "Nothing has been stamped for this circle yet."
-msgstr "Nothing has been stamped for this circle yet."
+#~ msgctxt "role measures, empty circle"
+#~ msgid "Nothing has been stamped for this circle yet."
+#~ msgstr "Nothing has been stamped for this circle yet."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card fact"
@@ -33568,9 +33690,9 @@ msgid "See: what the village shows about {name}"
 msgstr "See: what the village shows about {name}"
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, holding chain"
-msgid "First quest by day 14"
-msgstr "First quest by day 14"
+#~ msgctxt "role measures, holding chain"
+#~ msgid "First quest by day 14"
+#~ msgstr "First quest by day 14"
 
 #. placeholder {0}: weightText(standing.held)
 #. placeholder {1}: weightText(standing.weight)
@@ -34086,6 +34208,16 @@ msgstr "Someone who means to live in the village one day and starts on the resid
 msgctxt "founding team tally: roles opening after the founding team"
 msgid "{laterCount} opening next"
 msgstr "{laterCount} opening next"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a stage"
+msgid "Our review"
+msgstr "Our review"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the stage chain"
+msgid "From review to agreement"
+msgstr "From review to agreement"
 
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
@@ -34838,6 +34970,11 @@ msgstr "That sentence is a description of what you have ticked and saved. The di
 msgctxt "org chart, a sample circle or role"
 msgid "Standing example"
 msgstr "Standing example"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a group of measures"
+msgid "Moving through"
+msgstr "Moving through"
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: GUIDE_WORDS: open"
@@ -35716,7 +35853,7 @@ msgctxt "SetPassword, label"
 msgid "Repeat the new password"
 msgstr "Repeat the new password"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, a kind of number"
 msgid "median"
 msgstr "median"
@@ -37235,6 +37372,11 @@ msgstr "Remember my answers on this device"
 msgctxt "week strip, an empty day"
 msgid "Nothing on this day."
 msgstr "Nothing on this day."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a stage"
+msgid "Agreement"
+msgstr "Agreement"
 
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, adopted"
@@ -39474,6 +39616,11 @@ msgctxt "a safety contact's name"
 msgid "Who"
 msgstr "Who"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role measures, how to read"
+msgid "No data means nothing has been recorded yet. 0 means none."
+msgstr "No data means nothing has been recorded yet. 0 means none."
+
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"What the village can conjure can never claim what people paid for\", enforcedBy"
 msgid "server/lib/exchange.ts: faucet-issued tokens are permanently unswappable"
@@ -40097,6 +40244,11 @@ msgctxt "Admin, h3"
 msgid "Logistics"
 msgstr "Logistics"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, clear the circle filter"
+msgid "Show every circle you lead"
+msgstr "Show every circle you lead"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable library.loan_days_default, description"
 msgid "Days from pickup to due date."
@@ -40271,9 +40423,9 @@ msgid "Done when: {0}"
 msgstr "Done when: {0}"
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, nobody to count yet"
-msgid "not yet"
-msgstr "not yet"
+#~ msgctxt "role measures, nobody to count yet"
+#~ msgid "not yet"
+#~ msgstr "not yet"
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, tensions"
@@ -41312,6 +41464,11 @@ msgstr "A profile for every member, with a handle of their own"
 msgctxt "funding rounds"
 msgid "Who might do it:"
 msgstr "Who might do it:"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, refused: a door to the roles"
+msgid "See the roles"
+msgstr "See the roles"
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable gratitude.base_budget, label"
@@ -42678,6 +42835,11 @@ msgstr "Uploading…"
 msgctxt "name your guide note, founders only: what others read until the guide is named"
 msgid "Visitors and members see “{shared}” until you name it. Only founders see this note."
 msgstr "Visitors and members see “{shared}” until you name it. Only founders see this note."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, signed out"
+msgid "Sign in"
+msgstr "Sign in"
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
@@ -46267,7 +46429,7 @@ msgstr "Visit Program"
 msgid "Nothing has been changed yet."
 msgstr "Nothing has been changed yet."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgid "How roles are going"
 msgstr "How roles are going"
 
@@ -46492,7 +46654,7 @@ msgctxt "Training, p"
 msgid "No lessons yet. They appear here once the village adds them."
 msgstr "No lessons yet. They appear here once the village adds them."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgid "{n, plural, one {# hour} other {# hours}}"
 msgstr "{n, plural, one {# hour} other {# hours}}"
 
@@ -46777,6 +46939,11 @@ msgctxt "module hidden-map, benefit 1"
 msgid "Log a place from a phone, with its location read from the photo and then removed from it"
 msgstr "Log a place from a phone, with its location read from the photo and then removed from it"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, the measures section"
+msgid "Key measures"
+msgstr "Key measures"
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "Accept"
@@ -46813,9 +46980,9 @@ msgid "The change requests did not load. Some may be waiting for your voice."
 msgstr "The change requests did not load. Some may be waiting for your voice."
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, a circle's page"
-msgid "How roles are going here"
-msgstr "How roles are going here"
+#~ msgctxt "role measures, a circle's page"
+#~ msgid "How roles are going here"
+#~ msgstr "How roles are going here"
 
 #: client/src/pages/Governance.tsx
 msgctxt "how we work together: contents"
@@ -48513,7 +48680,7 @@ msgctxt "the bell: why a notice of this kind matters, kind role_proposal_review_
 msgid "One of your roles is due its review. Propose how you will hold it next season."
 msgstr "One of your roles is due its review. Propose how you will hold it next season."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, holding chain"
 msgid "Seated"
 msgstr "Seated"
@@ -49477,7 +49644,7 @@ msgstr "Southern"
 msgid "The rule a voucher reads"
 msgstr "The rule a voucher reads"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, applying chain"
 msgid "First interview"
 msgstr "First interview"
@@ -49858,6 +50025,11 @@ msgctxt "review inbox: a row, what deciding it does"
 msgid "Approving it moves it to its next stage."
 msgstr "Approving it moves it to its next stage."
 
+#: client/src/components/roleMeasures/CircleProgressLink.tsx
+msgctxt "circle page, door to the role progress page"
+msgid "How this circle's roles are going"
+msgstr "How this circle's roles are going"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
 #~ msgid "We write to you by {byWords} with what comes next."
@@ -49932,6 +50104,11 @@ msgstr "New date set. Nobody needs a reason."
 msgctxt "game variable progression.multiplier.initiate, label"
 msgid "Sending-budget multiplier: Initiate"
 msgstr "Sending-budget multiplier: Initiate"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, clear a circle the reader does not lead"
+msgid "Show the circles you lead"
+msgstr "Show the circles you lead"
 
 #: client/src/components/governance/parsedChecks.ts
 msgctxt "role terms: a setting a check names"
@@ -50334,6 +50511,11 @@ msgstr "How we will know it is done"
 msgctxt "follow-ups: heading"
 msgid "One thing is yours to do"
 msgstr "One thing is yours to do"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Still in the role at day 30"
+msgstr "Still in the role at day 30"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.partnerships_role, label"
@@ -51055,7 +51237,7 @@ msgstr "Move up"
 msgid "Place on your list"
 msgstr "Place on your list"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, how to read"
 msgid "Counts and medians from stamped times. No names."
 msgstr "Counts and medians from stamped times. No names."
@@ -52157,6 +52339,11 @@ msgctxt "sera answers"
 msgid "(including 1 role inside a new circle)"
 msgstr "(including 1 role inside a new circle)"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Applications"
+msgstr "Applications"
+
 #: client/src/components/playerCard/playerCardProposalMessages.ts
 msgctxt "player card role proposal, clears the words"
 msgid "Clears what is written now"
@@ -52296,7 +52483,7 @@ msgctxt "the bell: why a notice of this kind matters, kind approval_lapsing"
 msgid "Something an agent proposed lapses tomorrow if nobody decides it. Read it on the approvals page and say yes or no."
 msgstr "Something an agent proposed lapses tomorrow if nobody decides it. Read it on the approvals page and say yes or no."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, applying chain"
 msgid "Answered"
 msgstr "Answered"
@@ -54696,6 +54883,11 @@ msgctxt "pay page, receive"
 msgid "Your code"
 msgstr "Your code"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, circle filter"
+msgid "Every circle"
+msgstr "Every circle"
+
 #: client/src/components/investor/InvestorInterest.tsx
 msgctxt "investor interest: typical check size"
 msgid "$250,000 to $1 million"
@@ -54715,6 +54907,11 @@ msgstr "Reminders and changes for the gatherings you said yes to."
 msgctxt "ProposeQuest, h1"
 msgid "Propose a Quest"
 msgstr "Propose a Quest"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a circle the reader does not lead was asked for"
+msgid "You can see the circles you lead, so these are yours."
+msgstr "You can see the circles you lead, so these are yours."
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -55634,7 +55831,7 @@ msgctxt "module profiles, setup"
 msgid "Nothing to set up. Core, on from the first day."
 msgstr "Nothing to set up. Core, on from the first day."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, a season chip"
 msgid "No season"
 msgstr "No season"
@@ -56421,6 +56618,11 @@ msgstr "A person accepted waiting proposals into this draft."
 msgctxt "EventsAdminPanel, placeholder"
 msgid "greenhouse, commons"
 msgstr "greenhouse, commons"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, refused"
+msgid "This page is for administrators and circle leads."
+msgstr "This page is for administrators and circle leads."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application about"
@@ -58248,6 +58450,11 @@ msgctxt "governance: a view"
 msgid "Now"
 msgstr "Now"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a stage"
+msgid "References and proposal"
+msgstr "References and proposal"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing waits for you, and no draft is open."
 msgstr "Nothing waits for you, and no draft is open."
@@ -58423,6 +58630,11 @@ msgstr "Adopted by a village vote on {day}"
 msgctxt "Admin, placeholder"
 msgid "Getting-started note (optional)"
 msgstr "Getting-started note (optional)"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a group of measures"
+msgid "How applications end"
+msgstr "How applications end"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exit.keep_pct.recognition, label"
@@ -60756,9 +60968,9 @@ msgid "Settle these first"
 msgstr "Settle these first"
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, eyebrow"
-msgid "Only administrators see this"
-msgstr "Only administrators see this"
+#~ msgctxt "role measures, eyebrow"
+#~ msgid "Only administrators see this"
+#~ msgstr "Only administrators see this"
 
 #: client/src/components/GameDashboard.tsx
 msgctxt "GameDashboard, span"
@@ -62007,6 +62219,11 @@ msgstr "what your tokens are called together"
 msgctxt "HyphaModulePanel, span"
 msgid "Turn the Hypha Bridge module on to confirm this contract against a token."
 msgstr "Turn the Hypha Bridge module on to confirm this contract against a token."
+
+#: client/src/components/roleMeasures/parts.tsx
+msgctxt "role measures, filter to one circle"
+msgid "Show only this circle"
+msgstr "Show only this circle"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind cash_paid"
@@ -64283,7 +64500,7 @@ msgctxt "role sign sheet, first names note"
 msgid "First names only. Listed in the order it happened."
 msgstr "First names only. Listed in the order it happened."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, chain heading"
 msgid "Holding the role"
 msgstr "Holding the role"
@@ -64965,7 +65182,7 @@ msgctxt "module canvas, benefit 2"
 msgid "Five frames for each block: sense it, see what the village already runs, learn, say the village's answer, adopt a change"
 msgstr "Five frames for each block: sense it, see what the village already runs, learn, say the village's answer, adopt a change"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, season picker"
 msgid "Season"
 msgstr "Season"
@@ -66652,6 +66869,11 @@ msgctxt "live sessions: startTitle"
 msgid "Start a session"
 msgstr "Start a session"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, eyebrow"
+msgid "Today"
+msgstr "Today"
+
 #: client/src/pages/Governance.tsx
 msgctxt "governance page: the canvas"
 msgid "It can be saved as a Markdown file too."
@@ -66760,7 +66982,8 @@ msgctxt "GameMechanics, button"
 msgid "I've taken it to Hypha"
 msgstr "I've taken it to Hypha"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, holding chain"
 msgid "Still in the role at day 90"
 msgstr "Still in the role at day 90"
@@ -68166,7 +68389,7 @@ msgctxt "Admin, placeholder"
 msgid "Credits"
 msgstr "Credits"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, applying chain"
 msgid "Applied"
 msgstr "Applied"
@@ -68778,6 +69001,11 @@ msgctxt "character card, open the role proposal"
 msgid "Propose a new role"
 msgstr "Propose a new role"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, signed out"
+msgid "Sign in to see how roles are going."
+msgstr "Sign in to see how roles are going."
+
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: the pay ask"
 msgid "Why this compensation"
@@ -69116,6 +69344,11 @@ msgstr "Reference {0}: name"
 #~ msgctxt "terms setting"
 #~ msgid "Scoreboard"
 #~ msgstr "Scoreboard"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Declined"
+msgstr "Declined"
 
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgctxt "hidden map, covering faces in a photo"
@@ -69580,7 +69813,7 @@ msgstr "Close the photo"
 msgid "Say where it sits on your list, so whoever raised it knows."
 msgstr "Say where it sits on your list, so whoever raised it knows."
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/pages/RoleProgress.tsx
 msgctxt "role measures, empty"
 msgid "Nothing has been stamped yet."
 msgstr "Nothing has been stamped yet."
@@ -69893,6 +70126,11 @@ msgstr "Your private link to finish later"
 msgctxt "the bell: several notices of one kind batched into a line, kind session_night_settled"
 msgid "{n} rounds you facilitated are settled after a night."
 msgstr "{n} rounds you facilitated are settled after a night."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, circle filter"
+msgid "Every circle you lead"
+msgstr "Every circle you lead"
 
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
@@ -71130,6 +71368,11 @@ msgctxt "hidden map, progress toward opening the map"
 msgid "vouched"
 msgstr "vouched"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, clear the circle filter"
+msgid "Show every circle"
+msgstr "Show every circle"
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
 msgid "this quest's circle"
@@ -72164,6 +72407,11 @@ msgctxt "module season-places, name"
 msgid "Season places"
 msgstr "Season places"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, eyebrow"
+msgid "Median time at each stage"
+msgstr "Median time at each stage"
+
 #. placeholder {0}: batch.items.length
 #: client/src/pages/Review.tsx
 msgctxt "Review, button"
@@ -72490,6 +72738,11 @@ msgstr "Appoint a member"
 msgctxt "open proposal: the way in"
 msgid "Send this link in your reply. It opens the full application for this person."
 msgstr "Send this link in your reply. It opens the full application for this person."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a stage"
+msgid "Final conversation"
+msgstr "Final conversation"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: quickPath"
@@ -74583,9 +74836,9 @@ msgid "The list tables are not in this database yet."
 msgstr "The list tables are not in this database yet."
 
 #: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
-msgctxt "role measures, how to read"
-msgid "Too few means under three people, so the number stays hidden."
-msgstr "Too few means under three people, so the number stays hidden."
+#~ msgctxt "role measures, how to read"
+#~ msgid "Too few means under three people, so the number stays hidden."
+#~ msgstr "Too few means under three people, so the number stays hidden."
 
 #: client/src/i18n/LanguagePicker.tsx
 msgctxt "language picker"
@@ -74733,6 +74986,11 @@ msgstr "Choose a handle on your profile and your code appears here."
 msgctxt "role editor"
 msgid "The pay group of the terms"
 msgstr "The pay group of the terms"
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "References followed up"
+msgstr "References followed up"
 
 #: client/src/lib/guideNameWords.ts
 msgctxt "the village guide's name while the village has not named it, read by a founder or admin, mid-sentence"
@@ -75466,6 +75724,11 @@ msgstr "Stop this one"
 msgctxt "account emails: attached"
 msgid "Address added. You can sign in with it now."
 msgstr "Address added. You can sign in with it now."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, applications at each stage today"
+msgid "Right now"
+msgstr "Right now"
 
 #: client/src/components/admin/SaberraConfigPanel.tsx
 msgctxt "SaberraConfigPanel, a"
@@ -78527,6 +78790,11 @@ msgctxt "rights and agreements page: who a chapter is for"
 msgid "Anyone leaving"
 msgstr "Anyone leaving"
 
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Closed after 90 quiet days"
+msgstr "Closed after 90 quiet days"
+
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup choice"
@@ -79185,6 +79453,11 @@ msgstr "Not yet available. {0} {1} still word for word what the platform ships. 
 msgctxt "limit notice, read aloud"
 msgid "This answer is nearly full."
 msgstr "This answer is nearly full."
+
+#: client/src/pages/RoleProgress.tsx
+msgctxt "role progress, a measure"
+msgid "Agreements countered first"
+msgstr "Agreements countered first"
 
 #: client/src/components/governance/ProposalWizard.tsx
 msgctxt "ProposalWizard, label"
@@ -80009,7 +80282,7 @@ msgctxt "lantern: the person a thanks is going to, when no name is known"
 msgid "them"
 msgstr "them"
 
-#: client/src/components/roleMeasures/RoleMeasuresPanel.tsx
+#: client/src/components/roleMeasures/parts.tsx
 msgctxt "role measures, chain heading"
 msgid "Applying"
 msgstr "Applying"
