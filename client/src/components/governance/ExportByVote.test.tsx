@@ -69,7 +69,7 @@ describe("the ask on Decisions", () => {
     await user.type(screen.getByRole("textbox"), "The password holder has left the village.");
     expect(ask.disabled).toBe(false);
     await user.click(ask);
-    await waitFor(() => expect(screen.getByRole("link", { name: "Read it and vote" }).getAttribute("href")).toBe("/decisions/bal-9"));
+    await waitFor(() => expect(screen.getByRole("link", { name: "Read it and vote" }).getAttribute("href")).toBe("/governance/decisions/bal-9"));
     const post = calls.find((c) => c.init.method === "POST")!;
     expect(JSON.parse(post.init.body)).toEqual({ stewardUserId: "u-ada", reason: "The password holder has left the village." });
   });

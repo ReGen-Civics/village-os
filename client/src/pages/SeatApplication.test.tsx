@@ -196,7 +196,7 @@ describe("a member reading one", () => {
       json({ application: { ...SERVED, status: "voting", statusWords: "Carried, lands on 12 November 2029", carried: true, ballotId: "bal-1", you: { isCandidate: true, mayAdopt: false, mayPutToVillage: false, mayWithdraw: false, holdsThePower: false } } });
     render(<SeatApplication />);
     expect(await screen.findByText("Carried, lands on 12 November 2029.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Read the vote" }).getAttribute("href")).toBe("/decisions/bal-1");
+    expect(screen.getByRole("link", { name: "Read the vote" }).getAttribute("href")).toBe("/governance/decisions/bal-1");
     expect(screen.queryByRole("button", { name: "Withdraw my proposal" })).toBeNull();
   });
 

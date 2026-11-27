@@ -113,7 +113,7 @@ export function SeraTop({
 export function SeraMemberPage({ sera }: { sera: SeraOnReview }) {
   return (
     <>
-      <h1 className="text-2xl font-bold text-foreground"><Trans context="review page">Review</Trans></h1>
+      <h1 className="text-2xl font-bold text-foreground"><Trans context="review page">Your work</Trans></h1>
       <SeraDifferences read={sera.read} draftOpen={false} onRetry={sera.load} />
     </>
   );

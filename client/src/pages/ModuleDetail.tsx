@@ -269,7 +269,7 @@ export default function ModuleDetail() {
               {runningLine(door.proposal)}
             </h2>
             <Link
-              href={door.proposal.ballotId ? `/decisions/${door.proposal.ballotId}` : proposalHref(door.proposal.id)}
+              href={door.proposal.ballotId ? `/governance/decisions/${door.proposal.ballotId}` : proposalHref(door.proposal.id)}
               className="mt-3 inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white"
             >
               {door.proposal.ballotId ? "Go to the vote" : "Go to the proposal"}

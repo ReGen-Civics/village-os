@@ -27,8 +27,8 @@ export const ROUTE_ICON_SET: Readonly<Record<string, RouteIcon>> = {
   "/profile": Sprout,
   "/path": SteppingStones,
   // How the village decides: the council circle, as the welcome page's "How we decide" door draws it.
-  "/governance": CouncilCircle,
-  "/decisions": CouncilCircle,
+  "/governance/how": CouncilCircle,
+  "/governance/decisions": CouncilCircle,
   "/messages": Songbird,
   "/feed": Splash,
   "/map": SeedPin,

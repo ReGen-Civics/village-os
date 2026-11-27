@@ -434,7 +434,7 @@ export default function StructureDraft({
         </details>
       )}
 
-      <Link href="/review" className="underline justify-self-start"><Trans context="StructureDraft, Link">Back to the review queue</Trans></Link>
+      <Link href="/governance/work" className="underline justify-self-start"><Trans context="StructureDraft, Link">Back to the review queue</Trans></Link>
     </div>
   );
 }

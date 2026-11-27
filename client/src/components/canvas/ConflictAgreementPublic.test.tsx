@@ -171,7 +171,7 @@ describe("ConflictAgreementPublic", () => {
     serve({ ...MEMBERS, openBallot: { id: "b-7", title: "The village asks to change its conflict agreement", closesAt: "2026-10-05T10:00:00.000Z", proposal } });
     renderCard();
     expect(await screen.findByText("A vote to change this agreement is open")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Read the vote and cast yours" }).getAttribute("href")).toBe("/decisions/b-7");
+    expect(screen.getByRole("link", { name: "Read the vote and cast yours" }).getAttribute("href")).toBe("/governance/decisions/b-7");
     expect(screen.getByText("We talk it out, then ask Mara")).toBeTruthy();
     expect(screen.getByText(/Day crisis line/)).toBeTruthy();
     expect(screen.getByText(/ada@new\.invalid/)).toBeTruthy();

@@ -260,7 +260,7 @@ export default function StructureReview() {
               )}
               {(load.state === "empty" || (load.state === "ready" && !plan)) && (
                 <p>
-                  <Trans context="StructureReview, p">Nothing in this arrival is waiting for a decision. <Link href="/review" className="underline">Back to the review queue</Link></Trans>
+                  <Trans context="StructureReview, p">Nothing in this arrival is waiting for a decision. <Link href="/governance/work" className="underline">Back to the review queue</Link></Trans>
                 </p>
               )}
               {load.state === "failed" && (
@@ -462,7 +462,7 @@ export default function StructureReview() {
             {plan.notes.length > 0 && (
               <p className="text-sm text-muted-foreground">
                 <Trans context="StructureReview, p">{plural(plan.notes.length, "note", "notes")} in this arrival change no structure and stay in the{" "}
-                <Link href="/review" className="underline">review queue</Link>.
+                <Link href="/governance/work" className="underline">review queue</Link>.
               </Trans></p>
             )}
           </header>
@@ -868,7 +868,7 @@ export default function StructureReview() {
                       ))}
                     </ul>
                   )}
-                  <Link href="/review" className="underline"><Trans context="StructureReview, Link">Back to the review queue</Trans></Link>
+                  <Link href="/governance/work" className="underline"><Trans context="StructureReview, Link">Back to the review queue</Trans></Link>
                 </section>
               )}
             </div>

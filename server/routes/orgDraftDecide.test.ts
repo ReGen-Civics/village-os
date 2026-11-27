@@ -242,7 +242,7 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
 
   describe("the draft page's read (GET /api/org/drafts/:id/view)", () => {
     /** A live role to edit, and an open draft that edits its purpose, its list, and its terms. */
-    async function roleAndEdit(by = "admin-1") {
+    async function roleAndEdit(by = "admin-1", withTerms = true) {
       seq += 1;
       const roleId = `land-steward-${seq}`;
       await pool.query( // module-review-ok: the test seeds a live role for a draft to edit, the one fixture no draft route makes
@@ -257,7 +257,7 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
         payload: {
           aim: "Steward the land so the village grows within what the watershed can carry.",
           accountabilities: ["Keeps the land plan current.", "Brings large contracts to the finance role.", "Holds the permits."],
-          termsOffer: { pay: { kind: "stipend", note: "Seventeen hundred a moon" } },
+          ...(withTerms ? { termsOffer: { pay: { kind: "stipend", note: "Seventeen hundred a moon" } } } : {}),
         },
       });
       if (!r.ok) throw new Error(r.error);
@@ -365,10 +365,114 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
       expect(base).not.toHaveProperty("terms_offer_by");
     });
 
+    it("edits a draft's words as a new revision with a note, and never the live card (0437)", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId, roleId } = await roleAndEdit();
+      const words = { aim: "Steward the land so the village grows within what the watershed and the soil can carry." };
+      const r = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words, note: "Named the soil too" });
+      expect(r.status).toBe(200);
+      expect(r.json.revision).toBe(2);
+      expect(r.json.changeId).not.toBe(changeId);
+      const [[live]] = await pool.query<any[]>("SELECT aim FROM org_roles WHERE id = ?", [roleId]); // module-review-ok: the test reads the live card the edit must not touch
+      expect(live.aim).toBe("Steward the land so the project grows within what the watershed can carry.");
+      const v = (await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1")).json;
+      expect(v.changeIds).toEqual([r.json.changeId]);
+      expect(v.changes[0].fields.find((f: any) => f.field === "aim").after).toBe(words.aim);
+      expect(v.mayEdit).toBe(true);
+      expect(v.revisions).toHaveLength(1);
+      expect(v.revisions[0]).toMatchObject({ number: 2, note: "Named the soil too", changeId: r.json.changeId });
+      expect(v.revisions[0].fields.map((f: any) => f.field)).toEqual(["aim"]);
+      expect(v.revisions[0].fields[0].runs.filter((x: any) => x.op === "add").map((x: any) => x.text).join("")).toContain("and the soil");
+      // The base it was written against stays with the change through the edit.
+      expect(v.changes[0].baseKnown).toBe(true);
+    });
+
+    it("a publisher who read the draft before an edit is refused, so nobody publishes words they did not read", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit("admin-1", false);
+      await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { domain: "The land plan and the permits." } });
+      const p = await call("POST", `/api/org/drafts/${draftId}/publish-by-power`, "holder-1", { expectedChanges: [changeId] });
+      expect(p.status).not.toBe(200);
+      expect(JSON.stringify(p.json)).toContain("changed since you opened it");
+      expect((await getDraft(pool, draftId))?.status).toBe("open");
+      // The ids the page now shows publish it.
+      const now = (await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1")).json.changeIds;
+      expect((await call("POST", `/api/org/drafts/${draftId}/publish-by-power`, "holder-1", { expectedChanges: now })).status).toBe(200);
+    });
+
+    it("holds an edit to the role editor's rules, and to the draft's readers", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit();
+      const pay = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { aim: "Pay me at IBAN GB33BUKB20201555555555 every moon." } });
+      expect(pay.status).toBe(400);
+      expect(pay.json.field).toBe("words.aim");
+      expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { nope: "x" } })).status).toBe(400);
+      expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { aim: "x" }, note: "n".repeat(281) })).json.field).toBe("note");
+      expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "member-1", { changeId, words: { aim: "Mine now." } })).status).toBe(404);
+      expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId: "dch-elsewhere", words: { aim: "x" } })).status).toBe(404);
+      // Sending back what the draft already proposes changes nothing.
+      const same = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { aim: "Steward the land so the village grows within what the watershed can carry." } });
+      expect(same.status).toBe(409);
+    });
+
+    it("a word put back to what the live card says is no longer a change", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit();
+      const r = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { aim: "Steward the land so the project grows within what the watershed can carry." } });
+      expect(r.status).toBe(200);
+      const v = (await call("GET", `/api/org/drafts/${draftId}/view`, "holder-1")).json;
+      expect(v.changes[0].fields.map((f: any) => f.field)).not.toContain("aim");
+      expect(v.changes[0].unchanged).toContain("aim");
+    });
+
+    it("an erased member's id leaves the revisions they made, and the words stay", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit();
+      await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, words: { domain: "Kept words." }, note: "Kept note" });
+      const { forgetMemberInDrafts } = await import("../lib/orgDrafts");
+      await forgetMemberInDrafts(pool, "holder-1", "anon-1");
+      const [rows] = await pool.query<any[]>("SELECT revised_by, note FROM org_draft_revisions WHERE draft_id = ?", [draftId]); // module-review-ok: the test reads what the erasure left
+      expect(rows).toEqual([{ revised_by: "anon-1", note: "Kept note" }]);
+    });
+
+    it("leaves out one change that cannot be applied, so the rest publish, and keeps it in the revisions", async () => {
+      holders = new Set(["holder-1"]);
+      seq += 1;
+      const retired = `social-media-steward-${seq}`;
+      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'An old role', 1, 0)", [retired]); // module-review-ok: the test seeds a retired role whose id a new role collides with, the case the lead hit
+      const made = await createDraft(pool, { title: `Roles opening ${seq}`, rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
+      if (!made.ok) throw new Error(made.error);
+      await addChange(pool, made.id, { op: "create_circle", orgRoleId: `circle:sales-${seq}`, payload: { name: `Sales ${seq}` } });
+      await addChange(pool, made.id, { op: "create_seat", orgRoleId: `sales-steward-${seq}`, payload: { name: `Sales Steward ${seq}`, circleId: `sales-${seq}` } });
+      const bad = await addChange(pool, made.id, { op: "create_seat", orgRoleId: retired, payload: { name: "Social Media Steward", circleId: `sales-${seq}` } });
+      if (!bad.ok) throw new Error(bad.error);
+      const before = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
+      expect(before.changes.find((c: any) => c.id === bad.id).blocked).toBe("A role with that id already exists (a retired role)");
+
+      const r = await call("POST", `/api/org/drafts/${made.id}/revise`, "holder-1", { changeId: bad.id, leaveOut: true, note: "That id belongs to a retired role" });
+      expect(r.status).toBe(200);
+      const v = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
+      expect(v.changes.map((c: any) => c.op)).toEqual(["create_circle", "create_seat"]);
+      expect(v.changes.every((c: any) => c.blocked === null)).toBe(true);
+      expect(v.revisions[0]).toMatchObject({ number: 2, leftOut: "Social Media Steward", note: "That id belongs to a retired role", fields: [] });
+      // A publisher who read it before is refused; the ids the page shows now publish the rest.
+      expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: before.changeIds })).status).not.toBe(200);
+      expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: v.changeIds })).status).toBe(200);
+    });
+
+    it("will not leave out the last change: that is a withdraw", async () => {
+      holders = new Set(["holder-1"]);
+      const { draftId, changeId } = await roleAndEdit("admin-1", false);
+      const r = await call("POST", `/api/org/drafts/${draftId}/revise`, "holder-1", { changeId, leaveOut: true });
+      expect(r.status).toBe(409);
+      expect(r.json.message).toContain("Withdraw the draft instead");
+    });
+
     it("carries only the allowlisted keys, at every level", async () => {
-      const { draftId } = await roleAndEdit();
+      const { draftId, changeId } = await roleAndEdit();
+      expect((await call("POST", `/api/org/drafts/${draftId}/revise`, "admin-1", { changeId, words: { domain: "Revised." }, note: "A note" })).status).toBe(200);
       const r = await call("GET", `/api/org/drafts/${draftId}/view`, "admin-1");
-      const { DRAFT_VIEW_KEYS, DRAFT_CHANGE_KEYS, DRAFT_FIELD_KEYS, DRAFT_SOURCE_KEYS, DRAFT_PROPOSER_KEYS } = await import("../../shared/orgDraftView");
+      const { DRAFT_VIEW_KEYS, DRAFT_CHANGE_KEYS, DRAFT_FIELD_KEYS, DRAFT_SOURCE_KEYS, DRAFT_PROPOSER_KEYS, DRAFT_REVISION_KEYS } = await import("../../shared/orgDraftView");
       const within = (o: object, keys: readonly string[]) => expect(Object.keys(o).filter((k) => !keys.includes(k))).toEqual([]);
       within(r.json, DRAFT_VIEW_KEYS);
       within(r.json.source, DRAFT_SOURCE_KEYS);
@@ -376,6 +480,12 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
       for (const c of r.json.changes) {
         within(c, DRAFT_CHANGE_KEYS);
         for (const f of c.fields) within(f, DRAFT_FIELD_KEYS);
+      }
+      expect(r.json.revisions).toHaveLength(1);
+      for (const v of r.json.revisions) {
+        within(v, DRAFT_REVISION_KEYS);
+        if (v.by) within(v.by, DRAFT_PROPOSER_KEYS);
+        for (const f of v.fields) within(f, DRAFT_FIELD_KEYS);
       }
       // The draft row's own machinery never reaches the page.
       expect(JSON.stringify(r.json)).not.toMatch(/beforeJson|before_json|threadId|cites|sourceProposalId/);

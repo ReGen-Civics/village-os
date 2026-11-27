@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.88 (2026-11-27)
+
+### What changed for your village
+
+- **Governance is the village's dashboard.** Review is now Governance, with its own addresses; old links keep working. Its pages read in short steps and bullets.
+- **The Now view.** /governance opens on what the village is deciding now, and a guest first reads the village's own line about who owns and governs it, editable under Pages.
+- **Every draft has a page.** "Read the draft" opens the draft itself: what it changes, before and after for each field, edits kept as revisions with a note, leaving one change out, and the publish, vote and withdraw buttons.
+- **A lighter first page.** The first page's own code now ships as one file, so a visit loads less and the whole build takes 116 KB less room.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+One new table, `org_draft_revisions`, added on the way up (migration 0437), which keeps a draft's edits. Nothing is removed or changed, so going back to 1.3.87 still works.
+
+---
+
 ## 1.3.87 (2026-11-27)
 
 ### What changed for your village

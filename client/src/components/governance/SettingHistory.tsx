@@ -80,7 +80,7 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
             <>
               {" "}
               <Link
-                href={`/decisions/${ballot}`}
+                href={`/governance/decisions/${ballot}`}
                 className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
               >
                 <Trans context="SettingHistory, Link">Read the vote
@@ -92,7 +92,7 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
       {!h.proposal?.title && ballot && (
         <p className="text-xs mt-0.5">
           <Link
-            href={`/decisions/${ballot}`}
+            href={`/governance/decisions/${ballot}`}
             className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
           >
             <Trans context="SettingHistory, Link">Read the vote that decided this
