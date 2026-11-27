@@ -472,6 +472,85 @@ const SMALL_PAGE_BYTES = 12000;
  * here measured 7204 with a 290 KB group, too much for one page to wait on.
  */
 const MID_PAGE_BYTES = 18000;
+/*
+ * TWO MORE KINDS OF PAGE GROUP (headroom pass 4, 27 Nov 2026). On 6102b9c the
+ * total stood at 7924 KB of 8000 with four lanes about to add to it, and the
+ * padding sat in the member pages above MID_PAGE_BYTES: about 45 route pages of
+ * 8 to 40 KB built, each a file of its own and about 2 KB of block rounding
+ * apiece, plus the rites flow in its own folder, which SMALL_PAGE never matched.
+ *
+ * "rites": every page of the joining rites (client/src/pages/rites/), a flow a
+ * newcomer walks one page after the next, so one file serves the walk.
+ *
+ * "pages-1", "pages-2" and on: the member pages from MID_PAGE_BYTES up, packed
+ * in file-name order into groups of at most PAGE_GROUP_BYTES. A page is weighed
+ * with everything only it reaches (shippedBytes of each), since that rides with
+ * it: Profile is 19 KB of its own source and 203 KB built. A page that weighs
+ * PAGE_ALONE_BYTES or more on its own keeps its own file, and so do the pages
+ * OWN_FILE_PAGE names. None is a key route, none is on
+ * the first page and none is privileged (mayJoinSharedGroup), and nothing
+ * imports a page but the router, so no group can be imported back. The price is
+ * the one "midpages" already pays: the first visit to one of these pages
+ * fetches its group, and its neighbours come from cache after.
+ *
+ * Measured on 6102b9c with scripts/check-dist-budget.mjs: 7924 KB block-charged
+ * before and 7824 after (241 files to 217), main JS 8 KB both times, first-page
+ * JS 672 KB to 662 (the route-preload map names fewer chunks, 24 KB to 14). The
+ * eight groups are 20 to 64 KB raw, 7 to 18 KB gzipped, and "rites" is 53 KB raw. Tried on the
+ * way, so nobody has to again: weighing a page by its own source alone (90000
+ * and 45000) measured 7776 and 7804 KB but made groups of 211 and 274 KB raw,
+ * because a page's own dependencies rode along unweighed; at 60000 by weight,
+ * 7828 KB with two one-page groups.
+ */
+/**
+ * Pages that keep their own file in any case: the entrance a new visitor meets first, so the first visit fetches
+ * only its own page, and the founders' tracker, which server/trackerPrivacy.test.ts reads as a chunk of its own.
+ */
+const OWN_FILE_PAGE = /client[\\/]src[\\/]pages[\\/](?:Entrance|EntranceCode|ProjectHistory)\.tsx$/;
+const RITES_PAGE = /client[\\/]src[\\/]pages[\\/]rites[\\/][^\\/]+\.tsx$/;
+const PAGE_GROUP_BYTES = 80000;
+/** A page that ships this much on its own keeps its own file: its block rounding is a sliver of its size, and grouping it would make every neighbour wait on it. */
+const PAGE_ALONE_BYTES = 40000;
+/** Each big member page's group, worked out once per build. */
+let pageGroups: Map<string, string> | null = null;
+function bigPageGroupOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>, eager: Set<string>, key: Set<string>): string | undefined {
+  if (!pageGroups) {
+    pageGroups = new Map();
+    // A page's weight: what it ships and what only it reaches, which rides with it (the lazy pieces' rule 2, weightOf).
+    const exclusiveWeight = (page: string): number => {
+      const own = new Set([page]);
+      for (let grew = true; grew; ) {
+        grew = false;
+        for (const m of Array.from(own)) {
+          for (const dep of getModuleInfo(m)?.importedIds ?? []) {
+            const d = getModuleInfo(dep);
+            if (own.has(dep) || !d || eager.has(dep) || key.has(dep) || d.dynamicImporters.length > 0 || !d.importers.every((by) => own.has(by))) continue;
+            own.add(dep);
+            grew = true;
+          }
+        }
+      }
+      return Array.from(own).reduce((n, m) => n + shippedBytes(getModuleInfo(m)?.code ?? ""), 0);
+    };
+    const big = Array.from(getModuleIds())
+      .filter((m) => SMALL_PAGE.test(m) && !SHOPFRONT_PAGES.test(m) && !OWN_FILE_PAGE.test(m) && !eager.has(m) && !key.has(m) && mayJoinSharedGroup(m))
+      .filter((m) => (getModuleInfo(m)?.dynamicImporters.length ?? 0) > 0 && (getModuleInfo(m)?.code?.length ?? 0) >= MID_PAGE_BYTES)
+      .sort((a, b) => path.basename(a).localeCompare(path.basename(b)));
+    let n = 1;
+    let total = 0;
+    for (const m of big) {
+      const bytes = exclusiveWeight(m);
+      if (bytes >= PAGE_ALONE_BYTES) continue;
+      if (total > 0 && total + bytes > PAGE_GROUP_BYTES) {
+        n += 1;
+        total = 0;
+      }
+      total += bytes;
+      pageGroups.set(m, `pages-${n}`);
+    }
+  }
+  return pageGroups.get(id);
+}
 const SHOPFRONT_PAGES = /client[\\/]src[\\/]pages[\\/](Team|MasterPlan|Visit|WorkWithUs|LoveLetter|GoodNeighbor|CoCreatorsGuide|HowWeCreate|InvestorJourney|ResidentJourney|ProsperityJourney|ResidentRights|StewardRights)\.tsx$/;
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
@@ -809,6 +888,10 @@ const MOTION_FEATURES = /client[\\/]src[\\/]lib[\\/]motionFeatures\.ts$/;
  * The build guards say so on every run: the boot-set guard, the key routes'
  * first views, and the three budgets.
  */
+/** A group of route pages: loaded only through the router, so never a static group (headroom pass 4 adds "rites" and "pages-N"). */
+function isPageGroup(name: string): boolean {
+  return name === "smallpages" || name === "midpages" || name === "shopfront" || name === "rites" || /^pages-\d+$/.test(name);
+}
 function lazyGroupPlan(g: {
   info: GetModuleInfo;
   all: string[];
@@ -821,7 +904,7 @@ function lazyGroupPlan(g: {
   const { info, all, base, keyset, keySet, eager, closureOf } = g;
   const extra = new Map<string, string>();
   const groupOf = (id: string) => base.get(id) ?? keyset.get(id) ?? extra.get(id);
-  const PAGE_GROUPS = new Set(["smallpages", "midpages", "shopfront"]);
+  const PAGE_GROUPS = { has: (name: string | undefined) => !!name && isPageGroup(name) };
   const free = (id: string): boolean =>
     !groupOf(id) &&
     !id.includes("node_modules") &&
@@ -857,7 +940,7 @@ function lazyGroupPlan(g: {
    * member, that group must already reach every first-page module the members
    * reach. The members that bring a group falling short go.
    */
-  const DYNAMIC_GROUPS = new Set(["smallpages", "midpages", "shopfront"]);
+  const DYNAMIC_GROUPS = { has: (name: string) => isPageGroup(name) };
   const staticGroups = new Map<string, string[]>();
   for (const [id, name] of [...Array.from(base), ...Array.from(keyset)]) if (!DYNAMIC_GROUPS.has(name)) staticGroups.set(name, [...(staticGroups.get(name) ?? []), id]);
   const staticClosure = new Map(Array.from(staticGroups, ([name, members]) => [name, closureOf(members)] as const));
@@ -1232,7 +1315,10 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
     if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
     if (SHOPFRONT_PAGES.test(id)) return "shopfront";
     if (code && code.length < MID_PAGE_BYTES) return "midpages";
+    const grouped = bigPageGroupOf(id, getModuleInfo, getModuleIds, eagerModules, key);
+    if (grouped) return grouped;
   }
+  if (RITES_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) return "rites";
   return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
 }
 
