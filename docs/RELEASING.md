@@ -216,6 +216,16 @@ since 26 Nov 2026 (`ci.yml`'s push `paths-ignore`), so the commit tagged is
 the merge commit under it, whose own push run judged the landing. A `sha`
 naming the bot's commit is refused, and the refusal names the merge commit.
 
+**The tested twin is retired** (the lead, 26 Nov 2026). Guard 5 used to
+accept a second way through: a merge commit whose tree equalled its second
+parent's, when that parent (an integration branch) had a whole green push run.
+It existed for 712becf (1.3.66), whose own run the docs bot's commit
+cancelled. Neither half holds any more: a push run on main is never cancelled
+(25 Nov), and integration branches get no push run (26 Nov, `ci.yml`). So the
+merge commit's own run is the only one that tags, here and in `release.yml`'s
+"Require a green ci run" step. If that run is red or still running, wait for
+it, or fix and land again. Never tag around it.
+
 Then it pushes the annotated tag and makes `release.yml` run. With the secret
 `RELEASE_BOT_TOKEN` set, the tag is pushed with it and `release.yml` starts on
 the tag push. Without it, the tag goes out with the built-in token, which

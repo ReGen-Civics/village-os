@@ -223,8 +223,9 @@ seconds having started nothing, an npm outage failed one dependency step on a ru
 else passed, and this paragraph carried "a healthy `verify` is 45 steps" while the job had 57.
 Every job above must appear and succeed. **WHICH EVENTS, since 2026-11-01 (Rye: "Yes, free fix"):
 a BATCH and a COMPONENT each need only their pull_request run, every job green at the frozen
-head**, because `on.push.branches` is `["main", "wt/*-integration*"]` and neither a lane branch nor
-a batch branch gets a push run. A batch is built on current main, so its push run tested the
+head**, because `on.push.branches` is `["main"]` and no lane, batch or integration branch gets a
+push run (integration branches lost theirs on 2026-11-26, the lead's item 1b; open the pull request
+when you push one). A batch is built on current main, so its push run tested the
 same tree as its pull_request run (measured on four batches, `ci.yml` has the detail); open the
 batch's PR as you push it, because until then it has no run at all. The
 pull_request run is the better of the two for a component anyway: it tests the branch ALREADY
@@ -234,7 +235,7 @@ it. (Generated docs no longer conflict: main owns them, see "Generated docs" bel
 progressively, so an incomplete run reads as 7 of 7 while the last two have not been created. Assert a
 FLOOR on the job count. And a cancelled
 run is not a red, since `ci.yml` cancels superseded
-runs per ref on pull requests and integration branches. **A push run on `main` is never
+runs per pull request. **A push run on `main` is never
 cancelled** (2026-11-25): each main commit has a concurrency group of its own, so two quick landings
 cannot cancel each other's runs and a release can be tagged on the merge commit. Since 2026-11-26 the
 docs bot's commit has no run at all (see "Generated docs" above), so on main a missing run on a
@@ -277,9 +278,8 @@ measurement IS the CI measurement for the tree you built. What it cannot see is 
 on main while you worked.
 
 So the gap that used to be a warning is now the point: **a lane's only CI number already includes
-what landed since it branched**, which is the number that decides at landing. Only `main`, the
-batch branches and integration branches still get a push run, so only they can read a figure for
-their own tree alone. Rebase before you trust a number near the ceiling, and read all THREE
+what landed since it branched**, which is the number that decides at landing. Only `main` still
+gets a push run, so only main reads a figure for its own tree alone. Rebase before you trust a number near the ceiling, and read all THREE
 budgets: the boot number is labelled **First-page JS**, not "Boot".
 
 **The total is measured in 4 KB BLOCKS, and that changes what a fix looks like.** CI sizes the
