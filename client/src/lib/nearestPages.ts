@@ -50,7 +50,7 @@ export function menuPages(nav: readonly NavEntry[] = NAV, account: readonly NavL
  * Words an address or a name carries, lower case, accents off. Ids and numbers carry no meaning to match, and nor does
  * "village": half the pages are the village's something, so it would tie every one of them.
  */
-const FILLER = new Set(["the", "a", "an", "of", "and", "my", "your", "our", "to", "in", "on", "for", "we", "us", "page", "village"]);
+const FILLER = new Set("the a an of and my your our to in on for we us page village".split(" "));
 export function wordsOf(text: string): string[] {
   let raw = text;
   try {

@@ -21,16 +21,16 @@ export interface MenuPlace {
 export function usePlaceLine(name: (platformLabel: string) => string): (places: readonly MenuPlace[]) => string {
   const { t } = useLingui();
   return (places) => {
-    const seen = new Set<string>();
-    const wheres: string[] = [];
-    for (const p of places) {
-      const key = `${p.group ?? ""}|${p.folder ?? ""}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const group = p.group ? name(p.group) : t({ message: "Your account", context: "menu place: the account menu" });
-      const folder = p.folder ? name(p.folder) : "";
-      wheres.push(folder ? t({ message: `${group} under ${folder}`, context: "menu place: a folder inside a group" }) : group);
-    }
+    // One line per place, the same place once, in the order given.
+    const wheres = Array.from(
+      new Set(
+        places.map((p) => {
+          const group = p.group ? name(p.group) : t({ message: "Your account", context: "menu place: the account menu" });
+          const folder = p.folder ? name(p.folder) : "";
+          return folder ? t({ message: `${group} under ${folder}`, context: "menu place: a folder inside a group" }) : group;
+        }),
+      ),
+    );
     if (!wheres.length) return "";
     const first = wheres[0];
     let line = t({ message: `In ${first}`, context: "menu place: where a page sits" });
