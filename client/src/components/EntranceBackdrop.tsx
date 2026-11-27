@@ -45,9 +45,13 @@ export const ON_VIDEO = {
   link: "font-medium text-white underline underline-offset-4",
 } as const;
 
-/** The glass card the form sits on: the video shows through it, softened, and it rises into view. */
+/**
+ * The glass card the form sits on: the video shows through it, softened, and it rises into view. On a phone the card
+ * is a near-solid wash with no blur, and it does not rise (index.css): a full-height blur over a playing video,
+ * repainted on every scroll frame, is what made scrolling the gate jerky on a phone (the lead, 26 Nov 2026).
+ */
 export const GLASS =
-  "entrance-rise entrance-card relative z-10 mx-3 mb-[10svh] w-auto rounded-2xl border border-border bg-card/80 px-5 shadow-sm backdrop-blur-xl sm:mx-auto sm:w-full sm:px-10";
+  "entrance-rise entrance-card relative z-10 mx-3 mb-[10svh] w-auto rounded-2xl border border-border bg-card/95 px-5 shadow-sm sm:mx-auto sm:w-full sm:bg-card/80 sm:px-10 sm:backdrop-blur-xl";
 
 /** The form's own panel on the glass: an edge and a lighter wash, so the glass reads through it. */
 export const GLASS_PANEL = "rounded-2xl border-2 border-notice/60 bg-card/50 p-5 sm:p-8";
