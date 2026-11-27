@@ -6,6 +6,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: null, logout: vi.fn() }) }));
 vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: [], loaded: true, failed: false }) }));
@@ -40,9 +42,15 @@ describe("the header on a phone", () => {
     expect(header().className).toBe("sticky top-0 z-50");
   });
 
-  it("scrolls away on a phone and sticks from a wide screen up, where the page asks (the entrance)", () => {
+  it("is marked to scroll away on a phone where the page asks (the entrance); index.css does the rest", () => {
     const h = header(true);
-    expect(h.className.split(" ")).toEqual(["relative", "z-50", "sm:sticky", "sm:top-0"]);
+    expect(h.className).toBe("sticky top-0 z-50");
     expect(h.hasAttribute("data-header-scrolls-on-phone")).toBe(true);
+    const css = readFileSync(path.join(__dirname, "../index.css"), "utf8");
+    expect(css).toMatch(/@media \(max-width: 639px\) \{\s*header\[data-header-scrolls-on-phone\] \{\s*position: relative;/);
+  });
+
+  it("is not marked on any other page", () => {
+    expect(header().hasAttribute("data-header-scrolls-on-phone")).toBe(false);
   });
 });

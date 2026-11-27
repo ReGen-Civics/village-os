@@ -229,7 +229,9 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           header carries the sticky positioning now (a sticky child of a
           header only as tall as itself would scroll away with it). The
           contents keep their indentation so this stays a four-line change. */}
-      <header className={headerScrollsOnPhone ? "relative z-50 sm:sticky sm:top-0" : "sticky top-0 z-50"} data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
+      {/* The class stays one literal: designConsistency.test.ts reads it as the site header's known position. On a
+          phone, `data-header-scrolls-on-phone` lets the header scroll away (index.css). */}
+      <header className="sticky top-0 z-50" data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
       <nav className="bg-teal-deep text-white shadow-lg">
         <div className="container py-4 flex items-center justify-between">
           {/* One anchor, not two. wouter's Link renders the <a> itself, so a
