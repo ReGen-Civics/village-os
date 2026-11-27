@@ -142,6 +142,9 @@
 /* An open dropdown is a torn sheet too; its rows sit inside the tear, so the ragged edge never runs under them. */
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-nav-dropdown] {
   padding: 9px 7px;
+  /* The padding goes outside the menu's own width (w-48 or w-60), so the rows keep the room they have in the plain
+     look and a two-word entry ("Circles & Roles") stays on one line. */
+  box-sizing: content-box;
 }
 /* The lit entry in an open dropdown, and in the phone's More sheet: a teal edge, and the gold dot becomes a compass point. */
 :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-nav-dropdown] a[aria-current], a[data-lit]) {
