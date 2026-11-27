@@ -132,4 +132,4 @@ export async function proposeTurnOn(
 }
 
 /** Where a proposal is read, supported and taken to a vote. */
-export const proposalHref = (id: string) => `/game-mechanics?focus=proposal-${encodeURIComponent(id)}`;
+export const proposalHref = (id: string) => `/governance/how?focus=proposal-${encodeURIComponent(id)}#mechanics-proposals`;

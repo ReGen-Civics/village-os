@@ -60,7 +60,7 @@ function byId(blocks: readonly CanvasPublicBlock[]): LinesById {
 }
 
 const BUTTON =
-  "text-sm font-medium rounded-lg px-3 py-1.5 text-teal-deep border border-teal-deep bg-white hover:bg-stone-50 disabled:opacity-60";
+  "inline-flex min-h-11 items-center text-sm font-medium rounded-lg px-3 py-1.5 text-notice border border-notice bg-card hover:bg-muted disabled:opacity-60";
 
 function LineForm({
   block,
@@ -112,10 +112,10 @@ function LineForm({
       }}
       data-testid={`public-line-form-${block.id}`}
     >
-      <label htmlFor={inputId} className="block text-sm font-medium text-stone-900">
+      <label htmlFor={inputId} className="block text-sm font-medium text-foreground">
         <Trans>The public line for {name}</Trans>
       </label>
-      <p id={hintId} className="text-xs text-stone-600">
+      <p id={hintId} className="text-xs text-muted-foreground">
         <Trans>
           Anyone can read this line, signed in or not. Name the role that does the work, never a person. Leave it
           empty and save to take the line down.
@@ -128,10 +128,10 @@ function LineForm({
         maxLength={CANVAS_PUBLIC_LINE_MAX}
         aria-describedby={hintId}
         onChange={(e) => setText(e.target.value)}
-        className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-deep"
+        className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
       {error && (
-        <p role="alert" className="text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2">
+        <p role="alert" className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -171,33 +171,33 @@ function BlockLine({
 
   return (
     <li
-      className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5"
+      className="bg-card rounded-2xl border border-border shadow-sm p-5"
       data-testid={`public-line-${block.id}`}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <Trans context="a canvas block's number">Block {number}</Trans>
       </p>
-      <h3 className="font-display text-lg font-semibold text-teal-deep">{block.name}</h3>
-      <blockquote cite={CANVAS_SOURCE_URL} className="mt-1 text-sm italic text-stone-700">
+      <h3 className="font-display text-lg font-semibold text-notice">{block.name}</h3>
+      <blockquote cite={CANVAS_SOURCE_URL} className="mt-1 text-sm italic text-foreground">
         {CANVAS_BLOCK_TEXT[block.id].question}
       </blockquote>
 
       {line ? (
-        <p className="mt-3 text-stone-900 leading-relaxed border-l-2 border-teal-deep pl-3" data-testid={`public-line-text-${block.id}`}>
+        <p className="mt-3 text-foreground leading-relaxed border-l-2 border-notice pl-3" data-testid={`public-line-text-${block.id}`}>
           {line}
         </p>
       ) : withheld ? (
-        <p className="mt-3 text-sm text-stone-600">
+        <p className="mt-3 text-sm text-muted-foreground">
           <Trans>This block&apos;s public line is hidden for now.</Trans>
         </p>
       ) : (
-        <p className="mt-3 text-sm text-stone-600">
+        <p className="mt-3 text-sm text-muted-foreground">
           <Trans context="a public line not written yet">Not written yet.</Trans>
         </p>
       )}
 
       {withheld && mayWrite && (
-        <p className="mt-2 text-xs text-stone-700" data-testid={`public-line-withheld-${block.id}`}>
+        <p className="mt-2 text-xs text-foreground" data-testid={`public-line-withheld-${block.id}`}>
           {matched !== null ? (
             <Trans>
               The line holds the name of someone in this village, so the public page hides it. The word that matched is
@@ -214,13 +214,13 @@ function BlockLine({
 
       {answers && answers[0] && (
         <details className="mt-3 text-sm" data-testid={`member-answers-${block.id}`}>
-          <summary className="cursor-pointer font-medium text-teal-deep">
+          <summary className="cursor-pointer font-medium text-notice">
             <Trans>What the village says to its members</Trans>
           </summary>
           {answers.map((a) => (
             <div key={a.section} className="mt-2">
-              <p className="text-xs font-medium text-stone-600">{a.title}</p>
-              <p className="text-stone-800 whitespace-pre-line">{a.body}</p>
+              <p className="text-xs font-medium text-muted-foreground">{a.title}</p>
+              <p className="text-foreground whitespace-pre-line">{a.body}</p>
             </div>
           ))}
         </details>
@@ -303,19 +303,19 @@ export default function CanvasPublicLines() {
 
   return (
     <div data-testid="canvas-public-lines">
-      <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep mb-3">
+      <h2 className="font-display text-2xl text-card-foreground mb-3">
         <Trans context="heading of the public canvas page">Our Canvas, Block by Block</Trans>
       </h2>
-      <p className="text-stone-700 leading-relaxed">
+      <p className="text-foreground leading-relaxed">
         <Trans>
           The Governance Canvas asks a group twelve questions about how it works together. Under each question is this
           village&apos;s answer in one public line. The lines name roles, never people.
         </Trans>
       </p>
-      <p className="mt-2 text-sm text-stone-600" data-testid="canvas-public-credit">
+      <p className="mt-2 text-sm text-muted-foreground" data-testid="canvas-public-credit">
         <Trans>
           The questions are quoted from the{" "}
-          <a href={CANVAS_CREDIT.url} target="_blank" rel="noreferrer" className="font-medium text-stone-800 hover:underline">
+          <a href={CANVAS_CREDIT.url} target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">
             {CANVAS_CREDIT.text}
             <ExternalLink className="inline w-3 h-3 ml-0.5 align-[-1px]" aria-hidden="true" />
           </a>
@@ -323,7 +323,7 @@ export default function CanvasPublicLines() {
         </Trans>
       </p>
       {member && (
-        <p className="mt-2 text-sm text-stone-700" data-testid="canvas-member-note">
+        <p className="mt-2 text-sm text-foreground" data-testid="canvas-member-note">
           <Trans>
             You are signed in, so a block can also open the words the village keeps for its members. Visitors read the
             public lines only.
@@ -331,20 +331,20 @@ export default function CanvasPublicLines() {
         </p>
       )}
       {member?.mayWrite && (
-        <p className="mt-2 text-sm text-stone-700" data-testid="canvas-pen-note">
+        <p className="mt-2 text-sm text-foreground" data-testid="canvas-pen-note">
           <Trans>You hold the village&apos;s story, so you can write these lines. Anyone can read them, signed in or not.</Trans>
         </p>
       )}
 
       {failed ? (
-        <div role="alert" className="mt-6 text-sm text-red-700 bg-red-50 rounded-lg px-4 py-3 space-y-2">
+        <div role="alert" className="mt-6 text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-3 space-y-2">
           <p>{failed}</p>
           <button type="button" onClick={load} className={BUTTON}>
             <Trans context="retry a failed read">Try again</Trans>
           </button>
         </div>
       ) : !lines ? (
-        <p className="mt-6 text-sm text-stone-600 py-4 text-center">
+        <p className="mt-6 text-sm text-muted-foreground py-4 text-center">
           <BreathingLoader decorative size={16} className="mr-2 align-middle" />
           <Trans context="the canvas is loading">Reading the canvas</Trans>
         </p>

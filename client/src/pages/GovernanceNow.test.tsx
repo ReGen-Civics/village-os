@@ -47,7 +47,7 @@ describe("/governance, the Now view", () => {
     render(<GovernanceNow />);
     const box = await screen.findByTestId("governance-newcomer");
     expect(within(box).getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe("/login");
-    expect(within(box).getByRole("link", { name: "How we decide" }).getAttribute("href")).toBe("/governance/how");
+    expect(within(box).getByRole("link", { name: "How we work together" }).getAttribute("href")).toBe("/governance/how");
     expect(f).not.toHaveBeenCalled();
     expect(screen.queryByRole("link", { name: "Your work" })).toBeNull();
   });

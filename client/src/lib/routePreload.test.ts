@@ -66,8 +66,10 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), the /budget redirect
     // to /governance/treasury#cash-budget (the cash budget folded into Governance, the lead, 27 Nov 2026), the
     // /role-measures redirect to /circles#role-measures (folded into Circles & Roles, 27 Nov 2026), and the
-    // /treasury, /cash-payouts and /pricing redirects to their sections of the one Treasury (27 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 16);
+    // /treasury, /cash-payouts and /pricing redirects to their sections of the one Treasury (27 Nov 2026), and the
+    // /game-mechanics redirect to /governance/how#game-mechanics (Game Mechanics folded into How we work together,
+    // 26 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 17);
     expect(routes.length).toBeGreaterThan(60);
   });
 

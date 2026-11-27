@@ -88,7 +88,7 @@ export default function PurposeAlignmentField({
         maxLength={2000}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="max-w-full rounded-lg border border-border px-2 py-1.5 text-sm text-foreground"
+        className="min-h-11 max-w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm text-foreground"
         placeholder={t({ message: "This raises the quorum on rule changes, which serves the part of the purpose about agreements the members write and can change themselves.", context: "PurposeAlignmentField, placeholder" })}
       />
     </label>

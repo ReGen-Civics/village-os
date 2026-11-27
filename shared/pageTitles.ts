@@ -39,6 +39,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/partner": "Become a partner",
   "/pricing": "Pricing desk", // redirects to /governance/treasury#prices (27 Nov 2026)
   "/budget": "Cash budget", // redirects to /governance/treasury#cash-budget (27 Nov 2026)
+  // The lead's name for the page, the same as its menu entry and its Governance tab (26 Nov 2026).
+  "/governance/how": "How we work together",
   "/governance/treasury": "Treasury", // the cash budget, the pay desks, prices and the mint, folded in (27 Nov 2026)
   "/roles": "Roles",
   "/roles/select": "Find your roles",

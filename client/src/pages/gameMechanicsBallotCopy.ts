@@ -44,7 +44,7 @@ export function ballotReturn(catalyst: string): BallotReturnReading {
     failed: { chip: null, cls: "", line: null, tip: null },
     no_quorum: {
       chip: "too few spoke",
-      cls: "bg-stone-100 text-stone-600",
+      cls: "border-border text-muted-foreground",
       line: "Too few of the village voted for that ballot to settle anything. This stands where it stood, holding its supporters and every word of it, and it can go to a vote again.",
       tip: "A vote settles something only when enough of the village answers it. Too few did, so that ballot decided nothing and this went back where it was. Going again means a new vote, frozen fresh on the day it opens.",
     },
@@ -52,13 +52,13 @@ export function ballotReturn(catalyst: string): BallotReturnReading {
     // the instant between; the re-run's own status is what a card shows.
     no_quorum_rerun: {
       chip: "asked again",
-      cls: "bg-stone-100 text-stone-600",
+      cls: "border-border text-muted-foreground",
       line: "Too few of the village voted, so the question is open again for as long as before, and this time half as many voices are enough.",
       tip: null,
     },
     withdrawn: {
       chip: "its vote was called off",
-      cls: "bg-stone-100 text-stone-600",
+      cls: "border-border text-muted-foreground",
       line: "The vote on this was called off before it closed, so nothing was decided. It holds its supporters and every word of it, and the reason is on that vote's record.",
       tip: `Whoever opens a vote can call it off while nobody has answered it. Once even one vote stands, calling it off takes a proposal.decide holder or ${catalyst}, because cast votes belong to the people who cast them.`,
     },
