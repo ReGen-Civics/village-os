@@ -2871,6 +2871,17 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    // The investor gate (the lead, 27 Nov 2026): server/routes/investorAccess.ts.
+    key: "investors.gate",
+    category: "The village's people",
+    label: "Keep the investor page for the investors you accept",
+    description:
+      "On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone.",
+    type: "boolean",
+    default: "false",
+    ring: "founder",
+  },
+  {
     key: "entrance.turnstile_site_key",
     category: "The village's people",
     label: "Portal entrance: Turnstile site key",

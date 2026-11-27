@@ -78,6 +78,8 @@ const state = vi.hoisted(() => ({
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/components/WhyCostaRica", () => ({ default: () => null }));
 vi.mock("@/components/InvestorSummary", () => ({ default: () => null }));
+// The whole page, as a reader the team let in sees it (the investor gate: components/investor/InvestorInterest.test.tsx).
+vi.mock("@/lib/investorAccess", () => ({ useInvestorAccess: () => ({ state: { access: true, prefill: { name: "", email: "", whatsapp: "", link: "", locked: false }, request: null }, reload: () => undefined }), investorHeaders: (h: Record<string, string> = {}) => h }));
 vi.mock("@/components/comms/PathConsentBox", () => ({ default: () => null, FORM_CONSENT_FIELD: "commsConsent" }));
 // The questions come from FAQs; the heading over them is the page's.
 vi.mock("@/components/FaqSection", () => ({ default: ({ heading }: { heading?: string }) => <h2>{heading}</h2> }));

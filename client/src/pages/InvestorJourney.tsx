@@ -4,6 +4,8 @@ import WhyCostaRica from "@/components/WhyCostaRica";
 import FaqSection from "@/components/FaqSection";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import InvestorSummary from "@/components/InvestorSummary";
+import InvestorInterest from "@/components/investor/InvestorInterest";
+import { investorHeaders, useInvestorAccess } from "@/lib/investorAccess";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import {
@@ -103,7 +105,25 @@ const SECTION_H2 = "font-display text-3xl leading-tight text-foreground sm:text-
 const PACK_FORM = "pack-form";
 const CALL_FORM = "call-form";
 
+/**
+ * THE INVESTOR GATE (the lead, 27 Nov 2026: "hide all the wording on investor for now to just give a form for
+ * investors to give their information if they are interested"). A reader the team let in sees the whole page below,
+ * unchanged; everybody else sees only the interest form (components/investor/InvestorInterest.tsx). The server keeps
+ * the summary, the packet and the page's own words for the readers it lets in (server/routes/investorAccess.ts).
+ */
 export default function InvestorJourney() {
+  const { state, reload } = useInvestorAccess();
+  if (state?.access) return <InvestorJourneyFull />;
+  return (
+    <Layout>
+      <div className={WORLD} data-investor-gate="">
+        {state === undefined ? <div className="min-h-[60vh]" aria-busy="true" /> : <InvestorInterest state={state} onSent={reload} />}
+      </div>
+    </Layout>
+  );
+}
+
+function InvestorJourneyFull() {
   const page = useJourneyContent(INVESTOR_JOURNEY);
   const hero = page?.hero.fields;
   const figures = page?.figures;
@@ -163,7 +183,7 @@ export default function InvestorJourney() {
   const [packReady, setPackReady] = useState<boolean | null>(null);
   useEffect(() => {
     let live = true;
-    fetch("/api/investor-summary")
+    fetch("/api/investor-summary", { credentials: "same-origin", headers: investorHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { if (live && j && typeof j.packReady === "boolean") setPackReady(j.packReady); })
       .catch(() => {});
@@ -200,7 +220,8 @@ export default function InvestorJourney() {
        */
       const response = await fetch("/api/investor-docs/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        headers: investorHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           name: packFormData.name,
           email: packFormData.email,

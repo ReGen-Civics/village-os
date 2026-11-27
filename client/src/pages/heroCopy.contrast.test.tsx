@@ -44,6 +44,8 @@ vi.mock("@/components/Layout", () => ({
 vi.mock("@/components/FaqSection", () => ({ default: () => null }));
 vi.mock("@/components/WhyCostaRica", () => ({ default: () => null }));
 vi.mock("@/components/InvestorSummary", () => ({ default: () => null }));
+// The whole page, as a reader the team let in sees it (the investor gate: components/investor/InvestorInterest.test.tsx).
+vi.mock("@/lib/investorAccess", () => ({ useInvestorAccess: () => ({ state: { access: true, prefill: { name: "", email: "", whatsapp: "", link: "", locked: false }, request: null }, reload: () => undefined }), investorHeaders: (h: Record<string, string> = {}) => h }));
 vi.mock("@/lib/gameApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/gameApi")>()),
   useBrandImages: () => ({ prosperityHero: "/hero.webp", investorHero: "/hero.webp" }),
