@@ -190,7 +190,7 @@ export default function RightsAndAgreements() {
               <nav
                 id="rights-chapters"
                 aria-label={t({ message: "Agreements on this page", context: "rights and agreements page: the list of chapters" })}
-                className="scroll-mt-24 print:hidden lg:sticky lg:top-24 lg:self-start"
+                className="scroll-mt-32 print:hidden lg:sticky lg:top-24 lg:self-start"
               >
                 <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
                   {served.map((id) => {
@@ -241,7 +241,7 @@ export default function RightsAndAgreements() {
                       id={id}
                       data-chapter={id}
                       aria-labelledby={chapterHeadingId(id)}
-                      className={`scroll-mt-24 ${id === active ? "" : "hidden print:mt-12 print:block"}`}
+                      className={`scroll-mt-32 ${id === active ? "" : "hidden print:mt-12 print:block"}`}
                     >
                       <Body />
                       {served.length > 1 && (
