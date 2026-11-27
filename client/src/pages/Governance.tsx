@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import VillageAgreements from "@/components/governance/VillageAgreements";
-import { lazy, Suspense, useEffect, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import VillageConflictSteps from "@/components/governance/VillageConflictSteps";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import VoiceSpreadBand from "@/components/governance/VoiceSpreadBand";
@@ -22,8 +22,11 @@ import { CANVAS_CREDIT } from "@shared/governanceCanvasText";
 import { CANVAS_PUBLIC_MATRIX_PATH } from "@shared/canvasPublicLines";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNewcomer } from "@/lib/newcomer";
+import { readOnDay, useHowWeWorkRead } from "@/lib/howWeWorkRead";
+import BreathingLoader from "@/components/natural/BreathingLoader";
+import { HOW_WE_WORK_ANCHOR } from "@shared/howWeWorkRead";
 import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, RING, TILE, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, RING, TICK, TILE, WORLD } from "@/components/journey/look";
 
 // Each behind its module, so a village with both off downloads none of them.
 const ConflictAgreementPublic = lazy(() => import("@/components/canvas/ConflictAgreementPublic"));
@@ -45,6 +48,11 @@ function asksForMechanics(): boolean {
   const query = new URLSearchParams(window.location.search);
   return hash === GAME_MECHANICS_ANCHOR || hash.startsWith("mechanics-") || hash.startsWith("proposal-") || query.has("dial") || (query.get("focus") ?? "").startsWith("proposal-");
 }
+
+/** The first chapter and every section in it: a link to any of them opens the chapter again once it is folded. */
+const CHAPTER_IDS: ReadonlySet<string> = new Set([
+  "how-we-work", "voice", "agreements", "canvas", "who-decides", "principles", "decisions", "circles", "conflict", "conflict-agreement", "conflict-agreement-slot", "stewards", "rules", "canvas-on-paper", "hypha", "join-in",
+]);
 
 /** Two headings that say the same thing, whatever their case and spacing. */
 const sameWords = (a: string, b: string) => a.trim().replace(/\s+/g, " ").toLowerCase() === b.trim().replace(/\s+/g, " ").toLowerCase();
@@ -118,7 +126,7 @@ function Panel({ id, icon, eyebrow, heading, children, className = CARD }: { id:
  * tab away, and this page is the one that says how.
  */
 export default function Governance() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   // Each story page has its own switch now; a door goes with its page.
   const storyShown = useStoryPageShown();
   // A Hypha section needs a Hypha space to describe: the village's switch AND its DHO link.
@@ -138,6 +146,62 @@ export default function Governance() {
   const member = !useNewcomer();
 
   /*
+   * "I'VE READ THIS" (the lead, 27 Nov 2026). A member who ticked the box at the end of the first chapter sees it
+   * folded to one line, with the day they read it and "Read it again"; the mechanics move up under it. The read is
+   * theirs, kept server side (shared/howWeWorkRead.ts), so it holds on every device. A link into the chapter (the
+   * profile's "Read it again", or any of its sections) opens it again; ticking folds it, unticking clears the read.
+   */
+  const reading = useHowWeWorkRead(member);
+  const [reopened, setReopened] = useState(() => typeof window !== "undefined" && CHAPTER_IDS.has(window.location.hash.slice(1)));
+  const chapterRef = useRef<HTMLDivElement | null>(null);
+  const foldRef = useRef<HTMLElement | null>(null);
+  // The box shows the press at once while it saves; a failed save rolls it back to what the server holds.
+  const [pressed, setPressed] = useState<boolean | null>(null);
+  const folded = member && !!reading.readAt && !reopened;
+  // A member whose read is not known yet: hold the chapter's place, so it never draws and then collapses (QA round 1:
+  // a layout shift of 0.48). A failed read counts as known and unread (lib/howWeWorkRead.ts), so the chapter opens.
+  // A link straight into the chapter (#conflict, the profile's #how-we-work) opens it at once, read or not, so it
+  // never waits here and the arrival scroll has a section to land on (QA round 2).
+  const readPending = member && reading.readAt === undefined && !reopened;
+  useEffect(() => {
+    const opened = () => {
+      const id = window.location.hash.slice(1);
+      if (window.location.pathname !== "/governance/how" || !CHAPTER_IDS.has(id)) return;
+      setReopened(true);
+      window.setTimeout(() => document.getElementById(id)?.scrollIntoView?.({ block: "start" }), 0);
+    };
+    window.addEventListener("hashchange", opened);
+    window.addEventListener("pushState", opened);
+    return () => {
+      window.removeEventListener("hashchange", opened);
+      window.removeEventListener("pushState", opened);
+    };
+  }, []);
+  const tick = async (read: boolean) => {
+    // A press while the last one is saving is ignored, never disabled: a disabled box drops the keyboard's focus.
+    if (reading.saving) return;
+    setPressed(read);
+    const saved = await reading.save(read);
+    setPressed(null);
+    if (!saved || !read) return;
+    // Folded: focus moves to the line that says so (a screen reader hears it), with the mechanics right under it.
+    // Unticking leaves the chapter open and the focus on the box.
+    setReopened(false);
+    window.setTimeout(() => foldRef.current?.focus(), 0);
+  };
+  const readAgain = () => {
+    setReopened(true);
+    // Into the chapter at its first heading, a named place to start reading from.
+    window.setTimeout(() => {
+      const heading = chapterRef.current?.querySelector<HTMLElement>("h2, h3");
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: false });
+      } else chapterRef.current?.focus();
+    }, 0);
+  };
+
+  /*
    * ARRIVING AT AN ANCHOR. The page is drawn after its words arrive, so the
    * browser's own jump to `#conflict` or `#game-mechanics` found nothing to land
    * on. Once the words are in, go there. The mechanics' own folds do the same
@@ -151,15 +215,26 @@ export default function Governance() {
       // too, as the #game-mechanics arrival does, so the row and the way in under it are on the first screen.
       const id = window.location.hash.slice(1) || (!member && asksForMechanics() ? GAME_MECHANICS_ANCHOR : "");
       if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
-      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({ block: "start" }));
+      window.requestAnimationFrame(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView?.({ block: "start" });
+        // The app's ScrollToTop answers a hash 100ms after a new page mounts, and sends a page whose anchor it
+        // could not find yet back to the very top. Land again if that is what happened in between.
+        window.setTimeout(() => {
+          if (window.scrollY === 0 && el.isConnected && el.getBoundingClientRect().top > window.innerHeight / 2) el.scrollIntoView?.({ block: "start" });
+        }, 160);
+      });
     };
-    // Once, when the words land; then again for a router link to this page's own anchor (the footer's
-    // "Game Mechanics" is one), which wouter sends by pushState and so fires no hashchange.
+    // Once when the words land, again when the reader turns out to be a member (the rows above the chapter change)
+    // and when a member's held place gives way to the chapter or its folded line
+    // (everything under it moved), and for a router link to this page's own anchor (the footer's "Game Mechanics"
+    // is one), which wouter sends by pushState and so fires no hashchange.
     go();
     window.addEventListener("pushState", go);
     return () => window.removeEventListener("pushState", go);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!page]);
+  }, [!!page, readPending, member]);
 
   if (!page) {
     return (
@@ -248,6 +323,8 @@ export default function Governance() {
               phone it is the first thing under the tabs; on a desktop the
               contents beside the page carry it too. */}
           {member ? (
+            // Once the chapter is folded the mechanics sit right under it, so the jump has nothing left to skip.
+            folded || readPending ? null : (
             <div className={`${QUIET} mt-6 flex flex-wrap items-center justify-between gap-3 bg-card`} data-testid="mechanics-jump">
               <p className={`${NOTE} min-w-0`}>
                 <Trans context="how we work together: the jump">Read how we work together before?</Trans>
@@ -257,6 +334,7 @@ export default function Governance() {
                 <ArrowDown className="size-4" aria-hidden="true" />
               </a>
             </div>
+            )
           ) : (
             <div className="mt-6 space-y-3">
               {askedForMechanics && (
@@ -294,7 +372,31 @@ export default function Governance() {
 
           <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start lg:gap-8">
             <div className="min-w-0 space-y-6">
-              <div id="how-we-work" className="scroll-mt-24 space-y-6">
+              {readPending ? (
+                // The chapter's place, held while the member's read is asked for.
+                // Short when this device last saw the chapter read (a yes or no only, never when), tall otherwise.
+                <div
+                  id={HOW_WE_WORK_ANCHOR}
+                  aria-busy="true"
+                  className={`${reading.seenRead ? "min-h-16" : "min-h-[60vh]"} flex scroll-mt-24 items-start justify-center pt-4`}
+                  data-testid="how-we-work-waiting"
+                >
+                  <BreathingLoader size={32} label={chapterName} />
+                </div>
+              ) : folded && reading.readAt ? (
+                <section ref={foldRef} id={HOW_WE_WORK_ANCHOR} tabIndex={-1} aria-labelledby="how-we-work-read-line" className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3 bg-card focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`} data-testid="how-we-work-read">
+                  <p className={`${NOTE} flex min-w-0 items-center gap-2`}>
+                    <CheckCircle2 className="size-5 shrink-0 text-open" aria-hidden="true" />
+                    <span id="how-we-work-read-line">
+                      <Trans context="how we work together: read">How we work together, read on {readOnDay(reading.readAt, i18n.locale)}</Trans>
+                    </span>
+                  </p>
+                  <button type="button" onClick={readAgain} className={BTN_SECONDARY}>
+                    <Trans context="how we work together: read">Read it again</Trans>
+                  </button>
+                </section>
+              ) : (
+              <div id="how-we-work" ref={chapterRef} tabIndex={-1} className="scroll-mt-24 space-y-6 focus:outline-none">
                 {/* The first of the page's two chapters (groupLook.ts, as /roles splits its chapters). Left out
                     while it would only repeat the headline (the default headline is these same words). */}
                 {!sameWords(hero.fields.headline, chapterName) && <h2 className={GROUP_H2}>{chapterName}</h2>}
@@ -533,7 +635,35 @@ export default function Governance() {
                     </div>
                   </section>
                 )}
+
+                {/* THE BOX AT THE END OF THE CHAPTER, for a member, once their read is known. */}
+                {member && reading.readAt !== undefined && (
+                  <div className={`${TILE} space-y-1`} data-testid="how-we-work-tick">
+                    <label className="flex min-h-11 cursor-pointer items-center gap-3">
+                      <input
+                        type="checkbox"
+                        className={TICK}
+                        checked={pressed ?? !!reading.readAt}
+                        aria-disabled={reading.saving || undefined}
+                        aria-describedby="how-we-work-read-hint"
+                        onChange={(e) => void tick(e.target.checked)}
+                      />
+                      <span className="font-semibold text-foreground">
+                        <Trans context="how we work together: read">I&apos;ve read this</Trans>
+                      </span>
+                    </label>
+                    <p id="how-we-work-read-hint" className={HINT}>
+                      <Trans context="how we work together: read">It folds away for you, and your profile keeps it as read. Untick it to clear that.</Trans>
+                    </p>
+                    {reading.failed && (
+                      <p role="alert" className="text-sm text-destructive">
+                        <Trans context="how we work together: read">That did not save. Try again.</Trans>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
+              )}
 
               {/* THE GAME MECHANICS, for members only. One line on openness that
                   promises only what the folds hold, a door to each fold, then the
@@ -572,13 +702,13 @@ export default function Governance() {
                 </p>
                 <ul className="m-0 list-none space-y-0.5 p-0">
                   <li>
-                    <a href="#how-we-work" className={`${contentsLink} font-semibold text-foreground`}>
+                    <a href="#how-we-work" onClick={again(HOW_WE_WORK_ANCHOR)} className={`${contentsLink} font-semibold text-foreground`}>
                       <Trans context="how we work together: contents">How we work together</Trans>
                     </a>
                   </li>
                   {contents.map((c) => (
                     <li key={c.id}>
-                      <a href={`#${c.id}`} className={`${contentsLink} pl-6`}>
+                      <a href={`#${c.id}`} onClick={again(c.id)} className={`${contentsLink} pl-6`}>
                         <span className="min-w-0 truncate">{c.label}</span>
                       </a>
                     </li>
