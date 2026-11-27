@@ -258,7 +258,7 @@ export default function Quests() {
                 and the Lore line comes last, after the numbers. */}
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-4">
               <Trans context="Quests, p">Take a <GlossaryTip slot="quest">Quest</GlossaryTip>, do the work, turn it in.</Trans></p>
-            {/* The two rewards a quest names on its card, each explained once here: a mark cannot sit inside a card's
+            {/* The two rewards a quest names on its card, each explained once here: a tip cannot sit inside a card's
                 link, and the village's own token names come from its config (the lead, 25 Nov 2026). */}
             <RewardWords />
             {comingSoon ? (
@@ -732,7 +732,7 @@ export default function Quests() {
   );
 }
 
-/** "Quests pay in Village Credits and Village Voice.", each name with its mark, drawn only while both are explained. */
+/** "Quests pay in Village Credits and Village Voice.", each name wearing its own tip, drawn only while one is explained. */
 function RewardWords() {
   const credits = useValueTokenName("credits");
   const voice = useGameConfig()?.currency?.names?.["village-voice"] ?? "Voice";

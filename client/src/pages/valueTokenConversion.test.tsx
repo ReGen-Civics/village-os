@@ -60,7 +60,8 @@ vi.mock("@/components/Layout", () => ({
 }));
 vi.mock("@/components/FaqSection", () => ({ default: () => null }));
 vi.mock("@/components/ExamplesBanner", () => ({ ExamplesBanner: () => null }));
-vi.mock("@/components/InfoTip", () => ({ default: () => null }));
+// The word a tip explains is the tip's children (InfoTip.tsx), so the stand-in keeps the word and drops the tip.
+vi.mock("@/components/InfoTip", () => ({ default: ({ children }: { children?: import("react").ReactNode }) => children ?? null }));
 vi.mock("@/lib/gameApi", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/gameApi")>()),
   useBrandImages: () => ({}),

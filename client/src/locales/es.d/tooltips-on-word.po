@@ -131,3 +131,8 @@ msgstr "Elija la <0>raíz</0> de la que crece, mire las metas de esta temporada 
 msgctxt "thanks composer: the plain allowance line"
 msgid "Each cycle every member receives an <0>allowance</0> to send."
 msgstr "En cada ciclo, cada miembro recibe una <0>asignación</0> para enviar."
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/admin/GlossaryPanel.tsx
+msgid "One plain sentence for each word a visitor may not know. The word wears a thin dotted underline, and a tap or a hover on it opens the sentence. Blank leaves the word plain."
+msgstr "Una frase sencilla para cada palabra que un visitante quizá no conozca. La palabra lleva un subrayado fino de puntos, y al tocarla o pasar el cursor por encima se abre la frase. En blanco, la palabra queda sin más."
+
