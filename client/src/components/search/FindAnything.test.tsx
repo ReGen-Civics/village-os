@@ -13,6 +13,7 @@ import type { FindIndex } from "@shared/findAnything";
 
 let index: FindIndex;
 let guideReply: unknown;
+let guideStatus = 200;
 let calls: Array<{ url: string; method: string; body?: string }>;
 
 beforeEach(() => {
@@ -20,6 +21,7 @@ beforeEach(() => {
   window.history.replaceState({}, "", "/");
   calls = [];
   guideReply = { state: "unavailable", guide: "Sol" };
+  guideStatus = 200;
   index = {
     people: false,
     guide: { name: "Sol", available: true },
@@ -33,8 +35,11 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (url: any, init?: any) => {
       calls.push({ url: String(url), method: String(init?.method ?? "GET"), body: init?.body });
-      const body = String(url).endsWith("/api/search/guide") ? guideReply : index;
-      return { ok: true, status: 200, json: async () => body };
+      const u = String(url);
+      // The guide's name comes from the village's own document, through the name hook, never from the search.
+      if (u.endsWith("/api/work-with-us-config")) return { ok: true, status: 200, json: async () => ({ assistantName: "Sol" }) };
+      if (u.endsWith("/api/search/guide")) return { ok: guideStatus < 400, status: guideStatus, json: async () => guideReply };
+      return { ok: true, status: 200, json: async () => index };
     }),
   );
 });
@@ -89,6 +94,7 @@ describe("Find anything", () => {
     const d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "calender");
     await waitFor(() => expect(within(d).getAllByRole("option")[0].textContent).toContain("Village Calendar"));
+    expect(within(d).getByRole("status").textContent).toBe("1 result");
     await userEvent.keyboard("{Enter}");
     expect(window.location.pathname).toBe("/events");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -112,7 +118,8 @@ describe("Find anything", () => {
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
     const d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
-    const ask = await within(d).findByRole("option", { name: /Ask Sol where to find it/ });
+    // Nothing matches, so the guide's row is the door: "Nothing here matches. Ask Sol, or open the menu."
+    const ask = await within(d).findByRole("option", { name: "Nothing here matches. Ask Sol, or open the menu." });
     expect(within(d).getByText("Only the words you typed go to Sol.")).toBeTruthy();
     await userEvent.click(ask);
     const group = await within(d).findByRole("group", { name: "Sol suggests" });
@@ -141,5 +148,17 @@ describe("Find anything", () => {
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
     await userEvent.click(await within(d).findByRole("option", { name: /Ask Sol/ }));
     expect(await within(d).findByText("Sol can't answer right now, so these are the search's own results.")).toBeTruthy();
+  });
+
+  it("says the guide has rested for today when the day's share is spent, and keeps the results", async () => {
+    guideStatus = 429;
+    guideReply = { error: "The guide has rested for today. The search still works on its own.", limit: "day" };
+    render(<FindAnything />);
+    await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
+    const d = await dialog();
+    await userEvent.type(within(d).getByRole("combobox"), "garden plantas");
+    await userEvent.click(await within(d).findByRole("option", { name: /Ask Sol where to find it/ }));
+    expect(await within(d).findByText("Sol has rested for today. The search still works on its own.")).toBeTruthy();
+    expect(within(d).getByRole("option", { name: /Garden Lead/ })).toBeTruthy();
   });
 });

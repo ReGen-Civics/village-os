@@ -52,7 +52,7 @@ export interface FindEntry {
 
 // ── Ranking: prefix, word and one typo a word ──────────────────────────────
 
-const STOP = new Set(["the", "a", "an", "to", "of", "my", "me", "i", "how", "do", "where", "is", "for", "in", "on", "and", "can", "find", "page"]);
+const STOP = new Set(["the", "a", "an", "to", "of", "my", "me", "i", "how", "do", "where", "is", "for", "in", "on", "and", "can", "find", "page", "village", "does", "what", "with", "about", "other"]);
 
 /** Lower case, accents off, anything that is not a letter or a digit a space. */
 export function normFind(s: unknown): string {
@@ -84,10 +84,14 @@ export function withinOneTypo(a: string, b: string): boolean {
   return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
 }
 
-/** A typed word of four letters or more found one typo away from the start of one of these words. */
+/**
+ * A typed word of four letters or more found one typo away from the start of one of these words. A short word keeps
+ * its first letter: with only four letters, dropping the first one is a different word ("wren" is not "rent").
+ */
 function nearWord(word: string, tokens: readonly string[]): boolean {
   if (word.length < 4) return false;
-  return tokens.some((tok) => [word.length - 1, word.length, word.length + 1].some((n) => n >= 3 && n <= tok.length && withinOneTypo(word, tok.slice(0, n))));
+  const short = word.length <= 4;
+  return tokens.some((tok) => (!short || tok[0] === word[0]) && [word.length - 1, word.length, word.length + 1].some((n) => n >= 3 && n <= tok.length && withinOneTypo(word, tok.slice(0, n))));
 }
 
 /**
@@ -96,21 +100,33 @@ function nearWord(word: string, tokens: readonly string[]): boolean {
  * gets a lift over one that answers some.
  */
 export function scoreFind(query: string, e: FindEntry): number {
+  return scoreFindWords(query, e).score;
+}
+
+/** The score, and whether the entry answers every word of the query (one word answered counts as every word). */
+export function scoreFindWords(query: string, e: FindEntry): { score: number; all: boolean } {
   const q = normFind(query);
-  if (!q) return 0;
+  if (!q) return { score: 0, all: false };
   const title = normFind(e.title);
   const syns = (e.synonyms ?? []).map(normFind);
   const help = normFind(e.help);
   const titleTokens = title.split(" ").filter(Boolean);
   const synTokens = syns.flatMap((s) => s.split(" ")).filter(Boolean);
-  let n = 0;
-  if (title === q) n += 100;
-  else if (title.startsWith(q)) n += 60;
-  else if (title.includes(q)) n += 40;
-  if (syns.includes(q)) n += 45;
-  else if (syns.some((s) => s.startsWith(q))) n += 30;
-  else if (syns.some((s) => s.includes(q))) n += 20;
   const ws = wordsOf(query);
+  // The phrase as typed, and the phrase without its small words ("where do i vote" is "vote"): the better of the two.
+  const phrase = (p: string): number => {
+    if (!p) return 0;
+    let m = 0;
+    if (title === p) m += 100;
+    else if (title.startsWith(p)) m += 60;
+    else if (title.includes(p)) m += 40;
+    if (syns.includes(p)) m += 45;
+    else if (syns.some((s) => s.startsWith(p))) m += 30;
+    else if (syns.some((s) => s.includes(p))) m += 20;
+    return m;
+  };
+  const core = ws.join(" ");
+  let n = Math.max(phrase(q), core !== q ? phrase(core) : 0);
   let hit = 0;
   for (const w of ws) {
     const inTitle = titleTokens.some((t) => t.startsWith(w));
@@ -125,10 +141,12 @@ export function scoreFind(query: string, e: FindEntry): number {
     if (inHelp) n += 1;
     if (inTitle || inSyn || nearTitle || nearSyn || inHelp) hit++;
   }
-  if (ws.length > 1 && hit === ws.length) n += 10;
-  if (ws.length > 1 && hit < ws.length) n = Math.floor(n / 2);
+  const all = hit === ws.length;
+  if (ws.length > 1 && all) n += 10;
+  // Half for a partial answer, never to nothing: a match found only in a page's line still counts.
+  if (ws.length > 1 && !all && n > 0) n = Math.max(1, Math.floor(n / 2));
   if (n > 0 && e.kind === "page") n += 2;
-  return n;
+  return { score: n, all: ws.length === 0 ? n > 0 : all };
 }
 
 /** Below this, the best answer is a guess: the dialog offers the guide. */
@@ -137,21 +155,26 @@ export const WEAK_SCORE = 12;
 export interface RankedFind {
   entry: FindEntry;
   score: number;
+  /** It answers every word typed. */
+  all: boolean;
 }
 
 /** The best matches, best first, at most `limit`. Pure: it reads the entries and returns some of them. */
 export function rankFind(query: string, entries: readonly FindEntry[], limit = 20): RankedFind[] {
   return entries
-    .map((entry, i) => ({ entry, i, score: scoreFind(query, entry) }))
+    .map((entry, i) => ({ entry, i, ...scoreFindWords(query, entry) }))
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score || a.i - b.i)
     .slice(0, limit)
-    .map(({ entry, score }) => ({ entry, score }));
+    .map(({ entry, score, all }) => ({ entry, score, all }));
 }
 
-/** True when the local results are weak or empty, so the guide is worth offering. */
+/**
+ * True when the local results are weak or empty, so the guide is worth offering: nothing found, a best answer that
+ * is a guess, or a query of several words whose best answer does not answer all of them ("pay someone").
+ */
 export function weakFind(ranked: readonly RankedFind[]): boolean {
-  return ranked.length === 0 || ranked[0].score < WEAK_SCORE;
+  return ranked.length === 0 || ranked[0].score < WEAK_SCORE || !ranked[0].all;
 }
 
 /** The ranked entries in the dialog's groups, each group in rank order, at most `perGroup` a group. */
@@ -253,6 +276,12 @@ export function pickDestinations(raw: unknown, allowed: readonly FindEntry[], ma
 export type FindGuideAnswer =
   | { state: "answered"; guide: string; picks: FindPick[] }
   | { state: "unavailable"; guide: string };
+
+/** A refused question, 429: the reader's hour of questions, or the day's share (theirs, their address's, or the strangers'). */
+export interface FindGuideLimit {
+  error: string;
+  limit: "hour" | "day";
+}
 
 /** What `GET /api/search/index` answers. */
 export interface FindIndex {

@@ -19,11 +19,14 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type Keyboard
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ArrowRight, Search, Sparkles, X } from "lucide-react";
+import { plural } from "@lingui/core/macro";
+import { ArrowRight, Search, X } from "lucide-react";
+import { LeafCompass } from "@/components/sacred/livingCore";
+import { useGuideName } from "@/hooks/useGuideName";
 import { authToken } from "@/lib/gameApi";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { EYEBROW, HINT } from "@/components/journey/look";
-import { groupFind, rankFind, weakFind, type FindEntry, type FindGuideAnswer, type FindIndex, type FindKind, type FindPick } from "@shared/findAnything";
+import { groupFind, rankFind, weakFind, type FindEntry, type FindGuideAnswer, type FindGuideLimit, type FindIndex, type FindKind, type FindPick } from "@shared/findAnything";
 
 export const INDEX_URL = "/api/search/index";
 export const GUIDE_URL = "/api/search/guide";
@@ -61,7 +64,7 @@ type Guide =
   | { phase: "asking"; query: string }
   | { phase: "answered"; query: string; picks: FindPick[] }
   | { phase: "unavailable" }
-  | { phase: "resting" };
+  | { phase: "resting"; limit: FindGuideLimit["limit"] };
 
 type Row =
   | { type: "entry"; entry: FindEntry }
@@ -90,6 +93,12 @@ function lookFor(admin: boolean) {
     edge: "border-border",
     icon: "text-muted-foreground",
     close: "text-muted-foreground hover:bg-muted",
+    // The guide's own mark: a small gold ring (look.ts RING, at row size). Admin's quiet ink there.
+    ring: admin
+      ? "inline-flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-border text-muted-foreground"
+      : "inline-flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-notice text-notice",
+    // The guide's picks lie on a warm tile under the gold heading (look.ts TILE, edged in gold).
+    picks: admin ? "rounded-xl border border-border bg-muted p-1" : "rounded-xl border border-notice/50 bg-muted p-1",
   };
 }
 
@@ -113,7 +122,8 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
   }, []);
 
   const entries = index && index !== "failed" ? index.entries : [];
-  const guideName = index && index !== "failed" ? index.guide.name : "";
+  // The guide's name the way every surface reads it (hooks/useGuideName.ts), worded for this reader.
+  const guideName = useGuideName().name;
   const guideOn = !!(index && index !== "failed" && index.guide.available);
   const people = !!(index && index !== "failed" && index.people);
   const Guide = guideNameAtSentenceStart(guideName);
@@ -155,7 +165,10 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
     setGuide({ phase: "asking", query: q });
     try {
       const r = await fetch(GUIDE_URL, { method: "POST", headers: { "Content-Type": "application/json", ...auth() }, body: JSON.stringify({ query: q }) });
-      if (r.status === 429) return setGuide({ phase: "resting" });
+      if (r.status === 429) {
+        const limit = ((await r.json().catch(() => null)) as FindGuideLimit | null)?.limit === "day" ? "day" : "hour";
+        return setGuide({ phase: "resting", limit });
+      }
       const body = (r.ok ? await r.json() : null) as FindGuideAnswer | null;
       if (body?.state !== "answered") return setGuide({ phase: "unavailable" });
       // The server kept only places on this reader's list; the dialog keeps only places in its own index too.
@@ -218,7 +231,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
   return (
     <DialogPrimitive.Root open onOpenChange={(open) => !open && onClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/50" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/50" /* design-ok: the scrim behind a modal, as the More and Paths sheets draw theirs */ />
         <DialogPrimitive.Content
           data-slot="dialog-content"
           // The opener takes the focus back (FindAnything.tsx), so Radix's own return is not wanted.
@@ -264,7 +277,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
 
           <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
             <p role="status" className="sr-only">
-              {q && index !== null ? t({ message: `${resultCount} results`, context: "find anything: the count a screen reader hears" }) : ""}
+              {q && index !== null ? t({ message: plural(resultCount, { one: "# result", other: "# results" }), context: "find anything: the count a screen reader hears" }) : ""}
             </p>
 
             {index === "failed" && (
@@ -280,12 +293,12 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
 
             <div id={listId} role="listbox" aria-label={t({ message: "Results", context: "find anything: the results list" })} className="space-y-1">
               {answeredHere && answeredHere.picks.length > 0 && (
-                <div role="group" aria-label={t({ message: `${Guide} suggests`, context: "find anything: the guide's answer, a group heading" })}>
+                <div role="group" aria-label={t({ message: `${Guide} suggests`, context: "find anything: the guide's answer, a group heading" })} className={look.picks}>
                   <div aria-hidden="true" className={`px-3 pb-1 pt-2 ${look.eyebrow}`}>{t({ message: `${Guide} suggests`, context: "find anything: the guide's answer, a group heading" })}</div>
                   {answeredHere.picks.map((pick) =>
                     option({ type: "pick", pick }, `pick:${pick.path}`, (
                       <>
-                        <Sparkles aria-hidden="true" className={`size-4 shrink-0 ${look.icon}`} />
+                        <span aria-hidden="true" className={look.ring}><LeafCompass className="size-4" /></span>
                         {entryBody(pick.title, pick.why)}
                       </>
                     )),
@@ -301,9 +314,11 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
               {askable &&
                 option({ type: "ask" }, "ask", (
                   <>
-                    <Sparkles aria-hidden="true" className={`size-4 shrink-0 ${look.icon}`} />
+                    <span aria-hidden="true" className={look.ring}><LeafCompass className="size-4" /></span>
                     <span className={`min-w-0 flex-1 font-medium ${look.title}`}>
-                      <Trans context="find anything: ask the guide, the row's words">Ask {guideName} where to find it</Trans>
+                      {ranked.length === 0
+                        ? <Trans context="find anything: nothing matches, the door to the guide">Nothing here matches. Ask {guideName}, or open the menu.</Trans>
+                        : <Trans context="find anything: ask the guide, the row's words">Ask {guideName} where to find it</Trans>}
                     </span>
                     <ArrowRight aria-hidden="true" className={`size-4 shrink-0 ${look.icon}`} />
                   </>
@@ -315,7 +330,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
               </p>
             )}
 
-            {q && index !== null && index !== "failed" && ranked.length === 0 && !answeredHere?.picks.length && (
+            {q && index !== null && index !== "failed" && ranked.length === 0 && !answeredHere?.picks.length && !askable && (
               <p className={`px-3 py-2 ${look.hint}`}>
                 <Trans context="find anything: no results">Nothing here matches “{q}”. Try another word, or open the menu for every page.</Trans>
               </p>
@@ -330,8 +345,11 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
               {guide.phase === "unavailable" && (
                 <p className={`py-2 ${look.hint}`}><Trans context="find anything: the guide is not answering">{Guide} can't answer right now, so these are the search's own results.</Trans></p>
               )}
-              {guide.phase === "resting" && (
+              {guide.phase === "resting" && guide.limit === "hour" && (
                 <p className={`py-2 ${look.hint}`}><Trans context="find anything: the guide's hour is spent">That's a lot of asking for one hour. The search still works on its own.</Trans></p>
+              )}
+              {guide.phase === "resting" && guide.limit === "day" && (
+                <p className={`py-2 ${look.hint}`}><Trans context="find anything: the guide's day is spent">{Guide} has rested for today. The search still works on its own.</Trans></p>
               )}
               {weak && !guideOn && index !== null && index !== "failed" && ranked.length > 0 && (
                 <p className={`py-2 ${look.hint}`}><Trans context="find anything: weak results, no guide">These are the closest matches. A shorter word often finds more.</Trans></p>

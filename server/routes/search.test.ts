@@ -10,12 +10,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { register, type SearchDeps } from "./search";
 import { wireAssistant } from "../lib/assistant";
+import { entrancePasses } from "../lib/entrance";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
 const MODULES: Record<string, string> = { map: "public", forum: "public", library: "members", messaging: "members", "hidden-map": "members", governance: "members", journal: "members", stays: "off" };
 
-function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; story?: boolean } = {}) {
+function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; story?: boolean; entrance?: boolean } = {}) {
   const handlers = new Map<string, Handler>();
   const app = {
     get: (p: string, h: Handler) => handlers.set(`GET ${p}`, h),
@@ -23,6 +24,8 @@ function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; st
   } as any;
   const usage: Array<{ mode: string; userId: string | null }> = [];
   const deps: SearchDeps = {
+    // The entrance gate's own check (server/lib/entrance.ts), with the dial as the test sets it and no entry cookie.
+    entrancePasses: entrancePasses({ boolVar: (k: string) => k === "entrance.required" && !!opts.entrance, authedUser: async () => viewer }, async () => false),
     authedUser: async () => viewer,
     isAdmin: async () => !!opts.admin,
     mayStillSee: async (_req: any, cap: string) => (opts.holds ?? []).includes(cap),
@@ -59,10 +62,12 @@ const newcomer = { id: "u-new", role: "member", membershipGranted: false, stageG
 
 let reply = '{"picks":[]}';
 const sent: any[] = [];
+let daySpent = false;
 function wire(key: string) {
   wireAssistant({
     villageKey: () => key,
-    rateLimited: async () => false,
+    // A spent day slice: every `assistant-day:find:slice:` bucket reads over.
+    rateLimited: async (bucket: string) => daySpent && bucket.includes(":slice:"),
     fetchImpl: (async (_u: string, init: any) => {
       sent.push(JSON.parse(init.body));
       return { ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: reply }], stop_reason: "end_turn" }), text: async () => "" };
@@ -71,6 +76,7 @@ function wire(key: string) {
 }
 beforeEach(() => {
   sent.length = 0;
+  daySpent = false;
   reply = '{"picks":[]}';
   delete process.env.PLATFORM_ASSISTANT_KEY;
   wire("village-key");
@@ -138,6 +144,26 @@ describe("GET /api/search/index: who sees what", () => {
 });
 
 describe("POST /api/search/guide", () => {
+  it("behind the entrance, refuses a stranger who has not entered with 401 before any limit or place, and calls no provider", async () => {
+    const s = setup(null, { entrance: true });
+    const out = await s.ask("compost");
+    expect(out.status).toBe(401);
+    expect(out.body.error).toBe("entrance_required");
+    expect(sent).toEqual([]);
+    expect(s.usage).toEqual([]);
+    // A member passes the same entrance.
+    expect((await setup(member, { entrance: true }).ask("compost")).status).toBe(200);
+  });
+
+  it("tells a spent day from a spent hour", async () => {
+    daySpent = true;
+    const out = await setup(null).ask("garden");
+    expect(out.status).toBe(429);
+    expect(out.body).toEqual({ error: "The guide has rested for today. The search still works on its own.", limit: "day" });
+    const member429 = await setup(member).ask("garden");
+    expect(member429.body.limit).toBe("day");
+  });
+
   it("keeps only paths on the reader's own list: an invented path and a member page a visitor cannot open are dropped", async () => {
     reply = JSON.stringify({ picks: [{ path: "/secret-garden", why: "Made up." }, { path: "/library", why: "Members only." }, { path: "/roles/garden-lead", why: "The garden role." }] });
     const { status, body } = await setup(null).ask("someone who looks after plants");
@@ -178,7 +204,7 @@ describe("POST /api/search/guide", () => {
     // overLimit says yes: a 429 the dialog turns into a gentle line.
     const handlers = new Map<string, Handler>();
     register({ get: () => undefined, post: (p: string, h: Handler) => handlers.set(p, h) } as any, {
-      authedUser: async () => null, isAdmin: async () => false, mayStillSee: async () => false, clientIp: () => "203.0.113.9", overLimit: async () => true,
+      entrancePasses: async () => true, authedUser: async () => null, isAdmin: async () => false, mayStillSee: async () => false, clientIp: () => "203.0.113.9", overLimit: async () => true,
       lifecycle: () => "off", storyServed: () => false, villageName: () => "V", commitmentName: () => "", villageGuideName: () => "", noteAssistantUsage: async () => undefined,
       sources: { roles: async () => [], circles: async () => [], quests: async () => [], people: async () => [] },
     } as any);
@@ -186,6 +212,7 @@ describe("POST /api/search/guide", () => {
     const res: any = { set() { return res; }, status(c: number) { out.status = c; return res; }, json(b: any) { out.body = b; return res; } };
     await handlers.get("/api/search/guide")!({ body: { query: "garden" }, headers: {} }, res);
     expect(out.status).toBe(429);
+    expect(out.body.limit).toBe("hour");
     expect(sent).toEqual([]);
   });
 });

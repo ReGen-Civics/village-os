@@ -69,7 +69,7 @@ function onKey(e: KeyboardEvent): void {
   openFind(null);
 }
 
-/** The search icon. `className` replaces the default look, which is drawn for the dark header band. */
+/** The search icon. `className` replaces the default look, which takes the ink of whatever bar it sits in. */
 export function FindAnything({ className }: { className?: string }) {
   const { t } = useLingui();
   const s = useSyncExternalStore(subscribe, snapshot, snapshot);
@@ -108,7 +108,7 @@ export function FindAnything({ className }: { className?: string }) {
         aria-label={t({ message: "Find anything", context: "site header: opens the site search" })}
         title={t({ message: "Find anything (Ctrl K)", context: "site header: the site search button's tooltip" })}
         data-find-anything=""
-        className={className ?? "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"}
+        className={className ?? "inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-current hover:opacity-80 focus-visible:outline-2 focus-visible:outline-current"}
       >
         <Search aria-hidden="true" className="size-5" />
       </button>

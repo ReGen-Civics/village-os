@@ -72,6 +72,42 @@ describe("typo-tolerant ranking", () => {
   });
 });
 
+describe("round 1 of QA: the misses", () => {
+  const member = pages; // the member's pages: every page entry, as an index for a member carries them
+  const top3 = (q: string) => rankFind(q, member).slice(0, 3).map((r) => r.entry.path);
+
+  it("finds the words people used: vote, voting, pay someone, change password, village rules, donate money", () => {
+    expect(top3("where do i vote")[0]).toBe("/governance/decisions");
+    expect(top3("how does voting work")[0]).toBe("/governance/how");
+    expect(top3("pay someone")[0]).toBe("/gratitude");
+    expect(top3("change my password")[0]).toBe("/profile/settings");
+    expect(top3("village rules")[0]).toBe("/rights");
+    expect(top3("donate money")).toEqual(expect.arrayContaining(["/contribute", "/campaigns"]));
+  });
+
+  it("treats 'village' as a word that says nothing", () => {
+    expect(top3("leaving the village")[0]).toBe("/rights#leaving-well");
+  });
+
+  it("keeps a match found only in a page's line when a query of several words half matches", () => {
+    const line: FindEntry = { id: "page:/x", kind: "page", title: "Plain title", help: "Where the compost lives.", path: "/x" };
+    expect(rankFind("compost heap", [line]).map((r) => r.entry.path)).toEqual(["/x"]);
+  });
+
+  it("offers the guide when a query of several words is only half answered, even by a strong match", () => {
+    const strong = rankFind("quests xylophone", all);
+    expect(strong[0].entry.title).toBe("Quests");
+    expect(weakFind(strong)).toBe(true);
+    expect(weakFind(rankFind("open roles", all))).toBe(false);
+  });
+
+  it("never lets a short word drop its first letter: 'wren' is not 'rent'", () => {
+    const wren = rankFind("wren", all).map((r) => r.entry.path);
+    expect(wren).not.toContain("/housing");
+    expect(top("hoising")).toBe("Housing");
+  });
+});
+
 describe("audiences", () => {
   const visitor = { signedIn: false, member: false, admin: false };
   const newcomer = { signedIn: true, member: false, admin: false };

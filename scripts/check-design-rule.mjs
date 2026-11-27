@@ -269,6 +269,9 @@ const JOURNEY = [
   "client/src/components/proposals/ChangeCard.tsx",
   "client/src/components/proposals/Diff.tsx",
   "client/src/components/proposals/ProposalEditor.tsx",
+  // Find anything (#1879): the site search's door and its dialog, born inside the rule.
+  "client/src/components/search/FindAnything.tsx",
+  "client/src/components/search/FindAnythingDialog.tsx",
 ];
 
 const listFlag = (name) => flag(name)?.split(",").filter(Boolean);

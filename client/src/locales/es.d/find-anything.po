@@ -92,8 +92,20 @@ msgstr "Cerrar la búsqueda"
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx
 msgctxt "find anything: the count a screen reader hears"
-msgid "{resultCount} results"
-msgstr "{resultCount} resultados"
+msgid "{resultCount, plural, one {# result} other {# results}}"
+msgstr "{resultCount, plural, one {# resultado} other {# resultados}}"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: nothing matches, the door to the guide"
+msgid "Nothing here matches. Ask {guideName}, or open the menu."
+msgstr "Nada coincide aquí. Pregunte a {guideName}, o abra el menú."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide's day is spent"
+msgid "{Guide} has rested for today. The search still works on its own."
+msgstr "{Guide} ya descansó por hoy. La búsqueda sigue funcionando por sí sola."
 
 # needs-native-review: Find anything, 27 Nov 2026
 #: client/src/components/search/FindAnythingDialog.tsx

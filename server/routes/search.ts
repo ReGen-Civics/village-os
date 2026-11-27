@@ -28,14 +28,19 @@
  * own results with a gentle line. The companion's consent line is for a member's own documents; this sends none,
  * and the dialog says under the button that only the typed words go.
  *
+ * THE ENTRANCE. The portal gate reads GETs only, and the guide is a POST that answers with the village's places, so
+ * it asks the gate's own check first (`entrancePasses`, server/lib/entrance.ts) and answers a stranger who has not
+ * entered 401 `entrance_required`, before any limit is counted or any place is read. The index is a GET: the gate
+ * itself holds it.
+ *
  * LIMITS: the index 240 reads an hour per person (an address for a visitor); the guide 20 questions an hour per
  * person, then the engine's burst guard, the mode's day, a signed-in account's share of it and, for a visitor,
- * the strangers' slices of it.
+ * the strangers' slices of it. A refusal says which it was (`limit: "hour"` or `"day"`), so the dialog can too.
  */
 import type { Express, Request } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import type { AssistantPath } from "../lib/assistantUsage";
-import { DEFAULT_ASSISTANT_MODEL, anonymousDaySlices, callAssistant, parseJsonReply, resolveKey, type AssistantResult } from "../lib/assistant";
+import { DEFAULT_ASSISTANT_MODEL, SHARE_SPENT, anonymousDaySlices, callAssistant, parseJsonReply, resolveKey, type AssistantResult } from "../lib/assistant";
 import { isAdmitted } from "../lib/admission";
 import { countsAsVillager } from "../lib/canvasNames";
 import { isDepartedHandle } from "../lib/profile";
@@ -61,6 +66,7 @@ import {
   pickDestinations,
   type FindEntry,
   type FindGuideAnswer,
+  type FindGuideLimit,
   type FindIndex,
 } from "../../shared/findAnything";
 import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry, type FindReader } from "../../shared/findPages";
@@ -78,6 +84,12 @@ export interface SearchSources {
 }
 
 export interface SearchDeps extends Pick<AppDeps, "authedUser" | "isAdmin" | "mayStillSee" | "clientIp" | "overLimit"> {
+  /**
+   * The portal entrance's own answer for this caller (`entrancePasses`, server/lib/entrance.ts): true when the
+   * entrance is off, or the caller is signed in, an agent, our own automation, or has entered. The gate reads
+   * only GETs, and the guide is a POST that answers with the village's places, so it asks here itself.
+   */
+  entrancePasses(req: Request): Promise<boolean>;
   sources: SearchSources;
   /** A module's effective lifecycle. Absent: `effectiveLifecycle` (server/lib/modules.ts). */
   lifecycle?(id: string): string;
@@ -94,6 +106,10 @@ export interface SearchDeps extends Pick<AppDeps, "authedUser" | "isAdmin" | "ma
 const HOUR_MS = 60 * 60 * 1000;
 export const INDEX_READS_PER_HOUR = 240;
 export const GUIDE_ASKS_PER_HOUR = 20;
+
+/** The two refusals a reader can meet, told apart so the dialog says which: this hour, or today. */
+export const HOUR_SPENT: FindGuideLimit = { error: "That's a lot of asking for one hour. The search still works; ask again in a little while.", limit: "hour" };
+export const DAY_SPENT: FindGuideLimit = { error: "The guide has rested for today. The search still works on its own.", limit: "day" };
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, n);
 
@@ -223,13 +239,15 @@ export function register(app: Express, deps: SearchDeps): void {
   });
 
   app.post("/api/search/guide", async (req, res) => {
+    // Before the limits and before any place is read: behind the entrance, a stranger gets nothing of the village.
+    if (!(await deps.entrancePasses(req))) {
+      return res.status(401).json({ error: "entrance_required", message: "Enter the portal first: a name and an email address are all it asks." });
+    }
     const { viewer, reader } = await readerOf(deps, req);
     const query = clip(req.body?.query, FIND_QUERY_MAX);
     if (!query) return res.status(400).json({ error: "Type what you are looking for first." });
     const who = whoOf(viewer, deps, req);
-    if (await deps.overLimit(`find-guide:${who}`, GUIDE_ASKS_PER_HOUR, HOUR_MS)) {
-      return res.status(429).json({ error: "That's a lot of asking for one hour. The search still works; ask again in a little while." });
-    }
+    if (await deps.overLimit(`find-guide:${who}`, GUIDE_ASKS_PER_HOUR, HOUR_MS)) return res.status(429).json(HOUR_SPENT);
     const guide = guideName(deps.villageGuideName(), guideAudience(viewer)).name;
     const unavailable: FindGuideAnswer = { state: "unavailable", guide };
     if (resolveKey() === null) return res.json(unavailable);
@@ -252,7 +270,8 @@ export function register(app: Express, deps: SearchDeps): void {
     });
     await deps.noteAssistantUsage("find", DEFAULT_ASSISTANT_MODEL, call, uid);
     if (!call.ok) {
-      if (call.status === 429) return res.status(429).json({ error: "That's a lot of asking for one hour. The search still works; ask again in a little while." });
+      // A day slice spent (the account's share, an address's, or the strangers' pool) is the day, never the hour.
+      if (call.status === 429) return res.status(429).json(call.error === SHARE_SPENT ? DAY_SPENT : HOUR_SPENT);
       return res.json(unavailable);
     }
     const kept = destinations.map((d) => allowed.find((e) => e.path === d.path)!).filter(Boolean);
