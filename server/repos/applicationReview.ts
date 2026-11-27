@@ -399,28 +399,39 @@ export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[
     "SELECT c.application_ref AS ref, UNIX_TIMESTAMP(c.stamped_at) AS confirmed_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'shortlist' AND JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.answer')) = 'yes') AS yes_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'refs_asked') AS asked_s, " +
-      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided') AS decided_s " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided') AS decided_s, " +
+      "(SELECT JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.how')) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided' LIMIT 1) AS how " +
       "FROM application_steps c WHERE c.kind = 'confirmed' AND c.stamped_at >= ? LIMIT 2000",
     [since],
   );
   if (!apps.length) return [];
   const [ivs] = await db.query<RowDataPacket[]>(
-    "SELECT application_ref AS ref, is_final, UNIX_TIMESTAMP(opened_at) AS opened_s, UNIX_TIMESTAMP(scored_at) AS scored_s FROM application_interviews WHERE application_ref IN (?) ORDER BY application_ref, position",
+    "SELECT application_ref AS ref, is_final, state, UNIX_TIMESTAMP(opened_at) AS opened_s, UNIX_TIMESTAMP(scored_at) AS scored_s FROM application_interviews WHERE application_ref IN (?) ORDER BY application_ref, position",
     [apps.map((a: any) => String(a.ref))],
   );
   const ms = (v: unknown): number | null => (v === null || v === undefined ? null : Math.round(Number(v) * 1000));
-  const byRef = new Map<string, Array<{ final: boolean; openedAt: number | null; scoredAt: number | null }>>();
+  // The same facts the role progress page reads (server/repos/roleMeasures.ts), so both share one calculation:
+  // a skipped conversation is done, a waiting final has not opened, and only an adoption ends Agreement.
+  const byRef = new Map<string, Array<{ final: boolean; openedAt: number | null; scoredAt: number | null; skipped: boolean; waiting: boolean }>>();
   for (const r of ivs as any[]) {
     const list = byRef.get(String(r.ref)) ?? [];
-    list.push({ final: Number(r.is_final) === 1, openedAt: ms(r.opened_s), scoredAt: ms(r.scored_s) });
+    list.push({ final: Number(r.is_final) === 1, openedAt: ms(r.opened_s), scoredAt: ms(r.scored_s), skipped: String(r.state) === "skipped", waiting: String(r.state) === "waiting" });
     byRef.set(String(r.ref), list);
   }
+  const [followed] = await db.query<RowDataPacket[]>(
+    "SELECT application_ref AS ref, COUNT(*) AS n, SUM(followed_up_at IS NULL) AS open_n, UNIX_TIMESTAMP(MAX(followed_up_at)) AS last_s FROM application_references WHERE application_ref IN (?) GROUP BY application_ref",
+    [apps.map((a: any) => String(a.ref))],
+  );
+  const allFollowed = new Map<string, number | null>((followed as any[]).map((r) => [String(r.ref), Number(r.n) > 0 && Number(r.open_n) === 0 ? ms(r.last_s) : null]));
   return (apps as any[]).map((a) => ({
     confirmedAt: ms(a.confirmed_s) ?? 0,
     shortlistYesAt: ms(a.yes_s),
     refsAskedAt: ms(a.asked_s),
     interviews: byRef.get(String(a.ref)) ?? [],
     decidedAt: ms(a.decided_s),
+    door: String(a.ref).startsWith("op-") ? ("open" as const) : ("member" as const),
+    refsAllFollowedUpAt: allFollowed.get(String(a.ref)) ?? null,
+    adopted: a.how === "adopted",
   }));
 }
 
