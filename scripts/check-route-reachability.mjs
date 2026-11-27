@@ -101,6 +101,9 @@ const ALLOWLIST = {
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.
   "/game-mechanics": "a redirect to /governance/how#game-mechanics keeping ?dial= and ?focus=, kept for links already sent",
+  // The cash budget's old page (the lead, 27 Nov 2026: build it into Governance's treasury). It redirects to
+  // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
+  "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and

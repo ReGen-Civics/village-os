@@ -438,26 +438,63 @@ describe.skipIf(!configured)("org.decide: who adopts a reorganisation", () => {
     it("leaves out one change that cannot be applied, so the rest publish, and keeps it in the revisions", async () => {
       holders = new Set(["holder-1"]);
       seq += 1;
-      const retired = `social-media-steward-${seq}`;
-      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'An old role', 1, 0)", [retired]); // module-review-ok: the test seeds a retired role whose id a new role collides with, the case the lead hit
       const made = await createDraft(pool, { title: `Roles opening ${seq}`, rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
       if (!made.ok) throw new Error(made.error);
       await addChange(pool, made.id, { op: "create_circle", orgRoleId: `circle:sales-${seq}`, payload: { name: `Sales ${seq}` } });
       await addChange(pool, made.id, { op: "create_seat", orgRoleId: `sales-steward-${seq}`, payload: { name: `Sales Steward ${seq}`, circleId: `sales-${seq}` } });
-      const bad = await addChange(pool, made.id, { op: "create_seat", orgRoleId: retired, payload: { name: "Social Media Steward", circleId: `sales-${seq}` } });
+      // A circle nobody made: the one line that cannot be applied.
+      const bad = await addChange(pool, made.id, { op: "create_seat", orgRoleId: `social-media-${seq}`, payload: { name: "Social Media Steward", circleId: "no-such-circle" } });
       if (!bad.ok) throw new Error(bad.error);
       const before = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
-      expect(before.changes.find((c: any) => c.id === bad.id).blocked).toBe("A role with that id already exists (a retired role)");
+      expect(before.changes.find((c: any) => c.id === bad.id).blocked).toBeTruthy();
 
-      const r = await call("POST", `/api/org/drafts/${made.id}/revise`, "holder-1", { changeId: bad.id, leaveOut: true, note: "That id belongs to a retired role" });
+      const r = await call("POST", `/api/org/drafts/${made.id}/revise`, "holder-1", { changeId: bad.id, leaveOut: true, note: "Its circle is not made yet" });
       expect(r.status).toBe(200);
       const v = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
       expect(v.changes.map((c: any) => c.op)).toEqual(["create_circle", "create_seat"]);
       expect(v.changes.every((c: any) => c.blocked === null)).toBe(true);
-      expect(v.revisions[0]).toMatchObject({ number: 2, leftOut: "Social Media Steward", note: "That id belongs to a retired role", fields: [] });
+      expect(v.revisions[0]).toMatchObject({ number: 2, leftOut: "Social Media Steward", note: "Its circle is not made yet", fields: [] });
       // A publisher who read it before is refused; the ids the page shows now publish the rest.
       expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: before.changeIds })).status).not.toBe(200);
       expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: v.changeIds })).status).toBe(200);
+    });
+
+    it("gives a new role its own id when a retired role holds the one it asked for, never touching the retired row", async () => {
+      holders = new Set(["holder-1"]);
+      seq += 1;
+      const retired = `social-media-steward-${seq}`;
+      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'An old role', 1, 0)", [retired]); // module-review-ok: the test seeds a retired role whose id a new role asks for, the case the lead hit
+      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'Another old role', 1, 0)", [`${retired}-2`]); // module-review-ok: "-2" is taken too, so the next free one is "-3"
+      const made = await createDraft(pool, { title: `Roles opening ${seq}`, rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
+      if (!made.ok) throw new Error(made.error);
+      await addChange(pool, made.id, { op: "create_circle", orgRoleId: `circle:media-${seq}`, payload: { name: `Media ${seq}` } });
+      await addChange(pool, made.id, { op: "create_seat", orgRoleId: retired, payload: { name: "Social Media Steward", circleId: `media-${seq}` } });
+      // A later change naming the id it asked for follows it to the new one.
+      await addChange(pool, made.id, { op: "update_seat", orgRoleId: retired, payload: { aim: "Tell the village's story where people already are." } });
+      const v = (await call("GET", `/api/org/drafts/${made.id}/view`, "holder-1")).json;
+      const seat = v.changes.find((c: any) => c.op === "create_seat");
+      expect(seat).toMatchObject({ targetId: `${retired}-3`, blocked: null });
+      expect(seat.reads).toContain("(a retired role used this name; this one gets its own id)");
+      expect(v.changes.find((c: any) => c.op === "update_seat").targetId).toBe(`${retired}-3`);
+      expect((await call("POST", `/api/org/drafts/${made.id}/publish-by-power`, "holder-1", { expectedChanges: v.changeIds })).status).toBe(200);
+      const [rows] = await pool.query<any[]>("SELECT id, name, active, aim FROM org_roles WHERE id IN (?, ?) ORDER BY id", [retired, `${retired}-3`]); // module-review-ok: the test reads both rows the publish must and must not touch
+      expect(rows).toEqual([
+        { id: retired, name: "An old role", active: 0, aim: null },
+        { id: `${retired}-3`, name: "Social Media Steward", active: 1, aim: "Tell the village's story where people already are." },
+      ]);
+    });
+
+    it("a LIVE role with the id still blocks: that proposal names a role that exists", async () => {
+      seq += 1;
+      const live = `live-role-${seq}`;
+      await pool.query("INSERT INTO org_roles (id, name, seats, active) VALUES (?, 'A live role', 1, 1)", [live]); // module-review-ok: a live role a new one collides with
+      const made = await createDraft(pool, { title: `Clash ${seq}`, rationale: null, createdBy: "admin-1", sourceKind: "human", openCap: null });
+      if (!made.ok) throw new Error(made.error);
+      const c = await addChange(pool, made.id, { op: "create_seat", orgRoleId: live, payload: { name: "Another live role" } });
+      if (!c.ok) throw new Error(c.error);
+      const v = (await call("GET", `/api/org/drafts/${made.id}/view`, "admin-1")).json;
+      expect(v.changes[0].targetId).toBe(live);
+      expect(v.changes[0].blocked).toContain("A role with that id already exists");
     });
 
     it("will not leave out the last change: that is a withdraw", async () => {
