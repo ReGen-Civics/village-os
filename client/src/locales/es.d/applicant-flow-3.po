@@ -19,3 +19,68 @@ msgstr "Abrir su postulación"
 msgctxt "applicant onboarding: finalAdded"
 msgid "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up."
 msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y puede seguir mejorando su propuesta hasta que la conversación final quede escrita."
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, kicker"
+msgid "Your first week"
+msgstr "Su primera semana"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, heading"
+msgid "Welcome. Here's how you start"
+msgstr "Bienvenida, bienvenido. Así empieza"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the newcomer's buddy, with their role"
+msgid "Your buddy: {0} ({1})"
+msgstr "Su acompañante: {0} ({1})"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the newcomer's buddy"
+msgid "Your buddy: {0}"
+msgstr "Su acompañante: {0}"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the all-hands in the reader's own zone"
+msgid "All-hands: {0} your time"
+msgstr "Reunión general: {0}, su hora"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the all-hands video link"
+msgid "Join the video call"
+msgstr "Unirse a la videollamada"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: the adopt act's buddy"
+msgid "Their buddy for the first week"
+msgstr "Su acompañante en la primera semana"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: the default buddy"
+msgid "Whoever holds the welcoming role (the default)"
+msgstr "Quien tenga el rol de bienvenida (por defecto)"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: what the buddy choice does"
+msgid "Their name and role go in the start letter and on their profile."
+msgstr "Su nombre y su rol van en la carta de inicio y en su perfil."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claimTaken"
+msgid "Somebody else is following this one up."
+msgstr "Otra persona está dando seguimiento a esta."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claim"
+msgid "I'll follow up"
+msgstr "Yo le doy seguimiento"
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claimed"
+msgid "It's yours. Add your notes and mark it done."
+msgstr "Es suya. Agregue sus notas y márquela como hecha."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: referencesPage"
+msgid "Open the references page"
+msgstr "Abrir la página de referencias"

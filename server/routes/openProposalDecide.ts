@@ -125,7 +125,11 @@ import type { PlayDoor } from "../../shared/comms/comeAndPlay";
 import { boolVar, stringVar } from "../lib/variables";
 import { ALL_HANDS_VARIABLES, startDayOf, weekdayIndex, weekdayName, zoneLabel } from "../../shared/startDay";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
-import { roleNamesById } from "../repos/applicationReview";
+import { liveHoldersOfRole, roleNamesById, rolesHeldBy } from "../repos/applicationReview";
+import { trustedAccountFor } from "../lib/applicantAccount";
+import { allHandsInvite } from "../../shared/startDay";
+import { emailKeyOf } from "../../shared/comms/address";
+import { holderFirstName } from "../../shared/roleHolderLabel";
 
 export type DecideRouteDeps = Pick<
   AppDeps,
@@ -291,7 +295,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     origin: string,
     to: { email: string; name: string | null },
     words: { subject: string; text: string; button?: { label: string; url: string } },
-    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[] } = {},
+    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[]; attachments?: OutgoingEmail["attachments"] } = {},
   ): Promise<OutgoingEmail> {
     const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
     return {
@@ -303,6 +307,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       html: dressed.html,
       text: dressed.text,
       preheader: dressed.preheader,
+      ...(o.attachments?.length ? { attachments: o.attachments } : {}),
     };
   }
 
@@ -350,11 +355,71 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const welcome = stringVar("org.onboarding_role").trim();
     const welcomeName = welcome ? (await roleNamesById(getPool(), [welcome])).get(welcome) : undefined;
     return {
+      startIso: day,
       startDay: `${dayName} ${wordsIn(lang).day(day)}`,
       soonerRole: welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
       allHands: time ? { when: [dayName, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
     };
   };
+
+  /**
+   * THE NEWCOMER'S BUDDY (the lead, 27 Nov 2026: "The buddy by default will be the Ops role unless I choose someone
+   * else"): the member the adopter chose, else whoever holds the welcoming role (`org.onboarding_role`) now. Their
+   * first name and the role's short label go in the start letter and on the newcomer's profile.
+   */
+  const buddyFor = async (p: store.StoredOpenProposal): Promise<{ name: string; role: string | null } | null> => {
+    const pool = getPool();
+    const welcome = stringVar("org.onboarding_role").trim();
+    const chosen = await store.buddyOf(pool, p.id);
+    const userId = chosen ?? (welcome ? ((await liveHoldersOfRole(pool, welcome))[0] ?? null) : null);
+    if (!userId) return null;
+    const row: any = await members.byId(userId);
+    const name = holderFirstName(row?.name ?? null);
+    if (!name) return null;
+    const held = await rolesHeldBy(pool, userId);
+    const roleId = welcome && held.includes(welcome) ? welcome : (held[0] ?? "");
+    const roleName = roleId ? (await roleNamesById(pool, [roleId])).get(roleId) : undefined;
+    return { name, role: roleId && roleName ? roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null };
+  };
+
+  /** Everything the start letter adds: the day, the all-hands, the buddy. */
+  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p) });
+
+  /** The all-hands as a calendar invite, attached to the start letter (the lead, 27 Nov 2026). */
+  const allHandsAttachment = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<OutgoingEmail["attachments"]> => {
+    const sw = await startWords(p, adoptedAt);
+    const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
+    const zone = stringVar(ALL_HANDS_VARIABLES.zone).trim();
+    if (!time || !zone) return [];
+    const ics = allHandsInvite({ uid: `all-hands-${p.id}@village`, dayIso: sw.startIso, time, zone, title: wordsIn(languageOf(p)).adopt.allHandsTitle, link: sw.allHands?.link ?? null, now: now() });
+    return ics ? [{ filename: "all-hands.ics", contentType: "text/calendar; charset=utf-8; method=PUBLISH", contentBase64: Buffer.from(ics, "utf8").toString("base64") }] : [];
+  };
+
+  /**
+   * THE NEWCOMER'S FIRST WEEK ON THEIR PROFILE (the lead, 27 Nov 2026): their buddy, their start day and the all-hands
+   * they join, for the signed-in member's newest adopted proposal that this account is trusted to be. The page says the
+   * meeting's time in the reader's own zone with the village's beside it. Nothing of anyone else's application.
+   */
+  app.get("/api/me/first-week", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`first-week:${String(viewer.id)}`, 60, 10 * 60_000)) return res.status(429).json({ error: "too_many" });
+    const email = typeof (viewer as any).email === "string" ? (viewer as any).email : "";
+    for (const p of email ? await store.adoptedFromAddress(getPool(), emailKeyOf(email)) : []) {
+      if ((await trustedAccountFor(members, p, getPool())) !== String(viewer.id)) continue;
+      const at = p.decidedAt ?? now();
+      const sw = await startWords(p, at);
+      return res.set("Cache-Control", "no-store").json({
+        firstWeek: {
+          ref: p.id,
+          startIso: sw.startIso,
+          buddy: await buddyFor(p),
+          allHands: sw.allHands ? { time: stringVar(ALL_HANDS_VARIABLES.time).trim(), zone: stringVar(ALL_HANDS_VARIABLES.zone).trim(), link: sw.allHands.link } : null,
+        },
+      });
+    }
+    res.set("Cache-Control", "no-store").json({ firstWeek: null });
+  });
 
   // ── Read ──────────────────────────────────────────────────────────────────
 
@@ -696,6 +761,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.status !== "confirmed") return res.status(409).json({ error: DECIDE_WORDS.decided, status: p.status });
     const may = await deciding(p, actorId);
     if (!may.ok) return res.status(may.status).json(may.body);
+    // The buddy, when the adopter chose one (the lead, 27 Nov 2026): a member holding a role now.
+    const buddyAsked = typeof req.body?.buddyUserId === "string" ? req.body.buddyUserId.trim().slice(0, 64) : "";
+    if (buddyAsked) {
+      if ((await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
+      await store.setBuddy(getPool(), p.id, buddyAsked);
+    }
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     // "Start a conversation" carries no terms (the lead, 20 Nov 2026): nobody is placed on it; the full proposal comes first.
@@ -833,7 +904,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       }
       const why = await sent(
         p.email
-          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await startWords(p, at)), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await newcomer(p, at)), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: await allHandsAttachment(p, at) })
           : null,
       );
       await tell(p.id, "adopted");
@@ -881,7 +952,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await startWords(p, at)), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await newcomer(p, at)), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: await allHandsAttachment(p, at) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
@@ -1088,7 +1159,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), ...(await startWords(p, p.decidedAt ?? now())), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), ...(await newcomer(p, p.decidedAt ?? now())), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p), attachments: await allHandsAttachment(p, p.decidedAt ?? now()) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, now(), why === null);

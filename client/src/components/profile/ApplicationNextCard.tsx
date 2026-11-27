@@ -49,6 +49,7 @@ export default function ApplicationNextCard() {
       </h2>
       {/* The page's line points "below"; here it points to the application's page, where the form is. */}
       <p className="mt-1 text-lg text-foreground" data-application-next-move="">{sayOnProfile(lang, view.move)}</p>
+      {view.average && <p className="mt-1 text-sm text-muted-foreground" data-application-next-average="">{view.average}</p>}
       {/* With the stage's buttons below, the same acts are drawn once, there. */}
       {!view.tasks?.length && (view.primary || book.length > 0) && (
         <div className="mt-4 flex flex-wrap gap-2">

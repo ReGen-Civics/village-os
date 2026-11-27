@@ -56,7 +56,7 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
-import { applicantStagesOf, refineProposal } from "../lib/applicantOnboarding";
+import { applicantStagesOf, refineProposal, withdrawApplication } from "../lib/applicantOnboarding";
 import { emailKeyOf } from "../../shared/comms/address";
 import { REFINE_ERRORS } from "../../shared/proposalRefine";
 import path from "node:path";
@@ -122,6 +122,27 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
     const out = await refineProposal(work, ref, req.body);
     out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
+  });
+
+  // ── The applicant withdraws (the lead, 27 Nov 2026) ────────────────────────
+  /* By the emailed link, or signed in as the applicant. Quiet: no letter goes. */
+  app.post("/api/application-status/:ref/withdraw", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-withdraw:${deps.clientIp ? deps.clientIp(req) : "x"}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await withdrawApplication(work, ref);
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/withdraw", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-withdraw:${String(viewer.id)}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
+    const out = await withdrawApplication(work, ref);
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
   });
 
   /** The same, signed in as the applicant. */

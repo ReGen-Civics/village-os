@@ -313,6 +313,33 @@ export async function adoptedForAddress(db: Db, emailKey: string): Promise<Store
  * roles; the oldest, or null (shared/applicationAgain.ts). Anonymised rows carry no key, so they never match.
  */
 /** Every confirmed application from this address still waiting for the village, newest first (the applicant's profile card). */
+/** The newcomer's buddy (the lead, 27 Nov 2026), kept on the proposal: a member id, or null for the default. */
+export async function setBuddy(db: Db, id: string, userId: string | null): Promise<void> {
+  await db.query("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.buddyUserId', ?) WHERE id = ?", [userId, id]);
+}
+
+export async function buddyOf(db: Db, id: string): Promise<string | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.buddyUserId')) AS b FROM open_role_proposals WHERE id = ? LIMIT 1", [id]);
+  const b = rows[0]?.b;
+  return b && b !== "null" ? String(b) : null;
+}
+
+/** Adopted proposals from this address, newest first (the newcomer's first week on their profile). */
+export async function adoptedFromAddress(db: Db, emailKey: string): Promise<StoredOpenProposal[]> {
+  if (!emailKey) return [];
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status = 'adopted' AND email_key = ? AND anonymised_at IS NULL ORDER BY decided_at DESC, id LIMIT 5`,
+    [emailKey],
+  );
+  return rows.map(rowOf);
+}
+
+/** Whether a proposal's name and address are gone (closed and cleared, or erased). Unknown reads as gone. */
+export async function isAnonymised(db: Db, id: string): Promise<boolean> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT anonymised_at IS NOT NULL AS gone FROM open_role_proposals WHERE id = ? LIMIT 1", [id]);
+  return rows.length === 0 || Number(rows[0].gone) === 1;
+}
+
 export async function waitingAllFromAddress(db: Db, emailKey: string): Promise<StoredOpenProposal[]> {
   if (!emailKey) return [];
   const [rows] = await db.query<RowDataPacket[]>(

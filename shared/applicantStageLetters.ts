@@ -169,6 +169,36 @@ const ES: StageWords = {
 
 const TABLES: Record<ApplicantLanguage, StageWords> = { en: EN, es: ES };
 
+/** The one gentle reminder to book a conversation still open (server/lib/applicantNudges.ts): once per conversation. */
+export const bookingNudgeKey = (ref: string, interviewId: number): string => `open-proposal:${ref}:nudge:book:${interviewId}`;
+
+const NUDGE: Record<ApplicantLanguage, { subject(role: string): string; line(role: string): string; book(link: string): string; write: string }> = {
+  en: {
+    subject: (role) => `A gentle reminder: your conversation with ${role}`,
+    line: (role) => `Just a gentle reminder: your conversation with ${role} is open to book. If you've booked it already, thank you, and please ignore this.`,
+    book: (link) => `Book it here: ${link}`,
+    write: "We'll write to you with times.",
+  },
+  es: {
+    subject: (role) => `Un recordatorio amable: su conversación con ${role}`,
+    line: (role) => `Solo un recordatorio amable: su conversación con ${role} está abierta para reservar. Si ya la reservó, gracias, y puede ignorar este correo.`,
+    book: (link) => `Resérvela aquí: ${link}`,
+    write: "Le escribiremos con horarios.",
+  },
+};
+
+/** The reminder's words: the role, its booking link, the status page. Nothing private. PURE. */
+export function bookingNudgeLetter(i: { firstName: string | null; role: string; links: readonly string[]; statusLink: string | null; lang?: ApplicantLanguage | null }): { subject: string; text: string } {
+  const lang: ApplicantLanguage = i.lang === "es" ? "es" : "en";
+  const base = wordsIn(lang);
+  const n = NUDGE[lang];
+  const s = TABLES[lang];
+  return {
+    subject: n.subject(i.role),
+    text: [base.hello(i.firstName), "", n.line(i.role), "", i.links.length ? n.book(s.links(i.links)) : n.write, "", i.statusLink ? base.statusLinkLine(i.statusLink) : base.keepStatusLink, ""].join("\n"),
+  };
+}
+
 /** The letter for one stage, in the applicant's language: subject and plain text. PURE. */
 export function stageLetter(i: StageLetterInput): { subject: string; text: string } {
   const lang: ApplicantLanguage = i.lang === "es" ? "es" : "en";

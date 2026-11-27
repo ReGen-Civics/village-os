@@ -692,7 +692,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -733,7 +733,9 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   const refsGiven = steps.some((x) => x.kind === "refs_given");
   // Once given, the applicant may replace them until somebody reaches out (the lead, 27 Nov 2026).
   const mayEdit = refsGiven && !decidedStep && kindOfRef(ref) === "open" ? await referencesEditable(pool, ref) : false;
-  const referencesAsked = refsAsked ? { given: refsGiven ? await countReferences(pool, ref) : null, mayAdd: !refsGiven && !decidedStep, mayEdit } : null;
+  // Each reference reached or not, by its place in the list: never a name, a contact or a note (the lead, 27 Nov 2026).
+  const reached = refsGiven ? (await storedReferencesOf(pool, ref)).map((r) => !!r.followedUpAt) : [];
+  const referencesAsked = refsAsked ? { given: refsGiven ? reached.length : null, mayAdd: !refsGiven && !decidedStep, mayEdit, ...(refsGiven ? { reached } : {}) } : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
   // The conversation open now, and how to book it (`stepBookingOf`): the later ones are offered only as they open, in order.
@@ -781,6 +783,8 @@ export async function statusByToken(deps: ReviewDeps, ref: string, token: string
   if (!token) return null;
   const d = await confirmedDetail(deps.getPool(), ref);
   if (!d) return null;
+  // Closed and its details removed: the link stops working, whatever it says (the lead, 27 Nov 2026).
+  if (kindOfRef(ref) === "open" && (await proposals.isAnonymised(deps.getPool(), ref))) return null;
   if (d.statusHash) {
     const a = Buffer.from(hashToken(token));
     const b = Buffer.from(d.statusHash);
@@ -840,6 +844,13 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
       await tell("application_stale", REVIEW_WORDS.stale(names), `app:${r.ref}:stale:${r.lastAt.getTime()}:${bucket}`, r.ref);
       out.stale++;
     }
+  }
+  // The gentle nudges (the lead, 27 Nov 2026): reminders only, each once (server/lib/applicantNudges.ts).
+  try {
+    const { nudgeTick } = await import("./applicantNudges");
+    await nudgeTick(deps);
+  } catch (e) {
+    console.error("[application-review] the nudges did not run", e);
   }
   return out;
 }

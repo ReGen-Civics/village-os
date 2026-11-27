@@ -36,6 +36,7 @@ import ContractPrice, { type ContractPriceData } from "@/components/openProposal
 import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
 import RoleArtBeside from "@/components/roleCard/RoleArtBeside";
+import BuddyPicker from "@/components/openProposal/BuddyPicker";
 import TermsWeOffer, { HeldByThem, OpenTalksWarning, OverLimitWarning, prefillFromSearch, type ServedDeciderOffer, type ServedOverLimit } from "@/components/openProposal/TermsWeOffer";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
@@ -243,6 +244,8 @@ export default function OpenProposal() {
   const [knowsOpenTalks, setKnowsOpenTalks] = useState(false);
   // Every seat taken: adopting is for when a seat opens, chosen on purpose (audit B3).
   const [forASeat, setForASeat] = useState(false);
+  // The newcomer's buddy, when the adopter picks one (the lead, 27 Nov 2026); empty is the welcoming role's holder.
+  const [buddy, setBuddy] = useState("");
   const [aboveLimit, setAboveLimit] = useState(false);
 
   const load = useCallback(async () => {
@@ -563,6 +566,7 @@ export default function OpenProposal() {
                     </div>
                     {p.you.mayAdopt && p.offer && !p.agent && <div className="mt-3"><OpenTalksWarning settings={p.offer.openTalks} confirmed={knowsOpenTalks} onConfirm={setKnowsOpenTalks} /></div>}
                     {p.you.mayAdopt && <BeforeAdopt left={p.beforeAdopt ?? null} forASeat={forASeat} onForASeat={setForASeat} />}
+                    {p.you.mayAdopt && !p.agent && <BuddyPicker applicationRef={p.id} value={buddy} onChange={setBuddy} />}
                     {p.you.mayAdopt && <div className="mt-3"><OverLimitWarning over={p.beforeAdopt?.overLimit} confirmed={aboveLimit} onConfirm={setAboveLimit} /></div>}
                     {!declining ? (
                       // On a wide screen the row stays at the foot of the side panel while its note and checks scroll above it.
@@ -578,7 +582,7 @@ export default function OpenProposal() {
                             type="button"
                             disabled={busy || adoptWaits}
                             aria-describedby={p.beforeAdopt && (p.beforeAdopt.conversations.length || p.beforeAdopt.seatsFull.length) ? "op-before-adopt" : undefined}
-                            onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}) }, true)}
+                            onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}), ...(buddy ? { buddyUserId: buddy } : {}) }, true)}
                             // One gold act on the page (QA round 2): before Agreement, adopting is not the act, so it stays plain.
                             className={stage === null || stage === "agreement" ? PRIMARY : SECONDARY}
                             data-adopt-gold={stage === null || stage === "agreement" ? "" : undefined}

@@ -318,17 +318,19 @@ export interface AdoptLetterIn {
   soonerRole?: string | null;
   /** The all-hands they join that day: when, in words, and its video link (village settings). */
   allHands?: { when: string; link: string | null } | null;
+  /** Their buddy for the first week: by default whoever holds the welcoming role, unless the adopter chose another. */
+  buddy?: { name: string; role: string | null } | null;
 }
 
 /** The start day and the all-hands, when the letter knows them, and never for a role still waiting on a seat. */
 const startLines = (i: AdoptLetterIn): string[] => {
-  if (i.waitsForSeat || !i.startDay) return [];
+  if (i.waitsForSeat) return [];
   const w = wordsIn(i.lang).adopt;
   return [
-    "",
-    w.startDay(i.startDay),
-    w.startSooner(i.soonerRole ?? null),
-    ...(i.allHands ? ["", w.allHands(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : []),
+    ...(i.startDay
+      ? ["", w.startDay(i.startDay), w.startSooner(i.soonerRole ?? null), ...(i.allHands ? ["", w.allHands(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : [])]
+      : []),
+    ...(i.buddy ? ["", w.buddy(i.buddy.name, i.buddy.role)] : []),
   ];
 };
 

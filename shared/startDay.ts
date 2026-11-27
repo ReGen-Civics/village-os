@@ -57,3 +57,47 @@ export function zoneLabel(zone: unknown, lang: ApplicantLanguage | null | undefi
   if (!city) return "";
   return lang === "es" ? `hora de ${city}` : `${city} time`;
 }
+
+/**
+ * The instant a wall-clock time in a zone falls on ("2026-11-30", "12:00", "America/Costa_Rica"), or null when it
+ * cannot be read. Pages show it in the reader's own zone with the village's beside it (the lead: "Yes local times!").
+ */
+export function zonedInstant(dayIso: string, time: string, zone: string): Date | null {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(time ?? "").trim());
+  if (!m || !/^\d{4}-\d{2}-\d{2}$/.test(dayIso)) return null;
+  const [y, mo, d] = dayIso.split("-").map(Number);
+  const guess = Date.UTC(y, mo - 1, d, Number(m[1]), Number(m[2]));
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: zone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(guess));
+    const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+    const asIfUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour") % 24, get("minute"));
+    return new Date(guess - (asIfUtc - guess));
+  } catch {
+    return null;
+  }
+}
+
+/** A calendar invite (.ics) for the all-hands on the start day: one hour, in the village's zone, with its link. */
+export function allHandsInvite(i: { uid: string; dayIso: string; time: string; zone: string; title: string; link: string | null; now: Date }): string | null {
+  const at = zonedInstant(i.dayIso, i.time, i.zone);
+  if (!at) return null;
+  const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const end = new Date(at.getTime() + 60 * 60 * 1000);
+  const esc = (s: string) => s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//village//all-hands//EN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${i.uid}`,
+    `DTSTAMP:${stamp(i.now)}`,
+    `DTSTART:${stamp(at)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${esc(i.title)}`,
+    ...(i.link ? [`URL:${i.link}`, `LOCATION:${esc(i.link)}`] : []),
+    "END:VEVENT",
+    "END:VCALENDAR",
+    "",
+  ].join("\r\n");
+}

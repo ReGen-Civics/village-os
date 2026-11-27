@@ -171,6 +171,9 @@ export interface ApplicantMessages {
     startSooner(role: string | null): string;
     allHands(when: string): string;
     allHandsLink(link: string): string;
+    /** Their buddy for the first week (the lead, 27 Nov 2026: the Ops role by default). */
+    buddy(name: string, role: string | null): string;
+    allHandsTitle: string;
   };
 
   declined: {
@@ -302,6 +305,8 @@ export interface ApplicantMessages {
         done: string;
       };
       refine: { eyebrow: string; heading: string; line: string; why: string; aim: string; save: string; saved: string; frozen: string; failed: string; versions(n: number): string };
+      /** The village's real averages (the lead, 27 Nov 2026: "give them actual averages based on our work"). */
+      average: { reply(days: number): string; stage(days: number): string };
     };
     references: {
       none: string;
@@ -328,6 +333,8 @@ export interface ApplicantMessages {
       tellThem: string;
       /** Once given, while nobody has reached out yet: send again to replace the list. */
       editLine: string;
+      /** Each reference reached or not, by its place in the list (never a name). */
+      reached(n: number, done: boolean): string;
       how: string;
       ally: string;
       allyHint: string;
@@ -343,6 +350,8 @@ export interface ApplicantMessages {
       howMany: string;
     };
     private: string;
+    /** The quiet "withdraw my application" button, with its confirm step (the lead, 27 Nov 2026). */
+    withdraw: { button: string; ask: string; yes: string; keep: string; failed: string };
     wait: { heading: string; line: string; quests: string; map: string; events: string };
   };
 }
@@ -490,6 +499,8 @@ const en: ApplicantMessages = {
     startSooner: (role) => (role ? `If ${role} asks you to start sooner, they'll write to you.` : "If the team asks you to start sooner, they'll write to you."),
     allHands: (when) => `That day, join us for our all-hands meeting, ${when}.`,
     allHandsLink: (link) => `The video call: ${link}`,
+    buddy: (name, role) => `Your buddy is ${name}${role ? ` (${role})` : ""}. They'll help you through your first week.`,
+    allHandsTitle: "All-hands meeting",
     signFirst: () => "Before you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:",
     headlineReviewed: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
     firstCycle: "We begin with a first cycle together, and at its end either side may choose to end it there.",
@@ -636,6 +647,10 @@ const en: ApplicantMessages = {
         failed: "That did not save. Try again.",
         versions: (n) => (n === 1 ? "1 earlier version kept." : `${n} earlier versions kept.`),
       },
+      average: {
+        reply: (d) => (d === 1 ? "On average our review takes about a day." : `On average our review takes about ${d} days.`),
+        stage: (d) => (d === 1 ? "On average this step takes about a day." : `On average this step takes about ${d} days.`),
+      },
     },
     references: {
       none: "You gave no references, so we run a background check. You agreed to it when you proposed. We cover its cost, and we contact no one before our first conversation with you.",
@@ -657,6 +672,7 @@ const en: ApplicantMessages = {
       channelsHint: "We need their email, plus at least one of these three so we can reach them.",
       tellThem: "Please let your references know we'll be in touch.",
       editLine: "Want to change them? Send the list again and it replaces the one you gave. You can do this until we reach out.",
+      reached: (n, done) => (done ? `Reference ${n}: reached` : `Reference ${n}: not reached yet`),
       how: "How they know you",
       ally: "Why they might be an ally or partner (optional)",
       allyHint: "What they might bring to the village, or how they might work with us.",
@@ -681,6 +697,13 @@ const en: ApplicantMessages = {
       },
     },
     private: "This page shows steps only. What the people who talk with you write down stays with them.",
+    withdraw: {
+      button: "Withdraw my application",
+      ask: "Withdraw it? This closes your application, and you can apply again any time.",
+      yes: "Yes, withdraw it",
+      keep: "Keep it",
+      failed: "That didn't go through. Try again.",
+    },
     wait: {
       heading: "While you wait",
       line: "The village is open to you. Here are three ways to look around:",
@@ -812,6 +835,8 @@ const es: ApplicantMessages = {
     startSooner: (role) => (role ? `Si ${role} le pide empezar antes, le escribirá.` : "Si el equipo le pide empezar antes, le escribirá."),
     allHands: (when) => `Ese día, acompáñenos en nuestra reunión general, ${when}.`,
     allHandsLink: (link) => `La videollamada: ${link}`,
+    buddy: (name, role) => `Su acompañante de inicio es ${name}${role ? ` (${role})` : ""}. Le ayudará en su primera semana.`,
+    allHandsTitle: "Reunión general",
     signFirst: () => "Antes de ocupar su rol, alinéese con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearse con ella le hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearse", "membresía"; needs-native-review: new words, 16 Nov 2026
     headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
@@ -961,6 +986,11 @@ const es: ApplicantMessages = {
         failed: "No se pudo guardar. Inténtelo de nuevo.",
         versions: (n) => (n === 1 ? "Se guarda 1 versión anterior." : `Se guardan ${n} versiones anteriores.`),
       },
+      // needs-native-review: the village's averages, 27 Nov 2026
+      average: {
+        reply: (d) => (d === 1 ? "En promedio nuestra revisión toma alrededor de un día." : `En promedio nuestra revisión toma alrededor de ${d} días.`),
+        stage: (d) => (d === 1 ? "En promedio este paso toma alrededor de un día." : `En promedio este paso toma alrededor de ${d} días.`),
+      },
     },
     references: {
       none: "No dio referencias, así que haremos una verificación de antecedentes. Usted aceptó cuando envió su propuesta. Nosotros cubrimos su costo y no contactamos a nadie antes de nuestra primera conversación con usted.",
@@ -983,6 +1013,7 @@ const es: ApplicantMessages = {
       channelsHint: "Necesitamos su correo, y además al menos uno de estos tres para contactarla.",
       tellThem: "Por favor, avise a sus referencias que nos pondremos en contacto.",
       editLine: "¿Quiere cambiarlas? Envíe la lista de nuevo y reemplaza la que dio. Puede hacerlo hasta que las contactemos.",
+      reached: (n, done) => (done ? `Referencia ${n}: contactada` : `Referencia ${n}: aún sin contactar`),
       how: "Cómo le conoce",
       ally: "Por qué podría ser aliada o socia (opcional)",
       allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
@@ -1007,6 +1038,14 @@ const es: ApplicantMessages = {
       },
     },
     private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan con usted se queda con ellas.",
+    // needs-native-review: the withdraw button, 27 Nov 2026
+    withdraw: {
+      button: "Retirar mi postulación",
+      ask: "¿La retira? Esto cierra su postulación, y puede postularse de nuevo cuando quiera.",
+      yes: "Sí, retirarla",
+      keep: "Mantenerla",
+      failed: "No se pudo. Inténtelo de nuevo.",
+    },
     wait: {
       heading: "Mientras espera",
       line: "La aldea está abierta para usted. Aquí hay tres formas de conocerla:",
@@ -1141,6 +1180,8 @@ export interface StatusServedForView {
     next?: { act: "follow_up" | "move"; role: string | null } | null;
     /** The village's anchor circle, by name, which reviews the proposal at Agreement. Null when it has none. */
     anchorCircle?: string | null;
+    /** The village's real average for this stage, in days, once enough have passed it (shared/stageAverages.ts). */
+    average?: number;
   } | null;
 }
 
@@ -1169,6 +1210,8 @@ export interface StatusView {
   applicantActs: boolean;
   /** The booking button is the page's one gold act (at References and proposal the references form is, while it waits). */
   bookGold: boolean;
+  /** The village's real average for the stage, said in a line ("On average we reply in 4 days"), or null. */
+  average: string | null;
   /** The stage card's own gold act, when it is not a booking: "Add your references" at References and proposal. */
   primary: { label: string; href: string } | null;
   /**
@@ -1368,6 +1411,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
       // One gold act: at References and proposal the references form holds it while it waits.
       bookGold: !!bookable && !(six.now === "references" && refsToDo),
       primary: six.now === "references" && refsToDo && !decided ? { label: sw.tasks.add, href: "#reference-form" } : null,
+      average: !decided && typeof six.average === "number" && six.average > 0 ? (six.now === "received" || six.now === "review" ? sw.average.reply(six.average) : sw.average.stage(six.average)) : null,
       tasks,
     };
   }
@@ -1386,6 +1430,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     applicantActs: false,
     bookGold: false,
     primary: null,
+    average: null,
     tasks: null,
   };
 }

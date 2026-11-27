@@ -319,7 +319,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const s = await call("GET", `/api/application-status/${id}?token=${encodeURIComponent(token)}`, undefined, null);
       expect(s.status).toBe(200);
       // Editable while nobody has reached out (the lead, 27 Nov 2026).
-      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false, mayEdit: true });
+      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false, mayEdit: true, reached: [false, false] });
       expect(s.body.status.path.map((p: any) => p.label)).toContain("References");
       const text = JSON.stringify(s.body);
       for (const secret of ["Ana Reference", "ana.reference@example.test", "8888", "seed library"]) expect(text).not.toContain(secret);

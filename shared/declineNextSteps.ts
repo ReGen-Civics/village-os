@@ -56,16 +56,13 @@ export function declineNextStepsLines(get: (key: Key) => string, o: { site: stri
   const seederTitle = say(get(OTHER_WAYS_KEYS.seederTitle), OTHER_WAYS_DEFAULTS.seederTitle, ES.seederTitle, 200);
   const seederLine = say(get(OTHER_WAYS_KEYS.seederLine), OTHER_WAYS_DEFAULTS.seederLine, ES.seederLine);
   const seederHref = safeHref(get("org.stay_close_link"), SEEDER_FALLBACK_HREF);
+  // One "- " line each, the link on its own line under it (the lead, 27 Nov 2026: bullets when there are several
+  // steps; the decline letter "with other ways in: quests, another role, and the next season").
   return [
     say(get(DECLINE_STEPS_KEYS.intro), DECLINE_STEPS_DEFAULTS.intro, ES.intro),
     "",
-    say(get(DECLINE_STEPS_KEYS.waitlist), DECLINE_STEPS_DEFAULTS.waitlist, ES.waitlist),
-    abs("/roles"),
-    "",
-    say(get(DECLINE_STEPS_KEYS.quests), DECLINE_STEPS_DEFAULTS.quests, ES.quests),
-    abs("/quests"),
-    "",
-    `${seederTitle}. ${seederLine}`,
-    abs(seederHref),
+    `- ${say(get(DECLINE_STEPS_KEYS.waitlist), DECLINE_STEPS_DEFAULTS.waitlist, ES.waitlist)} ${abs("/roles")}`,
+    `- ${say(get(DECLINE_STEPS_KEYS.quests), DECLINE_STEPS_DEFAULTS.quests, ES.quests)} ${abs("/quests")}`,
+    `- ${seederTitle}. ${seederLine} ${abs(seederHref)}`,
   ];
 }

@@ -30,6 +30,7 @@ import { DECLINED_PAGE_WORDS } from "@shared/openProposalDecide";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
 import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
 import RefineProposal from "@/components/openProposal/RefineProposal";
+import WithdrawApplication from "@/components/openProposal/WithdrawApplication";
 import { useLingui } from "@lingui/react/macro";
 import { TERM_NOTE_MAX } from "@shared/termsWords";
 import GrowingField from "@/components/form/GrowingField";
@@ -70,7 +71,7 @@ interface Served {
   /** An adopted applicant's invitation: "expired" offers the door to ask for a new one, "asked" thanks them. */
   invitation?: "none" | "expired" | "asked";
   /** References asked of a shortlisted applicant (shared/applicantOnboarding.ts): the form while it waits, a count once given. */
-  referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean } | null;
+  referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean; reached?: boolean[] } | null;
   /** The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note. */
   sixStages?: StatusServedForView["sixStages"];
 }
@@ -414,6 +415,8 @@ export default function ApplicationStatus() {
                 <section aria-label={w.status.nextLabel} className={`sel-rise ${CARD_FEATURED} ${view.six ? "order-first lg:order-none" : ""}`} data-stage-card="">
                   <p className={EYEBROW}>{view.stepWords}</p>
                   {!(founding && s.outcome === "adopted") && <p className="mt-1 text-lg text-foreground">{view.move}</p>}
+                  {/* The village's real average for this step, once enough have passed it (the lead, 27 Nov 2026). */}
+                  {view.average && <p className="mt-1 text-sm text-muted-foreground" data-stage-average="">{view.average}</p>}
                   {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
                   {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
                   {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
@@ -543,7 +546,20 @@ export default function ApplicationStatus() {
               />
             )}
             {s.referencesAsked && typeof s.referencesAsked.given === "number" && (
-              <p role="status" className={`${TILE} text-foreground`} data-references-given-onboarding="">{w.status.referenceForm.given(s.referencesAsked.given)}</p>
+              <div role="status" className={`${TILE} text-foreground`} data-references-given-onboarding="">
+                <p>{w.status.referenceForm.given(s.referencesAsked.given)}</p>
+                {/* Each one reached or not, by its place: never a name, a contact or a note (the lead, 27 Nov 2026). */}
+                {s.referencesAsked.reached && s.referencesAsked.reached.length > 0 && (
+                  <ul className="mt-2 grid gap-1 text-sm" data-references-reached="">
+                    {s.referencesAsked.reached.map((done, i) => (
+                      <li key={i} className={`flex items-center gap-1 ${done ? "text-open" : "text-muted-foreground"}`} data-reference-reached={done ? "yes" : "no"}>
+                        {done && <Check className="size-4 shrink-0" aria-hidden="true" />}
+                        {w.status.referenceForm.reached(i + 1, done)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
             {s.offer && s.offer.rows.length > 0 && (
               <ChangedTerms
@@ -553,6 +569,14 @@ export default function ApplicationStatus() {
               />
             )}
             {!view.six && trail}
+            {/* The quiet way out, while the application is still open (the lead, 27 Nov 2026). */}
+            {s.outcome == null && view.six && (
+              <WithdrawApplication
+                url={token ? `/api/application-status/${encodeURIComponent(ref)}/withdraw?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/withdraw`}
+                words={w.status.withdraw}
+                onDone={() => setS((cur) => (cur ? { ...cur, outcome: "withdrawn" } : cur))}
+              />
+            )}
             {view.references && (
               <p className="text-sm text-muted-foreground" data-references-given="">{view.references}</p>
             )}

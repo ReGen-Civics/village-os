@@ -330,6 +330,99 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     for (const secret of [NOTE, EVIDENCE, FOLLOWUP]) expect(mine.text).not.toContain(secret);
   });
 
+  it("THE STATUS LINK (the lead: 'Yes! status link'): works for the application's life, and stops once it is closed and cleared", async () => {
+    const { statusLinkDays } = await import("../lib/applicantUpdates");
+    expect(statusLinkDays()).toBeGreaterThanOrEqual(120);
+    const id = await confirmed("link-life@example.test");
+    expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).status).toBe(200);
+    // Closed and its details removed: the same link is refused.
+    await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3), name = NULL, email = NULL, email_key = NULL, anonymised_at = NOW(3) WHERE id = ?", [id]);
+    expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).status).toBe(404);
+  });
+
+  it("WITHDRAW (the lead): the applicant's own quiet act, by their link; no letter goes, and it closes once", async () => {
+    const id = await confirmed("withdraw@example.test");
+    state.fresh.length = 0;
+    const out = await call("POST", `/api/application-status/${id}/withdraw?token=${statusToken(id)}`, {});
+    expect(out.status, out.text).toBe(200);
+    expect(state.fresh).toEqual([]);
+    expect(String((await q("SELECT status FROM open_role_proposals WHERE id = ?", [id]))[0].status)).toBe("withdrawn");
+    const page = await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`);
+    expect(page.body.status.outcome).toBe("withdrawn");
+    // Again: nothing more happens. CONTROL: a wrong token is the 404 a stranger gets.
+    expect((await call("POST", `/api/application-status/${id}/withdraw?token=${statusToken(id)}`, {})).status).toBe(409);
+    expect((await call("POST", `/api/application-status/${id}/withdraw?token=nope`, {})).status).toBe(404);
+  });
+
+  it("THE TEAM'S REFERENCES (the lead): claim one, the standard questions, mark it done; the applicant sees only reached or not", async () => {
+    const id = await confirmed("team-refs@example.test");
+    expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    const given = await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, {
+      references: [
+        { name: "Ana Example", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We kept a farm's books.", ally: "" },
+        { name: "Ben Example", email: "ben@example.test", signal: "ben.42", how: "He hired me twice.", ally: "" },
+      ],
+    });
+    expect(given.status, given.text).toBe(200);
+    const w = await call("GET", `${app(id)}/walkthrough`, undefined, IA.id);
+    expect(w.status, w.text).toBe(200);
+    expect(w.body.walkthrough.references.questions).toContain("What are they great at?");
+    expect(w.body.walkthrough.references.mayClaim).toBe(true);
+    const [first, second] = w.body.walkthrough.references.list;
+    // I'll follow up: IA takes the first; IB cannot take it from them.
+    expect((await call("POST", `${app(id)}/references/${first.id}/claim`, {}, IA.id)).status).toBe(200);
+    expect((await call("POST", `${app(id)}/references/${first.id}/claim`, {}, IB.id)).status).toBe(409);
+    expect((await call("POST", `${app(id)}/references/${first.id}/notes`, { notes: FOLLOWUP, followedUp: true }, IA.id)).status).toBe(200);
+    // The applicant: reached or not, by place, and never the notes or a contact.
+    const page = await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`);
+    expect(page.body.status.referencesAsked.reached).toEqual([true, false]);
+    for (const secret of [FOLLOWUP, "ana@example.test", "+506 8888 1234", "ben.42", "Ana Example"]) expect(page.text).not.toContain(secret);
+    expect(second.contact).toBe("Email: ben@example.test\nSignal: ben.42");
+    // CONTROL: outsiders and the applicant's link reach no claim.
+    expect((await call("POST", `${app(id)}/references/${second.id}/claim`, {}, null)).status).toBe(401);
+  });
+
+  it("NUDGES (the lead: 'yes' to nudges): once each, and never a move", async () => {
+    const { nudgeTick } = await import("../lib/applicantNudges");
+    const { makeApplicantTeller } = await import("../lib/applicantUpdates");
+    const deps: any = {
+      getPool: () => pool,
+      notify: async (n: any) => {
+        state.notices.push(n);
+        return { fresh: true };
+      },
+      notifyAdmins: async () => {},
+      liveHoldersOf: async () => [FOUNDER.id],
+      now: () => new Date(),
+      calendar: () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" }),
+      members: usersRepo(pool),
+    };
+    deps.tellApplicant = makeApplicantTeller({ getPool: () => pool, members: usersRepo(pool), notify: deps.notify, postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN });
+    const id = await confirmed("nudge@example.test");
+    const [first] = await ivs(id);
+    // Open six days (past the five), and the application seventy-six days old (past the seventy-five).
+    await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 6 * 86_400_000), first.id]);
+    await q("UPDATE application_steps SET stamped_at = ? WHERE application_ref = ? AND kind = 'confirmed'", [new Date(Date.now() - 76 * 86_400_000), id]);
+    const steps = async () => (await q("SELECT kind FROM application_steps WHERE application_ref = ? ORDER BY id", [id])).map((r: any) => r.kind);
+    const before = await steps();
+    state.fresh.length = 0;
+    state.notices.length = 0;
+    await nudgeTick(deps);
+    await nudgeTick(deps);
+    const nudges = state.fresh.filter((m) => m.idempotencyKey === `open-proposal:${id}:nudge:book:${first.id}`);
+    expect(nudges).toHaveLength(1);
+    expect(nudges[0].text).toContain(`Book it here: ${LINK.ops}`);
+    for (const l of [LINK.community, LINK.final]) expect(nudges[0].text).not.toContain(l);
+    // The role up next hears it once (deduped by its key), and the close warning reaches the people who place roles.
+    const keys = state.notices.map((n) => n.dedupeKey);
+    expect(keys.filter((k) => k === `app:${id}:nudge:conversation:${first.id}:${IA.id}`).length).toBeGreaterThanOrEqual(1);
+    expect(keys.filter((k) => k === `app:${id}:close-warning:${FOUNDER.id}`).length).toBeGreaterThanOrEqual(1);
+    // Nothing moved.
+    expect(await steps()).toEqual(before);
+    expect(String((await ivs(id))[0].state)).toBe("open");
+  });
+
   describe("the 90-day close", () => {
     const closing = { postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN, onboardingRole: () => "" };
     const ageOf = async (id: string, days: number, at: Date) => q("UPDATE open_role_proposals SET confirmed_at = ? WHERE id = ?", [new Date(at.getTime() - days * 86_400_000), id]);

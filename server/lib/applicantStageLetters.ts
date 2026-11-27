@@ -19,7 +19,7 @@
 import type { PostResult } from "../../shared/comms/contracts";
 import { greetingName } from "../../shared/openProposalDecide";
 import { FINAL_CALL_ROLE_VARIABLE, FOLLOWUP_ROLE_VARIABLE, trackStates } from "../../shared/applicantOnboarding";
-import { stageLetter, stageLetterKey, STAGE_LETTER_STAGES, type StageLetterKind, type StageLetterStage } from "../../shared/applicantStageLetters";
+import { bookingNudgeKey, bookingNudgeLetter, stageLetter, stageLetterKey, STAGE_LETTER_STAGES, type StageLetterKind, type StageLetterStage } from "../../shared/applicantStageLetters";
 import { finalFreezes, mayRefine } from "../../shared/proposalRefine";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import * as proposals from "../repos/openProposals";
@@ -140,6 +140,36 @@ export async function receivedNextLines(pool: Pool, ref: string, lang: Applicant
   }
   const welcome = await roleWord({ getPool: () => pool }, stringVar("org.onboarding_role"));
   return [w.shape.next, w.shape.receivedReview, "", w.shape.who, w.shape.receivedWho(welcome)];
+}
+
+/**
+ * THE ONE REMINDER TO BOOK (server/lib/applicantNudges.ts): a conversation still open, with its own booking link, once
+ * per conversation. True when it went now. Never a later step's link: only the conversation named.
+ */
+export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId: number): Promise<boolean> {
+  try {
+    const pool = deps.getPool();
+    const p = await proposals.readOpenProposal(pool, ref);
+    if (!p || !p.email || p.status !== "confirmed") return false;
+    const iv = (await review.interviewsOf(pool, ref)).find((i) => i.id === interviewId);
+    if (!iv || iv.state !== "open") return false;
+    const step = await stepBookingOf(pool, ref, iv.roleId);
+    const words = bookingNudgeLetter({ firstName: greetingName(p.name), role: step.label, links: step.links.map((l) => l.url), statusLink: statusLinkFor(deps, ref), lang: languageOf(p) });
+    const name = greetingName(p.name);
+    const sent = await deps.postEmail({
+      idempotencyKey: bookingNudgeKey(ref, interviewId),
+      kind: "essential",
+      origin: "open_proposal.nudge",
+      to: { email: p.email, ...(name ? { name } : {}) },
+      subject: words.subject,
+      html: plainLetterHtml(words.text),
+      text: words.text,
+    });
+    return WENT_NOW.has(sent.status);
+  } catch (e) {
+    console.error(`[open-proposals] the booking reminder for ${ref} was not sent`, e);
+    return false;
+  }
 }
 
 /** The one letter after the applicant first refines their proposal. True when it went now. */

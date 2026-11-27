@@ -40,6 +40,8 @@ import {
   type TrackStage,
   type TrackState,
 } from "../../shared/applicantOnboarding";
+import { stageAverages } from "../../shared/stageAverages";
+import { REFERENCE_QUESTIONS_VARIABLE } from "../../shared/referenceQuestions";
 import { finalFreezes, mayRefine, PROPOSAL_VERSIONS_MAX, readRefined, readVersions, REFINE_ERRORS, type ProposalVersion, type RefineView } from "../../shared/proposalRefine";
 import { kindOfRef, parseCriteria, reviewStageOf } from "../../shared/applicationReview";
 import * as review from "../repos/applicationReview";
@@ -317,6 +319,26 @@ export async function assignOwner(deps: ReviewDeps, ref: string, viewerId: strin
   return { ok: true };
 }
 
+/**
+ * "I'LL FOLLOW UP" (the lead, 27 Nov 2026: "let different team members follow up with them and mark them done"). A
+ * team member who may read the application takes one reference for themselves: they become its owner, keeping its
+ * role. Refused when somebody else has already taken it.
+ */
+export async function claimReference(deps: ReviewDeps, ref: string, viewerId: string, referenceId: number): Promise<{ ok: true } | Refusal> {
+  const pool = deps.getPool();
+  const closed = await openAndConfirmed(pool, ref);
+  if (closed) return closed;
+  const s = await standingOf(deps, ref, viewerId);
+  const interviewer = (await review.interviewsOf(pool, ref)).some((i) => s.roles.has(i.roleId));
+  const reads = mayReadReference({ isApplicant: s.isApplicant, recused: s.recused, isReviewer: s.isReviewer, isFinalCall: s.isFinalCall, isOwner: false }) || interviewer;
+  if (s.isApplicant || s.recused || !reads) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  const r = await repo.referenceById(pool, ref, referenceId);
+  if (!r) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  if (r.ownerUserId && r.ownerUserId !== viewerId) return refuse(409, "taken", ONBOARDING_WORDS.claimTaken);
+  await repo.setOwner(pool, ref, referenceId, { roleId: r.ownerRoleId, userId: viewerId });
+  return { ok: true };
+}
+
 /** THE OWNER'S NOTES, and whether the follow-up is done. Only the reference's own owner writes them. */
 export async function saveFollowUp(deps: ReviewDeps, ref: string, viewerId: string, referenceId: number, body: unknown): Promise<{ ok: true } | Refusal> {
   const pool = deps.getPool();
@@ -458,6 +480,10 @@ export interface Walkthrough {
     /** How many there are in all, so an owner reading their own sees the rest exist. */
     total: number;
     mayAssign: boolean;
+    /** The village's standard follow-up questions (`org.reference_questions`), the same for everyone. */
+    questions: string;
+    /** This reader may claim a reference to follow up ("I'll follow up"). */
+    mayClaim: boolean;
   };
   /** The roles a reference can be given to, by name. Shown only to those who may assign. */
   roles: Array<{ id: string; name: string }>;
@@ -547,7 +573,15 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
   return {
     track,
     shortlist,
-    references: { asked: steps.some((x) => x.kind === "refs_asked"), given: steps.some((x) => x.kind === "refs_given"), list, total: stored.length, mayAssign },
+    references: {
+      asked: steps.some((x) => x.kind === "refs_asked"),
+      given: steps.some((x) => x.kind === "refs_given"),
+      list,
+      total: stored.length,
+      mayAssign,
+      questions: stringVar(REFERENCE_QUESTIONS_VARIABLE).trim(),
+      mayClaim: open && !s.recused && (readsAll || interviewer),
+    },
     roles: mayAssign ? await review.activeRoles(pool) : [],
     members: mayAssign ? await review.membersHoldingRoles(pool) : [],
     scorecards: await scorecardsFor(deps, ref, viewerId),
@@ -786,6 +820,8 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
   shortlisted: boolean;
   next: { act: "follow_up" | "move"; role: string | null } | null;
   anchorCircle: string | null;
+  /** The village's real average for the stage they stand at, in days; absent until enough have passed it. */
+  average?: number;
 } | null> {
   if (kindOfRef(ref) !== "open") return null;
   const read = await trackFactsOf(deps, ref);
@@ -811,6 +847,8 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
     next,
     // The circle that reviews the proposal at Agreement, by its own name (the lead, 27 Nov 2026).
     anchorCircle: await review.anchorCircleName(deps.getPool()),
+    // The village's real average for this stage, only once enough have passed it (shared/stageAverages.ts).
+    ...(await averageFor(deps, now)),
     refine: {
       open,
       // Fixed once the final conversation is written up and the proposal goes to the anchor circle (Agreement).
@@ -820,6 +858,35 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
       versions: readVersions(await proposals.proposalVersionsOf(deps.getPool(), ref)).length,
     },
   };
+}
+
+/**
+ * THE APPLICANT WITHDRAWS (the lead, 27 Nov 2026: a quiet "withdraw my application" button with a confirm step). Their
+ * own act, by their own link or account: the application closes as withdrawn and its decided step says so, so the page
+ * shows the withdrawn card. No letter goes: withdrawing sent none before, and sends none now. Its name and address go
+ * with the usual tidy (server/routes/openProposals.ts `tidyOpenProposals`).
+ */
+export async function withdrawApplication(deps: ReviewDeps, ref: string): Promise<{ ok: true } | { ok: false; status: number; error: "not_found" | "closed" }> {
+  if (kindOfRef(ref) !== "open") return { ok: false, status: 404, error: "not_found" };
+  const pool = deps.getPool();
+  const p = await proposals.readOpenProposal(pool, ref);
+  if (!p) return { ok: false, status: 404, error: "not_found" };
+  if (p.status !== "confirmed") return { ok: false, status: 409, error: "closed" };
+  const at = deps.now();
+  if (!(await proposals.withdrawForErasure(pool, ref, at))) return { ok: false, status: 409, error: "closed" };
+  if ((await review.stepsOf(pool, ref)).some((s) => s.kind === "confirmed")) await review.stampStep(pool, { ref, kind: "decided", at, detail: { how: "withdrawn", byApplicant: true } });
+  return { ok: true };
+}
+
+/** The average for one stage, from the last year, as `{ average }` or nothing. */
+async function averageFor(deps: Pick<ReviewDeps, "getPool" | "now">, stage: TrackStage): Promise<{ average?: number }> {
+  // Received is the instant Our review begins: the applicant there reads Our review's average (one calculation,
+  // shared/applicationStageTiming.ts, the admin's role progress page's too).
+  const timed = stage === "received" ? "review" : stage;
+  if (timed === "start") return {};
+  const since = new Date(deps.now().getTime() - 365 * 24 * 60 * 60 * 1000);
+  const days = stageAverages(await review.stageTimes(deps.getPool(), since))[timed];
+  return typeof days === "number" ? { average: days } : {};
 }
 
 export type RefineOutcome = { ok: true; versions: number } | { ok: false; status: number; error: keyof typeof REFINE_ERRORS };

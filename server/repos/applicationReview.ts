@@ -21,6 +21,7 @@ import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
 import { anchorCircleId } from "../../shared/circlePicker";
+import type { StageTimingFacts } from "../../shared/applicationStageTiming";
 import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
 import { deleteGuideNotesOf, forgetGuideNotesBy } from "./applicationGuide";
 import { deleteConversationNotesOf, forgetConversationNotesBy } from "./applicationConversationNotes";
@@ -382,6 +383,41 @@ export async function agentRoleNamesInCircles(db: Db, circleIds: readonly string
  * Each role's booking link (`org_roles.booking_url`, 0362), read as `parseBookingUrl` allows it: an https
  * link or nothing. The applicant books a conversation through the link of the role that holds it.
  */
+/**
+ * EVERY APPLICATION'S STAGE STAMPS, the facts `stageHours` (shared/applicationStageTiming.ts) times: confirmed, the
+ * shortlist's yes, references asked, each conversation's opening and write-up in order, and decided. From what is
+ * already kept; the last year only. The caller turns them into averages and never shows one application's times.
+ */
+export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[]> {
+  const [apps] = await db.query<RowDataPacket[]>(
+    "SELECT c.application_ref AS ref, UNIX_TIMESTAMP(c.stamped_at) AS confirmed_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'shortlist' AND JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.answer')) = 'yes') AS yes_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'refs_asked') AS asked_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided') AS decided_s " +
+      "FROM application_steps c WHERE c.kind = 'confirmed' AND c.stamped_at >= ? LIMIT 2000",
+    [since],
+  );
+  if (!apps.length) return [];
+  const [ivs] = await db.query<RowDataPacket[]>(
+    "SELECT application_ref AS ref, is_final, UNIX_TIMESTAMP(opened_at) AS opened_s, UNIX_TIMESTAMP(scored_at) AS scored_s FROM application_interviews WHERE application_ref IN (?) ORDER BY application_ref, position",
+    [apps.map((a: any) => String(a.ref))],
+  );
+  const ms = (v: unknown): number | null => (v === null || v === undefined ? null : Math.round(Number(v) * 1000));
+  const byRef = new Map<string, Array<{ final: boolean; openedAt: number | null; scoredAt: number | null }>>();
+  for (const r of ivs as any[]) {
+    const list = byRef.get(String(r.ref)) ?? [];
+    list.push({ final: Number(r.is_final) === 1, openedAt: ms(r.opened_s), scoredAt: ms(r.scored_s) });
+    byRef.set(String(r.ref), list);
+  }
+  return (apps as any[]).map((a) => ({
+    confirmedAt: ms(a.confirmed_s) ?? 0,
+    shortlistYesAt: ms(a.yes_s),
+    refsAskedAt: ms(a.asked_s),
+    interviews: byRef.get(String(a.ref)) ?? [],
+    decidedAt: ms(a.decided_s),
+  }));
+}
+
 /**
  * The village's anchor circle, by name (shared/circlePicker.ts `anchorCircleId`: the one marked, else the one that
  * coordinates the rest), or null when it has none. The applicant reads it at Agreement: "Your proposal is with ...".

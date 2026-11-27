@@ -134,7 +134,8 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     roleNames: roleIds.map((id) => names.get(id) ?? "").filter(Boolean),
     site,
     team: (teamRole && names.get(teamRole)) || village,
-    statusLink: statusLinkFor({ siteUrl: () => site }, p.id),
+    // The page closes with the application (its details go now), so the letter points nowhere it cannot keep.
+    statusLink: null,
     lang: languageOf(p),
   });
   const block = (await deps.footer?.({ village, site, lang: languageOf(p) })) ?? null;

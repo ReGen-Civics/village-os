@@ -32,6 +32,7 @@ import { escapeHtml } from "./comms/mailer";
 import { plainLetterHtml } from "./letterHtml";
 import { languageOf } from "./applicantLanguage";
 import { STATUS_LINK_STARTS } from "../../shared/applicantWords";
+import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import { signLink } from "./comms/links";
 import { replyMoonsFor, replyMoonsNow } from "./foundingFirst";
 import type { BookingLink } from "../../shared/interviewBooking";
@@ -45,8 +46,15 @@ export interface TellDeps extends Pick<DecideDeps, "getPool" | "members" | "noti
   siteUrl?(): string;
 }
 
-/** How long the link in an update works. The status page is read-only apart from the applicant's own answers, and a proposal is decided within weeks. */
-const STATUS_LINK_DAYS = 60;
+/**
+ * HOW LONG THE LINK IN A LETTER WORKS (the lead, 27 Nov 2026: "Yes! status link"): the application's whole life, the
+ * village's close days (default 90) plus a margin, and never less than 120 days. Once the application is closed and
+ * its details removed, the page refuses every link anyway (`statusByToken`).
+ */
+export const STATUS_LINK_MARGIN_DAYS = 30;
+export function statusLinkDays(): number {
+  return Math.max(120, (Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || 90) + STATUS_LINK_MARGIN_DAYS);
+}
 
 /** What one update may add: which part of a kind (the position of a conversation), and facts the words use. */
 export interface UpdateFacts {
@@ -67,6 +75,8 @@ export interface UpdateFacts {
 export type TellApplicant = ((ref: string, kind: ApplicantUpdateKind, facts?: UpdateFacts) => Promise<void>) & {
   stage?: (ref: string) => Promise<boolean>;
   refined?: (ref: string) => Promise<boolean>;
+  /** The one reminder to book a conversation still open (server/lib/applicantNudges.ts). */
+  nudge?: (ref: string, interviewId: number) => Promise<boolean>;
 };
 
 
@@ -76,7 +86,7 @@ const keyOf = (ref: string, kind: ApplicantUpdateKind, part?: string) => `${ref}
 export function statusLinkFor(deps: Pick<TellDeps, "siteUrl">, ref: string): string | null {
   const origin = deps.siteUrl?.().replace(/\/+$/, "");
   if (!origin) return null;
-  return `${origin}/application-status/${encodeURIComponent(ref)}?token=${encodeURIComponent(signLink("application_status", { ref }, STATUS_LINK_DAYS))}`;
+  return `${origin}/application-status/${encodeURIComponent(ref)}?token=${encodeURIComponent(signLink("application_status", { ref }, statusLinkDays()))}`;
 }
 
 async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUrl">, p: proposals.StoredOpenProposal, kind: ApplicantUpdateKind, facts: UpdateFacts) {
@@ -127,6 +137,7 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
   // Loaded when first used: the stage letters read the review, which reads this file's type.
   tell.stage = async (ref) => (await import("./applicantStageLetters")).tellStageLetter(deps, ref);
   tell.refined = async (ref) => (await import("./applicantStageLetters")).tellRefinedLetter(deps, ref);
+  tell.nudge = async (ref, interviewId) => (await import("./applicantStageLetters")).tellBookingNudge(deps, ref, interviewId);
   return tell;
 }
 

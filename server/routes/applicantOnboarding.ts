@@ -37,7 +37,7 @@ import multer from "multer";
 import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
-import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
+import { addFinalConversation, answerShortlist, askForReferences, assignOwner, claimReference, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
 import { addConversationFile, addConversationText, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
 import { CONVERSATION_FILE_MAX_BYTES, CONVERSATION_NOTES_PER_HOUR, NOTES_WORDS, isConversationNoteKind, storedExtension } from "../../shared/conversationNotes";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume } from "../lib/uploads";
@@ -136,6 +136,14 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     const id = idOf(req);
     if (!id) return res.status(404).json(NOT_HERE);
     answer(res, await assignOwner(work, a.ref, a.viewerId, id, req.body), { message: ONBOARDING_WORDS.ownerSaved });
+  });
+
+  app.post("/api/governance/applications/:ref/references/:id/claim", async (req, res) => {
+    const a = await acting(req, res, "claim");
+    if (!a) return;
+    const id = idOf(req);
+    if (!id) return res.status(404).json(NOT_HERE);
+    answer(res, await claimReference(work, a.ref, a.viewerId, id), { message: ONBOARDING_WORDS.claimed });
   });
 
   app.post("/api/governance/applications/:ref/references/:id/notes", async (req, res) => {

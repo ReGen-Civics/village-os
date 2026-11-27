@@ -52,7 +52,7 @@ interface ServedReference {
 interface ServedWalkthrough {
   track: { stages: Array<{ key: TrackStage; label: string; state: TrackState }>; now: TrackStage; who: string; next: string; primary: PrimaryAction };
   shortlist: ShortlistAnswer | null;
-  references: { asked: boolean; given: boolean; list: ServedReference[]; total: number; mayAssign: boolean };
+  references: { asked: boolean; given: boolean; list: ServedReference[]; total: number; mayAssign: boolean; questions?: string; mayClaim?: boolean };
   roles: Array<{ id: string; name: string }>;
   members: Array<{ id: string; name: string }>;
   scorecards: {
@@ -111,9 +111,11 @@ export interface WalkthroughProps {
    * gold-edged, so the page keeps one gold act (QA round 3).
    */
   decideOnPage?: boolean;
+  /** Draw only the references, for the team's own references page (pages/ApplicationReferences.tsx). */
+  only?: "references";
 }
 
-export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false, only }: WalkthroughProps) {
   const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
@@ -225,6 +227,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   const gathered = w.you.isFinalCall || w.you.holdsPower;
 
+  // The team's references page: the references alone, at a link the team can share (the lead, 27 Nov 2026).
+  if (only === "references") {
+    return (
+      <section aria-labelledby="walk-references-page" className={CARD} data-walkthrough-references="">
+        <p className={EYEBROW}>{OW.referencesKicker}</p>
+        <h1 id="walk-references-page" className={H2}>{OW.referencesHeading}</h1>
+        <References w={w} busy={busy} act={act} page />
+        {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
+      </section>
+    );
+  }
+
   return (
     <section id="walkthrough" aria-labelledby="walk-heading" className={`scroll-mt-24 ${CARD}`} data-walkthrough={t.now}>
       <p className={EYEBROW}>{trackStageWords()[t.now]}</p>
@@ -273,13 +287,19 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
   );
 }
 
-function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
+function References({ w, busy, act, page = false }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean>; page?: boolean }) {
   const OW = useOnboardingWords();
   return (
     <div id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="">
-      <p className={EYEBROW}>{OW.referencesKicker}</p>
-      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>
+      {!page && <p className={EYEBROW}>{OW.referencesKicker}</p>}
+      {!page && <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>}
       <PrivacyNote line={OW.referencesShort} label={OW.whoReads} more={OW.referencesPrivate} />
+      {/* The team's own page for the references, to share among the team; never in an applicant's email. */}
+      {!page && typeof window !== "undefined" && window.location.pathname.startsWith("/open-proposals/") && (
+        <a className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline underline-offset-4" href={`${window.location.pathname.replace(/\/references$/, "")}/references`} data-walk-references-page="">
+          {OW.referencesPage}
+        </a>
+      )}
       {!w.references.given && <p className="mt-2 text-foreground">{OW.referencesAsked}</p>}
       {w.references.given && w.references.list.length === 0 && <p className="mt-2 text-foreground">{OW.referencesNone}</p>}
       <ul className="mt-3 grid gap-3">
@@ -300,7 +320,8 @@ function ownerWords(r: ServedReference): string {
 function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
   const OW = useOnboardingWords();
   const day = useDayWords();
-  const [notes, setNotes] = useState(r.notes ?? "");
+  // The village's standard questions open in an empty notes box (the lead, 27 Nov 2026).
+  const [notes, setNotes] = useState(r.notes ?? (w.references.questions || ""));
   const [done, setDone] = useState(r.followedUp);
   const [pick, setPick] = useState("");
   return (
@@ -315,6 +336,12 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
         {r.ally && <div><dt className="inline font-semibold text-foreground">{OW.ally}: </dt><dd className="inline break-words text-foreground">{r.ally}</dd></div>}
         <div><dt className="inline font-semibold text-foreground">{OW.owner}: </dt><dd className="inline text-foreground" data-walk-owner="">{ownerWords(r)}</dd></div>
       </dl>
+      {/* "I'll follow up": any team member who may read the application takes one for themselves (the lead, 27 Nov 2026). */}
+      {!r.mine && w.references.mayClaim && !r.owner.userId && (
+        <button type="button" className={`mt-3 ${BTN_NOTICE}`} disabled={busy} onClick={() => void act(`/references/${r.id}/claim`)} data-walk-claim="">
+          {OW.claim}
+        </button>
+      )}
       {w.references.mayAssign && (
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <label className="grow">
