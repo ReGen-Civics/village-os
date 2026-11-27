@@ -37,19 +37,20 @@ const at = (path: string) => {
 };
 
 describe("a circle page while the map runs", () => {
-  // Since 27 Nov 2026 the open roles have their own entry under Join, so the fold that remains is Circles into
-  // "Circles & Roles" (config/nav.ts, unlessModule).
-  it("marks Circles & Roles in the open Village menu, as the way there and not as the page", () => {
+  // Since round 2 (27 Nov 2026) Circles & Roles is a folder of Govern; the fold that remains is the plain Circles page
+  // into the map's view of the circles (config/nav.ts, unlessModule). The folder holding the page opens with the menu.
+  it("marks the map's Circles in the open Govern menu, as the way there and not as the page", () => {
     at("/circles/water");
-    fireEvent.click(screen.getByRole("button", { name: /^Village/ }));
-    const menu = within(document.getElementById("nav-menu-village")!);
-    expect(menu.getByRole("link", { name: /Circles & Roles/ }).getAttribute("aria-current")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: /^Govern/ }));
+    const menu = within(document.getElementById("nav-menu-govern")!);
+    const link = menu.getAllByRole("link", { name: /Circles/ }).find((a) => a.getAttribute("href") === "/map/circles")!;
+    expect(link.getAttribute("aria-current")).toBe("true");
   });
 
   it("keeps the trail on the page's own entry", () => {
     at("/circles/water");
     const trail = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Village / Circles");
+    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles");
     expect(within(trail).getByRole("link", { name: "Circles" }).getAttribute("href")).toBe("/circles");
   });
 });

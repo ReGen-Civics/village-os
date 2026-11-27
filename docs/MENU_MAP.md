@@ -1,28 +1,30 @@
 # The menu by membership
 
-The lead, 27 Nov 2026:
+The lead, 27 Nov 2026, round 1:
 
 - "Let's rethink this menu from the different levels of membership (visitor, member, role holder, admin, investor, etc) and what we prioritize (like having join be first, and module library at the bottom)."
 - "Let's map EVERY page in the site, determine where in the menu to show and make use of nesting to not overwhelm so we're never showing more than ~5 options while still being able to nest all pages into the menu."
-- "While we're mapping all the unique pages let's consider which ones we can fold their features into existing pages in a good way and also consider if we need the pages at all."
+
+Round 2, on PR #1847: "Under visitors signed out, when they go to come and see, we shouldn't have signed the love letter under there. That would be under community. ... any of the shared things can be hidden from a visitor. And wallet shouldn't be under shared things anyway. ... Library could just be its own tab under village, and so could village health. And then circles and roles can come under governance, which we could just call govern. ... The good neighbor criteria should be under village, under places and homes. ... Quests could be in both village and in governance. So with the feedback that I gave you here, take that same logic and apply it to the rest and go and redo that menu and give me another round, because I'm also looking at the member portal."
 
 This file is the map. `client/src/config/nav.ts` is the menu it describes, and `client/src/config/navNest.test.ts` holds the menu to it for every audience.
 
-## The rules
+## The rules (round 2)
 
-1. **Five groups on the bar.** Village, Community, Governance, Join, About. No page takes a bar slot of its own: the Living Map is Village's first row and the Module Library is About's last.
-2. **Five rows at most in a group, and five links at most in a folder.** A row is a link or a folder. Links that share a `sub` in `nav.ts` draw as one folder (`client/src/config/navNest.ts`). A folder left with one link for a reader draws as that link.
-3. **Join first for a newcomer.** A visitor, and someone signed in whom the village has not admitted, meet Join first (`leads: "newcomers"`). A member meets the village first and Join fourth.
-4. **The Module Library at the bottom,** the last entry of the last group, for every reader.
-5. **Each page in one place.** Messages and Wallet each had two menu doors; each has one now.
-6. **The same rows everywhere.** The desktop dropdowns, the drawer, the account menu and the phone's More sheet all draw through `client/src/components/nav/MenuRows.tsx`, so a folder opens the same way on each.
-7. **Built on where Governance is going.** `/governance` is the hub, and its views are Now, Decisions, Your work, Treasury and How we decide (`client/src/components/governance/now/GovernanceTabs.tsx`; the Treasury tab comes with #1843). The group leads with Now, Decisions and Treasury, and puts the season's pages in one folder and the other views in a second.
+1. **Four groups, by what each holds.** **Village**: the place and its life (the maps, Quests, Places and homes, the Library, Village Health). **Community**: the people and the story (Our story with the team and the Love Letter, conversations, Gratitude, gatherings, welcoming). **Join**: the ways in. **Govern** (Governance until round 2; the routes are unchanged): how the village is run and how we work (deciding, Circles & Roles, this season, the guides, how we work).
+2. **Five rows at most in a group, five links at most in a folder.** A folder left with one link for a reader shows as that link (`client/src/config/navNest.ts`).
+3. **Join first for a newcomer,** a visitor or someone signed in but not admitted. A member meets Village, Community, Join, Govern.
+4. **The Module Library at the very bottom:** Govern is the last group for every reader, and the library is the last link of its last folder.
+5. **No catch-all folder.** "Shared things" is gone. The Wallet is the member's own, in the account menu.
+6. **A stranger sees only what a stranger needs:** what the village is, how to come and see, how to join, its story and team, and the Love Letter. No Wallet, Village Health, Library, Game Mechanics, Village Email, Village Tools or member tools.
+7. **Each page in one place, with two named exceptions:** Quests (Village, and Govern's This season) and the roles (Join's Open Roles, and Govern's Circles & Roles). The test names both.
+8. **The same rows everywhere:** the desktop dropdowns, the drawer, the account menu and the phone's More sheet draw through `client/src/components/nav/MenuRows.tsx`.
 
-Audiences, as the gates see them: **V** visitor, **N** newcomer (signed in, not admitted), **M** member, **R** role holder (a seat or a power, such as a treasury power), **I** investor (the investor tag from #1837, which unlocks `/investor`; their menu is a member's or a visitor's), **A** admin or founder. The gates are the existing ones: `roles`, `newcomers`, `module`, `door`, `brochure` and `signedIn` in `nav.ts`.
+Audiences, as the gates see them: **V** visitor, **N** newcomer (signed in, not admitted), **M** member, **R** role holder (a seat or a power, such as a treasury power), **I** investor (the investor tag from #1837 unlocks `/investor`; their menu is a member's or a visitor's), **A** admin or founder. The gates are the existing ones in `nav.ts`: `roles`, `newcomers`, `module`, `door`, `brochure` and `signedIn`.
 
 ## The menu each audience sees
 
-Every optional module on and every story page served: the most any reader can be shown. A village with a module off loses that entry, and a folder left with one entry draws as that entry.
+Every optional module on and every story page served: the most any reader can be shown. A village with a module off loses that entry, and a folder left with one entry shows as that entry.
 
 ### Visitor (signed out), and a newcomer signed in but not admitted
 
@@ -34,9 +36,7 @@ Join
     Resident  `/resident`
     Prosperity Creator  `/prosperity`
   Open Roles  `/roles`
-  Come and see ▸
-    Plan a Visit  `/visit`
-    Sign the Love Letter  `/love-letter`
+  Plan a Visit  `/visit`
   Build with us ▸
     Become a partner  `/partner`
     Propose a quest  `/propose-quest`
@@ -46,61 +46,63 @@ Join
 Village
   Living Map  `/map`
   Quests  `/quests`
-  Circles & Roles  `/map/circles`
   Places and homes ▸
     Housing  `/housing`
     Stay  `/stay`
-  Shared things ▸
-    Library  `/library`
-    Wallet  `/wallet`
-    Health  `/village-health`
-Community
-  Gratitude  `/gratitude`
-Governance
-  Now  `/governance`
-  More in Governance ▸
-    How we work together  `/governance/how`
-    What We Look After  `/powers`
-About
-  Our story ▸
-    How We Create  `/how-we-create`
-    Master Plan  `/master-plan`
-    Our Team  `/team`
-  How we work ▸
-    Game Mechanics  `/game-mechanics`
-    Village Email  `/village-email`
     Good Neighbor  `/good-neighbor`
+Community
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+  Share Feedback  `/feedback`
+  Gratitude  `/gratitude`
+Govern
+  Now  `/governance`
+  Circles & Roles ▸
+    Circles  `/map/circles`
+    Roles  `/roles`
+    What We Look After  `/powers`
+  Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
     Training  `/training`
     Resident Rights  `/resident-rights`
     Steward Rights  `/steward-rights`
     Leaving Well  `/exit-policy`
-  Share Feedback  `/feedback`
-  Module Library  `/modules`
+  How we work ▸
+    How we work together  `/governance/how`
+    How We Create  `/how-we-create`
+    Module Library  `/modules`
 ```
 
 ### Member
 
 ```
 Village
-  Living Map  `/map`
-  Quests  `/quests`
-  Circles & Roles  `/map/circles`
-  Places and homes ▸
-    Places  `/places`
-    Photographs  `/photographs`
+  Maps ▸
+    Living Map  `/map`
     Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
     Housing  `/housing`
     Stay  `/stay`
-  Shared things ▸
-    Library  `/library`
-    Tools  `/tools`
-    Wallet  `/wallet`
-    Health  `/village-health`
+    Good Neighbor  `/good-neighbor`
+    Places  `/places`
+    Photographs  `/photographs`
+  Library  `/library`
+  Village Health  `/village-health`
 Community
-  Feed  `/feed`
-  Forum  `/forum`
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Village Tools  `/tools`
+    Share Feedback  `/feedback`
   Gratitude  `/gratitude`
   Gatherings ▸
     Events  `/events`
@@ -109,21 +111,6 @@ Community
   Welcoming ▸
     Rites  `/rites`
     Introductions  `/introductions`
-Governance
-  Now  `/governance`
-  Decisions  `/governance/decisions`
-  Treasury  `/governance/treasury`
-  This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
-    Funding Rounds  `/funding-rounds`
-    Aligned  `/aligned`
-  More in Governance ▸
-    Your work  `/governance/work`
-    How we work together  `/governance/how`
-    Make a Proposal  `/propose`
-    Change Requests  `/changes`
-    What We Look After  `/powers`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -131,9 +118,7 @@ Join
     Resident  `/resident`
     Prosperity Creator  `/prosperity`
   Open Roles  `/roles`
-  Come and see ▸
-    Plan a Visit  `/visit`
-    Sign the Love Letter  `/love-letter`
+  Plan a Visit  `/visit`
   Build with us ▸
     Become a partner  `/partner`
     Propose a quest  `/propose-quest`
@@ -142,33 +127,46 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
-About
-  Our story ▸
-    How We Create  `/how-we-create`
-    Master Plan  `/master-plan`
-    Our Team  `/team`
-    Village Network  `/network`
-  How we work ▸
-    Game Mechanics  `/game-mechanics`
-    Village Email  `/village-email`
-    Good Neighbor  `/good-neighbor`
+Govern
+  Decide ▸
+    Now  `/governance`
+    Decisions  `/governance/decisions`
+    Treasury  `/governance/treasury`
+    Make a Proposal  `/propose`
+    Change Requests  `/changes`
+  Circles & Roles ▸
+    Circles  `/map/circles`
+    Roles  `/roles`
+    What We Look After  `/powers`
+    How roles are going  `/role-measures`
+  This season ▸
+    Season Plans  `/season-plans`
+    Join the Season  `/season-places`
+    Funding Rounds  `/funding-rounds`
+    Aligned  `/aligned`
+    Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
     Training  `/training`
     Resident Rights  `/resident-rights`
     Steward Rights  `/steward-rights`
     Leaving Well  `/exit-policy`
-  Share Feedback  `/feedback`
-  Module Library  `/modules`
+  How we work ▸
+    How we work together  `/governance/how`
+    How We Create  `/how-we-create`
+    Game Mechanics  `/game-mechanics`
+    Village Email  `/village-email`
+    Module Library  `/modules`
 Account menu (your name)
   My Profile  `/profile`
   Messages  `/messages`
   My tasks  `/profile#my-tasks`
   Your things ▸
+    Your work  `/governance/work`
+    Wallet  `/wallet`
     Journal  `/journal`
     Protocols  `/protocols`
     Badges  `/badges`
-    Settings  `/profile/settings`
   🌳 Launch Plan  `/journey-to-launch`
 ```
 
@@ -176,23 +174,29 @@ Account menu (your name)
 
 ```
 Village
-  Living Map  `/map`
-  Quests  `/quests`
-  Circles & Roles  `/map/circles`
-  Places and homes ▸
-    Places  `/places`
-    Photographs  `/photographs`
+  Maps ▸
+    Living Map  `/map`
     Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
     Housing  `/housing`
     Stay  `/stay`
-  Shared things ▸
-    Library  `/library`
-    Tools  `/tools`
-    Wallet  `/wallet`
-    Health  `/village-health`
+    Good Neighbor  `/good-neighbor`
+    Places  `/places`
+    Photographs  `/photographs`
+  Library  `/library`
+  Village Health  `/village-health`
 Community
-  Feed  `/feed`
-  Forum  `/forum`
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Village Tools  `/tools`
+    Share Feedback  `/feedback`
   Gratitude  `/gratitude`
   Gatherings ▸
     Events  `/events`
@@ -201,21 +205,6 @@ Community
   Welcoming ▸
     Rites  `/rites`
     Introductions  `/introductions`
-Governance
-  Now  `/governance`
-  Decisions  `/governance/decisions`
-  Treasury  `/governance/treasury`
-  This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
-    Funding Rounds  `/funding-rounds`
-    Aligned  `/aligned`
-  More in Governance ▸
-    Your work  `/governance/work`
-    How we work together  `/governance/how`
-    Make a Proposal  `/propose`
-    Change Requests  `/changes`
-    What We Look After  `/powers`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -223,9 +212,7 @@ Join
     Resident  `/resident`
     Prosperity Creator  `/prosperity`
   Open Roles  `/roles`
-  Come and see ▸
-    Plan a Visit  `/visit`
-    Sign the Love Letter  `/love-letter`
+  Plan a Visit  `/visit`
   Build with us ▸
     Become a partner  `/partner`
     Propose a quest  `/propose-quest`
@@ -234,59 +221,78 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
-About
-  Our story ▸
-    How We Create  `/how-we-create`
-    Master Plan  `/master-plan`
-    Our Team  `/team`
-    Village Network  `/network`
-  How we work ▸
-    Game Mechanics  `/game-mechanics`
-    Village Email  `/village-email`
-    Good Neighbor  `/good-neighbor`
+Govern
+  Decide ▸
+    Now  `/governance`
+    Decisions  `/governance/decisions`
+    Treasury  `/governance/treasury`
+    Make a Proposal  `/propose`
+    Change Requests  `/changes`
+  Circles & Roles ▸
+    Circles  `/map/circles`
+    Roles  `/roles`
+    What We Look After  `/powers`
+    How roles are going  `/role-measures`
+  This season ▸
+    Season Plans  `/season-plans`
+    Join the Season  `/season-places`
+    Funding Rounds  `/funding-rounds`
+    Aligned  `/aligned`
+    Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
     Training  `/training`
     Resident Rights  `/resident-rights`
     Steward Rights  `/steward-rights`
     Leaving Well  `/exit-policy`
-  Share Feedback  `/feedback`
-  Module Library  `/modules`
+  How we work ▸
+    How we work together  `/governance/how`
+    How We Create  `/how-we-create`
+    Game Mechanics  `/game-mechanics`
+    Village Email  `/village-email`
+    Module Library  `/modules`
 Account menu (your name)
   My Profile  `/profile`
   Messages  `/messages`
   My tasks  `/profile#my-tasks`
   Your things ▸
+    Your work  `/governance/work`
+    Wallet  `/wallet`
     Journal  `/journal`
     Protocols  `/protocols`
     Badges  `/badges`
-    Settings  `/profile/settings`
   Running the village ▸
     🌳 Launch Plan  `/journey-to-launch`
-    Treasury  `/treasury`
+    Treasury desk  `/treasury`
 ```
 
 ### Admin or founder
 
 ```
 Village
-  Living Map  `/map`
-  Quests  `/quests`
-  Circles & Roles  `/map/circles`
-  Places and homes ▸
-    Places  `/places`
-    Photographs  `/photographs`
+  Maps ▸
+    Living Map  `/map`
     Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
     Housing  `/housing`
     Stay  `/stay`
-  Shared things ▸
-    Library  `/library`
-    Tools  `/tools`
-    Wallet  `/wallet`
-    Health  `/village-health`
+    Good Neighbor  `/good-neighbor`
+    Places  `/places`
+    Photographs  `/photographs`
+  Library  `/library`
+  Village Health  `/village-health`
 Community
-  Feed  `/feed`
-  Forum  `/forum`
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Village Tools  `/tools`
+    Share Feedback  `/feedback`
   Gratitude  `/gratitude`
   Gatherings ▸
     Events  `/events`
@@ -295,21 +301,6 @@ Community
   Welcoming ▸
     Rites  `/rites`
     Introductions  `/introductions`
-Governance
-  Now  `/governance`
-  Decisions  `/governance/decisions`
-  Treasury  `/governance/treasury`
-  This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
-    Funding Rounds  `/funding-rounds`
-    Aligned  `/aligned`
-  More in Governance ▸
-    Your work  `/governance/work`
-    How we work together  `/governance/how`
-    Make a Proposal  `/propose`
-    Change Requests  `/changes`
-    What We Look After  `/powers`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -317,9 +308,7 @@ Join
     Resident  `/resident`
     Prosperity Creator  `/prosperity`
   Open Roles  `/roles`
-  Come and see ▸
-    Plan a Visit  `/visit`
-    Sign the Love Letter  `/love-letter`
+  Plan a Visit  `/visit`
   Build with us ▸
     Become a partner  `/partner`
     Propose a quest  `/propose-quest`
@@ -328,40 +317,68 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
-About
-  Our story ▸
-    How We Create  `/how-we-create`
-    Master Plan  `/master-plan`
-    Our Team  `/team`
-    Village Network  `/network`
-  How we work ▸
-    Game Mechanics  `/game-mechanics`
-    Village Email  `/village-email`
-    Good Neighbor  `/good-neighbor`
+Govern
+  Decide ▸
+    Now  `/governance`
+    Decisions  `/governance/decisions`
+    Treasury  `/governance/treasury`
+    Make a Proposal  `/propose`
+    Change Requests  `/changes`
+  Circles & Roles ▸
+    Circles  `/map/circles`
+    Roles  `/roles`
+    What We Look After  `/powers`
+    How roles are going  `/role-measures`
+  This season ▸
+    Season Plans  `/season-plans`
+    Join the Season  `/season-places`
+    Funding Rounds  `/funding-rounds`
+    Aligned  `/aligned`
+    Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
     Training  `/training`
     Resident Rights  `/resident-rights`
     Steward Rights  `/steward-rights`
     Leaving Well  `/exit-policy`
-  Share Feedback  `/feedback`
-  Module Library  `/modules`
+  How we work ▸
+    How we work together  `/governance/how`
+    How We Create  `/how-we-create`
+    Game Mechanics  `/game-mechanics`
+    Village Email  `/village-email`
+    Module Library  `/modules`
 Account menu (your name)
   My Profile  `/profile`
   Messages  `/messages`
   My tasks  `/profile#my-tasks`
   Your things ▸
+    Your work  `/governance/work`
+    Wallet  `/wallet`
     Journal  `/journal`
     Protocols  `/protocols`
     Badges  `/badges`
-    Settings  `/profile/settings`
   Running the village ▸
     🌳 Launch Plan  `/journey-to-launch`
-    Treasury  `/treasury`
+    Treasury desk  `/treasury`
     🛠 Command Centre  `/project-history`
     Review  `/admin/review`
     Village Settings  `/admin`
 ```
+
+## The member portal (the profile's phone tabs)
+
+The lead, round 2: "I'm also looking at the member portal and I'm seeing some things could be rearranged here too, following the same logic." On a phone the profile is five tabs (`client/src/components/profileDash/ProfileTabs.tsx`); a desktop shows the whole page in one column, unchanged.
+
+| Tab, before | Tab, now | What changed |
+|---|---|---|
+| Today | Today | Starts with what is next: your path, your first 14 days, your week, follow-ups. The hero (who you are) moved to Sheet, and the door to proposing to My work and My roles. |
+| Quests | My work | Renamed, so it never reads as the village's Quests page. Your quests, tasks and asks, and now the door to proposing a role or a quest. |
+| Roles | My roles | Renamed, so it never reads as the village's Roles page. Your roles, your card, your moon, your season plan, and the door to proposing. |
+| Treasury | My treasury | Renamed, so it never reads as Govern's Treasury tab (the village's budget). What you hold, Gratitude first, cash owed, the ledger. |
+| Sheet | Sheet | Opens with the hero: who you are, your badges, Invite and Settings. Then your needs, journal, Gene Keys, about you and your paths. |
+
+The tab ids are unchanged, so every `/profile#anchor` the app links to still opens its tab. The village's own things on the portal (the quest board, the roles) link out to their menu homes. Moves to decide next are listed under "For the lead" below.
+
 
 ## Every page
 
@@ -375,50 +392,50 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 | `/canvas/workbook` | Canvas workbook | A | - | - | STAY | reached from the Governance canvas |
 | `/project-history` | Command Centre | A | Governance / 🛠 Command Centre | Account menu / Running the village / 🛠 Command Centre | STAY | the first village's build history |
 | `/claim` | Claim this village | A | - | - | STAY | a new village's first step, reached by link |
-| `/feedback` | Feedback | V N M R I A | Community / Share Feedback | About / Share Feedback | FOLD? | could become a row in the guide's corner panel (Scarlet) |
-| `/network` | Village network | V N M R I A | About / Village Network | About / Our story / Village Network | STAY |  |
+| `/feedback` | Feedback | V N M R I A | Community / Share Feedback | Community / Conversations / Share Feedback | FOLD? | could become a row in the guide's corner panel (Scarlet) |
+| `/network` | Village network | V N M R I A | About / Village Network | Community / Our story / Village Network | STAY |  |
 | `/contribute` | Contribute | V N M R I A | Join / Contribute | Join / Fund the village / Contribute | STAY |  |
 | `/seasonal-festivals` | Seasonal festivals | V N M R I A | Community / Seasonal Festivals | Community / Gatherings / Seasonal Festivals | STAY |  |
 | `/investor` | Investor journey | V N M R I A | Join / Investor | Join / Choose your path / Investor | STAY | gated to accepted investors by #1837 |
 | `/steward` | Steward journey | V N M R I A | Join / Village Steward | Join / Choose your path / Village Steward | STAY |  |
 | `/resident` | Resident journey | V N M R I A | Join / Resident | Join / Choose your path / Resident | STAY |  |
 | `/prosperity` | Prosperity journey | V N M R I A | Join / Prosperity Creator | Join / Choose your path / Prosperity Creator | STAY |  |
-| `/love-letter` | {commitment} | V N M R I A | Join / Sign the Love Letter | Join / Come and see / Sign the Love Letter | STAY |  |
-| `/circles` | Circles | V N M R I A | Village / Circles | Village / Circles | STAY | folds into Circles & Roles where the map runs (unlessModule) |
+| `/love-letter` | {commitment} | V N M R I A | Join / Sign the Love Letter | Community / Our story / Sign the Love Letter | STAY | Community, Our story (round 2) |
+| `/circles` | Circles | V N M R I A | Village / Circles | Govern / Circles & Roles / Circles | STAY | folds into Circles & Roles where the map runs (unlessModule) |
 | `/circles/:id` |  | V N M R I A | - | - | STAY | reached from Circles & Roles |
-| `/quests` | Quests | V N M R I A | Village / Quests | Village / Quests | STAY | also a phone tab |
+| `/quests` | Quests | V N M R I A | Village / Quests | Village / Quests; Govern / This season / Quests | STAY | in Village and in Govern's This season, on purpose (round 2); also a phone tab |
 | `/quests/:id` |  | V N M R I A | - | - | STAY | reached from Quests, the treasury and the profile |
-| `/tools` | Tools | M R A | Village / Tools | Village / Shared things / Tools | STAY |  |
-| `/modules` | Module Library | V N M R I A | the bar / Module Library; About / Module Library | About / Module Library | STAY | last of all, under About |
+| `/tools` | Tools | M R A | Village / Tools | Community / Conversations / Village Tools | STAY | Village Tools, in Community's Conversations: where the village talks and meets outside this app |
+| `/modules` | Module Library | V N M R I A | the bar / Module Library; About / Module Library | Govern / How we work / Module Library | STAY | last of all: the last link of Govern, the last group |
 | `/modules/:id` |  | V N M R I A | - | - | STAY | reached from the Module Library |
 | `/campaigns` | Crowd pooling | V N M R I A | Join / Crowd pooling | Join / Fund the village / Crowd pooling | STAY |  |
 | `/campaign/:slug` |  | V N M R I A | - | - | STAY | reached from Crowd pooling |
-| `/map` | Village map | V N M R I A | the bar / Living Map | Village / Living Map | STAY | Village's first row |
+| `/map` | Village map | V N M R I A | the bar / Living Map | Village / Maps / Living Map | STAY | Village's first row (with the hidden map beside it for a member) |
 | `/places` | Places, photographed | M R A | Village / Places | Village / Places and homes / Places | FOLD? | Places and Photographs are two photo listings; one page with two views |
 | `/places/:key` |  | M R A | - | - | STAY | reached from Places and the map |
 | `/photographs` | Every photograph | M R A | Village / Photographs | Village / Places and homes / Photographs | FOLD? | see Places |
-| `/map/circles` | Circles and roles | V N M R I A | Village / Circles & Roles | Village / Circles & Roles | STAY |  |
+| `/map/circles` | Circles and roles | V N M R I A | Village / Circles & Roles | Govern / Circles & Roles / Circles | STAY |  |
 | `/events` | Village Calendar | V N M R I A | Community / Events | Community / Gatherings / Events | STAY |  |
 | `/first-walk` | redirects to `/` | - | Guides / Your First Walk | - | REMOVED | the lead, 27 Nov 2026: "Let's get rid of this"; redirects home |
-| `/feed` | Village feed | V N M R I A | Community / Feed | Community / Feed | STAY |  |
+| `/feed` | Village feed | V N M R I A | Community / Feed | Community / Conversations / Feed | STAY |  |
 | `/stay` | Stays | V N M R I A | Village / Stay | Village / Places and homes / Stay | STAY |  |
 | `/tokens` | redirects to `/wallet` | - | - | - | STAY | old address, redirects to Wallet |
-| `/wallet` | Wallet | M R A | Village / Wallet; Account menu / Wallet | Village / Shared things / Wallet | STAY | one menu door now (it was in Village and the account menu) |
+| `/wallet` | Wallet | M R A | Village / Wallet; Account menu / Wallet | Account menu / Your things / Wallet | STAY | the member's own: account menu, Your things (round 2: never under shared) |
 | `/pay` | Pay and receive | M R A | - | - | STAY | a phone tile once credits are in use, and the treasury's Send; no menu entry, because its gate is the credits read |
 | `/badges` | Badges & skills | M R A | Account menu / Badges | Account menu / Your things / Badges | STAY |  |
-| `/powers` | What this village looks after | V N M R I A | Governance / What We Look After | Governance / More in Governance / What We Look After | STAY |  |
+| `/powers` | What this village looks after | V N M R I A | Governance / What We Look After | Govern / Circles & Roles / What We Look After | STAY |  |
 | `/pricing` | Pricing desk | R A | - | - | FOLD? | the pricing desk: could be a section of the Treasury |
 | `/budget` | Cash budget | - | Account menu / Cash Budget | - | FOLDED | into Governance's Treasury tab by #1843; redirects there |
 | `/review/structure/:batchId` |  | A | - | - | STAY | reached from Review |
 | `/approvals` | Approvals | R A | - | - | FOLD? | the one-tap approval inbox, built for a phone and shared with Admin: could be a view of Your work, the other queue that waits on the reader |
-| `/governance/work` |  | M R A | Governance / Your work | Governance / More in Governance / Your work | STAY | a Governance view |
+| `/governance/work` |  | M R A | Governance / Your work | Account menu / Your things / Your work | STAY | a Governance view; the member's own work, so it sits in the account menu |
 | `/review` | redirects to `/governance/work` | - | - | - | STAY | old address, redirects to Your work |
 | `/cash-payouts` | Cash to pay out | R A | - | - | FOLD? | the cash pay queue: a section of the Treasury desk |
-| `/treasury` | Treasury | R A | Account menu / Treasury | Account menu / Running the village / Treasury | FOLD? | the treasurer's desk (mint and pay queues). With the Treasury tab at /governance/treasury there are two treasuries: one page with the desk shown to power holders |
-| `/library` | Material library | M R A | Village / Library | Village / Shared things / Library | STAY | and the footer, beside the tools (its other way in was Your First Walk) |
-| `/village-health` | Village health | M R A | Village / Health | Village / Shared things / Health | STAY |  |
-| `/exit-policy` | Leaving well | V N M R I A | Guides / Leaving Well | About / Guides / Leaving Well | FOLD? | one Rights and agreements page with Resident Rights, Steward Rights, Good Neighbor and Leaving Well as sections |
-| `/forum` | Forum | M R A | Community / Forum | Community / Forum | STAY |  |
+| `/treasury` | Treasury | R A | Account menu / Treasury | Account menu / Running the village / Treasury desk | FOLD? | the treasurer's desk (mint and pay queues). With the Treasury tab at /governance/treasury there are two treasuries: one page with the desk shown to power holders |
+| `/library` | Material library | M R A | Village / Library | Village / Library | STAY | its own entry in Village (round 2); a member's. Also the footer |
+| `/village-health` | Village health | M R A | Village / Health | Village / Village Health | STAY | its own entry in Village (round 2); a member's |
+| `/exit-policy` | Leaving well | V N M R I A | Guides / Leaving Well | Govern / Guides / Leaving Well | FOLD? | one Rights and agreements page with Resident Rights, Steward Rights, Good Neighbor and Leaving Well as sections |
+| `/forum` | Forum | M R A | Community / Forum | Community / Conversations / Forum | STAY |  |
 | `/forum/:id` |  | M R A | - | - | STAY | reached from the Forum |
 | `/messages` | Messages | M R A | Community / Messages; Account menu / Messages | Account menu / Messages | STAY | one menu door now, with its count (it was in Community and the account menu) |
 | `/messages/:id` |  | M R A | - | - | STAY | reached from Messages |
@@ -427,17 +444,17 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 | `/partner` | Become a partner | V N M R I A | - | Join / Build with us / Become a partner | STAY | new menu door (27 Nov 2026); also the four ways to build |
 | `/roles/select` | Find your roles | V N M R | - | - | STAY | reached from Open Roles (Apply) |
 | `/roles/draft` | redirects to `/roles/select` | - | - | - | STAY | old address, redirects |
-| `/roles` | Roles | V N M R I A | Village / Roles | Join / Open Roles | STAY | Open Roles under Join, and a phone tab |
+| `/roles` | Roles | V N M R I A | Village / Roles | Join / Open Roles; Govern / Circles & Roles / Roles | STAY | Open Roles under Join and Roles under Govern's Circles & Roles, on purpose; also a phone tab |
 | `/roles/:slug` |  | V N M R I A | - | - | STAY | reached from Open Roles |
 | `/join` | redirects to `/roles` | - | - | - | STAY | old address, redirects to Open Roles |
 | `/apply` | redirects to `/roles` | - | - | - | STAY | old address, redirects to Open Roles |
-| `/how-we-create` | How we create | V N M R I A | About / How We Create | About / Our story / How We Create | STAY |  |
-| `/co-creators-guide` | Co-creators guide | V N M R I A | Guides / Co-Creators Guide | About / Guides / Co-Creators Guide | STAY |  |
+| `/how-we-create` | How we create | V N M R I A | About / How We Create | Govern / How we work / How We Create | STAY |  |
+| `/co-creators-guide` | Co-creators guide | V N M R I A | Guides / Co-Creators Guide | Govern / Guides / Co-Creators Guide | STAY |  |
 | `/housing` | Housing | V N M R I A | Village / Housing | Village / Places and homes / Housing | STAY |  |
 | `/reserve` | Reserve your home | M R | - | - | STAY | reached from Housing |
 | `/opportunities` | Opportunities | V N M R I A | Join / Business Opportunities | Join / Build with us / Business Opportunities | STAY |  |
-| `/master-plan` | Master plan | V N M R I A | About / Master Plan | About / Our story / Master Plan | STAY |  |
-| `/team` | Team | V N M R I A | About / Our Team | About / Our story / Our Team | STAY |  |
+| `/master-plan` | Master plan | V N M R I A | About / Master Plan | Community / Our story / Master Plan | STAY |  |
+| `/team` | Team | V N M R I A | About / Our Team | Community / Our story / Our Team | STAY |  |
 | `/admin` | Village settings | A | Account menu / Village Settings | Account menu / Running the village / Village Settings | STAY |  |
 | `/admin/mint` |  | R A | - | - | STAY | reached from the Treasury desk |
 | `/admin/proposals` |  | A | - | - | FOLDING | the Governance lane folds it into /admin/review |
@@ -445,7 +462,7 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 | `/profile` | My profile | N M R I A | Account menu / My Profile | Account menu / My Profile | STAY |  |
 | `/profile/characters` |  | M R A | - | - | STAY | reached from the profile |
 | `/profile/gene-keys` |  | M R A | - | - | STAY | reached from the profile |
-| `/profile/settings` |  | N M R I A | - | Account menu / Your things / Settings | STAY | new menu door (27 Nov 2026) |
+| `/profile/settings` |  | N M R I A | - | - | STAY | reached from the profile's own Settings button |
 | `/welcome` | Welcome | V N | - | - | STAY | a rite's welcome, reached by its link |
 | `/aboard` | Join | V N | - | - | STAY | a rite's joining flow, reached by its link |
 | `/aboard/welcome` | You're in | N | - | - | STAY | the end of that flow |
@@ -471,27 +488,27 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 | `/email/unsubscribe` |  | V N M | - | - | STAY | an email link |
 | `/email/a` |  | V N M | - | - | STAY | an email's one-tap action |
 | `/forgot-password` | Set a new password | V | - | - | STAY | reached from Sign in |
-| `/game-mechanics` | Game Mechanics | V N M R I A | Guides / Game Mechanics | About / How we work / Game Mechanics | FOLD? | overlaps How we work together: one page for how the village and its game work |
-| `/changes` | Change requests | M R A | Governance / Change Requests | Governance / More in Governance / Change Requests | FOLD? | a change request is several changes sent to one vote: could be a kind of decision under Decisions |
+| `/game-mechanics` | Game Mechanics | M R A | Guides / Game Mechanics | Govern / How we work / Game Mechanics | FOLD? | overlaps How we work together: one page for how the village and its game work |
+| `/changes` | Change requests | M R A | Governance / Change Requests | Govern / Decide / Change Requests | FOLD? | a change request is several changes sent to one vote: could be a kind of decision under Decisions |
 | `/changes/:id` |  | M R A | - | - | STAY | reached from Change Requests |
-| `/village-email` | How the village emails | V N M R I A | Guides / Village Email | About / How we work / Village Email | STAY | moved out of Guides (the lead: "the village emails can be nested somewhere else") |
-| `/good-neighbor` | Good neighbor | V N M R I A | Guides / Good Neighbor | About / How we work / Good Neighbor | FOLD? | see Leaving Well |
-| `/steward-rights` | Steward rights | V N M R I A | Guides / Steward Rights | About / Guides / Steward Rights | FOLD? | see Leaving Well |
-| `/resident-rights` | Resident rights | V N M R I A | Guides / Resident Rights | About / Guides / Resident Rights | FOLD? | see Leaving Well |
+| `/village-email` | How the village emails | M R A | Guides / Village Email | Govern / How we work / Village Email | STAY | out of Guides (the lead: "the village emails can be nested somewhere else"), into Govern's How we work; a member's |
+| `/good-neighbor` | Good neighbor | V N M R I A | Guides / Good Neighbor | Village / Places and homes / Good Neighbor | STAY | Village, Places and homes, beside Housing and Stay (round 2) |
+| `/steward-rights` | Steward rights | V N M R I A | Guides / Steward Rights | Govern / Guides / Steward Rights | FOLD? | see Leaving Well |
+| `/resident-rights` | Resident rights | V N M R I A | Guides / Resident Rights | Govern / Guides / Resident Rights | FOLD? | see Leaving Well |
 | `/training/steward` | Steward training | M R | - | - | STAY | reached from Training |
 | `/training/resident` | Resident training | M R | - | - | STAY | reached from Training |
-| `/training` | Training | V N M R I A | Guides / Training | About / Guides / Training | STAY |  |
-| `/governance` | Governance | V N M R I A | - | Governance; Governance / Now | STAY | Governance's hub and its group page |
-| `/governance/how` |  | V N M R I A | About / How we work together | Governance / More in Governance / How we work together | STAY | moved from About to Governance, beside the other views |
-| `/governance/decisions` |  | M R A | Governance / Decisions | Governance / Decisions | STAY |  |
+| `/training` | Training | V N M R I A | Guides / Training | Govern / Guides / Training | STAY |  |
+| `/governance` | Governance | V N M R I A | - | Govern / Decide; Govern / Decide / Now | STAY | Govern's hub and its group page |
+| `/governance/how` |  | V N M R I A | About / How we work together | Govern / How we work / How we work together | STAY | in Govern's How we work |
+| `/governance/decisions` |  | M R A | Governance / Decisions | Govern / Decide / Decisions | STAY |  |
 | `/governance/decisions/drafts/:draftId` |  | M R A | - | - | STAY | a draft's page (#1806), reached from Decisions and Review |
 | `/governance/decisions/:id` |  | M R A | - | - | STAY | reached from Decisions |
 | `/decisions` | redirects to `/governance/decisions` | - | - | - | STAY | old address, redirects |
 | `/decisions/:id` | redirects to `/governance/decisions/` | - | - | - | STAY | old address, redirects |
-| `/propose` | Start a proposal | M R A | Governance / Make a Proposal | Governance / More in Governance / Make a Proposal | STAY |  |
+| `/propose` | Start a proposal | M R A | Governance / Make a Proposal | Govern / Decide / Make a Proposal | STAY |  |
 | `/role-applications/:id` |  | N M A | - | - | STAY | an application's page |
 | `/open-proposals/:id` |  | V N M A | - | - | STAY | a proposal's page |
-| `/role-measures` | How roles are going | M R A | - | - | FOLD? | how roles are going: could be a view of Circles & Roles |
+| `/role-measures` | How roles are going | M R A | - | Govern / Circles & Roles / How roles are going | STAY | new menu door: Govern, Circles & Roles (round 2) |
 | `/application-status/:ref` |  | V N | - | - | STAY | an applicant's own status link |
 | `/path` | Your path | V N M R I A | - | - | STAY | the phone tab Your path |
 | `/seat-applications/:id` |  | - | - | - | STAY | old address |
@@ -499,19 +516,19 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 | `/role-proposals/shared/:token` |  | V N M | - | - | STAY | a shared draft link |
 | `/role-proposals/:id` |  | M R A | - | - | STAY | reached from Your work |
 | `/season-plans/mine` | Your season | M R | - | - | STAY | reached from Season Plans and the profile |
-| `/season-plans` | The village's season | M R A | Governance / Season Plans | Governance / This season / Season Plans | FOLD? | Season Plans, Join the Season and Aligned are three views of one season: one page with tabs |
+| `/season-plans` | The village's season | M R A | Governance / Season Plans | Govern / This season / Season Plans | FOLD? | Season Plans, Join the Season and Aligned are three views of one season: one page with tabs |
 | `/season-places/circles` | The season's circles | M R A | - | - | STAY | reached from Join the Season |
-| `/season-places` | Join the season | M R A | Governance / Join the Season | Governance / This season / Join the Season | FOLD? | see Season Plans |
+| `/season-places` | Join the season | M R A | Governance / Join the Season | Govern / This season / Join the Season | FOLD? | see Season Plans |
 | `/role-path/:roleId` |  | M R | - | - | STAY | a role's path, reached from the role |
-| `/aligned` | Aligned | M R A | Governance / Aligned | Governance / This season / Aligned | FOLD? | see Season Plans |
-| `/visit` | Visit | V N M R I A | Join / Plan a Visit | Join / Come and see / Plan a Visit | STAY |  |
+| `/aligned` | Aligned | M R A | Governance / Aligned | Govern / This season / Aligned | FOLD? | see Season Plans |
+| `/visit` | Visit | V N M R I A | Join / Plan a Visit | Join / Plan a Visit | STAY |  |
 | `/gratitude` | Gratitude | V N M R I A | Community / Gratitude | Community / Gratitude | STAY |  |
 | `/journal` | Journal | M R A | Account menu / Journal | Account menu / Your things / Journal | STAY |  |
 | `/protocols/practice/:protocolId` |  | M R A | - | - | STAY | reached from Protocols |
 | `/protocols/run/:id` |  | M R A | - | - | STAY | reached from Protocols |
 | `/protocols` | Protocols | M R A | Account menu / Protocols | Account menu / Your things / Protocols | STAY |  |
-| `/hidden-map` | Hidden map | M R A | Village / Hidden map | Village / Places and homes / Hidden map | STAY |  |
-| `/funding-rounds` | Funding rounds | M R A | Governance / Funding Rounds | Governance / This season / Funding Rounds | STAY |  |
+| `/hidden-map` | Hidden map | M R A | Village / Hidden map | Village / Maps / Hidden map | STAY |  |
+| `/funding-rounds` | Funding rounds | M R A | Governance / Funding Rounds | Govern / This season / Funding Rounds | STAY |  |
 | `/funding-rounds/:id` |  | M R A | - | - | STAY | reached from Funding Rounds |
 | `/sessions` | Live sessions | M R A | Community / Live Sessions | Community / Gatherings / Live Sessions | STAY |  |
 | `/sessions/season` |  | M R A | - | - | STAY | reached from Live Sessions |
@@ -523,29 +540,36 @@ Every route in `client/src/App.tsx`, 150 of them, plus the Treasury tab #1843 ad
 
 ## What changed, in short
 
-- **Gone:** Your First Walk (`/first-walk` redirects home). The bar's separate Living Map and Module Library entries.
-- **Moved:** Village Email out of Guides, into About > How we work. How we work together from About into Governance. The Launch Plan and the Command Centre from Governance into the account menu, under Running the village. The Cash Budget from the account menu into Governance as the Treasury tab (#1843). Share Feedback from Community into About. Open Roles from Village into Join, on every village.
-- **One door each:** Messages (account menu, with its count) and Wallet (Village > Shared things).
-- **New doors:** Become a partner, Propose a quest, Settings, and the admin's Review page, which had no menu entry.
-- **Gated as before:** no gate was added. A newcomer still meets none of a member's working areas.
+- **Gone:** Your First Walk (`/first-walk` redirects home). The bar's separate Living Map and Module Library entries. The About and Guides groups and the "Shared things" folder; their pages are in Community, Village and Govern.
+- **Village:** the maps (the hidden map beside the Living Map for a member), Quests, Places and homes (Housing, Stay, Good Neighbor, Places, Photographs), the Library and Village Health as their own entries.
+- **Community:** Our story (Our Team, Master Plan, the Love Letter, Village Network), Conversations (Feed, Forum, Village Tools, Share Feedback), Gratitude, Gatherings, Welcoming.
+- **Join:** the paths, Open Roles, Plan a Visit, Build with us (Become a partner, Propose a quest, Business Opportunities, Work With Us), Fund the village.
+- **Govern:** Decide (Now, Decisions, Treasury, Make a Proposal, Change Requests), Circles & Roles (Circles, Roles, What We Look After, How roles are going), This season (Season Plans, Join the Season, Funding Rounds, Aligned, Quests), Guides, How we work (How we work together, How We Create, Game Mechanics, Village Email, Module Library).
+- **The account menu, the member's own:** My Profile, Messages, My tasks (each with its count), Your things (Your work, Wallet, Journal, Protocols, Badges), Running the village (Launch Plan, Treasury desk, Command Centre, Review, Village Settings).
+- **New doors:** Become a partner, Propose a quest, How roles are going, the admin's Review page, and the footer's Library.
+- **Gated as before:** no gate was added. A newcomer meets none of a member's working areas.
 
 ## Folds to consider next (not done here)
 
-Each is a page whose work could live inside another. None is small and safe enough to do inside a menu change.
-
-1. **The two treasuries.** `/treasury` (the treasurer's desk: mint and pay queues), `/cash-payouts` and `/pricing` could be sections of Governance's Treasury tab, shown to whoever holds the power. One Treasury, not two.
+1. **The two treasuries.** The Treasury desk (`/treasury`: mint and pay queues), `/cash-payouts` and `/pricing` could be sections of Govern's Treasury tab, shown to whoever holds the power.
 2. **The season.** Season Plans, Join the Season and Aligned are three views of one season: one page with tabs.
-3. **Rights and agreements.** Resident Rights, Steward Rights, Good Neighbor and Leaving Well could be one page with four sections. They are binding texts, so the lead and counsel decide.
+3. **Rights and agreements.** Resident Rights, Steward Rights and Leaving Well could be one page with sections. They are binding texts, so the lead and counsel decide.
 4. **How it works.** Game Mechanics and How we work together overlap: one page for how the village and its game work.
 5. **Places and Photographs:** two photo listings, one page with two views.
 6. **The queues that wait on you.** `/approvals` (the one-tap approval inbox) could be a view of Your work.
 7. **Change Requests** could be a kind of decision under Decisions.
-8. **How roles are going** (`/role-measures`) could be a view of Circles & Roles.
-9. **The village at a glance** (`/fleet`) overlaps the map and Governance's Now.
-10. **Share Feedback** could be a row in the guide's corner panel.
-11. **Pay** (`/pay`) has no menu entry, because its gate is the credits read (`shared/payGate.ts`): it is a phone tile and the treasury's Send. A `credits` gate in `nav.ts` would give it one.
+8. **The village at a glance** (`/fleet`) overlaps the map and Govern's Now.
+9. **Pay** (`/pay`) has no menu entry, because its gate is the credits read (`shared/payGate.ts`): it is a phone tile and the treasury's Send. A `credits` gate in `nav.ts` would give it one.
 
 ## Not done here
 
-- A village can rename a group and hide an entry in Admin (`shared/menuDoc.ts`), but it cannot rename a folder yet; folder names are the platform's words, translated (`client/src/config/navWords.ts`).
+- A village can rename a group and hide an entry in Admin (`shared/menuDoc.ts`, which carries a name given to Governance or Decide over to Govern), but it cannot rename a folder yet; folder names are the platform's words, translated (`client/src/config/navWords.ts`).
 - The breadcrumb names the group and the page, not the folder between them.
+
+## For the lead
+
+1. **Page names.** "How we co-create" and "Good Neighbor criteria" are your words for How We Create and Good Neighbor. Their menu names are the story pages' own names, so they change in Admin > Pages (the page's "Name in the menu"), not in code. Rename them there if you want those words.
+2. **Tools.** Village Tools (the village's grid of outside tools: chat, calendar, Hypha) sits in Community's Conversations, as where the village talks and meets. Village is the other choice.
+3. **The portal's next moves.** On My work, the quest board summary (GameDashboard) repeats the village's Quests page; it could become one link to it. On My roles, Your roles and the player card could merge into one card per role.
+4. **Spanish.** "Govern" is "Gobernar" and the portal tabs "Mi trabajo", "Mis roles", "Mi tesorería", "Ficha"; all marked for native review in `client/src/locales/es.d/menu-levels.po`.
+
