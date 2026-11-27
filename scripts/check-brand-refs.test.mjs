@@ -116,7 +116,7 @@ check("with an empty list, every mention is a hit, in hard-clean and ratchet zon
   const r = withList({});
   assert.strictEqual(r.status, 1, r.out.slice(-800));
   assert.match(r.out, /shared\/regenFile\.ts .*HARD-CLEAN/);
-  assert.match(r.out, /client\/src\/pages\/Feedback\.tsx .*baseline allows 0/);
+  assert.match(r.out, /client\/src\/components\/admin\/goLivePlan\.ts .*baseline allows 0/);
 });
 
 check("a file naming the publisher more often than its entry allows fails, naming the entry", () => {

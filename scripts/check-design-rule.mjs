@@ -82,7 +82,6 @@ const PAGES = [
   "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
-  "client/src/pages/Feedback.tsx",
   "client/src/pages/Places.tsx",
   "client/src/pages/WorkWithUs.tsx",
   "client/src/pages/Modules.tsx",
@@ -127,6 +126,9 @@ const PAGES = [
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // Share feedback, in the guide's panel since the fold of /feedback (26 Nov 2026): born inside the rule.
+  "client/src/components/feedback/GuideFeedback.tsx",
+  "client/src/components/feedback/ShotEditor.tsx",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",

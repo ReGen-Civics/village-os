@@ -37,6 +37,7 @@ import NavDropdown from "@/components/nav/NavDropdown";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
 import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
+import { openGuideFeedback } from "@/lib/guideFeedback";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -783,9 +784,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   </li>
                 )}
                 <li>
-                  <Link href="/feedback" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  {/* Opens the guide's panel on this page, so a screenshot shows the page they mean (lib/guideFeedback.ts). */}
+                  <button type="button" onClick={openGuideFeedback} className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center text-left">
                     <Trans context="Layout, Link">Report a Bug / Share an Idea</Trans>
-                  </Link>
+                  </button>
                 </li>
                 <li>
                   <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
