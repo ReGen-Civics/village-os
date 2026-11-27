@@ -120,7 +120,7 @@ export default function PhotoGrid({
                     />
                   )}
                   {(cover || photo.hiddenAt) && (
-                    <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold text-foreground shadow-sm">
+                    <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold shadow-sm">
                       {photo.hiddenAt ? (
                         <>
                           <EyeOff className="size-3" aria-hidden="true" />

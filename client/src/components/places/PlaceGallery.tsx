@@ -19,7 +19,8 @@ import BreathingLoader from "@/components/natural/BreathingLoader";
 import LoadFailed from "@/components/LoadFailed";
 import Fireflies from "@/components/journey/nature/Fireflies";
 import PhotoGrid from "@/components/places/PhotoGrid";
-import { jsonHeaders, placeName, uploadHeaders } from "@/components/places/placesApi";
+import { jsonHeaders, placeName } from "@/components/places/placesApi";
+import { authToken } from "@/lib/gameApi";
 import { prepareImageForUpload } from "@/lib/imagePrep";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { ALT_TEXT_MAX, CAPTION_MAX, remainingForPlace, type PlacePhoto } from "@shared/placePhotos";
@@ -39,6 +40,15 @@ import {
   QUIET,
 } from "@/components/journey/look";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
+
+/**
+ * The upload's headers. No Content-Type: the browser sets the multipart
+ * boundary itself, and a hand-written header kills the parse on the far side.
+ */
+const uploadHeaders = (): Record<string, string> => {
+  const t = authToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+};
 
 export interface GalleryPayload {
   structureKey: string;

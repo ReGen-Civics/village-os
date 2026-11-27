@@ -14,14 +14,6 @@ export const jsonHeaders = (): Record<string, string> => {
   return t ? { Authorization: `Bearer ${t}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
 };
 
-/**
- * The upload. No Content-Type: the browser sets the multipart boundary itself,
- * and a hand-written header kills the parse on the far side.
- */
-export const uploadHeaders = (): Record<string, string> => {
-  const t = authToken();
-  return t ? { Authorization: `Bearer ${t}` } : {};
-};
 
 /**
  * A place key as a person reads it: "community-kitchen" reads "Community

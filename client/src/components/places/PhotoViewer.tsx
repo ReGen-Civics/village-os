@@ -35,7 +35,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 
 /** The round buttons over the picture (back, next, close); each adds its place. */
 const ROUND =
-  "absolute inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "absolute inline-flex size-11 items-center justify-center rounded-full border border-border bg-card shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /** A confirm pressed sooner than this after the first press is a double click, not an answer. */
 const CONFIRM_AFTER_MS = 500;
@@ -108,7 +108,6 @@ export default function PhotoViewer({
 
   if (!photo) return null;
   const mine = !!viewerId && viewerId === photo.contributorId;
-  const mayDrop = canCurate || mine;
   const many = total > 1;
   const id = encodeURIComponent(photo.id);
   /** The second question, asked in its row and said in the line. */
@@ -177,7 +176,7 @@ export default function PhotoViewer({
 
   const where = placeName(photo.structureKey);
   const why = photo.hiddenReason ?? "";
-  const here = typeof window === "undefined" ? "/places" : `${window.location.pathname}${window.location.hash}`;
+  const here = window.location.pathname + window.location.hash;
 
   return (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -196,15 +195,15 @@ export default function PhotoViewer({
             <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority className="max-h-[55vh]" />
           )}
           <DialogClose className={`${ROUND} right-2 top-2`} aria-label={t({ message: "Close the photo", context: "place photo viewer" })}>
-            <X className="size-5" aria-hidden="true" />
+            <X className="size-5" />
           </DialogClose>
           {many && (
             <>
               <button type="button" onClick={() => onStep(-1)} className={`${ROUND} left-2 top-1/2 -translate-y-1/2`} aria-label={t({ message: "The photo before", context: "place photo viewer" })}>
-                <ChevronLeft className="size-5" aria-hidden="true" />
+                <ChevronLeft className="size-5" />
               </button>
               <button type="button" onClick={() => onStep(1)} className={`${ROUND} right-2 top-1/2 -translate-y-1/2`} aria-label={t({ message: "The next photo", context: "place photo viewer" })}>
-                <ChevronRight className="size-5" aria-hidden="true" />
+                <ChevronRight className="size-5" />
               </button>
             </>
           )}
@@ -226,13 +225,13 @@ export default function PhotoViewer({
             )}
             {photo.heroAt && (
               <span className={CHIP_SOFT}>
-                <Pin className="size-3" aria-hidden="true" />
+                <Pin className="size-3" />
                 <Trans context="place photo viewer">Cover</Trans>
               </span>
             )}
             {photo.hiddenAt && (
               <span className={CHIP_SOFT}>
-                <EyeOff className="size-3" aria-hidden="true" />
+                <EyeOff className="size-3" />
                 <Trans context="place photo viewer">Hidden</Trans>
               </span>
             )}
@@ -257,7 +256,7 @@ export default function PhotoViewer({
               </p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={drop}>
-                  <Trash2 className="size-4" aria-hidden="true" />
+                  <Trash2 className="size-4" />
                   {canCurate ? (
                     <Trans context="place photo viewer">Yes, take it down</Trans>
                   ) : (
@@ -279,7 +278,7 @@ export default function PhotoViewer({
                     className={ACT}
                     onClick={() => post(`/api/places/photo/${id}/subject-request`, SUBJECT_FILED, SUBJECT_ALREADY, { reason: "" })}
                   >
-                    <UserRound className="size-4" aria-hidden="true" />
+                    <UserRound className="size-4" />
                     <Trans context="place photo viewer">This is me, take it down</Trans>
                   </button>
                   <button
@@ -293,7 +292,7 @@ export default function PhotoViewer({
                   </button>
                   {mine && !canCurate && (
                     <button ref={dropBtn} type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={ask}>
-                      <Trash2 className="size-4" aria-hidden="true" />
+                      <Trash2 className="size-4" />
                       <Trans context="place photo viewer">Remove my photo</Trans>
                     </button>
                   )}
@@ -317,7 +316,7 @@ export default function PhotoViewer({
                         className={ACT}
                         onClick={() => post(`/api/places/photo/${id}/restore`, t({ message: "Back on the place.", context: "place photo viewer" }), t({ message: "Already showing.", context: "place photo viewer" }), {})}
                       >
-                        <Undo2 className="size-4" aria-hidden="true" />
+                        <Undo2 className="size-4" />
                         <Trans context="place photo viewer">Put back</Trans>
                       </button>
                     ) : (
@@ -327,7 +326,7 @@ export default function PhotoViewer({
                         className={ACT}
                         onClick={() => post(`/api/places/photo/${id}/hide`, t({ message: "Hidden. The file stopped answering too.", context: "place photo viewer" }), t({ message: "Already hidden.", context: "place photo viewer" }), { reason: "" })}
                       >
-                        <EyeOff className="size-4" aria-hidden="true" />
+                        <EyeOff className="size-4" />
                         <Trans context="place photo viewer">Hide</Trans>
                       </button>
                     )}
@@ -346,16 +345,14 @@ export default function PhotoViewer({
                           )
                         }
                       >
-                        <Pin className="size-4" aria-hidden="true" />
+                        <Pin className="size-4" />
                         <Trans context="place photo viewer">Make it the cover</Trans>
                       </button>
                     )}
-                    {mayDrop && (
-                      <button ref={dropBtn} type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={ask}>
-                        <Trash2 className="size-4" aria-hidden="true" />
-                        <Trans context="place photo viewer">Take down</Trans>
-                      </button>
-                    )}
+                    <button ref={dropBtn} type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={ask}>
+                      <Trash2 className="size-4" />
+                      <Trans context="place photo viewer">Take down</Trans>
+                    </button>
                   </div>
                 </div>
               )}

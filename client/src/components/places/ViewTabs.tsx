@@ -57,7 +57,6 @@ export default function ViewTabs<K extends string>({
             key={tab.key}
             ref={(el) => {
               if (el) refs.current.set(tab.key, el);
-              else refs.current.delete(tab.key);
             }}
             type="button"
             role="tab"
