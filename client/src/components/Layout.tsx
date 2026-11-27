@@ -376,10 +376,11 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         transition={{ duration: 0.15 }}
                         className="absolute top-full right-0 mt-2 w-60 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="ml-4 border-l-2 border-border [&_a]:pl-3" renderLink={(item) => (
+                        <p data-menu-eyebrow="" className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="the phone's More sheet: heading">Yours</Trans></p>
+                        <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex min-h-11 w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted" listClassName="ml-4 border-l-2 border-border [&_a]:pl-3" renderLink={(item) => (
                           <Link
                             href={item.href}
-                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                            className="flex min-h-11 items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                             onClick={() => setAccountOpen(false)}
                           >
                             <MenuIcon href={item.href} fallback={item.icon} />{item.label}
@@ -390,13 +391,13 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         <button
                           type="button"
                           onClick={() => { setAccountOpen(false); logout(); }}
-                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-muted transition-colors text-left border-t border-border"
+                          className="w-full flex min-h-11 items-center gap-2 px-4 py-2 text-sm text-coral hover:bg-muted transition-colors text-left border-t border-border"
                           // "Everywhere" is honest, not decorative: tokenVersion
                           // is the only revocation lever, so this ends the
                           // session on every device the member is signed in on.
                           title={t({ message: "Sign out everywhere", context: "site header" })}
                         >
-                          <LogOut className="w-4 h-4" />
+                          <LogOut aria-hidden="true" className="size-5 shrink-0" />
                           <Trans context="site header">Sign out everywhere</Trans>
                         </button>
                       </m.div>
@@ -742,6 +743,18 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     </Link>
                   </li>
                 )}
+                {eventsUrl && (
+                  <li>
+                    <a
+                      href={eventsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center"
+                    >
+                      <Trans context="Layout, a">Events</Trans>
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
 
@@ -863,21 +876,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     <Trans context="Layout, Link">Leaving Well</Trans>
                   </Link>
                 </li>
-                {/* The review queue. Signed-in only, because a visitor has no
-                    use for it, and NOT gated on admin here: the whole point of
-                    that page is that a steward who is not an admin can open
-                    it, and a door only admins can see would put it back where
-                    it started. The page itself says plainly when the person
-                    looking may not open it, so a member who follows this link
-                    without the capability gets a sentence and never a blank
-                    screen. */}
-                {user && showsHref("/governance/work") && (
-                  <li>
-                    <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Waiting on you</Trans>
-                    </Link>
-                  </li>
-                )}
+                {/* Waiting on you is the account menu's (Your things), so it is not repeated here (the menu's QA, round 3). */}
               </ul>
             </div>
 
@@ -894,18 +893,6 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                       className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center"
                     >
                       <Trans context="Layout, a">Main Website</Trans>
-                    </a>
-                  </li>
-                )}
-                {eventsUrl && (
-                  <li>
-                    <a
-                      href={eventsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center"
-                    >
-                      <Trans context="Layout, a">Events</Trans>
                     </a>
                   </li>
                 )}

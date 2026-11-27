@@ -281,7 +281,8 @@ export const NAV: readonly NavEntry[] = [
       // 0098. What the village looks after, and who holds each one. Public since #1529.
       { href: "/powers", label: "What We Look After", sub: "Circles & Roles" },
       // A members-only report on how the roles are going. It had no menu door.
-      { href: "/role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
+      // A section of Circles since 1.3.95 (/role-measures redirects to /circles#role-measures).
+      { href: "/circles#role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
       // The season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms are its
       // tabs, and their old addresses redirect there. Members read it, so it is listed for the signed-in roles only.
       { href: "/season", label: "Season", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },

@@ -78,7 +78,7 @@ export default function NavDropdown({
     <Link
       href={item.href}
       aria-current={currentFor(lit, item.href)}
-      className={`flex items-start gap-3 border-l-2 px-4 py-2.5 hover:bg-muted transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
+      className={`flex min-h-11 items-center gap-3 border-l-2 px-4 py-1.5 hover:bg-muted transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
       onClick={() => setOpen(false)}
     >
       <MenuIcon href={item.href} fallback={item.icon} chip />
@@ -143,7 +143,7 @@ export default function NavDropdown({
           >
             {/* What the group holds, as the More sheet heads its sections (the menu's QA, round 2). Words only. */}
             {group.holds ? (
-              <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
+              <p data-menu-eyebrow="" className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
             ) : null}
             <MenuRows
               links={items}
@@ -151,7 +151,7 @@ export default function NavDropdown({
               here={lit?.href}
               renderLink={drawLink}
               gutter={<span aria-hidden="true" className="w-8 shrink-0" />}
-              rowClassName="flex w-full items-center gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              rowClassName="flex min-h-11 w-full items-center gap-3 border-l-2 border-transparent px-4 py-1.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
               // Indented, with the rule at the icon gutter, as the drawer and the phone sheet nest (the menu's QA, round 2).
               listClassName="ml-4 border-l-2 border-border [&_a]:pl-3 [&_a]:pr-3"
             />

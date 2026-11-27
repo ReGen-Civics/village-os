@@ -383,6 +383,27 @@ describe("the dropdowns' folders", () => {
     expect(document.getElementById("nav-menu-join")).toBeNull();
   });
 
+  it("draws every row 44px high, glyph or none, in a dropdown and in the account menu (the menu's QA, round 3)", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Govern/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /^Decide$/ }));
+    const rows = Array.from(document.querySelectorAll("#nav-menu-govern a, #nav-menu-govern [data-nav-folder] > button"));
+    expect(rows.length).toBeGreaterThan(5);
+    for (const r of rows) expect(r.className, r.textContent ?? "").toContain("min-h-11");
+    fireEvent.keyDown(document.getElementById("nav-menu-govern")!, { key: "Escape" });
+    fireEvent.click(screen.getByRole("button", { name: /Your account/ }));
+    const account = document.getElementById("account-menu")!;
+    expect(account.querySelector("[data-menu-eyebrow]")?.textContent).toBe("Yours");
+    for (const r of Array.from(account.querySelectorAll("a, button"))) expect(r.className, r.textContent ?? "").toContain("min-h-11");
+  });
+
+  it("lays the footer out as the menu's groups, and leaves Waiting on you to the account menu", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    const footer = document.querySelector("footer")!;
+    expect(Array.from(footer.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(["Village", "Community", "Join", "Govern", "Connect"]);
+    expect(footer.querySelector('a[href="/governance/work"]')).toBeNull();
+  });
+
   it("heads each dropdown with what its group holds, in words", () => {
     shell(null);
     fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);

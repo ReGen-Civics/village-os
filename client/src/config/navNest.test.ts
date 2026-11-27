@@ -93,7 +93,7 @@ describe("what a stranger is shown (the lead, round 2)", () => {
   const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
 
   it("offers no member tool to a visitor", () => {
-    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/role-measures"]) {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/circles#role-measures", "/governance/how#game-mechanics"]) {
       expect(offered(), h).not.toContain(h);
     }
   });

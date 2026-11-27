@@ -160,6 +160,7 @@ describe("the footer", () => {
   it("CONTROL: keeps them for a member", async () => {
     user = { id: "u1", name: "Ora Vale", role: "member", membershipGranted: true };
     const hrefs = await footerShows();
-    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/work", "/governance/how#game-mechanics"]) expect(hrefs, h).toContain(h);
+    // Waiting on you left the footer for the account menu (the menu's QA, round 3), so it is not here for anyone.
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/how#game-mechanics"]) expect(hrefs, h).toContain(h);
   });
 });

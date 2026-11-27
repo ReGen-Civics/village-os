@@ -1938,6 +1938,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   background-color: color-mix(in srgb, var(--band-active) 14%, transparent);
 }
 
+/* The menus' eyebrows (the dropdowns' "The place", the account menu's "Yours"): by day the light palette's accent,
+   the dark ink the home page's "What brought you here?" reads in, since the gold measured 3.8 to 4.0:1 at 12px on the
+   weathered map (the menu's QA, round 3, 27 Nov 2026). By night they keep the gold. */
+:root[data-mode="light"] [data-menu-eyebrow] {
+  color: var(--day-accent, var(--pal-day-accent));
+}
+
 /* The page's light: a warm sky by day, the goldwash over the canopy by night. */
 :root[data-mode="light"] .sheet-night.min-h-screen {
   background-image:
