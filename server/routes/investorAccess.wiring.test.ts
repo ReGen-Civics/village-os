@@ -37,6 +37,10 @@ describe("the investor gate's doors in server/index.ts", () => {
     expect(body).toMatch(/res\.json\(\{ success: true, rewarded, rewardRefused, notified, admitted, investor \}\)/);
   });
 
+  it("keeps the investor pathway's questions behind the gate", () => {
+    expect(src).toMatch(/registerFaqRoutes\(app, \{ isAdmin, guardCapability, faqsRepo, mayRead: async \(pathway, req\) => pathway !== "investor" \|\| investorAccess\.allowed\(req\) \}\);/);
+  });
+
   it("reads the gate's dial", () => {
     expect(src).toMatch(/registerInvestorAccess\(app, \{ getPool, gateOn: \(\) => boolVar\("investors\.gate"\),/);
   });

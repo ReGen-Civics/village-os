@@ -500,10 +500,19 @@ describe.skipIf(!DB_CONFIGURED)("the investor gate, on the built server", () => 
       expect(summary.status, summary.text).toBe(403);
       expect(summary.json?.error).toBe("investor_only");
       expect((await requestPacket("Gate Tester", "gate@example.test")).status).toBe(403);
-      expect((await call("GET", "/api/content/page-investor", undefined, "")).status).toBe(403);
-      expect((await call("GET", "/api/content/page-investor/translation", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/content/page-journey-investor", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/content/page-journey-investor/translation", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/investor/page", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/faqs/investor", undefined, "")).status).toBe(403);
+      // The other pathways' questions stay public.
+      expect((await call("GET", "/api/faqs/resident", undefined, "")).status).toBe(200);
       // The founder, an administrator, still reads it: the page has to be edited.
       expect((await call("GET", "/api/investor-summary")).status).toBe(200);
+      const served = await call("GET", "/api/investor/page");
+      expect(served.status, served.text).toBe(200);
+      expect(served.json?.spec?.id).toBe("journey-investor");
+      expect((await call("GET", "/api/faqs/investor")).status).toBe(200);
+      expect((await call("GET", "/api/admin/page-specs/kept")).json?.specs?.[0]?.id).toBe("journey-investor");
       expect((await call("GET", "/api/investor/access", undefined, "")).json?.access).toBe(false);
       // A stranger's interest form lands on the desk; accepting it, from an address nobody proved, lets nobody in.
       const sent = await call("POST", "/api/investor/interest", { name: "Gate Tester", email: "gate@example.test", checkSize: "25k-100k", consent: "words" }, "");

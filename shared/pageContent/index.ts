@@ -29,9 +29,21 @@ import { pageDocumentProblems } from "./resolve";
 
 export const PAGE_SPECS: readonly PageSpec[] = [HOME_PAGE, SITE_PAGE, RIGHTS_RESIDENT_PAGE, RIGHTS_STEWARD_PAGE, HOUSING_PAGE, OPPORTUNITIES_PAGE, VISIT_PAGE, WORK_WITH_US_PAGE, GOOD_NEIGHBOR_PAGE, HOW_WE_CREATE_PAGE, CO_CREATORS_GUIDE_PAGE, TEAM_PAGE, MASTER_PLAN_PAGE, LOVE_LETTER_PAGE, ...JOURNEY_PAGES, GOVERNANCE_PAGE, GOVERNANCE_NOW_PAGE, CIRCLES_PAGE, TRAINING_STEWARD_PAGE, TRAINING_RESIDENT_PAGE, APP_WORDS_PAGE];
 
+/**
+ * Pages whose spec, and so whose default words, only the server holds: the investor page (server/lib/investorJourney.ts,
+ * the lead, 27 Nov 2026). The server adds them at boot; in a browser this stays empty.
+ */
+const KEPT_SPECS: PageSpec[] = [];
+export function keepPageSpec(spec: PageSpec): void {
+  if (!KEPT_SPECS.some((s) => s.id === spec.id)) KEPT_SPECS.push(spec);
+}
+export function keptPageSpecs(): readonly PageSpec[] {
+  return KEPT_SPECS;
+}
+
 export function pageSpecForSection(section: string): PageSpec | null {
   if (!section.startsWith(PAGE_SECTION_PREFIX)) return null;
-  return PAGE_SPECS.find((spec) => pageSectionKey(spec) === section) ?? null;
+  return [...PAGE_SPECS, ...KEPT_SPECS].find((spec) => pageSectionKey(spec) === section) ?? null;
 }
 
 /**

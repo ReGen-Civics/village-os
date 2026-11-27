@@ -21,7 +21,9 @@ import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/
 import { signEntry } from "../lib/entrance";
 import { INVESTOR_INTEREST_FORM } from "../../shared/investorInterest";
 import { ENTRY_COOKIE as GATE_COOKIE } from "../../shared/entrance";
-import { register, INVESTOR_SECTION, type InvestorAccess } from "./investorAccess";
+import { register, INVESTOR_ONLY, INVESTOR_SECTION, type InvestorAccess } from "./investorAccess";
+import { INVESTOR_JOURNEY } from "../lib/investorJourney";
+import { pageSectionKey } from "../../shared/pageContent/types";
 
 const configured = testDbConfigured();
 const SECRET = "test-secret-for-the-investor-routes-only"; // module-review-ok: a test fixture key for the HMAC, never a real credential
@@ -106,7 +108,8 @@ describe.skipIf(!configured)("the investor gate, over HTTP", () => {
     signedIn = null;
     admin = true;
     expect(await guarded()).toBe(200);
-    expect(INVESTOR_SECTION).toBe("page-investor");
+    expect(INVESTOR_SECTION).toBe("page-journey-investor");
+    expect(INVESTOR_SECTION).toBe(pageSectionKey(INVESTOR_JOURNEY));
   });
 
   it("fills the form from the entrance entry and locks it when the address was proven", async () => {
@@ -142,13 +145,39 @@ describe.skipIf(!configured)("the investor gate, over HTTP", () => {
     expect(rows.length).toBe(before);
   });
 
+  it("serves the page itself, its spec and its words, only to a reader let in", async () => {
+    const page = (c = "") => call("/api/investor/page", c ? { headers: { Cookie: c } } : {});
+    const refused = await page();
+    expect(refused.status).toBe(403);
+    expect(await refused.json()).toEqual(INVESTOR_ONLY);
+    expect(refused.headers.get("cache-control")).toBe("no-store");
+    expect((await page(cookie("pe-a0a0a0a0a0a0a0a0a0a0"))).status).toBe(403);
+    admin = true;
+    const served = await (await page()).json();
+    expect(served.spec.id).toBe("journey-investor");
+    expect(served.spec.path).toBe("/investor");
+    expect(served.words.packTitle).toBe("Request Investor Pack");
+  });
+
+  it("hands the kept specs to an administrator only", async () => {
+    expect((await call("/api/admin/page-specs/kept")).status).toBe(401);
+    admin = true;
+    const kept = await (await call("/api/admin/page-specs/kept")).json();
+    expect(kept.specs.map((s: { id: string }) => s.id)).toEqual(["journey-investor"]);
+  });
+
   it("lets the accepted visitor in, only them, and takes it back on decline", async () => {
     const row = rows.find((r) => r.data?.identity === "visitor");
+    const alertsBefore = alerts.length;
     expect(await gate.decided(row, "reviewing", "u-steward")).toEqual({ letIn: null, holder: "visitor" });
     expect(await guarded(cookie("pe-a0a0a0a0a0a0a0a0a0a0"))).toBe(403);
     expect(await gate.decided(row, "accepted", "u-steward")).toEqual({ letIn: true, holder: "visitor" });
     expect(await guarded(cookie("pe-a0a0a0a0a0a0a0a0a0a0"))).toBe(200);
     expect((await (await call("/api/investor/access", { headers: { Cookie: cookie("pe-a0a0a0a0a0a0a0a0a0a0") } })).json()).access).toBe(true);
+    expect((await call("/api/investor/page", { headers: { Cookie: cookie("pe-a0a0a0a0a0a0a0a0a0a0") } })).status).toBe(200);
+    // Accepting only unlocks the page (the lead, 27 Nov 2026): it sends nothing and makes no account.
+    expect(alerts.length).toBe(alertsBefore);
+    expect((await pool.query<any[]>("SELECT COUNT(*) AS n FROM users"))[0][0].n).toBe(0); // module-review-ok: a test reading back its own scratch schema
     // Somebody else, and the unproven entry, stay outside.
     expect(await guarded(cookie("pe-b1b1b1b1b1b1b1b1b1b1"))).toBe(403);
     const [kept] = await pool.query<any[]>("SELECT user_id, email_key, submission_id, granted_by FROM investor_access"); // module-review-ok: a test reading back its own scratch schema

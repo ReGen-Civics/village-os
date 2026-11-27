@@ -17916,7 +17916,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   // â”€â”€ FAQs (NEW-1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  registerFaqRoutes(app, { isAdmin, guardCapability, faqsRepo });
+  registerFaqRoutes(app, { isAdmin, guardCapability, faqsRepo, mayRead: async (pathway, req) => pathway !== "investor" || investorAccess.allowed(req) }); // the investor gate: server/routes/investorAccess.ts
   registerBrochurePagesRoutes(app, { isAdmin, guardCapability });
   registerVillagePathsRoutes(app, { isAdmin, guardCapability, config: mergedConfig, valueTokenName: () => { const slug = String(stringVar("gratitude.pool_token")); return tokenDef(slug)?.name ?? slug; } });
 

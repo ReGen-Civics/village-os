@@ -30,8 +30,8 @@ import type { ComponentType, ReactNode } from "react";
 import { fillVars, markerDocument } from "@shared/pageContent/resolve";
 import { pageSectionKey, type PageSpec } from "@shared/pageContent/types";
 import { pageVarsFrom } from "@shared/pageContent/vars";
+import { INVESTOR_JOURNEY } from "../../../server/lib/investorJourney";
 import {
-  INVESTOR_JOURNEY,
   JOURNEY_LEGACY_STEP_IDS,
   PROSPERITY_JOURNEY,
   RESIDENT_JOURNEY,
@@ -78,8 +78,16 @@ const state = vi.hoisted(() => ({
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/components/WhyCostaRica", () => ({ default: () => null }));
 vi.mock("@/components/InvestorSummary", () => ({ default: () => null }));
-// The whole page, as a reader the team let in sees it (the investor gate: components/investor/InvestorInterest.test.tsx).
-vi.mock("@/lib/investorAccess", () => ({ useInvestorAccess: () => ({ state: { access: true, prefill: { name: "", email: "", whatsapp: "", link: "", locked: false }, request: null }, reload: () => undefined }), investorHeaders: (h: Record<string, string> = {}) => h }));
+// The whole page, as a reader the team let in sees it: the server sends its spec and its words (server/routes/investorAccess.ts).
+vi.mock("@/lib/investorAccess", async () => {
+  const { INVESTOR_JOURNEY } = await import("../../../server/lib/investorJourney");
+  const { INVESTOR_WORDS_EN } = await import("../../../server/lib/investorPageWords");
+  return {
+    useInvestorAccess: () => ({ state: { access: true, prefill: { name: "", email: "", whatsapp: "", link: "", locked: false }, request: null }, reload: () => undefined }),
+    useInvestorPage: () => ({ spec: INVESTOR_JOURNEY, words: INVESTOR_WORDS_EN }),
+    investorHeaders: (h: Record<string, string> = {}) => h,
+  };
+});
 vi.mock("@/components/comms/PathConsentBox", () => ({ default: () => null, FORM_CONSENT_FIELD: "commsConsent" }));
 // The questions come from FAQs; the heading over them is the page's.
 vi.mock("@/components/FaqSection", () => ({ default: ({ heading }: { heading?: string }) => <h2>{heading}</h2> }));

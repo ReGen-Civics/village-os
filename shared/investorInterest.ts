@@ -23,8 +23,45 @@ export const INVESTOR_INTEREST_FORM = "investor-interest";
 /** The page the gate stands in front of. */
 export const INVESTOR_PAGE = "/investor";
 
-/** That page's id among the village's pages (shared/pageContent/journeys.ts, `INVESTOR_JOURNEY`): its words are kept too. */
-export const INVESTOR_PAGE_ID = "investor";
+/**
+ * The investor page's own labels, buttons and messages (server/lib/investorPageWords.ts holds the words): the client
+ * holds only these keys, never the words, so nothing of the page rides in a reader's script.
+ */
+export const INVESTOR_WORD_KEYS = [
+  "stepsDone",
+  "packPreparing",
+  "retry",
+  "retryWithEmail",
+  "packSent",
+  "heroAlt",
+  "stage",
+  "accomplish",
+  "packTitle",
+  "packDescription",
+  "name",
+  "email",
+  "range",
+  "message",
+  "sendRequest",
+  "callTitle",
+  "callDescription",
+  "preferredTime",
+  "requestCall",
+  "summaryEyebrow",
+] as const;
+export type InvestorWordKey = (typeof INVESTOR_WORD_KEYS)[number];
+
+/** `{name}` in one of those words, filled. */
+export function fillWords(words: string, values: Record<string, string | number>): string {
+  return words.replace(/\{(\w+)\}/g, (all, k: string) => (k in values ? String(values[k]) : all));
+}
+
+/**
+ * That page's id among the village's pages (`INVESTOR_JOURNEY.id`, server/lib/investorJourney.ts, which is
+ * `journey-` and the journey's id): its words are kept too, in the content section `page-journey-investor`.
+ * server/routes/investorAccess.test.ts holds the two equal.
+ */
+export const INVESTOR_PAGE_ID = "journey-investor";
 
 /** Who the answer was tied to when it was sent, decided by the server, never by the form. */
 export type InvestorIdentity = "account" | "visitor" | "unverified";

@@ -4,6 +4,10 @@
  *
  *   GET  /api/investor/access     whether this reader sees the whole investor page, what the village
  *                                 already holds about them for the form, and their newest request
+ *   GET  /api/investor/page       the page itself for a reader let in: its spec and default words
+ *                                 (server/lib/investorJourney.ts) and its labels in the reader's language
+ *                                 (server/lib/investorPageWords.ts); 403 for anybody else
+ *   GET  /api/admin/page-specs/kept   the specs only the server holds, for Admin, Pages (an administrator)
  *   POST /api/investor/interest   { name, email, whatsapp?, link?, ...answers, consent, website? }
  *
  * And two things server/index.ts asks of it:
@@ -30,6 +34,10 @@ import { cleanLink, cleanWhatsapp, LINK_MAX } from "../../shared/entrance";
 import { CONSENT_MAX, cleanAnswers, contactProblem, INVESTOR_INTEREST_FORM, INVESTOR_PAGE_ID, type InvestorAccessState, type InvestorIdentity } from "../../shared/investorInterest";
 import { ipBucket } from "../../shared/openProposals";
 import { pageSectionKey } from "../../shared/pageContent/types";
+import { keptPageSpecs } from "../../shared/pageContent";
+import { INVESTOR_JOURNEY } from "../lib/investorJourney";
+import { investorWordsFor } from "../lib/investorPageWords";
+import { noSharedCache, readerLocale } from "../lib/contentTranslationRead";
 import { emailKeyOf } from "../../shared/comms/address";
 import { cookieValue, readEntry } from "../lib/entrance";
 import { entryLook } from "../repos/portalEntries";
@@ -124,6 +132,17 @@ export function register(app: Express, deps: InvestorAccessDeps): InvestorAccess
     res.json(state);
   });
 
+  app.get("/api/investor/page", async (req, res) => {
+    noSharedCache(res);
+    if (!(await allowed(req))) return res.status(403).json(INVESTOR_ONLY);
+    res.json({ spec: INVESTOR_JOURNEY, words: investorWordsFor(readerLocale(req)) });
+  });
+
+  app.get("/api/admin/page-specs/kept", async (req, res) => {
+    if (!(await deps.isAdmin(req).catch(() => false))) return res.status(401).json({ error: "auth_required" });
+    res.json({ specs: keptPageSpecs() });
+  });
+
   app.post("/api/investor/interest", async (req, res) => {
     if (await deps.overLimit(`investor-interest:${ipBucket(deps.clientIp(req))}`, PER_HOUR, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "slow_down", message: "Too many forms from this connection. Please try again in an hour." });
@@ -171,6 +190,12 @@ export function register(app: Express, deps: InvestorAccessDeps): InvestorAccess
     res.json({ ok: true, id: entry.id });
   });
 
+  /*
+   * ACCEPTING ONLY UNLOCKS THE PAGE (the lead, 27 Nov 2026: "it just unlocks the investor page, sending a member invite
+   * would only come if they make an investment"). This writes one `investor_access` row, or removes it, and nothing
+   * else: no invitation, no account, no email, no notice. An invitation to join is a separate act, later, when an
+   * investment is made.
+   */
   async function decided(row: any, status: string, actorId: string | null) {
     if (!row || row.type !== INVESTOR_INTEREST_FORM) return null;
     const holder: AccessHolder | null = row.userId

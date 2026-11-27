@@ -289,10 +289,29 @@ function withoutBlanks(spec: PageSpec, doc: Doc): Doc {
   return out;
 }
 
+/**
+ * The pages only the server holds the spec for (the investor page, server/lib/investorJourney.ts: its words never ride
+ * in the script), read for an administrator from GET /api/admin/page-specs/kept and listed beside the rest.
+ */
+function useKeptSpecs(password: string): readonly PageSpec[] {
+  const [kept, setKept] = useState<readonly PageSpec[]>([]);
+  useEffect(() => {
+    let live = true;
+    fetch(`${API_BASE}/admin/page-specs/kept`, { headers: authHeaders(password) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (live && Array.isArray(j?.specs)) setKept(j.specs as PageSpec[]); })
+      .catch(() => undefined);
+    return () => { live = false; };
+  }, [password]);
+  return kept;
+}
+
 export default function PagesEditor({ password }: { password: string }) {
   const { t } = useLingui();
+  const kept = useKeptSpecs(password);
+  const specs = useMemo(() => [...PAGE_SPECS, ...kept], [kept]);
   const [pageId, setPageId] = useState(PAGE_SPECS[0]?.id ?? "");
-  const spec = useMemo(() => PAGE_SPECS.find((p) => p.id === pageId) ?? PAGE_SPECS[0], [pageId]);
+  const spec = useMemo(() => specs.find((p) => p.id === pageId) ?? specs[0], [pageId, specs]);
   const [saved, setSaved] = useState<Doc>({});
   const [draft, setDraft] = useState<Doc>({});
   const [loading, setLoading] = useState(true);
@@ -386,7 +405,7 @@ export default function PagesEditor({ password }: { password: string }) {
           title={dirty || programDirty ? t({ message: "Save or reload before switching pages", context: "PagesEditor, title" }) : undefined}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg"
         >
-          {PAGE_SPECS.map((p) => (
+          {specs.map((p) => (
             <option key={p.id} value={p.id}>{p.label}</option>
           ))}
         </select>

@@ -5,7 +5,9 @@
  */
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
-import type { InvestorAccessState } from "@shared/investorInterest";
+import type { InvestorAccessState, InvestorWordKey } from "@shared/investorInterest";
+import type { PageSpec } from "@shared/pageContent/types";
+import { useLocale } from "@/i18n/LocaleProvider";
 
 /** The reader's token, when they are signed in, with any other headers. */
 export function investorHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -26,4 +28,26 @@ export function useInvestorAccess(): { state: InvestorAccessState | null | undef
     return () => { live = false; };
   }, [asked]);
   return { state, reload: () => setAsked((n) => n + 1) };
+}
+
+/** The investor page as the server sends it to a reader let in. */
+export interface InvestorPage {
+  spec: PageSpec;
+  words: Record<InvestorWordKey, string>;
+}
+
+/** The served investor page: undefined while asked, null when the server refused (or could not answer). */
+export function useInvestorPage(): InvestorPage | null | undefined {
+  const { locale } = useLocale();
+  const [page, setPage] = useState<InvestorPage | null | undefined>(undefined);
+  useEffect(() => {
+    let live = true;
+    setPage(undefined);
+    fetch("/api/investor/page", { credentials: "same-origin", headers: investorHeaders({ "X-Village-Locale": locale }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (live) setPage(j && j.spec && j.words ? (j as InvestorPage) : null); })
+      .catch(() => { if (live) setPage(null); });
+    return () => { live = false; };
+  }, [locale]);
+  return page;
 }
