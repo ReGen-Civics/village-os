@@ -1,5 +1,5 @@
 /**
- * The Setup Wizard's seven steps, and which of them the screen can actually count.
+ * The Setup Wizard's eight steps, and which of them the screen can actually count.
  *
  * THE STEPS, IN ONE PLACE. There used to be two lists: the wizard's own, and a
  * copy in the Admin shell that decides whether setup is finished. Adding a
@@ -77,12 +77,14 @@
  */
 import { isCleared } from "@shared/brandCleared";
 import { HUMAN_NEEDS } from "@shared/needs";
+import type { HelperStatus } from "@shared/adminHelper";
 import type { ContentEditor } from "./wizardFacts";
 
 /** How many needs the platform offers. The denominator of the needs row. */
 const PLATFORM_NEED_COUNT = HUMAN_NEEDS.length;
 
 export type SetupStepKey =
+  | "guide"
   | "identity"
   | "needs"
   | "images"
@@ -143,6 +145,17 @@ export const IDENTITY_WIZARD_FIELDS = [
 ] as const;
 
 export const SETUP_STEPS: readonly SetupStep[] = [
+  /*
+   * FIRST: BRING YOUR AGENT OR GUIDE (the lead, 26 Nov 2026: "Make this yours"
+   * as one launch path, and this is its first step).
+   *
+   * First because every step after it goes faster with the guide beside you:
+   * it finds the box, explains the setting and proposes the change for you to
+   * save. Observed, never ticked: `guideObservation` reads `GET
+   * /api/admin/helper`, the same answer the guide's own panel reads, so the
+   * step and the guide can never disagree about whether it is connected.
+   */
+  { key: "guide", label: "Bring your agent or guide", fields: [] },
   {
     key: "identity",
     label: "Identity",
@@ -541,4 +554,45 @@ export function needsObservation(reading: NeedsScopeReading | null | undefined):
         : "This village has not said which needs it is taking on.",
     },
   };
+}
+
+/**
+ * The first step's row, read from the guide's own status
+ * (`GET /api/admin/helper`). This is the completion predicate.
+ *
+ *   nothing read yet          -> `unknown`. Nobody has looked.
+ *   a provider could answer   -> `done`. The village's own Anthropic key, or a
+ *                               Sera connection on its own (the lead, 26 Nov
+ *                               2026: Sera alone counts).
+ *   switched off on purpose   -> `done`. Turning the guide off is an answer to
+ *                               this step, and a village that made it should
+ *                               not read as unfinished forever.
+ *   neither                   -> `todo`.
+ *
+ * Never carryable: the answer is always readable, so a tick has nothing to add.
+ */
+export function guideObservation(status: HelperStatus | null | undefined): SetupObservations {
+  if (!status) {
+    return {
+      guide: {
+        state: "unknown",
+        carryable: false,
+        detail: "Whether an agent or guide is connected has not been read back yet, so this row says nothing either way.",
+      },
+    };
+  }
+  if (status.off === "switch") {
+    return { guide: { state: "done", carryable: false, detail: "The guide is switched off for this village, which is an answer to this step." } };
+  }
+  const has = new Set(status.available);
+  if (has.size > 0) {
+    const detail =
+      has.has("anthropic") && has.has("sera")
+        ? "Claude answers on the village's own Anthropic key, and Sera is connected too."
+        : has.has("anthropic")
+          ? "Claude answers on the village's own Anthropic key."
+          : "Sera is connected and answers as the guide.";
+    return { guide: { state: "done", carryable: false, detail } };
+  }
+  return { guide: { state: "todo", carryable: false, detail: "No agent or guide is connected yet." } };
 }

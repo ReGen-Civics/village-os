@@ -33,6 +33,9 @@ const UNREACHABLE = msg`The save could not reach the server.`;
 
 const BOTTOM_BARS = "[data-admin-bottom-bar], [data-mobile-tabbar]";
 
+/** The room the bar keeps at the end of the page while it shows: the old spacer's 7rem. */
+export const SAVE_BAR_ROOM = "7rem";
+
 /** The height of whichever bottom bar is showing, so the save bar sits above it. */
 export function bottomBarHeight(): number {
   let h = 0;
@@ -98,6 +101,20 @@ export default function SaveBar({
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
+  }, [visible]);
+
+  // Room at the END of the page, so the bar never covers the last field. It
+  // used to be a spacer drawn where the leading surface sat, which opened a
+  // gap mid-page whenever that surface was near the top (Make this yours,
+  // step 1). Padding the body puts the room where it is needed, wherever the
+  // leader is mounted, and gives it back when the bar goes.
+  useEffect(() => {
+    if (!visible) return;
+    const was = document.body.style.paddingBottom;
+    document.body.style.paddingBottom = SAVE_BAR_ROOM;
+    return () => {
+      document.body.style.paddingBottom = was;
+    };
   }, [visible]);
 
   // Enter on the next frame so the slide can run; with reduced motion the
@@ -184,8 +201,6 @@ export default function SaveBar({
       <p className="sr-only" aria-live="polite" aria-atomic="true">{said}</p>
       {visible && (
         <>
-          {/* Room at the end of the page, so the bar never covers the last field. */}
-          <div aria-hidden="true" className="h-28" />
           <div
             data-save-bar=""
             role="region"
