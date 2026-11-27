@@ -3058,7 +3058,7 @@ export const VARIABLES: VariableDef[] = [
     key: "org.close_warning_days",
     category: "The village's people",
     label: "Days after arrival when the team is warned an application will close",
-    description: "An application nobody has decided this many days after it arrived warns the people who place roles, once, before it closes on its own at the days set below. It never moves the application.",
+    description: "An application nobody has decided this many days after it arrived warns the people who place roles, once, before it closes on its own at the days set below. With a role's application deadline, the days count from when its review window opens. It never moves the application.",
     type: "integer",
     default: "75",
     min: 1,
@@ -3070,7 +3070,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "The all-hands meeting's day",
     description:
-      "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day, the first one after their proposal is accepted and on or after their role starts, and the start letter invites them to the meeting that day.",
+      "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless the adoption chose to start now. The start letter invites them to the meeting that day.",
     type: "text",
     default: "Monday",
   },
@@ -3103,7 +3103,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Days before an undecided application closes",
     description:
-      "An application nobody has decided this many days after it arrived is closed, and the applicant gets one letter saying so (the lead, 27 Nov 2026: yes close in 90 days). It is the only step in an application that happens without a person. An application that was adopted, declined or withdrawn is never touched.",
+      "An application nobody has decided this many days after it arrived is closed, and the applicant gets one letter saying so (the lead, 27 Nov 2026: yes close in 90 days). When a role it applies for sets the day applications close, the days count from when its review window opens, a week after that day. It is the only step in an application that happens without a person. An application that was adopted, declined or withdrawn is never touched.",
     type: "integer",
     default: "90",
     min: 30,

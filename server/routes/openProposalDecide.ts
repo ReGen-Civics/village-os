@@ -123,7 +123,7 @@ import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
 import { declineNextStepsLines, DECLINE_STEPS_KEYS } from "../../shared/declineNextSteps";
 import type { PlayDoor } from "../../shared/comms/comeAndPlay";
 import { boolVar, stringVar } from "../lib/variables";
-import { ALL_HANDS_VARIABLES, startDayOf, weekdayIndex, weekdayName, zoneLabel } from "../../shared/startDay";
+import { ALL_HANDS_VARIABLES, startDayOf, startOf, weekdayIndex, weekdayName, zoneLabel } from "../../shared/startDay";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { liveHoldersOfRole, roleNamesById, rolesHeldBy } from "../repos/applicationReview";
 import { trustedAccountFor } from "../lib/applicantAccount";
@@ -352,9 +352,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const t = p.body.term;
     const lang = languageOf(p);
     const accepted = civilDateKey(adoptedAt, tz());
-    const roleStarts = t ? roleStartsOn(t.startsOn, accepted) : s?.startsOn ? String(s.startsOn) : null;
     const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
-    const day = startDayOf(roleStarts, accepted, weekday);
+    // Ruling 8: the next season's start in every term mode, unless the adoption chose "start now".
+    const day = startOf({ acceptedIso: accepted, weekday, seasonStarts: (deps.seasonState().seasons ?? []).map((x: any) => String(x?.startsOn ?? "")), startNow: await store.startNowOf(getPool(), p.id) }).iso;
+    void s;
+    void t;
     const dayName = weekdayName(weekday, lang);
     const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
     const zone = zoneLabel(stringVar(ALL_HANDS_VARIABLES.zone), lang);
@@ -776,9 +778,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // The buddy, when the adopter chose one (the lead, 27 Nov 2026): a member holding a role now.
     const buddyAsked = typeof req.body?.buddyUserId === "string" ? req.body.buddyUserId.trim().slice(0, 64) : "";
     if (buddyAsked && (await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
+    // "Start now" (ruling 8): the adoption may start them on the next all-hands day instead of the next season's.
+    const startNow = req.body?.startNow === true;
     // Saved only once the adoption itself is recorded (QA pass 2: a refused adoption still kept the buddy).
     const keepBuddy = async () => {
       if (buddyAsked) await store.setBuddy(getPool(), p!.id, buddyAsked);
+      if (startNow) await store.setStartNow(getPool(), p!.id);
     };
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });

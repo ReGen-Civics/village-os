@@ -154,3 +154,13 @@ msgstr "No se envió. Inténtelo de nuevo."
 msgctxt "applicant onboarding: finalAdded"
 msgid "The final conversation is open. The applicant books it now, and keeps refining their proposal until they send it to the anchor circle."
 msgstr "La conversación final está abierta. La persona la reserva ahora, y sigue mejorando su propuesta hasta que la envíe al círculo ancla."
+
+# needs-native-review: ruling 8, 27 Nov 2026
+msgctxt "open proposal: the adopt act's start now"
+msgid "Start now: on the next all-hands day"
+msgstr "Empezar ya: en la próxima reunión general"
+
+# needs-native-review: ruling 8, 27 Nov 2026
+msgctxt "open proposal: what start now does"
+msgid "Left off, they start on the all-hands day on or after the next season begins. Ops decides."
+msgstr "Sin marcar, empieza el día de la reunión general en o después del inicio de la próxima temporada. Lo decide Ops."

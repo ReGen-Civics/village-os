@@ -8,7 +8,7 @@ import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { FIELD, HINT, LABEL } from "@/components/journey/look";
 
-export default function BuddyPicker({ applicationRef, value, onChange }: { applicationRef: string; value: string; onChange: (id: string) => void }) {
+export default function BuddyPicker({ applicationRef, value, onChange, startNow = false, onStartNow }: { applicationRef: string; value: string; onChange: (id: string) => void; startNow?: boolean; onStartNow?: (v: boolean) => void }) {
   const { t } = useLingui();
   const [members, setMembers] = useState<Array<{ id: string; name: string }>>([]);
   useEffect(() => {
@@ -32,6 +32,14 @@ export default function BuddyPicker({ applicationRef, value, onChange }: { appli
         ))}
       </select>
       <span className={`block ${HINT}`}>{t({ message: "Their name and role go in the start letter and on their profile.", context: "open proposal: what the buddy choice does" })}</span>
+      {onStartNow && (
+        // Ruling 8: by default they start on the all-hands day on or after the next season begins.
+        <span className="mt-3 flex min-h-11 items-center gap-2 text-foreground" data-start-now="">
+          <input type="checkbox" className="size-5" checked={startNow} onChange={(e) => onStartNow(e.target.checked)} aria-describedby="start-now-hint" />
+          {t({ message: "Start now: on the next all-hands day", context: "open proposal: the adopt act's start now" })}
+        </span>
+      )}
+      {onStartNow && <span id="start-now-hint" className={`block ${HINT}`}>{t({ message: "Left off, they start on the all-hands day on or after the next season begins. Ops decides.", context: "open proposal: what start now does" })}</span>}
     </label>
   );
 }

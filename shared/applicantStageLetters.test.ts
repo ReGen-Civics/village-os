@@ -8,7 +8,7 @@ import { parseRoleShortLabels, roleShortLabel } from "./roleShortLabel";
 import { bookingLinksText, roleBookingFor } from "./interviewBooking";
 import { adoptedAccountLetter, adoptedInviteLetter, closedLetter, invitedLetter } from "./openProposalDecide";
 import { sayOnProfile } from "./applicantWords";
-import { startDayOf, weekdayIndex, weekdayName, zoneLabel } from "./startDay";
+import { START_RULE_WORDS, startDayOf, startOf, weekdayIndex, weekdayName, zoneLabel } from "./startDay";
 
 const base: StageLetterInput = {
   kind: "references",
@@ -153,6 +153,16 @@ describe("the start day (the lead, 27 Nov 2026: accepted Friday, start Monday, a
     // The season starts later: the first Monday on or after its first day.
     expect(startDayOf("2027-01-01", "2026-11-27", 1)).toBe("2027-01-04");
     expect(startDayOf("2027-01-04", "2026-11-27", 1)).toBe("2027-01-04");
+  });
+  it("RULING 8: on or after the NEXT season's start in every term mode, unless the adoption chose start now; and says which rule", () => {
+    // QA pass 1: a moon-term village got Monday 30 November when the next season begins Monday 21 December.
+    const seasons = ["2026-09-21", "2026-12-21", "2027-03-20"];
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: false })).toEqual({ iso: "2026-12-21", rule: "next_season" });
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: true })).toEqual({ iso: "2026-11-30", rule: "start_now" });
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: [], startNow: false })).toEqual({ iso: "2026-11-30", rule: "no_season" });
+    // A season starting on a Wednesday: the first Monday on or after it.
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: ["2026-12-23"], startNow: false }).iso).toBe("2026-12-28");
+    expect(START_RULE_WORDS.next_season("Monday")).toBe("the first Monday on or after the next season begins");
   });
   it("reads the village's weekday and zone, in the applicant's language", () => {
     expect(weekdayIndex("Monday")).toBe(1);

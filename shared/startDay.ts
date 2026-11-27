@@ -43,6 +43,27 @@ export function startDayOf(roleStartsIso: string | null, acceptedIso: string, we
   return toIso(d);
 }
 
+/**
+ * RULING 8 (the lead, 27 Nov 2026): a newcomer starts on the all-hands weekday after the Friday their proposal is
+ * accepted that falls on or after the start of the NEXT season, in every term mode (a moon-term role too: QA pass 1
+ * got 30 November when the next season begins 21 December), unless Ops chose "start now", which starts them on the
+ * first all-hands weekday after acceptance. Which rule chose the day is said in the team's view.
+ */
+export type StartRule = "next_season" | "start_now" | "no_season";
+export function startOf(i: { acceptedIso: string; weekday: number; seasonStarts: readonly string[]; startNow: boolean }): { iso: string; rule: StartRule } {
+  if (i.startNow) return { iso: startDayOf(null, i.acceptedIso, i.weekday), rule: "start_now" };
+  const next = [...i.seasonStarts].filter((d) => /^\d{4}-\d{2}-\d{2}/.test(d) && d.slice(0, 10) > i.acceptedIso.slice(0, 10)).sort()[0] ?? null;
+  if (next) return { iso: startDayOf(next.slice(0, 10), i.acceptedIso, i.weekday), rule: "next_season" };
+  return { iso: startDayOf(null, i.acceptedIso, i.weekday), rule: "no_season" };
+}
+
+/** The team's words for which rule chose the day. English, like every team line. */
+export const START_RULE_WORDS: Record<StartRule, (weekday: string) => string> = {
+  next_season: (w) => `the first ${w} on or after the next season begins`,
+  start_now: (w) => `the first ${w} after acceptance, because the adoption chose to start now`,
+  no_season: (w) => `the first ${w} after acceptance, because no next season is set`,
+};
+
 /** A weekday's name in the applicant's language. */
 export function weekdayName(index: number, lang: ApplicantLanguage | null | undefined): string {
   const list = lang === "es" ? WEEKDAYS_ES : WEEKDAYS;

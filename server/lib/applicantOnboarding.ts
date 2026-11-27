@@ -73,7 +73,8 @@ import { readApplication as readSeatApplication } from "../repos/seatApplication
 import { applicationHref } from "../../shared/seatApplications";
 import { finalCallHolders, isApplicant, openConsentRound, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
 import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
-import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
+import { civilDateKey } from "../../shared/lunar";
+import { ALL_HANDS_VARIABLES, START_RULE_WORDS, startOf, weekdayIndex, weekdayName } from "../../shared/startDay";
 import { stringVar } from "./variables";
 
 type Db = Pool | PoolConnection;
@@ -562,6 +563,14 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     },
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
   );
+  // Start (ruling 8): the day they start, and which rule chose it, for the team.
+  if (!member && how === "adopted" && decidedStep && track.now === "start") {
+    const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
+    const accepted = civilDateKey(decidedStep.at, deps.calendar().timezone || "UTC");
+    const start = startOf({ acceptedIso: accepted, weekday, seasonStarts: deps.calendar().seasons.map((x) => String(x.startsOn ?? "")), startNow: await proposals.startNowOf(pool, ref) });
+    const day = weekdayName(weekday, "en");
+    track.next = `${track.next} They start ${day} ${start.iso}: ${START_RULE_WORDS[start.rule](day)}.`;
+  }
 
   const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false, isOwner: false });
   const visible = s.recused ? [] : readsAll ? stored : owned;
