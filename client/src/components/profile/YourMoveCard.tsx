@@ -67,3 +67,6 @@ export default function YourMoveCard({ embedded = false }: { embedded?: boolean 
     </section>
   );
 }
+
+/** The applicant's own cards on the Today tab, re-exported here so Profile.tsx imports them on a line it already has (its 1000-line ratchet). */
+export { default as ApplicantCards } from "./ApplicantCards";
