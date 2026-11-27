@@ -348,7 +348,7 @@ export default function MobileTabBar({ inMenu = false }: { inMenu?: boolean } = 
               className={cls}
             >
               {inner}
-              {opensMenu && user && !newcomer ? <Suspense fallback={null}><WaitingCount who={String(user.id)} variant="dot" /></Suspense> : null}
+              {opensMenu && user && !newcomer ? <Suspense fallback={null}><WaitingCount who={String(user.id)} variant="dot" at="right-2 top-1" /></Suspense> : null}
             </button>
           );
         })}

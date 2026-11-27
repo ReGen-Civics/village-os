@@ -80,14 +80,15 @@ export function useWaiting(who: string): number | null {
  * `badge`: the number, beside a row's words (the "Waiting on you" row, as Messages carries its unread count).
  * `dot`: a small mark on a group's name or the account button, with the number for a screen reader.
  */
-export default function WaitingCount({ who, variant = "badge" }: { who: string | number; variant?: "badge" | "dot" }) {
+/** `at`: where the dot sits on its host (the phone's More tab keeps it inside the screen's edge). */
+export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 -top-1" }: { who: string | number; variant?: "badge" | "dot"; at?: string }) {
   const { t } = useLingui();
   const n = useWaiting(String(who));
   if (!n || n <= 0) return null;
   const words = t({ message: `${n} waiting on you`, context: "the menu: how many things wait on the reader, read aloud" });
   return variant === "dot" ? (
     <>
-      <span aria-hidden="true" data-waiting-dot="" className="absolute -right-1.5 -top-1 inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-card px-1 text-xs font-bold leading-none text-foreground">
+      <span aria-hidden="true" data-waiting-dot="" className={`absolute ${at} inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-card px-1 text-xs font-bold leading-none text-foreground`}>
         {n > 9 ? "9+" : n}
       </span>
       <span className="sr-only">, {words}</span>

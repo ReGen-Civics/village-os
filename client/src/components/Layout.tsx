@@ -209,7 +209,17 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
       requestAnimationFrame(focusDrawerIfAsked);
     };
     window.addEventListener("open-mobile-menu", openMenu);
-    return () => window.removeEventListener("open-mobile-menu", openMenu);
+    // "village:open-menu" (the search lane's empty state, 27 Nov 2026): the bar's first dropdown where the bar shows,
+    // else the same menu More opens. Announced while mounted, so a page can tell whether anything will answer.
+    const w = window as Window & { __openMenuReady?: boolean };
+    const openAny = () => {
+      const first = document.querySelector<HTMLButtonElement>('[data-wayfinding="menu"] button[aria-controls]');
+      if (first?.offsetParent) { first.click(); first.focus(); } else openMenu();
+    };
+    window.addEventListener("village:open-menu", openAny);
+    w.__openMenuReady = true;
+    window.dispatchEvent(new Event("village:open-menu-ready"));
+    return () => { window.removeEventListener("open-mobile-menu", openMenu); window.removeEventListener("village:open-menu", openAny); delete w.__openMenuReady; };
   }, []);
   // The bar's More button reads this for its aria-expanded (lib/mobileMenuState.ts).
   useEffect(() => announceMobileMenu(mobileMenuOpen), [mobileMenuOpen]);
