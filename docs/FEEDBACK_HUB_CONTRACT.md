@@ -45,6 +45,12 @@ own hub's ingest address, e.g. `https://hub.example.org/api/feedback/ingest`:
 }
 ```
 
+**Three kinds since 0443.** `kind` is `"bug"`, `"idea"` or `"feedback"`. The third is how something
+felt ("this page confused me"), which is neither a fault nor a feature. A hub that knows only the first
+two must store the third as it comes and never refuse the batch for it: a refused batch is retried
+forever and blocks every item behind it. The fingerprint covers the kind, so a bug and a feedback item
+with the same words stay two items.
+
 **Never present:** the screenshot a member may attach. It is stripped of metadata and kept in
 the village's private folder for its own admins (`screenshot_file`, served only by
 `GET /api/admin/feedback/:id/screenshot`); a picture of a page can show other members' names,

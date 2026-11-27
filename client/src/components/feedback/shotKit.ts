@@ -21,7 +21,8 @@
 import { fitWithin, prepareImageForUpload } from "@/lib/imagePrep";
 import { FEEDBACK_SHOT_EDGE } from "@shared/feedbackItems";
 
-export type Mark = { tool: "pen" | "arrow"; pts: Array<[number, number]> };
+/** A mark: a pen line, an arrow (start and end), or a ring the keyboard places round one spot. */
+export type Mark = { tool: "pen" | "arrow" | "ring"; pts: Array<[number, number]> };
 
 /** Read one frame of the screen the member picks in the browser's own picker, then stop sharing. */
 export async function captureScreen(): Promise<Blob | null> {
@@ -74,10 +75,54 @@ function ink(canvas: HTMLCanvasElement): string {
   return fromSheet || "#d94f3d";
 }
 
-function stroke(ctx: CanvasRenderingContext2D, m: Mark, w: number) {
+/**
+ * Where a pointer is on the picture, in the picture's own pixels. Pure.
+ *
+ * Mapped through the picture's visible rectangle, never the element's box (fold QA round 1: a phone
+ * screenshot letterboxed in a wide box put a mark made 90% across at 72.5%). The editor sizes the canvas to
+ * the picture's own shape, so the two are the same rectangle there; this keeps a mark under the finger even
+ * if a stylesheet ever fits the picture inside a differently shaped box again.
+ */
+export function pictureXY(
+  box: { left: number; top: number; width: number; height: number },
+  picture: { width: number; height: number },
+  clientX: number,
+  clientY: number,
+): [number, number] {
+  const scale = Math.min(box.width / picture.width, box.height / picture.height) || 1;
+  const left = box.left + (box.width - picture.width * scale) / 2;
+  const top = box.top + (box.height - picture.height * scale) / 2;
+  const clamp = (v: number, max: number) => Math.min(max, Math.max(0, v));
+  return [clamp((clientX - left) / scale, picture.width), clamp((clientY - top) / scale, picture.height)];
+}
+
+/**
+ * The keyboard's way to mark a spot (fold QA round 1: drawing was pointer-only). The arrow keys move a ring
+ * by a twentieth of the picture, a hundredth with Shift, and never off it. Pure; null for any other key.
+ */
+export function moveRing(at: [number, number], key: string, fine: boolean, picture: { width: number; height: number }): [number, number] | null {
+  const step = fine ? 0.01 : 0.05;
+  const dx = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : 0;
+  const dy = key === "ArrowUp" ? -1 : key === "ArrowDown" ? 1 : 0;
+  if (!dx && !dy) return null;
+  const clamp = (v: number, max: number) => Math.min(max, Math.max(0, v));
+  return [clamp(at[0] + dx * step * picture.width, picture.width), clamp(at[1] + dy * step * picture.height, picture.height)];
+}
+
+/** The ring the keyboard places: a circle round the spot, sized from the picture's longer edge. */
+export function ringRadius(longEdge: number): number {
+  return Math.max(18, Math.round(longEdge / 20));
+}
+
+function stroke(ctx: CanvasRenderingContext2D, m: Mark, w: number, longEdge: number) {
   const pts = m.pts;
   if (!pts.length) return;
   ctx.beginPath();
+  if (m.tool === "ring") {
+    ctx.arc(pts[0][0], pts[0][1], ringRadius(longEdge), 0, Math.PI * 2);
+    ctx.stroke();
+    return;
+  }
   if (m.tool === "pen") {
     ctx.moveTo(pts[0][0], pts[0][1]);
     for (const [x, y] of pts.slice(1)) ctx.lineTo(x, y);
@@ -105,7 +150,8 @@ function stroke(ctx: CanvasRenderingContext2D, m: Mark, w: number) {
 export function paint(canvas: HTMLCanvasElement, img: HTMLImageElement, marks: readonly Mark[]): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const w = penWidth(Math.max(canvas.width, canvas.height));
+  const long = Math.max(canvas.width, canvas.height);
+  const w = penWidth(long);
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
@@ -114,7 +160,7 @@ export function paint(canvas: HTMLCanvasElement, img: HTMLImageElement, marks: r
     ctx.strokeStyle = colour;
     ctx.fillStyle = colour;
     ctx.lineWidth = width;
-    for (const m of marks) stroke(ctx, m, w);
+    for (const m of marks) stroke(ctx, m, w, long);
   }
 }
 

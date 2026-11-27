@@ -20,11 +20,14 @@ type Query = { sql: string; params: unknown[] };
 const queries: Query[] = [];
 let stored: Record<string, unknown> | null = null;
 let admin = false;
+let refuseInsert = false;
+let overTheLimit = false;
 
 const pool = {
   async query(sql: string, params: unknown[] = []) {
     queries.push({ sql, params });
     if (sql.startsWith("INSERT INTO feedback_items")) {
+      if (refuseInsert) throw new Error("the database refused the row");
       stored = { id: params[0], screenshot_file: params[8] };
       return [{ affectedRows: 1 }];
     }
@@ -46,7 +49,7 @@ beforeAll(async () => {
     authedUser: async () => ({ id: "m-ana" }) as never,
     getPool: () => pool as never,
     notify: async () => undefined as never,
-    overLimit: async () => false,
+    overLimit: async () => overTheLimit,
     clientIp: () => "203.0.113.9",
     projectName: () => "Hollow Oak",
     uploadsDir: path.join(dataDir, "uploads"),
@@ -66,6 +69,8 @@ beforeEach(() => {
   queries.length = 0;
   stored = null;
   admin = false;
+  refuseInsert = false;
+  overTheLimit = false;
 });
 
 /** One door to the suite's own server, so the waiver below is said once. */
@@ -137,6 +142,49 @@ describe("POST /api/feedback from the guide's panel", () => {
     const r = await call(`/api/feedback`, { method: "POST", body: form });
     expect(r.status).toBe(400);
     expect(insert()).toBeUndefined();
+  });
+});
+
+describe("the door's order (fold QA round 1)", () => {
+  const picture = () => sharp({ create: { width: 40, height: 30, channels: 3, background: { r: 9, g: 9, b: 9 } } }).png().toBuffer();
+  const shotForm = async () => {
+    const form = new FormData();
+    form.append("kind", "bug");
+    form.append("detail", "The send button sits under the tab bar on a phone.");
+    form.append("screenshot", new Blob([new Uint8Array(await picture())], { type: "image/png" }), "shot.png");
+    return form;
+  };
+  const shotsOnDisk = () => {
+    const dir = path.join(dataDir, FEEDBACK_SHOT_DIRNAME);
+    return fs.existsSync(dir) ? fs.readdirSync(dir).length : 0;
+  };
+
+  it("writes no file when the row is refused, so no picture sits where nobody can find or erase it", async () => {
+    const before = shotsOnDisk();
+    refuseInsert = true;
+    const r = await call(`/api/feedback`, { method: "POST", body: await shotForm() });
+    expect(r.status).toBe(500);
+    expect(shotsOnDisk()).toBe(before);
+  });
+
+  it("answers an address over its hourly limit before it reads a screenshot", async () => {
+    overTheLimit = true;
+    const r = await call(`/api/feedback`, { method: "POST", body: await shotForm() });
+    expect(r.status).toBe(429);
+    expect(insert()).toBeUndefined();
+  });
+
+  it("names who receives the copy by the host the relay sends to, and nobody when nothing is sent", async () => {
+    const was = process.env.FEEDBACK_HUB_URL;
+    try {
+      delete process.env.FEEDBACK_HUB_URL;
+      expect(await (await call(`/api/feedback/config`)).json()).toMatchObject({ relayOn: false, hubName: null, villageName: "Hollow Oak" });
+      process.env.FEEDBACK_HUB_URL = "https://hub.example.org/api/feedback/ingest";
+      expect(await (await call(`/api/feedback/config`)).json()).toMatchObject({ relayOn: true, hubName: "hub.example.org" });
+    } finally {
+      if (was === undefined) delete process.env.FEEDBACK_HUB_URL;
+      else process.env.FEEDBACK_HUB_URL = was;
+    }
   });
 });
 

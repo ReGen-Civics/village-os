@@ -73,7 +73,7 @@ import { SCARLET_LOOK, type CompanionLook, type CompanionView } from "@shared/co
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 import { useLingui } from "@lingui/react/macro";
 import { useEntranceStands } from "@/lib/entranceStatus";
-import { FEEDBACK_HASH, OPEN_FEEDBACK_EVENT, rememberPage } from "@/lib/guideFeedback";
+import { FEEDBACK_HASH, OPEN_FEEDBACK_EVENT, feedbackHeldFor, holdFeedbackOpen, releaseFeedback, rememberPage } from "@/lib/guideFeedback";
 
 /**
  * The founding team's pages: the steward front door, the roles page that
@@ -202,7 +202,11 @@ export default function MobileFab() {
   const entrance = useEntranceStands(location, !!user);
   // Which panel is open: the companions', or the guide's (its chat, its help, feedback, Admin's helper for an
   // admin), or the guide's opened straight on the feedback form.
-  const [panel, setPanel] = useState<false | "companions" | "guide" | "feedback">(false);
+  // A corner arriving on a page where the form is open opens on it (lib/guideFeedback.ts: a loading screen's
+  // corner may have heard the request and been unmounted since).
+  const [panel, setPanel] = useState<false | "companions" | "guide" | "feedback">(() =>
+    feedbackHeldFor(window.location.pathname) ? "feedback" : false,
+  );
   const rows = cornerRows({ signedIn: !!user, admin, army, guide: guideName, t });
   const standing = (army ?? []).slice(0, STANDING);
   const waiting = draftsWaiting(army ?? []);
@@ -213,12 +217,15 @@ export default function MobileFab() {
   // "Share feedback" from anywhere: the footer's button, `#feedback` on an address, and /feedback (lib/guideFeedback.ts).
   useEffect(() => {
     rememberPage(location);
+    // A request held for another page lapses when the member moves on.
+    if (!feedbackHeldFor(window.location.pathname)) releaseFeedback();
     const openFeedback = () => {
       setOpen(false);
       setPanel("feedback");
     };
     const fromHash = () => {
       if (window.location.hash !== FEEDBACK_HASH) return;
+      holdFeedbackOpen();
       openFeedback();
       // The hash has done its work; a reload or a shared link should not open the form again.
       window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
@@ -337,17 +344,11 @@ export default function MobileFab() {
   useEffect(() => setTucked(false), [location]);
   const hidden = tucked && !open;
 
-  // The screens that render no tab bar render no FAB either: the trigger is a
-  // 56px circle in the bottom-right, and on /login it sat over the right end
-  // of the full-width sign-in button. Same list, same reason (mobileNav.ts).
-  // The portal entrance in front of the page: it is the page then, with its own "I have an account: sign in", and
-  // every row here leads behind it (1.3.75's live check: the corner drew over the entrance).
-  if (entrance) return null;
-
   const guidePanel = panel ? (
     <CompanionsDialog
       onClose={() => {
         setPanel(false);
+        releaseFeedback();
         reread(); // a yes in the panel changes what waits; the count follows
         window.setTimeout(() => triggerRef.current?.focus(), 0);
       }}
@@ -363,6 +364,13 @@ export default function MobileFab() {
     />
   ) : null;
 
+  // The portal entrance in front of the page: it is the page then, with its own "I have an account: sign in", and
+  // every row here leads behind it (1.3.75's live check: the corner drew over the entrance). The feedback form
+  // still opens there when the footer asks: its two reads and its one write are open to a visitor (fold QA round 1).
+  if (entrance) return panel === "feedback" ? guidePanel : null;
+  // The screens that render no tab bar render no FAB either: the trigger is a
+  // 56px circle in the bottom-right, and on /login it sat over the right end
+  // of the full-width sign-in button. Same list, same reason (mobileNav.ts).
   // The pages that draw no corner still open the guide's panel when asked for feedback (the footer's door).
   if (isBareRoute(location)) return guidePanel;
   // The founding team's pages keep their own quiet register and their one act;

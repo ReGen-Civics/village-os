@@ -65,7 +65,7 @@ describe("the feedback form in the guide's panel", () => {
     await user.type(screen.getByLabelText(/What happened/), "The map is blank. I tapped a circle.");
     const heard = document.querySelector("[data-guide-heard]") as HTMLElement;
     expect(heard.textContent).toContain("What Ceiba heard");
-    expect(heard.textContent).toContain("Something broke on /");
+    expect(heard.textContent).toContain("Something broke on the home page.");
     expect(screen.getByLabelText("Title")).toHaveValue("The map is blank");
     expect(heard.textContent).toContain("Suggested from your first line");
     // The guide repeats and suggests; it never ranks the report or the person.
@@ -129,16 +129,23 @@ describe("the feedback form in the guide's panel", () => {
     expect(onAside).toHaveBeenCalledWith("pill");
   });
 
-  it("draws the way back while stepped aside, focused, and goes back to the guide's doors on Back", async () => {
+  it("draws the way back while stepped aside, focused, in a FIXED bar, never on the button `.jw-btn` makes relative", async () => {
     stubFetch();
     const onAside = vi.fn();
-    const onBack = vi.fn();
-    render(<GuideFeedback guide="Ceiba" face={face} aside="pill" onAside={onAside} onBack={onBack} onClose={() => {}} />);
+    render(<GuideFeedback guide="Ceiba" face={face} aside="pill" onAside={onAside} onClose={() => {}} />);
     const way = screen.getByRole("button", { name: "Back to my feedback" });
     expect(document.activeElement).toBe(way);
+    // `.jw-btn { position: relative }` beat a `fixed` on the button and drew it over the page heading at 375 (fold QA round 1).
+    const bar = way.closest("[data-feedback-back-bar]") as HTMLElement;
+    expect(bar.className.split(/\s+/)).toContain("fixed");
+    expect(way.className.split(/\s+/)).not.toContain("fixed");
     fireEvent.click(way);
     expect(onAside).toHaveBeenCalledWith(false);
-    fireEvent.click(screen.getByRole("button", { name: "Back" }));
-    expect(onBack).toHaveBeenCalled();
+  });
+
+  it("names the hub that receives the copy, from the server, never from this code", async () => {
+    stubFetch({ relayOn: true, villageName: "Hollow Oak", hubName: "hub.example.org" } as never);
+    render(<GuideFeedback guide="Ceiba" face={face} onAside={() => {}} onClose={() => {}} />);
+    expect(await screen.findByText(/a copy of the words to the platform team at hub\.example\.org/)).toBeInTheDocument();
   });
 });

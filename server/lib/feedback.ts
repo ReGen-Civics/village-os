@@ -39,6 +39,21 @@ export function feedbackHubUrl(): string {
 }
 
 /**
+ * Who receives the relayed copy, as the form names it: the host the relay sends to. Read from the
+ * deployment's own `FEEDBACK_HUB_URL`, so the platform's name is never typed into this code and a
+ * fork that points elsewhere names where it points. Null with no hub, or an address that does not parse.
+ */
+export function feedbackHubName(): string | null {
+  const url = feedbackHubUrl();
+  if (!url) return null;
+  try {
+    return new URL(url).hostname || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Whether feedback submitted right now would actually leave this village.
  *
  * Two things have to be true: the village left the dial on, and somebody told

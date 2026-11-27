@@ -10,7 +10,7 @@
  * paid for: Escape spent on the menu, and a shut menu that takes no room.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import type { CompanionView } from "@shared/companionItems";
@@ -19,6 +19,7 @@ const session = vi.hoisted(() => ({
   user: null as null | { id: string; name: string; role?: string },
   admin: false,
   companions: null as null | unknown[],
+  entrance: false,
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -31,18 +32,14 @@ vi.mock("@/lib/gameApi", () => ({
     session.companions ? new Response(JSON.stringify({ companions: session.companions }), { status: 200 }) : new Response("{}", { status: 403 }),
   ),
 }));
+vi.mock("@/lib/entranceStatus", () => ({ useEntranceStands: () => session.entrance }));
 vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
 vi.mock("@/components/feedback/GuideFeedback", () => ({
-  default: ({ guide, onBack }: { guide: string; onBack?: () => void }) => (
-    <>
-      <p>the feedback form for {guide}</p>
-      {onBack ? <button type="button" onClick={onBack}>Back</button> : null}
-    </>
-  ),
+  default: ({ guide }: { guide: string }) => <p>the feedback form for {guide}</p>,
 }));
 
 import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows, guideDoors } from "./MobileFab";
-import { openGuideFeedback } from "@/lib/guideFeedback";
+import { openGuideFeedback, releaseFeedback } from "@/lib/guideFeedback";
 
 const t = ({ message }: { message: string }) => message;
 /** A companion; the first a member has is their personal one, which the guide's row stands for. */
@@ -80,8 +77,13 @@ beforeEach(() => {
   session.user = null;
   session.admin = false;
   session.companions = null;
+  session.entrance = false;
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // The open form is held per page across corners (lib/guideFeedback.ts); a case starts with nothing held.
+  releaseFeedback();
+});
 
 /*
  * ONE GUIDE ROW (the lead, 27 Nov 2026): "Scarlet is Maia and Maia admin all 3 can be scarlet ... So I should only
@@ -316,6 +318,51 @@ describe("Share feedback, in the guide's panel", () => {
     await renderAt("/quests");
     expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
     expect(window.location.hash).toBe("");
+  });
+
+  /*
+   * A COLD /feedback LOST THE FORM 12 TIMES IN 16 (fold QA round 1). The loading screen drew a corner of its
+   * own, which read the hash, took it off and opened the form, and was then unmounted. The request is held
+   * outside the corner now, so the corner that replaces it opens on the form from its first render.
+   */
+  it("keeps the form open across a corner that unmounts and a new one that mounts, and lets it go on close", async () => {
+    window.history.replaceState(null, "", "/#feedback");
+    const first = await renderAt("/");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+    first.unmount();
+    await renderAt("/");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close your companions" }));
+    cleanup();
+    await renderAt("/");
+    expect(screen.queryByText("the feedback form for Ceiba")).toBeNull();
+  });
+
+  it("opens the form behind the portal entrance when the footer asks, and draws no corner there", async () => {
+    session.entrance = true;
+    const { container } = await renderAt("/gratitude");
+    expect(container.querySelector("[data-mobile-fab]")).toBeNull();
+    act(() => openGuideFeedback());
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+  });
+
+  it("keeps Tab inside the panel, and keeps the night in dark mode (a scene, not a dialog of words)", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    fireEvent.click(row(/Ceiba/)!);
+    const dialog = await screen.findByRole("dialog", { name: "Ceiba" });
+    expect(dialog).toHaveAttribute("data-scene");
+    // The doors open the way every section does: a kicker, then the guide's name.
+    expect(within(dialog).getByRole("heading", { name: "Ceiba" })).toBeInTheDocument();
+    const doors = Array.from(dialog.querySelectorAll<HTMLElement>("[data-guide-door]"));
+    const last = doors[doors.length - 1];
+    last.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(within(dialog).getByRole("button", { name: "Close your companions" }));
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(last);
   });
 
   it("opens the panel on a page that draws no corner, a founding page", async () => {

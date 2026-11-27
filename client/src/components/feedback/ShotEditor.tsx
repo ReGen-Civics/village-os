@@ -10,15 +10,24 @@
  * It ships in the feedback form's lazy chunk (GuideFeedback.tsx), with its machinery beside it, so no page pays
  * for it until the door opens.
  */
-import { useEffect, useRef, useState, type MutableRefObject, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MutableRefObject, type PointerEvent as ReactPointerEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { MoveUpRight, PenLine, Trash2, Undo2 } from "lucide-react";
-import { exportShot, loadPicture, paint, shotSize, type Mark } from "./shotKit";
+import { exportShot, loadPicture, moveRing, paint, pictureXY, shotSize, type Mark } from "./shotKit";
 
 export { captureScreen } from "./shotKit";
 
 const TOOL =
   "jw-btn inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm font-medium disabled:opacity-50";
+
+/** Whether focus came from the keyboard (`:focus-visible`); true where a browser cannot say. */
+function byKeyboard(el: Element): boolean {
+  try {
+    return el.matches(":focus-visible");
+  } catch {
+    return true;
+  }
+}
 
 export default function ShotEditor({
   source,
@@ -39,7 +48,11 @@ export default function ShotEditor({
   const [broken, setBroken] = useState(false);
   const [tool, setTool] = useState<Mark["tool"]>("arrow");
   const [marks, setMarks] = useState<Mark[]>([]);
+  const marksNow = useRef(marks);
+  marksNow.current = marks;
   const drawing = useRef<Mark | null>(null);
+  // The keyboard's ring: where it stands while the picture has focus, null otherwise.
+  const [ring, setRing] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -64,21 +77,38 @@ export default function ShotEditor({
       c.width = size.width;
       c.height = size.height;
     }
-    paint(c, img, drawing.current ? [...marks, drawing.current] : marks);
+    paint(c, img, [...marks, ...(drawing.current ? [drawing.current] : []), ...(ring ? [{ tool: "ring" as const, pts: [ring] }] : [])]);
     onMarks(marks.length);
-  }, [img, marks, onMarks]);
+  }, [img, marks, onMarks, ring]);
 
   useEffect(() => {
-    exportRef.current = () => (canvas.current && img ? exportShot(canvas.current) : Promise.resolve(null));
+    // The marks alone go: the keyboard's ring is a pointer on the screen, never part of the picture.
+    exportRef.current = () => {
+      const c = canvas.current;
+      if (!c || !img) return Promise.resolve(null);
+      paint(c, img, marksNow.current);
+      return exportShot(c);
+    };
     return () => {
       exportRef.current = null;
     };
   }, [exportRef, img]);
 
-  const at = (e: ReactPointerEvent<HTMLCanvasElement>): [number, number] => {
-    const c = e.currentTarget;
-    const box = c.getBoundingClientRect();
-    return [((e.clientX - box.left) / box.width) * c.width, ((e.clientY - box.top) / box.height) * c.height];
+  const at = (e: ReactPointerEvent<HTMLCanvasElement>): [number, number] =>
+    pictureXY(e.currentTarget.getBoundingClientRect(), e.currentTarget, e.clientX, e.clientY);
+  const key = (e: ReactKeyboardEvent<HTMLCanvasElement>) => {
+    const c = canvas.current;
+    if (!c || !img) return;
+    const from = ring ?? [c.width / 2, c.height / 2];
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setMarks((all) => [...all, { tool: "ring", pts: [from] }]);
+      return;
+    }
+    const next = moveRing(from, e.key, e.shiftKey, c);
+    if (!next) return;
+    e.preventDefault();
+    setRing(next);
   };
   const down = (e: ReactPointerEvent<HTMLCanvasElement>) => {
     if (!img) return;
@@ -112,15 +142,25 @@ export default function ShotEditor({
 
   return (
     <div className="space-y-2" data-shot-editor="">
+      {/* The canvas takes the picture's own shape (no letterbox), so a mark lands under the finger; pictureXY
+          maps through the picture's rectangle besides. Focusable, with the keyboard's ring (moveRing). */}
       <canvas
         ref={canvas}
-        role="img"
-        aria-label={t({ message: `Your screenshot. Marks on it: ${markCount}`, context: "guide feedback: the screenshot, read aloud" })}
+        role="application"
+        tabIndex={0}
+        aria-label={t({ message: `Your screenshot. Marks on it: ${markCount}. The arrow keys move a ring, Enter marks the spot.`, context: "guide feedback: the screenshot, read aloud, with its keys" })}
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
         onPointerCancel={up}
-        className="block h-auto max-h-[46vh] w-full cursor-crosshair touch-none rounded-xl border border-border bg-muted object-contain"
+        onKeyDown={key}
+        // The ring shows for the keyboard only: a click that focuses the picture is about to draw with the pointer.
+        onFocus={(e) => {
+          const c = e.currentTarget;
+          if (byKeyboard(c)) setRing((r) => r ?? [c.width / 2, c.height / 2]);
+        }}
+        onBlur={() => setRing(null)}
+        className="mx-auto block h-auto max-h-[46vh] w-auto max-w-full cursor-crosshair touch-none rounded-xl border border-border bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <div className="flex flex-wrap gap-2" role="toolbar" aria-label={t({ message: "Draw on your screenshot", context: "guide feedback: the drawing tools, read aloud" })}>
         <button type="button" aria-pressed={tool === "arrow"} onClick={() => setTool("arrow")} className={pick("arrow")}>
@@ -139,6 +179,12 @@ export default function ShotEditor({
           <Trash2 className="size-4" aria-hidden="true" /> {t({ message: "Remove", context: "guide feedback: takes the screenshot off" })}
         </button>
       </div>
+      <p className="text-sm text-muted-foreground">
+        {t({
+          message: "No mouse or finger handy? Tab to the picture, move the ring with the arrow keys and press Enter. Or say where it is in your words above; the picture goes as it is.",
+          context: "guide feedback: the keyboard's way to mark the screenshot",
+        })}
+      </p>
     </div>
   );
 }

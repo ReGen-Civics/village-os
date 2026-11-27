@@ -22,6 +22,11 @@ export async function feedbackShotsOfMember(pool: Pool, userId: string): Promise
   return rows.map((r) => String(r.screenshot_file));
 }
 
+/** Take the name off one report whose file did not reach the folder, so the admin view offers no broken picture. */
+export async function clearFeedbackShot(pool: Pool, feedbackId: string): Promise<void> {
+  await pool.query("UPDATE `feedback_items` SET `screenshot_file` = NULL WHERE `id` = ?", [feedbackId]);
+}
+
 /** Clear the names once the files are off. Idempotent: a second run finds nothing to clear. */
 export async function clearFeedbackShotsOfMember(pool: Pool, userId: string): Promise<void> {
   await pool.query("UPDATE `feedback_items` SET `screenshot_file` = NULL WHERE `submitted_by` = ? AND `screenshot_file` IS NOT NULL", [userId]);

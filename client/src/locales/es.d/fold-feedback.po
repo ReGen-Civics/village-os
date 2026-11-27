@@ -24,9 +24,9 @@ msgid "That picture could not be opened. Try another one."
 msgstr "No se pudo abrir esa imagen. Pruebe con otra."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
-msgctxt "guide feedback: the screenshot, read aloud"
-msgid "Your screenshot. Marks on it: {markCount}"
-msgstr "Su captura de pantalla. Marcas en ella: {markCount}"
+msgctxt "guide feedback: the screenshot, read aloud, with its keys"
+msgid "Your screenshot. Marks on it: {markCount}. The arrow keys move a ring, Enter marks the spot."
+msgstr "Su captura de pantalla. Marcas en ella: {markCount}. Las flechas mueven un círculo y Enter marca el lugar."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: the drawing tools, read aloud"
@@ -95,18 +95,18 @@ msgstr "¿Qué notó, y cómo se sintió?"
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: what the guide heard, a bug and its page"
-msgid "Something broke on {page}."
-msgstr "Algo falló en {page}."
+msgid "Something broke on the {page} page."
+msgstr "Algo falló en la página {page}."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: what the guide heard, an idea and its page"
-msgid "An idea, sent from {page}."
-msgstr "Una idea, enviada desde {page}."
+msgid "An idea, sent from the {page} page."
+msgstr "Una idea, enviada desde la página {page}."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: what the guide heard, feedback and its page"
-msgid "How {page} felt to you."
-msgstr "Cómo sintió usted {page}."
+msgid "How the {page} page felt to you."
+msgstr "Cómo sintió usted la página {page}."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: the heading, with the guide's name"
@@ -184,9 +184,9 @@ msgid "Suggested from your first line. Change it if you like."
 msgstr "Sugerido a partir de su primera línea. Cámbielo si quiere."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
-msgctxt "guide feedback: where it goes, shared"
-msgid "Where this goes: {village}'s team, and a copy of the words to the platform team, so a bug fixed once is fixed for every village. Your name and your screenshot stay here."
-msgstr "Adónde va: al equipo de {village}, y una copia de las palabras al equipo de la plataforma, para que una falla arreglada una vez quede arreglada en todas las aldeas. Su nombre y su captura de pantalla se quedan aquí."
+msgctxt "guide feedback: where it goes, shared, naming the hub"
+msgid "Where this goes: {village}'s team, and a copy of the words to the platform team at {hub}, so a bug fixed once is fixed for every village. Your name and your screenshot stay here."
+msgstr "Adónde va: al equipo de {village}, y una copia de las palabras al equipo de la plataforma en {hub}, para que una falla arreglada una vez quede arreglada en todas las aldeas. Su nombre y su captura de pantalla se quedan aquí."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: the button"
@@ -212,3 +212,28 @@ msgstr "Mostrar la captura de pantalla"
 msgctxt "Admin, p"
 msgid "Nothing yet. Members send it from the guide's panel in the corner (Share feedback), or from the footer's Report a Bug link."
 msgstr "Nada todavía. Los miembros lo envían desde el panel de la guía en la esquina (Compartir comentarios), o desde el enlace Reportar una falla del pie de página."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "the guide's panel: the kicker over the guide's name"
+msgid "Your village guide"
+msgstr "La guía de su aldea"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the home page's name in the read-back, as in 'the home page'"
+msgid "home"
+msgstr "de inicio"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "voice field purpose: feedback detail, three kinds"
+msgid "For a bug: what you did, what you expected and what happened. For an idea: how it would work and who it serves. For how something felt: what you noticed, and how it felt."
+msgstr "Para una falla: qué hizo, qué esperaba y qué pasó. Para una idea: cómo funcionaría y a quién sirve. Para cómo se sintió algo: qué notó y cómo se sintió."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: where the copy goes, when the hub gives no name"
+msgid "the platform's hub"
+msgstr "el centro de la plataforma"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the keyboard's way to mark the screenshot"
+msgid "No mouse or finger handy? Tab to the picture, move the ring with the arrow keys and press Enter. Or say where it is in your words above; the picture goes as it is."
+msgstr "¿Sin ratón ni dedo a mano? Llegue a la imagen con Tab, mueva el círculo con las flechas y presione Enter. O diga dónde está con sus palabras arriba; la imagen se envía tal como está."

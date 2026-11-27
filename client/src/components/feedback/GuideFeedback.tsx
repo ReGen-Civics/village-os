@@ -22,7 +22,7 @@
  */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ArrowLeft, Bug, ImagePlus, Monitor } from "lucide-react";
+import { Bug, ImagePlus, Monitor } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import { Seed } from "@/components/sacred/living";
@@ -42,6 +42,7 @@ import {
   suggestTitle,
   type FeedbackKind,
 } from "@shared/feedbackItems";
+import { pageTitleFor } from "@shared/pageTitles";
 import ShotEditor, { captureScreen } from "./ShotEditor";
 
 /** A computer whose browser offers its own "share this tab" picker. iOS Safari has none, nor does a phone's Chrome. */
@@ -58,7 +59,6 @@ export default function GuideFeedback({
   face,
   aside,
   onAside,
-  onBack,
   onClose,
 }: {
   guide: string;
@@ -67,12 +67,10 @@ export default function GuideFeedback({
   aside?: false | "pill" | "hidden";
   /** Step the panel aside: "pill" while the member takes a phone screenshot, "hidden" while the browser captures. */
   onAside: (mode: false | "pill" | "hidden") => void;
-  /** Back to the guide's doors, when the panel has any. */
-  onBack?: () => void;
   onClose: () => void;
 }) {
   const { t } = useLingui();
-  const [cfg, setCfg] = useState<{ relayOn: boolean; villageName: string } | null>(null);
+  const [cfg, setCfg] = useState<{ relayOn: boolean; villageName: string; hubName?: string | null } | null>(null);
   const [kind, setKind] = useState<FeedbackKind>("bug");
   const [detail, setDetail] = useState("");
   const [title, setTitle] = useState("");
@@ -106,8 +104,11 @@ export default function GuideFeedback({
 
   const suggested = suggestTitle(detail);
   const shownTitle = titleTouched ? title : suggested;
-  const page = pageForHeard(here);
+  // The page by its name, as the browser tab says it (shared/pageTitles.ts), never a raw path where it has one.
+  const path = pageForHeard(here);
+  const page = path === "/" ? t({ message: "home", context: "guide feedback: the home page's name in the read-back, as in 'the home page'" }) : pageTitleFor(path) || path;
   const village = cfg?.villageName || t({ message: "your village", context: "feedback page: where it goes, before the village name loads" });
+  const hub = cfg?.hubName || t({ message: "the platform's hub", context: "guide feedback: where the copy goes, when the hub gives no name" });
   const detailShort = detail.trim().length < FEEDBACK_DETAIL_MIN;
   // An emptied title is fine (the server takes the guide's suggestion); one to three letters is not a title yet.
   const titleShort = shownTitle.trim().length > 0 && shownTitle.trim().length < FEEDBACK_TITLE_MIN;
@@ -202,34 +203,29 @@ export default function GuideFeedback({
         : t({ message: "What did you notice, and how did it feel?", context: "guide feedback: the words, for how something felt" });
   const heardLine =
     kind === "bug"
-      ? t({ message: `Something broke on ${page}.`, context: "guide feedback: what the guide heard, a bug and its page" })
+      ? t({ message: `Something broke on the ${page} page.`, context: "guide feedback: what the guide heard, a bug and its page" })
       : kind === "idea"
-        ? t({ message: `An idea, sent from ${page}.`, context: "guide feedback: what the guide heard, an idea and its page" })
-        : t({ message: `How ${page} felt to you.`, context: "guide feedback: what the guide heard, feedback and its page" });
+        ? t({ message: `An idea, sent from the ${page} page.`, context: "guide feedback: what the guide heard, an idea and its page" })
+        : t({ message: `How the ${page} page felt to you.`, context: "guide feedback: what the guide heard, feedback and its page" });
 
   return (
     <div className="space-y-5" data-guide-feedback="">
-      {onBack ? (
-        // Back sits in the panel's top row, level with its close button (which is 44px and 0.5rem above this).
-        <div className="-mt-13 flex">
-          <button type="button" onClick={onBack} className="jw-btn inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted">
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            {t({ message: "Back", context: "guide feedback: back to the guide's doors" })}
-          </button>
-        </div>
-      ) : null}
       {aside === "pill" ? (
         // The one thing drawn while the member takes their screenshot: a way back, low on the screen. `visible`
-        // shows it inside the panel the dialog has made invisible.
-        <button
-          ref={backFromShot}
-          type="button"
-          onClick={() => onAside(false)}
-          data-feedback-back=""
-          className="jw-btn visible pointer-events-auto fixed bottom-[max(calc(env(safe-area-inset-bottom,0px)+1rem),1rem)] left-1/2 z-[71] inline-flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full border border-notice bg-card px-4 text-sm font-semibold text-card-foreground shadow-sm"
-        >
-          {t({ message: "Back to my feedback", context: "guide feedback: the button that brings the panel back after a screenshot" })}
-        </button>
+        // shows it inside the panel the dialog has made invisible. The wrapper is what is fixed: `.jw-btn` sets
+        // `position: relative` and beat a `fixed` on the button itself, which drew it over the page's heading
+        // at 375 (fold QA round 1).
+        <div data-feedback-back-bar="" className="visible pointer-events-none fixed inset-x-0 bottom-[max(calc(env(safe-area-inset-bottom,0px)+1rem),1rem)] z-[71] flex justify-center">
+          <button
+            ref={backFromShot}
+            type="button"
+            onClick={() => onAside(false)}
+            data-feedback-back=""
+            className="jw-btn pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-notice bg-card px-4 text-sm font-semibold text-card-foreground shadow-sm"
+          >
+            {t({ message: "Back to my feedback", context: "guide feedback: the button that brings the panel back after a screenshot" })}
+          </button>
+        </div>
       ) : null}
       {/* The guide, in its circle, asking. */}
       <div className="flex items-center gap-3">
@@ -270,7 +266,7 @@ export default function GuideFeedback({
           onValue={setDetail}
           talk={{
             label: t({ message: "The details", context: "voice field label: feedback detail" }),
-            purpose: t({ message: "For a bug: what you did, what you expected and what happened. For an idea: how it would work and who it serves.", context: "voice field purpose: feedback detail" }),
+            purpose: t({ message: "For a bug: what you did, what you expected and what happened. For an idea: how it would work and who it serves. For how something felt: what you noticed, and how it felt.", context: "voice field purpose: feedback detail, three kinds" }),
           }}
         >
           <textarea id="guide-feedback-detail" value={detail} onChange={(e) => setDetail(e.target.value)} rows={4} maxLength={FEEDBACK_DETAIL_MAX} className={`${FIELD} text-base`} />
@@ -351,7 +347,7 @@ export default function GuideFeedback({
               setTitle(e.target.value);
             }}
             maxLength={FEEDBACK_TITLE_MAX}
-            className={`${FIELD} text-base`}
+            className={`${FIELD} min-h-11 text-base`}
           />
           <p className={`${HINT} mt-1.5`}>
             {titleTouched
@@ -366,8 +362,10 @@ export default function GuideFeedback({
 
       {/* 5. Where it goes, before the button, in plain words. */}
       <p className="border-t border-border pt-3 text-sm text-muted-foreground">
+        {/* The platform's name comes from where the relay is set to send (the hub's address, server/routes/feedback.ts),
+            never from this code, so a fork says its own (fold QA round 1: the old line named who receives the words). */}
         {cfg?.relayOn
-          ? t({ message: `Where this goes: ${village}'s team, and a copy of the words to the platform team, so a bug fixed once is fixed for every village. Your name and your screenshot stay here.`, context: "guide feedback: where it goes, shared" })
+          ? t({ message: `Where this goes: ${village}'s team, and a copy of the words to the platform team at ${hub}, so a bug fixed once is fixed for every village. Your name and your screenshot stay here.`, context: "guide feedback: where it goes, shared, naming the hub" })
           : t({ message: `Where this goes: ${village}'s team, and nowhere else.`, context: "feedback page: where it goes" })}
       </p>
       {detailShort ? (

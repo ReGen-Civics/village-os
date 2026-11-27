@@ -32,6 +32,7 @@ import { boolVar } from "../lib/variables";
 import { recordEvent } from "../lib/events";
 import {
   FEEDBACK_SHOT_PREFIX,
+  feedbackHubName,
   feedbackHubUrl,
   feedbackIsShared,
   feedbackShotName,
@@ -41,6 +42,7 @@ import {
 } from "../lib/feedback";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume, stampedName, writeToVolume } from "../lib/uploads";
 import { attachmentHeaders } from "../lib/submissionAttachments";
+import { clearFeedbackShot } from "../repos/feedbackScreenshots";
 import { FEEDBACK_DETAIL_MIN, FEEDBACK_SHOT_MAX_BYTES, FEEDBACK_TITLE_MIN, isFeedbackKind, suggestTitle } from "../../shared/feedbackItems";
 
 // The screenshot's folder and its names live beside the rest of the feedback spine (server/lib/feedback.ts),
@@ -79,21 +81,25 @@ export function register(app: Express, deps: Deps): void {
    * their words are travelling somewhere while they stay home.
    */
   app.get("/api/feedback/config", async (_req, res) => {
+    const relayOn = feedbackIsShared();
     res.json({
-      relayOn: feedbackIsShared(),
+      relayOn,
       villageName: projectName(),
+      // Who receives the copy, named by where the relay sends (the hub's host), so the form can say it.
+      hubName: relayOn ? feedbackHubName() : null,
     });
   });
 
   app.post("/api/feedback", async (req, res) => {
-    // The guide's panel sends a screenshot as multipart, with the words as fields beside it.
-    const refused = await parseShot(req, res);
-    if (refused) return res.status(400).json({ error: refused });
-    // Same anti-abuse posture as every public form: honeypot + IP limit.
-    if (typeof req.body?.hp === "string" && req.body.hp.length > 0) return res.json({ success: true });
+    // Same anti-abuse posture as every public form: an IP limit and a honeypot. The limit is read BEFORE the
+    // body is parsed, so an address over it never gets a screenshot buffered into memory (fold QA round 1).
     if (await overLimit(`feedback:${clientIp(req)}`, 5, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "That's a lot of feedback for one hour. Thank you, and give it a rest" });
     }
+    // The guide's panel sends a screenshot as multipart, with the words as fields beside it.
+    const refused = await parseShot(req, res);
+    if (refused) return res.status(400).json({ error: refused });
+    if (typeof req.body?.hp === "string" && req.body.hp.length > 0) return res.json({ success: true });
     const kind = isFeedbackKind(req.body?.kind) ? req.body.kind : null;
     const detail = String(req.body?.detail ?? "").trim();
     // The member's title, or the guide's suggestion from their own first line when they left it empty.
@@ -105,13 +111,14 @@ export function register(app: Express, deps: Deps): void {
     }
     // The screenshot goes through the strip (no metadata, no location) before a byte is kept.
     let screenshotFile: string | null = null;
+    let shotBytes: Buffer | null = null;
     const file = (req as any).file as { buffer?: Buffer; originalname?: string } | undefined;
     if (file?.buffer?.length) {
       try {
         const clean = await sanitiseForVolume(file.buffer, String(file.originalname ?? ""));
         if (clean.kind !== "image") return res.status(400).json({ error: "That screenshot is not a picture. Try a PNG, JPEG or WebP." });
         screenshotFile = stampedName(FEEDBACK_SHOT_PREFIX, clean.ext || ".png");
-        writeToVolume(shotsDir, screenshotFile, clean.bytes);
+        shotBytes = clean.bytes;
       } catch (e) {
         if (e instanceof CarriesLocationData || e instanceof LocationDataSurvived) {
           return res.status(400).json({ error: "That screenshot kept hidden data through the strip, so it was not stored. Try another." });
@@ -129,6 +136,19 @@ export function register(app: Express, deps: Deps): void {
       submittedBy: user?.id ?? null,
       screenshotFile,
     }, mayRelay);
+    /*
+     * The file is written only once the row that names it exists (fold QA round 1), so a refused INSERT leaves
+     * no picture nobody can find or erase. A write that fails after it takes the name off the row: the report
+     * still lands, without a screenshot the admin view would then fail to open.
+     */
+    if (screenshotFile && shotBytes) {
+      try {
+        writeToVolume(shotsDir, screenshotFile, shotBytes);
+      } catch (e) {
+        console.error(`[feedback] ${r.id}: the screenshot was not stored: ${String((e as Error)?.message ?? e).slice(0, 120)}`);
+        await clearFeedbackShot(getPool(), r.id);
+      }
+    }
     void recordEvent(getPool(), {
       kind: "audit", text: `feedback:${kind}:${title.slice(0, 60)}`,
       actorUserId: user?.id ?? null, entityType: "feedback", entityRef: r.id, audience: "admin",

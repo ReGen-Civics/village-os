@@ -10,7 +10,7 @@
  */
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { Link } from "wouter";
 import { gameFetch } from "@/lib/gameApi";
 import { natureArtUrl } from "@shared/natureArt";
@@ -71,6 +71,30 @@ export interface FeedbackHost {
   face: { look: CompanionLook; url: string | null };
 }
 
+/**
+ * Tab stays inside the panel (fold QA round 1: Tab after Send left the modal for the page under it). From the
+ * last control Tab goes to the first, and Shift+Tab from the first to the last. A panel stepped aside for a
+ * screenshot is invisible, so its controls are skipped by `checkVisibility`, and the way back is what is left.
+ */
+export function keepFocusIn(box: HTMLElement | null, e: KeyboardEvent): void {
+  if (!box) return;
+  const all = Array.from(
+    box.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]'),
+  ).filter((el) => el.getAttribute("aria-hidden") !== "true" && (typeof el.checkVisibility !== "function" || el.checkVisibility({ visibilityProperty: true } as CheckVisibilityOptions)));
+  if (!all.length) return;
+  const first = all[0];
+  const last = all[all.length - 1];
+  const at = document.activeElement as HTMLElement | null;
+  const inside = !!at && box.contains(at);
+  if (e.shiftKey && (at === first || !inside)) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (at === last || !inside)) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 /** Drafts waiting for a yes, across every companion. */
 export function draftsWaiting(army: readonly CompanionView[]): number {
   return army.reduce((n, c) => n + c.drafts.filter((d) => d.status === "open").length, 0);
@@ -128,9 +152,11 @@ export function CompanionsDialog({
   const [aside, setAside] = useState<false | "pill" | "hidden">(false);
   const asideNow = useRef(aside);
   asideNow.current = aside;
+  const box = useRef<HTMLDivElement>(null);
   useEffect(() => {
     close.current?.focus();
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Tab") return keepFocusIn(box.current, e);
       if (e.key !== "Escape") return;
       // Escape while stepped aside brings the draft back; it never throws the draft away.
       if (asideNow.current) setAside(false);
@@ -139,16 +165,31 @@ export function CompanionsDialog({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  const back = view === "feedback" && doors.length > 0;
   return (
     <div className={`fixed inset-0 z-[70] ${aside ? "pointer-events-none" : ""}`} data-companion-panel="">
       <button type="button" tabIndex={-1} aria-hidden="true" onClick={onClose} className={`absolute inset-0 h-full w-full cursor-default bg-black/40 ${aside ? "invisible" : ""}`} />
       <div
+        ref={box}
         role="dialog"
         aria-modal="true"
         aria-label={title ?? t({ message: "Your companions", context: "companion corner: the panel, read aloud" })}
+        // A place, not a box of words: `data-scene` keeps the sheet's night in dark mode, where a dialog turns to
+        // sand (index.css), so the panel no longer sits cream over the night page (fold QA round 1).
+        data-scene=""
         className={`sheet-night absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-sm sm:p-6 md:inset-y-0 md:left-auto md:max-h-none md:w-[34rem] md:rounded-none md:rounded-l-2xl ${aside ? "invisible" : ""}`}
       >
-        <div className="mb-2 flex justify-end">
+        <div className={`mb-2 flex ${back ? "justify-between" : "justify-end"}`}>
+          {back ? (
+            <button
+              type="button"
+              onClick={() => setView("doors")}
+              className="jw-btn inline-flex min-h-11 items-center gap-2 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              {t({ message: "Back", context: "guide feedback: back to the guide's doors" })}
+            </button>
+          ) : null}
           <button
             ref={close}
             type="button"
@@ -161,9 +202,16 @@ export function CompanionsDialog({
         </div>
         {view === "feedback" && feedback ? (
           <Suspense fallback={<BreathingLoader />}>
-            {/* The form draws its own Back and the way back from a screenshot, so that code loads with it. */}
-            <GuideFeedback guide={feedback.guide} face={feedback.face} aside={aside} onAside={setAside} onBack={doors.length ? () => setView("doors") : undefined} onClose={onClose} />
+            {/* The form draws the way back from a screenshot itself, so that code loads with it. */}
+            <GuideFeedback guide={feedback.guide} face={feedback.face} aside={aside} onAside={setAside} onClose={onClose} />
           </Suspense>
+        ) : null}
+        {view === "doors" && doors.length && title ? (
+          // The guide's panel opens the way every section does: a kicker that places the reader, then the guide's name.
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-notice">{t({ message: "Your village guide", context: "the guide's panel: the kicker over the guide's name" })}</p>
+            <h2 className="font-display text-2xl text-foreground">{title}</h2>
+          </div>
         ) : null}
         {view === "doors" && doors.length ? (
           <ul className="mb-4 grid list-none gap-2 p-0" data-guide-doors="">

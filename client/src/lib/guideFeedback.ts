@@ -17,8 +17,33 @@
 export const FEEDBACK_HASH = "#feedback";
 export const OPEN_FEEDBACK_EVENT = "guide:open-feedback";
 
+/**
+ * THE REQUEST OUTLIVES THE CORNER THAT HEARD IT (fold QA round 1: a cold /feedback lost the form 12 times
+ * in 16). While a lazy page loads, its loading screen draws a Layout of its own, with a corner of its own,
+ * and that corner read the hash, took it off, opened the form and was then unmounted with the page that
+ * replaced it. So the request is held here, keyed on the page, until the member closes the panel, and every
+ * corner on that page opens on the form from its first render.
+ */
+let heldAt: string | null = null;
+
+/** Hold "the form is open" for this page. */
+export function holdFeedbackOpen(path: string = window.location.pathname): void {
+  heldAt = path;
+}
+
+/** Whether a corner arriving on this page should open on the form. */
+export function feedbackHeldFor(path: string): boolean {
+  return heldAt !== null && heldAt === path;
+}
+
+/** The member closed the panel: nothing is held. */
+export function releaseFeedback(): void {
+  heldAt = null;
+}
+
 /** Open the guide's panel on "Share feedback", over the page as it stands. */
 export function openGuideFeedback(): void {
+  holdFeedbackOpen();
   window.dispatchEvent(new CustomEvent(OPEN_FEEDBACK_EVENT));
 }
 
