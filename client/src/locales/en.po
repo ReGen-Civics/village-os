@@ -1490,6 +1490,11 @@ msgctxt "sera answers"
 msgid "Kept ours. It stays out of the list until it changes again."
 msgstr "Kept ours. It stays out of the list until it changes again."
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a quest the member holds"
+msgid "In your hands. Turn it in when it is done."
+msgstr "In your hands. Turn it in when it is done."
+
 #: client/src/components/reviewInbox/OrgDraftRow.tsx
 msgctxt "review inbox: an org chart draft"
 msgid "What it does"
@@ -5605,6 +5610,11 @@ msgctxt "moon recap: SPLIT_PAY_WORDS: weighted"
 msgid "weighted by the days each of your {n} splits held this moon"
 msgstr "weighted by the days each of your {n} splits held this moon"
 
+#: client/src/components/admin/UnifiedInbox.tsx
+msgctxt "admin inbox: what to do with quest work"
+msgid "Read the work and consent on the review page."
+msgstr "Read the work and consent on the review page."
+
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: decidedAfterNight"
 msgid "Marked decided."
@@ -8729,6 +8739,12 @@ msgctxt "StewardSlatePicker, p"
 msgid "Who carries the steward role"
 msgstr "Who carries the steward role"
 
+#. placeholder {0}: owedSteps.map((i) => i + 1).join(", ")
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the turn-in waits on several steps"
+msgid "Steps {0} need something from you first."
+msgstr "Steps {0} need something from you first."
+
 #: client/src/components/openProposal/MembershipAtApplication.tsx
 msgid "You are already aligned with the village's membership letter, so there is nothing to do here."
 msgstr "You are already aligned with the village's membership letter, so there is nothing to do here."
@@ -10019,6 +10035,11 @@ msgctxt "game variable hypha.link_treasury, description"
 msgid "Only if your DHO's treasury page is not at /treasury. Blank derives from the DHO address."
 msgstr "Only if your DHO's treasury page is not at /treasury. Blank derives from the DHO address."
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a quest taken back after turning it in"
+msgid "Taken back to change. Turn it in again when ready."
+msgstr "Taken back to change. Turn it in again when ready."
+
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription"
 msgid "Writing down your words. A long take can take a few minutes."
@@ -10118,6 +10139,12 @@ msgstr "Who decides: {pen}"
 msgctxt "role sign newcomers-active, label"
 msgid "Newcomers active within 7 days"
 msgstr "Newcomers active within 7 days"
+
+#. placeholder {0}: q.circle
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a suited quest, matched on the circle of a role the member holds"
+msgid "Work in {0}, a circle where you hold a role."
+msgstr "Work in {0}, a circle where you hold a role."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -13801,6 +13828,11 @@ msgctxt "role card commitment label"
 msgid "Part time or fractional"
 msgstr "Part time or fractional"
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a suited quest, matched on a circle, no name"
+msgid "Work in a circle where you hold a role."
+msgstr "Work in a circle where you hold a role."
+
 #: client/src/pages/Network.tsx
 msgctxt "Network, button"
 msgid "accept & resume"
@@ -15878,6 +15910,11 @@ msgctxt "follow-ups: who you asked"
 msgid "Waiting on {0}"
 msgstr "Waiting on {0}"
 
+#: client/src/components/admin/QuestsTab.tsx
+msgctxt "admin quest step needs"
+msgid "Steps that need a photo, document or words"
+msgstr "Steps that need a photo, document or words"
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft character count"
 msgid "{n} open roles fit"
@@ -15971,6 +16008,11 @@ msgstr "The role card couldn't open just now. You can still send your applicatio
 msgctxt "follow-ups: a source"
 msgid "Asked of you"
 msgstr "Asked of you"
+
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind quest_pulled_back"
+msgid "Somebody took back work they had turned in. It left the review queue until they turn it in again."
+msgstr "Somebody took back work they had turned in. It left the review queue until they turn it in again."
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -16434,6 +16476,11 @@ msgctxt "the bell: several notices of one kind batched into a line, kind session
 msgid "{n} tasks sit with roles nobody holds."
 msgstr "{n} tasks sit with roles nobody holds."
 
+#: client/src/components/SeasonBanner.tsx
+msgctxt "SeasonBanner, beside the plan button when the window closes on another day than the season"
+msgid "Open until {until}."
+msgstr "Open until {until}."
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "Talk and share"
@@ -16479,6 +16526,12 @@ msgstr "Profile sections"
 msgctxt "FeedbackReceiving, p"
 msgid "Shown to the people who can write to you."
 msgstr "Shown to the people who can write to you."
+
+#. placeholder {0}: String(c.userName)
+#: client/src/components/admin/UnifiedInbox.tsx
+msgctxt "admin inbox: who turned in quest work"
+msgid "Turned in by {0}"
+msgstr "Turned in by {0}"
 
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -22714,6 +22767,11 @@ msgctxt "ReasonSheet, label"
 msgid "A role"
 msgstr "A role"
 
+#: client/src/components/SeasonBanner.tsx
+msgctxt "SeasonBanner, the marker on the season's time line"
+msgid "Today"
+msgstr "Today"
+
 #: client/src/components/VentureAccountsCard.tsx
 msgctxt "venture redemption"
 msgid "Kept sealed. Only the people who run this venture and the Treasury see it in full."
@@ -24451,6 +24509,11 @@ msgstr "Hero Subtitle"
 msgctxt "MapChipsPanel, toast"
 msgid "Chips saved. An open map shows them straight away"
 msgstr "Chips saved. An open map shows them straight away"
+
+#: client/src/components/admin/QuestStepNeedsEditor.tsx
+msgctxt "admin quest step needs"
+msgid "This quest has no steps yet. Add them under Story, effort, steps, and poster, and save."
+msgstr "This quest has no steps yet. Add them under Story, effort, steps, and poster, and save."
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, renewal date"
@@ -27240,6 +27303,11 @@ msgctxt "Admin, placeholder"
 msgid "Description"
 msgstr "Description"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: take back work turned in, until it is paid"
+msgid "Take it back to change it"
+msgstr "Take it back to change it"
+
 #: client/src/components/admin/comms/CommsPeople.tsx
 msgctxt "CommsPeople, th"
 msgid "Stopped"
@@ -28104,6 +28172,11 @@ msgstr "The roll was told this vote was open and will be told it is not. This se
 msgctxt "LoveLetter, NextStep"
 msgid "You'll get a notice when they answer, and your profile shows where it stands."
 msgstr "You'll get a notice when they answer, and your profile shows where it stands."
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: save the words"
+msgid "Add these words"
+msgstr "Add these words"
 
 #: client/src/components/review/SeraRows.tsx
 msgid "Its role comes with it, and leaving the circle out leaves it out too."
@@ -30016,6 +30089,11 @@ msgctxt "proposal wizard"
 msgid "Publishing opens the vote to the whole roll. If it carries, the member sits in the role from that day until the end date, holding every power the role carries, and the village can vote the role back at any time."
 msgstr "Publishing opens the vote to the whole roll. If it carries, the member sits in the role from that day until the end date, holding every power the role carries, and the village can vote the role back at any time."
 
+#: client/src/components/admin/QuestStepNeedsEditor.tsx
+msgctxt "admin quest step needs"
+msgid "The steps did not save. Try again."
+msgstr "The steps did not save. Try again."
+
 #: client/src/pages/VillageEmail.tsx
 msgctxt "VillageEmail, p"
 msgid "Until it is, the village sends no journey emails and no letters. Account emails and your notices still arrive."
@@ -31575,9 +31653,9 @@ msgstr "Nothing to show in this window yet"
 #. placeholder {0}: window.seasonName ? `: ${window.seasonName}` : ""
 #. placeholder {1}: civilDayWords(window.closesOn)
 #: client/src/components/SeasonBanner.tsx
-msgctxt "SeasonBanner, span"
-msgid "Plan your season{0}. Open until {1}. <0>Plan your season</0>"
-msgstr "Plan your season{0}. Open until {1}. <0>Plan your season</0>"
+#~ msgctxt "SeasonBanner, span"
+#~ msgid "Plan your season{0}. Open until {1}. <0>Plan your season</0>"
+#~ msgstr "Plan your season{0}. Open until {1}. <0>Plan your season</0>"
 
 #: client/src/components/profile/onboardingPathWords.ts
 msgctxt "onboarding path: overall"
@@ -32133,6 +32211,11 @@ msgstr "Saved. We told the applicant."
 msgctxt "proposed changes"
 msgid "Edit words"
 msgstr "Edit words"
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: a piece is being saved"
+msgid "Saving…"
+msgstr "Saving…"
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable org.reassignment_cadence, choice annual, hint"
@@ -33635,6 +33718,11 @@ msgstr "The numbers are shared with the people who joined the room."
 msgctxt "role card rows: a label"
 msgid "Where"
 msgstr "Where"
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: upload a document"
+msgid "Add a document"
+msgstr "Add a document"
 
 #. placeholder {0}: (detail.transcript.segments ?? []).length
 #. placeholder {1}: detail.recording.durationS ? `, ${fmtTs(detail.recording.durationS * 1000)} long` : ""
@@ -36519,6 +36607,11 @@ msgctxt "founding application, save and finish later: while saving"
 msgid "Saving"
 msgstr "Saving"
 
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind quest_pulled_back"
+msgid "{n} pieces of work were taken back."
+msgstr "{n} pieces of work were taken back."
+
 #: client/src/components/admin/comms/WordsPreview.tsx
 msgctxt "WordsPreview, title"
 msgid "The email at {width} width"
@@ -37384,6 +37477,11 @@ msgstr "Invited."
 msgctxt "IdentityPackPanel, label"
 msgid "Reference files"
 msgstr "Reference files"
+
+#: client/src/components/review/ConsentQueue.tsx
+msgctxt "consent queue: the step submissions heading"
+msgid "What they gave for each step"
+msgstr "What they gave for each step"
 
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, h3"
@@ -39990,6 +40088,11 @@ msgctxt "PlanEditor, button"
 msgid "<0/>Edit the plan"
 msgstr "<0/>Edit the plan"
 
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: a step that needs a submission"
+msgid "This step needs a photo, a document or a few words from you."
+msgstr "This step needs a photo, a document or a few words from you."
+
 #: client/src/pages/EmailPages.tsx
 msgctxt "EmailPages, button"
 msgid "Yes, stop everything"
@@ -42081,6 +42184,11 @@ msgctxt "admin compare split rule"
 msgid "Each shared piece goes to whoever has the most room for their commitment"
 msgstr "Each shared piece goes to whoever has the most room for their commitment"
 
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: a photo's alt text"
+msgid "A photo you added for this step"
+msgstr "A photo you added for this step"
+
 #: client/src/pages/WorkWithUs.tsx
 msgctxt "work with us: help under a question"
 msgid "How would this serve the community, the land, the guests, the ecosystem, or the mission?"
@@ -42209,6 +42317,11 @@ msgstr "End date"
 msgctxt "HandOverPowers, span"
 msgid "Why stop it? The village reads this."
 msgstr "Why stop it? The village reads this."
+
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a suited quest, matched on its role gate"
+msgid "Held for a role you hold."
+msgstr "Held for a role you hold."
 
 #. placeholder {0}: nameOf(c)
 #: client/src/components/admin/CompareTab.tsx
@@ -42939,6 +43052,11 @@ msgstr "Change"
 msgctxt "price ask"
 msgid "Choose your commitment to see a suggested compensation."
 msgstr "Choose your commitment to see a suggested compensation."
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: a document with no name"
+msgid "A document"
+msgstr "A document"
 
 #: client/src/pages/Introductions.tsx
 msgctxt "Introductions, placeholder"
@@ -46025,6 +46143,11 @@ msgctxt "founding application keys"
 msgid "to continue"
 msgstr "to continue"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: taking work back failed"
+msgid "That didn't go through. Try again."
+msgstr "That didn't go through. Try again."
+
 #: client/src/components/modules/PoolStatement.tsx
 msgctxt "PoolStatement, dt"
 msgid "The pool"
@@ -47985,6 +48108,11 @@ msgctxt "companion welcome"
 msgid "Profile tour"
 msgstr "Profile tour"
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: open quests matched to the member's roles"
+msgid "Suited to your roles"
+msgstr "Suited to your roles"
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "link to the page where a setting is set"
 msgid "Where it is set"
@@ -49142,6 +49270,11 @@ msgstr "A different value for one of the changes. The author may take it in."
 msgctxt "founding application, save and finish later: link copied"
 msgid "Copied"
 msgstr "Copied"
+
+#: client/src/components/review/ConsentQueue.tsx
+msgctxt "consent queue: a step photo's alt text"
+msgid "A photo given for this step"
+msgstr "A photo given for this step"
 
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable stage choice co-creator"
@@ -50337,6 +50470,11 @@ msgctxt "CommsSentMail, button"
 msgid "Cancel this email"
 msgstr "Cancel this email"
 
+#: client/src/components/admin/QuestStepNeedsEditor.tsx
+msgctxt "admin quest step needs"
+msgid "Nothing to save. Change a box first."
+msgstr "Nothing to save. Change a box first."
+
 #: client/src/components/AccountEmailsPanel.tsx
 msgctxt "account emails: button"
 msgid "Send a code"
@@ -50996,6 +51134,11 @@ msgstr "The next seven days"
 msgctxt "proposed changes"
 msgid "Discard"
 msgstr "Discard"
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: removing a piece failed"
+msgid "That didn't go through. Try again."
+msgstr "That didn't go through. Try again."
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, not written"
@@ -52323,6 +52466,11 @@ msgctxt "Layout, h2"
 msgid "Connect"
 msgstr "Connect"
 
+#: client/src/components/admin/QuestStepNeedsEditor.tsx
+msgctxt "admin quest step needs"
+msgid "Steps saved"
+msgstr "Steps saved"
+
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
 msgid "Try again"
@@ -52504,6 +52652,11 @@ msgstr "Review week of {day}"
 msgctxt "proposed changes: a batch"
 msgid "{took} accepted, {0} discarded"
 msgstr "{took} accepted, {0} discarded"
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: a needed step that has a submission"
+msgid "Done: you added something for this step."
+msgstr "Done: you added something for this step."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal side by side answer"
@@ -57279,6 +57432,11 @@ msgctxt "game variable org.decline_next_steps_on, description"
 msgid "When on, the letter that says no to an application also offers the waitlist for other roles, open quests and the resident path, as links."
 msgstr "When on, the letter that says no to an application also offers the waitlist for other roles, open quests and the resident path, as links."
 
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: upload a photo"
+msgid "Add a photo"
+msgstr "Add a photo"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group's summary"
 msgid "{byPerson} a person confirms"
@@ -58252,6 +58410,11 @@ msgctxt "site menu"
 msgid "Protocols"
 msgstr "Protocols"
 
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: remove a piece"
+msgid "Take this off the step"
+msgstr "Take this off the step"
+
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
 msgstr "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
@@ -58533,6 +58696,11 @@ msgstr "Members with the link read it, terms included, and can leave feedback."
 msgctxt "companion welcome"
 msgid "Not now"
 msgstr "Not now"
+
+#: client/src/components/SeasonBanner.tsx
+msgctxt "SeasonBanner, the one button to plan the season"
+msgid "Plan your season"
+msgstr "Plan your season"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, none, the one door"
@@ -59231,6 +59399,11 @@ msgstr "Bring in my tasks"
 msgctxt "open work card: how much of a person the quest asks"
 msgid "{commitment}% of you"
 msgstr "{commitment}% of you"
+
+#: client/src/components/admin/UnifiedInbox.tsx
+msgctxt "admin inbox: quest work with no title"
+msgid "A quest"
+msgstr "A quest"
 
 #: client/src/components/playerCard/roleSignMessages.ts
 msgctxt "role sign sheet, no season plan filed"
@@ -60730,15 +60903,20 @@ msgctxt "game variable payments.purchase_limit_annual_usd, description"
 msgid "Rolling 365-day ceiling on one member's total fiat purchases, summed across every module. 0 disables the check."
 msgstr "Rolling 365-day ceiling on one member's total fiat purchases, summed across every module. 0 disables the check."
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: work taken back, in hand again"
+msgid "You took this back. Change what you need, then turn it in again."
+msgstr "You took this back. Change what you need, then turn it in again."
+
 #: client/src/components/admin/comms/LetterComposer.tsx
 msgctxt "LetterComposer, title"
 msgid "The letter as it arrives"
 msgstr "The letter as it arrives"
 
 #: client/src/components/QuestActions.tsx
-msgctxt "quest page: a turned-in quest cannot be put back by its doer"
-msgid "Want it back? Ask the steward to hand it back."
-msgstr "Want it back? Ask the steward to hand it back."
+#~ msgctxt "quest page: a turned-in quest cannot be put back by its doer"
+#~ msgid "Want it back? Ask the steward to hand it back."
+#~ msgstr "Want it back? Ask the steward to hand it back."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice clip beside an answer"
@@ -61426,6 +61604,11 @@ msgstr "Reading the forest."
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "No role is named yet."
 msgstr "No role is named yet."
+
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: the words box"
+msgid "Add a few words for this step"
+msgstr "Add a few words for this step"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -63203,6 +63386,11 @@ msgstr "A decision passes by consent when nobody in the circle has a reasoned ob
 #~ msgid "What the whole village is working toward this season"
 #~ msgstr "What the whole village is working toward this season"
 
+#: client/src/components/QuestSteps.tsx
+msgctxt "quest step: adding to a step failed"
+msgid "That didn't go through. Try again."
+msgstr "That didn't go through. Try again."
+
 #: client/src/components/admin/AdminSeraLink.tsx
 msgctxt "AdminSeraLink, a"
 msgid "Sera board"
@@ -63734,7 +63922,7 @@ msgctxt "the bell: several notices of one kind batched into a line, kind ballot_
 msgid "{n} votes close soon and are still waiting on your answer."
 msgstr "{n} votes close soon and are still waiting on your answer."
 
-#: client/src/components/mobile/MobileFab.tsx
+#: client/src/components/profileDash/companionStanding.tsx
 msgctxt "the corner: the tag on the Admin helper's row"
 msgid "Admin"
 msgstr "Admin"
@@ -64184,6 +64372,11 @@ msgstr "Ask whoever looks after the village queues to pass one on to you."
 #~ msgctxt "founding application refusal"
 #~ msgid "Send up to 3 recordings."
 #~ msgstr "Send up to 3 recordings."
+
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: quests the member holds or turned in"
+msgid "Doing now"
+msgstr "Doing now"
 
 #: client/src/components/VentureAccountsCard.tsx
 msgid "The venture you run"
@@ -64824,6 +65017,11 @@ msgctxt "EventsAdminPanel, label"
 msgid "Attendance"
 msgstr "Attendance"
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: the full list of the member's quests"
+msgid "Your quests"
+msgstr "Your quests"
+
 #. placeholder {0}: plural(carry.retireDraft.reads.length, "change", "changes")
 #. placeholder {1}: carry.retireDraft.blocked ? `${carry.retireDraft.blocked} blocked` : "none blocked"
 #: client/src/components/review/CarryAcross.tsx
@@ -64984,9 +65182,9 @@ msgstr "Somebody applies for {head} and {last}"
 #. placeholder {0}: active.name
 #. placeholder {1}: civilDayWords(active.endsOn)
 #: client/src/components/SeasonBanner.tsx
-msgctxt "SeasonBanner, span"
-msgid "{0} closes on {1}."
-msgstr "{0} closes on {1}."
+#~ msgctxt "SeasonBanner, span"
+#~ msgid "{0} closes on {1}."
+#~ msgstr "{0} closes on {1}."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -65245,6 +65443,12 @@ msgstr "{clock} left"
 msgctxt "module funding-rounds, setup"
 msgid "Seat someone who holds the pots, by default the Treasury role, then open a pot and a round."
 msgstr "Seat someone who holds the pots, by default the Treasury role, then open a pot and a round."
+
+#. placeholder {0}: owedSteps[0] + 1
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the turn-in waits on one step"
+msgid "Step {0} needs something from you first."
+msgstr "Step {0} needs something from you first."
 
 #. placeholder {0}: p.label
 #: client/src/pages/CrowdpoolCampaign.tsx
@@ -67397,6 +67601,11 @@ msgctxt "MySeason, p"
 msgid "Term until {0}"
 msgstr "Term until {0}"
 
+#: client/src/components/profileDash/YourQuests.tsx
+msgctxt "profile: a quest the member turned in"
+msgid "Turned in. Waiting on a steward."
+msgstr "Turned in. Waiting on a steward."
+
 #. placeholder {0}: e.method
 #. placeholder {1}: e.path
 #: client/src/components/admin/AgentPathTree.tsx
@@ -68087,6 +68296,11 @@ msgctxt "open work: the group for quests with no circle"
 msgid "Open to every circle"
 msgstr "Open to every circle"
 
+#: client/src/components/review/ConsentQueue.tsx
+msgctxt "consent queue: a step document with no name"
+msgid "A document"
+msgstr "A document"
+
 #: client/src/components/ThemeSwitch.tsx
 msgctxt "site header: the mode switch, read aloud; it starts with the word shown under the switch"
 msgid "Dark mode: switch to light"
@@ -68677,6 +68891,11 @@ msgctxt "Decision, p"
 msgid "A vote opened by mistake can be called off. It decides nothing, records why, and leaves the subject free to go to a vote again straight away."
 msgstr "A vote opened by mistake can be called off. It decides nothing, records why, and leaves the subject free to go to a vote again straight away."
 
+#: client/src/components/admin/QuestStepNeedsEditor.tsx
+msgctxt "admin quest step needs"
+msgid "Save steps"
+msgstr "Save steps"
+
 #. placeholder {0}: catalyst.aName
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Could not load. Are you signed in as {0}?"
@@ -69127,6 +69346,11 @@ msgstr "Propose this role for next season"
 msgctxt "CommsOverview, span"
 msgid "to {0}"
 msgstr "to {0}"
+
+#: client/src/components/SeasonBanner.tsx
+msgctxt "SeasonBanner, beside the plan button when the window plans another season than the card's"
+msgid "For {planned}. Open until {until}."
+msgstr "For {planned}. Open until {until}."
 
 #: client/src/components/roleCard/frontWords.ts
 msgctxt "role card front: a share of the pay mix as the card names it"
@@ -72912,6 +73136,11 @@ msgctxt "hidden map page"
 msgid "{0} logged"
 msgstr "{0} logged"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the turn-in form when the steps carry the evidence"
+msgid "Your steps hold your work. You can add a link or a few more words if you like."
+msgstr "Your steps hold your work. You can add a link or a few more words if you like."
+
 #: client/src/pages/ApplicationStatus.tsx
 #~ msgctxt "applicant's application status, adoption"
 #~ msgid "The circle said yes. Your seed is whole."
@@ -73999,6 +74228,11 @@ msgstr "The agreement could not be read just now."
 msgctxt "booking link field"
 msgid "Clear"
 msgstr "Clear"
+
+#: client/src/components/SeasonBanner.tsx
+msgctxt "SeasonBanner, the season's closing day, said once"
+msgid "Closes on {closesOn}."
+msgstr "Closes on {closesOn}."
 
 #. placeholder {0}: dayWords(place.expectWeek)
 #: client/src/components/priorities/PlaceInLine.tsx
