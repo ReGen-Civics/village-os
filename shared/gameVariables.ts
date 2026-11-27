@@ -3957,12 +3957,12 @@ export const VARIABLES: VariableDef[] = [
     category: "Village",
     label: "Light mode's paper",
     description:
-      "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are.",
+      "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are.",
     type: "choice",
     default: "plain",
     choices: [
       { value: "plain", label: "Plain", hint: "The clean Golden Hour page." },
-      { value: "sea-chart", label: "Sea chart", hint: "Aged paper, torn cards and Garamond headings." },
+      { value: "sea-chart", label: "Weathered map", hint: "Weathered paper, pages torn each their own way, and Garamond headings." },
     ],
   },
 
@@ -3974,11 +3974,11 @@ export const VARIABLES: VariableDef[] = [
     category: "Village",
     label: "Light or dark on a first visit",
     description:
-      "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.",
+      "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode.",
     type: "choice",
     default: "light",
     choices: [
-      { value: "light", label: "Light", hint: "The day page, and Sea chart where the village chose it." },
+      { value: "light", label: "Light", hint: "The day page, and Weathered map where the village chose it." },
       { value: "dark", label: "Dark", hint: "The night page." },
     ],
   },

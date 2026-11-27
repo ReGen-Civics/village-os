@@ -507,25 +507,25 @@ export const DIAL_WORDS_2: Readonly<Record<string, DialWords>> = {
   },
   "look.light_paper": {
     label: msg({ message: "Light mode's paper", context: "game variable look.light_paper, label" }),
-    description: msg({ message: "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are.", context: "game variable look.light_paper, description" }),
+    description: msg({ message: "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are.", context: "game variable look.light_paper, description" }),
     choices: {
       "plain": {
         label: msg({ message: "Plain", context: "game variable look.light_paper, choice plain, label" }),
         hint: msg({ message: "The clean Golden Hour page.", context: "game variable look.light_paper, choice plain, hint" }),
       },
       "sea-chart": {
-        label: msg({ message: "Sea chart", context: "game variable look.light_paper, choice sea-chart, label" }),
-        hint: msg({ message: "Aged paper, torn cards and Garamond headings.", context: "game variable look.light_paper, choice sea-chart, hint" }),
+        label: msg({ message: "Weathered map", context: "game variable look.light_paper, choice sea-chart, label" }),
+        hint: msg({ message: "Weathered paper, pages torn each their own way, and Garamond headings.", context: "game variable look.light_paper, choice sea-chart, hint" }),
       },
     },
   },
   "look.default_mode": {
     label: msg({ message: "Light or dark on a first visit", context: "game variable look.default_mode, label" }),
-    description: msg({ message: "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.", context: "game variable look.default_mode, description" }),
+    description: msg({ message: "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode.", context: "game variable look.default_mode, description" }),
     choices: {
       "light": {
         label: msg({ message: "Light", context: "game variable look.default_mode, choice light, label" }),
-        hint: msg({ message: "The day page, and Sea chart where the village chose it.", context: "game variable look.default_mode, choice light, hint" }),
+        hint: msg({ message: "The day page, and Weathered map where the village chose it.", context: "game variable look.default_mode, choice light, hint" }),
       },
       "dark": {
         label: msg({ message: "Dark", context: "game variable look.default_mode, choice dark, label" }),
