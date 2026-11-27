@@ -119,11 +119,16 @@ const PAGES = [
   // The investor path (24 Nov 2026, investor remake): into the night world with the other paths.
   "client/src/pages/InvestorJourney.tsx",
   "client/src/pages/ProsperityJourney.tsx",
+  // The Governance page's Now view (the Governance brief, 26 Nov 2026): born inside the rule.
+  "client/src/pages/GovernanceNow.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // The Governance page's views (26 Nov 2026): born inside the rule.
+  "client/src/components/governance/now/NowView.tsx",
+  "client/src/components/governance/now/GovernanceTabs.tsx",
   "client/src/components/journey/look.ts",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",

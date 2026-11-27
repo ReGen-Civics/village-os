@@ -1,0 +1,524 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Put this draft to the village? A vote opens, and the village decides it."
+msgstr "¿Llevar este borrador a la aldea? Se abre una votación, y la aldea lo decide."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Copy link"
+msgstr "Copiar enlace"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "There is no draft at this address that you can read. Drafts are read by whoever may decide the org chart and by the person who made them."
+msgstr "No hay en esta dirección un borrador que usted pueda leer. Los borradores los leen quienes pueden decidir el organigrama y la persona que los hizo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Put it to the village"
+msgstr "Llevarlo a la aldea"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Waiting for a decision"
+msgstr "Esperando una decisión"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "The terms on offer change in this draft. Only people who may read a role's terms see how."
+msgstr "Los términos que se ofrecen cambian en este borrador. Solo quienes pueden leer los términos de un rol ven cómo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Put to the village. A vote is open."
+msgstr "Llevado a la aldea. Hay una votación abierta."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a list line, read aloud"
+msgid "Added:"
+msgstr "Añadido:"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the way back, read aloud"
+msgid "Where you are"
+msgstr "Dónde está usted"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Not mine to hold"
+msgstr "No me corresponde"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Circle"
+msgstr "Círculo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a revision"
+msgid "Left out: {0}"
+msgstr "Se dejó fuera: {0}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Time it takes"
+msgstr "Tiempo que requiere"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "The live card changed here after this draft was written. Publishing writes the draft's words over these newer ones."
+msgstr "La tarjeta en vigor cambió aquí después de escribirse este borrador. Al publicar, las palabras del borrador reemplazan estas más recientes."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a revision"
+msgid "What changed: {0}"
+msgstr "Qué cambió: {0}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the header"
+msgid "Writes every change below onto the org chart at once, or none of them. A role card's history keeps the old words, so a change can be put back."
+msgstr "Escribe en el organigrama todos los cambios de abajo a la vez, o ninguno. El historial de la tarjeta de un rol guarda las palabras anteriores, así que un cambio se puede deshacer."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field's old words"
+msgid "Before"
+msgstr "Antes"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "What I do regularly"
+msgstr "Lo que hago con regularidad"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "{0, plural, one {One change} other {# changes}}"
+msgstr "{0, plural, one {Un cambio} other {# cambios}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the header"
+msgid "Who must act"
+msgstr "Quién debe actuar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a field"
+msgid "Save as a new revision"
+msgstr "Guardar como nueva revisión"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the header"
+msgid "Publishing"
+msgstr "Al publicar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtelo de nuevo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who must act"
+msgid "{0, plural, one {The one person who holds the power to change the org chart, or a village vote.} other {One of the # people who hold the power to change the org chart, or a village vote.}}"
+msgstr "{0, plural, one {La única persona que tiene el poder de cambiar el organigrama, o una votación de la aldea.} other {Una de las # personas que tienen el poder de cambiar el organigrama, o una votación de la aldea.}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "A retired role keeps its id, and the chart only lists live roles, which is why nothing with this name shows there. Leave this one out to publish the rest, then add the role again under a new id."
+msgstr "Un rol retirado conserva su identificador, y el organigrama solo muestra roles en vigor; por eso no aparece nada con este nombre. Deje este fuera para publicar el resto, y luego añada el rol de nuevo con otro identificador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the way back"
+msgid "Review"
+msgstr "Revisión"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Publish"
+msgstr "Publicar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a change's kind"
+msgid "Removed"
+msgstr "Retirado"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "This role exists while"
+msgstr "Este rol existe mientras"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field's new words"
+msgid "After"
+msgstr "Después"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "What I decide on my own"
+msgstr "Lo que decido por mi cuenta"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Yes, publish it"
+msgstr "Sí, publicarlo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the header"
+msgid "Came from"
+msgstr "De dónde viene"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "What you can count on me for"
+msgstr "Con qué puede contar conmigo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "The live card changed after this draft was written."
+msgstr "La tarjeta en vigor cambió después de escribirse este borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a role being retired"
+msgid "{0, plural, =0 {Nobody holds this role now.} one {One person holds this role now. Retiring it ends their holding.} other {# people hold this role now. Retiring it ends their holdings.}}"
+msgstr "{0, plural, =0 {Nadie tiene este rol ahora.} one {Una persona tiene este rol ahora. Retirarlo pone fin a su función.} other {# personas tienen este rol ahora. Retirarlo pone fin a sus funciones.}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Cannot be published yet"
+msgstr "Aún no se puede publicar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Leave this one out"
+msgstr "Dejar este fuera"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "{0, plural, one {Another open draft changes the same role or circle:} other {# other open drafts change the same role or circle:}}"
+msgstr "{0, plural, one {Otro borrador abierto cambia el mismo rol o círculo:} other {Otros # borradores abiertos cambian el mismo rol o círculo:}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Yes, withdraw it"
+msgstr "Sí, retirarlo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "A short note on why (optional)"
+msgstr "Una nota breve sobre el porqué (opcional)"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Link copied"
+msgstr "Enlace copiado"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Sign in to read this draft."
+msgstr "Inicie sesión para leer este borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a change's kind"
+msgid "Changed"
+msgstr "Cambiado"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Bring me"
+msgstr "Tráiganme"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Under a village vote"
+msgstr "En votación de la aldea"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Published"
+msgstr "Publicado"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a field"
+msgid "Cancel"
+msgstr "Cancelar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Withdrawn. It can no longer be published."
+msgstr "Retirado. Ya no se puede publicar."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the way back"
+msgid "Org chart draft"
+msgstr "Borrador del organigrama"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a field"
+msgid "This changes the draft only. The live role card changes when the draft is published."
+msgstr "Esto cambia solo el borrador. La tarjeta del rol en vigor cambia cuando se publica el borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "What it looks after"
+msgstr "De qué se ocupa"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: where it came from"
+msgid "A person made it in the role editor or the org chart."
+msgstr "Lo hizo una persona en el editor de roles o en el organigrama."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who must act"
+msgid "Nobody holds the power to change the org chart, so a village vote decides it."
+msgstr "Nadie tiene el poder de cambiar el organigrama, así que lo decide una votación de la aldea."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Put back"
+msgstr "Deshecho"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Reading the draft…"
+msgstr "Leyendo el borrador…"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a change's kind"
+msgid "Change"
+msgstr "Cambio"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the fold"
+msgid "{0, plural, one {# field unchanged} other {# fields unchanged}}"
+msgstr "{0, plural, one {# campo sin cambios} other {# campos sin cambios}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Pay and terms"
+msgstr "Pago y términos"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a field"
+msgid "New words for {label}"
+msgstr "Palabras nuevas para {label}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: state"
+msgid "Withdrawn"
+msgstr "Retirado"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Withdraw"
+msgstr "Retirar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Revisions"
+msgstr "Revisiones"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: where it came from"
+msgid "An agent proposed it. A person reads it before anything changes."
+msgstr "Lo propuso un agente. Una persona lo lee antes de que cambie nada."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "This draft was written before drafts kept the card they were written against, so \"Before\" is the card as it stands now."
+msgstr "Este borrador se escribió antes de que los borradores guardaran la tarjeta sobre la que se escribieron, así que \"Antes\" es la tarjeta tal como está ahora."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a list"
+msgid "One line for each item."
+msgstr "Una línea por cada elemento."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: editing a field"
+msgid "A short note on why (shown in the draft's history)"
+msgstr "Una nota breve sobre el porqué (se muestra en el historial del borrador)"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: where it came from"
+msgid "A person accepted waiting proposals into this draft."
+msgstr "Una persona aceptó propuestas en espera en este borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "What changes"
+msgstr "Qué cambia"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Not recorded"
+msgstr "Sin registrar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who must act"
+msgid "The village, in the vote that is open now."
+msgstr "La aldea, en la votación abierta ahora."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Purpose"
+msgstr "Propósito"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Leave this change out"
+msgstr "Dejar este cambio fuera"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "This change cannot be applied as the village stands."
+msgstr "Este cambio no se puede aplicar tal como está la aldea."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who must act"
+msgid "Whoever holds the power to change the org chart."
+msgstr "Quien tenga el poder de cambiar el organigrama."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "That did not go through. Reload and try again."
+msgstr "No se pudo completar. Recargue e inténtelo de nuevo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Edit"
+msgstr "Editar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "This draft did not load. Reload the page to try again."
+msgstr "Este borrador no se cargó. Recargue la página para intentarlo de nuevo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: read aloud before added words"
+msgid "added:"
+msgstr "añadido:"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Publishing waits until every change can be applied. Fix or leave out the ones marked above."
+msgstr "La publicación espera hasta que todos los cambios se puedan aplicar. Corrija o deje fuera los marcados arriba."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Withdraw this draft? It is kept on record, and it can no longer be published. Nothing on the org chart changes."
+msgstr "¿Retirar este borrador? Se guarda en el registro y ya no se puede publicar. Nada cambia en el organigrama."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a list line, read aloud"
+msgid "Removed:"
+msgstr "Quitado:"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Leave \"{target}\" out of this draft? The rest stays, and can be published without it. Its words are kept in the draft's history."
+msgstr "¿Dejar \"{target}\" fuera de este borrador? El resto se queda y se puede publicar sin él. Sus palabras se guardan en el historial del borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "\"{target}\" is out of this draft."
+msgstr "\"{target}\" quedó fuera de este borrador."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: the header"
+msgid "Proposed by"
+msgstr "Propuesto por"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Confirm"
+msgstr "Confirmar"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: read aloud before removed words"
+msgid "removed:"
+msgstr "quitado:"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Until it is fixed or left out, the whole draft waits. Leave it out to publish the rest."
+msgstr "Hasta que se corrija o se deje fuera, todo el borrador espera. Déjelo fuera para publicar el resto."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "{n, plural, one {Publish this draft? Its one change goes onto the org chart now.} other {Publish this draft? Its # changes go onto the org chart now.}}"
+msgstr "{n, plural, one {¿Publicar este borrador? Su único cambio pasa al organigrama ahora.} other {¿Publicar este borrador? Sus # cambios pasan al organigrama ahora.}}"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a revision"
+msgid "The draft as it was made"
+msgstr "El borrador tal como se hizo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Why it matters"
+msgstr "Por qué importa"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Empty"
+msgstr "Vacío"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a change's kind"
+msgid "New"
+msgstr "Nuevo"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Yes, open the vote"
+msgstr "Sí, abrir la votación"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who must act"
+msgid "You may publish it. A village vote is the other way."
+msgstr "Usted puede publicarlo. Una votación de la aldea es la otra vía."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: where it came from"
+msgid "Sera suggested it. A person reads it before anything changes."
+msgstr "Lo sugirió Sera. Una persona lo lee antes de que cambie nada."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "That did not go through. Try again."
+msgstr "No se pudo completar. Inténtelo de nuevo."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Yes, leave it out"
+msgstr "Sí, dejarlo fuera"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: a field"
+msgid "Role title"
+msgstr "Título del rol"
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Each field where that happened is marked below with what changed. Read them before publishing, so nothing newer is written over."
+msgstr "Cada campo donde ocurrió está marcado abajo con lo que cambió. Léalos antes de publicar, para no escribir encima de nada más reciente."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page"
+msgid "Published. The org chart has changed."
+msgstr "Publicado. El organigrama cambió."
+
+# needs-native-review: the org chart draft page, 26 Nov 2026
+msgctxt "draft page: who proposed it"
+msgid "An agent"
+msgstr "Un agente"

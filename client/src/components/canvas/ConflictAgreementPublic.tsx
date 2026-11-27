@@ -408,7 +408,7 @@ function OpenVote({ vote, roles }: { vote: NonNullable<MembersView["openBallot"]
       <p className="text-sm">
         <Trans>
           Voting closes on {closesOn}.{" "}
-          <a className="font-medium text-teal-deep underline" href={`/decisions/${voteId}`}>
+          <a className="font-medium text-teal-deep underline" href={`/governance/decisions/${voteId}`}>
             Read the vote and cast yours
           </a>
           . The vote's page holds back anything that names a person, and the members-only parts. All of what it would adopt is here.

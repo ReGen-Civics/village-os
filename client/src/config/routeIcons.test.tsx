@@ -30,7 +30,7 @@ describe("the set", () => {
   });
 
   it("covers the top pages", () => {
-    for (const href of ["/", "/quests", "/roles", "/circles", "/gratitude", "/profile", "/governance", "/decisions"]) expect(ROUTE_ICON_SET[href], href).toBeTruthy();
+    for (const href of ["/", "/quests", "/roles", "/circles", "/gratitude", "/profile", "/governance/how", "/governance/decisions"]) expect(ROUTE_ICON_SET[href], href).toBeTruthy();
   });
 
   it("draws each page one way everywhere: the bar's own five slots and the menus agree (the lead, 25 Nov 2026)", () => {
@@ -106,7 +106,7 @@ describe("a menu entry's icon", () => {
     await act(async () => {
       await loadRouteIcons();
     });
-    const chip = render(<MenuIcon href="/decisions" chip />);
+    const chip = render(<MenuIcon href="/governance/decisions" chip />);
     expect(chip.container.querySelector("span[data-menu-icon] svg")).not.toBeNull();
     chip.unmount();
     expect(render(<MenuIcon href="/nowhere" chip />).container.innerHTML).toBe("");

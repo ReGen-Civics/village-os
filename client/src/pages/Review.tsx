@@ -572,10 +572,10 @@ export default function Review() {
         <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
           {sera.read.phase === "member" ? <SeraMemberPage sera={sera} /> : <div className={card}>
             <h1 className="font-display text-2xl text-foreground"><Trans context="Review, h1">This queue is not open to you yet</Trans></h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              <Trans context="Review, p">Reviewing what an outside service proposes, and witnessing finished quests, are jobs this
-              village hands to somebody. Ask whoever looks after the village queues, and they can pass one on.
-            </Trans></p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+              <li><Trans context="Review, a step">Reading what an outside service proposes, and witnessing finished quests, are jobs the village hands to somebody.</Trans></li>
+              <li><Trans context="Review, a step">Ask whoever looks after the village queues to pass one on to you.</Trans></li>
+            </ul>
           </div>}
         </div>
         </div>
@@ -598,13 +598,17 @@ export default function Review() {
             <Inbox className="size-4" aria-hidden="true" />
             <Trans context="review: eyebrow">Waiting on the village</Trans>
           </p>
-          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Review</Trans></h1>
+          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Your work</Trans></h1>
           {!forbidden && (
-            <p className={`${LEDE} mt-2`}>
-              <Trans context="Review, p">What an outside service has proposed about this village. Nothing here is true yet. Read it,
-              change anything you want, and accept what the village agrees with. What you accept goes into
-              a draft you preview before it goes live.
-            </Trans></p>
+            <div className={`${LEDE} mt-2 space-y-1`}>
+              <p><Trans context="Review, p">What an outside service proposes about this village. Nothing here is true yet.</Trans></p>
+              <ol className="list-decimal space-y-1 pl-5">
+                <li><Trans context="Review, a step">Read it.</Trans></li>
+                <li><Trans context="Review, a step">Change anything you want.</Trans></li>
+                <li><Trans context="Review, a step">Accept what the village agrees with.</Trans></li>
+                <li><Trans context="Review, a step">Preview the draft it goes into, then publish it.</Trans></li>
+              </ol>
+            </div>
           )}
           <p className={`${HINT} mt-2`}>
             <Trans context="Review, a door to the one list">Looking for a code such as B-71, or for everything waiting in one list?</Trans>{" "}

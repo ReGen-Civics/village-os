@@ -212,7 +212,7 @@ function nextLine(a: SyncRunsAnswer, now: number): string {
 export function ReviewQueueButton({ waiting }: { waiting: number }) {
   return (
     <a
-      href="/review"
+      href="/governance/work"
       className="mt-2 inline-flex items-center min-h-11 px-4 py-2 text-sm font-medium rounded-lg bg-teal-deep text-white hover:bg-teal-deep-dark transition-colors"
     >
       <Trans context="SaberraSyncSchedule, a">Open the review queue ({count(waiting, "suggestion")})

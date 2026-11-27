@@ -55,7 +55,7 @@ describe("the breadcrumb", () => {
     at("/powers/water");
     const nav = trail()!;
     expect(nav).toBeTruthy();
-    expect(nav.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Decide / What We Look After");
+    expect(nav.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Governance / What We Look After");
     const links = within(nav).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual(["/powers"]);
   });
@@ -64,7 +64,7 @@ describe("the breadcrumb", () => {
     at("/powers/water", { name: "  Water  " });
     const here = within(trail()!).getByText("Water");
     expect(here.getAttribute("aria-current")).toBe("page");
-    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Decide / What We Look After / Water");
+    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Governance / What We Look After / Water");
   });
 
   it("drops the page's name when the page leaves", () => {
@@ -94,7 +94,7 @@ describe("the breadcrumb", () => {
     at("/powers/water", { name: "Water" });
     const nav = trail()!;
     expect(nav.getAttribute("data-wayfinding")).toBe("breadcrumb");
-    expect(nav.querySelector('[data-crumb="group"]')?.textContent).toBe("Decide");
+    expect(nav.querySelector('[data-crumb="group"]')?.textContent).toBe("Governance");
     expect(nav.querySelector('[data-crumb="entry"]')?.textContent).toBe("What We Look After");
     expect(nav.querySelector('[data-crumb="leaf"]')?.getAttribute("aria-current")).toBe("page");
     const seps = nav.querySelectorAll("[data-crumb-sep]");

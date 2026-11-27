@@ -16,6 +16,7 @@
  * Pure: no database, no Express, no React.
  */
 import { matchesFind, normalizeCode } from "./proposedChanges";
+import { draftPageHref } from "./orgDraftView";
 
 import { INBOX_ORDER, INBOX_SOURCES, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_SOURCES, type InboxSource };
@@ -185,7 +186,7 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
   const drafts = list(b?.roleChanges).flatMap((x) => {
     const d = obj(x);
     if (!d || !str(d.draftId)) return [];
-    return [{ key: `agent:draft:${d.draftId}`, source: "agent" as const, kind: "role_change", code: null, summary: line(d.title, "A role change"), filedAt: null, batch: null, decideAt: "/review", touchesPerson: false }];
+    return [{ key: `agent:draft:${d.draftId}`, source: "agent" as const, kind: "role_change", code: null, summary: line(d.title, "A role change"), filedAt: null, batch: null, decideAt: draftPageHref(String(d.draftId)), touchesPerson: false }];
   });
   const seatings = list(b?.seatings).flatMap((x) => {
     const s = obj(x);
@@ -258,7 +259,7 @@ export function fromWaitingOnMe(body: unknown): InboxItem[] {
   for (const x of list(b?.drafts)) {
     const d = obj(x);
     if (!d || !str(d.id)) continue;
-    out.push({ key: `structure:${d.id}`, source: "structure", kind: "org_draft", code: null, summary: line(d.title, "A draft to publish"), filedAt: null, batch: null, decideAt: inApp(d.href) ?? "/review", touchesPerson: false });
+    out.push({ key: `structure:${d.id}`, source: "structure", kind: "org_draft", code: null, summary: line(d.title, "A draft to publish"), filedAt: null, batch: null, decideAt: draftPageHref(String(d.id)), touchesPerson: false });
   }
   for (const x of list(b?.toAccept)) {
     const t = obj(x);
@@ -448,7 +449,7 @@ export function fromOrgDrafts(body: unknown): InboxItem[] {
     const id = str(d?.id);
     if (!d || !id || d.status !== "open") return [];
     const changes = list(d.changes).length;
-    return [{ key: `structure:${id}`, source: "structure" as const, kind: "org_draft", code: null, summary: line(d.title, changes === 1 ? "An org chart draft with one change" : `An org chart draft with ${changes} changes`), filedAt: null, batch: null, decideAt: "/admin?tab=org-chart", touchesPerson: false }];
+    return [{ key: `structure:${id}`, source: "structure" as const, kind: "org_draft", code: null, summary: line(d.title, changes === 1 ? "An org chart draft with one change" : `An org chart draft with ${changes} changes`), filedAt: null, batch: null, decideAt: draftPageHref(id), touchesPerson: false }];
   });
 }
 

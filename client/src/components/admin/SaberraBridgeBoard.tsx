@@ -207,7 +207,7 @@ export function BridgeView({ a, now, onFeed }: { a: BridgeAnswer; now: number; o
         <QuestCard title={t({ message: "Review queue", context: "SaberraBridgeBoard, title" })} state={a.reviewQueue.waiting > 0 ? "active" : "done"}>
           <p>{a.reviewQueue.waiting > 0 ? `${plural(a.reviewQueue.waiting, "suggestion")} waiting.` : "Nothing waiting."}</p>
           {a.reviewQueue.waiting > 0 && (
-            <a href="/review" className="inline-flex items-center min-h-[44px] text-teal-deep underline focus:outline-none focus:ring-2 focus:ring-teal-deep rounded">
+            <a href="/governance/work" className="inline-flex items-center min-h-[44px] text-teal-deep underline focus:outline-none focus:ring-2 focus:ring-teal-deep rounded">
               <Trans context="SaberraBridgeBoard, a">Open the review queue
             </Trans></a>
           )}
