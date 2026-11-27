@@ -283,8 +283,9 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         ))}
       </ol>
 
+      {/* QA pass 2: past stages fold to one line each, the current one opens. */}
       {(w.references.asked || w.references.list.length > 0) && (
-        <References w={w} busy={busy} act={act} />
+        <References w={w} busy={busy} act={act} open={t.now === "references"} />
       )}
 
       {w.reflections && w.reflections.length > 0 && <Reflections items={w.reflections} />}
@@ -295,17 +296,19 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />
       )}
       {w.proposalVersions && w.proposalVersions.length > 0 && <ProposalVersions versions={w.proposalVersions} current={w.proposalNow ?? null} />}
-      {gathered && <Gathered w={w} />}
+      {gathered && <Gathered w={w} open={t.now === "final_interview" || t.now === "agreement"} />}
     </section>
   );
 }
 
-function References({ w, busy, act, page = false }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean>; page?: boolean }) {
+function References({ w, busy, act, page = false, open = true }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean>; page?: boolean; open?: boolean }) {
   const OW = useOnboardingWords();
+  // Folded to its heading when its stage is past (QA pass 2); its own page always open.
+  const Box = page ? "div" : "details";
   return (
-    <div id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="">
+    <Box id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="" {...(page ? {} : { open })}>
+      {!page && <summary className="flex min-h-11 cursor-pointer items-center font-display text-xl font-bold text-foreground">{OW.referencesHeading}</summary>}
       {!page && <p className={EYEBROW}>{OW.referencesKicker}</p>}
-      {!page && <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>}
       <PrivacyNote line={OW.referencesShort} label={OW.whoReads} more={OW.referencesPrivate} />
       {/* The team's own page for the references, to share among the team; never in an applicant's email. */}
       {!page && typeof window !== "undefined" && window.location.pathname.startsWith("/open-proposals/") && (
@@ -320,7 +323,7 @@ function References({ w, busy, act, page = false }: { w: ServedWalkthrough; busy
           <ReferenceTile key={r.id} r={r} w={w} busy={busy} act={act} />
         ))}
       </ul>
-    </div>
+    </Box>
   );
 }
 
@@ -407,15 +410,15 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
 }
 
 /** Everything the final call reads, in one place: each reference's notes and each conversation's scorecard, as written. */
-function Gathered({ w }: { w: ServedWalkthrough }) {
+function Gathered({ w, open = true }: { w: ServedWalkthrough; open?: boolean }) {
   const OW = useOnboardingWords();
   const role = w.roleNames.finalCall ?? "the role that makes the final call";
   const cards = w.scorecards;
   const criterion = (id: string) => cards?.criteria.find((c) => c.id === id)?.text ?? id;
   return (
-    <div className="mt-6" data-walk-gathered="">
+    <details className="mt-6" data-walk-gathered="" open={open}>
+      <summary className="flex min-h-11 cursor-pointer items-center font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</summary>
       <p className={EYEBROW}>{OW.gatheredKicker}</p>
-      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</h3>
       <PrivacyNote line={OW.gatheredShort(role)} label={OW.gatheredMore} more={OW.gatheredIntro(role)} />
       {w.references.list.length > 0 && (
         <ul className="mt-3 grid gap-2">
@@ -451,6 +454,6 @@ function Gathered({ w }: { w: ServedWalkthrough }) {
           ))}
         </div>
       )}
-    </div>
+    </details>
   );
 }
