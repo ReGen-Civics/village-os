@@ -59,6 +59,17 @@ export interface TermsStep {
   commitmentPct: number;
 }
 
+/**
+ * The terms step's refusals (lane ES-A, 27 Nov 2026). A refusal carries its `code` beside its English, and its `key`
+ * names the setting, so a page can say it in the reader's language (client/src/components/governance/parsedChecks.ts).
+ */
+export const TERMS_STEP_WORDS = {
+  unanswered: (label: string) => `Say whether you accept or would like to talk about ${label}.`,
+  noteTooLong: (label: string, max: number) => `Keep your note on ${label} to ${max} characters.`,
+  commitment: "Choose your commitment, from 0 to 100 in steps of 10.",
+} as const;
+export type TermsStepCode = keyof typeof TERMS_STEP_WORDS;
+
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
 /** The settings a role has written, plus Clocks when it asks a commitment: the ones that need an answer. */
@@ -71,22 +82,22 @@ export function writtenKeys(offers: ReadonlyArray<{ words?: TermsWords | null; c
  * answer. Answers for a setting nobody wrote are kept if well formed (the candidate may have
  * changed roles). Commitment is always required.
  */
-export function judgeTermsStep(raw: unknown, written: readonly TermKey[]): { ok: true; value: TermsStep } | { ok: false; error: string; key?: TermKey | "commitment" } {
+export function judgeTermsStep(raw: unknown, written: readonly TermKey[]): { ok: true; value: TermsStep } | { ok: false; error: string; code: TermsStepCode; key: TermKey | "commitment" } {
   const o = isObj(raw) ? raw : {};
   const given = isObj(o.answers) ? o.answers : {};
   const answers: TermAnswers = {};
   for (const k of TERM_KEYS) {
     const a = given[k];
     if (a === undefined || a === null) continue;
-    if (!isObj(a) || (a.choice !== "accept" && a.choice !== "talk")) return { ok: false, error: `Say whether you accept or would like to talk about ${TERM_LABELS[k]}.`, key: k };
+    if (!isObj(a) || (a.choice !== "accept" && a.choice !== "talk")) return { ok: false, error: TERMS_STEP_WORDS.unanswered(TERM_LABELS[k]), code: "unanswered", key: k };
     const note = typeof a.note === "string" ? a.note.trim() : "";
-    if (note.length > TERM_NOTE_MAX) return { ok: false, error: `Keep your note on ${TERM_LABELS[k]} to ${TERM_NOTE_MAX} characters.`, key: k };
+    if (note.length > TERM_NOTE_MAX) return { ok: false, error: TERMS_STEP_WORDS.noteTooLong(TERM_LABELS[k], TERM_NOTE_MAX), code: "noteTooLong", key: k };
     answers[k] = { choice: a.choice, note };
   }
   for (const k of written) {
-    if (!answers[k]) return { ok: false, error: `Say whether you accept or would like to talk about ${TERM_LABELS[k]}.`, key: k };
+    if (!answers[k]) return { ok: false, error: TERMS_STEP_WORDS.unanswered(TERM_LABELS[k]), code: "unanswered", key: k };
   }
-  if (!isCommitment(o.commitmentPct)) return { ok: false, error: "Choose your commitment, from 0 to 100 in steps of 10.", key: "commitment" };
+  if (!isCommitment(o.commitmentPct)) return { ok: false, error: TERMS_STEP_WORDS.commitment, code: "commitment", key: "commitment" };
   return { ok: true, value: { answers, commitmentPct: o.commitmentPct } };
 }
 

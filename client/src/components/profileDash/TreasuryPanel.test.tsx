@@ -67,6 +67,18 @@ describe("the treasury", () => {
     expect(page()).not.toMatch(MECHANICS);
   });
 
+  it("puts the gratitude purse first, above cash and every token (the lead, 26 Nov 2026)", () => {
+    render(
+      <I18nProvider i18n={i18n}>
+      <Router>
+        <TreasuryPanel data={data} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
+      </Router>
+      </I18nProvider>,
+    );
+    const purses = Array.from(document.querySelectorAll("#treasury ul > li h3, #treasury ul > li [role=heading]")).map((h) => h.textContent);
+    expect(purses[0]).toBe("Cheers");
+  });
+
   it("reads the village's own headings where it set them (gap G7)", () => {
     villageWords = { heading: "Your hold", byMoon: "By tide" };
     try {

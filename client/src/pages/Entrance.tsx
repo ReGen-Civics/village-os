@@ -231,7 +231,7 @@ export default function Entrance({ next, siteKey, privacyContact = "", codes = f
   const signIn = `/login?next=${encodeURIComponent(next)}`;
 
   return (
-    <Layout>
+    <Layout headerScrollsOnPhone>
       <div className={backdrop ? `${WORLD} ${VIDEO_WORLD}` : WORLD}>
         {backdrop && <EntranceBackdrop backdrop={backdrop} />}
         {backdrop && (
