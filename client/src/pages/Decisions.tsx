@@ -193,7 +193,7 @@ export default function Decisions() {
                 a bare column. What was missing is the second door, for the
                 visitor with no account to sign in with. */}
             <div className="mt-5">
-              <SignInDoors next="/decisions" />
+              <SignInDoors next="/governance/decisions" />
             </div>
           </div>
         ) : ballots === null ? (
@@ -225,7 +225,7 @@ export default function Decisions() {
                 emptyNote={ballots.length > 0 ? "You have voted in everything that is open to you." : null}
                 turn={
                   groups.mine[0] ? (
-                    <YourTurn to={`/decisions/${groups.mine[0].id}`} label={t({ message: "Open the one that has waited longest", context: "decisions: your turn" })} />
+                    <YourTurn to={`/governance/decisions/${groups.mine[0].id}`} label={t({ message: "Open the one that has waited longest", context: "decisions: your turn" })} />
                   ) : null
                 }
               />

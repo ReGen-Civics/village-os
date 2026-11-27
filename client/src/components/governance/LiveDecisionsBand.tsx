@@ -68,7 +68,7 @@ export default function LiveDecisionsBand() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/decisions"
+              href="/governance/decisions"
               className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-teal-deep px-4 text-sm font-semibold text-teal-deep hover:bg-teal-deep/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2"
             >
               <Trans context="LiveDecisionsBand, Link">Every decision
@@ -98,7 +98,7 @@ export default function LiveDecisionsBand() {
               >
                 <span className="text-xs font-medium text-stone-500">{noun(b.subjectType)}</span>
                 <Link
-                  href={`/decisions/${b.id}`}
+                  href={`/governance/decisions/${b.id}`}
                   className="mt-1 flex min-h-[44px] flex-1 items-start rounded-sm text-sm font-bold leading-snug text-stone-900 hover:text-teal-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
                 >
                   {b.title}

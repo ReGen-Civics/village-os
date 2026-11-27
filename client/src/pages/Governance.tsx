@@ -161,10 +161,16 @@ export default function Governance() {
             <Trans context="governance page section heading">Who Decides What</Trans>
           </h2>
           <p className="text-stone-700 leading-relaxed">
-            <Trans>
-              Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come
-              from the rules this village runs on today, so they change when the village changes them.
-            </Trans>
+            <Trans context="governance page: who decides what">For each kind of decision:</Trans>
+          </p>
+          <ul className="list-disc space-y-1 pl-5 text-stone-700">{/* palette-ok: matches the fixed bg-white section it sits in, like its heading paragraph */}
+            <li><Trans context="governance page: who decides what">who approves it</Trans></li>
+            <li><Trans context="governance page: who decides what">who is asked first</Trans></li>
+            <li><Trans context="governance page: who decides what">who is told</Trans></li>
+            <li><Trans context="governance page: who decides what">how it is made</Trans></li>
+          </ul>
+          <p className="text-sm text-stone-600">{/* palette-ok: matches the fixed bg-white section it sits in */}
+            <Trans context="governance page: who decides what">The answers come from the village's rules today, and change when the village changes them.</Trans>
           </p>
           <Suspense fallback={null}>
             <DecisionMatrix src={CANVAS_PUBLIC_MATRIX_PATH} />
@@ -381,13 +387,12 @@ export default function Governance() {
               <Trans>The Governance Canvas, on Paper</Trans>
             </h2>
           </div>
-          <p className="text-stone-700 leading-relaxed mb-3">
-            <Trans>
-              Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is
-              held, how resources move. The workbook prints each block on its own page with room to write, and it can be
-              saved as a Markdown file too.
-            </Trans>
-          </p>
+          <ul className="mb-3 list-disc space-y-1 pl-5 text-stone-700">{/* palette-ok: matches the fixed bg-white section it sits in */}
+            <li><Trans context="governance page: the canvas">Twelve blocks, from purpose to impact, for a group to talk through together.</Trans></li>
+            <li><Trans context="governance page: the canvas">They cover who decides, how conflict is held and how resources move.</Trans></li>
+            <li><Trans context="governance page: the canvas">The workbook prints each block on its own page, with room to write.</Trans></li>
+            <li><Trans context="governance page: the canvas">It can be saved as a Markdown file too.</Trans></li>
+          </ul>
           <p className="text-sm text-stone-600 mb-4">
             <Trans>
               The canvas is the{" "}

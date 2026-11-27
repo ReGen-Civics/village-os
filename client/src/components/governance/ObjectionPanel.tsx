@@ -237,7 +237,7 @@ export default function ObjectionPanel({
                     <GitBranch className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                     <span className="text-muted-foreground"><Trans context="ObjectionPanel, span">The proposal changed after this. The version that came next:</Trans></span>
                     <Link
-                      href={`/decisions/${lineage[o.id].ballotId}`}
+                      href={`/governance/decisions/${lineage[o.id].ballotId}`}
                       className="rounded font-semibold underline underline-offset-2 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {lineage[o.id].title}

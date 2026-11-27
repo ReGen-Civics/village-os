@@ -73,7 +73,7 @@ function openDecide(who: { id: string; name: string; role?: string; membershipGr
     </Router>,
   );
   // A visitor may have no Decide group at all: every entry in it is a member's (the front door, 24 Nov 2026).
-  const buttons = screen.queryAllByRole("button", { name: /Decide/i });
+  const buttons = screen.queryAllByRole("button", { name: /Governance/i });
   if (buttons[0]) fireEvent.click(buttons[0]);
 }
 
@@ -174,9 +174,9 @@ describe("the How we work together entry", () => {
     ["a visitor", null],
     ["a member", { id: "u-wren", name: "Wren Ash", role: "member" }],
   ] as const) {
-    it(`reads "How we work together" for ${who}, in the menu and the footer, and still opens /governance`, () => {
+    it(`reads "How we work together" for ${who}, in the menu and the footer, and opens /governance/how`, () => {
       openAbout(user);
-      const links = linksTo("/governance");
+      const links = linksTo("/governance/how");
       // One in the About menu, one in the footer.
       expect(links.length).toBeGreaterThanOrEqual(2);
       for (const a of links) expect(a.textContent?.trim()).toBe("How we work together");
@@ -229,9 +229,9 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     expect(added).toEqual({ "/circles": 0, "/roles": 0, "/map/circles": 1 });
   });
 
-  it("offers the review queue and the powers page under Decide", () => {
-    const added = addedByOpening(/Decide/i, ["/review", "/powers"]);
-    expect(added).toEqual({ "/review": 1, "/powers": 1 });
+  it("offers Your work and the powers page under Governance", () => {
+    const added = addedByOpening(/Governance/i, ["/governance/work", "/powers"]);
+    expect(added).toEqual({ "/governance/work": 1, "/powers": 1 });
   });
 });
 

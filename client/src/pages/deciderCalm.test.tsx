@@ -128,7 +128,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("/decisions/:id, one decision", () => {
+describe("/governance/decisions/:id, one decision", () => {
   const open = (over: Record<string, unknown> = {}) =>
     serve({
       "/api/governance/ballots/b1": () => json(ballot(over)),
@@ -239,7 +239,7 @@ describe("/decisions, the list", () => {
     expect(order.every((i) => i >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(fireflyLayers()).toHaveLength(1);
-    expect(within(door() as HTMLElement).getByRole("link").getAttribute("href")).toBe("/decisions/b-old");
+    expect(within(door() as HTMLElement).getByRole("link").getAttribute("href")).toBe("/governance/decisions/b-old");
   });
 
   it("lights nothing when nothing waits on you", async () => {
