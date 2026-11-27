@@ -202,3 +202,57 @@ msgstr "Una propuesta aprobada se aplica y queda registrada en el libro de enmie
 msgctxt "GameMechanics, button"
 msgid "Copy for Hypha"
 msgstr "Copiar para Hypha"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "Decision rights"
+msgstr "Quién decide"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "What we hold to"
+msgstr "Lo que sostenemos"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "The path of a decision"
+msgstr "El camino de una decisión"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "Who looks after what"
+msgstr "Quién cuida de qué"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "When it gets hard"
+msgstr "Cuando se pone difícil"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "Who can stop a decision"
+msgstr "Quién puede detener una decisión"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "How rules change"
+msgstr "Cómo cambian las reglas"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "Take it with you"
+msgstr "Lléveselo consigo"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: section kicker"
+msgid "On chain"
+msgstr "En cadena"

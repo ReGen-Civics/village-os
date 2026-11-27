@@ -526,9 +526,12 @@ export default function GameMechanics() {
     if (!snapshot) return;
     const id = window.location.hash.slice(1);
     if (id === "mechanics-history" && history === null) loadHistory();
-    if (id === "game-mechanics" || (MECHANICS_FOLDS as readonly string[]).includes(id)) {
-      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "start" }));
-    }
+    // A notification's focus lands on its own card (useFocusTarget), so nothing here pulls the page away from it.
+    if (focusTargetId(window.location.search)) return;
+    // A fold the address names by anchor, or by query (`?dial=` from the old address), is where the reader lands.
+    const fold = foldFromUrl(window.location.hash, window.location.search);
+    const target = (MECHANICS_FOLDS as readonly string[]).includes(id) ? id : fold ?? (id === "game-mechanics" ? id : null);
+    if (target) window.requestAnimationFrame(() => document.getElementById(target)?.scrollIntoView({ block: "start" }));
     // Once, when the snapshot lands: the reader's later scrolling is theirs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snapshot]);

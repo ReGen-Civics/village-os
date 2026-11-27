@@ -6,10 +6,10 @@ import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import VillageConflictSteps from "@/components/governance/VillageConflictSteps";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import VoiceSpreadBand from "@/components/governance/VoiceSpreadBand";
-import { Eye, MessageSquare, CheckCircle2, RefreshCw, Network, ArrowRight, ArrowDown, Scale, Printer } from "lucide-react";
-import { GoldenSpiral, Labyrinth, SeedOfLife, Triad } from "@/components/sacred/glyphs";
+import { Eye, MessageSquare, CheckCircle2, Network, ArrowRight, ArrowDown, Scale, Printer } from "lucide-react";
+import { GoldenSpiral, Labyrinth, Lotus, SeedOfLife, Triad } from "@/components/sacred/glyphs";
 import { GROUP_BREAK, GROUP_H2 } from "@/components/roleCard/groupLook";
-import { Canopy, CouncilCircle, MushroomNetwork, Seed } from "@/components/sacred/living";
+import { Canopy, CouncilCircle, Gathering, MushroomNetwork, Seed, Sprout, TendingHands } from "@/components/sacred/living";
 import { useStoryPageShown } from "@/lib/brochure";
 import { useHypha } from "@/modules/ModuleProvider";
 import { HyphaAdminNote } from "@/components/HyphaAdminNote";
@@ -23,7 +23,7 @@ import { CANVAS_PUBLIC_MATRIX_PATH } from "@shared/canvasPublicLines";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNewcomer } from "@/lib/newcomer";
 import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
-import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, RING, TILE, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, RING, TILE, WORLD } from "@/components/journey/look";
 
 // Each behind its module, so a village with both off downloads none of them.
 const ConflictAgreementPublic = lazy(() => import("@/components/canvas/ConflictAgreementPublic"));
@@ -42,19 +42,24 @@ const paragraphs = (...texts: string[]) => texts.filter((t) => t.trim() !== "");
 /** The anchor every door to the mechanics lands on (the old /game-mechanics redirects here). */
 export const GAME_MECHANICS_ANCHOR = "game-mechanics";
 
-/** A section of the page: a panel with its own anchor, clear of the sticky header. */
-function Panel({ id, icon, heading, children, className = CARD }: { id: string; icon?: ReactNode; heading: ReactNode; children: ReactNode; className?: string }) {
+/**
+ * A section of the page: a panel with its own anchor, clear of the sticky header. It opens the way every
+ * section in the sheet's world opens: a glyph in a gold ring, a kicker that places the reader, then the
+ * village's own heading in the display face.
+ */
+function Panel({ id, icon, eyebrow, heading, children, className = CARD }: { id: string; icon: ReactNode; eyebrow: ReactNode; heading: ReactNode; children: ReactNode; className?: string }) {
   return (
     <section id={id} aria-labelledby={`${id}-heading`} className={`${className} scroll-mt-24 min-w-0`}>
       <div className="mb-4 flex items-center gap-3">
-        {icon ? (
-          <span className={RING} aria-hidden="true">
-            {icon}
-          </span>
-        ) : null}
-        <h2 id={`${id}-heading`} className={`${H2} min-w-0 break-words`}>
-          {heading}
-        </h2>
+        <span className={RING} aria-hidden="true">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className={EYEBROW}>{eyebrow}</p>
+          <h2 id={`${id}-heading`} className={`${H2} break-words`}>
+            {heading}
+          </h2>
+        </div>
       </div>
       {children}
     </section>
@@ -207,7 +212,7 @@ export default function Governance() {
               <p className={`${NOTE} min-w-0`}>
                 <Trans context="how we work together: the jump">Read how we work together before?</Trans>
               </p>
-              <a href={`#${GAME_MECHANICS_ANCHOR}`} className={BTN_NOTICE}>
+              <a href={`#${GAME_MECHANICS_ANCHOR}`} className={BTN_PRIMARY}>
                 <Trans context="how we work together: the jump">Skip to the game mechanics</Trans>
                 <ArrowDown className="size-4" aria-hidden="true" />
               </a>
@@ -244,7 +249,7 @@ export default function Governance() {
                     platform writes from the rules it enforces. Read only, and from
                     the PUBLIC door, which can serve nothing a village wrote. */}
                 {canvasOn && (
-                  <Panel id="who-decides" icon={<Scale className="size-5" />} heading={<Trans context="governance page section heading">Who Decides What</Trans>}>
+                  <Panel id="who-decides" icon={<Scale className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">Decision rights</Trans>} heading={<Trans context="governance page section heading">Who Decides What</Trans>}>
                     <p className={NOTE}>
                       <Trans context="governance page: who decides what">For each kind of decision:</Trans>
                     </p>
@@ -265,7 +270,7 @@ export default function Governance() {
 
                 {/* What guides us */}
                 {!principles.hidden && (
-                  <Panel id="principles" heading={principles.fields.heading}>
+                  <Panel id="principles" icon={<Lotus className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">What we hold to</Trans>} heading={principles.fields.heading}>
                     {principles.lists.items.length > 0 && (
                       <ul className="grid list-none gap-3 p-0 sm:grid-cols-3">
                         {principles.lists.items.map((p, i) => {
@@ -285,7 +290,7 @@ export default function Governance() {
 
                 {/* How a decision gets made, as stepping stones */}
                 {!decision.hidden && (
-                  <Panel id="decisions" heading={decision.fields.heading}>
+                  <Panel id="decisions" icon={<Seed className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">The path of a decision</Trans>} heading={decision.fields.heading}>
                     {decision.fields.intro && <p className={`${NOTE} mb-4 break-words`}>{decision.fields.intro}</p>}
                     {decision.lists.steps.length > 0 && (
                       <ol className="list-none space-y-3 p-0">
@@ -306,7 +311,7 @@ export default function Governance() {
 
                 {/* Circles and their domains. The circles page draws the real ones. */}
                 {!circles.hidden && (
-                  <Panel id="circles" heading={circles.fields.heading}>
+                  <Panel id="circles" icon={<Gathering className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">Who looks after what</Trans>} heading={circles.fields.heading}>
                     {circles.fields.intro && (
                       <p className={`${NOTE} mb-4 break-words`}>
                         <Emphasized text={circles.fields.intro} />
@@ -334,7 +339,7 @@ export default function Governance() {
                     and before there is one the restorative steps of its published exit
                     policy. The reasoning is in VillageConflictSteps and ConflictAgreementPublic. */}
                 {!conflict.hidden && (
-                  <Panel id="conflict" icon={<Scale className="size-5" />} heading={conflict.fields.heading}>
+                  <Panel id="conflict" icon={<TendingHands className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">When it gets hard</Trans>} heading={conflict.fields.heading}>
                     {conflictParagraphs.length > 0 && (
                       <div className={`${NOTE} mb-5 space-y-3`}>
                         {conflictParagraphs.map((text, i) => (
@@ -364,7 +369,7 @@ export default function Governance() {
                     the village can do about it. "How long" is the village's own
                     `governance.veto_hours`, held back until it is known. */}
                 {showStewards && (
-                  <Panel id="stewards" icon={<Canopy className="size-5" />} heading={stewards.fields.heading}>
+                  <Panel id="stewards" icon={<Canopy className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">Who can stop a decision</Trans>} heading={stewards.fields.heading}>
                     <div className={`${NOTE} space-y-3`}>
                       {stewardParagraphs.map((text, i) => (
                         <p key={i} className="break-words">
@@ -377,7 +382,7 @@ export default function Governance() {
 
                 {/* How rules evolve */}
                 {!rules.hidden && (
-                  <Panel id="rules" icon={<RefreshCw className="size-5" />} heading={rules.fields.heading}>
+                  <Panel id="rules" icon={<Sprout className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">How rules change</Trans>} heading={rules.fields.heading}>
                     <p className={`${NOTE} break-words`}>
                       <Emphasized text={rules.fields.body} />
                     </p>
@@ -388,7 +393,7 @@ export default function Governance() {
                     through, printable by anyone, signed in or not. Credited wherever
                     the canvas appears. */}
                 {canvasOn && (
-                  <Panel id="canvas-on-paper" icon={<Printer className="size-5" />} heading={<Trans>The Governance Canvas, on Paper</Trans>}>
+                  <Panel id="canvas-on-paper" icon={<Printer className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">Take it with you</Trans>} heading={<Trans>The Governance Canvas, on Paper</Trans>}>
                     <ul className={`${NOTE} mb-3 list-disc space-y-1 pl-5`}>
                       <li><Trans context="governance page: the canvas">Twelve blocks, from purpose to impact, for a group to talk through together.</Trans></li>
                       <li><Trans context="governance page: the canvas">They cover who decides, how conflict is held and how resources move.</Trans></li>
@@ -412,7 +417,7 @@ export default function Governance() {
 
                 {/* Hypha: drawn only while this village has a Hypha space to describe. */}
                 {showHypha && (
-                  <Panel id="hypha" icon={<Network className="size-5" />} heading={<span lang={langOf("hypha.heading")}>{hyphaSection.fields.heading}</span>}>
+                  <Panel id="hypha" icon={<Network className="size-5" />} eyebrow={<Trans context="how we work together: section kicker">On chain</Trans>} heading={<span lang={langOf("hypha.heading")}>{hyphaSection.fields.heading}</span>}>
                     <p lang={langOf("hypha.body")} className={`${NOTE} mb-4 break-words`}>
                       <Emphasized text={hyphaSection.fields.body} />
                     </p>
