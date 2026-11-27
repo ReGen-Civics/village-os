@@ -2055,6 +2055,12 @@ msgctxt "review inbox: a row, what deciding it does"
 msgid "Settling it releases what the cycle holds."
 msgstr "Cerrarlo libera lo que el ciclo guarda."
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a save failed"
+msgid "That did not go through. Try again."
+msgstr "No se pudo guardar. Inténtelo de nuevo."
+
 # needs-native-review: visitor pages, 26 Nov 2026
 #: client/src/pages/GameMechanics.tsx
 msgctxt "a proposal's state chip"
@@ -4724,6 +4730,12 @@ msgstr "Aquí ahora"
 msgctxt "CommunityCalendarCard, label"
 msgid "Until"
 msgstr "Hasta"
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: finalExists"
+msgid "The final conversation is already open or done."
+msgstr "La conversación final ya está abierta o terminada."
 
 # needs-native-review: the rows of /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/sourceWords.ts
@@ -18462,6 +18474,12 @@ msgctxt "role measures, a withheld number"
 msgid "too few"
 msgstr "muy pocos"
 
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+#: client/src/components/openProposal/ProposalVersions.tsx
+msgctxt "proposal versions: the kicker"
+msgid "The proposal"
+msgstr "La propuesta"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/SetPassword.tsx
 msgctxt "SetPassword, p"
@@ -19185,6 +19203,12 @@ msgctxt "NeedsSetupStep, p"
 msgid "A village is a business designed to meet the needs of the people in it. Setting this up front orients everything after it: meeting one need for a tenth of your members and meeting all ten for all of them are two different economic engines."
 msgstr "Una aldea es un negocio diseñado para atender las necesidades de las personas que viven en ella. Definir esto desde el inicio orienta todo lo que sigue: atender una necesidad para una décima parte de sus miembros y atender las diez para todos son dos motores económicos distintos."
 
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: whoReads"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "IdentityPackPanel, placeholder"
@@ -19717,9 +19741,9 @@ msgstr "Su lista"
 
 # needs-native-review: consent round answers, application stages, let-go reason; usted, 2026-11-26
 #: client/src/components/openProposal/trackStageWords.ts
-msgctxt "application stage"
-msgid "Follow-ups and intuition conversations"
-msgstr "Seguimientos y conversaciones de intuición"
+#~ msgctxt "application stage"
+#~ msgid "Follow-ups and intuition conversations"
+#~ msgstr "Seguimientos y conversaciones de intuición"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
@@ -21888,6 +21912,12 @@ msgstr "Quitar el silencio a esta conversación"
 msgctxt "EmailPages, p"
 msgid "Stop everything for this address?"
 msgstr "¿Detener todo para esta dirección?"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+#: client/src/components/openProposal/ProposalVersions.tsx
+msgctxt "proposal versions: the heading"
+msgid "Earlier versions of the proposal"
+msgstr "Versiones anteriores de la propuesta"
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -25134,6 +25164,12 @@ msgctxt "portal code step: Google instead"
 msgid "Use Google instead"
 msgstr "Usar Google en su lugar"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the note box"
+msgid "Write a note"
+msgstr "Escriba una nota"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ContentEditorTab.tsx
 msgctxt "ContentEditorTab, p"
@@ -25229,6 +25265,12 @@ msgstr "{season} cambia en {daysLeft, plural, one {# día} other {# días}}, el 
 msgctxt "module moon-review, for whom"
 msgid "Villages that pay their core team for deliverables and want one honest record of the moon's work."
 msgstr "Aldeas que pagan a su equipo central por entregables y quieren un registro honesto del trabajo de la luna."
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the file picker"
+msgid "Add a file"
+msgstr "Agregar un archivo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: item.by
@@ -26218,6 +26260,12 @@ msgctxt "module canvas, for whom"
 msgid "Villages that want to see where their governance stands before they ask members to start."
 msgstr "Aldeas que quieren ver dónde está su gobernanza antes de pedir a los miembros que empiecen."
 
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: referencesShort"
+msgid "Private to the team, and deleted with the application."
+msgstr "Privado para el equipo, y se borra con la postulación."
+
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/components/governance/now/NowView.tsx
 msgctxt "governance now: a read"
@@ -26651,6 +26699,12 @@ msgstr "Su Ikigai y sus personajes"
 msgctxt "when the review time ends"
 msgid "Waits until {until}"
 msgstr "Espera hasta {until}"
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the heading"
+msgid "Conversation notes"
+msgstr "Notas de las conversaciones"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Messages.tsx
@@ -28003,6 +28057,12 @@ msgstr "Yo la tomo"
 msgctxt "HousingAdminPanel, p"
 msgid "No hamlets yet. Add one with its structure key from the map."
 msgstr "Todavía no hay caseríos. Agregue uno con su clave de estructura del mapa."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: opens what it is"
+msgid "What this holds"
+msgstr "Qué contiene"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal sent, later role"
@@ -30045,6 +30105,12 @@ msgctxt "how pay works"
 msgid "Your goals for the moon are what we agree to, and we work toward them, because that's what we're here for. This is an early-stage project, and what it needs can change mid-moon. So we stay responsive, and we're paid on what we truly accomplish."
 msgstr "Sus metas para la luna son lo que acordamos, y trabajamos para cumplirlas, porque para eso estamos aquí. Esta aldea está en sus primeras etapas, y lo que necesita puede cambiar a mitad de la luna. Así que respondemos a lo que surge, y se nos paga por lo que de verdad logramos."
 
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the guide's questions, folded in"
+msgid "Questions to talk through"
+msgstr "Preguntas para conversar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ModuleDetail.tsx
 msgctxt "ModuleDetail, h3"
@@ -30436,9 +30502,9 @@ msgstr "p. ej. valle de río entre robles viejos, templado y con neblina"
 
 # needs-native-review: consent round answers, application stages, let-go reason; usted, 2026-11-26
 #: client/src/components/openProposal/trackStageWords.ts
-msgctxt "application stage"
-msgid "References"
-msgstr "Referencias"
+#~ msgctxt "application stage"
+#~ msgid "References"
+#~ msgstr "Referencias"
 
 # needs-native-review: player card, 26 Nov 2026
 #: client/src/components/playerCard/playerCardMessages.ts
@@ -30624,9 +30690,9 @@ msgstr "A medida que la aldea crece, asume estas responsabilidades por sus propi
 
 # needs-native-review: consent round answers, application stages, let-go reason; usted, 2026-11-26
 #: client/src/components/openProposal/trackStageWords.ts
-msgctxt "application stage"
-msgid "Shortlist"
-msgstr "Preselección"
+#~ msgctxt "application stage"
+#~ msgid "Shortlist"
+#~ msgstr "Preselección"
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
@@ -31236,6 +31302,12 @@ msgstr "Es mi profesión"
 msgctxt "the phone's More sheet: close button"
 msgid "Close More"
 msgstr ""
+
+# needs-native-review: the team page's kickers, QA round 4
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal: the kicker above the two cards side by side"
+msgid "The cards"
+msgstr "Las tarjetas"
 
 # needs-native-review: player card signs, 26 Nov 2026
 #: client/src/components/playerCard/roleSignMessages.ts
@@ -33245,6 +33317,12 @@ msgstr "editado"
 #~ msgid "The day page, and Sea chart where the village chose it."
 #~ msgstr "La página de día, y Carta náutica donde la aldea la eligió."
 
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: opens who reads them"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk error"
@@ -33853,6 +33931,12 @@ msgctxt "ModuleHistoryStrip, Link"
 msgid "Read the vote"
 msgstr "Leer la votación"
 
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: confirm before deleting"
+msgid "Take this off for good?"
+msgstr "¿Quitarla para siempre?"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequest.tsx
 msgctxt "decline a suggested edit"
@@ -34164,6 +34248,12 @@ msgstr "Una nota, si quiere"
 msgid "Choose a .json file"
 msgstr "Elija un archivo .json"
 
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: gatheredMore"
+msgid "What this holds"
+msgstr "Qué contiene"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/CanvasWorkbook.tsx
 msgid "Print this workbook to fill in by hand, or save it as a Markdown file to fill in on a screen. Both happen in your browser, and nothing is sent anywhere."
@@ -34180,6 +34270,12 @@ msgstr "<0/>Iniciar una propuesta"
 msgctxt "NeedsPanel, p"
 msgid "Designed your needs in a ReGen Civics session? Start from your profile, and read every part before anything is set."
 msgstr "¿Diseñó sus necesidades en una sesión de ReGen Civics? Empiece desde su perfil, y lea cada parte antes de que se configure algo."
+
+# needs-native-review: the bell, conversation notes, 27 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: several notices of one kind batched into a line, kind application_conversation_notes"
+msgid "{n} conversations have new notes."
+msgstr "{n} conversaciones tienen notas nuevas."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/companionWelcome/LensSheet.tsx
@@ -35758,6 +35854,12 @@ msgstr "Detenido: {0}, desde {1}.{2}"
 msgctxt "talk it out: offline"
 msgid "That did not reach the village. Check your connection and try again."
 msgstr "Eso no llegó a la aldea. Revise su conexión e inténtelo de nuevo."
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: send the chosen file"
+msgid "Add the file"
+msgstr "Agregar el archivo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/roleCard/valueExplainerWords.ts
@@ -37535,6 +37637,12 @@ msgstr "Al enviarla, usted se alinea con estas palabras:"
 msgctxt "game variable stay.low_balance_warn_nights, description"
 msgid "Notify a guest when their remaining credits cover this many nights or fewer at their current rate."
 msgstr "Avisar a un invitado cuando sus créditos restantes cubren esta cantidad de noches o menos a su tarifa actual."
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: confirm the delete"
+msgid "Yes, take it off"
+msgstr "Sí, quitarla"
 
 # needs-native-review: the live sessions pages and the meeting rhythm, 26 Nov 2026
 #: client/src/components/sessions/sessionWords.ts
@@ -40038,6 +40146,13 @@ msgstr "la aldea no tiene moneda configurada"
 msgctxt "approval inbox"
 msgid "Approval inbox"
 msgstr "Bandeja de aprobaciones"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+#. placeholder {0}: when(v.at)
+#: client/src/components/openProposal/ProposalVersions.tsx
+msgctxt "proposal versions: the words until that day"
+msgid "Before {0}"
+msgstr "Antes del {0}"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -46226,9 +46341,9 @@ msgstr "Aceptar con este efectivo"
 
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/openProposal/onboardingWords.ts
-msgctxt "applicant onboarding: primary.add_final"
-msgid "Add the final conversation"
-msgstr "Agregar la conversación final"
+#~ msgctxt "applicant onboarding: primary.add_final"
+#~ msgid "Add the final conversation"
+#~ msgstr "Agregar la conversación final"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
@@ -49583,6 +49698,12 @@ msgctxt "proposal wizard"
 msgid "Not tied to one domain"
 msgstr "Sin un dominio en particular"
 
+# needs-native-review: the six application stages, 27 Nov 2026
+#: client/src/components/openProposal/trackStageWords.ts
+msgctxt "application stage"
+msgid "Start"
+msgstr "Inicio"
+
 # needs-native-review: the speed cards' heading, untranslated in es.po until now and caught by the strict catalog check after the fold, 27 Nov 2026
 #: client/src/components/Layout.tsx
 #: client/src/components/mobile/SpeedCards.tsx
@@ -51819,6 +51940,12 @@ msgctxt "profile: a suited quest, matched on its role gate"
 msgid "Held for a role you hold."
 msgstr "Reservada para un rol que usted tiene."
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a file kind"
+msgid "Transcript"
+msgstr "Transcripción"
+
 # needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: nameOf(c)
 #: client/src/components/admin/CompareTab.tsx
@@ -52781,6 +52908,12 @@ msgctxt "role card: a commitment inside a sentence"
 msgid "when the term ends"
 msgstr "cuándo termina el periodo"
 
+# needs-native-review: the phone's decide panel holds the choice, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: decideBelow"
+msgid "Adopt or decline below."
+msgstr "Adopte o decline abajo."
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.role_card_shared, description"
@@ -53082,9 +53215,9 @@ msgstr "Quién decide"
 
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/openProposal/onboardingWords.ts
-msgctxt "applicant onboarding: finalExists"
-msgid "This application already has a final conversation."
-msgstr "Esta solicitud ya tiene una conversación final."
+#~ msgctxt "applicant onboarding: finalExists"
+#~ msgid "This application already has a final conversation."
+#~ msgstr "Esta solicitud ya tiene una conversación final."
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
@@ -55128,9 +55261,9 @@ msgstr "{0}: {1}, pendiente desde {2}"
 
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/openProposal/onboardingWords.ts
-msgctxt "applicant onboarding: finalAdded"
-msgid "The final conversation is added. It opens once the conversations before it are written up."
-msgstr "Se agregó la conversación final. Se abre cuando las conversaciones anteriores estén escritas."
+#~ msgctxt "applicant onboarding: finalAdded"
+#~ msgid "The final conversation is added. It opens once the conversations before it are written up."
+#~ msgstr "Se agregó la conversación final. Se abre cuando las conversaciones anteriores estén escritas."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/map/MapMembersDoor.tsx
@@ -55180,6 +55313,12 @@ msgstr "Confirme su contraseña"
 msgctxt "game variable category"
 msgid "Badges"
 msgstr "Insignias"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: gatheredKicker"
+msgid "Before the final conversation"
+msgstr "Antes de la conversación final"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decision.tsx
@@ -56399,6 +56538,12 @@ msgctxt "HousingTiersPanel, p"
 msgid "Loading."
 msgstr "Cargando."
 
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+#: client/src/components/openProposal/ProposalVersions.tsx
+msgctxt "proposal versions: the current words"
+msgid "Now"
+msgstr "Ahora"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
@@ -57500,6 +57645,12 @@ msgstr "Su id de dueño en la biblioteca"
 msgctxt "game variable unit"
 msgid "credits"
 msgstr "créditos"
+
+# needs-native-review: the move to the final conversation only once References and proposal is done, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: finalAtReferences"
+msgid "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up."
+msgstr "La conversación final llega cuando Referencias y propuesta está completa: la postulación preseleccionada, sus conversaciones escritas y cada referencia entregada y contactada."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: pctText(ballot.quorumPct)
@@ -59438,6 +59589,12 @@ msgstr "Cuando la agenda esté lista, empiece el primer punto."
 #~ msgid "Animals"
 #~ msgstr ""
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: empty"
+msgid "No notes yet."
+msgstr "Todavía no hay notas."
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/ProposeARole.tsx
@@ -60313,6 +60470,12 @@ msgctxt "TheVessel, span"
 msgid "What for{0}"
 msgstr "Para qué{0}"
 
+# needs-native-review: the team page's kickers, QA round 4
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal: the kicker above the roles asked for"
+msgid "What they ask to hold"
+msgstr "Lo que pide sostener"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -60847,6 +61010,12 @@ msgctxt "hidden map page"
 msgid "Reading the queue"
 msgstr "Leyendo la cola"
 
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the one line under the heading"
+msgid "Never shown to the applicant."
+msgstr "Nunca se muestran a la persona que postula."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -61247,9 +61416,9 @@ msgstr "Guardar cambios"
 
 # needs-native-review: consent round answers, application stages, let-go reason; usted, 2026-11-26
 #: client/src/components/openProposal/trackStageWords.ts
-msgctxt "application stage"
-msgid "Decision"
-msgstr "Decisión"
+#~ msgctxt "application stage"
+#~ msgid "Decision"
+#~ msgstr "Decisión"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Quests.tsx
@@ -61627,6 +61796,12 @@ msgctxt "funding rounds"
 msgid "Share an idea"
 msgstr "Compartir una idea"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a file kind"
+msgid "Recording"
+msgstr "Grabación"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/ConsentCard.tsx
 msgctxt "ConsentCard, li"
@@ -61638,6 +61813,12 @@ msgstr "Alguien que conoce la ley del lugar donde está esta aldea ha leído có
 msgctxt "GeneKeysMoon, span"
 msgid "Siddhi"
 msgstr "Siddhi"
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: save a written note"
+msgid "Save the note"
+msgstr "Guardar la nota"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -63269,6 +63450,12 @@ msgctxt "JourneyDetail, p"
 msgid "The reminder times follow the dials in Comms Settings until you change a step here."
 msgstr "Las horas de los recordatorios siguen los ajustes de Comunicaciones hasta que usted cambie un paso aquí."
 
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and their proposal is fixed."
+msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y su propuesta queda fija."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profileDash/TreasuryPanel.tsx
 msgctxt "TreasuryPanel, Link"
@@ -63595,6 +63782,12 @@ msgctxt "button that adopts the conflict agreement"
 msgid "Adopt it"
 msgstr "Adoptarlo"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a file kind"
+msgid "File"
+msgstr "Archivo"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ProfileImportDoor.tsx
 msgctxt "ProfileImportDoor, p"
@@ -63817,6 +64010,12 @@ msgctxt "circles page, the map picture for a visitor"
 msgid "The living map opens to members. This picture shows each circle and its roles: a hollow dot is a role still open."
 msgstr "El mapa vivo se abre para quienes son miembros. Esta imagen muestra cada círculo y sus roles: un punto hueco es un rol que sigue abierto."
 
+# needs-native-review: the bell, conversation notes, 27 Nov 2026
+#: client/src/lib/noticeKindWordsI18n.ts
+msgctxt "the bell: why a notice of this kind matters, kind application_conversation_notes"
+msgid "An interviewer added notes to a conversation with an applicant. Read them on the application. The applicant never sees them."
+msgstr "Una persona entrevistadora agregó notas a una conversación con alguien que postula. Léalas en la postulación. Quien postula nunca las ve."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/CodeChip.tsx
 msgctxt "proposed changes: a short code"
@@ -63904,6 +64103,12 @@ msgstr "Un registro que sabe quién lo mira: invitados, miembros y roles ven cad
 #: client/src/components/hiddenMap/PinPanel.tsx
 #~ msgid "Saved. Your visit is waiting for a member to confirm it on the quest board."
 #~ msgstr "Guardado. Su visita espera que un miembro la confirme en el tablero de misiones."
+
+# needs-native-review: the six application stages, 27 Nov 2026
+#: client/src/components/openProposal/trackStageWords.ts
+msgctxt "application stage"
+msgid "References and proposal"
+msgstr "Referencias y propuesta"
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
@@ -65031,6 +65236,12 @@ msgctxt "Review, a door to the one list"
 msgid "Find it here"
 msgstr "Encuéntrelo aquí"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the author removes their note"
+msgid "Take it off"
+msgstr "Quitarla"
+
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/components/governance/now/NowView.tsx
 msgctxt "governance now: your voice"
@@ -66052,6 +66263,12 @@ msgctxt "the bell: several notices of one kind batched into a line, kind role_ta
 msgid "{n} tasks you handed on are done."
 msgstr "{n} tareas que usted pasó están listas."
 
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: cancel the delete"
+msgid "Keep it"
+msgstr "Conservarla"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
@@ -67028,6 +67245,12 @@ msgstr "Leyendo la versión de Sera"
 msgctxt "proposal wizard"
 msgid "Recurring"
 msgstr "Recurrente"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: referencesKicker"
+msgid "Who vouches for them"
+msgstr "Quién responde por esta persona"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
@@ -68700,6 +68923,12 @@ msgstr "Recibos"
 msgctxt "Badges, placeholder"
 msgid "e.g. carpentry"
 msgstr "p. ej. carpintería"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: the one line under the heading"
+msgid "Notes only: nothing here is scored or ranked."
+msgstr "Solo notas: aquí nada se puntúa ni se clasifica."
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
@@ -70615,6 +70844,13 @@ msgstr "Significado de Equidad Ganada"
 msgctxt "calendar view tabs"
 msgid "Calendar views"
 msgstr "Vistas del calendario"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationGuide.tsx
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the kicker"
+msgid "Private to the team"
+msgstr "Privado para el equipo"
 
 #. placeholder {0}: short(aim) || notYet
 #: client/src/pages/ProposeARole.tsx
@@ -73501,6 +73737,12 @@ msgstr "$ReGen"
 msgctxt "module feed, name"
 msgid "Village Feed"
 msgstr "Novedades de la aldea"
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a file failed to open"
+msgid "That file did not open."
+msgstr "Ese archivo no se abrió."
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
@@ -77465,6 +77707,12 @@ msgctxt "admin art library filter"
 msgid "All"
 msgstr "Todo"
 
+# needs-native-review: the team page's kickers, QA round 4
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal: the kicker above why and what they would do"
+msgid "Why they apply"
+msgstr "Por qué se postula"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar legend"
 msgid "something else on"
@@ -80164,6 +80412,12 @@ msgctxt "a canvas moon gathering is being offered"
 msgid "Offering"
 msgstr "Ofreciendo"
 
+# needs-native-review: the six application stages, 27 Nov 2026
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: primary.conversation"
+msgid "Go to the conversation"
+msgstr "Ir a la conversación"
+
 #: client/src/components/calendar/MoonTurnings.tsx
 msgctxt "calendar turnings"
 msgid "New moon, this moon opens"
@@ -80994,6 +81248,12 @@ msgctxt "player card, tensions open"
 msgid "{n, plural, one {# open tension} other {# open tensions}}"
 msgstr "{n, plural, one {# tensión abierta} other {# tensiones abiertas}}"
 
+# needs-native-review: the six application stages, 27 Nov 2026
+#: client/src/components/openProposal/trackStageWords.ts
+msgctxt "application stage"
+msgid "Agreement"
+msgstr "Acuerdo"
+
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module crowdpool, setup"
@@ -81363,6 +81623,12 @@ msgstr "Crea una contraseña nueva"
 msgctxt "module commerce, benefit 3"
 msgid "Zeffy and manual paths for fee-free giving"
 msgstr "Zeffy y caminos manuales para donar sin comisiones"
+
+# needs-native-review: the proposal's earlier versions, QA round 2
+#: client/src/components/openProposal/ProposalVersions.tsx
+msgctxt "proposal versions: what they are"
+msgid "The applicant refined their proposal. Their words now come first, then each earlier version, newest first."
+msgstr "La persona que postula mejoró su propuesta. Primero van sus palabras actuales y luego cada versión anterior, de la más reciente a la más antigua."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall eyebrow"
@@ -83432,6 +83698,12 @@ msgctxt "proposal wizard"
 msgid "The whole roll reads this before voting."
 msgstr "Todo el padrón lee esto antes de votar."
 
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: opens the note box and the file picker"
+msgid "Add a note or file"
+msgstr "Agregar una nota o un archivo"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/NotifyPrefsPanel.tsx
 msgctxt "notification settings: the daily failed-actions report email, admins and founders only"
@@ -84018,6 +84290,12 @@ msgstr "Un rol nuevo"
 msgctxt "ProfileImport, p"
 msgid "Your stewards have not chosen any modules yet."
 msgstr "Sus custodios todavía no han elegido ningún módulo."
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: closes the note box"
+msgid "Done"
+msgstr "Listo"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/LetterDraftsPanel.tsx
@@ -85692,6 +85970,12 @@ msgctxt "proposal wizard"
 msgid "Starting the Game"
 msgstr "El inicio del Juego"
 
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: finalTalksFirst"
+msgid "Write up the conversations before it first. Then move the application to the final conversation."
+msgstr "Primero escriba las conversaciones anteriores. Después pase la postulación a la conversación final."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "Name members read (optional)"
@@ -85725,6 +86009,12 @@ msgstr "{n} votaciones aprobadas."
 msgctxt "draft page: a field"
 msgid "Why it matters"
 msgstr "Por qué importa"
+
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: a written note"
+msgid "Note"
+msgstr "Nota"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/roleDraft/DiscoverStep.tsx
@@ -87263,6 +87553,12 @@ msgctxt "visitor profile: data section"
 msgid "Your data"
 msgstr "Sus datos"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: who reads them"
+msgid "Private to the people who hold each conversation, the role that makes the final call, and the people who place roles. Never shown to the applicant. No AI reads them."
+msgstr "Privadas para quienes tienen cada conversación, el rol que toma la decisión final y quienes asignan los roles. Nunca se muestran a la persona que postula. Ninguna IA las lee."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profileDash/TreasuryPanel.tsx
 msgctxt "TreasuryPanel, p"
@@ -88692,6 +88988,12 @@ msgstr "Las decisiones más recientes sobre {name}, con la nota con que se decid
 msgctxt "protocols install card"
 msgid "Tap Add."
 msgstr "Toque Agregar."
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: primary.add_final"
+msgid "Move to the final conversation"
+msgstr "Pasar a la conversación final"
 
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
@@ -92634,6 +92936,12 @@ msgctxt "constitution law \"A vote is counted against the day it opened\", enfor
 msgid "the ballots snapshot columns (drizzle/0089) + server/lib/ballots.test.ts"
 msgstr "las columnas de fotografía de las votaciones (drizzle/0089) + server/lib/ballots.test.ts"
 
+# needs-native-review: conversation notes, 27 Nov 2026
+#: client/src/components/openProposal/ConversationNotes.tsx
+msgctxt "conversation notes: the file input"
+msgid "Choose the file"
+msgstr "Elija el archivo"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
 #~ msgid "Start with the role that calls you. Pick up to three, and tell us what you bring to each if you like."
@@ -95164,6 +95472,12 @@ msgstr "Eventos"
 msgctxt "role editor, qualities hint, the focus line"
 msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card picks the words for the commitment it shows, in steps from 10% to 100%."
 msgstr "Escriba {FOCUS_TOKEN} en una línea propia para decir cuánta dedicación pide el rol: la tarjeta elige las palabras para el compromiso que muestra, en pasos del 10% al 100%."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+#: client/src/components/openProposal/onboardingWords.ts
+msgctxt "applicant onboarding: gatheredShort"
+msgid "Everything {role} reads, as written."
+msgstr "Todo lo que lee {role}, tal como se escribió."
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
