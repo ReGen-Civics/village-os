@@ -56,6 +56,7 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
+import path from "node:path";
 
 /** A status token: the first email's random one is 32 characters, a signed link's is about 130. */
 const TOKEN_MAX = 300;
@@ -279,7 +280,9 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
   });
 
   // ── Shortlist, references, follow-ups and the final call (server/routes/applicantOnboarding.ts) ──
-  registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp });
+  // The conversations' files (0442) sit beside the proposals' private files, outside the public uploads volume.
+  const noteFilesDir = deps.proposalFileDir ? path.join(path.dirname(deps.proposalFileDir), "private-conversation-notes") : undefined;
+  registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp, noteFilesDir });
 
   // ── The clock: reminders only ─────────────────────────────────────────────
   registerJob(REVIEW_CLOCK_JOB, CLOCK_EVERY_MS, async () => {

@@ -21,7 +21,9 @@ import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, 
 import { FOLLOWUP_NOTE_MAX, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
 import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
+import ConversationNotes from "@/components/openProposal/ConversationNotes";
 import type { GuideView } from "@shared/conversationGuide";
+import type { ConversationNotesView } from "@shared/conversationNotes";
 import { GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, type GutAnswer, type InterviewState, type ScoreLevel } from "@shared/applicationReview";
 import { onboardingWords, useOnboardingWords } from "@/components/openProposal/onboardingWords";
 
@@ -55,6 +57,8 @@ interface ServedWalkthrough {
   } | null;
   roleNames: { followup: string | null; finalCall: string | null };
   guide?: GuideView | null;
+  /** Each conversation's private notes and files this reader may read (0442). Never served to the applicant. */
+  conversations?: ConversationNotesView[];
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -173,6 +177,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
       )}
 
       {w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />}
+      {w.conversations && w.conversations.length > 0 && <ConversationNotes base={base} conversations={w.conversations} onSaved={() => void load()} />}
       {gathered && <Gathered w={w} />}
     </section>
   );

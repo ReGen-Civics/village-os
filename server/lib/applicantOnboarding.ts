@@ -37,6 +37,18 @@ import {
 import { kindOfRef, parseCriteria, reviewStageOf } from "../../shared/applicationReview";
 import * as review from "../repos/applicationReview";
 import * as repo from "../repos/applicantOnboarding";
+import * as notesRepo from "../repos/applicationConversationNotes";
+import {
+  CONVERSATION_NOTE_KINDS,
+  mayReadConversationNotes,
+  mayRemoveNote,
+  NOTES_NOTICES,
+  NOTES_WORDS,
+  readNoteBody,
+  type ConversationNoteKind,
+  type ConversationNotesView,
+  type ServedNote,
+} from "../../shared/conversationNotes";
 import * as guideRepo from "../repos/applicationGuide";
 import { guideItems, mayUseGuide, readGuideNote, GUIDE_WORDS, type GuideItem, type GuideView } from "../../shared/conversationGuide";
 import { sectionsForMany } from "./roleCardSections";
@@ -425,6 +437,8 @@ export interface Walkthrough {
   roleNames: { followup: string | null; finalCall: string | null };
   /** The conversation guide: the role's criteria and qualities as prompts, with reviewers' notes. Null for anybody who may not use it. */
   guide: GuideView | null;
+  /** Each conversation's private notes and files, only the conversations this viewer may read (shared/conversationNotes.ts). */
+  conversations: ConversationNotesView[];
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -503,6 +517,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     members: mayAssign ? await review.membersHoldingRoles(pool) : [],
     scorecards: await scorecardsFor(deps, ref, viewerId),
     guide: await guideFor(deps, ref, s, viewerId),
+    conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
@@ -547,4 +562,132 @@ export async function stagesOf(deps: Pick<ReviewDeps, "getPool">, refs: readonly
     out.set(ref, { now: t.now, who: t.who, next: t.next });
   }
   return out;
+}
+
+// ── The conversations' notes (0442) ─────────────────────────────────────────
+
+/** Whether this viewer may read, and add to, one conversation's notes. */
+function readsConversation(s: Standing, roleId: string): boolean {
+  return mayReadConversationNotes({ isApplicant: s.isApplicant, recused: s.recused, holdsPower: s.holdsPower, isFinalCall: s.isFinalCall, holdsConversationRole: s.roles.has(roleId) });
+}
+
+/** The file door for one note: it asks who the reader is again on every read. */
+export const noteFileHref = (ref: string, id: number): string => `/api/governance/applications/${encodeURIComponent(ref)}/conversation-notes/${id}/file`;
+
+/** Each conversation this viewer may read, with its notes, oldest first. Never for the applicant or anyone who stepped out. */
+async function conversationNotesFor(deps: ReviewDeps, ref: string, s: Standing, viewerId: string, interviews: review.StoredInterview[]): Promise<ConversationNotesView[]> {
+  if (s.isApplicant || s.recused) return [];
+  const readable = interviews.filter((i) => readsConversation(s, i.roleId));
+  if (!readable.length) return [];
+  const pool = deps.getPool();
+  const stored = await notesRepo.conversationNotesOf(pool, ref);
+  const names = await review.roleNamesById(pool, readable.map((i) => i.roleId));
+  const authors = new Map<string, string>();
+  for (const u of Array.from(new Set(stored.map((n) => n.authorUserId)))) {
+    const m: any = await deps.members.byId(u);
+    authors.set(u, String(m?.name ?? "").trim().split(/\s+/)[0] || "A member");
+  }
+  return readable.map((i) => ({
+    interviewId: i.id,
+    label: NOTES_WORDS.conversation(names.get(i.roleId) ?? i.roleId, i.final),
+    roleId: i.roleId,
+    final: i.final,
+    state: i.state,
+    notes: stored
+      .filter((n) => n.interviewId === i.id)
+      .map(
+        (n): ServedNote => ({
+          id: n.id,
+          kind: n.kind,
+          body: n.kind === "text" ? n.body : null,
+          fileName: n.kind === "text" ? null : n.originalName,
+          fileHref: n.kind === "text" || !n.fileName ? null : noteFileHref(ref, n.id),
+          author: authors.get(n.authorUserId) ?? "A member",
+          on: n.createdAt.toISOString().slice(0, 10),
+          mine: mayRemoveNote(n.authorUserId, viewerId),
+        }),
+      ),
+  }));
+}
+
+/** The conversation a note is added to, when the viewer may write there. */
+async function writableConversation(deps: ReviewDeps, ref: string, viewerId: string, interviewId: number): Promise<{ ok: true; interview: review.StoredInterview } | Refusal> {
+  const pool = deps.getPool();
+  const interview = await review.interviewById(pool, interviewId);
+  if (!interview || interview.ref !== ref) return refuse(404, "not_found", NOTES_WORDS.notFound);
+  const s = await standingOf(deps, ref, viewerId);
+  if (!readsConversation(s, interview.roleId)) return refuse(403, "not_allowed", NOTES_WORDS.notAllowed);
+  return { ok: true, interview };
+}
+
+/** A written note on one conversation. The other readers get a bell notice; the applicant never does. */
+export async function addConversationText(deps: ReviewDeps, ref: string, viewerId: string, interviewId: number, raw: unknown): Promise<{ ok: true; id: number } | Refusal> {
+  const at = await writableConversation(deps, ref, viewerId, interviewId);
+  if (!at.ok) return at;
+  const read = readNoteBody(raw);
+  if (!read.ok) return refuse(400, read.error, read.error === "empty" ? NOTES_WORDS.empty : NOTES_WORDS.tooLong);
+  const id = await notesRepo.addConversationNote(deps.getPool(), { ref, interviewId, authorUserId: viewerId, kind: "text", body: read.body, fileName: null, originalName: null, at: deps.now() });
+  await tellNotesAdded(deps, ref, at.interview, viewerId, id);
+  return { ok: true, id };
+}
+
+/** Whether the viewer may add a file to one conversation, checked before its bytes are stored. */
+export async function mayAddConversationFile(deps: ReviewDeps, ref: string, viewerId: string, interviewId: number): Promise<{ ok: true } | Refusal> {
+  const at = await writableConversation(deps, ref, viewerId, interviewId);
+  return at.ok ? { ok: true } : at;
+}
+
+/** A file's row, once its bytes are stored in the private folder. The other readers get a bell notice. */
+export async function addConversationFile(
+  deps: ReviewDeps,
+  ref: string,
+  viewerId: string,
+  interviewId: number,
+  f: { kind: ConversationNoteKind; fileName: string; originalName: string },
+): Promise<{ ok: true; id: number } | Refusal> {
+  const at = await writableConversation(deps, ref, viewerId, interviewId);
+  if (!at.ok) return at;
+  if (f.kind === "text" || !CONVERSATION_NOTE_KINDS.includes(f.kind)) return refuse(400, "kind", NOTES_WORDS.wrongType);
+  const id = await notesRepo.addConversationNote(deps.getPool(), { ref, interviewId, authorUserId: viewerId, kind: f.kind, body: null, fileName: f.fileName, originalName: f.originalName.slice(0, 255), at: deps.now() });
+  await tellNotesAdded(deps, ref, at.interview, viewerId, id);
+  return { ok: true, id };
+}
+
+/** The author takes their note or file off. */
+export async function removeConversationNote(deps: ReviewDeps, ref: string, viewerId: string, id: number): Promise<{ ok: true } | Refusal> {
+  const pool = deps.getPool();
+  const note = await notesRepo.conversationNoteById(pool, ref, id);
+  if (!note) return refuse(404, "not_found", NOTES_WORDS.notFound);
+  if (!mayRemoveNote(note.authorUserId, viewerId)) return refuse(403, "not_yours", NOTES_WORDS.notYours);
+  return (await notesRepo.removeConversationNote(pool, ref, id, viewerId)) ? { ok: true } : refuse(404, "not_found", NOTES_WORDS.notFound);
+}
+
+/** One note's file for a reader who may read its conversation, or null for anybody else (the same 404 as a stranger). */
+export async function conversationFileFor(deps: ReviewDeps, ref: string, viewerId: string, id: number): Promise<{ fileName: string; originalName: string } | null> {
+  const pool = deps.getPool();
+  const note = await notesRepo.conversationNoteById(pool, ref, id);
+  if (!note || !note.fileName) return null;
+  const interview = await review.interviewById(pool, note.interviewId);
+  if (!interview || interview.ref !== ref) return null;
+  const s = await standingOf(deps, ref, viewerId);
+  if (!readsConversation(s, interview.roleId)) return null;
+  return { fileName: note.fileName, originalName: note.originalName ?? "file" };
+}
+
+/**
+ * THE INTERVIEWERS ARE TOLD, NEVER THE APPLICANT: every other person who may read this conversation's notes (its
+ * role's holders, the final-call role, the holders of the power to place people in roles) gets a bell notice with a
+ * link to the notes. No applicant name, contact or note words ride on it. One notice per note per person.
+ */
+async function tellNotesAdded(deps: ReviewDeps, ref: string, interview: review.StoredInterview, authorId: string, noteId: number): Promise<void> {
+  const pool = deps.getPool();
+  const names = await roleNamesOfApplication(pool, ref);
+  const recused = new Set(await review.recusedUsers(pool, ref));
+  const people = [...(await review.liveHoldersOfRole(pool, interview.roleId)), ...(await finalCallHolders(pool)), ...(await deps.liveHoldersOf(ADOPTING_POWER))];
+  const told = new Set<string>([authorId]);
+  for (const userId of people) {
+    if (told.has(userId) || recused.has(userId) || (await isApplicant(deps, ref, userId))) continue;
+    told.add(userId);
+    await deps.notify({ userId, type: "application_conversation_notes", title: NOTES_NOTICES.title(names), body: NOTES_NOTICES.body, link: walkthroughHref(ref), actorUserId: authorId, dedupeKey: `app:${ref}:conv-note:${noteId}:${userId}` });
+  }
 }

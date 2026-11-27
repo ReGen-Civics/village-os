@@ -179,6 +179,10 @@ export const KIND_WORDS_MSG: Readonly<Record<string, Pair>> = {
     blurb: msg({ message: "You follow up with a reference for an applicant. Read how to reach them on the application, then write your notes.", context: "the bell: why a notice of this kind matters, kind application_reference_owner" }),
     many: msg({ message: "{n} references wait for your follow-up.", context: "the bell: several notices of one kind batched into a line, kind application_reference_owner" }),
   },
+  "application_conversation_notes": {
+    blurb: msg({ message: "An interviewer added notes to a conversation with an applicant. Read them on the application. The applicant never sees them.", context: "the bell: why a notice of this kind matters, kind application_conversation_notes" }),
+    many: msg({ message: "{n} conversations have new notes.", context: "the bell: several notices of one kind batched into a line, kind application_conversation_notes" }),
+  },
   "application_references_asked": {
     blurb: msg({ message: "Your application is for your first long-term role, so references are asked. Add them on your application's page.", context: "the bell: why a notice of this kind matters, kind application_references_asked" }),
     many: msg({ message: "{n} of your applications ask for references.", context: "the bell: several notices of one kind batched into a line, kind application_references_asked" }),
