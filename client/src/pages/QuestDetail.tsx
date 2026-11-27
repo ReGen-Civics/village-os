@@ -319,6 +319,24 @@ export default function QuestDetail() {
             )}
           </div>
 
+          {/* YOURS (the lead, 27 Nov 2026): a member who holds this quest, arriving
+              from the treasury, the board or the bell, reads that it is theirs at
+              once and reaches what to do next in one tap. On a phone the doing
+              card sits below the whole story, so the strip points down to it. */}
+          {(claim?.status === "claimed" || claim?.status === "submitted") && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-notice/40 bg-card px-4 py-3" data-your-quest={claim.status}>
+              <Footprints className="size-5 shrink-0 text-notice" aria-hidden="true" />
+              <p className="m-0 min-w-0 flex-1 text-sm text-foreground">
+                {claim.status === "claimed"
+                  ? t({ message: "You took this quest. Turn in your work when it is done, or put it back.", context: "quest page: the strip for a member holding the quest" })
+                  : t({ message: "You turned this in. A steward will read it soon.", context: "quest page: the strip for a member whose work is turned in" })}
+              </p>
+              <a href="#your-quest" className="inline-flex min-h-11 items-center text-sm font-semibold text-teal-deep underline underline-offset-2 hover:text-teal">
+                {t({ message: "Your next step", context: "quest page: jump to the member's actions on this quest" })}
+              </a>
+            </div>
+          )}
+
           {/* What this quest is for. A description of the work and never a
               condition on it: the claim gate reads the stage floor and the
               role gate above, and no tag reaches either. */}
@@ -475,8 +493,8 @@ export default function QuestDetail() {
 
           {/* The doing column */}
           <aside className="lg:sticky lg:top-28 space-y-4">
-            {/* What you'll share, directly above the form it feeds */}
-            <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+            {/* What you'll share, directly above the form it feeds. `your-quest` is where the strip under the poster points. */}
+            <div id="your-quest" className="scroll-mt-20 bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
               <div className="p-5 pb-4">
                 <h2 className="font-display text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                   <Trans context="QuestDetail, h2"><ClipboardCheck className="w-5 h-5 text-teal-deep" />
