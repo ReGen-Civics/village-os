@@ -17,6 +17,7 @@
  */
 import { matchesFind, normalizeCode } from "./proposedChanges";
 import { draftPageHref } from "./orgDraftView";
+import { expiresAt } from "./approvalInbox";
 
 import { INBOX_ORDER, INBOX_SOURCES, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_SOURCES, type InboxSource };
@@ -36,6 +37,11 @@ export interface InboxItem {
   decideAt: string;
   /** A seating, or anything tied to an application: shown in arrival order, never grouped or judged. */
   touchesPerson: boolean;
+  /**
+   * When it lapses undecided (shared/approvalInbox.ts, seven days after it was filed): an agent's seating or setting.
+   * Absent for everything that waits until somebody decides it.
+   */
+  lapsesAt?: string | null;
 }
 
 /** How one queue answered: `ok` with its items, `refused` (not this reader's), `off` (its module is off), `failed`. */
@@ -167,15 +173,19 @@ export function fromApprovals(body: unknown): InboxItem[] {
     const id = String(c.id);
     const kind = String(c.kind ?? "setting");
     return [{
-      key: id.startsWith("draft:") ? `agent:draft:${id.slice("draft:".length)}` : kind === "seating" ? `agent:seating:${id}` : `approval:${id}`,
+      // A draft is keyed as every read keys it (`structure:<id>`), so the approvals, the agents' and the org drafts'
+      // reads list one draft once (the review page audit, 26 Nov 2026: an admin saw an agent's role draft twice).
+      key: id.startsWith("draft:") ? `structure:${id.slice("draft:".length)}` : kind === "seating" ? `agent:seating:${id}` : `approval:${id}`,
       source: id.startsWith("draft:") || kind === "seating" ? ("agent" as const) : ("approval" as const),
       kind,
       code: null,
       summary: line(c.title, "An approval"),
       filedAt: str(c.at),
       batch: null,
-      decideAt: "/approvals",
+      decideAt: id.startsWith("draft:") ? draftPageHref(id.slice("draft:".length)) : "/approvals",
       touchesPerson: kind === "seating",
+      // A draft waits until it is decided; an approval lapses seven days after it was filed.
+      lapsesAt: !id.startsWith("draft:") && str(c.at) ? expiresAt(String(c.at)).toISOString() : null,
     }];
   });
 }
@@ -186,12 +196,12 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
   const drafts = list(b?.roleChanges).flatMap((x) => {
     const d = obj(x);
     if (!d || !str(d.draftId)) return [];
-    return [{ key: `agent:draft:${d.draftId}`, source: "agent" as const, kind: "role_change", code: null, summary: line(d.title, "A role change"), filedAt: null, batch: null, decideAt: draftPageHref(String(d.draftId)), touchesPerson: false }];
+    return [{ key: `structure:${d.draftId}`, source: "agent" as const, kind: "role_change", code: null, summary: line(d.title, "A role change"), filedAt: null, batch: null, decideAt: draftPageHref(String(d.draftId)), touchesPerson: false }];
   });
   const seatings = list(b?.seatings).flatMap((x) => {
     const s = obj(x);
     if (!s || !str(s.id)) return [];
-    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: "/review", touchesPerson: true }];
+    return [{ key: `agent:seating:${s.id}`, source: "agent" as const, kind: "seating", code: null, summary: line(s.title, "A seating"), filedAt: str(s.createdAt), batch: null, decideAt: "/approvals", touchesPerson: true, lapsesAt: str(s.createdAt) ? expiresAt(String(s.createdAt)).toISOString() : null }];
   });
   return [...drafts, ...seatings];
 }
