@@ -79,6 +79,7 @@ import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
+import { termsRefusal } from "@/components/governance/parsedChecks";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { MoonText } from "@/components/MoonWord";
 import { APPLY_MINUTES, LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
@@ -395,7 +396,7 @@ export default function ProposeARole() {
     // Every written setting answered and the commitment chosen, in the shared rules' words.
     if (role) {
       const judgedTerms = judgeTermsStep({ answers: termsStep.answers, commitmentPct: termsStep.commitmentPct }, writtenKeys([role, ...extraRoles].map((r) => ({ words: r?.terms?.words, commitmentPct: r?.terms?.commitmentPct ?? null }))));
-      if (!judgedTerms.ok) add("terms", judgedTerms.error);
+      if (!judgedTerms.ok) add("terms", termsRefusal(judgedTerms, i18n));
     }
     // Each role added: its own commitment, within what that role takes from one person.
     extras.forEach((x, i) => {

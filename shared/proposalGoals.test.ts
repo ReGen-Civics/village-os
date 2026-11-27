@@ -14,15 +14,15 @@ describe("parseGoals", () => {
   });
 
   it("needs at least one goal, and says so in plain words", () => {
-    expect(parseGoals([], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needOne });
-    expect(parseGoals([{ title: " ", doneWhen: "" }], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needOne });
+    expect(parseGoals([], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needOne, code: "needOne", args: [] });
+    expect(parseGoals([{ title: " ", doneWhen: "" }], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needOne, code: "needOne", args: [] });
   });
 
   it("refuses what is malformed: not a list, a goal with no title or no done when, over-long words", () => {
     expect(parseGoals("plant beds", CTX).ok).toBe(false);
     expect(parseGoals([5], CTX).ok).toBe(false);
-    expect(parseGoals([goal({ title: "" , doneWhen: "x"})], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needTitle(1) });
-    expect(parseGoals([goal({ doneWhen: "" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needDoneWhen(1) });
+    expect(parseGoals([goal({ title: "" , doneWhen: "x"})], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needTitle(1), code: "needTitle", args: [1] });
+    expect(parseGoals([goal({ doneWhen: "" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.needDoneWhen(1), code: "needDoneWhen", args: [1] });
     expect(parseGoals([goal({ title: "x".repeat(GOAL_LIMITS.title + 1) })], CTX).ok).toBe(false);
     expect(parseGoals([goal({ doneWhen: "x".repeat(GOAL_LIMITS.doneWhen + 1) })], CTX).ok).toBe(false);
   });
@@ -37,16 +37,16 @@ describe("parseGoals", () => {
   });
 
   it("holds a goal to the role's own goals, and a role with none keeps it empty", () => {
-    expect(parseGoals([goal({ moves: "Something the role never listed" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.notTheRole(1) });
+    expect(parseGoals([goal({ moves: "Something the role never listed" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.notTheRole(1), code: "notTheRole", args: [1] });
     expect(parseGoals([goal({ roleId: "r2", moves: "Anything" })], CTX).ok).toBe(false);
     expect(parseGoals([goal({ roleId: "r2" })], CTX).ok).toBe(true);
   });
 
   it("holds a season goal to the season's, and a date to a moon either side of today", () => {
-    expect(parseGoals([goal({ serves: "nope" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.notASeasonGoal(1) });
-    expect(parseGoals([goal({ date: "next friday" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.badDate(1) });
+    expect(parseGoals([goal({ serves: "nope" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.notASeasonGoal(1), code: "notASeasonGoal", args: [1] });
+    expect(parseGoals([goal({ date: "next friday" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.badDate(1), code: "badDate", args: [1] });
     expect(parseGoals([goal({ date: "2026-02-30" })], CTX).ok).toBe(false);
-    expect(parseGoals([goal({ date: "2027-03-01" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.dateOutside(1) });
+    expect(parseGoals([goal({ date: "2027-03-01" })], CTX)).toEqual({ ok: false, error: GOAL_WORDS.dateOutside(1), code: "dateOutside", args: [1] });
     expect(parseGoals([goal({ date: "2026-12-01" })], CTX).ok).toBe(true);
     expect(goalDateWindow("2026-11-10")).toEqual({ min: "2026-11-09", max: "2026-12-11" });
   });

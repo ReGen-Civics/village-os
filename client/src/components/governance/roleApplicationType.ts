@@ -43,6 +43,7 @@ import { goalsAsText, parseGoals, type ProposalGoal } from "@shared/proposalGoal
 import { isTextDraft, withoutDraftFlag, type DraftableGoal } from "@shared/seraDrafts";
 import { atMostRoles, draftBlocked, moreToFix, pickRole, pickVillageGoal, sayAim, termsUnanswered } from "./applicationChecks";
 import { marksOf } from "./seraDraftAnswers";
+import { goalsRefusal, termsRefusal } from "./parsedChecks";
 
 /** The goals the member listed, as the list holds them (GoalsField), or none. */
 export function goalsOfAnswers(a: Record<string, unknown>): ProposalGoal[] {
@@ -54,7 +55,7 @@ export const goalsProblem = (v: unknown): string | null => {
   // A goal Sera drafted is the member's only once they edit or keep it.
   if (Array.isArray(v) && v.some((g) => (g as DraftableGoal)?.seraDraft === true)) return draftBlocked(["goals"]);
   const judged = parseGoals(v ?? [], {});
-  return judged.ok ? null : judged.error;
+  return judged.ok ? null : goalsRefusal(judged);
 };
 
 /**
@@ -95,7 +96,7 @@ export const termsChoiceProblem = (v: unknown, a: Record<string, unknown>): stri
   const t = termsChoiceOf(v);
   if (!t) return termsUnanswered();
   const judged = judgeTermsStep({ answers: t.answers, commitmentPct: t.commitmentPct }, t.written);
-  if (!judged.ok) return judged.error;
+  if (!judged.ok) return termsRefusal(judged);
   return settingsProblem(t.settings);
 };
 

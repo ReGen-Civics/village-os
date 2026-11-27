@@ -88,15 +88,32 @@ export interface GoalContext {
   min?: number;
 }
 
-export type GoalsParsed = { ok: true; goals: ProposalGoal[] } | { ok: false; error: string };
+/** Which of GOAL_WORDS a refusal is. */
+export type GoalCode = keyof typeof GOAL_WORDS;
+type GoalArgs<K extends GoalCode> = (typeof GOAL_WORDS)[K] extends (...a: infer A) => string ? A : [];
+
+/**
+ * A refusal's code and what it was said with, beside its English (lane ES-A, 27 Nov 2026). The server reads `error`;
+ * a page says the same sentence in the reader's language from `code` and `args`
+ * (client/src/components/governance/parsedChecks.ts), and `error` is exactly GOAL_WORDS[code](...args).
+ */
+export type GoalRefusal = { [K in GoalCode]: { code: K; args: GoalArgs<K> } }[GoalCode];
+
+export type GoalsParsed = { ok: true; goals: ProposalGoal[] } | ({ ok: false; error: string } & GoalRefusal);
+
+function refuse<K extends GoalCode>(code: K, ...args: GoalArgs<K>): GoalsParsed {
+  const words = GOAL_WORDS[code] as string | ((...a: unknown[]) => string);
+  const error = typeof words === "function" ? words(...args) : words;
+  return { ok: false, error, code, args } as GoalsParsed;
+}
 
 /** Goals as a form sent them, checked. The first problem is answered; a wholly blank row is dropped. */
 export function parseGoals(raw: unknown, ctx: GoalContext = {}): GoalsParsed {
-  if (!Array.isArray(raw)) return { ok: false, error: GOAL_WORDS.notAList };
+  if (!Array.isArray(raw)) return refuse("notAList");
   const L = GOAL_LIMITS;
   const goals: ProposalGoal[] = [];
   for (const item of raw) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) return { ok: false, error: GOAL_WORDS.badGoal };
+    if (!item || typeof item !== "object" || Array.isArray(item)) return refuse("badGoal");
     const o = item as Record<string, unknown>;
     const g: ProposalGoal = {
       title: text(o.title),
@@ -108,29 +125,29 @@ export function parseGoals(raw: unknown, ctx: GoalContext = {}): GoalsParsed {
     };
     if (!g.title && !g.doneWhen && !g.moves && !g.serves && !g.date) continue;
     const n = goals.length + 1;
-    if (!g.title) return { ok: false, error: GOAL_WORDS.needTitle(n) };
-    if (g.title.length > L.title) return { ok: false, error: GOAL_WORDS.tooLong("A goal", L.title) };
-    if (!g.doneWhen) return { ok: false, error: GOAL_WORDS.needDoneWhen(n) };
-    if (g.doneWhen.length > L.doneWhen) return { ok: false, error: GOAL_WORDS.tooLong("Done when", L.doneWhen) };
-    if (g.moves.length > L.text || g.serves.length > L.text) return { ok: false, error: GOAL_WORDS.badGoal };
-    if (ctx.roleIds && ctx.roleIds.size > 0 && g.roleId && !ctx.roleIds.has(g.roleId)) return { ok: false, error: GOAL_WORDS.notThisProposal(n) };
+    if (!g.title) return refuse("needTitle", n);
+    if (g.title.length > L.title) return refuse("tooLong", "A goal", L.title);
+    if (!g.doneWhen) return refuse("needDoneWhen", n);
+    if (g.doneWhen.length > L.doneWhen) return refuse("tooLong", "Done when", L.doneWhen);
+    if (g.moves.length > L.text || g.serves.length > L.text) return refuse("badGoal");
+    if (ctx.roleIds && ctx.roleIds.size > 0 && g.roleId && !ctx.roleIds.has(g.roleId)) return refuse("notThisProposal", n);
     if (g.moves && ctx.roleGoalsOf) {
       const own = (ctx.roleGoalsOf(g.roleId) ?? []).map((x) => x.trim());
-      if (!own.includes(g.moves)) return { ok: false, error: GOAL_WORDS.notTheRole(n) };
+      if (!own.includes(g.moves)) return refuse("notTheRole", n);
     }
-    if (g.serves && ctx.seasonKeys && !ctx.seasonKeys.has(g.serves)) return { ok: false, error: GOAL_WORDS.notASeasonGoal(n) };
+    if (g.serves && ctx.seasonKeys && !ctx.seasonKeys.has(g.serves)) return refuse("notASeasonGoal", n);
     if (g.date) {
-      if (!isCivilDay(g.date)) return { ok: false, error: GOAL_WORDS.badDate(n) };
+      if (!isCivilDay(g.date)) return refuse("badDate", n);
       if (ctx.today) {
         const w = goalDateWindow(ctx.today);
-        if (g.date < w.min || g.date > w.max) return { ok: false, error: GOAL_WORDS.dateOutside(n) };
+        if (g.date < w.min || g.date > w.max) return refuse("dateOutside", n);
       }
     }
     goals.push(g);
     // The cap is for each role: one proposal for several roles lists up to the cap under each.
-    if (goals.filter((x) => x.roleId === g.roleId).length > L.max) return { ok: false, error: GOAL_WORDS.tooMany };
+    if (goals.filter((x) => x.roleId === g.roleId).length > L.max) return refuse("tooMany");
   }
-  if (goals.length < (ctx.min ?? L.min)) return { ok: false, error: GOAL_WORDS.needOne };
+  if (goals.length < (ctx.min ?? L.min)) return refuse("needOne");
   return { ok: true, goals };
 }
 
