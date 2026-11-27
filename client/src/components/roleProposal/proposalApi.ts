@@ -27,6 +27,7 @@ import type { ConsentAnswer, ConsentState } from "@shared/roleProposalConsent";
 import type { ProposalStatus, ShareAudience, WordValue } from "@shared/roleProposals";
 import type { SeatSettings } from "@shared/seatSettings";
 import type { WorkPay } from "@shared/workValue";
+import { readerLanguage } from "@/lib/readerLanguage";
 
 export const PROPOSALS_URL = "/api/governance/role-proposals";
 
@@ -34,12 +35,14 @@ export type Answer<T> = { ok: true; data: T } | { ok: false; status: number; err
 
 export const FAILED = "That did not reach the server. Try again.";
 
-async function call<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown): Promise<Answer<T>> {
+async function call<T>(path: string, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown, locale?: string): Promise<Answer<T>> {
   const t = authToken();
+  // A read that names the reader's language gets the card said in it (client/src/lib/readerLanguage.ts).
+  const readIn = (readerLanguage(locale ?? "").headers as Record<string, string> | undefined) ?? {};
   try {
     const res = await fetch(path, {
       method,
-      headers: { "Content-Type": "application/json", ...(t ? { Authorization: `Bearer ${t}` } : {}) },
+      headers: { "Content-Type": "application/json", ...(t ? { Authorization: `Bearer ${t}` } : {}), ...readIn },
       ...(body !== undefined ? { body: JSON.stringify(body) } : method === "POST" ? { body: "{}" } : {}),
     });
     const out = await res.json().catch(() => null);
@@ -191,7 +194,7 @@ export const fetchMine = () => call<MineOut>(`${PROPOSALS_URL}/mine`);
 export const startFromCard = () => call<{ proposal: ProposalOut }>(`${PROPOSALS_URL}/prefill`, "POST");
 export const fetchProposal = (id: string) => call<{ proposal: ProposalOut }>(one(id));
 export const saveProposal = (id: string, update: ProposalUpdate) => call<{ proposal: ProposalOut }>(one(id), "PUT", update);
-export const fetchProposalCard = (id: string) => call<PlayerCardPayload>(`${one(id)}/card`);
+export const fetchProposalCard = (id: string, locale?: string) => call<PlayerCardPayload>(`${one(id)}/card`, "GET", undefined, locale);
 /** `whoApproves` names who adopts it in this village, read from who holds the power (E8); an older server sends none. */
 export const fetchSubmitWords = (id: string) =>
   call<{ title: string; body: string; money: boolean; intent: string; whoApproves?: string | null }>(`${one(id)}/words`, "POST");
@@ -201,7 +204,7 @@ export const shareOff = (id: string) => call<{ share: ShareOut }>(`${one(id)}/sh
 export const fetchComments = (id: string) => call<{ comments: CommentOut[] }>(`${one(id)}/comments`);
 export const submitProposal = (id: string, alignedWords?: string) =>
   call<{ proposal: ProposalOut | null; seasonPlanSaved: boolean; status?: string; message?: string }>(`${one(id)}/submit`, "POST", alignedWords === undefined ? {} : { alignedWords });
-export const fetchShared = (token: string) => call<SharedOut>(sharedPath(token));
+export const fetchShared = (token: string, locale?: string) => call<SharedOut>(sharedPath(token), "GET", undefined, locale);
 export const fetchSharedComments = (token: string) => call<{ comments: CommentOut[] }>(`${sharedPath(token)}/comments`);
 export const postSharedComment = (token: string, text: string) => call<{ comments: CommentOut[] }>(`${sharedPath(token)}/comments`, "POST", { text });
 

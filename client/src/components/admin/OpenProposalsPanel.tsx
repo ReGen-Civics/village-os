@@ -17,7 +17,8 @@ import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { PlayVoice, StoredWordsSlot, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
 import { STORED_TRANSCRIBE_WORDS } from "@shared/voiceTranscribe";
-import { TRACK, TRACK_WORDS, type TrackStage } from "@shared/applicantOnboarding";
+import { TRACK, type TrackStage } from "@shared/applicantOnboarding";
+import { trackStageWords } from "@/components/openProposal/trackStageWords";
 import { useOnboardingWords } from "@/components/openProposal/onboardingWords";
 
 interface DeskLink {
@@ -290,7 +291,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                   return n ? (
                     <li key={k}>
                       <a href={`#desk-stage-${k}`} className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-foreground hover:bg-muted" data-stage-count={k}>
-                        {TRACK_WORDS[k]}: {n}
+                        {trackStageWords()[k]}: {n}
                       </a>
                     </li>
                   ) : null;
@@ -301,7 +302,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
               <div key={p.id} className="grid gap-2">
               {(i === 0 || (desk.proposals[i - 1].stage?.key ?? "received") !== (p.stage?.key ?? "received")) && (
                 <h3 id={`desk-stage-${p.stage?.key ?? "received"}`} className="mt-2 scroll-mt-24 font-semibold text-foreground" data-stage-heading={p.stage?.key ?? "received"}>
-                  {TRACK_WORDS[p.stage?.key ?? "received"]}
+                  {trackStageWords()[p.stage?.key ?? "received"]}
                 </h3>
               )}
               <article className="grid gap-2 rounded-lg border border-border p-3 text-sm" data-open-proposal-row={p.id} data-open-proposal-stage={p.stage?.key ?? ""}>

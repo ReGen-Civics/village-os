@@ -1,0 +1,74 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part"
+msgid "your aim"
+msgstr "su objetivo"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part"
+msgid "your goals"
+msgstr "sus metas"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part"
+msgid "your story line"
+msgstr "su línea de historia"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part, starting a sentence"
+msgid "Your aim"
+msgstr "Su objetivo"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part, starting a sentence"
+msgid "Your goals"
+msgstr "Sus metas"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: a drafted part, starting a sentence"
+msgid "Your story line"
+msgstr "Su línea de historia"
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "One proposal holds at most {max} roles."
+msgstr "Una propuesta puede incluir como máximo {max} roles."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "Pick the role you are proposing for."
+msgstr "Elija el rol para el que se propone."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "Pick the village goal your work serves."
+msgstr "Elija la meta de la aldea a la que sirve su trabajo."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "Say whether you accept each setting, or would like to talk about it, and choose your commitment."
+msgstr "Diga si acepta cada ajuste o prefiere conversarlo, y elija su compromiso."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "Say your aim for this role."
+msgstr "Diga su objetivo para este rol."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "{first} And {more} more to fix in the terms."
+msgstr "{first} Y {more} más por corregir en los términos."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "{first} is still a draft from Sera. Edit it or press \"Keep this\", then send."
+msgstr "{first}: sigue siendo un borrador de Sera. Edítelo o pulse \"Quedarme con esto\" y luego envíe."
+
+# needs-native-review: role application checks, usted, 2026-11-26
+msgctxt "role application: check"
+msgid "{head} and {last} are still a draft from Sera. Edit them or press \"Keep this\", then send."
+msgstr "{head} y {last}: siguen siendo un borrador de Sera. Edítelos o pulse \"Quedarme con esto\" y luego envíe."

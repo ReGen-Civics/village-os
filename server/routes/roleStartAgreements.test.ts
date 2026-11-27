@@ -33,7 +33,7 @@ import os from "node:os";
 import path from "node:path";
 import express from "express";
 import type mysql from "mysql2/promise";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { openInviteId } from "../../shared/openProposalDecide";
 import { letterSourceFrom } from "../../shared/membershipLetter";
@@ -63,6 +63,36 @@ const FOUNDER = { id: "u-founder", name: "Fern Oak", email: "founder@example.tes
 const ANA = { id: "u-ana", name: "Ana Reed", email: "ana@example.test" };
 const AGREEMENT = { title: "Confidentiality agreement", body: "What you read in the village's private records stays with you.\n\nYou keep it after you leave." };
 const LETTER_SOURCE = letterSourceFrom({ project: { name: "Test Village", commitmentName: "membership agreement" }, currency: { name: "Seeds" } }, null);
+
+/*
+ * THE NEXT TURN, A MINUTE ON (the full story is beside moonMode below). Module scope,
+ * so the pure check of its clock arithmetic runs with no database.
+ */
+const soon = () => new Date(Date.now() + 60_000);
+
+/*
+ * A minute after anything written BEFORE it is asked for. This was the second half of
+ * the "CONTROL for the minute" case, as `soon().getTime() - Date.now() >= 60_000`,
+ * which reads the clock twice in the wrong order: soon() first, the comparison's
+ * Date.now() after it, so a millisecond tick between the two read 59999. It turned
+ * main red at 86d349a (run 45740461813, 26 Nov 2026) on code that was right. What the
+ * turns rely on is the other order: the write happens, then the turn is asked for.
+ */
+describe("the next turn is a full minute after a write made before it", () => {
+  it("holds on a clock that moves between every read, where the old order did not", () => {
+    let t = 1_000_000;
+    const spy = vi.spyOn(Date, "now").mockImplementation(() => t++);
+    try {
+      const written = Date.now();
+      expect(soon().getTime() - written).toBeGreaterThanOrEqual(60_000);
+      // CONTROL: the old order, soon() before the clock it is compared with, comes up a millisecond short.
+      const at = soon().getTime();
+      expect(at - Date.now()).toBe(59_999);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
 
 describe.skipIf(!configured)("a role starts only after its agreements, on a real schema", () => {
   let db: TestDb;
@@ -298,7 +328,6 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
    * from the role journey lane. Until this branch carries it, the moon-mode
    * control below is red on MySQL 8 and green on MariaDB.
    */
-  const soon = () => new Date(Date.now() + 60_000);
   const moonMode = async <T,>(fn: () => Promise<T>): Promise<T> => {
     expect((await call("PUT", "/api/admin/open-proposals/settings", { term: "moon" }, FOUNDER.id)).status).toBe(200);
     try {
@@ -398,9 +427,9 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
     const stored = Date.parse(String(row.t));
     // Either way it lands within a second of the write...
     expect(Math.abs(stored - written)).toBeLessThan(1000);
-    // ...so a turn a minute on always finds it due, on either engine.
+    // ...so a turn a minute on always finds it due, on either engine. (That soon() IS a minute on from a
+    // write made before it is the pure case at the top of this file; it no longer reads the clock here.)
     expect(written + 60_000).toBeGreaterThan(stored);
-    expect(soon().getTime() - Date.now()).toBeGreaterThanOrEqual(60_000);
   });
 
   describe("changed words ask again", () => {

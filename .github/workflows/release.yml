@@ -266,27 +266,10 @@ jobs:
           if [ "${green:-0}" -ge 1 ]; then
             exit 0
           fi
-          # THE TESTED TWIN, the same fallback tag-release.yml's guard accepts
-          # (scripts/tag-release-check.mjs, checkTestedTwin): a merge commit
-          # whose tree is byte-identical to its second parent's, where that
-          # parent passed a ci push run with every job present and green.
-          # Without this, tag-release.yml could push a tag this step refuses,
-          # and a published version number is final.
-          echo '{"workflow_runs":[]}' > "$RUNNER_TEMP/twin-runs.json"
-          echo '{}' > "$RUNNER_TEMP/twin-jobs.json"
-          if parent=$(git rev-parse --verify --quiet "${SHA}^2^{commit}"); then
-            gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${parent}&event=push&per_page=100" > "$RUNNER_TEMP/twin-runs.json"
-            for id in $(jq -r '.workflow_runs[] | select(.status == "completed" and .conclusion == "success") | .id' "$RUNNER_TEMP/twin-runs.json"); do
-              gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs?filter=latest&per_page=100" > "$RUNNER_TEMP/twin-jobs-${id}.json"
-              jq --arg id "$id" --slurpfile j "$RUNNER_TEMP/twin-jobs-${id}.json" '. + {($id): $j[0].jobs}' "$RUNNER_TEMP/twin-jobs.json" > "$RUNNER_TEMP/twin-jobs.next"
-              mv "$RUNNER_TEMP/twin-jobs.next" "$RUNNER_TEMP/twin-jobs.json"
-            done
-          fi
-          if node scripts/tag-release-check.mjs --twin-only --sha "$SHA" \
-               --twin-runs "$RUNNER_TEMP/twin-runs.json" --twin-jobs "$RUNNER_TEMP/twin-jobs.json"; then
-            exit 0
-          fi
-          echo "::error::No successful ci run on ${SHA}, and it is not a tested twin. Tag a commit that has already gone green on main, or push the commit to a branch and let ci run before tagging it."
+          # The tested-twin fallback that stood here was retired on 26 Nov 2026
+          # with tag-release.yml's (docs/RELEASING.md): a merge commit's own run
+          # on main is never cancelled, and integration branches get no push run.
+          echo "::error::No successful ci run on ${SHA}. Tag a commit that has already gone green on main. The docs bot's commit never has one; tag the merge commit under it."
           exit 1
 
   # -------------------------------------------------------------------------

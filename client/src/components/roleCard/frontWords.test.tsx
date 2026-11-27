@@ -59,7 +59,7 @@ describe("the front's words", () => {
 
   it("gives the stamp its pieces, and the days left only inside the last week", () => {
     const far = applyByParts(i18n, "2026-12-15", "2026-11-24");
-    expect(far && { ...far }).toEqual({ eyebrow: "Apply by", day: "15", month: "Dec", weekday: "Tuesday", line: "Applications close Tue\u00a015\u00a0Dec", label: "Applications close Tuesday 15 December", daysLeft: 21, soon: null });
+    expect(far && { ...far }).toEqual({ eyebrow: "Apply by", day: "15", month: "Dec", weekday: "Tuesday", line: "Applications close Tue\u00a015\u00a0Dec", label: "Applications close Tuesday 15 December", plain: "Apply by 15 December", daysLeft: 21, soon: null });
     expect(applyByParts(i18n, "2026-11-30", "2026-11-24")?.soon).toBe("6 days left");
     expect(applyByParts(i18n, "2026-11-30", "2026-11-23")?.soon).toBe("7 days left");
     expect(applyByParts(i18n, "2026-11-30", "2026-11-22")?.soon).toBeNull();
@@ -126,10 +126,14 @@ describe("the team sheet's front", () => {
     expect(frame("a").querySelector('[data-pay-share-zero="credits"]')).toBeTruthy();
     // The last day to apply is a stamp now (the lead, 24 Nov 2026): a seal from 1024px, a ribbon on the painting below.
     expect(frame("a").querySelector("[data-front-apply-by]")).toBeNull();
-    // From 1024px it is plain, straight text (the lead, 26 Nov 2026), read as shown.
-    expect(frame("a").querySelector("[data-apply-stamp]")?.textContent).toBe("Applications close Monday 30 November · 7 days left");
-    expect(frame("a").querySelector("[data-apply-stamp]")?.className).not.toMatch(/rotate/);
-    expect(frame("a").querySelector("[data-apply-ribbon]")?.textContent).toContain("Applications close Mon\u00a030\u00a0Nov");
+    // Plain text in both places now (the team, 26 Nov 2026: "just keep it the text"): no circle, no tilt, no gold band.
+    for (const sel of ["[data-apply-stamp]", "[data-apply-ribbon]"]) {
+      const el = frame("a").querySelector(sel)!;
+      expect(el.querySelector(".sr-only")?.textContent, sel).toBe("Applications close Monday 30 November. 7 days left.");
+      expect(el.querySelector("[aria-hidden]")?.textContent, sel).toBe("Apply by 30 November");
+      expect(el.querySelector("[data-apply-soon]")?.textContent, sel).toBe("7 days left");
+      expect(el.outerHTML, sel).not.toMatch(/rotate|rounded-full|bg-dash-gold|border-dash-gold/);
+    }
     expect(frame("b").querySelector("[data-status-pill]")?.textContent).toBe("Open paid role");
     expect(segments("b")).toEqual([["cash", "100%"]]);
     expect(frame("b").querySelector("[data-apply-stamp]")).toBeNull();

@@ -12,7 +12,6 @@
 import { useEffect, useState } from "react";
 import {
   ITEM_VISIBILITIES,
-  LET_GO_NEEDS_REASON,
   NO_ROLE_YET,
   OUTSIDE_MY_ROLES,
   REDIRECT_NEEDS_WHO,
@@ -139,7 +138,7 @@ export default function ItemCard({ item, roles, seasonGoals, ownGoals, villageRo
               <label className={LABEL}>
                 {MW.myMoon.letGoReason}
                 <input value={letGo} readOnly={!editable} onChange={(e) => setLetGo(e.target.value)} onBlur={() => saveIfChanged("letGoReason", letGo, item.letGoReason)} className={INPUT} />
-                {!item.letGoReason ? <span className="mt-1 block text-xs text-muted-foreground">{LET_GO_NEEDS_REASON}</span> : null}
+                {!item.letGoReason ? <span className="mt-1 block text-xs text-muted-foreground">{MW.letGoNeedsReason}</span> : null}
               </label>
             ) : null}
             {item.taskStatus === "redirect" ? (

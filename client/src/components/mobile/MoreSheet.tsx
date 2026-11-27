@@ -37,6 +37,7 @@ import ThemeSwitch from "@/components/ThemeSwitch";
 import MenuIcon from "@/components/nav/MenuIcon";
 import { isGroup, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
 import { TAB_SLOTS } from "@/config/mobileNav";
+import { currentFor, type Lit } from "@/config/navBearings";
 import { TASK_BOARD_PATH } from "@shared/taskMenu";
 import { creditsInUse, type PayRead, type PayRecentRead } from "@shared/payGate";
 
@@ -70,6 +71,8 @@ export interface MoreSheetProps {
   account: readonly AccountLink[];
   onClose: () => void;
   villageDefault?: string | null;
+  /** Where the page sits in the menu (config/navBearings.ts): its group opens with the sheet, and both are marked. */
+  lit?: Lit | null;
 }
 
 /** Credits are in use for this member (shared/payGate.ts): read once per opening. */
@@ -124,6 +127,13 @@ function Tile({ href, label, onGo, children, Icon }: { href: string; label: stri
   );
 }
 
+/** The entry the page is at or under wears a gold edge on its left (the accent on the panel, measured 3:1 in modePalettes.test.ts). */
+// Pulled left by what it pads, so the words stay where they were and only the edge appears.
+const LIT_ON = "-ml-3 border-l-2 border-notice pl-2.5 font-semibold";
+// A top-level entry has no group rule to sit on, so its edge stands on the text column and the words step in after it
+// (the live check, 27 Nov 2026: pulled left, the edge sat at the sheet's own edge, outside the list).
+const LIT_TOP = "border-l-2 border-notice pl-3 font-semibold";
+
 /** Below `md`, where the bar and its More exist. From `md` up the header's drawer answers the same open state (Layout.tsx). */
 const PHONE = "(max-width: 767.98px)";
 
@@ -132,11 +142,12 @@ export default function MoreSheet(props: MoreSheetProps) {
   return phone ? <Sheet {...props} /> : null;
 }
 
-function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheetProps) {
+function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null }: MoreSheetProps) {
   const { t } = useLingui();
   const { user, logout } = useAuth();
   const [location] = useLocation();
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  // The branch the page belongs to opens with the sheet, so the reader sees where they are before they choose.
+  const [openGroup, setOpenGroup] = useState<string | null>(() => lit?.group ?? null);
   const panel = useRef<HTMLDivElement>(null);
   const opener = useRef<Element | null>(null);
 
@@ -157,6 +168,11 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheet
       window.removeEventListener("keydown", onKey);
       if (opener.current instanceof HTMLElement && opener.current.isConnected) opener.current.focus();
     };
+  }, []);
+  // The entry the page belongs to is brought into view, so its open branch is never below the sheet's fold.
+  useEffect(() => {
+    const here = panel.current?.querySelector<HTMLElement>("#more-village ~ ul a[aria-current]");
+    if (typeof here?.scrollIntoView === "function") here.scrollIntoView({ block: "nearest" });
   }, []);
   // A new page closes it.
   const first = useRef(location);
@@ -240,7 +256,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheet
 
         <section aria-labelledby="more-village" className="mt-4">
           <h2 id="more-village" className={eyebrow}><Trans context="the phone's More sheet: heading">The village</Trans></h2>
-          <ul className="mt-1 divide-y divide-border/60">
+          <ul className="mt-1 divide-y divide-border/60" data-wayfinding="menu">
             {entries.map((e) =>
               isGroup(e) ? (
                 <li key={e.label}>
@@ -248,16 +264,21 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheet
                     type="button"
                     onClick={() => setOpenGroup(openGroup === e.label ? null : e.label)}
                     aria-expanded={openGroup === e.label}
-                    className="flex min-h-11 w-full items-center justify-between py-2 text-left text-base text-foreground"
+                    aria-current={lit?.group === e.label ? "true" : undefined}
+                    data-lit={lit?.group === e.label ? "" : undefined}
+                    className={`flex min-h-11 w-full items-center justify-between py-2 text-left text-base text-foreground ${lit?.group === e.label ? "font-semibold" : ""}`}
                   >
-                    {e.label}
+                    <span className="inline-flex items-center gap-2">
+                      {lit?.group === e.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
+                      {e.label}
+                    </span>
                     <ChevronDown aria-hidden="true" className={`size-4 transition-transform ${openGroup === e.label ? "rotate-180" : ""}`} />
                   </button>
                   {openGroup === e.label ? (
                     <ul className="mb-2 ml-1 border-l border-border pl-3">
                       {itemsOf(e).map((l) => (
                         <li key={l.href}>
-                          <Link href={l.href} onClick={close} className="flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline">
+                          <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
                             <MenuIcon href={l.href} fallback={l.icon} />
                             {l.label}
                           </Link>
@@ -268,7 +289,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault }: MoreSheet
                 </li>
               ) : (
                 <li key={e.href}>
-                  <Link href={e.href} onClick={close} className="flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline">
+                  <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} data-lit={currentFor(lit, e.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_TOP : ""}`}>
                     <MenuIcon href={e.href} fallback={e.icon} bare />
                     {e.label}
                   </Link>

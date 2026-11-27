@@ -206,6 +206,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself.",
     many: "{n} access tasks are waiting for you.",
   },
+  approval_lapsing: {
+    blurb: "Something an agent proposed lapses tomorrow if nobody decides it. Read it on the approvals page and say yes or no.",
+    many: "{n} proposals lapse tomorrow if nobody decides them.",
+  },
   term_expiring: {
     blurb: "The agreement to keep holding your role is running out. In a role that carries permissions those end with the term (0171), so it is the moment to renew or hand it on.",
     many: "{n} of your terms are running out.",

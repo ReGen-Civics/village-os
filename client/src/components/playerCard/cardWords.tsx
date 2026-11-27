@@ -18,6 +18,8 @@ import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS } from "@shared/playerCard";
 import { countWord } from "@shared/playerCardHero";
 import type { PlayerCardWords } from "@shared/playerCardSpeak";
+import { ROLE_PROPOSAL_WORDS } from "@shared/playerCardProposals";
+import type { ProposalWordsOut } from "@shared/playerCardProposalMessages";
 
 /** The fixed lines the server sent, for a reader in another language. Undefined draws the English. */
 export const CardWordsContext = createContext<Partial<PlayerCardWords> | undefined>(undefined);
@@ -61,4 +63,21 @@ export function useCardWords(): CardWordsForComponents {
   const fixed = useContext(CardWordsContext);
   const { i18n } = useLingui();
   return useMemo(() => cardWordsFor(fixed, i18n), [fixed, i18n, i18n.locale]);
+}
+
+/** The role proposal lines the server sent for a reader in another language. Undefined draws the English. */
+export const ProposalWordsContext = createContext<ProposalWordsOut | undefined>(undefined);
+
+/** ROLE_PROPOSAL_WORDS for a reader: the English with the server's lines laid over it, the voting line from its template. */
+export function useProposalWords(): typeof ROLE_PROPOSAL_WORDS {
+  const sent = useContext(ProposalWordsContext);
+  return useMemo(() => {
+    if (!sent) return ROLE_PROPOSAL_WORDS;
+    const { votingTemplate, ...lines } = sent;
+    return {
+      ...ROLE_PROPOSAL_WORDS,
+      ...lines,
+      ...(votingTemplate ? { voting: (day: string) => votingTemplate.replace("{day}", day) } : {}),
+    } as unknown as typeof ROLE_PROPOSAL_WORDS;
+  }, [sent]);
 }

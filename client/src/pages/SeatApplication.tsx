@@ -74,7 +74,7 @@ import { call as alignCall } from "@/components/alignment/alignmentsApi";
 
 import { ApplicantGeneKeys } from "@/components/geneKeys/ProfileGeneKeys";
 import CircleConsent from "@/components/roleProposal/CircleConsent";
-import { CONSENT_WORDS } from "@shared/roleProposalConsent";
+import { consentWords } from "@/components/roleProposal/consentWords";
 import YourTurn from "@/components/governance/YourTurn";
 import ConsentSeal from "@/components/governance/ConsentSeal";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -504,7 +504,7 @@ export default function SeatApplication() {
                   <p className="mt-1 text-foreground">{APPLICATION_WORDS.ownTerms}</p>
                 ) : (
                   <p className="mt-1 text-foreground">
-                    {record ? CONSENT_WORDS.recordLine : app.proposal?.changesRoles ? APPLICATION_WORDS.powerLine : APPLICATION_WORDS.holderLine}
+                    {record ? consentWords().recordLine : app.proposal?.changesRoles ? APPLICATION_WORDS.powerLine : APPLICATION_WORDS.holderLine}
                   </p>
                 )}
                 {app.you.mayAdopt && app.offer && <div className="mt-3"><OpenTalksWarning settings={app.offer.openTalks} confirmed={knowsOpenTalks} onConfirm={setKnowsOpenTalks} /></div>}

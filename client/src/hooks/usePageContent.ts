@@ -98,6 +98,32 @@ function subscribeTranslations(l: () => void) {
 }
 
 /**
+ * A BINDING PAGE'S READING COPY, AND THE ENGLISH ONE TAP AWAY (the lead, 26 Nov 2026). The server sends a
+ * binding page's accepted reading copy marked `readingCopy`; the page lays it over its English like any
+ * translation and says, in both languages, that the English text is the binding version. A reader who
+ * taps to read the English sees the binding text itself until they tap back, on every binding page.
+ */
+let bindingEnglish = false;
+const NONE: PageTranslationWire = { fields: {}, machine: [], locale: "en" };
+/** The translation a page lays over its words: none while a reading copy's reader chose the English. */
+const shownTranslation = (t: PageTranslationWire | null) => (t?.readingCopy && bindingEnglish ? { ...NONE, locale: t.locale } : t);
+
+export function usePageReadingCopy(spec: PageSpec): { active: boolean; showingEnglish: boolean; toggle: () => void } {
+  useSyncExternalStore(subscribeTranslations, () => translationVersion, () => 0);
+  const t = lastTranslation.get(pageSectionKey(spec));
+  const active = !!t?.readingCopy && Object.keys(t.fields).length > 0;
+  return {
+    active,
+    showingEnglish: active && bindingEnglish,
+    toggle: () => {
+      bindingEnglish = !bindingEnglish;
+      translationVersion++;
+      translationListeners.forEach((l) => l());
+    },
+  };
+}
+
+/**
  * `lang` for a block of the village's words on this page: the source
  * language's tag while that block has no translation in the reader's language,
  * undefined once it does (shared/contentTranslationOverlay.ts, fallbackLangOf).
@@ -110,11 +136,33 @@ export function usePageLang(spec: PageSpec): (address: string) => string | undef
   const version = useSyncExternalStore(subscribeTranslations, () => translationVersion, () => 0);
   const section = pageSectionKey(spec);
   return useCallback(
-    (address: string) => fallbackLangOf(lastTranslation.get(section) ?? null, locale, address),
+    (address: string) => fallbackLangOf(shownTranslation(lastTranslation.get(section) ?? null), locale, address),
     // `version` moves when a translation arrives.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [section, locale, version],
   );
+}
+
+/**
+ * The fields a page lays over its English in the reader's language, for a page that resolves its own words
+ * (the membership letter page): {} in English or while unread, and the reading copy only while its reader has
+ * not chosen the binding English.
+ */
+export function usePageTranslationFields(spec: PageSpec): Readonly<Record<string, string>> {
+  const { locale } = useLocale();
+  const version = useSyncExternalStore(subscribeTranslations, () => translationVersion, () => 0);
+  useEffect(() => {
+    let alive = true;
+    void readPageTranslationFor(pageSectionKey(spec), locale).then((t) => alive && rememberTranslation(pageSectionKey(spec), t.locale === locale ? t : { ...t, locale }));
+    return () => {
+      alive = false;
+    };
+  }, [spec, locale]);
+  return useMemo(() => {
+    const t = shownTranslation(lastTranslation.get(pageSectionKey(spec)) ?? null);
+    return t && t.locale === locale ? t.fields : NONE.fields;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spec, locale, version]);
 }
 
 export function usePageContent(spec: PageSpec): ResolvedPage | null {
@@ -143,7 +191,14 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
       alive = false;
     };
   }, [spec, locale]);
-  const translation = translated && translated.locale === locale ? translated.t : null;
+  // A binding page's reading copy steps aside while its reader chose the English (usePageReadingCopy).
+  const version = useSyncExternalStore(subscribeTranslations, () => translationVersion, () => 0);
+  const translation = useMemo(
+    () => shownTranslation(translated && translated.locale === locale ? translated.t : null),
+    // `version` moves when the reader switches between the reading copy and the English.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [translated, locale, version],
+  );
   const pathFields = usePathFields();
   // Words a machine drafted are marked (machineTranslation.tsx): the layout's note shows while any are on the page.
   const machine = (translation?.machine.length ?? 0) > 0;

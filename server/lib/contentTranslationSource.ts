@@ -87,8 +87,10 @@ export async function translatableFields(r: SourceReaders, kind: ContentKind, re
     for (const f of villageDocFields(refKey, await r.villageDoc(refKey))) keep(out, kind, refKey, f.field, f.english);
     return out;
   }
-  // page_section
-  if (!refKey.startsWith(PAGE_SECTION_PREFIX) || PROTECTED_PAGES.includes(refKey.slice(PAGE_SECTION_PREFIX.length))) return null;
+  // page_section, and a binding page's reading copy (shared/contentTranslation.ts): the same addresses, and
+  // each kind only on its own pages.
+  if (!refKey.startsWith(PAGE_SECTION_PREFIX)) return null;
+  if (PROTECTED_PAGES.includes(refKey.slice(PAGE_SECTION_PREFIX.length)) !== (kind === "reading_copy")) return null;
   const spec = pageSpecForSection(refKey);
   if (!spec) return null;
   const raw = resolvePageRaw(spec, r.contentSection(refKey));

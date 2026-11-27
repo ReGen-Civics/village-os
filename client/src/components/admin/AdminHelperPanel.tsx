@@ -8,13 +8,17 @@
  * the page name or the corner menu.
  *
  * Three states, and the component test walks each one:
- *   off        the village has not switched the helper on (the dial
- *              `platform.admin_helper`, off by default), or has no key of its
+ *   off        the village switched the helper off (the dial
+ *              `platform.admin_helper`, on by default), or has no key of its
  *              own yet: plain steps for whichever is missing.
  *   ready      a conversation. The guide answers, and may offer a page to open.
  *   proposing  the guide's answer carries ONE change, drawn as a card with the
- *              setting, what it is now and what it would become. Apply calls
- *              the dial's own admin route; Not now drops the card.
+ *              setting, what it is now and what it would become. Review and
+ *              save puts it on the page's one save bar (AdminHelperHost holds
+ *              it, so closing the panel keeps it); only a person's Save there
+ *              writes it, through the dial's own admin route, the same gate as
+ *              a hand edit. Take me there opens the dial's own place; Not now
+ *              drops the card.
  *
  * Paints with the sheet tokens only (bg-card, text-foreground, border-border,
  * bg-muted, bg-primary), so it follows the Admin palette and its night look.
@@ -28,9 +32,16 @@ import { guideLabelIn } from "@/lib/guideNameWords";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import type { NavGroup } from "./adminNavGroups";
-import { applyProposal, askHelper, fetchHelperStatus, tabsFromGroups, type HelperLine } from "./adminHelperApi";
+import { askHelper, fetchHelperStatus, tabsFromGroups, type HelperLine } from "./adminHelperApi";
+import { adminSearchHref } from "@shared/adminSearch";
+import { goTo } from "./search/adminSearchModel";
 
-type Turn = HelperLine & { answer?: HelperAnswer; applied?: "done" | "dropped"; note?: string };
+type Turn = HelperLine & { answer?: HelperAnswer; applied?: "dropped" };
+
+/** Where a proposed dial lives: the address admin search uses, so it lands and focuses the same way. */
+export const proposalHref = (p: Pick<HelperProposal, "key">): string =>
+  adminSearchHref({ id: `dial.${p.key}`, kind: "dial", tab: "variables" });
+const mark = (p: Pick<HelperProposal, "key" | "to">): string => `${p.key}=${p.to}`;
 
 export default function AdminHelperPanel({
   password,
@@ -41,6 +52,10 @@ export default function AdminHelperPanel({
   onClose,
   onOpenTab,
   initialStatus,
+  waiting = [],
+  saved = [],
+  onReview,
+  onUnreview,
 }: {
   password: string;
   groups: readonly NavGroup[];
@@ -54,6 +69,12 @@ export default function AdminHelperPanel({
   onOpenTab: (key: string) => void;
   /** For tests and previews: skip the status fetch. */
   initialStatus?: HelperStatus;
+  /** Proposals waiting on the save bar, and the ones saved, by key and value (AdminHelperHost). */
+  waiting?: readonly string[];
+  saved?: readonly string[];
+  /** Put a proposal on the page's one save bar, or take it off. The guide never writes it itself. */
+  onReview?: (p: HelperProposal) => void;
+  onUnreview?: (p: HelperProposal) => void;
 }) {
   const { t, i18n } = useLingui();
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
@@ -62,7 +83,6 @@ export default function AdminHelperPanel({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [applying, setApplying] = useState(false);
   const input = useRef<HTMLTextAreaElement>(null);
   const end = useRef<HTMLDivElement>(null);
 
@@ -134,20 +154,6 @@ export default function AdminHelperPanel({
     [draft, busy, turns, password, groups, tab, chosen],
   );
 
-  const apply = async (index: number, p: HelperProposal) => {
-    setApplying(true);
-    const out = await applyProposal(password, p);
-    setApplying(false);
-    setTurns((all) =>
-      all.map((turn, i) =>
-        i === index
-          ? out.ok
-            ? { ...turn, applied: "done", note: out.message }
-            : { ...turn, note: out.error }
-          : turn,
-      ),
-    );
-  };
 
   const drop = (index: number) => setTurns((all) => all.map((turn, i) => (i === index ? { ...turn, applied: "dropped" } : turn)));
 
@@ -223,10 +229,17 @@ export default function AdminHelperPanel({
                 {turn.answer?.proposal && (
                   <ProposalCard
                     proposal={turn.answer.proposal}
-                    state={turn.applied ?? null}
-                    note={turn.note ?? ""}
-                    busy={applying}
-                    onApply={() => apply(i, turn.answer!.proposal!)}
+                    state={
+                      turn.applied === "dropped"
+                        ? "dropped"
+                        : waiting.includes(mark(turn.answer.proposal))
+                          ? "waiting"
+                          : saved.includes(mark(turn.answer.proposal))
+                            ? "saved"
+                            : null
+                    }
+                    onReview={() => onReview?.(turn.answer!.proposal!)}
+                    onUnreview={() => onUnreview?.(turn.answer!.proposal!)}
                     onDrop={() => drop(i)}
                   />
                 )}
@@ -391,16 +404,15 @@ function OpenLabel({ label }: { label: string }) {
 function ProposalCard({
   proposal,
   state,
-  note,
-  busy,
-  onApply,
+  onReview,
+  onUnreview,
   onDrop,
 }: {
   proposal: HelperProposal;
-  state: "done" | "dropped" | null;
-  note: string;
-  busy: boolean;
-  onApply: () => void;
+  /** waiting: on the save bar; saved: a person's Save wrote it. */
+  state: "waiting" | "saved" | "dropped" | null;
+  onReview: () => void;
+  onUnreview: () => void;
   onDrop: () => void;
 }) {
   const { t } = useLingui();
@@ -420,34 +432,59 @@ function ProposalCard({
         <dd className="break-words font-mono font-semibold text-foreground">{proposal.to || blank}</dd>
       </dl>
       {proposal.why && <p className="mt-2 text-muted-foreground">{proposal.why}</p>}
-      {state === "done" ? (
+      {state === "saved" ? (
         <p className="mt-2 flex items-center gap-1 font-medium text-open">
           <Check className="h-4 w-4" aria-hidden="true" />
-          <Trans context="admin helper, proposal">Applied.</Trans> {note}
+          <Trans context="admin helper, proposal">Saved.</Trans>
         </p>
-      ) : (
+      ) : state === "waiting" ? (
         <>
-          {note && <p role="alert" className="mt-2 text-destructive">{note}</p>}
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={onApply}
-              disabled={busy}
-              className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Trans context="admin helper, applies the proposed change">Apply</Trans>
+          <p role="status" className="mt-2 text-foreground">
+            <Trans context="admin helper, proposal">Waiting on the save bar at the bottom. Nothing changes until you press Save there.</Trans>
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={onUnreview} className={secondaryBtn}>
+              <Trans context="admin helper, takes the proposed change off the save bar">Take it off the bar</Trans>
             </button>
-            <button
-              type="button"
-              onClick={onDrop}
-              disabled={busy}
-              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Trans context="admin helper, declines the proposed change">Not now</Trans>
-            </button>
+            <TakeMeThere proposal={proposal} />
           </div>
         </>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onReview}
+            className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Trans context="admin helper, puts the proposed change on the save bar">Review and save</Trans>
+          </button>
+          <button type="button" onClick={onDrop} className={secondaryBtn}>
+            <Trans context="admin helper, declines the proposed change">Not now</Trans>
+          </button>
+          <TakeMeThere proposal={proposal} />
+        </div>
       )}
     </div>
+  );
+}
+
+const secondaryBtn =
+  "inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+/** The dial's own place in Admin, through the address search uses, so it lands, focuses and asks the one leave guard. */
+function TakeMeThere({ proposal }: { proposal: HelperProposal }) {
+  const href = proposalHref(proposal);
+  return (
+    <a
+      href={href}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        goTo(href);
+      }}
+      className={secondaryBtn}
+    >
+      <Trans context="admin helper, opens the setting's own place">Take me there</Trans>
+    </a>
   );
 }

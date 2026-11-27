@@ -101,6 +101,12 @@ export type NavLink = {
 export type NavGroup = {
   label: string;
   items: readonly NavLink[];
+  /**
+   * The group's own page, when it has one. The breadcrumb links the group's name there; without one the name is
+   * plain words (the coordinator for the lead, 26 Nov 2026: "Keep it honest"). No group has a page today: /join
+   * only redirects to /roles.
+   */
+  href?: string;
 };
 
 export type NavEntry = NavLink | NavGroup;

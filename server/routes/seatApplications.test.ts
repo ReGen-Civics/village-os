@@ -694,7 +694,14 @@ describe.skipIf(!configured)("applying, adopting and seating, on a real schema",
     const fixture = `${JSON.stringify(served.body)} ${JSON.stringify(stored)}`;
     for (const needle of needles) expect(fixture, needle).toContain(needle);
 
-    const publicText = `${ballot.title}\n${ballot.docMarkdown}`;
+    // The ballot links the application by its id (asserted below), and that id is
+    // `sa-` plus 16 random hex characters: 87600 or 4321000 can turn up inside it by
+    // chance. One did, as sa-87600aeff7d1af71, and turned main red at e42387f (ci run
+    // 45740823817, 26 Nov 2026) with no amount anywhere in the ballot. So the one
+    // random value the ballot is meant to carry is blanked before the needles look.
+    const publicText = `${ballot.title}\n${ballot.docMarkdown}`.replaceAll(a.body.id, "<application id>");
+    // CONTROL: the blank landed on the link and nowhere else the needles look.
+    expect(publicText).toContain("/role-applications/<application id>");
     for (const needle of needles) expect(publicText, needle).not.toContain(needle);
     expect(publicText).not.toMatch(/[0-9a-f]{64}/);
     // What it does carry: the seat and its aim, and where members read the rest.

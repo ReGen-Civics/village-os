@@ -1,0 +1,40 @@
+msgid ""
+msgstr ""
+"Language: es\n"
+"Content-Type: text/plain; charset=utf-8\n"
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperHost.tsx
+msgctxt "admin helper, what the save bar saves"
+msgid "the guide's proposed changes"
+msgstr "los cambios que propone la guía"
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperPanel.tsx
+msgctxt "admin helper, proposal"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperPanel.tsx
+msgctxt "admin helper, proposal"
+msgid "Waiting on the save bar at the bottom. Nothing changes until you press Save there."
+msgstr "Esperando en la barra de guardar, abajo. Nada cambia hasta que pulse Guardar ahí."
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperPanel.tsx
+msgctxt "admin helper, takes the proposed change off the save bar"
+msgid "Take it off the bar"
+msgstr "Quitarlo de la barra"
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperPanel.tsx
+msgctxt "admin helper, puts the proposed change on the save bar"
+msgid "Review and save"
+msgstr "Revisar y guardar"
+
+# needs-native-review: first pass, admin guide review and save, 26 Nov 2026
+#: client/src/components/admin/AdminHelperPanel.tsx
+msgctxt "admin helper, opens the setting's own place"
+msgid "Take me there"
+msgstr "Lléveme ahí"

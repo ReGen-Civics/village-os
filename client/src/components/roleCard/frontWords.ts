@@ -115,6 +115,8 @@ export interface ApplyByParts {
   line: string;
   /** "Applications close Monday 30 November", the sentence a screen reader hears. */
   label: string;
+  /** "Apply by 30 November", the plain line the card shows (the team, 26 Nov 2026: "just keep it the text"). */
+  plain: string;
   /** Whole days from today to the last day: 0 on the day itself. */
   daysLeft: number;
   /** "6 days left" inside the last seven days, "Closes today" on the day; null before. */
@@ -149,6 +151,13 @@ export function applyByParts(i18n: I18n = appI18n, day: string | null | undefine
     whenLong = when;
   }
   const whenKept = when.replace(/ /g, "\u00a0");
+  // "30 November" in English; other languages take their own day and month ("30 de noviembre").
+  let dayMonth: string;
+  try {
+    dayMonth = locale.startsWith("en") ? [dayNum, long("month")].filter(Boolean).join(" ") : new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", timeZone: "UTC" }).format(at);
+  } catch {
+    dayMonth = day;
+  }
   const daysLeft = Math.round((at.getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86400000);
   const soon =
     daysLeft > CLOSING_SOON_DAYS
@@ -164,6 +173,7 @@ export function applyByParts(i18n: I18n = appI18n, day: string | null | undefine
     // The short date never splits across lines: "Mon 30 Nov" is one piece on a narrow ribbon.
     line: i18n._(msg({ message: `Applications close ${whenKept}`, context: "role card front: the apply-by ribbon, a short date" })),
     label: i18n._(msg({ message: `Applications close ${whenLong}`, context: "role card front: the apply-by date said whole, for a screen reader" })),
+    plain: i18n._(msg({ message: `Apply by ${dayMonth}`, context: "role card front: the last day to apply, as plain text beside the card" })),
     daysLeft,
     soon,
   };
