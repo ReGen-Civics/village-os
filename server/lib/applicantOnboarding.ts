@@ -228,7 +228,7 @@ export async function askForReferences(deps: ReviewDeps, ref: string, viewerId: 
 
 // ── The applicant gives them ────────────────────────────────────────────────
 
-export type GiveOutcome = { ok: true; given: number } | { ok: false; status: number; error: ReferenceError | "not_asked" | "given" | "decided"; row: number | null };
+export type GiveOutcome = { ok: true; given: number } | { ok: false; status: number; error: ReferenceError | "not_asked" | "given" | "decided"; row: number | null; field?: string };
 
 /**
  * THE APPLICANT'S LIST, from their status page. Only once references were asked
@@ -249,7 +249,7 @@ export async function giveReferences(deps: ReviewDeps, ref: string, raw: unknown
   const member = kindOfRef(ref) === "member" ? await memberApplicationFacts(pool, ref) : null;
   if (member && !member.open) return { ok: false, status: 409, error: "decided", row: null };
   const parsed = parseReferenceList(raw);
-  if (!parsed.ok) return { ok: false, status: 400, error: parsed.error, row: parsed.row };
+  if (!parsed.ok) return { ok: false, status: 400, error: parsed.error, row: parsed.row, ...(parsed.field ? { field: parsed.field } : {}) };
   const at = deps.now();
   const ownerRole = stringVar(FOLLOWUP_ROLE_VARIABLE).trim();
   const won = await inTransaction(pool, async (conn) => {

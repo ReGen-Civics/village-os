@@ -130,7 +130,9 @@ const clean = (v: unknown): string => String(typeof v === "string" ? v : "").rep
 /** The reasons a list is refused, in the applicant's language (shared/applicantWords.ts `status.referenceForm.errors`). */
 export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "email" | "channel" | "contact" | "twice" | "too_long";
 
-export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null };
+/** The field a refusal is about, so the form names it (QA pass 1: a refusal named neither the reference nor the field). */
+export type ReferenceField = "name" | "how" | "email" | "whatsapp" | "usPhone" | "signal" | "ally";
+export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null; field?: ReferenceField };
 
 /**
  * The list as the form sent it. A wholly blank row is dropped; a row with some of it needs a name, how they know the
@@ -152,12 +154,14 @@ export function parseReferenceList(raw: unknown): ReferenceParse {
     const ally = clean(r?.ally);
     if (!name && !email && !legacy && !channels.whatsapp && !channels.usPhone && !channels.signal && !how && !ally) continue;
     const contact = contactLines({ email, ...channels });
-    if (name.length > REF_NAME_MAX || contact.length > REF_CONTACT_MAX || how.length > REF_HOW_MAX || ally.length > REF_ALLY_MAX) return { ok: false, error: "too_long", row: i };
-    if (!name || !how) return { ok: false, error: "needs_all", row: i };
-    if (!email || !isReferenceEmail(email)) return { ok: false, error: "email", row: i };
+    const long: ReferenceField | null = name.length > REF_NAME_MAX ? "name" : how.length > REF_HOW_MAX ? "how" : ally.length > REF_ALLY_MAX ? "ally" : contact.length > REF_CONTACT_MAX ? "email" : null;
+    if (long) return { ok: false, error: "too_long", row: i, field: long };
+    if (!name || !how) return { ok: false, error: "needs_all", row: i, field: !name ? "name" : "how" };
+    if (!email || !isReferenceEmail(email)) return { ok: false, error: "email", row: i, field: "email" };
     const given = REFERENCE_CHANNELS.filter((k) => channels[k]);
-    if (!given.length) return { ok: false, error: "channel", row: i };
-    if (given.some((k) => !CHANNEL_OK[k](channels[k]))) return { ok: false, error: "contact", row: i };
+    if (!given.length) return { ok: false, error: "channel", row: i, field: "whatsapp" };
+    const bad = given.find((k) => !CHANNEL_OK[k](channels[k]));
+    if (bad) return { ok: false, error: "contact", row: i, field: bad };
     const key = email.toLowerCase();
     if (seen.has(key)) return { ok: false, error: "twice", row: i };
     seen.add(key);

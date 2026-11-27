@@ -31,18 +31,24 @@ export function ReferenceForm({ postUrl, words, onGiven, line, editing = false }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ text: string; row: number | null } | null>(null);
   const set = (i: number, key: keyof ReferenceRow, value: string) => setRows((cur) => cur.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
-  const say = (code: string, row: number | null) => setError({ text: words.errors[code as ReferenceError] ?? words.failed, row });
+  // Which reference and which field (QA pass 1): "Reference 2, WhatsApp: One of those numbers doesn't look right."
+  const fieldLabel: Record<string, string> = { name: words.name, email: words.email, whatsapp: words.whatsapp, usPhone: words.usPhone, signal: words.signal, how: words.how, ally: words.ally };
+  const say = (code: string, row: number | null, field?: string) => {
+    const text = words.errors[code as ReferenceError] ?? words.failed;
+    const where = row === null ? "" : `${words.row(row + 1)}${field && fieldLabel[field] ? `, ${fieldLabel[field]}` : ""}: `;
+    setError({ text: `${where}${text}`, row });
+  };
   const send = async () => {
     setError(null);
     // The server's own rule, here first, so a missing number is said before anything is sent.
     const checked = parseReferenceList(rows);
-    if (!checked.ok) return say(checked.error, checked.row);
+    if (!checked.ok) return say(checked.error, checked.row, checked.field);
     setBusy(true);
     try {
       const res = await gameFetch(postUrl, { method: "POST", body: JSON.stringify({ references: rows }), cache: "no-store" });
       const data = await res.json().catch(() => null);
       if (res.ok) onGiven(Number(data?.given ?? rows.length));
-      else say(String(data?.error ?? ""), typeof data?.row === "number" ? data.row : null);
+      else say(String(data?.error ?? ""), typeof data?.row === "number" ? data.row : null, typeof data?.field === "string" ? data.field : undefined);
     } catch {
       setError({ text: words.failed, row: null });
     } finally {

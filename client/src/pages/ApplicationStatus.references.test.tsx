@@ -101,7 +101,7 @@ describe("the reference form", () => {
 
   it("a refused row says why in the applicant's words and keeps the form", async () => {
     served = { ...WAITING };
-    answer = { status: 400, body: { error: "contact", row: 0 } };
+    answer = { status: 400, body: { error: "contact", row: 0, field: "usPhone" } };
     render(<ApplicationStatus />);
     await screen.findByRole("button", { name: EN.send });
     // Filled to the page's own rule, so the server's answer is what is said.
@@ -112,7 +112,8 @@ describe("the reference form", () => {
       fireEvent.change(screen.getAllByLabelText(EN.how)[i], { target: { value: "Knew me." } });
     }
     fireEvent.click(screen.getByRole("button", { name: EN.send }));
-    expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.contact);
+    // Which reference and which field (QA round 4).
+    expect((await screen.findByRole("alert")).textContent).toBe(`${EN.row(1)}, ${EN.usPhone}: ${EN.errors.contact}`);
     expect(document.querySelector("[data-reference-form]")).not.toBeNull();
   });
 
@@ -126,7 +127,7 @@ describe("the reference form", () => {
       fireEvent.change(screen.getAllByLabelText(EN.how)[i], { target: { value: "Knew me." } });
     }
     fireEvent.click(screen.getByRole("button", { name: EN.send }));
-    expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.channel);
+    expect((await screen.findByRole("alert")).textContent).toBe(`${EN.row(1)}, ${EN.whatsapp}: ${EN.errors.channel}`);
     expect(posts).toHaveLength(0);
     expect(document.querySelector('[data-reference-row="0"]')?.getAttribute("aria-invalid")).toBe("true");
   });

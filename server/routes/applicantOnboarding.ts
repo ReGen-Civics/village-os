@@ -171,7 +171,7 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
   // ── The applicant gives their references ──────────────────────────────────
 
   const given = (res: any, out: GiveOutcome) =>
-    out.ok ? res.json({ success: true, given: out.given }) : res.status(out.status).json({ error: out.error, ...(out.row !== null ? { row: out.row } : {}) });
+    out.ok ? res.json({ success: true, given: out.given }) : res.status(out.status).json({ error: out.error, ...(out.row !== null ? { row: out.row } : {}), ...("field" in out && out.field ? { field: out.field } : {}) });
 
   app.post("/api/application-status/:ref/references", async (req, res) => {
     const ref = refOf(req);

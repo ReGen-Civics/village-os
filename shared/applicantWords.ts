@@ -704,7 +704,7 @@ const en: ApplicantMessages = {
       email: "Their email",
       whatsapp: "WhatsApp number",
       usPhone: "US phone number",
-      signal: "Signal number or username",
+      signal: "Signal number or username (like name.01)",
       channelsHint: "We need their email, plus at least one of these three so we can reach them.",
       tellThem: "Please let your references know we'll be in touch.",
       editLine: "Want to change them? Send the list again and it replaces the one you gave. You can do this until we reach out.",
@@ -1064,7 +1064,7 @@ const es: ApplicantMessages = {
       email: "Su correo",
       whatsapp: "Número de WhatsApp",
       usPhone: "Teléfono de EE. UU.",
-      signal: "Número o usuario de Signal",
+      signal: "Número o usuario de Signal (como nombre.01)", // needs-native-review: QA round 4, 27 Nov 2026
       channelsHint: "Necesitamos su correo, y además al menos uno de estos tres para contactarla.",
       tellThem: "Por favor, avise a sus referencias que nos pondremos en contacto.",
       editLine: "¿Quiere cambiarlas? Envíe la lista de nuevo y reemplaza la que dio. Puede hacerlo hasta que las contactemos.",

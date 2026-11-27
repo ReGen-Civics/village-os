@@ -34,24 +34,24 @@ describe("the reference list", () => {
     expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", email: "ben@example.test" })]).ok).toBe(true);
     // At least two (the lead, 19 Nov 2026): one alone is refused.
     expect(parseReferenceList([ref()])).toEqual({ ok: false, error: "too_few", row: null });
-    expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0 });
+    expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0, field: "how" });
   });
   it("THE LEAD'S RULE (27 Nov 2026): an email AND one of WhatsApp, a US phone or Signal, each checked", () => {
     const b = (over: Record<string, string>) => ref({ name: "Ben", email: "ben@example.test", whatsapp: "", ...over });
     // No email, or a bad one.
-    expect(parseReferenceList([ref(), b({ email: "", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1 });
-    expect(parseReferenceList([ref(), b({ email: "not an email", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1 });
+    expect(parseReferenceList([ref(), b({ email: "", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1, field: "email" });
+    expect(parseReferenceList([ref(), b({ email: "not an email", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1, field: "email" });
     // An email alone is not enough.
-    expect(parseReferenceList([ref(), b({})])).toEqual({ ok: false, error: "channel", row: 1 });
+    expect(parseReferenceList([ref(), b({})])).toEqual({ ok: false, error: "channel", row: 1, field: "whatsapp" });
     // Each of the three, alone, is enough with the email.
     expect(parseReferenceList([ref(), b({ whatsapp: "+44 7700 900123" })]).ok).toBe(true);
     expect(parseReferenceList([ref(), b({ usPhone: "(415) 555-0132" })]).ok).toBe(true);
     expect(parseReferenceList([ref(), b({ signal: "ben.42" })]).ok).toBe(true);
     // A number that does not read as its kind is refused.
-    expect(parseReferenceList([ref(), b({ usPhone: "+506 8888 1234" })])).toEqual({ ok: false, error: "contact", row: 1 });
-    expect(parseReferenceList([ref(), b({ whatsapp: "12" })])).toEqual({ ok: false, error: "contact", row: 1 });
+    expect(parseReferenceList([ref(), b({ usPhone: "+506 8888 1234" })])).toEqual({ ok: false, error: "contact", row: 1, field: "usPhone" });
+    expect(parseReferenceList([ref(), b({ whatsapp: "12" })])).toEqual({ ok: false, error: "contact", row: 1, field: "whatsapp" });
     // An older form's single contact reads as the email, and still needs a number.
-    expect(parseReferenceList([ref(), { name: "Old", contact: "old@example.test", how: "Knew me." }])).toEqual({ ok: false, error: "channel", row: 1 });
+    expect(parseReferenceList([ref(), { name: "Old", contact: "old@example.test", how: "Knew me." }])).toEqual({ ok: false, error: "channel", row: 1, field: "whatsapp" });
   });
   it("refuses none, the same reference twice and more than ten", () => {
     expect(parseReferenceList([])).toEqual({ ok: false, error: "none", row: null });
