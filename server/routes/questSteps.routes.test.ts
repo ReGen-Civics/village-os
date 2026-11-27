@@ -110,7 +110,9 @@ describe.skipIf(!configured)("the quest card, part 2 (MySQL)", () => {
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const addr = server.address();
     base = `http://127.0.0.1:${typeof addr === "object" && addr ? addr.port : 0}`;
-    await pool.query("INSERT INTO circles (id, name) VALUES ('c-garden', 'Garden')");
+    // No repo writes a circle row; the fixture helper the org route suites use (agentProposals.test.ts) does.
+    const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+    await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-garden', 'Garden', '[]', 0)");
     await createOrgRole(pool, { id: "garden-steward", name: "Garden Steward", seats: 1, circleId: "c-garden" });
     await seatHolder(pool, "garden-steward", { userId: ADA.id });
   }, 300_000);
@@ -161,7 +163,9 @@ describe.skipIf(!configured)("the quest card, part 2 (MySQL)", () => {
     await call("POST", "/api/game/quests/q-paid/claim");
     await call("POST", "/api/game/quests/q-paid/submit", { note: "Done." });
     const c = (await claims.forUser(ADA.id)).find((x) => x.questId === "q-paid")!;
-    await pool.query("UPDATE quest_claims SET status = 'consented' WHERE id = ?", [c.id]);
+    // Consented through the repo's own door, with no value to post: the status is what the take-back reads.
+    const consented = await claims.consentOnce(c.id, ["submitted"], (x) => { x.status = "consented"; }, null);
+    expect(consented.ok).toBe(true);
     const back = await call("POST", "/api/game/quests/q-paid/pull-back");
     expect(back.status).toBe(409);
     expect(back.body.status).toBe("consented");
