@@ -276,6 +276,9 @@ export default function ApplicationStatus() {
   const [state, setState] = useState<"loading" | "ready" | "missing">("loading");
   // The references form opened again to replace the list (the lead, 27 Nov 2026: "offer them a chance to edit").
   const [editRefs, setEditRefs] = useState(false);
+  // QA pass 1: the page ran 3,600 to 7,000 px on a phone. The refine form and the reference rows fold behind one button each.
+  const [refineShown, setRefineShown] = useState(() => typeof window !== "undefined" && window.location.hash === "#refine-heading");
+  const [refsShown, setRefsShown] = useState(() => typeof window !== "undefined" && window.location.hash === "#reference-form");
   const token = typeof window === "undefined" ? "" : (new URLSearchParams(window.location.search).get("token") ?? "");
 
   // The words this page owns follow the language the person is reading the site in, else the one kept on their proposal.
@@ -285,6 +288,8 @@ export default function ApplicationStatus() {
   const view = s ? statusView(lang, s) : null;
   // The review window, 1 to 2 weeks after the role's deadline (a week after it, as the server counts): not yet open.
   const windowAhead = !!s?.reviewAfter && Date.now() < Date.parse(`${s.reviewAfter}T00:00:00Z`) + 7 * 86_400_000;
+  // One Book button (QA pass 1 saw two): the stage's task row carries it when the task list is drawn.
+  const taskBooks = !!view?.tasks?.some((task) => task.key === "conversation" && !!task.href);
   const promiseShown = !!s && s.outcome == null && (windowAhead || (!view?.applicantActs && (!!s.afterFounding || typeof s.replyMoons === "number")));
 
   useEffect(() => {
@@ -440,14 +445,14 @@ export default function ApplicationStatus() {
                   {/* Ruling 17: until the review window opens, the line stays, whatever else the card offers (QA pass 1 saw it hide). */}
                   {s.outcome == null && windowAhead && s.reviewAfter && <p className="mt-1 text-foreground" data-review-window="">{w.reviewWindow(w.day(s.reviewAfter))}</p>}
                   {/* The stage's own gold act (QA round 2): "Add your references" while they wait, the booking gold-edged beside it. */}
-                  {view.six && (view.primary || (view.booking?.book && "links" in view.booking.book)) && (
+                  {view.six && (view.primary || (view.booking?.book && "links" in view.booking.book && !taskBooks)) && (
                     <div className="mt-4 flex flex-wrap gap-2" data-stage-book="">
                       {view.primary && (
                         <a href={view.primary.href} className={BTN_PRIMARY} data-stage-primary="">
                           {view.primary.label}
                         </a>
                       )}
-                      {view.booking?.book && "links" in view.booking.book && view.booking.book.links
+                      {view.booking?.book && "links" in view.booking.book && !taskBooks && view.booking.book.links
                         .filter((l) => /^https:\/\//.test(l.url))
                         .map((l) => (
                           <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={view.bookGold ? BTN_PRIMARY : BTN_NOTICE} data-book-now="" data-book-gold={view.bookGold ? "" : undefined}>
@@ -528,6 +533,20 @@ export default function ApplicationStatus() {
                         >
                           {task.action}
                         </button>
+                      ) : task.action && (task.key === "proposal" || task.key === "references") && !task.external ? (
+                        <button
+                          type="button"
+                          className={BTN_NOTICE}
+                          onClick={() => {
+                            if (task.key === "proposal") setRefineShown(true);
+                            else setRefsShown(true);
+                            const id = task.key === "proposal" ? "refine-heading" : "reference-form";
+                            window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: "start" }), 0);
+                          }}
+                          data-task-action={task.key}
+                        >
+                          {task.action}
+                        </button>
                       ) : task.action && task.href ? (
                         <a href={task.href} className={BTN_NOTICE} data-task-action={task.key} {...(task.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
                           {task.action}
@@ -589,7 +608,14 @@ export default function ApplicationStatus() {
                 </ul>
               </section>
             )}
-            {(s.referencesAsked?.mayAdd || (editRefs && s.referencesAsked?.mayEdit)) && (
+            {s.referencesAsked?.mayAdd && !refsShown && !editRefs && (
+              <div id="reference-form" className={`scroll-mt-24 ${TILE}`} data-references-folded="">
+                <button type="button" className={BTN_PRIMARY} onClick={() => setRefsShown(true)} data-references-open="">
+                  {w.status.six.tasks.add}
+                </button>
+              </div>
+            )}
+            {((s.referencesAsked?.mayAdd && (refsShown || editRefs)) || (editRefs && s.referencesAsked?.mayEdit)) && (
               <ReferenceForm
                 postUrl={token ? `/api/application-status/${encodeURIComponent(ref)}/references?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/references`}
                 words={w.status.referenceForm}
@@ -667,7 +693,14 @@ export default function ApplicationStatus() {
                 {view.booking.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
               </section>
             )}
-            {view.refine && (
+            {view.refine && view.refine.open && !refineShown && (
+              <div id="refine-heading" className={`scroll-mt-24 ${TILE}`} data-refine-folded="">
+                <button type="button" className={BTN_NOTICE} onClick={() => setRefineShown(true)} data-refine-open="">
+                  {w.status.six.tasks.refine}
+                </button>
+              </div>
+            )}
+            {view.refine && (!view.refine.open || refineShown) && (
               <RefineProposal
                 refine={view.refine}
                 words={w.status.six.refine}

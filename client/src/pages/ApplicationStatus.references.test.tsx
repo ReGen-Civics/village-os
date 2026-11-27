@@ -6,7 +6,7 @@
  */
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { LANGUAGES } from "@shared/applicantWords";
 
 vi.mock("@/components/Layout", () => ({
@@ -38,6 +38,14 @@ vi.mock("@/lib/gameApi", () => ({
 }));
 
 import ApplicationStatus, { ReferenceForm } from "./ApplicationStatus";
+
+/** The reference rows fold behind one button (QA round 4): open them, when the page offers the form. */
+const renderAndOpen = async () => {
+  render(<ApplicationStatus />);
+  await waitFor(() => expect(document.querySelector("[data-stage-card]")).not.toBeNull());
+  const fold = document.querySelector<HTMLButtonElement>("[data-references-open]");
+  if (fold) fireEvent.click(fold);
+};
 
 const EN = LANGUAGES.en.status.referenceForm;
 const ES = LANGUAGES.es.status.referenceForm;
@@ -72,9 +80,18 @@ afterEach(() => {
 });
 
 describe("the reference form", () => {
-  it("shows once asked, sends the rows by the emailed link, and then says how many, never who", async () => {
+  it("QA round 4: folds behind one button until the applicant opens it", async () => {
     served = { ...WAITING };
     render(<ApplicationStatus />);
+    await waitFor(() => expect(document.querySelector("[data-references-folded]")).not.toBeNull());
+    expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(0);
+    fireEvent.click(document.querySelector<HTMLButtonElement>("[data-references-open]")!);
+    expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(3);
+  });
+
+  it("shows once asked, sends the rows by the emailed link, and then says how many, never who", async () => {
+    served = { ...WAITING };
+    await renderAndOpen();
     expect(await screen.findByRole("heading", { level: 2, name: EN.heading })).toBeTruthy();
     expect(screen.getByText(EN.privacy)).toBeTruthy();
     // Three rows to start, and the minimum said (the lead, 19 Nov 2026: at least two, we prefer three).
@@ -102,7 +119,7 @@ describe("the reference form", () => {
   it("a refused row says why in the applicant's words and keeps the form", async () => {
     served = { ...WAITING };
     answer = { status: 400, body: { error: "contact", row: 0, field: "usPhone" } };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     await screen.findByRole("button", { name: EN.send });
     // Filled to the page's own rule, so the server's answer is what is said.
     for (const i of [0, 1]) {
@@ -119,7 +136,7 @@ describe("the reference form", () => {
 
   it("THE LEAD'S RULE (27 Nov 2026): an email without a WhatsApp, US phone or Signal number is said on the page, and nothing is sent", async () => {
     served = { ...WAITING };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     expect(await screen.findByText(EN.tellThem)).toBeTruthy();
     for (const i of [0, 1]) {
       fireEvent.change(screen.getAllByLabelText(EN.name)[i], { target: { value: `R${i}` } });
@@ -134,7 +151,7 @@ describe("the reference form", () => {
 
   it("adds rows up to ten (the lead, 19 Nov 2026)", async () => {
     served = { ...WAITING };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     const add = await screen.findByRole("button", { name: EN.add });
     for (let i = 0; i < 7; i++) fireEvent.click(screen.getByRole("button", { name: EN.add }));
     expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(10);
@@ -153,7 +170,7 @@ describe("the reference form", () => {
 
   it("a single reference is refused in the applicant's words (too_few), on the page before anything is sent", async () => {
     served = { ...WAITING };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     fireEvent.change((await screen.findAllByLabelText(EN.name))[0], { target: { value: "Only One" } });
     fireEvent.change(screen.getAllByLabelText(EN.email)[0], { target: { value: "one@example.test" } });
     fireEvent.change(screen.getAllByLabelText(EN.whatsapp)[0], { target: { value: "+506 8888 1234" } });
@@ -165,12 +182,12 @@ describe("the reference form", () => {
 
   it("is not offered before references are asked for, nor after they are given", async () => {
     served = { ...WAITING, referencesAsked: null };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     await screen.findByRole("heading", { level: 1 });
     expect(document.querySelector("[data-reference-form]")).toBeNull();
     cleanup();
     served = { ...WAITING, referencesAsked: { given: 2, mayAdd: false } };
-    render(<ApplicationStatus />);
+    await renderAndOpen();
     expect(await screen.findByText(EN.given(2))).toBeTruthy();
     expect(document.querySelector("[data-reference-form]")).toBeNull();
   });
