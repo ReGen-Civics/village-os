@@ -454,9 +454,27 @@ export async function applicationDeadline(db: Db, ref: string): Promise<string |
 
 /** The review window opens a week after the deadline (the lead: "1-2 weeks after"); before that nothing is stalled. */
 export const REVIEW_WINDOW_DAYS = 7;
+/** When the review window opens: a week after the roles' deadline, or null when no role sets one. */
+export function reviewWindowOpensAt(deadline: string | null): Date | null {
+  return deadline ? new Date(new Date(`${deadline}T00:00:00Z`).getTime() + REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000) : null;
+}
 export function reviewWindowOpen(deadline: string | null, now: Date): boolean {
-  if (!deadline) return true;
-  return now.getTime() >= new Date(`${deadline}T00:00:00Z`).getTime() + REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const opens = reviewWindowOpensAt(deadline);
+  return !opens || now.getTime() >= opens.getTime();
+}
+
+/**
+ * WHEN THE 90-DAY CLOCK STARTS (the lead, 27 Nov 2026, asked whether the close waits for the review window: "Yes"):
+ * at arrival, or, when a role it applies for sets "Applications close", when the review window opens (the deadline
+ * plus `REVIEW_WINDOW_DAYS`, the nudges' own start), whichever is later. The close, its day-75 warning and the
+ * status link's lifetime all count from here.
+ */
+export function closeClockStartOf(arrivedAt: Date, deadline: string | null): Date {
+  const opens = reviewWindowOpensAt(deadline);
+  return opens && opens.getTime() > arrivedAt.getTime() ? opens : arrivedAt;
+}
+export async function closeClockStart(db: Db, ref: string, arrivedAt: Date): Promise<Date> {
+  return closeClockStartOf(arrivedAt, await applicationDeadline(db, ref).catch(() => null));
 }
 
 export async function bookingUrlsById(db: Db, ids: readonly string[]): Promise<Map<string, string | null>> {

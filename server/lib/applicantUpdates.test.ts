@@ -49,12 +49,12 @@ describe("the status link in a letter", () => {
       expect(withoutStatusLink(text)).not.toContain("token=");
     }
   });
-  it("the link is signed for this one proposal and refuses another purpose", () => {
-    const link = statusLinkFor({ siteUrl: () => "https://x.test/" }, "op-abc")!;
+  it("the link is signed for this one proposal and refuses another purpose", async () => {
+    const link = (await statusLinkFor({ siteUrl: () => "https://x.test/" }, "op-abc"))!;
     const token = new URL(link).searchParams.get("token")!;
     expect(link.startsWith("https://x.test/application-status/op-abc?token=")).toBe(true);
     expect(verifyLink("application_status", token)?.ref).toBe("op-abc");
     expect(verifyLink("unsubscribe", token)).toBeNull();
-    expect(statusLinkFor({}, "op-abc")).toBeNull();
+    expect(await statusLinkFor({}, "op-abc")).toBeNull();
   });
 });

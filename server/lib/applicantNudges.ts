@@ -51,7 +51,8 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
   for (const r of await repo.openReviews(pool)) {
     // Before its role's review window opens, nothing waits on the team (the lead: "we review 1-2 weeks after the
     // application deadline so a stage that waits more than 3 days would nudge").
-    const teamWaits = repo.reviewWindowOpen(await repo.applicationDeadline(pool, r.ref).catch(() => null), now);
+    const deadline = await repo.applicationDeadline(pool, r.ref).catch(() => null);
+    const teamWaits = repo.reviewWindowOpen(deadline, now);
     const recused = new Set(await repo.recusedUsers(pool, r.ref));
     const notifyRole = async (roleId: string, title: string, key: string) => {
       for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
@@ -89,8 +90,9 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
         out.team++;
       }
     }
-    // The last warning before the close: the people who place roles, once.
-    const age = Math.floor((now.getTime() - r.confirmedAt.getTime()) / DAY);
+    // The last warning before the close: the people who place roles, once. From the close's own start (arrival, or
+    // the review window's opening: `closeClockStart`).
+    const age = Math.floor((now.getTime() - repo.closeClockStartOf(r.confirmedAt, deadline).getTime()) / DAY);
     if (age >= warnDays && age < closeDays && kindOfRef(r.ref) === "open") {
       const title = NUDGE_WORDS.closing(await rolesNow(), closeDays - age);
       const holders = (await deps.liveHoldersOf("org.seat")).filter((u) => !recused.has(u));

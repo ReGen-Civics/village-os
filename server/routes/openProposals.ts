@@ -1230,12 +1230,18 @@ export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, 
   // address go now (red team, 9 Nov). With a post office handed in, each one first gets its one closed letter (keyed
   // per application) while the address is still here, then the close is recorded as an event. An adopted, declined
   // or withdrawn application is never touched: only `status = 'confirmed'` rows are read.
+  // The clock starts at arrival, or when the role's review window opens (the lead, 27 Nov 2026: "Yes";
+  // `closeClockStart`): a candidate by arrival is closed only once its own clock has run the days.
   const closeDays = Math.max(1, Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || OPEN_ANONYMISE_DAYS);
   const closeCutoff = new Date(at.getTime() - closeDays * 24 * 60 * 60_000);
+  const candidates = await store.undecidedBefore(pool, closeCutoff);
+  const due: typeof candidates = [];
+  for (const p of candidates) {
+    if ((await reviewRepo.closeClockStart(pool, p.id, p.confirmedAt ?? p.createdAt)).getTime() < closeCutoff.getTime()) due.push(p);
+  }
   let expired: number;
   let letters = 0;
   if (closing) {
-    const due = await store.undecidedBefore(pool, closeCutoff);
     letters = await sendClosedLetters(pool, closing, due);
     const closed = await store.expireUndecided(pool, due.map((p) => p.id), closeCutoff, at);
     await stampQuietClose(pool, closed, at);
@@ -1244,7 +1250,7 @@ export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, 
     }
     expired = closed.length;
   } else {
-    expired = await store.expireUndecidedBefore(pool, closeCutoff, at);
+    expired = (await store.expireUndecided(pool, due.map((p) => p.id), closeCutoff, at)).length;
   }
   let anonymised = await store.anonymiseDecidedBefore(pool, cutoff, at);
   for (const p of await store.adoptedDecidedBefore(pool, cutoff)) {

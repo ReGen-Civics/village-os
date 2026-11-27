@@ -114,7 +114,7 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
       referencesIn: read.facts.refsGiven,
       referencesEditable: read.facts.refsGiven ? await referencesEditable(pool, ref) : false,
       refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
-      statusLink: statusLinkFor(deps, ref),
+      statusLink: await statusLinkFor(deps, ref),
       profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
     });
@@ -154,7 +154,7 @@ export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId:
     const iv = (await review.interviewsOf(pool, ref)).find((i) => i.id === interviewId);
     if (!iv || iv.state !== "open") return false;
     const step = await stepBookingOf(pool, ref, iv.roleId);
-    const words = bookingNudgeLetter({ firstName: greetingName(p.name), role: step.label, links: step.links.map((l) => l.url), statusLink: statusLinkFor(deps, ref), lang: languageOf(p) });
+    const words = bookingNudgeLetter({ firstName: greetingName(p.name), role: step.label, links: step.links.map((l) => l.url), statusLink: await statusLinkFor(deps, ref), lang: languageOf(p) });
     const name = greetingName(p.name);
     const sent = await deps.postEmail({
       idempotencyKey: bookingNudgeKey(ref, interviewId),
@@ -191,7 +191,7 @@ export async function tellRefinedLetter(deps: TellDeps, ref: string): Promise<bo
       anchorCircle: await review.anchorCircleName(pool),
       referencesOpen: false,
       refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
-      statusLink: statusLinkFor(deps, ref),
+      statusLink: await statusLinkFor(deps, ref),
       lang: languageOf(p),
     });
     return await send(deps, p, "refined", words);

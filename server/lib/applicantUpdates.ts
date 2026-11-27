@@ -52,8 +52,14 @@ export interface TellDeps extends Pick<DecideDeps, "getPool" | "members" | "noti
  * its details removed, the page refuses every link anyway (`statusByToken`).
  */
 export const STATUS_LINK_MARGIN_DAYS = 30;
-export function statusLinkDays(): number {
-  return Math.max(120, (Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || 90) + STATUS_LINK_MARGIN_DAYS);
+/**
+ * The days a link signed `now` works: the close days plus the margin, counted from when the close's clock starts
+ * (`closeClockStart`: arrival, or the role's review window opening, the lead's "Yes" of 27 Nov 2026), and never less
+ * than 120.
+ */
+export function statusLinkDays(clockStartsAt: Date | null = null, now: Date = new Date()): number {
+  const ahead = clockStartsAt ? Math.max(0, Math.ceil((clockStartsAt.getTime() - now.getTime()) / 86_400_000)) : 0;
+  return Math.max(120, ahead + (Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || 90) + STATUS_LINK_MARGIN_DAYS);
 }
 
 /** What one update may add: which part of a kind (the position of a conversation), and facts the words use. */
@@ -82,11 +88,16 @@ export type TellApplicant = ((ref: string, kind: ApplicantUpdateKind, facts?: Up
 
 const keyOf = (ref: string, kind: ApplicantUpdateKind, part?: string) => `${ref}:update:${kind}${part ? `:${part}` : ""}`;
 
-/** A link to the applicant's own status page, signed for this proposal alone. Null when the deployment cannot say its address. */
-export function statusLinkFor(deps: Pick<TellDeps, "siteUrl">, ref: string): string | null {
+/**
+ * A link to the applicant's own status page, signed for this proposal alone, working until the close's clock has run
+ * (`statusLinkDays`). Null when the deployment cannot say its address.
+ */
+export async function statusLinkFor(deps: Pick<TellDeps, "siteUrl"> & { getPool?: TellDeps["getPool"] }, ref: string): Promise<string | null> {
   const origin = deps.siteUrl?.().replace(/\/+$/, "");
   if (!origin) return null;
-  return `${origin}/application-status/${encodeURIComponent(ref)}?token=${encodeURIComponent(signLink("application_status", { ref }, statusLinkDays()))}`;
+  const now = new Date();
+  const opens = deps.getPool ? review.reviewWindowOpensAt(await review.applicationDeadline(deps.getPool(), ref).catch(() => null)) : null;
+  return `${origin}/application-status/${encodeURIComponent(ref)}?token=${encodeURIComponent(signLink("application_status", { ref }, statusLinkDays(opens, now)))}`;
 }
 
 async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUrl">, p: proposals.StoredOpenProposal, kind: ApplicantUpdateKind, facts: UpdateFacts) {
@@ -104,7 +115,7 @@ async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUr
     lang: languageOf(p),
     note: p.body.note ?? null,
     // Only the letters that ask the applicant to open the page carry the link; the rest never pointed there.
-    statusLink: kind === "conversation" || kind === "terms" || kind === "first_reply" || kind === "consent" || kind === "references" ? statusLinkFor(deps, p.id) : null,
+    statusLink: kind === "conversation" || kind === "terms" || kind === "first_reply" || kind === "consent" || kind === "references" ? await statusLinkFor(deps, p.id) : null,
   });
 }
 

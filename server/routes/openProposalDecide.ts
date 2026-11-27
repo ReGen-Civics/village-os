@@ -1091,7 +1091,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             roleNames: namesOf(await rolesOf(pool, p)),
             // All three calls, the final one too (the lead, 27 Nov 2026), with only the first one's link.
             conversations: (await conversationsToName(pool, p.id)).map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks, ...(c.final ? { final: true } : {}) })),
-            statusLink: statusLinkFor({ siteUrl: site }, p.id),
+            statusLink: await statusLinkFor({ siteUrl: site, getPool: () => pool }, p.id),
             lang: languageOf(p),
             note,
           }), { lang: languageOf(p) })

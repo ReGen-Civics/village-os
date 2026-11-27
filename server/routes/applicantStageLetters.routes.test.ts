@@ -548,6 +548,49 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
       expect(await events(old)).toHaveLength(1);
     });
 
+    it("THE CLOCK STARTS AT REVIEW (the lead, 27 Nov 2026: 'Yes'): with a deadline, the days count from the review window's opening; without one, from arrival. The warning and the link follow", async () => {
+      const { nudgeTick } = await import("../lib/applicantNudges");
+      const { statusLinkDays } = await import("../lib/applicantUpdates");
+      const at = new Date();
+      const dayAgo = (n: number) => new Date(at.getTime() - n * 86_400_000).toISOString().slice(0, 10);
+      // Both arrived 120 days ago.
+      const late = await confirmed("clock-late@example.test");
+      const due = await confirmed("clock-due@example.test");
+      await ageOf(late, 120, at);
+      await ageOf(due, 120, at);
+      await q("UPDATE application_steps SET stamped_at = ? WHERE application_ref IN (?, ?) AND kind = 'confirmed'", [new Date(at.getTime() - 120 * 86_400_000), late, due]);
+      try {
+        // The deadline 50 days back: the window opened 43 days ago, so 43 days on the clock. Not closed.
+        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(50), gate]);
+        await tidyOpenProposals(pool, at, undefined, closing);
+        expect(await statusOf(late)).toBe("confirmed");
+        expect(await statusOf(due)).toBe("confirmed");
+        // No warning either: 43 is short of the 75.
+        const deps: any = { getPool: () => pool, notify: async (n: any) => { state.notices.push(n); return { fresh: true }; }, notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id], now: () => at, members: usersRepo(pool) };
+        state.notices.length = 0;
+        await nudgeTick(deps);
+        expect(state.notices.filter((n) => n.dedupeKey === `app:${late}:close-warning:${FOUNDER.id}`)).toEqual([]);
+        // The deadline 87 days back: the window opened 80 days ago. The warning goes, and nothing closes yet.
+        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(87), gate]);
+        await nudgeTick(deps);
+        expect(state.notices.filter((n) => n.dedupeKey === `app:${late}:close-warning:${FOUNDER.id}`)).toHaveLength(1);
+        await tidyOpenProposals(pool, at, undefined, closing);
+        expect(await statusOf(late)).toBe("confirmed");
+        // The deadline 100 days back: the window opened 93 days ago. Both close.
+        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(100), gate]);
+        await tidyOpenProposals(pool, at, undefined, closing);
+        expect([await statusOf(late), await statusOf(due)]).toEqual(["withdrawn", "withdrawn"]);
+      } finally {
+        await q("UPDATE org_roles SET apply_by = NULL WHERE id = ?", [gate]);
+      }
+      // Without a deadline, from arrival: 120 days is closed (the test above pins 91 and 89).
+      // The link: signed now for a window opening in 60 days, it lives those 60 days plus the close's 90 and the margin.
+      expect(statusLinkDays(null, at)).toBe(120);
+      expect(statusLinkDays(new Date(at.getTime() + 60 * 86_400_000), at)).toBe(60 + 90 + 30);
+      // A window already open adds nothing.
+      expect(statusLinkDays(new Date(at.getTime() - 5 * 86_400_000), at)).toBe(120);
+    });
+
     it("the days are the village's: at 30, an application 31 days old closes", async () => {
       const at = new Date();
       const id = await confirmed("thirty@example.test");
