@@ -19,6 +19,7 @@ import { ModuleProvider } from "./modules/ModuleProvider";
 import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./lib/landing";
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
 import { useConfigFailed, useGameConfig } from "./lib/gameApi";
+import { oldTreasuryAddress, TREASURY_SECTIONS } from "./lib/treasuryAddress";
 import ConfigUnavailable from "./components/ConfigUnavailable";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
 
@@ -285,15 +286,12 @@ const Wallet = lazyPage(() => import("./pages/Wallet"));
 const Pay = lazyPage(() => import("./pages/Pay"));
 const Badges = lazyPage(() => import("./pages/Badges"));
 const Powers = lazyPage(() => import("./pages/Powers"));
-// The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
-const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
-// The cash budget every member reads, and the holder of role.pay changes (budgets spec R23): the Governance page's
-// Treasury view since 27 Nov 2026 (the lead). /budget redirects there.
+// The village's one Treasury (the lead, 27 Nov 2026): the cash budget every member reads, and the desks a holder of a
+// treasury power opens (End of Moon pay, cash to pay out, quest prices, the mint). /budget, /treasury, /cash-payouts
+// and /pricing redirect to their sections (client/src/lib/treasuryAddress.ts).
 const GovernanceTreasury = lazyPage(() => import("./pages/GovernanceTreasury"));
 const Review = lazyPage(() => import("./pages/Review"));
 const Approvals = lazyPage(() => import("./pages/Approvals"));
-const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
-const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
 const Library = lazyPage(() => import("./pages/Library"));
 const VillageHealth = lazyPage(() => import("./pages/VillageHealth"));
@@ -430,7 +428,8 @@ function Router() {
       <Route path="/pay" component={Pay} />
       <Route path="/badges" component={Badges} />
       <Route path="/powers" component={Powers} />
-      <Route path="/pricing" component={PricingDeskPage} />
+      {/* The pricing desk's old page: a section of the Treasury since 27 Nov 2026. */}
+      <Route path="/pricing">{() => <Redirect to={oldTreasuryAddress(TREASURY_SECTIONS.prices, window.location.hash)} replace />}</Route>
       {/* The cash budget's old address, in links and notices already sent, lands on its Governance section. */}
       <Route path="/budget">{() => <Redirect to="/governance/treasury#cash-budget" replace />}</Route>
       <Route path="/review/structure/:batchId" component={StructureReview} />
@@ -440,9 +439,11 @@ function Router() {
       <Route path="/governance/work" component={Review} />
       <Route path="/review">{() => <Redirect to={`/governance/work${window.location.search}${window.location.hash}`} replace />}</Route>
       {/* The treasurer's payout list, for a finance role holding cash.pay without admin */}
-      <Route path="/cash-payouts" component={CashPayouts} />
+      {/* The cash desk's old page; a notice already sent to /cash-payouts#pay-board keeps its hash. */}
+      <Route path="/cash-payouts">{() => <Redirect to={oldTreasuryAddress(TREASURY_SECTIONS.cash, window.location.hash)} replace />}</Route>
       {/* The hand mint and the pay queues for a holder of token.mint, cash.pay or moon.approve_alone, admin or not */}
-      <Route path="/treasury" component={Treasury} />
+      {/* The old Treasury page (the mint and the pay queues): the desk board at the top of the one Treasury. */}
+      <Route path="/treasury">{() => <Redirect to={oldTreasuryAddress(TREASURY_SECTIONS.desks, window.location.hash)} replace />}</Route>
       <Route path="/library" component={Library} />
       {/* /village-health, not /health: the server owns /health as the ops probe */}
       <Route path="/village-health" component={VillageHealth} />

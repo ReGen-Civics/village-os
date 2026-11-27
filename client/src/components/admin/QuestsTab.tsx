@@ -106,7 +106,7 @@ export default function QuestsTab({ password }: { password: string }) {
           flight cannot be deleted until those claims are consented or declined.
         </Trans></p>
         {/* The Treasurer prices quests beside the engine (quest re-price Q3). */}
-        <a href="/pricing" className="inline-block mt-2 text-sm font-semibold text-emerald-800 underline"><Trans context="admin quests">Price the quests on the pricing desk</Trans></a>
+        <a href="/governance/treasury#prices" className="inline-block mt-2 text-sm font-semibold text-emerald-800 underline"><Trans context="admin quests">Price the quests on the pricing desk</Trans></a>
       </div>
 
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-6">

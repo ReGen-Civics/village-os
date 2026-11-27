@@ -102,6 +102,9 @@ const ALLOWLIST = {
   // The cash budget's old page (the lead, 27 Nov 2026: build it into Governance's treasury). It redirects to
   // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
   "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
+  // The treasury's three old pages (the lead, 27 Nov 2026: one Treasury under Govern). Each redirects to its section
+  // of /governance/treasury; Admin, the profile's cash card and the review queue link the new address.
+  "/pricing": "a redirect to /governance/treasury#prices, the pricing desk's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
@@ -129,16 +132,11 @@ const ALLOWLIST = {
   // client and could only show an error.
   "/oauth/authorize": "a connector's sign-in page, reached only from the connector that sends the member there",
 
-  // The treasurer's payout list outside /admin (Rye, 2026-10-30), for a finance
-  // role holding cash.pay without being an admin. Its one door is the books half
-  // of the profile cash card, which renders only for a key holder; a nav entry
-  // would show every member a page that refuses them. Admins keep their own tab.
-  "/cash-payouts": "entered from the profile cash card, shown only to a holder of cash.pay",
-  // The Treasury (Rye, 2026-11-15): the hand mint and the pay queues for a
-  // holder who is not an admin. Its door is the account menu entry, which the
-  // shell shows only when GET /api/treasury/doors opens one of its powers; a
-  // second door anywhere public would show every member a page that refuses them.
-  "/treasury": "the account menu entry, shown only to a holder of token.mint, cash.pay or moon.approve_alone",
+  // The treasurer's payout list and the old Treasury page, both sections of /governance/treasury since 27 Nov 2026.
+  // The redirects keep the notices already sent (`/cash-payouts#pay-board`) and the account menu entry working until
+  // the menu lane points it at the new address.
+  "/cash-payouts": "a redirect to /governance/treasury#cash (or the hash it carried), kept for notices already sent",
+  "/treasury": "a redirect to /governance/treasury#desks, kept for the account menu entry and links already sent",
 
   // Password flows arrive from an EMAIL, not from the site. The set-password
   // link carries a one-time token and is useless without it, so a nav entry

@@ -37,9 +37,9 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/quests": "Quests",
   "/propose-quest": "Propose a quest",
   "/partner": "Become a partner",
-  "/pricing": "Pricing desk",
+  "/pricing": "Pricing desk", // redirects to /governance/treasury#prices (27 Nov 2026)
   "/budget": "Cash budget", // redirects to /governance/treasury#cash-budget (27 Nov 2026)
-  "/governance/treasury": "Treasury", // the cash budget, folded in from /budget (27 Nov 2026)
+  "/governance/treasury": "Treasury", // the cash budget, the pay desks, prices and the mint, folded in (27 Nov 2026)
   "/roles": "Roles",
   "/roles/select": "Find your roles",
   "/roles/draft": "Find your roles",
@@ -59,8 +59,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/powers": "What this village looks after",
   "/review": "Review",
   "/approvals": "Approvals",
-  "/cash-payouts": "Cash to pay out",
-  "/treasury": "Treasury",
+  "/cash-payouts": "Cash to pay out", // redirects to /governance/treasury#cash (27 Nov 2026)
+  "/treasury": "Treasury", // redirects to /governance/treasury#desks (27 Nov 2026)
   "/role-proposals": "Propose my roles",
   // Keys here are matched by longest PREFIX against the live location, so a
   // key with no route behind it can never match and is dead weight that

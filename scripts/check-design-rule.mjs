@@ -111,8 +111,8 @@ const PAGES = [
   "client/src/pages/Review.tsx",
   "client/src/pages/Decisions.tsx",
   "client/src/pages/Decision.tsx",
-  // The Treasury (2026-11-15): the hand mint and the pay queues for a holder who is not an admin.
-  "client/src/pages/Treasury.tsx",
+  // The one Treasury under Governance (27 Nov 2026): the cash budget, the pay desks, prices and the mint.
+  "client/src/pages/GovernanceTreasury.tsx",
   // The review page as cards (2026-11-16): where every change an agent proposes is decided.
   "client/src/pages/ProposedChanges.tsx",  // The send and receive page (2026-11-23, credits lane 3): born inside the rule.
   "client/src/pages/Pay.tsx",

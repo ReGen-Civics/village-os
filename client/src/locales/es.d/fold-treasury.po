@@ -1,0 +1,134 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the one Treasury under Governance, the lede, 27 Nov 2026
+msgctxt "governance treasury: lede"
+msgid "The village's money in one place: the cash budget every member reads, and the desks where the people the village chose pay what is owed."
+msgstr "El dinero de la aldea en un solo lugar: el presupuesto en efectivo que lee cada miembro, y los escritorios donde las personas que la aldea eligió pagan lo que se debe."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Cash budget"
+msgstr "Presupuesto en efectivo"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "What the village plans to pay this moon, and what is left."
+msgstr "Lo que la aldea planea pagar esta luna, y lo que queda."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "End of Moon pay"
+msgstr "Pago de Fin de Luna"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Confirm what was agreed against what was delivered."
+msgstr "Confirme lo acordado frente a lo entregado."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Cash to pay out"
+msgstr "Efectivo por pagar"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Send what is owed by bank transfer, then record it here."
+msgstr "Envíe lo que se debe por transferencia bancaria y luego regístrelo aquí."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Quest prices"
+msgstr "Precios de las misiones"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Price each open quest beside the suggested figure."
+msgstr "Ponga precio a cada misión abierta junto a la cifra sugerida."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Mint tokens"
+msgstr "Emitir tokens"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Pay a request or give a bonus in the village's tokens."
+msgstr "Pague una solicitud o dé un bono en los tokens de la aldea."
+
+# needs-native-review: the Treasury, the pricing desk's refusal, 27 Nov 2026
+msgctxt "treasury: prices refused"
+msgid "The pricing desk is for whoever holds the pay-setting power, such as the Treasurer."
+msgstr "El escritorio de precios es para quien tiene el poder de fijar pagos, como el Tesorero."
+
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+msgctxt "treasury: signed out"
+msgid "The treasury"
+msgstr "La tesorería"
+
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+msgctxt "treasury: signed out"
+msgid "Sign in to read the village's cash budget, and any treasury desk the village has given you."
+msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea y cualquier escritorio de tesorería que la aldea le haya dado."
+
+# needs-native-review: the Treasury, the first screen's eyebrow, 27 Nov 2026
+msgctxt "treasury: hero eyebrow"
+msgid "The treasury, this moon"
+msgstr "La tesorería, esta luna"
+
+# needs-native-review: the Treasury, the first screen's heading for a power holder, 27 Nov 2026
+msgctxt "treasury: hero, a holder of a treasury power"
+msgid "Your treasury desks"
+msgstr "Sus escritorios de tesorería"
+
+# needs-native-review: the Treasury, the first screen's heading for a member, 27 Nov 2026
+msgctxt "treasury: hero, a member"
+msgid "The village's cash, in the open"
+msgstr "El efectivo de la aldea, a la vista"
+
+# needs-native-review: the Treasury, the desk board read aloud, 27 Nov 2026
+msgctxt "treasury: the desk board, read aloud"
+msgid "Your desks"
+msgstr "Sus escritorios"
+
+# needs-native-review: the Treasury, a holder of one desk, 27 Nov 2026
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the power behind this desk by its vote."
+msgstr "La aldea le dio, por su voto, el poder detrás de este escritorio."
+
+# needs-native-review: the Treasury, a holder of several desks, 27 Nov 2026
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the powers behind these {0} desks by its vote."
+msgstr "La aldea le dio, por su voto, los poderes detrás de estos {0} escritorios."
+
+# needs-native-review: the Treasury, a member's one act, 27 Nov 2026
+msgctxt "treasury: hero, a member's one act"
+msgid "Read the budget, line by line"
+msgstr "Lea el presupuesto, línea por línea"
+
+# needs-native-review: the Treasury, the budget section's line, 27 Nov 2026
+msgctxt "treasury: budget"
+msgid "Every member reads it. Whoever holds the budget power changes it."
+msgstr "Cada miembro lo lee. Quien tiene el poder del presupuesto lo cambia."
+
+# needs-native-review: the Treasury, for a member who holds no treasury power, 27 Nov 2026
+msgctxt "treasury: who keeps the books, for a member who holds no treasury power"
+msgid "The treasurer's desks open here for whoever the village gives those powers by its vote."
+msgstr "Los escritorios del tesorero se abren aquí para quien la aldea dé esos poderes por su voto."
+
+# needs-native-review: the Treasury, the purses read aloud, 27 Nov 2026
+msgctxt "treasury: the purses, read aloud"
+msgid "This moon's cash"
+msgstr "El efectivo de esta luna"
+
+# needs-native-review: the Treasury, the mint form's failed read, 27 Nov 2026
+msgctxt "treasury: mint"
+msgid "The mint form could not load just now. Try again in a moment."
+msgstr "El formulario de emisión no pudo cargarse en este momento. Inténtelo de nuevo en un momento."
+
+# needs-native-review: Admin's pricing desk, the door for a Treasurer who is not an admin, 27 Nov 2026
+msgctxt "pricing desk"
+msgid "A Treasurer who is not an admin opens this desk under Governance, Treasury"
+msgstr "Un Tesorero que no es administrador abre este escritorio en Gobernanza, Tesorería"

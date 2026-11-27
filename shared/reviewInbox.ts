@@ -299,7 +299,7 @@ export function fromMoonQueue(body: unknown): InboxItem[] {
     const r = obj(x);
     if (!r || !str(r.recapId) || !r.waitingOn) return [];
     const roles = list(r.roles).map((y) => str(obj(y)?.name)).filter(Boolean).join(", ");
-    return [{ key: `recap:${r.recapId}`, source: "recap" as const, kind: `recap_${String(r.waitingOn)}`, code: null, summary: line(roles ? `A moon recap for ${roles}` : "", "A moon recap"), filedAt: null, batch: null, decideAt: "/treasury", touchesPerson: false }];
+    return [{ key: `recap:${r.recapId}`, source: "recap" as const, kind: `recap_${String(r.waitingOn)}`, code: null, summary: line(roles ? `A moon recap for ${roles}` : "", "A moon recap"), filedAt: null, batch: null, decideAt: "/governance/treasury#end-of-moon", touchesPerson: false }];
   });
 }
 
@@ -344,7 +344,7 @@ export function fromCashOwed(body: unknown): InboxItem[] {
   return list(obj(body)?.unpaid).flatMap((x) => {
     const c = obj(x);
     if (!c || !str(c.id)) return [];
-    return [{ key: `cash:${c.id}`, source: "cash" as const, kind: "cash_owed", code: null, summary: line(c.workTitle, "Cash owed for work"), filedAt: str(c.owedAt), batch: null, decideAt: "/cash-payouts", touchesPerson: false }];
+    return [{ key: `cash:${c.id}`, source: "cash" as const, kind: "cash_owed", code: null, summary: line(c.workTitle, "Cash owed for work"), filedAt: str(c.owedAt), batch: null, decideAt: "/governance/treasury#cash", touchesPerson: false }];
   });
 }
 

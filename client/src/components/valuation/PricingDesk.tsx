@@ -114,7 +114,11 @@ const workOf = (r: RowState): WorkInputs => ({
   complexity: r.complexity,
 });
 
-export default function PricingDesk({ call }: { call: Call }) {
+export default function PricingDesk({ call, bare = false }: {
+  call: Call;
+  /** Drawn inside a page section that carries its own heading and lede (Governance's Treasury): no h1, no width cap. */
+  bare?: boolean;
+}) {
   const { t } = useLingui();
   const [read, setRead] = useState<DeskRead | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
@@ -203,12 +207,13 @@ export default function PricingDesk({ call }: { call: Call }) {
   };
 
   // The page keeps its one heading while it opens and when it refuses (QA P1-16).
-  const heading = <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>;
+  const heading = bare ? null : <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>;
+  const frame = bare ? "" : "max-w-6xl mx-auto";
   if (failed || !read) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className={frame}>
         {heading}
-        <p className="mt-2 text-sm text-muted-foreground">{failed ?? <Trans context="pricing desk">Opening the pricing desk…</Trans>}</p>
+        <p className={`${bare ? "" : "mt-2 "}text-sm text-muted-foreground`}>{failed ?? <Trans context="pricing desk">Opening the pricing desk…</Trans>}</p>
       </div>
     );
   }
@@ -221,9 +226,9 @@ export default function PricingDesk({ call }: { call: Call }) {
   const hoursNow = !eeNow && !modelNow && hoursLeft > 0;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className={frame}>
       {heading}
-      <p className="text-muted-foreground mb-4"><Trans context="pricing desk">Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer.</Trans></p>
+      {bare ? null : <p className="text-muted-foreground mb-4"><Trans context="pricing desk">Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer.</Trans></p>}
       <div className="mb-3"><PayDoorNote door={read.payDoor} /></div>
 
       <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">

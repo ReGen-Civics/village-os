@@ -86,8 +86,13 @@ const keyWords = (body: { message?: unknown } | null | undefined) => {
 
 type Refused = { kind: "signed-out" } | { kind: "no-key"; text: string } | { kind: "failed"; text: string };
 
-export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true }: {
+export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true, withHeading = true }: {
   password: string;
+  /**
+   * Draw the desk's own title and sentence. Governance's Treasury puts the desk under a section heading of its own
+   * that says the same, so it passes false and keeps one heading.
+   */
+  withHeading?: boolean;
   /**
    * Draw "Pay by member" (PayBoard) inside the desk. The Treasury page draws it
    * once in its own End of Moon section, for approve-alone holders as well, and
@@ -248,7 +253,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
     const link = "inline-flex min-h-[44px] items-center font-medium text-teal-deep underline";
     return (
       <div className="rounded-xl border border-border bg-white p-6">
-        <Heading className="text-xl font-semibold text-foreground"><Trans context="CashPayoutsTab, Heading">Cash to pay out</Trans></Heading>
+        {withHeading && <Heading className="text-xl font-semibold text-foreground"><Trans context="CashPayoutsTab, Heading">Cash to pay out</Trans></Heading>}
         {refused.kind === "signed-out" ? (
           <>
             <p className="mt-2 text-sm text-muted-foreground">{SIGN_IN_WORDS}</p>
@@ -269,8 +274,8 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className={`flex flex-wrap items-start gap-3 ${withHeading ? "justify-between" : "justify-end"}`}>
+        {withHeading && <div>
           <Heading className="flex items-center gap-2 text-xl font-semibold text-foreground">
             <Trans context="CashPayoutsTab, Heading"><HandCoins className="h-5 w-5" aria-hidden="true" />
             Cash to pay out
@@ -279,7 +284,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
             <Trans context="CashPayoutsTab, p">What the village owes each member in cash, for their roles, quests and accepted proposals. The village pays
             by bank transfer itself. Record each transfer here and its lines become paid.
           </Trans></p>
-        </div>
+        </div>}
         <button
           type="button"
           onClick={exportCsv}

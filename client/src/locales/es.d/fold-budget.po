@@ -8,12 +8,3 @@ msgctxt "governance: a view"
 msgid "Treasury"
 msgstr "Tesorería"
 
-# needs-native-review: Governance's Treasury view, the lede, 27 Nov 2026
-msgctxt "governance treasury: lede"
-msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
-msgstr "El efectivo de la aldea, a la vista: lo que planea pagar esta luna y lo que queda."
-
-# needs-native-review: Governance's Treasury view, the door to the books, 27 Nov 2026
-msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
-msgid "The village's books: mint, End of Moon pay and cash to send"
-msgstr "Las cuentas de la aldea: emitir, el pago de Fin de Luna y el efectivo por enviar"
