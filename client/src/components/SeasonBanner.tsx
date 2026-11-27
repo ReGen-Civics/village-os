@@ -92,18 +92,37 @@ function SeasonLine({ startsOn, endsOn, day, of }: { startsOn: string; endsOn: s
   );
 }
 
-/** "Plan your season", one button, while the window is open. Members only: a visitor has no seat to keep and no plan to file. */
-function PlanButton({ closesOn, sameDay }: { closesOn: string; sameDay: boolean }) {
-  const until = civilDayWords(closesOn);
+/** "2026-12-31" from "2026-12-31" or a full ISO stamp; "" for anything else. Days are compared as civil days, never as Dates. */
+function civilDayOf(iso: string | null | undefined): string {
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(iso ?? "");
+  return m ? m[1] : "";
+}
+
+/**
+ * "Plan your season", one button, while the window is open. Members only: a visitor has no seat to keep and no plan to
+ * file. What it says beside the button is only what the card has not said already:
+ * - the season being planned, when it is another season than the one on the card (a window often plans the NEXT
+ *   season), with the window's own closing day;
+ * - otherwise the window's closing day, only when it is another day than the season's close.
+ */
+function PlanButton({ window, cardSeason, cardCloses }: { window: { seasonName: string; closesOn: string }; cardSeason: string; cardCloses: string }) {
+  const until = civilDayWords(window.closesOn);
+  const planned = window.seasonName.trim();
+  const otherSeason = !!planned && planned !== cardSeason.trim();
+  const sameDay = !!civilDayOf(cardCloses) && civilDayOf(window.closesOn) === civilDayOf(cardCloses);
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-season-plan="">
       <Link href="/season-plans/mine" className={BTN_NOTICE}>
         <Trans context="SeasonBanner, the one button to plan the season">Plan your season</Trans>
         <ArrowRight className="size-4" aria-hidden="true" />
       </Link>
-      {sameDay ? null : (
+      {otherSeason ? (
         <span className={HINT}>
-          <Trans context="SeasonBanner, when the planning window closes on another day than the season">Plans are open until {until}.</Trans>
+          <Trans context="SeasonBanner, beside the plan button when the window plans another season than the card's">For {planned}. Open until {until}.</Trans>
+        </span>
+      ) : sameDay ? null : (
+        <span className={HINT}>
+          <Trans context="SeasonBanner, beside the plan button when the window closes on another day than the season">Open until {until}.</Trans>
         </span>
       )}
     </div>
@@ -142,7 +161,7 @@ export default function SeasonBanner() {
                 {season.daysUntilStart > 0 && next.startsOn ? `begins on ${civilDayWords(next.startsOn)}` : "begins today"}
               </p>
             </div>
-            {planWindow ? <PlanButton closesOn={planWindow.closesOn} sameDay={false} /> : null}
+            {planWindow ? <PlanButton window={planWindow} cardSeason={next.name} cardCloses="" /> : null}
           </div>
         </div>
       </section>
@@ -200,7 +219,7 @@ export default function SeasonBanner() {
                 </Link></Trans>
               </p>
             )}
-            {planWindow ? <PlanButton closesOn={planWindow.closesOn} sameDay={closes && planWindow.closesOn.slice(0, 10) === active.endsOn.slice(0, 10)} /> : null}
+            {planWindow ? <PlanButton window={planWindow} cardSeason={active.name} cardCloses={closes ? active.endsOn : ""} /> : null}
           </div>
         </div>
       </div>

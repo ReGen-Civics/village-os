@@ -19,6 +19,11 @@ msgid "Plan your season"
 msgstr "Planee su temporada"
 
 # needs-native-review: the season card on the home page, 27 Nov 2026
-msgctxt "SeasonBanner, when the planning window closes on another day than the season"
-msgid "Plans are open until {until}."
-msgstr "Los planes están abiertos hasta el {until}."
+msgctxt "SeasonBanner, beside the plan button when the window closes on another day than the season"
+msgid "Open until {until}."
+msgstr "Abierto hasta el {until}."
+
+# needs-native-review: the season card on the home page, 27 Nov 2026
+msgctxt "SeasonBanner, beside the plan button when the window plans another season than the card's"
+msgid "For {planned}. Open until {until}."
+msgstr "Para {planned}. Abierto hasta el {until}."

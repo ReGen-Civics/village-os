@@ -68,7 +68,22 @@ describe("the season strap", () => {
     state.season = { ...base, current: entry(), upcoming: null, daysLeft: 49, planWindow: { seasonId: "s1", seasonName: "Season of Foundations", opensOn: "2026-11-01", closesOn: "2026-11-30", state: "open" } };
     state.user = { id: "u1", role: "member", membershipGranted: true };
     const { container } = render(<Router><SeasonBanner /></Router>);
-    expect(container.querySelector("[data-season-plan]")?.textContent).toContain("Plans are open until 30 November 2026.");
+    expect(container.querySelector("[data-season-plan]")?.textContent).toContain("Open until 30 November 2026.");
+  });
+
+  it("names the season being planned when the window plans another season than the card's, with its own day", () => {
+    state.season = { ...base, current: entry(), upcoming: null, daysLeft: 49, planWindow: { seasonId: "s2", seasonName: "Season of Rains", opensOn: "2026-12-01", closesOn: "2026-12-31", state: "open" } };
+    state.user = { id: "u1", role: "member", membershipGranted: true };
+    const { container } = render(<Router><SeasonBanner /></Router>);
+    // Same closing day as the season, but another season: the name and the day both say something new.
+    expect(container.querySelector("[data-season-plan]")?.textContent).toContain("For Season of Rains. Open until 31 December 2026.");
+  });
+
+  it("compares the window's close with the season's as civil days, so a full ISO stamp on the same day says nothing more", () => {
+    state.season = { ...base, current: entry({ endsOn: "2026-12-31T00:00:00.000Z" }), upcoming: null, daysLeft: 49, planWindow: { seasonId: "s1", seasonName: "Season of Foundations", opensOn: "2026-11-01", closesOn: "2026-12-31", state: "open" } };
+    state.user = { id: "u1", role: "member", membershipGranted: true };
+    const { container } = render(<Router><SeasonBanner /></Router>);
+    expect(container.querySelector("[data-season-plan]")?.textContent).toBe("Plan your season");
   });
 
   it("gives a visitor no plan button", () => {
