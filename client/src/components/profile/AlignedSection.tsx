@@ -119,7 +119,7 @@ function Own() {
       {rows.length === 0 ? <p className="mt-2 text-muted-foreground">{ALIGNED_SECTION_WORDS.empty}</p> : <Rows rows={rows} onChanged={() => void load()} />}
       {/* The village's register (PR6): every member's terms, every version. */}
       <Link
-        href="/aligned"
+        href="/season#aligned"
         className="mt-4 inline-flex min-h-11 items-center px-1 text-sm font-medium text-notice underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring"
       >
         {ALIGNED_SECTION_WORDS.register}

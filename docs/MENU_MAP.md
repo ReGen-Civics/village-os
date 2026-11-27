@@ -366,7 +366,7 @@ The tab ids are unchanged, so every `/profile#anchor` the app links to still ope
 
 ## Every page
 
-Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/rights`) and the season page (`/season`), which fold 3 (#1857) and the season fold (#1862) add. "Menu on main" is where `nav.ts` had it before this change, and "Menu now" is where it is after. A page with no menu entry is reached from the page in the last column. Decisions: **STAY**; **FOLD?** a candidate to fold into another page (listed below, not done here); **FOLDED** or **FOLDING** done or under way in another lane; **REMOVED**.
+Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights #1857, season #1862) merged in. "Menu on main" is where `nav.ts` had it before this change, and "Menu now" is where it is after. A page with no menu entry is reached from the page in the last column. Decisions: **STAY**; **FOLD?** a candidate to fold into another page (listed below, not done here); **FOLDED** or **FOLDING** done or under way in another lane; **REMOVED**.
 
 | Route | Page | Who | Menu on main | Menu now | Decision | Note |
 |---|---|---|---|---|---|---|
@@ -395,9 +395,9 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/campaigns` | Crowd pooling | V N M R I A | Join / Crowd pooling | Join / Fund the village / Crowd pooling | STAY |  |
 | `/campaign/:slug` |  | V N M R I A | - | - | STAY | reached from Crowd pooling |
 | `/map` | Village map | V N M R I A | the bar / Living Map | Village / Maps / Living Map | STAY | Village's first row (with the hidden map beside it for a member) |
-| `/places` | Places, photographed | M R A | Village / Places | Village / Places and homes / Places | STAY | Village, Places and homes; holds the photographs since fold 5, #1856 |
+| `/places` | Places | M R A | Village / Places | Village / Places and homes / Places | STAY | Village, Places and homes; holds the photographs since fold 5, #1856 |
 | `/places/:key` |  | M R A | - | - | STAY | reached from Places and the map |
-| `/photographs` | Every photograph | - | Village / Photographs | - | FOLDED | into Places (/places#photos) by fold 5, #1856; redirects there |
+| `/photographs` | redirects to `/places#photos` | - | Village / Photographs | - | FOLDED | into Places (/places#photos) by fold 5, #1856; redirects there |
 | `/map/circles` | Circles and roles | V N M R I A | Village / Circles & Roles | Govern / Circles & Roles / Circles | STAY |  |
 | `/events` | Village Calendar | V N M R I A | Community / Events | Community / Gatherings / Events | STAY |  |
 | `/first-walk` | redirects to `/` | - | Guides / Your First Walk | - | REMOVED | the lead, 27 Nov 2026: "Let's get rid of this"; redirects home |
@@ -411,14 +411,15 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/pricing` | Pricing desk | R A | - | - | FOLD? | the pricing desk: could be a section of the Treasury |
 | `/budget` | redirects to `/governance/treasury#cash-budget` | - | Account menu / Cash Budget | - | FOLDED | into Govern's Treasury tab by #1843 (on this branch since the 1.3.94 merge); redirects to /governance/treasury#cash-budget |
 | `/review/structure/:batchId` |  | A | - | - | STAY | reached from Review |
-| `/approvals` | Approvals | - | - | - | FOLDED | into Your work (/governance/work#approvals) by folds 6 and 7, #1861 |
+| `/approvals` | redirects to `/governance/work` | - | - | - | FOLDED | into Your work (/governance/work#approvals) by folds 6 and 7, #1861 |
 | `/governance/work` |  | M R A | Governance / Your work | Account menu / Your things / Waiting on you | STAY | a Governance view; "Waiting on you" in the account menu, the member's own |
 | `/review` | redirects to `/governance/work` | - | - | - | STAY | old address, redirects to Your work |
 | `/cash-payouts` | Cash to pay out | R A | - | - | FOLD? | the cash pay queue: a section of the Treasury desk |
 | `/treasury` | Treasury | R A | Account menu / Treasury | Account menu / Running the village / Treasury desk | FOLD? | the treasurer's desk (mint and pay queues). With the Treasury tab at /governance/treasury there are two treasuries: one page with the desk shown to power holders |
 | `/library` | Material library | M R A | Village / Library | Village / Library | STAY | its own entry in Village (round 2); a member's. Also the footer |
 | `/village-health` | Village health | M R A | Village / Health | Village / Village Health | STAY | its own entry in Village (round 2); a member's |
-| `/exit-policy` | Leaving well | - | Guides / Leaving Well | Govern / Guides / Leaving Well (`/rights#leaving-well`) | FOLDED | into Rights and agreements (/rights#leaving-well) by fold 3, #1857; Govern, Guides keeps a Leaving Well row that opens the chapter |
+| `/rights` | Rights and agreements | V N M R I A | - | Govern / Guides / Rights and agreements | STAY | Rights and agreements (fold 3, #1857): Good Neighbor criteria, Resident Rights, Steward Rights and Leaving Well as four chapters |
+| `/exit-policy` | redirects to `/rights` | - | Guides / Leaving Well | Govern / Guides / Leaving Well (`/rights#leaving-well`) | FOLDED | into Rights and agreements (/rights#leaving-well) by fold 3, #1857; Govern, Guides keeps a Leaving Well row that opens the chapter |
 | `/forum` | Forum | M R A | Community / Forum | Community / Conversations / Forum | STAY |  |
 | `/forum/:id` |  | M R A | - | - | STAY | reached from the Forum |
 | `/messages` | Messages | M R A | Community / Messages; Account menu / Messages | Account menu / Messages | STAY | one menu door now, with its count (it was in Community and the account menu) |
@@ -473,12 +474,12 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/email/a` |  | V N M | - | - | STAY | an email's one-tap action |
 | `/forgot-password` | Set a new password | V | - | - | STAY | reached from Sign in |
 | `/game-mechanics` | redirects to `/governance/how` | - | Guides / Game Mechanics | Govern / How we work / Game Mechanics (`/governance/how#game-mechanics`) | FOLDED | into How we work together (/governance/how#game-mechanics, members only) by fold 4, #1854 (1.3.96, merged into this branch); redirects there. Govern, How we work keeps a Game Mechanics row for members that opens the section |
-| `/changes` | Change requests | - | Governance / Change Requests | - | FOLDED | into Decisions (/governance/decisions#changes) by folds 6 and 7, #1861 |
-| `/changes/:id` |  | M R A | - | - | STAY | reached from the change requests inside Decisions |
+| `/changes` | redirects to `/governance/decisions` | - | Governance / Change Requests | - | FOLDED | into Decisions (/governance/decisions#changes) by folds 6 and 7, #1861 |
+| `/changes/:id` |  | - | - | - | FOLDED | redirects to one change request under Decisions (#1861) |
 | `/village-email` | How the village emails | M R A | Guides / Village Email | Govern / How we work / Village Email | STAY | out of Guides (the lead: "the village emails can be nested somewhere else"), into Govern's How we work; a member's |
-| `/good-neighbor` | Good neighbor | - | Guides / Good Neighbor | Village / Places and homes / Good Neighbor Criteria (`/rights#good-neighbor`) | FOLDED | into Rights and agreements (/rights#good-neighbor) by fold 3, #1857; Village, Places and homes keeps its row, opening the chapter, with its switch and name still under /good-neighbor |
-| `/steward-rights` | Steward rights | - | Guides / Steward Rights | - | FOLDED | into Rights and agreements (/rights#steward-rights) by fold 3, #1857 |
-| `/resident-rights` | Resident rights | - | Guides / Resident Rights | - | FOLDED | into Rights and agreements (/rights#resident-rights) by fold 3, #1857 |
+| `/good-neighbor` | redirects to `/rights` | - | Guides / Good Neighbor | Village / Places and homes / Good Neighbor Criteria (`/rights#good-neighbor`) | FOLDED | into Rights and agreements (/rights#good-neighbor) by fold 3, #1857; Village, Places and homes keeps its row, opening the chapter, with its switch and name still under /good-neighbor |
+| `/steward-rights` | redirects to `/rights` | - | Guides / Steward Rights | - | FOLDED | into Rights and agreements (/rights#steward-rights) by fold 3, #1857 |
+| `/resident-rights` | redirects to `/rights` | - | Guides / Resident Rights | - | FOLDED | into Rights and agreements (/rights#resident-rights) by fold 3, #1857 |
 | `/training/steward` | Steward training | M R | - | - | STAY | reached from Training |
 | `/training/resident` | Resident training | M R | - | - | STAY | reached from Training |
 | `/training` | Training | V N M R I A | Guides / Training | Govern / Guides / Training | STAY |  |
@@ -487,6 +488,8 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/governance/treasury` | Treasury | M R A | - | Govern / Decide / Treasury | STAY | Govern's Treasury tab (#1843): the cash budget folded in from /budget |
 | `/governance/decisions` |  | M R A | Governance / Decisions | Govern / Decide / Decisions | STAY |  |
 | `/governance/decisions/drafts/:draftId` |  | M R A | - | - | STAY | a draft's page (#1806), reached from Decisions and Review |
+| `/governance/decisions/changes` | redirects to `/governance/decisions#changes` | - | - | - | FOLDED | a redirect to /governance/decisions#changes (#1861), for the address people guess at |
+| `/governance/decisions/changes/:id` |  | M R A | - | - | STAY | one change request's page (#1861), reached from Decisions, Now, Your work and its notices |
 | `/governance/decisions/:id` |  | M R A | - | - | STAY | reached from Decisions |
 | `/decisions` | redirects to `/governance/decisions` | - | - | - | STAY | old address, redirects |
 | `/decisions/:id` | redirects to `/governance/decisions/` | - | - | - | STAY | old address, redirects |
@@ -500,12 +503,13 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/role-proposals/new` |  | M R A | - | - | STAY | reached from Open Roles and Make a Proposal |
 | `/role-proposals/shared/:token` |  | V N M | - | - | STAY | a shared draft link |
 | `/role-proposals/:id` |  | M R A | - | - | STAY | reached from Your work |
-| `/season-plans/mine` | Your season | - | - | - | FOLDED | into the season page (/season#plan) by the season fold, #1862 |
-| `/season-plans` | The village's season | - | Governance / Season Plans | - | FOLDED | into the season page (/season#everyone) by the season fold, #1862 |
+| `/season` | The season | M R A | - | Govern / This season / Season | STAY | the season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms as tabs; Govern, This season |
+| `/season-plans/mine` | redirects to `/season` | - | - | - | FOLDED | into the season page (/season#plan) by the season fold, #1862 |
+| `/season-plans` | redirects to `/season` | - | Governance / Season Plans | - | FOLDED | into the season page (/season#everyone) by the season fold, #1862 |
 | `/season-places/circles` | The season's circles | M R A | - | - | STAY | reached from the season page's Join tab |
-| `/season-places` | Join the season | - | Governance / Join the Season | - | FOLDED | into the season page (/season#join) by the season fold, #1862 |
+| `/season-places` | redirects to `/season` | - | Governance / Join the Season | - | FOLDED | into the season page (/season#join) by the season fold, #1862 |
 | `/role-path/:roleId` |  | M R | - | - | STAY | a role's path, reached from the role |
-| `/aligned` | Aligned | - | Governance / Aligned | - | FOLDED | into the season page (/season#aligned) by the season fold, #1862 |
+| `/aligned` | redirects to `/season` | - | Governance / Aligned | - | FOLDED | into the season page (/season#aligned) by the season fold, #1862 |
 | `/visit` | Visit | V N M R I A | Join / Plan a Visit | Join / Plan a Visit | STAY |  |
 | `/gratitude` | Gratitude | V N M R I A | Community / Gratitude | Community / Gratitude | STAY |  |
 | `/journal` | Journal | M R A | Account menu / Journal | Account menu / Your things / Journal | STAY |  |
@@ -521,8 +525,6 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/work-with-us` | Work with us | V N M R I A | Join / Work With Us | Join / Build with us / Work With Us | STAY |  |
 | `/reset` | A fresh start | V N M | - | - | STAY | a fresh start for a phone stuck on an old version, handed over as a link |
 | `/404` | Page not found | V N M R I A | - | - | STAY | the not-found page |
-| `/rights` | Rights and agreements | V N M R I A | - | Govern / Guides / Rights and agreements | STAY | Rights and agreements (fold 3, #1857): Good Neighbor criteria, Resident Rights, Steward Rights and Leaving Well as four chapters |
-| `/season` | Season | M R A | - | Govern / This season / Season | STAY | the season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms as tabs; Govern, This season |
 
 ## What changed, in short
 

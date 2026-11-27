@@ -48,7 +48,7 @@ function Own() {
       </p>
       {mine.plan?.aim && <p className="mt-2 whitespace-pre-wrap text-muted-foreground">{mine.plan.aim}</p>}
       <Link
-        href="/season-plans/mine"
+        href="/season#plan"
         className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2"
       >
         <CalendarDays className="h-4 w-4" aria-hidden="true" />

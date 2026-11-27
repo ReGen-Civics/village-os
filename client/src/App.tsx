@@ -20,7 +20,9 @@ import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./li
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
 import { useConfigFailed, useGameConfig } from "./lib/gameApi";
 import ConfigUnavailable from "./components/ConfigUnavailable";
+import { feedbackRedirectTarget } from "./lib/guideFeedback";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
+import { changeRequestHref } from "@shared/changeRequestAddress";
 
 /**
  * "/" means the welcome page, for everyone, every time. The map was going to
@@ -182,9 +184,8 @@ const LoveLetter = brochurePage(() => import("./pages/LoveLetter"));
 const Circles = lazyPage(() => import("./pages/Circles"));
 const OAuthAuthorize = lazyPage(() => import("./pages/OAuthAuthorize"));
 const CircleCardPage = lazyPage(() => import("./pages/CircleCardPage"));
+// Places and their photos, one page (the fold, 26 Nov 2026): the shelf, one place, and every photo as a view.
 const Places = lazyPage(() => import("./pages/Places"));
-const PlacePhotos = lazyPage(() => import("./pages/PlacePhotos"));
-const Photographs = lazyPage(() => import("./pages/Photographs"));
 const Quests = lazyPage(() => import("./pages/Quests"));
 const QuestDetail = lazyPage(() => import("./pages/QuestDetail"));
 const ProposeQuest = lazyPage(() => import("./pages/ProposeQuest"));
@@ -227,20 +228,17 @@ const EmailPreferences = lazyPage(() => import("./pages/EmailPages").then((m) =>
 const EmailUnsubscribe = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailUnsubscribe })));
 const EmailAction = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailAction })));
 const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword"));
-const ChangeRequests = lazyPage(() => import("./pages/ChangeRequests"));
+// One change request, a kind of decision under Decisions since 27 Nov 2026 (the lead). The list is a section of Decisions.
+const ChangeRequest = lazyPage(() => import("./pages/ChangeRequest"));
 const VillageEmail = lazyPage(() => import("./pages/VillageEmail"));
-const GoodNeighbor = brochurePage(() => import("./pages/GoodNeighbor"));
 const JourneyToLaunch = lazyPage(() => import("./pages/JourneyToLaunch"));
 const SetupGame = lazyPage(() => import("./pages/SetupGame"));
 const CanvasWorkbook = lazyPage(() => import("./pages/CanvasWorkbook"));
 const ProjectHistory = brochurePage(() => import("./pages/ProjectHistory"));
 const Bootstrap = lazyPage(() => import("./pages/Bootstrap"));
-const Feedback = lazyPage(() => import("./pages/Feedback"));
 const Network = lazyPage(() => import("./pages/Network"));
 const Contribute = lazyPage(() => import("./pages/Contribute"));
 const SeasonalFestivals = lazyPage(() => import("./pages/SeasonalFestivals"));
-const StewardRights = brochurePage(() => import("./pages/StewardRights"));
-const ResidentRights = brochurePage(() => import("./pages/ResidentRights"));
 const Training = lazyPage(() => import("./pages/Training"));
 const Governance = lazyPage(() => import("./pages/Governance"));
 const GovernanceNow = lazyPage(() => import("./pages/GovernanceNow"));
@@ -253,13 +251,11 @@ const SeatApplication = lazyPage(() => import("./pages/SeatApplication"));
 const RoleProposal = lazyPage(() => import("./pages/RoleProposal"));
 const NewRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.NewRoleProposal })));
 const SharedRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.SharedRoleProposal })));
-const SeasonPlans = lazyPage(() => import("./pages/SeasonPlans"));
-// Season places (module season-places): join the season, the season's circles, a role's path. Lazy: none touch the first page.
-const SeasonPlaces = lazyPage(() => import("./pages/SeasonPlaces"));
+// The season, one page (the season fold, 27 Nov 2026): the season and its goals, joining it, your plan, everyone's, and Aligned.
+const Season = lazyPage(() => import("./pages/Season"));
+// Season places (module season-places): the season's circles and a role's path. Lazy: neither touches the first page.
 const SeasonCircles = lazyPage(() => import("./pages/SeasonCircles"));
 const RolePath = lazyPage(() => import("./pages/RolePath"));
-const Aligned = lazyPage(() => import("./pages/Aligned"));
-const MySeason = lazyPage(() => import("./pages/MySeason"));
 const Visit = brochurePage(() => import("./pages/Visit"));
 const GratitudeWall = lazyPage(() => import("./pages/GratitudeWall"));
 const WorkWithUs = brochurePage(() => import("./pages/WorkWithUs"));
@@ -288,13 +284,13 @@ const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
 // Treasury view since 27 Nov 2026 (the lead). /budget redirects there.
 const GovernanceTreasury = lazyPage(() => import("./pages/GovernanceTreasury"));
 const Review = lazyPage(() => import("./pages/Review"));
-const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
 const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
 const Library = lazyPage(() => import("./pages/Library"));
 const VillageHealth = lazyPage(() => import("./pages/VillageHealth"));
-const ExitPolicy = lazyPage(() => import("./pages/ExitPolicy"));
+// Rights and agreements: the Good Neighbor criteria, both rights pages and Leaving Well, as one page (the rights fold, 27 Nov 2026).
+const RightsAndAgreements = lazyPage(() => import("./pages/RightsAndAgreements"));
 const Modules = lazyPage(() => import("./pages/Modules"));
 const ModuleDetail = lazyPage(() => import("./pages/ModuleDetail"));
 const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
@@ -339,8 +335,8 @@ export function PageLoading() {
   return <Layout>{quiet}</Layout>;
 }
 
-/** The pages that draw without the site's header and bar (Admin, OAuthAuthorize, ChangeRequests, Reset). */
-const SHELL_LESS = /^\/(?:admin|oauth\/authorize|changes|reset)(?:\/|$)/;
+/** The pages that draw without the site's header and bar (Admin, OAuthAuthorize, Reset). */
+const SHELL_LESS = /^\/(?:admin|oauth\/authorize|reset)(?:\/|$)/;
 
 /**
  * The responsive bottom bar's visit count (client/src/lib/navVisits.ts): after a
@@ -376,7 +372,8 @@ function Router() {
       <Route path="/canvas/workbook" component={CanvasWorkbook} />
       <Route path="/project-history" component={ProjectHistory} />
       <Route path="/claim" component={Bootstrap} />
-      <Route path="/feedback" component={Feedback} />
+      {/* Feedback lives in the guide's panel since the fold (26 Nov 2026): back to the page they came from, panel open (lib/guideFeedback.ts). */}
+      <Route path="/feedback">{() => <Redirect to={feedbackRedirectTarget()} replace />}</Route>
       <Route path="/network" component={Network} />
       <Route path="/contribute" component={Contribute} />
       <Route path="/seasonal-festivals" component={SeasonalFestivals} />
@@ -405,17 +402,15 @@ function Router() {
           relay and raise-your-hand, which read live data behind the
           capability gate and have no equivalent in the artifact. */}
       <Route path="/map" component={LivingMap} />
-      {/* The photographs of the land, beside the map rather than inside it.
-          The list route is declared before the detail route for the reason
-          /decisions gives: wouter takes the first match, and a :key above the
-          shelf would swallow it. */}
+      {/* The photographs of the land, beside the map rather than inside it:
+          one page for the shelf of places, one place (its own shareable
+          address) and every photo (the #photos view). The list route is
+          declared before the detail route for the reason /decisions gives:
+          wouter takes the first match. /photographs was its own page until
+          the fold (26 Nov 2026) and now opens the All photos view. */}
       <Route path="/places" component={Places} />
-      <Route path="/places/:key" component={PlacePhotos} />
-      {/* Every photograph in the village on one page, so a person who wants a
-          picture of themselves down can find it without knowing which place
-          it was filed under. Top level and not under /places for the reason
-          PAGE_TITLES gives. */}
-      <Route path="/photographs" component={Photographs} />
+      <Route path="/places/:key" component={Places} />
+      <Route path="/photographs">{() => <Redirect to="/places#photos" replace />}</Route>
       <Route path="/map/circles" component={VillageMap} />
       <Route path="/events" component={Events} />
       {/* Your First Walk is gone (the lead, 27 Nov 2026: "Let's get rid of this"); an old link lands on the home page, which every village has. */}
@@ -432,7 +427,9 @@ function Router() {
       {/* The cash budget's old address, in links and notices already sent, lands on its Governance section. */}
       <Route path="/budget">{() => <Redirect to="/governance/treasury#cash-budget" replace />}</Route>
       <Route path="/review/structure/:batchId" component={StructureReview} />
-      <Route path="/approvals" component={Approvals} />
+      {/* The approval inbox is the Approvals section of Your work (the lead, 27 Nov 2026). Its old address, in
+          notices and links already sent, lands there. */}
+      <Route path="/approvals">{() => <Redirect to={`/governance/work${window.location.search}#approvals`} replace />}</Route>
       {/* Governance (the lead, 26 Nov 2026: "Don't call it review, call it governance"). The deciders' queue is Your work
           under /governance; the old address keeps working, with its query and anchor (#witness). */}
       <Route path="/governance/work" component={Review} />
@@ -444,7 +441,10 @@ function Router() {
       <Route path="/library" component={Library} />
       {/* /village-health, not /health: the server owns /health as the ops probe */}
       <Route path="/village-health" component={VillageHealth} />
-      <Route path="/exit-policy" component={ExitPolicy} />
+      <Route path="/rights" component={RightsAndAgreements} />
+      {/* The four old addresses of Rights and agreements, each to its own chapter, with the query riding along
+          (`/exit-policy?focus=begin-departure` still lands on the departure card). Kept for links already sent. */}
+      <Route path="/exit-policy">{() => <Redirect to={`/rights${window.location.search}#leaving-well`} replace />}</Route>
       <Route path="/forum" component={Forum} />
       <Route path="/forum/:id" component={Forum} />
       <Route path="/messages" component={Messages} />
@@ -515,12 +515,14 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       {/* Game Mechanics folded into How we work together (26 Nov 2026). Old links keep their query (?dial=, ?focus=) and anchor; with none, they land on the mechanics. */}
       <Route path="/game-mechanics">{() => <Redirect to={`/governance/how${window.location.search}${window.location.hash || "#game-mechanics"}`} replace />}</Route>
-      <Route path="/changes" component={ChangeRequests} />
-      <Route path="/changes/:id" component={ChangeRequests} />
+      {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list is the Change requests section of
+          Decisions, and one change request is under it. The old addresses, in notices already sent, keep working. */}
+      <Route path="/changes">{() => <Redirect to={`/governance/decisions${window.location.search}#changes`} replace />}</Route>
+      <Route path="/changes/:id">{(p) => <Redirect to={`${changeRequestHref(p.id)}${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/village-email" component={VillageEmail} />
-      <Route path="/good-neighbor" component={GoodNeighbor} />
-      <Route path="/steward-rights" component={StewardRights} />
-      <Route path="/resident-rights" component={ResidentRights} />
+      <Route path="/good-neighbor">{() => <Redirect to={`/rights${window.location.search}#good-neighbor`} replace />}</Route>
+      <Route path="/steward-rights">{() => <Redirect to={`/rights${window.location.search}#steward-rights`} replace />}</Route>
+      <Route path="/resident-rights">{() => <Redirect to={`/rights${window.location.search}#resident-rights`} replace />}</Route>
       {/* One training page per track, each with its own words in Admin, Pages; /training chooses between them. */}
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
@@ -537,6 +539,9 @@ function Router() {
       <Route path="/governance/decisions" component={Decisions} />
       {/* One org chart draft, before and after, with its revisions and the acts its decide answer allows. */}
       <Route path="/governance/decisions/drafts/:draftId" component={OrgDraft} />
+      {/* One change request, before :id for the same reason. The bare list address goes to its section. */}
+      <Route path="/governance/decisions/changes">{() => <Redirect to="/governance/decisions#changes" replace />}</Route>
+      <Route path="/governance/decisions/changes/:id" component={ChangeRequest} />
       <Route path="/governance/decisions/:id" component={Decision} />
       {/* The old addresses, in links already sent (notifications, emails), keep working. */}
       <Route path="/decisions">{() => <Redirect to={`/governance/decisions${window.location.search}${window.location.hash}`} replace />}</Route>
@@ -554,13 +559,14 @@ function Router() {
       <Route path="/role-proposals/new" component={NewRoleProposal} />
       <Route path="/role-proposals/shared/:token" component={SharedRoleProposal} />
       <Route path="/role-proposals/:id" component={RoleProposal} />
-      {/* Your season: your own plan, then the village's page of everyone's, by name. */}
-      <Route path="/season-plans/mine" component={MySeason} />
-      <Route path="/season-plans" component={SeasonPlans} />
+      {/* The season, one page. The three pages it replaced redirect to its tabs, keeping the query (?renew=, ?season=). */}
+      <Route path="/season" component={Season} />
+      <Route path="/season-plans/mine">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
+      <Route path="/season-plans">{() => <Redirect to={`/season${window.location.search}#everyone`} replace />}</Route>
       <Route path="/season-places/circles" component={SeasonCircles} />
-      <Route path="/season-places" component={SeasonPlaces} />
+      <Route path="/season-places">{() => <Redirect to={`/season${window.location.search}#join`} replace />}</Route>
       <Route path="/role-path/:roleId" component={RolePath} />
-      <Route path="/aligned" component={Aligned} />
+      <Route path="/aligned">{() => <Redirect to={`/season${window.location.search}${window.location.hash || "#aligned"}`} replace />}</Route>
       <Route path="/visit" component={Visit} />
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}

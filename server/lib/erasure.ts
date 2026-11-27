@@ -238,6 +238,8 @@ import { forgetSeatJournalNames, SEAT_JOURNAL_ROWS_SQL } from "../repos/orgSeatE
 import { leaveEveryCrewOf } from "../repos/questCrewErasure";
 import { releaseOpenClaimsOf } from "../repos/questClaimErasure";
 import { deleteStepSubmissionsOfMember, stepSubmissionsOfMember } from "../repos/questStepSubmissions";
+import { clearFeedbackShotsOfMember, feedbackShotsOfMember } from "../repos/feedbackScreenshots";
+import { feedbackShotsDir } from "./feedback";
 import { forgetReportReasonsOf } from "../repos/placePhotos";
 import { heldByAnotherAccount, usersRepo } from "../repos/users";
 import { forgetPulseLinesNaming } from "../repos/pulseLines";
@@ -302,6 +304,11 @@ export type ErasureDeps = {
    * row is anonymised.
    */
   proposalFileDir?: string;
+  /**
+   * The private folder of feedback screenshots (0443, server/lib/feedback.ts). Absent, it is the folder
+   * beside `uploadsDir` the feedback route writes to, which is what the server has; a test hands its own.
+   */
+  feedbackShotDir?: string;
   /**
    * The notification spine as the server holds it, so a notice this sweep
    * writes follows each recipient's mail preference. The delegations step
@@ -1818,6 +1825,24 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
+       * The screenshots they sent with their feedback (0443): a picture of their own screen, which can
+       * show their dashboard, their messages or other people's names. The files come off the private
+       * folder first and the names after, so a file that will not come off stops this step with its
+       * name still on the row, and a resume tries again. The reports stay: their words are the
+       * village's record of what broke, as they were before screenshots existed.
+       *
+       * AFTER THE TOMBSTONE, for the reason the needs step gives: the feedback door takes a screenshot
+       * from anybody signed in until the sessions die.
+       */
+      name: "feedback-screenshots-after-tombstone",
+      run: async () => {
+        const dir = deps.feedbackShotDir ?? feedbackShotsDir(deps.uploadsDir);
+        for (const file of await feedbackShotsOfMember(pool, target.id)) unlink(dir, file);
+        await clearFeedbackShotsOfMember(pool, target.id);
+      },
+    },
+    {
+      /*
        * Place-photo reports (0093): the words they typed go, the reports stay.
        * The curators' queue serves them to every holder of `map.curatePhotos`,
        * a role or badge power, and a subject request often names the person.
@@ -2553,6 +2578,8 @@ export const BACKFILL_LEAVES_OUT: Readonly<Record<string, string>> = {
     "its table is new in migration 0414, so no member whose erasure finished before it can have signed up there",
   "suggestion-staging-after-tombstone":
     "its table is new in migration 0432, so no member whose erasure finished before it can have filed there",
+  "feedback-screenshots-after-tombstone":
+    "its column is new in migration 0443, so no member whose erasure finished before it can have sent a screenshot",
   "sera-answers-after-tombstone":
     "its two tables are new in the a_sera_difference_is_answered migration, so no member whose erasure finished before them can have answered there",
   audit: "the sweep wrote its line when it finished, and a second would say the erasure happened twice",

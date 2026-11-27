@@ -68,7 +68,7 @@ export function removeAttachment(privateDir: string, legacyUploadsDir: string, r
 /** The headers a kept attachment is answered with, and its type. A PDF goes as a download, an image as an image. */
 export function attachmentHeaders(name: string): Record<string, string> {
   const ext = path.extname(name).toLowerCase();
-  const types: Record<string, string> = { ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif" };
+  const types: Record<string, string> = { ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif", ".avif": "image/avif" };
   const type = types[ext] ?? "application/octet-stream";
   return {
     "Content-Type": type,

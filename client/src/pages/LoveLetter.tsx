@@ -691,7 +691,7 @@ export default function LoveLetter() {
                     {!pageShown("/good-neighbor") ? (
                       <span className="text-foreground">{words.fields.standardsLabel}</span>
                     ) : (
-                      <a href="/good-neighbor" className="text-notice underline" target="_blank">
+                      <a href="/rights#good-neighbor" className="text-notice underline" target="_blank">
                         {words.fields.standardsLabel}
                       </a>
                     )}{" "}

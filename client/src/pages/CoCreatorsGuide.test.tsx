@@ -265,6 +265,6 @@ describe("words the village owns", () => {
 
     expect(within(section).getByRole("heading", { level: 2 })).toHaveTextContent("Our Village Agreements");
     expect(within(section).getByText(/The Our Village Agreements are essential/)).toBeInTheDocument();
-    expect(within(section).getByRole("link", { name: /Read the Full Our Village Agreements/ })).toHaveAttribute("href", "/good-neighbor");
+    expect(within(section).getByRole("link", { name: /Read the Full Our Village Agreements/ })).toHaveAttribute("href", "/rights#good-neighbor");
   });
 });

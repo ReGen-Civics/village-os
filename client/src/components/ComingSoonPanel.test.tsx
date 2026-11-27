@@ -16,7 +16,6 @@ vi.mock("@/lib/gameApi", () => ({ authToken: () => "t" }));
 
 import ComingSoonPanel from "./ComingSoonPanel";
 import Places from "@/pages/Places";
-import Photographs from "@/pages/Photographs";
 
 beforeEach(() => {
   places = [];
@@ -57,13 +56,15 @@ describe("an empty places page", () => {
     expect(screen.getByRole("link", { name: "Open the map" })).toBeTruthy();
   });
 
-  it("the photographs page does the same", async () => {
+  it("the All photos view (once /photographs) does the same", async () => {
+    window.location.hash = "#photos";
     render(
       <Router>
-        <Photographs />
+        <Places />
       </Router>,
     );
     expect(await screen.findByText("Coming soon")).toBeTruthy();
     expect(screen.queryByText("No photographs yet.")).toBeNull();
+    window.location.hash = "";
   });
 });

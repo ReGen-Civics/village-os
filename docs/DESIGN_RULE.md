@@ -11,13 +11,13 @@ The rule exists as three things that agree with each other:
 - `scripts/check-design-rule.mjs`, which fails CI when a file on its list draws outside it.
 
 The joining journey is on the list today: `/steward`, `/roles`, `/roles/select`, `/propose-a-role`,
-the member door of `/propose`, `/love-letter`, `/application-status` and `/role-applications/:id`, and the onboarding pages: `/aligned` (and the
+the member door of `/propose`, `/love-letter`, `/application-status` and `/role-applications/:id`, and the onboarding pages: the season page `/season`, which took in `/aligned` (and the
 confidentiality and membership align cards), `/register`, `/set-password`, `/verify-email`, the onboarding path on the
-profile, `/approvals`, how roles are going (the panel on `/circles` and a circle's page) and `/quests`, the membership align step inside the proposal form
+profile, one change request (`/governance/decisions/changes/:id`), how roles are going (the panel on `/circles` and a circle's page) and `/quests`, the membership align step inside the proposal form
 (`MembershipAtApplication`), `RoleCardBridge`, the signed-out card (`SignInDoors` in `ModuleGate`, whose two doors now
 take `BTN_PRIMARY` and `BTN_SECONDARY` on every page that shows them), Admin's onboarding path editor,
 `/request-membership`, the village calendar at `/events` with its moon spiral, strip of days and turnings,
-`/season-plans/mine`, with the commons it draws (`components/commons`), the
+`/season`'s tabs (`components/season`: joining the season, your plan, everyone's plans, Aligned), with the commons it draws (`components/commons`), the
 gratitude wall at `/gratitude` with its threads, and the pages where people decide (`/review`, `/decisions`,
 `/decisions/:id`, with what they render: the vote, the roll, the round, the outcome and the review queue's cards). The investor path `/investor` joined on 24 Nov 2026, with its investment summary and the landing's build progress. A page joins by being
 added to `JOURNEY` (and `PAGES`, for a page) in the script, once it passes.

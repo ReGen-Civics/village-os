@@ -92,7 +92,7 @@ describe("Your roles, for a member", () => {
     expect(screen.getByRole("link", { name: /Well keeper/ }).textContent).toContain(YOUR_ROLES_WORDS.ended);
 
     expect(hrefOf(YOUR_ROLES_WORDS.apply)).toBe("/propose?type=role_application&season=s-next");
-    expect(hrefOf(YOUR_ROLES_WORDS.plan)).toBe("/season-plans/mine");
+    expect(hrefOf(YOUR_ROLES_WORDS.plan)).toBe("/season#plan");
     expect(hrefOf(YOUR_ROLES_WORDS.every)).toBe("/roles");
     expect(hrefOf(YOUR_ROLES_WORDS.fits)).toBe("/profile/characters");
 
@@ -114,7 +114,7 @@ describe("Your roles, for a member", () => {
     await screen.findByText(YOUR_ROLES_WORDS.noSeats);
     // No season to plan: the wizard opens with no season named.
     expect(hrefOf(YOUR_ROLES_WORDS.apply)).toBe("/propose?type=role_application");
-    expect(hrefOf(YOUR_ROLES_WORDS.plan)).toBe("/season-plans/mine");
+    expect(hrefOf(YOUR_ROLES_WORDS.plan)).toBe("/season#plan");
     await waitFor(() => expect(fetchApplications).toHaveBeenCalledTimes(1));
     expect(screen.queryByText(YOUR_ROLES_WORDS.openHeading)).toBeNull();
   });

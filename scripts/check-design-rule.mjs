@@ -72,37 +72,33 @@ const PAGES = [
   "client/src/pages/LoveLetter.tsx",
   "client/src/pages/ApplicationStatus.tsx",
   "client/src/pages/StewardJourney.tsx",
-  "client/src/pages/StewardRights.tsx",
-  "client/src/pages/ResidentRights.tsx",
-  "client/src/pages/ExitPolicy.tsx",
+  // Rights and agreements (the rights fold, 27 Nov 2026): the two rights pages, Good Neighbor and Leaving Well, as one page.
+  "client/src/pages/RightsAndAgreements.tsx",
   "client/src/pages/Quests.tsx",
-  "client/src/pages/MySeason.tsx",
+  // The season, one page (the season fold, 27 Nov 2026): it took in Your season, the village's season, Join the Season and Aligned.
+  "client/src/pages/Season.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
   "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
-  "client/src/pages/Feedback.tsx",
   "client/src/pages/Places.tsx",
   "client/src/pages/WorkWithUs.tsx",
   "client/src/pages/Modules.tsx",
   "client/src/pages/RequestMembership.tsx",
-  "client/src/pages/Photographs.tsx",
   "client/src/pages/EmailPages.tsx",
   "client/src/pages/ProposeQuest.tsx",
   "client/src/pages/Crowdpool.tsx",
-  "client/src/pages/Approvals.tsx",
+  "client/src/pages/ChangeRequest.tsx",
   "client/src/pages/VerifyEmail.tsx",
   "client/src/pages/SetPassword.tsx",
   "client/src/pages/Register.tsx",
   "client/src/pages/Login.tsx",
   "client/src/pages/ForgotPassword.tsx",
-  "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
   "client/src/pages/Powers.tsx",
   "client/src/pages/Team.tsx",
-  "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
@@ -127,6 +123,17 @@ const PAGES = [
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // Share feedback, in the guide's panel since the fold of /feedback (26 Nov 2026): born inside the rule.
+  "client/src/components/feedback/GuideFeedback.tsx",
+  "client/src/components/feedback/ShotEditor.tsx",
+  // What /places draws since the places fold (26 Nov 2026): the shelf, one place, the viewer, every photo and the queue.
+  "client/src/components/places/PlaceCard.tsx",
+  "client/src/components/places/PlaceGallery.tsx",
+  "client/src/components/places/PhotoGrid.tsx",
+  "client/src/components/places/PhotoViewer.tsx",
+  "client/src/components/places/PhotoIndex.tsx",
+  "client/src/components/places/PhotoReportsPanel.tsx",
+  "client/src/components/places/placesApi.ts",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",
@@ -140,6 +147,12 @@ const JOURNEY = [
   "client/src/components/canvas/DecisionMatrix.tsx",
   "client/src/components/canvas/ConflictAgreementPublic.tsx",
   "client/src/components/journey/look.ts",
+  // The four chapters of /rights and the frame they share (the rights fold, 27 Nov 2026).
+  "client/src/components/rights/chapterParts.tsx",
+  "client/src/components/rights/GoodNeighborChapter.tsx",
+  "client/src/components/rights/ResidentRightsChapter.tsx",
+  "client/src/components/rights/StewardRightsChapter.tsx",
+  "client/src/components/rights/LeavingWellChapter.tsx",
   // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
   "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
@@ -193,6 +206,17 @@ const JOURNEY = [
   "client/src/components/alignment/RegisterEntry.tsx",
   "client/src/components/alignment/AlignButton.tsx",
   "client/src/components/alignment/ConfidentialityCard.tsx",
+  // The season page's tabs and the cards they draw (the season fold).
+  "client/src/components/season/JoinSeason.tsx",
+  "client/src/components/season/VillagePlans.tsx",
+  "client/src/components/season/YourPlan.tsx",
+  "client/src/components/season/AlignedPanel.tsx",
+  "client/src/components/season/seasonSteps.tsx",
+  "client/src/components/season/ReadFailed.tsx",
+  "client/src/components/season/TabBoundary.tsx",
+  "client/src/components/seasonPlans/PlanCard.tsx",
+  "client/src/components/seasonPlans/RoleCarryOn.tsx",
+  "client/src/components/seasonPlans/SeasonGoalsFields.tsx",
   // The decider and holder side of a proposal (audit M11). CircleConsent.tsx joined with decider calm, below.
   "client/src/components/openProposal/AboutYou.tsx",
   "client/src/components/openProposal/MembershipAtApplication.tsx",
@@ -226,7 +250,8 @@ const JOURNEY = [
   "client/src/components/review/ConsentQueue.tsx",
   "client/src/components/review/OwedPostings.tsx",
   "client/src/components/review/OwedCancels.tsx",
-  "client/src/components/review/AgentProposalsCard.tsx",
+  "client/src/components/governance/ChangeRequestsSection.tsx",
+  "client/src/components/governance/work/ApprovalsSection.tsx",
   "client/src/components/review/QuestProposalCard.tsx",
   // The review page's batch and change cards, in the role card's hand (2026-11-16).
   "client/src/components/proposals/BatchCard.tsx",
