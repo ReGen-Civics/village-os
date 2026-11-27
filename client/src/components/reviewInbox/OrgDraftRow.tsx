@@ -19,6 +19,7 @@ import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, DOOR, HINT, LINK, QUIET } from "@/components/journey/look";
 import { authToken } from "@/lib/gameApi";
 import type { InboxItem } from "@shared/reviewInbox";
+import { draftPageHref } from "@shared/orgDraftView";
 import { sourceText } from "./sourceWords";
 
 interface DecideAnswer {
@@ -203,11 +204,11 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
             </button>
           ) : null}
           {mayPublish || mayPut ? (
-            <Link href={item.decideAt} className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
+            <Link href={draftPageHref(id)} className={`${LINK} inline-flex min-h-11 items-center text-sm`}>
               {words.door}
             </Link>
           ) : (
-            <Link href={item.decideAt} className={`${DOOR} whitespace-nowrap`}>
+            <Link href={draftPageHref(id)} className={`${DOOR} whitespace-nowrap`}>
               {words.door}
             </Link>
           )}

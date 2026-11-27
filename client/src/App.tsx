@@ -247,6 +247,7 @@ const Governance = lazyPage(() => import("./pages/Governance"));
 const GovernanceNow = lazyPage(() => import("./pages/GovernanceNow"));
 const Decisions = lazyPage(() => import("./pages/Decisions"));
 const Decision = lazyPage(() => import("./pages/Decision"));
+const OrgDraft = lazyPage(() => import("./pages/OrgDraft"));
 const Propose = lazyPage(() => import("./pages/Propose"));
 const SeatApplication = lazyPage(() => import("./pages/SeatApplication"));
 // One chunk for the three role proposal routes (role proposals PR C).
@@ -532,6 +533,8 @@ function Router() {
           /profile/characters precedes /profile/:handle — wouter takes the first
           match, and a :id above the list would swallow it. */}
       <Route path="/governance/decisions" component={Decisions} />
+      {/* One org chart draft, before and after, with its revisions and the acts its decide answer allows. */}
+      <Route path="/governance/decisions/drafts/:draftId" component={OrgDraft} />
       <Route path="/governance/decisions/:id" component={Decision} />
       {/* The old addresses, in links already sent (notifications, emails), keep working. */}
       <Route path="/decisions">{() => <Redirect to={`/governance/decisions${window.location.search}${window.location.hash}`} replace />}</Route>

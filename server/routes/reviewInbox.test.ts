@@ -141,8 +141,8 @@ describe("the deciders' read shows each person exactly what their own queues sho
       ["structure:dr_1", null],
       ["structure:dr_2", null],
     ]);
-    // A draft made in the admin panel is listed too, and the one both reads carry keeps the structure review's door.
-    expect(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => i.decideAt)).toEqual(["/review/structure/b_1", "/admin?tab=org-chart"]);
+    // A draft made in the admin panel is listed too, and every draft's door is its own page (the lead, 26 Nov 2026).
+    expect(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => i.decideAt)).toEqual(["/governance/decisions/drafts/dr_1", "/governance/decisions/drafts/dr_2"]);
     const states = Object.fromEntries(r.body.sections.map((s: any) => [s.source, s.state]));
     expect(states.sera).toBe("failed");
     expect(states.approval).toBe("ok");

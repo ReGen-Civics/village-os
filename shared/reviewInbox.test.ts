@@ -151,7 +151,7 @@ describe("every queue a person decides from", () => {
       ["application:ap1", "/role-applications/ap1"],
       ["consent:rp1", "/role-applications/ap2"],
       ["open:op1", "/open-proposals/op1"],
-      ["structure:d1", "/review/structure/b1"],
+      ["structure:d1", "/governance/decisions/drafts/d1"],
       ["task:7", "/profile"],
       ["tension:t1", "/profile"],
     ]);
@@ -283,7 +283,7 @@ describe("the routes the inbox reads are the queues' own", () => {
 });
 
 describe("org chart drafts (lane 4c: the lead could not find where to publish)", () => {
-  it("lists every open draft from the admin's own read, by title, with a door to the org chart tab", async () => {
+  it("lists every open draft from the admin's own read, by title, with a door to the draft's own page", async () => {
     const { fromOrgDrafts } = await import("./reviewInbox");
     const items = fromOrgDrafts([
       { id: "d1", status: "open", title: "Add a Seed Keeper role", changes: [{ id: "c1" }] },
@@ -291,8 +291,8 @@ describe("org chart drafts (lane 4c: the lead could not find where to publish)",
       { id: "d3", status: "published", title: "Done" },
     ]);
     expect(items.map((i) => [i.key, i.source, i.summary, i.decideAt])).toEqual([
-      ["structure:d1", "structure", "Add a Seed Keeper role", "/admin?tab=org-chart"],
-      ["structure:d2", "structure", "An org chart draft with 2 changes", "/admin?tab=org-chart"],
+      ["structure:d1", "structure", "Add a Seed Keeper role", "/governance/decisions/drafts/d1"],
+      ["structure:d2", "structure", "An org chart draft with 2 changes", "/governance/decisions/drafts/d2"],
     ]);
   });
 });
