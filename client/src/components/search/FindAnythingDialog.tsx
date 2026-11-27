@@ -75,10 +75,13 @@ type Row =
  * its headings are Admin's quiet ink, never the member gold.
  */
 function lookFor(admin: boolean) {
-  // CARD's panel (look.ts) without its padding: the field and the list sit flush to its edges.
-  const panel = "rounded-2xl border border-border bg-card text-card-foreground shadow-sm";
+  // CARD's panel (look.ts) without its padding, so the field and the list sit flush to its edges. `bg-popover` and
+  // the dialog's own data-slot: the Weathered map paper draws a dialog as an opaque sheet (client/src/seaChart.css),
+  // where `bg-card` would take the see-through paper a panel lying on the page wears.
+  const panel = "rounded-2xl border border-border bg-popover text-popover-foreground shadow-sm";
   return {
-    panel: admin ? `admin-root ${panel}` : panel,
+    // `sheet-night` carries the member look's day and night palettes onto the portal, outside any page's world.
+    panel: admin ? `admin-root ${panel}` : `sheet-night ${panel}`,
     field: "min-h-11 min-w-0 flex-1 bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none",
     eyebrow: admin ? "text-xs font-semibold uppercase tracking-widest text-muted-foreground" : EYEBROW,
     hint: HINT,
@@ -217,6 +220,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-black/50" />
         <DialogPrimitive.Content
+          data-slot="dialog-content"
           // The opener takes the focus back (FindAnything.tsx), so Radix's own return is not wanted.
           onCloseAutoFocus={(e) => e.preventDefault()}
           onOpenAutoFocus={(e) => {
