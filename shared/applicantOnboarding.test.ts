@@ -136,7 +136,11 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
   });
 
   it("asks for the shortlist inside our review, then the first conversation with its role, before references", () => {
-    expect(trackOf(facts(), roles)).toMatchObject({ now: "review", primary: "shortlist" });
+    // Review-first, invited: the first conversation is open and is part of our review, as the applicant's page says
+    // (QA pass 2: the team was told to shortlist while the applicant was asked to book).
+    expect(trackOf(facts(), roles)).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
+    // The older path (no review first): the shortlist comes first and opens the first conversation.
+    expect(trackOf(facts({ reviewStage: null, interviews: [{ state: "waiting", final: false }, { state: "waiting", final: false }] }), roles)).toMatchObject({ now: "review", primary: "shortlist" });
     // Shortlisted: still our review, until the first conversation (the operations role's) is written up.
     const talking = trackOf(facts({ shortlist: "yes" }), roles);
     expect(talking).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
@@ -167,15 +171,31 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
     expect(trackStates(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "open", final: true }] })).now).toBe("final_interview");
     const withFinal = { ...gathered, interviews: [...gathered.interviews, { state: "open", final: true }] };
     expect(trackOf(withFinal, roles).primary).toBe("final_conversation");
-    const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }] };
-    const t = trackOf(held, roles);
-    expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "Lead Steward" });
+    // RULING 7: the final written up is still the Final conversation; the applicant refines, then sends it on.
+    const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }], sentToCircle: false };
+    const waiting = trackOf(held, roles);
+    expect(waiting).toMatchObject({ now: "final_interview", primary: "send_to_circle", who: "The applicant" });
+    expect(waiting.next).toContain("Welcome Role or Lead Steward may send it on");
+    expect(waiting.next).not.toMatch(/fixes the proposal|delivers/);
+    // Sent: Agreement, and the anchor circle acts (QA pass 2: the Visionary was named here).
+    const t = trackOf({ ...held, sentToCircle: true }, { ...roles, anchorCircle: "Anchor Circle" });
+    expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "The Anchor Circle" });
     expect(t.next).toMatch(/counter/i);
+    expect(trackOf({ ...held, sentToCircle: true }, roles).who).toBe("The anchor circle");
   });
 
-  it("says the power to place people decides when no final-call role is named", () => {
-    const held = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: true }] });
-    expect(trackOf(held, { ...roles, finalCall: null }).who).toMatch(/power to place people in roles/);
+  it("says the power to place people holds the final call when no final-call role is named", () => {
+    const open = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "open", final: true }] });
+    expect(trackOf(open, { ...roles, finalCall: null }).who).toMatch(/power to place people in roles/);
+  });
+
+  it("review-first: the invitation opens the first conversation inside our review, before the shortlist (QA pass 2)", () => {
+    const invited = trackOf(facts({ reviewStage: "invited", firstReplied: true, shortlist: null }), roles);
+    expect(invited).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
+    expect(invited.next).toContain("part of our review");
+    const heard = trackOf(facts({ reviewStage: "invited", firstReplied: true, shortlist: null, interviews: [{ state: "scored", final: false }, { state: "waiting", final: false }] }), roles);
+    expect(heard).toMatchObject({ now: "review", primary: "shortlist" });
+    expect(heard.next).toContain("Shortlisting begins References and proposal");
   });
 
   it("a not shortlisted application stays in our review, skips the rest and declines nobody by itself", () => {
@@ -187,7 +207,8 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
 
   it("adopted reads Start; the stages that never happened read as skipped", () => {
     const t = trackOf(facts({ decided: "adopted", shortlist: "yes" }), roles);
-    expect(t.primary).toBe("none");
+    // Start names the welcoming role, who welcomes them and is their buddy (QA pass 2: "says nobody acts").
+    expect(t).toMatchObject({ primary: "welcome", who: "Welcome Role" });
     expect(t.now).toBe("start");
     expect(stateOf(t)).toMatchObject({ agreement: "done", start: "done", references: "skipped" });
   });

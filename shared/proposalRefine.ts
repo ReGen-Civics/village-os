@@ -26,8 +26,10 @@ export interface ProposalVersion {
 export const PROPOSAL_VERSIONS_MAX = 20;
 
 /** A final conversation written up (held or skipped) sends the proposal to the anchor circle, which fixes it. */
-export function finalFreezes(finals: ReadonlyArray<{ state: string; booked: boolean }>): boolean {
-  return finals.some((i) => i.state === "scored" || i.state === "skipped");
+export function finalFreezes(f: { sentToCircle: boolean }): boolean {
+  // RULING 7 (the lead, 27 Nov 2026): the proposal is fixed when it is SENT to the anchor circle, never when the final
+  // conversation is only written up, opened or booked.
+  return f.sentToCircle;
 }
 
 /**

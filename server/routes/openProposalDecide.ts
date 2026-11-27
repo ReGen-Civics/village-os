@@ -775,10 +775,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (!may.ok) return res.status(may.status).json(may.body);
     // The buddy, when the adopter chose one (the lead, 27 Nov 2026): a member holding a role now.
     const buddyAsked = typeof req.body?.buddyUserId === "string" ? req.body.buddyUserId.trim().slice(0, 64) : "";
-    if (buddyAsked) {
-      if ((await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
-      await store.setBuddy(getPool(), p.id, buddyAsked);
-    }
+    if (buddyAsked && (await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
+    // Saved only once the adoption itself is recorded (QA pass 2: a refused adoption still kept the buddy).
+    const keepBuddy = async () => {
+      if (buddyAsked) await store.setBuddy(getPool(), p!.id, buddyAsked);
+    };
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     // "Start a conversation" carries no terms (the lead, 20 Nov 2026): nobody is placed on it; the full proposal comes first.
@@ -884,6 +885,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         return res.status(409).json({ error: seated.error });
       }
       await stampDecided(work, p.id, "adopted");
+      await keepBuddy();
       await deps.notify({
         userId: agent.keeperUserId,
         type: "open_role_proposal_decided",
@@ -914,6 +916,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         await store.undoAdoption(pool, p.id);
         return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
       }
+      await keepBuddy();
       const why = await sent(
         p.email
           ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await newcomer(p, at)), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: await allHandsAttachment(p, at) })
@@ -959,6 +962,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     }
     if (!held.ok) return res.status(401).json({ error: "auth_required" });
     await stampDecided(work, p.id, "adopted");
+    await keepBuddy();
 
     const link = `${site()}${invitePath(token)}`;
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.

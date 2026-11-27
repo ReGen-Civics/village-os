@@ -25,6 +25,7 @@ import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import ConversationNotes from "@/components/openProposal/ConversationNotes";
 import ProposalVersions from "@/components/openProposal/ProposalVersions";
 import Reflections, { type Reflection } from "@/components/openProposal/Reflections";
+import SendToCircle from "@/components/openProposal/SendToCircle";
 import PrivacyNote from "@/components/openProposal/PrivacyNote";
 import { useDayWords } from "@/components/openProposal/ConversationNotes";
 import type { ProposalVersion } from "@shared/proposalRefine";
@@ -70,7 +71,7 @@ interface ServedWalkthrough {
   /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts), and its words now. */
   proposalVersions?: ProposalVersion[];
   proposalNow?: { why: string; aim: string } | null;
-  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
+  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle?: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
 /**
@@ -195,6 +196,14 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         return w.you.mayAskReferences ? <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("/references/ask")} data-walk-ask="">{label}</button> : null;
       case "add_final":
         return w.you.mayAddFinal ? <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("/final-conversation")} data-walk-final="">{label}</button> : null;
+      case "send_to_circle":
+        // Ruling 7: the applicant sends it, or Ops or the Visionary from here; it asks once, the proposal is fixed after.
+        return w.you.maySendToCircle ? (
+          <SendToCircle url={`${base}/to-circle`} words={{ button: label, ask: OW.sendToCircle.ask, yes: OW.sendToCircle.yes, keep: OW.sendToCircle.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
+        ) : (
+          <p className={HINT}>{OW.primary.wait_applicant}</p>
+        );
+      case "welcome":
       case "wait_applicant":
       case "none":
         return <p className={HINT}>{label}</p>;

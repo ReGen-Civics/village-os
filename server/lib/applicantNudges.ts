@@ -19,7 +19,7 @@ import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import * as repo from "../repos/applicationReview";
 import { referencesOf } from "../repos/applicantOnboarding";
 import { numberVar } from "./variables";
-import { scorecardHref, type ReviewDeps } from "./applicationReview";
+import { isApplicant, scorecardHref, type ReviewDeps } from "./applicationReview";
 
 export const NUDGE_VARIABLES = { book: "org.nudge_book_days", step: "org.nudge_step_days", warn: "org.close_warning_days" } as const;
 
@@ -54,9 +54,11 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
     const deadline = await repo.applicationDeadline(pool, r.ref).catch(() => null);
     const teamWaits = repo.reviewWindowOpen(deadline, now);
     const recused = new Set(await repo.recusedUsers(pool, r.ref));
+    // A nudge never reaches the applicant's own account, even when they hold the role up next (QA pass 3).
+    const isTheApplicant = async (userId: string) => isApplicant(deps, r.ref, userId).catch(() => false);
     const notifyRole = async (roleId: string, title: string, key: string) => {
       for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
-        if (recused.has(userId)) continue;
+        if (recused.has(userId) || (await isTheApplicant(userId))) continue;
         await deps.notify({ userId, type: "application_interview_turn", title, link: scorecardHref(r.ref), actorUserId: null, dedupeKey: `${key}:${userId}` });
       }
     };
@@ -82,7 +84,7 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
         const age = Math.floor((now.getTime() - ref.addedAt.getTime()) / DAY);
         if (age < stepDays || !teamWaits) continue;
         const key = `app:${r.ref}:nudge:reference:${ref.id}`;
-        if (ref.ownerUserId && !recused.has(ref.ownerUserId)) {
+        if (ref.ownerUserId && !recused.has(ref.ownerUserId) && !(await isTheApplicant(ref.ownerUserId))) {
           await deps.notify({ userId: ref.ownerUserId, type: "application_interview_turn", title: NUDGE_WORDS.reference(await rolesNow(), age), link: scorecardHref(r.ref), actorUserId: null, dedupeKey: `${key}:${ref.ownerUserId}` });
         } else if (ref.ownerRoleId) {
           await notifyRole(ref.ownerRoleId, NUDGE_WORDS.reference(await rolesNow(), age), key);
@@ -95,7 +97,8 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
     const age = Math.floor((now.getTime() - repo.closeClockStartOf(r.confirmedAt, deadline).getTime()) / DAY);
     if (age >= warnDays && age < closeDays && kindOfRef(r.ref) === "open") {
       const title = NUDGE_WORDS.closing(await rolesNow(), closeDays - age);
-      const holders = (await deps.liveHoldersOf("org.seat")).filter((u) => !recused.has(u));
+      const holders: string[] = [];
+      for (const u of await deps.liveHoldersOf("org.seat")) if (!recused.has(u) && !(await isTheApplicant(u))) holders.push(u);
       if (holders.length) {
         for (const userId of holders) await deps.notify({ userId, type: "application_stale", title, link: scorecardHref(r.ref), actorUserId: null, dedupeKey: `app:${r.ref}:close-warning:${userId}` });
       } else {

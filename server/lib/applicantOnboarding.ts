@@ -32,6 +32,8 @@ import {
   shortlistOf,
   trackOf,
   trackStates,
+  sentToCircleOf,
+  mayGoToCircle,
   readyForFinalOf,
   TRACK,
   type ReferenceError,
@@ -69,7 +71,7 @@ import { asksFor } from "../repos/roleProposals";
 import { inTransaction } from "../repos/liveSessions";
 import { readApplication as readSeatApplication } from "../repos/seatApplications";
 import { applicationHref } from "../../shared/seatApplications";
-import { finalCallHolders, isApplicant, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
+import { finalCallHolders, isApplicant, openConsentRound, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
 import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
 import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
 import { stringVar } from "./variables";
@@ -513,7 +515,7 @@ export interface Walkthrough {
   proposalVersions: ProposalVersion[];
   /** The proposal's words now, beside the earlier versions; null when there are none. */
   proposalNow: { why: string; aim: string } | null;
-  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
+  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
 /**
@@ -556,8 +558,9 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: stored.map((r) => ({ followedUp: !!r.followedUpAt })),
       interviews: interviews.map((i) => ({ state: i.state, final: i.final, role: names.get(i.roleId) ?? null })),
+      sentToCircle: sentToCircleOf(steps, interviews),
     },
-    { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
+    { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
   );
 
   const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false, isOwner: false });
@@ -616,6 +619,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
         // Only when the page offers the move: the same readiness the door requires (QA round 4).
         track.primary === "add_final" &&
         (interviews.some((i) => i.final && i.state === "waiting") || (shortlist === "yes" && !!finalRole)),
+      // Ruling 7: Ops or the Visionary (or a placer) may send the written-up proposal on to the anchor circle.
+      maySendToCircle: !member && open && !s.recused && track.primary === "send_to_circle" && (await mayTeamSend(deps, s)),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,
     },
@@ -633,7 +638,7 @@ export async function stagesOf(deps: Pick<ReviewDeps, "getPool">, refs: readonly
   const finalRole = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
   const welcomeRole = stringVar("org.onboarding_role").trim();
   const names = await review.roleNamesById(pool, [followRole, finalRole, welcomeRole].filter(Boolean));
-  const roles = { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null };
+  const roles = { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) };
   for (const ref of refs) {
     const steps = await review.stepsOf(pool, ref);
     if (!steps.some((s) => s.kind === "confirmed")) continue;
@@ -649,6 +654,7 @@ export async function stagesOf(deps: Pick<ReviewDeps, "getPool">, refs: readonly
         refsGiven: steps.some((x) => x.kind === "refs_given"),
         references: follow.get(ref) ?? [],
         interviews: (await review.interviewsOf(pool, ref)).map((i) => ({ state: i.state, final: i.final })),
+        sentToCircle: sentToCircleOf(steps, await review.interviewsOf(pool, ref)),
       },
       roles,
     );
@@ -853,6 +859,7 @@ async function trackFactsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Pro
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: follow.get(ref) ?? [],
       interviews: interviews.map((i) => ({ state: i.state, final: i.final })),
+      sentToCircle: sentToCircleOf(steps, interviews),
     },
     finals: interviews.filter((i) => i.final).map((i) => ({ state: i.state, booked: !!i.bookedAt })),
   };
@@ -873,13 +880,15 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
   anchorCircle: string | null;
   /** The village's real average for the stage they stand at, in days; absent until enough have passed it. */
   average?: number;
+  /** The final is written up: the applicant may send the proposal to the anchor circle (ruling 7). */
+  toCircle: boolean;
 } | null> {
   if (kindOfRef(ref) !== "open") return null;
   const read = await trackFactsOf(deps, ref);
   if (!read) return null;
   const { state, now } = trackStates(read.facts);
   const own = await proposals.readOpenProposal(deps.getPool(), ref);
-  const finalFrozen = finalFreezes(read.finals);
+  const finalFrozen = finalFreezes({ sentToCircle: read.facts.sentToCircle ?? false });
   const decided = read.facts.decided !== null;
   const open = mayRefine({ stage: now, decided, finalFrozen });
   // Once the references are in at References and proposal, the ROLE that acts next (QA round 2): the follow-up role
@@ -900,9 +909,11 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
     anchorCircle: await review.anchorCircleName(deps.getPool()),
     // The village's real average for this stage, only once enough have passed it (shared/stageAverages.ts).
     ...(await averageFor(deps, now)),
+    // Ruling 7: the final is written up and the proposal waits for the applicant to send it to the anchor circle.
+    toCircle: !decided && mayGoToCircle(read.facts),
     refine: {
       open,
-      // Fixed once the final conversation is written up and the proposal goes to the anchor circle (Agreement).
+      // Fixed once the proposal is sent to the anchor circle (Agreement), never at the final's write-up (ruling 7).
       frozen: !decided && finalFrozen,
       why: open ? (own?.body.why ?? "") : "",
       aim: open ? (own?.body.aim ?? "") : "",
@@ -959,6 +970,36 @@ export async function bookedByTeam(deps: ReviewDeps, ref: string, viewerId: stri
   return { ok: true, at: read.at.toISOString() };
 }
 
+/** Who on the team may send the proposal on: Ops (the welcoming or follow-up role), the Visionary (the final call), or a placer. */
+async function mayTeamSend(deps: ReviewDeps, s: Standing): Promise<boolean> {
+  if (s.isApplicant || s.recused) return false;
+  if (s.holdsPower || s.isFinalCall) return true;
+  const ops = [stringVar("org.onboarding_role").trim(), stringVar(FOLLOWUP_ROLE_VARIABLE).trim()].filter(Boolean);
+  return ops.some((r) => s.roles.has(r));
+}
+
+/**
+ * SEND IT TO THE ANCHOR CIRCLE (ruling 7, the lead, 27 Nov 2026). Once the final conversation is written up the
+ * applicant refines their proposal, then sends it on; Ops or the Visionary may send it from the walkthrough. That act
+ * fixes the proposal, begins Agreement, opens the circle's consent round and sends the Agreement letter. Once.
+ */
+export async function sendToCircle(deps: ReviewDeps, ref: string, by: { applicant: true } | { viewerId: string }): Promise<{ ok: true } | { ok: false; status: number; error: "not_found" | "closed" | "not_ready" }> {
+  if (kindOfRef(ref) !== "open") return { ok: false, status: 404, error: "not_found" };
+  const pool = deps.getPool();
+  const p = await proposals.readOpenProposal(pool, ref);
+  if (!p) return { ok: false, status: 404, error: "not_found" };
+  if (p.status !== "confirmed") return { ok: false, status: 409, error: "closed" };
+  if ("viewerId" in by && !(await mayTeamSend(deps, await standingOf(deps, ref, by.viewerId)))) return { ok: false, status: 404, error: "not_found" };
+  const read = await trackFactsOf(deps, ref);
+  if (!read) return { ok: false, status: 404, error: "not_found" };
+  if (!mayGoToCircle(read.facts)) return { ok: false, status: read.facts.sentToCircle ? 409 : 409, error: read.facts.sentToCircle ? "closed" : "not_ready" };
+  if (!(await review.stampStep(pool, { ref, kind: "to_circle", at: deps.now(), actorUserId: "viewerId" in by ? by.viewerId : null, detail: { by: "viewerId" in by ? "team" : "applicant" } }))) return { ok: false, status: 409, error: "closed" };
+  // The Agreement letter goes now; the consent round's own letter stays quiet (one email per moment).
+  await openConsentRound(deps, ref, { tellApplicant: false });
+  await deps.tellApplicant?.stage?.(ref);
+  return { ok: true };
+}
+
 /** The average for one stage, from the last year, as `{ average }` or nothing. */
 async function averageFor(deps: Pick<ReviewDeps, "getPool" | "now">, stage: TrackStage): Promise<{ average?: number }> {
   // Received is the instant Our review begins: the applicant there reads Our review's average (one calculation,
@@ -981,7 +1022,7 @@ export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown
   const read = await trackFactsOf(deps, ref);
   if (!read) return { ok: false, status: 404, error: "not_found" };
   const { now } = trackStates(read.facts);
-  if (!mayRefine({ stage: now, decided: read.facts.decided !== null, finalFrozen: finalFreezes(read.finals) })) return { ok: false, status: 409, error: "closed" };
+  if (!mayRefine({ stage: now, decided: read.facts.decided !== null, finalFrozen: finalFreezes({ sentToCircle: read.facts.sentToCircle ?? false }) })) return { ok: false, status: 409, error: "closed" };
   const words = readRefined(raw);
   if (!words.ok) return { ok: false, status: 400, error: words.error };
   const pool = deps.getPool();

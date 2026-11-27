@@ -276,10 +276,24 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(fin.text).toContain(`Book your final conversation with Visionary: ${LINK.final}`);
     expect(state.fresh.filter((m) => m.idempotencyKey.includes(":update:conversation"))).toHaveLength(0);
 
-    // The final conversation written up: Agreement, naming who acts by role, with no booking link at all.
+    // Sending it on before the final is written up is refused (ruling 7).
+    expect((await call("POST", `/api/application-status/${id}/to-circle?token=${statusToken(id)}`)).body.error).toBe("not_ready");
+    // RULING 7: the final written up neither fixes the proposal nor moves it to Agreement, and sends no Agreement letter.
     state.fresh.length = 0;
     const final = (await ivs(id)).find((i: any) => Number(i.is_final) === 1);
     await score(id, Number(final.id), FINAL.id);
+    expect(stageMails("agreement")).toHaveLength(0);
+    const after = (await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.sixStages;
+    expect(after).toMatchObject({ now: "final_interview", toCircle: true, refine: { open: true, frozen: false } });
+    expect((await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "After the final, a little clearer.", aim: "Books anyone can read." })).status).toBe(200);
+    // A member who is neither Ops, the Visionary nor a placer cannot send it on.
+    expect((await call("POST", `${app(id)}/to-circle`, {}, IB.id)).status).toBe(404);
+    // The applicant sends it on: Agreement, its one letter, and the proposal fixed from that moment.
+    const sent = await call("POST", `/api/application-status/${id}/to-circle?token=${statusToken(id)}`);
+    expect(sent.status, sent.text).toBe(200);
+    expect((await call("POST", `/api/application-status/${id}/to-circle?token=${statusToken(id)}`)).status).toBe(409);
+    expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.sixStages).toMatchObject({ now: "agreement", toCircle: false, refine: { open: false, frozen: true } });
+    expect((await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "Too late now.", aim: "Fixed." })).body.error).toBe("closed");
     expect(stageMails("agreement")).toHaveLength(1);
     const agr = stageMails("agreement")[0];
     expect(agr.text).toContain("Who acts next:\nThe circle.");

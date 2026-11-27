@@ -309,7 +309,7 @@ export function register(app: Express, deps: Deps): void {
       application: p.applicationId ? { id: p.applicationId, href: applicationHref(p.applicationId) } : null,
       // Where the circle's consent stands, and the decision in words once adopted (PR B).
       // The reasons for holders in an asked circle and the applicant only (the lead, 27 Nov 2026); the count for everybody.
-      consent: p.status === "submitted" && membersUp ? readableConsent(consentView(asks, now(), tz(), viewerId, askRoles), asks, viewerId, askRoles, p.userId === viewerId) : null,
+      consent: p.status === "submitted" && membersUp ? readableConsent(consentView(asks, now(), tz(), viewerId, askRoles), asks, viewerId, askRoles ?? (() => []), p.userId === viewerId) : null,
       decided: p.decidedWords,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),

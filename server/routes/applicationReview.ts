@@ -56,7 +56,7 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
-import { applicantStagesOf, bookedByApplicant, refineProposal, withdrawApplication } from "../lib/applicantOnboarding";
+import { applicantStagesOf, bookedByApplicant, refineProposal, sendToCircle, withdrawApplication } from "../lib/applicantOnboarding";
 import { emailKeyOf } from "../../shared/comms/address";
 import { REFINE_ERRORS } from "../../shared/proposalRefine";
 import path from "node:path";
@@ -142,6 +142,29 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const ref = refOf(req);
     if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
     const out = await withdrawApplication(work, ref);
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  // ── Send it to the anchor circle (ruling 7, the lead, 27 Nov 2026) ────────
+  /* After the final conversation is written up: the applicant by their link or account, or Ops or the Visionary
+     signed in from the walkthrough. The proposal is fixed from that moment. */
+  app.post("/api/application-status/:ref/to-circle", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-to-circle:${deps.clientIp ? deps.clientIp(req) : "x"}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await sendToCircle(work, ref, { applicant: true });
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/to-circle", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-to-circle:${String(viewer.id)}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref) return res.status(404).json(NOT_HERE);
+    const own = await isApplicant(work, ref, String(viewer.id));
+    const out = await sendToCircle(work, ref, own ? { applicant: true } : { viewerId: String(viewer.id) });
     out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
   });
 

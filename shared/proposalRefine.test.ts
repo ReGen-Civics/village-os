@@ -16,10 +16,9 @@ describe("when the applicant may refine their proposal", () => {
     expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: true })).toBe(false);
   });
 
-  it("the proposal is fixed once the final conversation is written up (Agreement), never when it only opens or is booked", () => {
-    expect(finalFreezes([])).toBe(false);
-    for (const f of [{ state: "waiting", booked: false }, { state: "waiting", booked: true }, { state: "open", booked: true }]) expect(finalFreezes([f])).toBe(false);
-    for (const state of ["scored", "skipped"]) expect(finalFreezes([{ state, booked: false }])).toBe(true);
+  it("the proposal is fixed once it is SENT to the anchor circle (ruling 7), never at the final conversation's write-up", () => {
+    expect(finalFreezes({ sentToCircle: false })).toBe(false);
+    expect(finalFreezes({ sentToCircle: true })).toBe(true);
   });
 });
 

@@ -109,3 +109,48 @@ msgstr "Antes de su llamada: escuche a {roles}"
 msgctxt "walkthrough: what the reflections are"
 msgid "Their voice reflections from their own conversations. Never shown to the applicant."
 msgstr "Sus reflexiones de voz de sus propias conversaciones. Nunca se muestran a la persona que postula."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: primary.send_to_circle"
+msgid "Send it to the anchor circle"
+msgstr "Enviarla al círculo ancla"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: primary.welcome"
+msgid "Welcome them"
+msgstr "Darle la bienvenida"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: referencesPrivate"
+msgid "Personal details of people who never signed up. Only the people who hold this application's conversations, the people who place roles and each reference's owner read them. No AI reads them. They are deleted with the application."
+msgstr "Datos personales de personas que nunca se registraron. Solo los leen quienes tienen las conversaciones de esta postulación, quienes asignan roles y la persona a cargo de cada referencia. Ninguna IA los lee. Se borran con la postulación."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.ask"
+msgid "Send it to the anchor circle now? The proposal is fixed from that moment."
+msgstr "¿La envía al círculo ancla ahora? La propuesta queda fija desde ese momento."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.yes"
+msgid "Send it"
+msgstr "Enviarla"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.keep"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.sent"
+msgid "Sent. The anchor circle has it now."
+msgstr "Enviada. El círculo ancla ya la tiene."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.failed"
+msgid "That did not go through. Try again."
+msgstr "No se envió. Inténtelo de nuevo."
+
+# needs-native-review: ruling 7, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and keeps refining their proposal until they send it to the anchor circle."
+msgstr "La conversación final está abierta. La persona la reserva ahora, y sigue mejorando su propuesta hasta que la envíe al círculo ancla."

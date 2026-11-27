@@ -113,7 +113,7 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
       // In already: never asked again (the lead, 27 Nov 2026). Only whether they are in and editable rides along.
       referencesIn: read.facts.refsGiven,
       referencesEditable: read.facts.refsGiven ? await referencesEditable(pool, ref) : false,
-      refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
+      refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes({ sentToCircle: read.facts.sentToCircle ?? false }) }),
       statusLink: await statusLinkFor(deps, ref),
       profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
@@ -190,7 +190,7 @@ export async function tellRefinedLetter(deps: TellDeps, ref: string): Promise<bo
       finalCallRole: null,
       anchorCircle: await review.anchorCircleName(pool),
       referencesOpen: false,
-      refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes(read.finals) }),
+      refineOpen: mayRefine({ stage: now, decided: false, finalFrozen: finalFreezes({ sentToCircle: read.facts.sentToCircle ?? false }) }),
       statusLink: await statusLinkFor(deps, ref),
       lang: languageOf(p),
     });

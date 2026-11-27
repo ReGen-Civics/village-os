@@ -68,7 +68,7 @@ export function kindOfRef(ref: unknown): ApplicationKind | null {
  * yes or no, in the detail), `refs_asked` (references were asked for) and
  * `refs_given` (the applicant gave them). Each fits the column's 16 characters.
  */
-export const STEP_KINDS = ["confirmed", "first_reply", "review", "invited", "not_invited", "interview", "scores_in", "consent", "decided", "first_cycle", "cleared", "shortlist", "refs_asked", "refs_given"] as const;
+export const STEP_KINDS = ["confirmed", "first_reply", "review", "invited", "not_invited", "interview", "scores_in", "consent", "decided", "first_cycle", "cleared", "shortlist", "refs_asked", "refs_given", "to_circle"] as const;
 export type StepKind = (typeof STEP_KINDS)[number];
 
 export const STEP_WORDS: Record<StepKind, string> = {
@@ -86,6 +86,8 @@ export const STEP_WORDS: Record<StepKind, string> = {
   shortlist: "Shortlist",
   refs_asked: "References",
   refs_given: "References given",
+  // Ruling 7 (the lead, 27 Nov 2026): the proposal sent to the anchor circle, which begins Agreement.
+  to_circle: "Sent to the circle",
 };
 
 /** The setting that puts our review before the conversations. Read at confirm and kept on the application. */

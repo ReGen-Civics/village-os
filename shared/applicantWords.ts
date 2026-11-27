@@ -284,6 +284,8 @@ export interface ApplicantMessages {
         referencesInFollow(role: string | null, refine: boolean): string;
         referencesInMove(role: string | null, refine: boolean): string;
         final(role: string | null): string;
+        /** Ruling 7: the final is written up; refine, then send the proposal to the anchor circle. */
+        toCircle(anchor: string | null): string;
         /** Agreement with the anchor circle's answer still to come (its name from the village's circles). */
         agreementWaiting(anchor: string | null): string;
         /** Agreement with a counter-offer to answer, line by line. */
@@ -308,6 +310,14 @@ export interface ApplicantMessages {
         edit: string;
         refine: string;
         done: string;
+        /** Ruling 7: send the written-up proposal to the anchor circle, with a confirm step. */
+        sendLabel(anchor: string | null): string;
+        sendRow: string;
+        sendState: string;
+        sendAsk(anchor: string | null): string;
+        sendYes: string;
+        sendKeep: string;
+        sendFailed: string;
       };
       refine: { eyebrow: string; heading: string; line: string; why: string; aim: string; save: string; saved: string; frozen: string; failed: string; versions(n: number): string };
       /** The village's real averages (the lead, 27 Nov 2026: "give them actual averages based on our work"). */
@@ -624,6 +634,7 @@ const en: ApplicantMessages = {
         referencesInFollow: (role) => `Your references are in. ${role ?? "The team"} is about to reach out to them.`,
         referencesInMove: (role) => `Your references are in. ${role ?? "The team"} moves you to your final conversation next.`,
         final: (role) => (role ? `Book your final conversation with ${role}. It's a chance to connect with the source of this village. Bring your proposal as best you can, and keep refining it as you go.` : "Your final conversation opens here soon. It's a chance to connect with the source of this village. Keep refining your proposal as you go."),
+        toCircle: (anchor) => `Your final conversation is written up. Refine your proposal, then send it to ${theCircle(anchor)}. It's fixed once you send it.`,
         agreementWaiting: (anchor) => `Your proposal is with ${theCircle(anchor)} for review. They'll accept it or send a counter-offer, right here.`,
         agreement: (anchor) => `${cap(theCircle(anchor))} sent a counter-offer. Answer each change below, and we'll go back and forth until we agree.`,
         start: "Welcome! You start on the terms we agreed. Your tasks show up on your profile.",
@@ -643,6 +654,13 @@ const en: ApplicantMessages = {
         edit: "Edit your references",
         refine: "Refine your proposal",
         done: "Done",
+        sendLabel: (anchor) => `Send it to ${theCircle(anchor)}`,
+        sendRow: "Your proposal goes to the circle",
+        sendState: "When you're ready",
+        sendAsk: (anchor) => `Send your proposal to ${theCircle(anchor)} now? It's fixed from that moment.`,
+        sendYes: "Send it",
+        sendKeep: "Not yet",
+        sendFailed: "That didn't go through. Try again in a moment.",
       },
       refine: {
         eyebrow: "Your proposal",
@@ -969,6 +987,7 @@ const es: ApplicantMessages = {
         referencesInFollow: (role) => `Sus referencias ya llegaron. ${role ?? "El equipo"} está por contactarlas.`,
         referencesInMove: (role) => `Sus referencias ya llegaron. ${role ?? "El equipo"} le pasa ahora a su conversación final.`,
         final: (role) => (role ? `Reserve su conversación final con ${role}. Es una oportunidad para conectar con la fuente de esta aldea. Traiga su propuesta lo mejor que pueda, y siga mejorándola.` : "Su conversación final se abre aquí pronto. Es una oportunidad para conectar con la fuente de esta aldea. Siga mejorando su propuesta."),
+        toCircle: (anchor) => `Su conversación final está escrita. Mejore su propuesta y luego envíela a ${anchor ?? "el círculo"}. Queda fija una vez que la envíe.`, // needs-native-review: ruling 7, 27 Nov 2026
         agreementWaiting: (anchor) => `Su propuesta está con ${anchor ?? "el círculo"} para su revisión. Aquí verá si la acepta o le envía una contraoferta.`,
         agreement: (anchor) => `${anchor ?? "El círculo"} le envió una contraoferta. Responda cada cambio abajo, y seguimos hasta llegar a un acuerdo.`,
         start: "¡Le damos la bienvenida! Usted empieza con los términos acordados. Sus tareas aparecen en su perfil.",
@@ -988,6 +1007,13 @@ const es: ApplicantMessages = {
         edit: "Editar sus referencias",
         refine: "Mejorar su propuesta",
         done: "Hecho",
+        sendLabel: (anchor) => `Enviarla a ${anchor ?? "el círculo"}`, // needs-native-review: ruling 7, 27 Nov 2026
+        sendRow: "Su propuesta va al círculo", // needs-native-review: ruling 7, 27 Nov 2026
+        sendState: "Cuando esté lista", // needs-native-review: ruling 7, 27 Nov 2026
+        sendAsk: (anchor) => `¿Envía su propuesta a ${anchor ?? "el círculo"} ahora? Queda fija desde ese momento.`, // needs-native-review: ruling 7, 27 Nov 2026
+        sendYes: "Enviarla", // needs-native-review: ruling 7, 27 Nov 2026
+        sendKeep: "Todavía no", // needs-native-review: ruling 7, 27 Nov 2026
+        sendFailed: "No se envió. Inténtelo de nuevo en un momento.", // needs-native-review: ruling 7, 27 Nov 2026
       },
       refine: {
         eyebrow: "Su propuesta",
@@ -1202,6 +1228,8 @@ export interface StatusServedForView {
     anchorCircle?: string | null;
     /** The village's real average for this stage, in days, once enough have passed it (shared/stageAverages.ts). */
     average?: number;
+    /** Ruling 7: the final is written up, and the applicant may send the proposal to the anchor circle. */
+    toCircle?: boolean;
   } | null;
 }
 
@@ -1239,7 +1267,7 @@ export interface StatusView {
    * it is done, and the button's words and where it goes (`external`: a booking page). At References and proposal and
    * at the Final conversation; null at every other stage.
    */
-  tasks: Array<{ key: "references" | "proposal" | "conversation"; label: string; state: string; done: boolean; href: string | null; action: string | null; external: boolean }> | null;
+  tasks: Array<{ key: "references" | "proposal" | "conversation" | "send"; label: string; state: string; done: boolean; href: string | null; action: string | null; external: boolean }> | null;
 }
 
 /** The status page's booking doors: "Book a time with Role (First, First)", and each person's link under it when there are several. */
@@ -1368,11 +1396,11 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
                     : sw.move.referencesInMove(six.next?.role ?? null, refineOpen)
                 : sw.move.references
               : atFinal
-                ? sw.move.final(role)
+                ? six.toCircle ? sw.move.toCircle(anchor) : sw.move.final(role)
                 : six.now === "agreement"
                   ? hasOffer ? sw.move.agreement(anchor) : sw.move.agreementWaiting(anchor)
                   : sw.move.start;
-    const applicantActs = !decided && (!!bookable || refsToDo || ((six.now === "references" || atFinal) && refineOpen) || (six.now === "agreement" && !!s.offer?.mayAnswer));
+    const applicantActs = !decided && (!!bookable || refsToDo || ((six.now === "references" || atFinal) && refineOpen) || (six.now === "agreement" && !!s.offer?.mayAnswer) || !!six.toCircle);
     // One button per action (the lead, 27 Nov 2026: "easy to see and click buttons so each stage for them is really
     // easy to track and participate in"), each saying whether it is done.
     const bookLink = bookable ? (bookable.links?.[0]?.url ?? bookable.url ?? null) : null;
@@ -1412,7 +1440,10 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
             conversationTask,
           ]
         : atFinal
-          ? [conversationTask, proposalTask]
+          ? six.toCircle
+            ? // Ruling 7: the call is written up; refine, then send it on (the page asks once before it sends).
+              [proposalTask, { key: "send", label: sw.tasks.sendRow, state: sw.tasks.sendState, done: false, href: "#send-to-circle", action: sw.tasks.sendLabel(anchor), external: false }]
+            : [conversationTask, proposalTask]
           : // Received and Our review offer refining too (the lead, 27 Nov 2026: "they can refine proposal in each
             // stage"), with the open conversation's button first once there is one.
             (six.now === "received" || six.now === "review") && refineOpen

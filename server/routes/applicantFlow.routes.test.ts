@@ -224,7 +224,7 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [await interviewOf(id)]);
     expect(await nowOf(id)).toBe("references");
     // Stage keys and states, the shortlist flag and the next ROLE (QA round 2): no note, score, reference or person rides on it.
-    expect(Object.keys(s.sixStages).sort()).toEqual(["anchorCircle", "next", "now", "refine", "shortlisted", "stages"]);
+    expect(Object.keys(s.sixStages).sort()).toEqual(["anchorCircle", "next", "now", "refine", "shortlisted", "stages", "toCircle"]);
     expect(s.sixStages.shortlisted).toBe(false);
     expect(s.sixStages.next).toBeNull();
   });

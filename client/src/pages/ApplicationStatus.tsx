@@ -32,6 +32,7 @@ import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@
 import RefineProposal from "@/components/openProposal/RefineProposal";
 import WithdrawApplication from "@/components/openProposal/WithdrawApplication";
 import BookedIt from "@/components/openProposal/BookedIt";
+import SendToCircle from "@/components/openProposal/SendToCircle";
 import { useLingui } from "@lingui/react/macro";
 import { TERM_NOTE_MAX } from "@shared/termsWords";
 import GrowingField from "@/components/form/GrowingField";
@@ -481,7 +482,20 @@ export default function ApplicationStatus() {
                           {task.state}
                         </p>
                       </div>
-                      {task.action && task.key === "references" && !s.referencesAsked?.mayAdd ? (
+                      {task.key === "send" ? (
+                        // Ruling 7: refine, then send it to the anchor circle; it asks once, the proposal is fixed after.
+                        <SendToCircle
+                          url={token ? `/api/application-status/${encodeURIComponent(ref)}/to-circle?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/to-circle`}
+                          words={{
+                            button: w.status.six.tasks.sendLabel(s.sixStages?.anchorCircle ?? null),
+                            ask: w.status.six.tasks.sendAsk(s.sixStages?.anchorCircle ?? null),
+                            yes: w.status.six.tasks.sendYes,
+                            keep: w.status.six.tasks.sendKeep,
+                            failed: w.status.six.tasks.sendFailed,
+                          }}
+                          onDone={() => window.location.reload()}
+                        />
+                      ) : task.action && task.key === "references" && !s.referencesAsked?.mayAdd ? (
                         <button
                           type="button"
                           className={BTN_NOTICE}

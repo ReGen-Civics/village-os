@@ -382,6 +382,13 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
     });
   });
 
+  /** Ruling 7: shortlisted, every conversation written up, then a placer sends the proposal to the anchor circle. */
+  const sendOn = async (id: string) => {
+    await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, FOUNDER.id);
+    const sent = await call("POST", `/api/governance/applications/${id}/to-circle`, {}, FOUNDER.id);
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+  };
+
   describe("the circle's consent round", () => {
     it("opens at confirm when the village has not asked for the interviews to come first", async () => {
       const { id } = await confirmed("now@example.test");
@@ -396,9 +403,15 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(state.notices.filter((n) => n.type === "open_role_proposal_consent_ask")).toEqual([]);
       expect(state.notices.filter((n) => n.type === "application_arrived").length).toBeGreaterThan(0);
       await scoreAll(id);
+      // RULING 7 (the lead, 27 Nov 2026): every card in opens nothing; the round waits for the proposal to be SENT to
+      // the anchor circle (QA pass 1 saw "Your proposal is with the circle" before the final call).
+      expect(await asks(id)).toEqual([]);
+      expect(await stepKinds(id)).toContain("scores_in");
+      expect(await stepKinds(id)).not.toContain("consent");
+      await sendOn(id);
       const rows = await asks(id);
       expect(rows.length).toBeGreaterThan(0);
-      expect(await stepKinds(id)).toEqual(expect.arrayContaining(["scores_in", "consent"]));
+      expect(await stepKinds(id)).toEqual(expect.arrayContaining(["scores_in", "to_circle", "consent"]));
       expect(state.notices.some((n) => n.type === "open_role_proposal_consent_ask")).toBe(true);
     });
   });
@@ -425,6 +438,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       await setting(true);
       const { id } = await confirmed("agents2@example.test");
       await scoreAll(id);
+      await sendOn(id);
       const ask = state.notices.find((n) => n.type === "open_role_proposal_consent_ask");
       expect(ask?.body).toContain("held by an AI agent");
       expect((await q("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'consent'", [id]))[0].detail_json).toContain("Team Support Role");

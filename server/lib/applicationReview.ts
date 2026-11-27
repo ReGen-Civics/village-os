@@ -350,8 +350,11 @@ async function afterMove(deps: ReviewDeps, ref: string, opened: { position: numb
   const staged = kindOfRef(ref) === "open" ? !!(await deps.tellApplicant?.stage?.(ref)) : false;
   if (scoresIn) {
     await deps.notifyAdmins("governance", REVIEW_WORDS.interviewsDone(await roleNamesOf(deps, ref)), `app:${ref}:scores-in`, scorecardHref(ref));
-    // The Agreement letter that just went already says what comes next: the consent round's own letter stays quiet.
-    if (holdConsent) await openConsentRound(deps, ref, { tellApplicant: !staged });
+    // RULING 7 (the lead, 27 Nov 2026): the circle's consent round waits for the proposal to be SENT to the anchor
+    // circle (server/lib/applicantOnboarding.ts `sendToCircle`). Writing up the last conversation opens nothing: QA
+    // pass 1 saw "Your proposal is with the circle" after the Community write-up, before the final call.
+    void staged;
+    void holdConsent;
   }
 }
 

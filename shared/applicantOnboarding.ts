@@ -250,7 +250,7 @@ export const TRACK_WORDS: Record<TrackStage, string> = {
 };
 
 /** The one obvious act at a stage. `none` when the stage waits on somebody outside the team, or nothing is left. */
-export const PRIMARY_ACTIONS = ["review", "shortlist", "conversation", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "decide", "none"] as const;
+export const PRIMARY_ACTIONS = ["review", "shortlist", "conversation", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "send_to_circle", "decide", "welcome", "none"] as const;
 export type PrimaryAction = (typeof PRIMARY_ACTIONS)[number];
 
 export interface TrackFacts {
@@ -265,6 +265,41 @@ export interface TrackFacts {
   references: ReadonlyArray<{ followedUp: boolean }>;
   /** The application's conversations, in order, with the final one marked, and the role holding each when known. */
   interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null }>;
+  /**
+   * The proposal was sent to the anchor circle (ruling 7, the lead, 27 Nov 2026): Agreement begins and the proposal is
+   * fixed. Writing up the final conversation alone does neither. Left out, a written-up final counts as sent: the rule
+   * before ruling 7, kept for a caller that does not say (`sentToCircleOf` is what the server passes).
+   */
+  sentToCircle?: boolean;
+}
+
+/**
+ * Whether the proposal went to the anchor circle: the step `to_circle`, or, for an application already in flight when
+ * ruling 7 landed, a consent round that the last write-up opened (stamped with or after `scores_in`). A village that
+ * asks the circle at confirm has its round open from the start, and ruling 7 still holds there: its proposal goes
+ * on only when it is sent.
+ */
+export function sentToCircleOf(steps: ReadonlyArray<{ kind: string; at: Date | number }>, interviews: ReadonlyArray<{ state: string; final: boolean }>): boolean {
+  if (steps.some((s) => s.kind === "to_circle")) return true;
+  const ms = (v: Date | number) => (typeof v === "number" ? v : v.getTime());
+  const scoresIn = steps.find((s) => s.kind === "scores_in");
+  const consent = steps.find((s) => s.kind === "consent");
+  // In flight: the round the final write-up opened. A round the older code opened early (after the Community
+  // write-up, before any final: QA pass 1) is not a send, and the applicant still sends it on.
+  const finals = interviews.filter((i) => i.final);
+  return !!scoresIn && !!consent && ms(consent.at) >= ms(scoresIn.at) && finals.length > 0 && finals.every((i) => done(i.state));
+}
+
+/**
+ * Whether the proposal may go to the anchor circle now: undecided, not sent, and the final conversation written up
+ * (a role with no final conversation at all: every conversation written up after a shortlist yes).
+ */
+export function mayGoToCircle(f: TrackFacts): boolean {
+  if (f.decided || (f.sentToCircle ?? false)) return false;
+  const finals = f.interviews.filter((i) => i.final);
+  if (finals.length) return finals.every((i) => done(i.state));
+  const talks = f.interviews.filter((i) => !i.final);
+  return f.shortlist === "yes" && talks.length > 0 && talks.every((i) => done(i.state));
 }
 
 export interface TrackRoles {
@@ -274,6 +309,8 @@ export interface TrackRoles {
   followup: string | null;
   /** The role that makes the final call, by name, or null. */
   finalCall: string | null;
+  /** The anchor circle, by its own name, which reviews the proposal at Agreement; null names it "the anchor circle". */
+  anchorCircle?: string | null;
 }
 
 export interface Track {
@@ -309,13 +346,17 @@ export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackSta
   const movedToFinal = finals.some((i) => i.state !== "waiting");
   /** Everything References and proposal asks is in: the moment to move on, never a move by itself. */
   const readyForFinal = reviewDone && talksDone && followedUp;
+  // RULING 7 (the lead, 27 Nov 2026): writing up the final conversation neither fixes the proposal nor moves it to
+  // Agreement. The applicant refines it, then sends it to the anchor circle (or Ops or the Visionary does): that act
+  // ends the Final conversation and begins Agreement.
+  const sent = f.sentToCircle ?? finalDone;
 
   const state: Record<TrackStage, TrackState> = {
     received: "done",
-    review: reviewDone || movedToFinal ? "done" : "now",
-    references: no ? "skipped" : movedToFinal ? "done" : reviewDone ? "now" : "later",
-    final_interview: no ? "skipped" : finalDone ? "done" : movedToFinal ? "now" : "later",
-    agreement: no ? "skipped" : f.decided === "adopted" ? "done" : finalDone ? "now" : "later",
+    review: reviewDone || movedToFinal || sent ? "done" : "now",
+    references: no ? "skipped" : movedToFinal || sent ? "done" : reviewDone ? "now" : "later",
+    final_interview: no ? "skipped" : sent ? (finals.length ? "done" : "skipped") : movedToFinal ? "now" : "later",
+    agreement: no ? "skipped" : f.decided === "adopted" ? "done" : sent ? "now" : "later",
     start: f.decided === "adopted" ? "done" : "later",
   };
   if (f.decided) {
@@ -353,7 +394,11 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
   const talks = f.interviews.filter((i) => !i.final);
   const finals = f.interviews.filter((i) => i.final);
   const no = f.shortlist === "no" || f.reviewStage === "not_invited";
+  const anchor = roles.anchorCircle ? `The ${roles.anchorCircle}` : "The anchor circle";
 
+  if (f.decided === "adopted")
+    // Start (QA pass 2: "says nobody acts"): the welcoming role welcomes them and is their buddy unless another was picked.
+    return { stages, now, who: roles.welcome ?? PLACING_POWER_WORDS, next: "Welcome them on their start day and be their buddy for the first week, unless the adoption named another buddy. Their first-week steps are on their profile.", primary: "welcome" };
   if (f.decided) return { stages, now, who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
   switch (now) {
     case "review":
@@ -361,17 +406,34 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
       if (f.reviewStage === "review")
         return { stages, now, who: PLACING_POWER_WORDS, next: "Read the application, then invite the applicant to the conversations or send the not-invited letter.", primary: "review" };
       if (f.reviewStage === null && !f.firstReplied) return { stages, now, who: roles.welcome ?? PLACING_POWER_WORDS, next: "Send the applicant a first reply.", primary: "review" };
-      if (f.shortlist === null) return { stages, now, who: PLACING_POWER_WORDS, next: "Shortlist this application, or say it is not shortlisted. Shortlisting opens the first conversation to book.", primary: "shortlist" };
+      // REVIEW-FIRST IN STEP WITH THE SIX STAGES (QA pass 2): the invitation opened the first conversation, which is
+      // part of Our review, exactly as the applicant's page says. It is held first, then the shortlist answers.
+      if (f.reviewStage === "invited" && f.shortlist === null && talks[0] && talks[0].state === "open")
+        return {
+          stages,
+          now,
+          who: talks[0].role ? `${talks[0].role}` : PLACING_POWER_WORDS,
+          next: "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
+          primary: "conversation",
+        };
+      if (f.shortlist === null)
+        return {
+          stages,
+          now,
+          who: PLACING_POWER_WORDS,
+          next: f.reviewStage === "invited" ? "Shortlist this application, or say it is not shortlisted. Shortlisting begins References and proposal." : "Shortlist this application, or say it is not shortlisted. Shortlisting opens the first conversation to book.",
+          primary: "shortlist",
+        };
       return {
         stages,
         now,
         who: talks[0]?.role ? `${talks[0].role}` : PLACING_POWER_WORDS,
-        next: "The applicant books the first conversation. Hold it, then write the notes and the scorecard.",
+        next: "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
         primary: "conversation",
       };
     case "references":
       if (readyForFinalOf(f))
-        return { stages, now, who: deciders, next: "The references are followed up and the conversations written up. When the proposal is solid, move the application to the final conversation. That fixes the proposal.", primary: "add_final" };
+        return { stages, now, who: deciders, next: "The references are followed up and the conversations written up. When the applicant is ready, move the application to the final conversation. They keep refining their proposal.", primary: "add_final" };
       if (!f.refsAsked) return { stages, now, who: PLACING_POWER_WORDS, next: "Ask the applicant for references. The letter goes in their language. They refine their proposal and book the next conversation meanwhile.", primary: "ask_references" };
       if (!f.refsGiven) return { stages, now, who: "The applicant", next: "The applicant adds their references, refines their proposal and books the next conversation, from their status page.", primary: "wait_applicant" };
       return {
@@ -382,14 +444,23 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         primary: "follow_up",
       };
     case "final_interview":
-      return { stages, now, who: deciders, next: "Hold the final conversation, where the applicant delivers their proposal, then write the notes and the scorecard.", primary: "final_conversation" };
+      if (mayGoToCircle(f))
+        return {
+          stages,
+          now,
+          who: "The applicant",
+          next: `The final conversation is written up. The applicant refines their proposal, then sends it to ${anchor.replace(/^The /, "the ")}. ${roles.welcome ?? "Ops"} or ${deciders} may send it on from here. It is fixed from that moment.`,
+          primary: "send_to_circle",
+        };
+      return { stages, now, who: deciders, next: "Hold the final conversation, a chance for the applicant to connect with the source of this village, then write the notes and the scorecard. The applicant keeps refining their proposal.", primary: "final_conversation" };
     case "agreement":
     default:
+      // The anchor circle reviews the proposal (QA pass 2: the Visionary was named here).
       return {
         stages,
         now: "agreement",
-        who: deciders,
-        next: "Accept the proposal as it is, or counter it. Counter until both sides agree, then adopt with the existing doors.",
+        who: anchor,
+        next: `${anchor} accepts the proposal as it is, or counters it. Counter until both sides agree, then adopt with the existing doors.`,
         primary: "decide",
       };
   }
@@ -458,7 +529,9 @@ export const ONBOARDING_WORDS = {
     follow_up: "Go to the follow-ups",
     add_final: "Move to the final conversation",
     final_conversation: "Go to the final conversation",
+    send_to_circle: "Send it to the anchor circle",
     decide: "Go to the decision",
+    welcome: "Welcome them",
     none: "Nothing to do",
   } as Record<PrimaryAction, string>,
   notShortlist: "Not shortlisted",
@@ -470,7 +543,14 @@ export const ONBOARDING_WORDS = {
   referencesKicker: "Who vouches for them",
   referencesShort: "Private to the team, and deleted with the application.",
   whoReads: "Who reads these",
-  referencesPrivate: "Personal details of people who never signed up. Only the people who review this application, the role that makes the final call and each reference's owner read them. No AI reads them. They are deleted with the application.",
+  referencesPrivate: "Personal details of people who never signed up. Only the people who hold this application's conversations, the people who place roles and each reference's owner read them. No AI reads them. They are deleted with the application.",
+  sendToCircle: {
+    ask: "Send it to the anchor circle now? The proposal is fixed from that moment.",
+    yes: "Send it",
+    keep: "Not yet",
+    sent: "Sent. The anchor circle has it now.",
+    failed: "That did not go through. Try again.",
+  },
   referencesAsked: "References were asked for. The applicant adds them from their status page.",
   referencesAskedNow: "Asked. The letter went to the applicant in their language.",
   referencesAskedAlready: "References were already asked for.",
@@ -506,7 +586,7 @@ export const ONBOARDING_WORDS = {
   gatheredIntro: (role: string) => `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`,
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
-  finalAdded: "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up.",
+  finalAdded: "The final conversation is open. The applicant books it now, and keeps refining their proposal until they send it to the anchor circle.",
   finalExists: "The final conversation is already open or done.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
   finalAtReferences: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.",

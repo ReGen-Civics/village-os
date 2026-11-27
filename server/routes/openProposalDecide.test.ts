@@ -1270,9 +1270,11 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const shown = await page(id, FOUNDER.id);
       expect(shown.body.proposal.addressUnconfirmed).toEqual({ words: OPEN_WORDS.addressUnconfirmed, account: OPEN_WORDS.addressUnconfirmedAccount });
       expect(shown.body.proposal.you.mayAdopt).toBe(false);
-      const adopt = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      // With a buddy picked (QA pass 2): a refused adoption saves nothing, the buddy included.
+      const adopt = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { buddyUserId: ANA.id }, FOUNDER.id);
       expect(adopt.status).toBe(409);
       expect(adopt.body).toEqual({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
+      expect(await (await import("../repos/openProposals")).buddyOf(pool, id)).toBeNull();
       expect(await q("SELECT id FROM seat_applications WHERE candidate_user_id = ?", [KEPT.id])).toEqual([]);
       expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
       // Nor is the account made the review's applicant, or told in its bell (security sweep, 14 Nov 2026):

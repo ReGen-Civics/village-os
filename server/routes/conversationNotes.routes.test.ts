@@ -307,6 +307,24 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     expect(await notesOf(id)).toEqual([]);
   });
 
+  it("A TEAM NUDGE NEVER REACHES THE APPLICANT (QA pass 3), even when they hold the role up next; its other holders hear it", async () => {
+    const { nudgeTick } = await import("../lib/applicantNudges");
+    const id = await confirmed(APPLICANT_HOLDER.email);
+    const [first] = await q("SELECT id FROM application_interviews WHERE application_ref = ? ORDER BY position", [id]);
+    await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 4 * 86_400_000), first.id]);
+    try {
+      state.notices.length = 0;
+      const deps: any = { getPool: () => pool, notify: async (n: any) => { state.notices.push(n); return { fresh: true }; }, notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id, APPLICANT_HOLDER.id], now: () => new Date(), members: usersRepo(pool) };
+      await nudgeTick(deps);
+      const nudged = state.notices.filter((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`)).map((n) => n.userId);
+      expect(nudged).toContain(IA.id);
+      expect(nudged).not.toContain(APPLICANT_HOLDER.id);
+      expect(state.notices.filter((n) => n.userId === APPLICANT_HOLDER.id)).toEqual([]);
+    } finally {
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE id = ?", [id]);
+    }
+  });
+
   it("VOICE REFLECTIONS (the lead, 27 Nov 2026): a later holder hears an earlier holder's recording; never the applicant, never earlier hearing later", async () => {
     await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }, { roleId: "cn-role-data", minutes: 30, final: false }]), gate]);
     try {
