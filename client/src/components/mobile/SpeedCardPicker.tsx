@@ -89,7 +89,7 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t({ message: "Find a page", context: "the speed-card picker: the search field's hint" })}
-            className="min-h-11 w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-h-11 w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-foreground [&::-webkit-search-cancel-button]:hidden placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </label>
         <div className="mt-2 flex-1 overflow-y-auto px-4 pb-6" data-speed-pick-list="">

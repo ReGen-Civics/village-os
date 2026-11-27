@@ -230,7 +230,8 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
       }}
     >
       {REGISTERED_CARDS.map((c) => <Probe key={c.id} card={c} onAnswer={onAnswer} />)}
-      <div className="flex items-center justify-between gap-2">
+      {/* Clear of the sheet's close button, which hangs over this row's right end. */}
+      <div className="flex items-center justify-between gap-2 pr-11">
         <h2 id="more-yours" className={eyebrow}><Trans context="the phone's More sheet: heading">Yours</Trans></h2>
         {editing ? (
           <span className="flex items-center gap-1">
