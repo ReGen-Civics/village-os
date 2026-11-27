@@ -260,8 +260,12 @@ describe.skipIf(!configured)("the circle consents to a role proposal, on a real 
     // A consent after an objection does not unblock the circle's path.
     expect((await answer(READER, s.applicationId, { answer: "consent" })).status).toBe(200);
     await closeWindow(s.proposalId);
+    // THE REASONS, FOR THE CIRCLE ASKED AND THE APPLICANT ONLY (the lead, 27 Nov 2026). The power holder outside the
+    // circle reads the state and the count; a holder in the circle and the applicant read the reason.
     const after = (await page(s.applicationId)).proposal.consent;
-    expect(after).toMatchObject({ state: "objected", record: null, objections: ["Two of us already keep the paths."] });
+    expect(after).toMatchObject({ state: "objected", record: null, objected: 1, objections: [] });
+    expect((await page(s.applicationId, READER)).proposal.consent.objections).toEqual(["Two of us already keep the paths."]);
+    expect((await page(s.applicationId, OWNER)).proposal.consent.objections).toEqual(["Two of us already keep the paths."]);
     // The power still adopts it, and says whose power.
     h.as(HOLDER);
     const adopted = await h.call("POST", `/api/governance/role-applications/${s.applicationId}/adopt`);

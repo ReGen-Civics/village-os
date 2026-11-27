@@ -186,6 +186,12 @@ describe.skipIf(!configured)("the circle answers a role proposal, through the ro
     expect((await application(OWNER, s.applicationId)).proposal.consent).toMatchObject({ objected: 1, roles: { objected: [] } });
     // So does a holder of the power outside the circle.
     expect((await application(HOLDER, s.applicationId)).proposal.consent).toMatchObject({ objected: 1, roles: { consented: ["Gate Keeper"], objected: [] } });
+    // THE REASONS (the lead, 27 Nov 2026): the applicant and the circle asked read them, on the proposal and the
+    // application; the power holder outside the circle reads the count alone.
+    expect(own.body.proposal.consent.objections).toEqual(["The bakery needs the kitchen on Fridays."]);
+    expect((await application(OWNER, s.applicationId)).proposal.consent.objections).toEqual(["The bakery needs the kitchen on Fridays."]);
+    expect((await application(READER, s.applicationId)).proposal.consent.objections).toEqual(["The bakery needs the kitchen on Fridays."]);
+    expect((await application(HOLDER, s.applicationId)).proposal.consent.objections).toEqual([]);
     // A holder the circle asked reads the objecting role, on the application and by the share link.
     expect((await application(READER, s.applicationId)).proposal.consent).toMatchObject({ objected: 1, roles: { objected: ["Bread Keeper"] } });
     h.as(READER);

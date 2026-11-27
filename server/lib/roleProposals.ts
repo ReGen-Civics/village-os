@@ -208,6 +208,11 @@ export function withoutObjectionReasons(view: ConsentView): ConsentView {
   return { ...view, objections: [] };
 }
 
+/** The view as this reader may read it: whole for the circle asked and the applicant, the count alone for anyone else. */
+export function readableConsent(view: ConsentView, asks: readonly store.StoredAsk[], viewerId: string | null, rolesOf: AskRoles, isApplicant: boolean): ConsentView {
+  return mayReadObjectionReasons(asks, viewerId, rolesOf, isApplicant) ? view : withoutObjectionReasons(view);
+}
+
 /**
  * WAITING ON YOU: the proposals the reader's circle is asked about, still
  * inside the window, that they have not answered, oldest first. A fixed number
