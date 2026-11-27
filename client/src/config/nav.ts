@@ -182,13 +182,14 @@ export const NAV: readonly NavEntry[] = [
       // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
       { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
       { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
-      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). Village holds
-      // five rows already, so Tools is a folder: the village's tools grid (chat, calendar, Hypha) and the Library, the
-      // things the village lends and borrows. A reader offered only one of them sees it as its own row (navNest.ts).
-      // Neither is a stranger's: a visitor is not offered them.
+      // The Library is its own row (the lead, 27 Nov 2026: "LIbrary as it's own village row").
+      { href: "/library", label: "Library", module: "library", newcomers: "never" },
+      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). With the
+      // Library its own row, Village would hold six, so Tools is a folder of the village's instruments: its tools grid
+      // (chat, calendar, Hypha) and Village Health, its dashboard. A reader offered only one of them sees it as its own
+      // row (navNest.ts). Neither is a stranger's: a visitor is not offered them.
       { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Tools" },
-      { href: "/library", label: "Library", module: "library", newcomers: "never", sub: "Tools" },
-      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
+      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never", sub: "Tools" },
     ],
   },
   {

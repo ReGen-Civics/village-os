@@ -118,14 +118,15 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
     expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
     for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
-    // Village Tools left Community for a Tools folder in Village, beside the Library (the lead, 27 Nov 2026: "should be under tools").
-    expect(at("/library")).toEqual(["Village/Tools"]);
+    // The Library is its own row (the lead, 27 Nov 2026: "LIbrary as it's own village row"), and Village Tools left Community for
+    // a Tools folder in Village, beside Village Health ("should be under tools"), which keeps Village at five rows.
+    expect(at("/library")).toEqual(["Village/"]);
     expect(at("/tools")).toEqual(["Village/Tools"]);
+    expect(at("/village-health")).toEqual(["Village/Tools"]);
     // Pay is a member's own, beside the Wallet; Protocols, the village's checklists, joined the guides to make room.
     expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.sub).toBe("Your things");
     expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.module).toBeUndefined();
     expect(at("/protocols")).toEqual(["Govern/Guides"]);
-    expect(at("/village-health")).toEqual(["Village/"]);
     expect(at("/quests").sort()).toEqual(["Govern/This season", "Village/"]);
     // No catch-all folder, and the Wallet is the member's own (the account menu).
     expect(NAV.filter(isGroup).flatMap((g) => g.items).some((l) => l.sub === "Shared things")).toBe(false);
