@@ -40,7 +40,8 @@ import { OPEN_AIM_MAX } from "@shared/openProposals";
 import { isDoor } from "./wizardDoor";
 import { TERM_KEYS, commitmentWords, isCommitment, judgeTermsStep, notesAsText, overallChoice, type TermAnswers, type TermKey } from "@shared/termsWords";
 import { goalsAsText, parseGoals, type ProposalGoal } from "@shared/proposalGoals";
-import { DRAFT_WORDS, isTextDraft, withoutDraftFlag, type DraftableGoal } from "@shared/seraDrafts";
+import { isTextDraft, withoutDraftFlag, type DraftableGoal } from "@shared/seraDrafts";
+import { atMostRoles, draftBlocked, moreToFix, pickRole, pickVillageGoal, sayAim, termsUnanswered } from "./applicationChecks";
 import { marksOf } from "./seraDraftAnswers";
 
 /** The goals the member listed, as the list holds them (GoalsField), or none. */
@@ -51,7 +52,7 @@ export function goalsOfAnswers(a: Record<string, unknown>): ProposalGoal[] {
 /** The goals step's verdict, in the shared rules' own words: at least one, each with a title and a done when. */
 export const goalsProblem = (v: unknown): string | null => {
   // A goal Sera drafted is the member's only once they edit or keep it.
-  if (Array.isArray(v) && v.some((g) => (g as DraftableGoal)?.seraDraft === true)) return DRAFT_WORDS.blocked(["goals"]);
+  if (Array.isArray(v) && v.some((g) => (g as DraftableGoal)?.seraDraft === true)) return draftBlocked(["goals"]);
   const judged = parseGoals(v ?? [], {});
   return judged.ok ? null : judged.error;
 };
@@ -92,7 +93,7 @@ export function termsChoiceOf(v: unknown): TermsChoice | null {
 export const termsChoiceProblem = (v: unknown, a: Record<string, unknown>): string | null => {
   if (!isDoor(a)) return null;
   const t = termsChoiceOf(v);
-  if (!t) return "Say whether you accept each setting, or would like to talk about it, and choose your commitment.";
+  if (!t) return termsUnanswered();
   const judged = judgeTermsStep({ answers: t.answers, commitmentPct: t.commitmentPct }, t.written);
   if (!judged.ok) return judged.error;
   return settingsProblem(t.settings);
@@ -153,14 +154,14 @@ export const settingsProblem = (v: unknown): string | null => {
   if (parsed.ok) return null;
   const first = parsed.problems[0];
   const more = parsed.problems.length - 1;
-  return more > 0 ? `${first.message} And ${more} more to fix in the terms.` : first.message;
+  return moreToFix(first.message, more);
 };
 
 /** The seats field's verdict: one to five. */
 export const seatsProblem = (v: unknown): string | null => {
   const n = pickedSeats(v).length;
-  if (n === 0) return "Pick the role you are proposing for.";
-  if (n > MAX_SEATS) return `One proposal holds at most ${MAX_SEATS} roles.`;
+  if (n === 0) return pickRole();
+  if (n > MAX_SEATS) return atMostRoles(MAX_SEATS);
   return null;
 };
 
@@ -240,7 +241,7 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
           required: true,
           showWhen: isDoor,
           problem: (v, a) =>
-            isDoor(a) && !String(v ?? "").trim() ? "Say your aim for this role." : isTextDraft(String(v ?? ""), marksOf(a).aim) ? DRAFT_WORDS.blocked(["aim"]) : null,
+            isDoor(a) && !String(v ?? "").trim() ? sayAim() : isTextDraft(String(v ?? ""), marksOf(a).aim) ? draftBlocked(["aim"]) : null,
         },
         {
           // Joining lane PR 1: a list of goals, each with a "done when", where a textarea of tasks stood.
@@ -257,7 +258,7 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
           label: "Which of the village's goals for the season your work serves",
           required: true,
           showWhen: isDoor,
-          problem: (v, a) => (isDoor(a) && !String(v ?? "").trim() ? "Pick the village goal your work serves." : null),
+          problem: (v, a) => (isDoor(a) && !String(v ?? "").trim() ? pickVillageGoal() : null),
         },
       ],
     },
@@ -272,7 +273,7 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
           help: "Only the people who decide your proposal see this. No AI reads it.",
           // The member door only: a renewal or a season plan carries on a seat, so it asks no references.
           showWhen: isDoor,
-          problem: (v, a) => aboutYouStepProblem(v, a) ?? (isTextDraft(aboutYouOf(v).story, marksOf(a).story) ? DRAFT_WORDS.blocked(["story"]) : null),
+          problem: (v, a) => aboutYouStepProblem(v, a) ?? (isTextDraft(aboutYouOf(v).story, marksOf(a).story) ? draftBlocked(["story"]) : null),
         },
       ],
     },

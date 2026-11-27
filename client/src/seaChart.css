@@ -120,6 +120,75 @@
   mask-border: none;
 }
 
+/* WAYFINDING AS A CHART'S COURSE (the lead, 26 Nov 2026: the menu's lit branch and the breadcrumbs take
+   the nautical map in light mode; the Expedition mock-up's marks). Every rule keys on the hooks the
+   wayfinding lane pins in its tests (components/nav: data-lit-rule, data-nav-dropdown, data-lit,
+   data-wayfinding, data-crumb, data-crumb-sep), never on their Tailwind classes. Marks are in the edge
+   brown (3:1), the current place in the accent teal (4.5:1), both held in seaChartPalette.test.ts. */
+
+/* The rule under the lit branch becomes a rhumb line with a compass point at its middle. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-lit-rule] {
+  height: 11px !important;
+  bottom: -11px !important;
+  border-radius: 0 !important;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M5.5 .6L10.4 5.5L5.5 10.4L.6 5.5Z' fill='none' stroke='%236e4a1e' stroke-width='1'/%3E%3Cpath d='M5.5 3.2L7.8 5.5L5.5 7.8L3.2 5.5Z' fill='%236e4a1e'/%3E%3C/svg%3E") center / 11px 11px no-repeat,
+    linear-gradient(var(--pal-day-edge), var(--pal-day-edge)) left center / calc(50% - 8px) 1px no-repeat,
+    linear-gradient(var(--pal-day-edge), var(--pal-day-edge)) right center / calc(50% - 8px) 1px no-repeat !important;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="menu"] :is(button[aria-current="true"], a[aria-current]) {
+  color: var(--pal-day-accent);
+}
+/* An open dropdown is a torn sheet too; its rows sit inside the tear, so the ragged edge never runs under them. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-nav-dropdown] {
+  padding: 9px 7px;
+}
+/* The lit entry in an open dropdown, and in the phone's More sheet: a teal edge, and the gold dot becomes a compass point. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) :is([data-nav-dropdown] a[aria-current], a[data-lit]) {
+  border-left-color: var(--pal-day-accent) !important;
+  background-color: var(--pal-day-tile-glass) !important;
+  color: var(--pal-day-accent);
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-lit] [data-lit-dot] {
+  border-radius: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 11 11'%3E%3Cpath d='M5.5 .6L10.4 5.5L5.5 10.4L.6 5.5Z' fill='none' stroke='%236e4a1e' stroke-width='1'/%3E%3Cpath d='M5.5 3.2L7.8 5.5L5.5 7.8L3.2 5.5Z' fill='%236e4a1e'/%3E%3C/svg%3E") center / contain no-repeat !important;
+  width: 11px;
+  height: 11px;
+}
+
+/* The breadcrumbs read as a course: small-caps chart labels, a compass rose at the start, dashed
+   bearings between the legs, and a faint rule under the whole trail. */
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="breadcrumb"] ol {
+  padding-bottom: 6px;
+  background: linear-gradient(var(--pal-day-rule-soft), var(--pal-day-rule-soft)) left bottom / 100% 1px no-repeat;
+  font-variant: small-caps;
+  letter-spacing: 0.06em;
+  color: var(--pal-day-ink-dim);
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="breadcrumb"] ol > li:first-child::before {
+  content: "";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='none' stroke='%236e4a1e' stroke-width='.8'/%3E%3Cpath d='M8 3.6L8.9 7.1L12.4 8L8.9 8.9L8 12.4L7.1 8.9L3.6 8L7.1 7.1Z' fill='%236e4a1e' opacity='.55' transform='rotate(45 8 8)'/%3E%3Cpath d='M8 .4L9.3 6.7L15.6 8L9.3 9.3L8 15.6L6.7 9.3L.4 8L6.7 6.7Z' fill='%236e4a1e'/%3E%3Cpath d='M8 .4L9.3 6.7L8 8Z' fill='%2308474b'/%3E%3Cpath d='M8 .4L6.7 6.7L8 8Z' fill='%2308474b' opacity='.7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="breadcrumb"] a[data-crumb] {
+  color: var(--pal-day-accent);
+  text-decoration-color: var(--pal-day-rule-soft);
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="breadcrumb"] [data-crumb="leaf"] {
+  color: var(--pal-day-ink);
+}
+:root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) [data-wayfinding="breadcrumb"] [data-crumb-sep] {
+  display: inline-block;
+  width: 20px;
+  height: 8px;
+  font-size: 0;
+  color: transparent;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8'%3E%3Cpath d='M1 4H14' stroke='%236e4a1e' stroke-width='1.2' stroke-dasharray='2 2'/%3E%3Cpath d='M13 1.4L17.2 4L13 6.6' fill='none' stroke='%236e4a1e' stroke-width='1.2'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
 @media (prefers-contrast: more), print {
   :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) { background-image: none !important; }
   :root[data-mode="light"][data-paper="sea-chart"]:not(:has(.admin-root)) body::before { display: none; }

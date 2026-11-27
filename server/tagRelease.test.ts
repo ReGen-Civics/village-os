@@ -9,9 +9,10 @@
  *   3. package.json, PLATFORM_VERSION, the changelog section and the compose
  *      image all name the version at that commit;
  *   4. the tag does not exist yet;
- *   5. ci concluded success on a push run at exactly that commit, or the
- *      commit is a merge whose tree equals its second parent's and that
- *      parent passed a whole ci push run (the tested twin).
+ *   5. ci concluded success on a push run at exactly that commit. The tested
+ *      twin (a merge whose tree equalled a green second parent's) was retired
+ *      on 26 Nov 2026, and a test below holds it retired. The docs bot's
+ *      commit, which gets no ci run, is never tagged.
  *
  * The last block drives the command line against a throwaway git repository,
  * so the gathering (git show at the commit, the ancestry check) is exercised
@@ -24,6 +25,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error plain ESM script without type declarations
 import * as guard from "../scripts/tag-release-check.mjs";
+import { isBotCommit } from "../scripts/lib/generatedDocs.mjs";
 
 const SHA = "a".repeat(40);
 const OTHER = "b".repeat(40);
@@ -140,73 +142,34 @@ describe("guard 5: ci green on a push run at exactly this commit", () => {
   });
 });
 
-const WHOLE_JOBS = ["verify", "test (1/4)", "test (2/4)", "test (3/4)", "test (4/4)", "tests-ran-once", "browser-smoke"];
-const jobsOf = (names: string[]) => names.map((name) => ({ name, status: "completed", conclusion: "success" }));
-const twinRun = { id: 7, head_sha: OTHER, event: "push", status: "completed", conclusion: "success" };
-function twin(over: Record<string, unknown> = {}) {
-  return { parent: OTHER, sameTree: true, runs: [twinRun], jobsByRun: { "7": jobsOf(WHOLE_JOBS) }, ...over };
-}
-
-describe("guard 5, the tested twin: a merge whose tree its second parent already passed", () => {
-  const cancelled = [{ ...greenRun, conclusion: "cancelled" }];
-
-  it("allows the merge commit when the second parent's push run was whole and green", () => {
-    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin() }));
-    expect(v.problems).toEqual([]);
-    expect(v.ok).toBe(true);
-  });
-
-  it("allows six shards as well as four, since the shard count is read off the job names", () => {
-    const six = ["verify", ...[1, 2, 3, 4, 5, 6].map((i) => `test (${i}/6)`), "tests-ran-once", "browser-smoke"];
-    expect(guard.checkWholeRun(jobsOf(six))).toEqual([]);
-  });
-
-  it.each([
-    ["a tree that differs from the parent's", { sameTree: false }, "its tree differs"],
-    ["no second parent", { parent: "" }, "not a merge commit"],
-    ["a parent with only a red push run", { runs: [{ ...twinRun, conclusion: "failure" }] }, "no green ci push run"],
-    ["a parent green only on pull_request", { runs: [{ ...twinRun, event: "pull_request" }] }, "no green ci push run"],
-    ["a green run on some other commit", { runs: [{ ...twinRun, head_sha: SHA }] }, "no green ci push run"],
-    ["a green run with no jobs read", { jobsByRun: {} }, "under the floor of 7"],
-    ["a run missing browser-smoke", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "browser-smoke")) } }, "no browser-smoke job"],
-    ["a run missing tests-ran-once", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "tests-ran-once")) } }, "no tests-ran-once job"],
-    ["a run missing a shard", { jobsByRun: { "7": jobsOf(WHOLE_JOBS.filter((n) => n !== "test (3/4)")) } }, "no test (3/4) job"],
-    [
-      "a run whose shards disagree on N",
-      { jobsByRun: { "7": jobsOf([...WHOLE_JOBS, "test (5/6)"]) } },
-      "shard jobs disagree on N",
-    ],
-    [
-      "a run with a skipped job",
-      { jobsByRun: { "7": [...jobsOf(WHOLE_JOBS.slice(1)), { name: "verify", status: "completed", conclusion: "skipped" }] } },
-      "verify is completed/skipped",
-    ],
-  ])("refuses %s", (_label, over, msg) => {
-    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin(over) }));
-    expect(v.ok).toBe(false);
-    expect(v.problems.join("\n")).toContain(`ci has not concluded success on a push run at ${SHA}`);
-    expect(v.problems.join("\n")).toContain(msg);
-  });
-
-  it("takes any one whole green run among several", () => {
-    const runs = [{ ...twinRun, id: 6 }, twinRun];
-    const jobsByRun = { "6": jobsOf(["verify"]), "7": jobsOf(WHOLE_JOBS) };
-    expect(guard.checkTestedTwin(twin({ runs, jobsByRun })).ok).toBe(true);
-  });
-
-  it("does not let the twin excuse any other guard", () => {
-    const v = guard.evaluate(facts({ ciRuns: cancelled, twin: twin(), onMain: false }));
-    expect(v.ok).toBe(false);
-    expect(v.problems).toEqual([`${SHA} is not on main. Only a commit main already carries can be released.`]);
-  });
-});
-
 describe("evaluate reports every refusal at once", () => {
   it("lists all four failing guards together", () => {
     const v = guard.evaluate(
       facts({ onMain: false, files: files("1.3.20"), remoteTags: `${SHA}\trefs/tags/v1.3.21\n`, ciRuns: [] }),
     );
     expect(v.problems.length).toBe(4 + 3);
+  });
+});
+
+describe("which commit is the docs bot's (isBotCommit, the list ci.yml's paths-ignore holds)", () => {
+  const subject = "Regenerate the generated docs and catalogs";
+  it.each([
+    ["the catalogs and a generated doc", { subject, parents: 1, paths: ["client/src/locales/en.po", "docs/GOVERNANCE.md"] }, true],
+    ["a fold, which deletes the fragments", { subject, parents: 1, paths: ["client/src/locales/es.po", "client/src/locales/es.d/menu.po"] }, true],
+    ["one other file beside them", { subject, parents: 1, paths: ["client/src/locales/en.po", "client/src/App.tsx"] }, false],
+    ["a doc that is not generated", { subject, parents: 1, paths: ["docs/RELEASING.md"] }, false],
+    ["another subject", { subject: "Fix the menu", parents: 1, paths: ["client/src/locales/en.po"] }, false],
+    ["a merge commit", { subject, parents: 2, paths: [] }, false],
+    ["no paths at all", { subject, parents: 1, paths: [] }, false],
+  ])("%s", (_name, c, want) => {
+    expect(isBotCommit(c)).toBe(want);
+  });
+
+  it("refuses the bot's commit by name in guard 5, in place of the ci message", () => {
+    const v = guard.evaluate(facts({ ciRuns: [], botParent: OTHER }));
+    expect(v.ok).toBe(false);
+    expect(v.problems.join("\n")).toContain(`Tag the commit under it, ${OTHER}`);
+    expect(v.problems.join("\n")).not.toContain("ci has not concluded success");
   });
 });
 
@@ -292,52 +255,28 @@ describe("the command line, against a real git repository", () => {
     return g("rev-parse", "HEAD");
   }
 
-  function twinFiles(dir: string, parent: string, names = WHOLE_JOBS) {
-    fs.writeFileSync(path.join(dir, "twin-runs.json"), JSON.stringify({ workflow_runs: [{ ...twinRun, head_sha: parent }] }));
-    fs.writeFileSync(path.join(dir, "twin-jobs.json"), JSON.stringify({ "7": jobsOf(names) }));
-    return ["--twin-runs", "twin-runs.json", "--twin-jobs", "twin-jobs.json"];
-  }
-
-  it("tags a merge commit whose own run was cancelled, when its tree is the tested batch head's", () => {
+  // THE TESTED TWIN WAS RETIRED on 26 Nov 2026 (the lead, item 1b): this
+  // merge commit's tree IS its tested second parent's, and it is refused
+  // all the same, because its own run is the only one that counts now.
+  it("refuses a merge commit whose own run was cancelled, even when its tree is a green branch head's", () => {
     const { dir, side } = repo();
     const m = merge(dir, side, true);
-    const cancelledRun = [{ head_sha: m, event: "push", status: "completed", conclusion: "cancelled" }];
-    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side)], cancelledRun);
-    expect(r.text).toContain(`v1.3.22 may be tagged at ${m}`);
-    expect(r.text).toContain("tested twin");
-    expect(r.status).toBe(0);
-    fs.rmSync(dir, { recursive: true, force: true });
-  });
-
-  it("refuses the same merge when the batch head's run was not whole", () => {
-    const { dir, side } = repo();
-    const m = merge(dir, side, true);
-    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side, WHOLE_JOBS.slice(0, 5))], []);
+    const cancelledRun = [
+      { head_sha: m, event: "push", status: "completed", conclusion: "cancelled" },
+      { head_sha: side, event: "push", status: "completed", conclusion: "success" },
+    ];
+    const r = run(dir, ["--version", "1.3.22", "--sha", m], cancelledRun);
     expect(r.status).toBe(1);
-    expect(r.text).toContain("not a whole one");
+    expect(r.text).toContain(`ci has not concluded success on a push run at ${m} (found: push/completed/cancelled)`);
+    expect(r.text).not.toContain("twin");
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it("refuses a merge whose tree is NOT its second parent's, however green that parent", () => {
+  it("no longer answers --twin-only, so a caller left behind fails loudly", () => {
     const { dir, side } = repo();
-    const m = merge(dir, side, false);
-    const r = run(dir, ["--version", "1.3.22", "--sha", m, ...twinFiles(dir, side)], []);
-    expect(r.status).toBe(1);
-    expect(r.text).toContain("its tree differs");
-    fs.rmSync(dir, { recursive: true, force: true });
-  });
-
-  it("answers release.yml's --twin-only question the same way", () => {
-    const { dir, side, tip } = repo();
     const m = merge(dir, side, true);
-    const ask = (sha: string) =>
-      spawnSync(process.execPath, [SCRIPT, "--twin-only", "--sha", sha, ...twinFiles(dir, side)], { cwd: dir, encoding: "utf8" });
-    const yes = ask(m);
-    expect(yes.stdout).toContain(`${m} is a tested twin`);
-    expect(yes.status).toBe(0);
-    const no = ask(tip);
-    expect(no.stderr).toContain("not a merge commit");
-    expect(no.status).toBe(1);
+    const r = spawnSync(process.execPath, [SCRIPT, "--twin-only", "--sha", m], { cwd: dir, encoding: "utf8" });
+    expect(r.status).not.toBe(0);
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
@@ -354,6 +293,61 @@ describe("the command line, against a real git repository", () => {
     const r = run(dir, ["--version", "1.3.21", "--sha", "c".repeat(40)], []);
     expect(r.status).toBe(1);
     expect(r.text).toContain("is not a commit in this repository.");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  // THE DOCS BOT'S COMMIT (26 Nov 2026): it gets no ci run (ci.yml's
+  // paths-ignore), so the commit to tag is the merge commit under it.
+  function botCommit(dir: string, change: (dir: string) => void, subject = "Regenerate the generated docs and catalogs") {
+    const g = (...a: string[]) => execFileSync("git", a, { cwd: dir, encoding: "utf8" }).trim();
+    change(dir);
+    g("add", "-A");
+    g("-c", "user.name=github-actions[bot]", "-c", "user.email=bot@example.invalid", "commit", "-qm", `${subject}\n\nWritten by .github/workflows/generated-docs.yml.`);
+    return g("rev-parse", "HEAD");
+  }
+  const regenerate = (dir: string) => {
+    fs.mkdirSync(path.join(dir, "client/src/locales/es.d"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "client/src/locales/en.po"), `msgid "a"\nmsgstr "${Math.random()}"\n`);
+    fs.mkdirSync(path.join(dir, "docs"), { recursive: true });
+    fs.writeFileSync(path.join(dir, "docs/GOVERNANCE.md"), `# ${Math.random()}\n`);
+  };
+
+  it("with no --sha, tags the commit under the docs bot's commits, which have no ci run", () => {
+    const { dir, tip } = repo();
+    const bot1 = botCommit(dir, regenerate);
+    const bot2 = botCommit(dir, regenerate);
+    const r = run(dir, ["--version", "1.3.21"], green(tip));
+    expect(r.text).toContain(`main's tip ${bot2} is the docs bot's commit, which gets no ci run; the commit to tag is ${tip}.`);
+    expect(r.status).toBe(0);
+    expect(r.output).toBe(`sha=${tip}\ntag=v1.3.21\nversion=1.3.21\n`);
+    expect(bot1).not.toBe(tip);
+    // tag-release.yml's shell asks the same question through --untold-target.
+    const t = spawnSync(process.execPath, [SCRIPT, "--untold-target", "main"], { cwd: dir, encoding: "utf8" });
+    expect(t.status).toBe(0);
+    expect(t.stdout.trim()).toBe(tip);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("refuses a --sha that names the docs bot's commit, and names the commit to tag", () => {
+    const { dir, tip } = repo();
+    const bot = botCommit(dir, regenerate);
+    // Even a green run on it does not make it the tested image: en.po is compiled into dist.
+    const r = run(dir, ["--version", "1.3.21", "--sha", bot], green(bot));
+    expect(r.status).toBe(1);
+    expect(r.text).toContain(`${bot} is the docs bot's commit`);
+    expect(r.text).toContain(`dispatch again with sha=${tip}`);
+    expect(r.output).toBe("");
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("does not walk past a commit with the bot's subject that changed anything else", () => {
+    const { dir } = repo();
+    const odd = botCommit(dir, (d) => {
+      regenerate(d);
+      fs.writeFileSync(path.join(d, "server/lib/other.ts"), "export const x = 1;\n");
+    });
+    const t = spawnSync(process.execPath, [SCRIPT, "--untold-target", "main"], { cwd: dir, encoding: "utf8" });
+    expect(t.stdout.trim()).toBe(odd);
     fs.rmSync(dir, { recursive: true, force: true });
   });
 

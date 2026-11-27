@@ -130,6 +130,9 @@ function Tile({ href, label, onGo, children, Icon }: { href: string; label: stri
 /** The entry the page is at or under wears a gold edge on its left (the accent on the panel, measured 3:1 in modePalettes.test.ts). */
 // Pulled left by what it pads, so the words stay where they were and only the edge appears.
 const LIT_ON = "-ml-3 border-l-2 border-notice pl-2.5 font-semibold";
+// A top-level entry has no group rule to sit on, so its edge stands on the text column and the words step in after it
+// (the live check, 27 Nov 2026: pulled left, the edge sat at the sheet's own edge, outside the list).
+const LIT_TOP = "border-l-2 border-notice pl-3 font-semibold";
 
 /** Below `md`, where the bar and its More exist. From `md` up the header's drawer answers the same open state (Layout.tsx). */
 const PHONE = "(max-width: 767.98px)";
@@ -253,7 +256,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
 
         <section aria-labelledby="more-village" className="mt-4">
           <h2 id="more-village" className={eyebrow}><Trans context="the phone's More sheet: heading">The village</Trans></h2>
-          <ul className="mt-1 divide-y divide-border/60">
+          <ul className="mt-1 divide-y divide-border/60" data-wayfinding="menu">
             {entries.map((e) =>
               isGroup(e) ? (
                 <li key={e.label}>
@@ -266,7 +269,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                     className={`flex min-h-11 w-full items-center justify-between py-2 text-left text-base text-foreground ${lit?.group === e.label ? "font-semibold" : ""}`}
                   >
                     <span className="inline-flex items-center gap-2">
-                      {lit?.group === e.label ? <span aria-hidden="true" className="size-2 rounded-full bg-notice" /> : null}
+                      {lit?.group === e.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
                       {e.label}
                     </span>
                     <ChevronDown aria-hidden="true" className={`size-4 transition-transform ${openGroup === e.label ? "rotate-180" : ""}`} />
@@ -275,7 +278,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                     <ul className="mb-2 ml-1 border-l border-border pl-3">
                       {itemsOf(e).map((l) => (
                         <li key={l.href}>
-                          <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
+                          <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
                             <MenuIcon href={l.href} fallback={l.icon} />
                             {l.label}
                           </Link>
@@ -286,7 +289,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                 </li>
               ) : (
                 <li key={e.href}>
-                  <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_ON : ""}`}>
+                  <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} data-lit={currentFor(lit, e.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_TOP : ""}`}>
                     <MenuIcon href={e.href} fallback={e.icon} bare />
                     {e.label}
                   </Link>

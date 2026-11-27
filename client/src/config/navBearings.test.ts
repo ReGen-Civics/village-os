@@ -96,3 +96,35 @@ describe("litFor", () => {
     expect(NAV.filter(isGroup).filter((g) => g.href)).toEqual([]);
   });
 });
+
+describe("an entry another took the place of (the live check, 27 Nov 2026)", () => {
+  const MAPPED: NavEntry[] = [
+    { label: "Village", items: [{ href: "/map/circles", label: "Circles & Roles", module: "map" }, { href: "/roles", label: "Roles", unlessModule: "map" }] },
+  ];
+  const mapOn = (l: { module?: string; unlessModule?: string }) => l.unlessModule !== "map";
+  const word = (g: string) => g;
+
+  it("marks the entry that replaced it in the menu, and keeps the page's own entry for the trail", () => {
+    const lit = litFor("/roles/gardener", mapOn, { hidden: [], groups: {} }, word, MAPPED)!;
+    expect(lit).toMatchObject({ group: "Village", href: "/map/circles", replaced: true, exact: false, item: { href: "/roles" } });
+    expect(currentFor(lit, "/map/circles")).toBe("true");
+  });
+
+  it("never calls the replacing entry the page itself, even on the replaced entry's own page", () => {
+    const lit = litFor("/roles", mapOn, { hidden: [], groups: {} }, word, MAPPED)!;
+    expect(lit.exact).toBe(true);
+    expect(currentFor(lit, "/map/circles")).toBe("true");
+  });
+
+  it("marks nothing in its place when the village hid the replacing entry", () => {
+    const lit = litFor("/roles/gardener", mapOn, { hidden: ["/map/circles"], groups: {} }, word, MAPPED)!;
+    expect(lit.replaced).toBeUndefined();
+    expect(lit.href).toBe("/roles");
+  });
+
+  it("changes nothing when the page's own entry is in the menu (the map off)", () => {
+    const lit = litFor("/roles/gardener", (l) => !l.module, { hidden: [], groups: {} }, word, MAPPED)!;
+    expect(lit).toMatchObject({ href: "/roles", item: { href: "/roles" } });
+    expect(lit.replaced).toBeUndefined();
+  });
+});

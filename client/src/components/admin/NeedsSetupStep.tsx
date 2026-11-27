@@ -107,7 +107,6 @@ export function NeedsSetupStep({
       setup={setup}
       onToggleStep={onToggleStep}
       id="needs"
-      n={2}
       title={t({ message: "What this village is for", context: "NeedsSetupStep, title" })}
       subtitle="The needs this village is taking on, how far it means to get on each, and for how many."
     >

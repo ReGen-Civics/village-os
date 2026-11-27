@@ -67,6 +67,12 @@ describe("the Sea chart's palette", () => {
     expect(contrastRatio(c("band-ink"), c("band"))).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("keeps the wayfinding legible on the header band: the lit branch's teal and its compass marks", () => {
+    // The lit branch's label (accent) and the rhumb line with its compass point (edge) sit on the band.
+    expect(contrastRatio(c("accent"), c("band"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(c("edge"), c("band"))).toBeGreaterThanOrEqual(3);
+  });
+
   it("draws its paper and torn edges: no raw # inside an SVG data URL", () => {
     // A raw # ends a data URL and starts its fragment, so the browser gets a cut-off SVG, refuses it,
     // and the card falls back to a plain border. That shipped in 1.3.81 with every texture missing.

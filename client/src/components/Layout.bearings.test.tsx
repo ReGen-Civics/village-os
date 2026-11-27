@@ -57,6 +57,7 @@ describe("the branch the page belongs to", () => {
     at("/powers");
     fireEvent.click(group("Decide"));
     expect(dropdown().getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("page");
+    expect(document.getElementById("nav-menu-decide")?.hasAttribute("data-nav-dropdown")).toBe(true); // a Sea chart hook
     cleanup();
     at("/powers/water");
     fireEvent.click(group("Decide"));
