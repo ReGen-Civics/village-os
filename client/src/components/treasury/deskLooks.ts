@@ -154,6 +154,8 @@ export const MINT_SHEET: MintDeskLook = {
 export interface PricingDeskLook {
   /** A row's hours, as little as and as much as. */
   hourInput: string;
+  /** The row the three hour boxes sit in, with their "from" and "to". */
+  hoursRow: string;
   /** The hours before the Treasurer confirms them. */
   hoursPending: string;
   /** The one main act: use every suggestion inside the band. */
@@ -199,6 +201,7 @@ const PRICE_BTN = "rounded-lg px-3 py-2 text-sm font-semibold min-h-[40px]";
 
 export const PRICING_ADMIN: PricingDeskLook = {
   hourInput: "w-12 border border-border rounded-md px-1.5 py-1.5 text-sm bg-card text-center",
+  hoursRow: "flex flex-nowrap items-center gap-1.5 text-sm col-span-2 md:col-span-1",
   hoursPending: "border-notice bg-amber-light",
   bulk: `${PRICE_BTN} bg-teal-deep text-white hover:bg-teal-deep-dark disabled:opacity-50`,
   rowAct: `${PRICE_BTN} bg-teal-deep text-white hover:bg-teal-deep-dark disabled:opacity-50`,
@@ -226,7 +229,9 @@ export const PRICING_ADMIN: PricingDeskLook = {
 };
 
 export const PRICING_SHEET: PricingDeskLook = {
-  hourInput: "min-h-11 w-14 rounded-lg border border-border bg-background px-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+  // On a phone the cell label leads the row; from md up it is hidden, so the row is one column shorter.
+  hoursRow: "col-span-2 grid grid-cols-[auto_minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 text-sm md:col-span-1 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)]",
+  hourInput: "min-h-11 w-full min-w-0 rounded-lg border border-border bg-background px-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring",
   hoursPending: "border-notice",
   bulk: BTN_PRIMARY,
   rowAct: BTN_NOTICE,
@@ -286,7 +291,7 @@ export const QUEUE_SHEET: QueueLook = {
   headingTag: "h3",
   heading: "font-display text-xl text-card-foreground",
   row: `${TILE} flex flex-col gap-3`,
-  item: "flex flex-col gap-2 rounded-xl border border-border bg-card p-3",
+  item: "flex flex-col gap-2 border-t border-border pt-3 first:border-t-0 first:pt-0",
   toggle: `${BTN_SECONDARY} self-start`,
   choiceOn: `${BTN_NOTICE} bg-notice/15`,
   choiceOff: BTN_SECONDARY,

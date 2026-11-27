@@ -163,8 +163,11 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
           // The sheet's three lines (fold QA round 1): the rules a treasurer acts on, without the settings' keys.
           <ul className={look.rulesText} data-mint-rules>
             <li>{t({ message: `At most ${capWords} a moon`, context: "hand-mint rules, the cap" })}</li>
-            {/* With no second signer set, there is no rule to tell. */}
-            {cosignOver > 0 ? <li>{t({ message: `Over ${cosignWords} waits for a second signer`, context: "hand-mint rules, the second signer" })}</li> : null}
+            <li>
+              {cosignOver > 0
+                ? t({ message: `Over ${cosignWords} waits for a second signer`, context: "hand-mint rules, the second signer" })
+                : t({ message: "Any amount goes through on your signature alone", context: "hand-mint rules, the second signer" })}
+            </li>
             <li>{t({ message: "You can't mint to yourself", context: "hand-mint rules, self" })}</li>
           </ul>
         ) : (
@@ -187,7 +190,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
             <Trans context="hand-mint form, a field's label">Token</Trans>
           <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
             className={look.select}>
-            <option value=""><Trans context="hand-mint form, token picker placeholder">Token…</Trans></option>
+            <option value=""><Trans context="hand-mint form, a picker's placeholder">Choose…</Trans></option>
             {tokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
           </select>
           </label>
@@ -195,7 +198,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
             <Trans context="hand-mint form, a field's label">Member</Trans>
           <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
             className={look.select}>
-            <option value=""><Trans context="hand-mint form, member picker placeholder">Member…</Trans></option>
+            <option value=""><Trans context="hand-mint form, a picker's placeholder">Choose…</Trans></option>
             {members.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
           </select>
           </label>

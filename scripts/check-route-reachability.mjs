@@ -166,7 +166,7 @@ const ALLOWLIST = {
   // The redirects keep the notices already sent (`/cash-payouts#pay-board`) and the account menu entry working until
   // the menu lane points it at the new address.
   "/cash-payouts": "a redirect to /governance/treasury#cash (or the hash it carried), kept for notices already sent",
-  "/treasury": "a redirect to /governance/treasury#desks, kept for the account menu entry and links already sent",
+  "/treasury": "a redirect to /governance/treasury#desks, kept for links already sent (the menu links the new address)",
 
   // Password flows arrive from an EMAIL, not from the site. The set-password
   // link carries a one-time token and is useless without it, so a nav entry

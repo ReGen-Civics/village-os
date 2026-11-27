@@ -124,6 +124,8 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
 }) {
   const { t } = useLingui();
   const Heading = asPage ? "h1" : "h2";
+  // A member's name sits one level under the desk's heading: an h4 under Governance's Treasury's h2 and its h3s.
+  const Name = withHeading ? "h3" : "h4";
   const [data, setData] = useState<{ unpaid: CashQueueEntry[]; paid: CashQueueEntry[] } | null>(null);
   const [refused, setRefused] = useState<Refused | null>(null);
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -400,7 +402,7 @@ export default function CashPayoutsTab({ password, asPage = false, withPayBoard 
             return (
               <li key={g.userId} className={look.group}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="font-semibold text-foreground">{g.name}</h3>
+                  <Name className="font-semibold text-foreground">{g.name}</Name>
                   <p className="text-sm font-semibold text-foreground">
                     {view === "unpaid" ? "Owed " : "Paid "}{totalsText(g.rows)}
                   </p>

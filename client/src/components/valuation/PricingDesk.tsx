@@ -237,7 +237,7 @@ export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }
 
       <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         <li className={step(read.eeMeaningWritten, eeNow)}>
-          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}{t({ message: `${equity}: its meaning`, context: "pricing desk, the first step on the Treasurer's path" })}</b>
+          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}{t({ message: `What ${equity} means`, context: "pricing desk, the first step on the Treasurer's path" })}</b>
           <span className="text-sm text-muted-foreground">{read.eeMeaningWritten ? t({ message: `Written`, context: "pricing desk" }) : <a className={look.link} href="/admin?tab=tokens"><Trans context="pricing desk">Write what it means first</Trans></a>}</span>
         </li>
         <li className={step(read.modelAdopted, modelNow)}>
@@ -315,7 +315,7 @@ export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }
                   <span className="text-sm text-muted-foreground">{p.problem ?? t({ message: `Give the hours`, context: "pricing desk" })}</span>
                 )}
               </div>
-              <div className="flex flex-nowrap items-center gap-1.5 text-sm col-span-2 md:col-span-1">
+              <div className={look.hoursRow}>
                 <span className={`${label} mr-1`}><Trans context="pricing desk">Hours</Trans></span>
                 <input aria-label={t({ message: `Estimated hours for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={`${input} ${r.confirmed ? "" : look.hoursPending}`} value={r.hours} onChange={(e) => patch(q.id, { hours: e.target.value, confirmed: false })} />
                 <span className="text-muted-foreground"><Trans context="pricing desk">from</Trans></span>

@@ -263,11 +263,6 @@ msgctxt "budget upload"
 msgid "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
 msgstr "Un periodo es una luna, un mes como 2026-11, una temporada o dos fechas. Usted lee lo que cambia antes de que se guarde nada."
 
-# needs-native-review: the pricing desk, the first step on the Treasurer's path, 27 Nov 2026
-msgctxt "pricing desk, the first step on the Treasurer's path"
-msgid "{equity}: its meaning"
-msgstr "{equity}: su significado"
-
 # needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
 msgctxt "hand-mint form, a field's label"
 msgid "Token"
@@ -277,3 +272,18 @@ msgstr "Token"
 msgctxt "hand-mint form, a field's label"
 msgid "Member"
 msgstr "Miembro"
+
+# needs-native-review: the pricing desk, the first step on the Treasurer's path, 27 Nov 2026
+msgctxt "pricing desk, the first step on the Treasurer's path"
+msgid "What {equity} means"
+msgstr "Qué significa {equity}"
+
+# needs-native-review: the hand mint's rules, no second signer set, 27 Nov 2026
+msgctxt "hand-mint rules, the second signer"
+msgid "Any amount goes through on your signature alone"
+msgstr "Cualquier monto se aprueba solo con su firma"
+
+# needs-native-review: the hand mint's form, a picker's placeholder, 27 Nov 2026
+msgctxt "hand-mint form, a picker's placeholder"
+msgid "Choose…"
+msgstr "Elija…"
