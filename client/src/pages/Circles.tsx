@@ -23,6 +23,7 @@ import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/Se
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
+import RoleMeasuresPanel from "@/components/roleMeasures/RoleMeasuresPanel";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
@@ -571,6 +572,14 @@ export default function Circles() {
                 </div>
               </div>
             )}
+
+            {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
+                here): administrators only, renders nothing for anyone else. */}
+            {circles !== null ? (
+              <div className="mt-12">
+                <RoleMeasuresPanel />
+              </div>
+            ) : null}
 
             {/* The seat a chip opened, as the same role card the map draws,
                 in the phone sheet. `sheet-night` makes the sheet's own panel

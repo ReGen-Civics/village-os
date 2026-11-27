@@ -16,7 +16,8 @@
  *
  * A circle with no roles yet is a quiet hearth: the embers, one sentence and
  * one door. Below the card, for those who keep the circle, sits this season's
- * pulse from Live Sessions.
+ * pulse from Live Sessions, and for an administrator how the circle's roles
+ * are going (components/roleMeasures, the fold of /role-measures).
  *
  * PHONE AND DESKTOP, each at its best.
  *   - Phone: one column in the order a newcomer asks. The header, the hearth
@@ -39,6 +40,7 @@ import { LinkedCircles, QuietHearth, WeDecided, WeMeet, WeTend, WhoHolds } from 
 import { adoptionOf, hearthRoles, linkedCircles, meetFacts, stonesOf, threadsOf } from "@/components/circleCard/hearthModel";
 import { tendFor, useHearth } from "@/components/circleCard/useHearth";
 import CirclePulse from "@/components/sessions/CirclePulse";
+import RoleMeasuresPanel from "@/components/roleMeasures/RoleMeasuresPanel";
 import { CARD, LINK, WORLD } from "@/components/journey/look";
 import { gameFetch } from "@/lib/gameApi";
 import type { CircleCard, CircleSection } from "@shared/circleCard";
@@ -213,6 +215,8 @@ function HearthPage({
                 lede={W.pulseLede}
               />
             ) : null}
+            {/* How this circle's roles are going (the fold of /role-measures): administrators only, renders nothing for anyone else. */}
+            <RoleMeasuresPanel circleId={circleId} />
           </div>
         </div>
       )}

@@ -88,8 +88,8 @@ const ALLOWLIST = {
   // Copy link on the role card's footer and on a directory row, and the link people share outside the app.
   "/roles/:slug": "a role's own page; its links are built from each role and shared outside the app",
 
-  // A members-only report of the role journey (counts and medians, no names). Its one door is the signed-in link on /roles; a second link would only add a header entry nobody needs.
-  "/role-measures": "a members-only report reached from the roles page",
+  // How roles are going folded into Circles & Roles (27 Nov 2026). It redirects to /circles#role-measures; old bookmarks and links already sent are its doors.
+  "/role-measures": "a redirect to /circles#role-measures, kept for old links",
 
   // The old address of the role selection board. It redirects to /roles/select and nothing links to it on purpose; old bookmarks and shared links are its doors.
   "/roles/draft": "a redirect to /roles/select kept for old links",

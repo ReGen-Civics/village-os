@@ -234,7 +234,7 @@ export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
   { id: "page.pricing", kind: "outside", path: "/pricing", title: "Pricing desk", help: "Every open quest beside the engine's suggested price.", synonyms: ["pricing", "quest price"] },
   { id: "page.budget", kind: "outside", path: "/budget", title: "Cash budget", help: "The cash the village plans to pay this moon.", synonyms: ["budget"] },
   { id: "page.powers", kind: "outside", path: "/powers", title: "Powers", help: "Every power, and who holds it.", synonyms: ["powers", "capabilities", "who can"] },
-  { id: "page.role-measures", kind: "outside", path: "/role-measures", title: "Role measures", help: "How each role's work is measured.", synonyms: ["measures", "role measures"] },
+  { id: "page.role-measures", kind: "outside", path: "/circles#role-measures", title: "How roles are going", help: "Each circle's applications answered and roles kept, on the circles page.", synonyms: ["measures", "role measures", "how roles are going"] },
   { id: "page.decisions", kind: "outside", path: "/decisions", title: "Decisions", help: "Votes and decisions, open and closed.", synonyms: ["votes", "ballots", "decide"] },
   { id: "page.changes", kind: "outside", path: "/changes", title: "Change requests", help: "Requests to change how the village works.", synonyms: ["change request"] },
   { id: "page.launch", kind: "outside", path: "/journey-to-launch", title: "Launch plan", help: "Everything still to do before the village launches.", synonyms: ["launch", "go live", "checklist", "journey to launch"] },
