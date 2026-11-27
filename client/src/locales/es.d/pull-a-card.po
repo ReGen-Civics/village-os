@@ -1,0 +1,291 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8
+"
+"Language: es
+"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the door once drawn"
+msgid "Open your card"
+msgstr "Abra su carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: keeping it failed"
+msgid "The card did not save to your journal. Try again."
+msgstr "La carta no se guardó en su diario. Inténtelo de nuevo."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the draw button while it pulls"
+msgid "Reading the sky"
+msgstr "Leyendo el cielo"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the fold with the day's sky"
+msgid "Today's sky"
+msgstr "El cielo de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today, empty"
+msgid "Nothing waits on you today. The day is yours to shape."
+msgstr "Hoy nada le espera. El día es suyo para darle forma."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the draw button"
+msgid "Draw today's card"
+msgstr "Saque la carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the face down card, read aloud"
+msgid "Draw today's card"
+msgstr "Saque la carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "{0} asks from other members"
+msgstr "{0} pedidos de otros miembros"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the chip on the card, today's sky leaves it alone"
+msgid "Steady"
+msgstr "Serena"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the page's heading"
+msgid "Today's card"
+msgstr "La carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the back of the card"
+msgid "Today's card"
+msgstr "La carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the chip on the card, today's sky completes a channel from it"
+msgid "Sky-linked"
+msgstr "Unida al cielo"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the reading's eyebrow, woven by the village guide"
+msgid "Read by {guide}"
+msgstr "Leída por {guide}"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: under the draw button"
+msgid "One card a day, from your own lines and today's sky. The same card all day."
+msgstr "Una carta al día, de sus propias líneas y el cielo de hoy. La misma carta todo el día."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "{0} tasks waiting"
+msgstr "{0} tareas esperando"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the focus line's eyebrow"
+msgid "Today's focus"
+msgstr "El enfoque de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Quest in hand"
+msgstr "Misión en curso"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Session open now"
+msgstr "Sesión abierta ahora"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: before the draw"
+msgid "Your eleven spheres are your deck. Each day one is drawn, weighed by today's sky, and read against your whole design and what waits on you in the village."
+msgstr "Sus once esferas son su baraja. Cada día se saca una, pesada por el cielo de hoy, y se lee frente a todo su diseño y lo que le espera en la aldea."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today, tasks"
+msgid "From your sessions"
+msgstr "De sus sesiones"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: after sharing"
+msgid "Shared"
+msgstr "Compartida"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: a member with no lines yet, the door"
+msgid "Find your lines"
+msgstr "Encuentre sus líneas"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the guide's ask, the yes"
+msgid "Yes, read my card"
+msgstr "Sí, lea mi carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: weave the reading now"
+msgid "Ask {guide} to read it"
+msgstr "Pida a {guide} que la lea"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the reading's eyebrow, in plain words"
+msgid "Your chart today"
+msgstr "Su carta natal hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today, loading"
+msgid "Reading what waits on you"
+msgstr "Leyendo lo que le espera"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the member's design under the reading"
+msgid "{0} authority"
+msgstr "Autoridad {0}"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: loading"
+msgid "Opening today's card"
+msgstr "Abriendo la carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Gathering today · {at}"
+msgstr "Encuentro hoy · {at}"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the guide's ask, the no"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "A decision waits on you"
+msgstr "Una decisión le espera"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the chip on the card, the Moon passes its gate today"
+msgid "Moon-lit"
+msgstr "Iluminada por la Luna"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: save the day's card to the private journal"
+msgid "Keep in my journal"
+msgstr "Guardar en mi diario"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the journal entry's heading"
+msgid "Today's card: {0}"
+msgstr "La carta de hoy: {0}"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: after keeping it"
+msgid "Kept in your journal"
+msgstr "Guardada en su diario"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the guide's ask, heading; {guide} is the village guide's name"
+msgid "Let {guide} read your card"
+msgstr "Deje que {guide} lea su carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today, a decision"
+msgid "Waiting on you"
+msgstr "Le espera"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the page's eyebrow"
+msgid "Pull a card"
+msgstr "Saque una carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "One task waiting"
+msgstr "Una tarea esperando"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today, asks"
+msgid "Asked of you"
+msgstr "Le piden"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: under the card"
+msgid "A lens, never a forecast. A new card at midnight."
+msgstr "Una lente, nunca un pronóstico. Una carta nueva a medianoche."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the chip on the card, today's Sun stands in its gate"
+msgid "Sun-lit"
+msgstr "Iluminada por el Sol"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: before the pull"
+msgid "Draw one card from your own lines, read against today's sky and what waits on you."
+msgstr "Saque una carta de sus propias líneas, leída frente al cielo de hoy y lo que le espera."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the chip on the card, today's Earth stands in its gate"
+msgid "Earth-held"
+msgstr "Sostenida por la Tierra"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "One ask from another member"
+msgstr "Un pedido de otro miembro"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "the phone's More sheet: speed card, today's card drawn from the member's own lines"
+msgid "Pull a card"
+msgstr "Saque una carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Session today · {at}"
+msgstr "Sesión hoy · {at}"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: share only the card's name and focus"
+msgid "Share the card"
+msgstr "Compartir la carta"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Decisions wait on you"
+msgstr "Decisiones le esperan"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the guide's ask; {guide} is the village guide's name"
+msgid "This also lets {guide} use your lines, the same yes as in your Gene Keys controls, where you can take it back."
+msgstr "Esto también permite que {guide} use sus líneas, el mismo sí que en sus controles de Gene Keys, donde puede retirarlo."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "GeneKeys, Link: today's card, drawn from the lines just found"
+msgid "Pull today's card"
+msgstr "Saque la carta de hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the words a share sends"
+msgid "My card today: {0}. {1}."
+msgstr "Mi carta de hoy: {0}. {1}."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: in the village today"
+msgid "Gathering today"
+msgstr "Encuentro hoy"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: the line bars on the card, read aloud"
+msgid "Line {0} of 6"
+msgstr "Línea {0} de 6"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: a member with no lines yet"
+msgid "Your card is drawn from your own lines. Find them first, and a card waits for you each day."
+msgstr "Su carta se saca de sus propias líneas. Encuéntrelas primero, y cada día le espera una carta."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+msgctxt "today's card: what waits on the member, heading"
+msgid "Today in the village"
+msgstr "Hoy en la aldea"
+
+# needs-native-review: an existing entry, now in usted, 27 Nov 2026
+msgctxt "today's card: button"
+msgid "Pull today's card"
+msgstr "Saque la carta de hoy"

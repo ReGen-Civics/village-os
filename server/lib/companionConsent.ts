@@ -141,6 +141,27 @@ export function companionDisclosure(
 }
 
 /**
+ * The line for today's card (shared/myCard.ts): the guide writes the member's daily card from their lines, the
+ * day's sky and counts of what waits on them. The same provider, operator and key kind as the companion's line,
+ * and it always names the Gene Keys result, so a yes given here covers exactly what the companion's line with
+ * the result covers, and a yes the companion was given without the result does not cover the card. Only the
+ * sentence differs, which is not part of what a yes is keyed on (`consentFor`).
+ */
+export function cardDisclosure(
+  source: KeySource,
+  memberKey: MemberKeyFacts | null,
+  villageName: string,
+  env: NodeJS.ProcessEnv = process.env,
+): CompanionDisclosure {
+  const d = companionDisclosure(source, memberKey, villageName, env, { geneKeys: true });
+  const key = d.sentence.slice(d.sentence.lastIndexOf(", on ") + 2);
+  return {
+    ...d,
+    sentence: `To write your card in its own words, the guide sends your lines, today's sky and counts of what waits on you (never titles or names) to ${d.provider}, ${key}`,
+  };
+}
+
+/**
  * The line for a companion that speaks through the outside service. Its
  * operator is the service itself, so a yes here is its own line and never
  * carries to the village guide or back. `companionName` is the member's own

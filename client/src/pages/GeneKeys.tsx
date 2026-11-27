@@ -450,6 +450,10 @@ export default function GeneKeysPage() {
                 <Link href="/profile#gene-keys" className={next ? BTN_PLAIN : BTN_GOLD}>
                   <Trans context="GeneKeys, Link">See them on your profile
                 </Trans></Link>
+                {/* Your lines are now a deck: the first card waits (shared/myCard.ts). */}
+                <Link href="/profile/today-card" className={BTN_PLAIN}>
+                  <Trans context="GeneKeys, Link: today's card, drawn from the lines just found">Pull today's card</Trans>
+                </Link>
               </div>
               <a className={BTN_LINK} href={GENE_KEYS_SITE} target="_blank" rel="noopener noreferrer">
                 <Trans context="GeneKeys, a">Explore more in depth on genekeys.com
