@@ -124,6 +124,8 @@ export interface SaveBody {
 export const readAccess = () => send<{ door: "power" | "admin" | null }>("GET", "/access");
 export const openEditor = (id: string) => send<EditorOpen>("GET", `/${encodeURIComponent(id)}`);
 export const saveEditor = (id: string, body: SaveBody) => send<{ success: true; changed: string[]; state: EditorState }>("POST", `/${encodeURIComponent(id)}`, body);
+/** The open org drafts that change this role, for the card's "a change is waiting" link (deciders only). */
+export const readOpenDrafts = (id: string) => send<{ drafts: Array<{ id: string; title: string }> }>("GET", `/${encodeURIComponent(id)}/drafts`);
 export const readHistory = (id: string) => send<{ entries: HistoryEntry[] }>("GET", `/${encodeURIComponent(id)}/history`);
 export const revertEntry = (id: string, draftId: string) => send<{ success: true; state: EditorState }>("POST", `/${encodeURIComponent(id)}/history/${encodeURIComponent(draftId)}/revert`, {});
 export const readSera = (id: string) => send<SeraSuggestion>("GET", `/${encodeURIComponent(id)}/sera`);
