@@ -84,8 +84,8 @@ describe("the cash card", () => {
     });
     render(<CashOwedPanel />);
     expect(await screen.findByText("What the village owes")).toBeTruthy();
-    // A finance role holding cash.pay without admin reaches the full payout list from here.
-    expect(screen.getByRole("link", { name: "Record a bank transfer" }).getAttribute("href")).toBe("/cash-payouts");
+    // A finance role holding cash.pay without admin reaches the full payout list from here: the Treasury's cash desk.
+    expect(screen.getByRole("link", { name: "Record a bank transfer" }).getAttribute("href")).toBe("/governance/treasury#cash");
     expect(screen.getByText(/to Ora/)).toBeTruthy();
     const mark = screen.getByRole("button", { name: "Mark paid" }) as HTMLButtonElement;
     expect(mark.disabled, "no note, no payment").toBe(true);

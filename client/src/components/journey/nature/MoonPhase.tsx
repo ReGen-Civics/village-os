@@ -49,8 +49,9 @@ export default function MoonPhase({ date, label, showName = false, size = "md", 
     <span className={`nk inline-flex flex-col items-center gap-1 ${className}`.trim()} data-phase={reading.phase.toFixed(3)} data-side={reading.side}>
       <svg viewBox="0 0 100 100" role="img" aria-label={label ?? reading.label} className={`block shrink-0 ${SIZES[size]}`}>
         <title>{reading.phaseName}</title>
-        <circle cx={50} cy={50} r={44} className="text-muted" fill="currentColor" />
-        {d ? <path d={d} className="text-foreground" fill="currentColor" fillOpacity={0.92} data-testid="moon-lit" /> : null}
+        {/* The lit side is the light one in both modes (nature.css, nk-moon-*): by day the ink is dark. */}
+        <circle cx={50} cy={50} r={44} className="nk-moon-dark" fill="currentColor" />
+        {d ? <path d={d} className="nk-moon-lit" fill="currentColor" fillOpacity={0.92} data-testid="moon-lit" /> : null}
         <circle cx={50} cy={50} r={44} className="text-border" fill="none" stroke="currentColor" strokeWidth={1.2} />
       </svg>
       {showName ? <span className="text-xs text-muted-foreground">{reading.phaseName}</span> : null}

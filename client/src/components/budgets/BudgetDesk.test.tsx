@@ -92,6 +92,7 @@ describe("BudgetDesk", () => {
       return ok(answer({ written: true, added: [{ row: 1 }] }));
     });
     draw(call);
+    fireEvent.click(await screen.findByRole("button", { name: "Upload a budget sheet" }));
     fireEvent.change(await screen.findByLabelText("Or paste the cells"), { target: { value: "period,label,category,planned\n2026-11,Seeds,materials,40" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview the upload" }));
     expect(await screen.findByText("Adds Seeds: $40.00, 2026-11")).toBeInTheDocument();
@@ -112,6 +113,7 @@ describe("BudgetDesk", () => {
       return ok(answer({ refused: [{ row: 1, cell: "planned", reason: "planned", message: "Write the planned amount as a number." }] }));
     });
     draw(call);
+    fireEvent.click(await screen.findByRole("button", { name: "Upload a budget sheet" }));
     const box = await screen.findByLabelText("Or paste the cells");
     fireEvent.change(box, { target: { value: "period,planned\n2026-11,5" } });
     fireEvent.click(screen.getByRole("button", { name: "Preview the upload" }));
@@ -130,6 +132,7 @@ describe("BudgetDesk", () => {
       return { ok: false, status: 409, data: { error: "The village holds the budget power, so a change to the budget goes to a vote. Suggest the change.", code: "village_holds_it" } };
     });
     draw(call);
+    fireEvent.click(await screen.findByRole("button", { name: "Add one line by hand" }));
     fireEvent.change(await screen.findByLabelText("Label", { selector: "#budget-add-label" }), { target: { value: "Tools" } });
     fireEvent.change(screen.getByLabelText("Planned amount", { selector: "#budget-add-planned" }), { target: { value: "5" } });
     fireEvent.click(screen.getByRole("button", { name: "Add the line" }));
@@ -157,6 +160,23 @@ describe("BudgetDesk", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Withdraw Garden crew pay" }));
     expect(await screen.findByText("Withdrawn. It stops counting and stays on the record.")).toBeInTheDocument();
     expect(calls.some((c) => c.path === "/admin/budgets/lines/bl-1/withdraw")).toBe(true);
+  });
+
+  it("on the sheet, starts the upload and the hand line closed behind two edged buttons, and tells the upload in three lines", async () => {
+    const { call } = stub((path) => (path === "/budgets" ? ok(readOf({ mayWrite: true, via: "holder" })) : ok(answer())));
+    draw(call);
+    const upload = await screen.findByRole("button", { name: "Upload a budget sheet" });
+    expect(upload.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByLabelText("Or paste the cells")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add the line" })).toBeNull();
+    fireEvent.click(upload);
+    expect(upload.getAttribute("aria-expanded")).toBe("true");
+    expect(document.querySelectorAll("[data-budget-upload] ul li")).toHaveLength(3);
+    // The parts' headings sit under the page's section heading.
+    expect(screen.getByRole("heading", { name: "Upload a budget sheet" }).tagName).toBe("H3");
+    expect(screen.getByRole("heading", { name: "The lines" }).tagName).toBe("H3");
+    // Every field on the sheet is a 44px target, the file input with them.
+    expect(SHEET_LOOK.field).toContain("min-h-11");
   });
 
   it("says plainly when the server cannot be reached during a save", async () => {

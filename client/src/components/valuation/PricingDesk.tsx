@@ -24,6 +24,8 @@ import { REASON_CODES } from "@shared/valuationSetting";
 import { effortGuess } from "@/lib/questEffortGuess";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
 import NoSignBandNote from "./NoSignBandNote";
+import { PRICING_ADMIN, type PricingDeskLook } from "@/components/treasury/deskLooks";
+import { useShareNames } from "@/components/ContributionWord";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 
@@ -59,11 +61,6 @@ interface RowState {
   busy: boolean;
 }
 
-const input = "w-12 border border-border rounded-md px-1.5 py-1.5 text-sm bg-card text-center";
-const btn = "rounded-lg px-3 py-2 text-sm font-semibold min-h-[40px]";
-const primary = `${btn} bg-teal-deep text-white hover:bg-teal-deep-dark disabled:opacity-50`;
-const ghost = `${btn} border border-border text-teal-deep bg-card hover:bg-muted`;
-const label = "block text-[11px] font-bold uppercase tracking-wide text-muted-foreground md:hidden";
 
 const toMinor = (text: string, currency: string): number | null => {
   const n = Number(String(text).replace(/[^0-9.]/g, ""));
@@ -114,8 +111,20 @@ const workOf = (r: RowState): WorkInputs => ({
   complexity: r.complexity,
 });
 
-export default function PricingDesk({ call }: { call: Call }) {
+export default function PricingDesk({ call, bare = false, look = PRICING_ADMIN }: {
+  call: Call;
+  /** Admin's light look by default; Governance's Treasury passes the sheet's (components/treasury/deskLooks.ts). */
+  look?: PricingDeskLook;
+  /** Drawn inside a page section that carries its own heading and lede (Governance's Treasury): no h1, no width cap. */
+  bare?: boolean;
+}) {
   const { t } = useLingui();
+  // The village's own word for its contribution token, never the registry's (the lead, 19 Nov 2026).
+  const equity = useShareNames().equity;
+  const input = look.hourInput;
+  const primary = look.rowAct;
+  const ghost = look.secondary;
+  const label = look.cellLabel;
   const [read, setRead] = useState<DeskRead | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [rows, setRows] = useState<Record<string, RowState>>({});
@@ -203,33 +212,33 @@ export default function PricingDesk({ call }: { call: Call }) {
   };
 
   // The page keeps its one heading while it opens and when it refuses (QA P1-16).
-  const heading = <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>;
+  const heading = bare ? null : <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>;
+  const frame = bare ? "" : "max-w-6xl mx-auto";
   if (failed || !read) {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className={frame}>
         {heading}
-        <p className="mt-2 text-sm text-muted-foreground">{failed ?? <Trans context="pricing desk">Opening the pricing desk…</Trans>}</p>
+        <p className={`${bare ? "" : "mt-2 "}text-sm text-muted-foreground`}>{failed ?? <Trans context="pricing desk">Opening the pricing desk…</Trans>}</p>
       </div>
     );
   }
 
-  const step = (done: boolean, now: boolean) =>
-    `rounded-xl border p-3 ${done ? "border-sage/30 bg-sage-light" : now ? "border-teal-deep ring-2 ring-muted bg-card" : "border-border bg-card"}`;
+  const step = (done: boolean, now: boolean) => (done ? look.stepDone : now ? look.stepNow : look.stepIdle);
   const hoursLeft = counts.hours;
   const eeNow = !read.eeMeaningWritten;
   const modelNow = !eeNow && !read.modelAdopted;
   const hoursNow = !eeNow && !modelNow && hoursLeft > 0;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className={frame}>
       {heading}
-      <p className="text-muted-foreground mb-4"><Trans context="pricing desk">Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer.</Trans></p>
-      <div className="mb-3"><PayDoorNote door={read.payDoor} /></div>
+      {bare ? null : <p className="text-muted-foreground mb-4"><Trans context="pricing desk">Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer.</Trans></p>}
+      <div className="mb-3"><PayDoorNote door={read.payDoor} {...(look.doorNote ? { className: look.doorNote } : {})} /></div>
 
       <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         <li className={step(read.eeMeaningWritten, eeNow)}>
-          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}<Trans context="pricing desk">Earned Equity meaning</Trans></b>
-          <span className="text-sm text-muted-foreground">{read.eeMeaningWritten ? t({ message: `Written`, context: "pricing desk" }) : <a className="underline font-semibold" href="/admin?tab=tokens"><Trans context="pricing desk">Write what it means first</Trans></a>}</span>
+          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}{t({ message: `What ${equity} means`, context: "pricing desk, the first step on the Treasurer's path" })}</b>
+          <span className="text-sm text-muted-foreground">{read.eeMeaningWritten ? t({ message: `Written`, context: "pricing desk" }) : <a className={look.link} href="/admin?tab=tokens"><Trans context="pricing desk">Write what it means first</Trans></a>}</span>
         </li>
         <li className={step(read.modelAdopted, modelNow)}>
           <b className="block text-sm text-foreground">{read.modelAdopted ? "✓ " : "2 "}<Trans context="pricing desk">Pay settings adopted</Trans></b>
@@ -246,27 +255,30 @@ export default function PricingDesk({ call }: { call: Call }) {
       </ol>
 
       {!read.cashBudgetLeft && (
-        <p className="rounded-xl bg-aqua-light text-foreground px-3 py-2 text-sm mb-3">
+        <p className={`${look.info} mb-3`}>
           <Trans context="pricing desk">No cash budget this moon, so every price is paid in Credits and Earned Equity, with no cash.</Trans>
         </p>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2 my-3">
         <div className="flex flex-wrap gap-2 text-sm font-semibold">
-          <span className="rounded-full px-3 py-1 bg-sage-light text-sage">{t({ message: `${counts.ready} inside the band`, context: "pricing desk" })}</span>
-          <span className="rounded-full px-3 py-1 bg-amber-light text-amber-ink">{t({ message: `${counts.hours} need your hours`, context: "pricing desk" })}</span>
-          <span className="rounded-full px-3 py-1 bg-coral/10 text-coral">{t({ message: `${counts.flagged} outside the band`, context: "pricing desk" })}</span>
-          <span className="rounded-full px-3 py-1 bg-muted text-muted-foreground">{t({ message: `${counts.set} set`, context: "pricing desk" })}</span>
-          {counts.waiting > 0 && <span className="rounded-full px-3 py-1 bg-muted text-muted-foreground">{t({ message: `${counts.waiting} waiting for a signer`, context: "pricing desk" })}</span>}
+          <span className={look.chipReady}>{t({ message: `${counts.ready} inside the band`, context: "pricing desk" })}</span>
+          <span className={look.chipHours}>{t({ message: `${counts.hours} need your hours`, context: "pricing desk" })}</span>
+          <span className={look.chipFlagged}>{t({ message: `${counts.flagged} outside the band`, context: "pricing desk" })}</span>
+          <span className={look.chipQuiet}>{t({ message: `${counts.set} set`, context: "pricing desk" })}</span>
+          {counts.waiting > 0 && <span className={look.chipQuiet}>{t({ message: `${counts.waiting} waiting for a signer`, context: "pricing desk" })}</span>}
         </div>
-        <button className={`${primary} w-full md:w-auto`} disabled={!read.modelAdopted || bulkBusy || counts.ready === 0} onClick={() => void useAllInBand()}>
-          {t({ message: `Use the suggestion on all ${counts.ready} inside the band`, context: "pricing desk" })}
-        </button>
+        {/* With nothing inside the band the sheet draws no act at all, never "all 0" (fold QA round 2). */}
+        {look.hideEmptyBulk && counts.ready === 0 ? null : (
+          <button className={`${look.bulk} w-full md:w-auto`} disabled={!read.modelAdopted || bulkBusy || counts.ready === 0} onClick={() => void useAllInBand()}>
+            {t({ message: `Use the suggestion on all ${counts.ready} inside the band`, context: "pricing desk" })}
+          </button>
+        )}
       </div>
 
       <NoSignBandNote model={read.model} className="text-sm text-muted-foreground mb-3" />
 
-      <div className="rounded-xl border border-border bg-card">
+      <div className={look.table}>
         <div className="hidden md:grid grid-cols-[1.6fr_1fr_1.2fr_1.5fr_1fr_1.3fr] gap-3 px-4 pt-2 pb-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
           <div><Trans context="pricing desk">Quest</Trans></div><div><Trans context="pricing desk">Pays today</Trans></div><div><Trans context="pricing desk">Suggestion</Trans></div><div><Trans context="pricing desk">Estimated hours</Trans></div><div><Trans context="pricing desk">Past prices</Trans></div><div />
         </div>
@@ -279,14 +291,14 @@ export default function PricingDesk({ call }: { call: Call }) {
             : (q.pay?.lines ?? []).map((l) => `${l.amount} ${l.name}`).join(" + ") || t({ message: `Nothing yet`, context: "pricing desk" });
           const ownMinor = r.own === null ? null : toMinor(r.own, currency);
           return (
-            <div key={q.id} className={`grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1.1fr_1.6fr_0.8fr_1.2fr] gap-x-3 gap-y-2 items-center px-3 md:px-4 py-3 border-t border-border ${p.status === "flagged" ? "bg-coral/5" : ""}`}>
+            <div key={q.id} className={`grid grid-cols-2 md:grid-cols-[1.5fr_1fr_1.1fr_1.6fr_0.8fr_1.2fr] gap-x-3 gap-y-2 items-center px-3 md:px-4 py-3 border-t border-border ${p.status === "flagged" ? look.flaggedRow : ""}`}>
               <div className="col-span-2 md:col-span-1">
                 <b className="block text-foreground">{q.title}</b>
                 <span className="flex flex-col items-start text-sm text-muted-foreground">
-                  <select aria-label={t({ message: `Kind of work for ${q.title}`, context: "pricing desk" })} className="appearance-none bg-transparent underline decoration-dotted cursor-pointer" value={r.band} onChange={(e) => patch(q.id, { band: e.target.value, confirmed: false })}>
+                  <select aria-label={t({ message: `Kind of work for ${q.title}`, context: "pricing desk" })} className={look.inlineSelect} value={r.band} onChange={(e) => patch(q.id, { band: e.target.value, confirmed: false })}>
                     {read.model.bands.map((b) => <option key={b.key} value={b.key}>{b.label}</option>)}
                   </select>
-                  <select aria-label={t({ message: `Conditions for ${q.title}`, context: "pricing desk" })} className="appearance-none bg-transparent underline decoration-dotted cursor-pointer" value={r.complexity} onChange={(e) => patch(q.id, { complexity: e.target.value, confirmed: false })}>
+                  <select aria-label={t({ message: `Conditions for ${q.title}`, context: "pricing desk" })} className={look.inlineSelect} value={r.complexity} onChange={(e) => patch(q.id, { complexity: e.target.value, confirmed: false })}>
                     {read.model.complexity.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
                   </select>
                 </span>
@@ -303,9 +315,9 @@ export default function PricingDesk({ call }: { call: Call }) {
                   <span className="text-sm text-muted-foreground">{p.problem ?? t({ message: `Give the hours`, context: "pricing desk" })}</span>
                 )}
               </div>
-              <div className="flex flex-nowrap items-center gap-1.5 text-sm col-span-2 md:col-span-1">
+              <div className={look.hoursRow}>
                 <span className={`${label} mr-1`}><Trans context="pricing desk">Hours</Trans></span>
-                <input aria-label={t({ message: `Estimated hours for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={`${input} ${r.confirmed ? "" : "border-notice bg-amber-light"}`} value={r.hours} onChange={(e) => patch(q.id, { hours: e.target.value, confirmed: false })} />
+                <input aria-label={t({ message: `Estimated hours for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={`${input} ${r.confirmed ? "" : look.hoursPending}`} value={r.hours} onChange={(e) => patch(q.id, { hours: e.target.value, confirmed: false })} />
                 <span className="text-muted-foreground"><Trans context="pricing desk">from</Trans></span>
                 <input aria-label={t({ message: `As little as, for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={input} value={r.low} onChange={(e) => patch(q.id, { low: e.target.value, confirmed: false })} />
                 <span className="text-muted-foreground"><Trans context="pricing desk">to</Trans></span>
@@ -334,10 +346,10 @@ export default function PricingDesk({ call }: { call: Call }) {
                   ) : (
                     <div className="flex-1 flex flex-col gap-1.5">
                       <span className={label}><Trans context="pricing desk">Your figure</Trans></span>
-                      <input aria-label={t({ message: `Your figure for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={`w-full border rounded-md px-2 py-2 text-sm ${p.status === "flagged" ? "border-coral/40 bg-coral/10 text-coral font-semibold" : "border-border bg-card"}`} value={r.own} onChange={(e) => patch(q.id, { own: e.target.value })} />
+                      <input aria-label={t({ message: `Your figure for ${q.title}`, context: "pricing desk" })} inputMode="decimal" className={`${look.ownField} ${p.status === "flagged" ? look.ownFieldFlagged : look.ownFieldOk}`} value={r.own} onChange={(e) => patch(q.id, { own: e.target.value })} />
                       <div className="flex gap-1.5">
                         <button
-                          className={`${p.status === "flagged" ? `${btn} bg-coral text-white disabled:opacity-50` : primary} flex-1`}
+                          className={`${p.status === "flagged" ? look.danger : primary} flex-1`}
                           disabled={r.busy || ownMinor === null || (p.status === "flagged" && !r.reason)}
                           onClick={() => void setPrice(q, ownMinor!, p.status === "flagged" ? r.reason : undefined).then(async (ok) => { if (ok) await load(); })}
                         >
@@ -350,22 +362,22 @@ export default function PricingDesk({ call }: { call: Call }) {
                 )}
               </div>
               {p.status === "flagged" && p.s && ownMinor !== null && (
-                <div className="col-span-2 md:col-span-6 rounded-lg bg-coral/10 text-coral px-3 py-2 text-sm flex flex-wrap items-center gap-2">
+                <div className={`col-span-2 md:col-span-6 ${look.flaggedBox} px-3 py-2 text-sm flex flex-wrap items-center gap-2`}>
                   <span>
                     {ownMinor > p.s.band.highMinor
                       ? t({ message: `${money(ownMinor)} is above the band (${money(p.s.band.lowMinor)} to ${money(p.s.band.highMinor)}). Pick a reason, then a second Treasurer or a steward signs it.`, context: "pricing desk" })
                       : t({ message: `${money(ownMinor)} is below the band (${money(p.s.band.lowMinor)} to ${money(p.s.band.highMinor)}). Pick a reason, then a second Treasurer or a steward signs it.`, context: "pricing desk" })}
                   </span>
-                  <select aria-label={t({ message: `Reason for ${q.title}`, context: "pricing desk" })} className="border border-coral/30 rounded-md px-2 py-1 bg-card text-sm" value={r.reason} onChange={(e) => patch(q.id, { reason: e.target.value })}>
+                  <select aria-label={t({ message: `Reason for ${q.title}`, context: "pricing desk" })} className={look.reasonSelect} value={r.reason} onChange={(e) => patch(q.id, { reason: e.target.value })}>
                     <option value="">{t({ message: `Pick a reason`, context: "pricing desk" })}</option>
                     {REASON_CODES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               )}
               {q.openClaims > 0 && (
-                <div className="col-span-2 md:col-span-6 rounded-lg bg-aqua-light text-foreground px-3 py-2 text-sm">
+                <div className={`col-span-2 md:col-span-6 ${look.infoRow} px-3 py-2 text-sm`}>
                   {q.openClaims === 1 ? t({ message: `1 open claim keeps the price it was taken at.`, context: "pricing desk" }) : t({ message: `${q.openClaims} open claims keep the price they were taken at.`, context: "pricing desk" })}{" "}
-                  <a className="underline font-semibold" href={`/quests/${encodeURIComponent(q.id)}#take-current-price`}><Trans context="pricing desk">Its worker takes the new price here</Trans></a>
+                  <a className={look.link} href={`/quests/${encodeURIComponent(q.id)}#take-current-price`}><Trans context="pricing desk">Its worker takes the new price here</Trans></a>
                 </div>
               )}
             </div>

@@ -48,6 +48,8 @@ export function sentenceOf(data: any, fallback: string): string {
 
 export interface BudgetDoorView {
   mayWrite: boolean;
+  /** Where this reader suggests a change instead (budgets spec R22): `{ path, control }`, or null. */
+  suggest?: { path: string; control: string } | null;
   via?: string;
   code?: string;
   message?: string;

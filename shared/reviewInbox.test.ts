@@ -236,7 +236,7 @@ describe("every Open door leads somewhere", () => {
     const src = readFileSync("shared/reviewInbox.ts", "utf8");
     const doors = [...src.matchAll(/decideAt: (?:inApp\([^)]*\) \?\? )?[`"]([^`"]+)[`"]/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, "x"));
     expect(doors.length).toBeGreaterThan(20);
-    for (const d of doors) expect(routes.some((r) => r.test(d.split("?")[0])), d).toBe(true);
+    for (const d of doors) expect(routes.some((r) => r.test(d.split(/[?#]/)[0])), d).toBe(true);
     const handed = fromWaitingOnMe({ applications: [
       { id: "a", href: "https://elsewhere.test/x" }, { id: "b", href: "//elsewhere.test" }, { id: "c", href: "/role-applications/c" },
     ] });

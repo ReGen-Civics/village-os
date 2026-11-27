@@ -1,0 +1,289 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the one Treasury under Governance, the lede, 27 Nov 2026
+msgctxt "governance treasury: lede"
+msgid "The village's money in one place: what it can pay this moon, and the desks that pay it."
+msgstr "El dinero de la aldea en un solo lugar: lo que puede pagar esta luna, y los escritorios que lo pagan."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Cash budget"
+msgstr "Presupuesto en efectivo"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "What the village plans to pay this moon, and what is left."
+msgstr "Lo que la aldea planea pagar esta luna, y lo que queda."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "End of Moon pay"
+msgstr "Pago de Fin de Luna"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Confirm what was agreed against what was delivered."
+msgstr "Confirme lo acordado frente a lo entregado."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Cash to pay out"
+msgstr "Efectivo por pagar"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Send what is owed by bank transfer, then record it here."
+msgstr "Envíe lo que se debe por transferencia bancaria y luego regístrelo aquí."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Quest prices"
+msgstr "Precios de las misiones"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Price each open quest beside the suggested figure."
+msgstr "Ponga precio a cada misión abierta junto a la cifra sugerida."
+
+# needs-native-review: the Treasury, a desk's name, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Mint tokens"
+msgstr "Emitir tokens"
+
+# needs-native-review: the Treasury, a desk's line, 27 Nov 2026
+msgctxt "treasury: a desk"
+msgid "Pay a request or give a bonus in the village's tokens."
+msgstr "Pague una solicitud o dé un bono en los tokens de la aldea."
+
+# needs-native-review: the Treasury, the pricing desk's refusal, 27 Nov 2026
+msgctxt "treasury: prices refused"
+msgid "The pricing desk is for whoever holds the pay-setting power, such as the Treasurer."
+msgstr "El escritorio de precios es para quien tiene el poder de fijar pagos, como el Tesorero."
+
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+msgctxt "treasury: signed out"
+msgid "The treasury"
+msgstr "La tesorería"
+
+# needs-native-review: the Treasury, signed out, 27 Nov 2026
+msgctxt "treasury: signed out"
+msgid "Sign in to read the village's cash budget, and any treasury desk the village has given you."
+msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea y cualquier escritorio de tesorería que la aldea le haya dado."
+
+# needs-native-review: the Treasury, the first screen's eyebrow, 27 Nov 2026
+msgctxt "treasury: hero eyebrow"
+msgid "The treasury, this moon"
+msgstr "La tesorería, esta luna"
+
+# needs-native-review: the Treasury, the first screen's heading for a power holder, 27 Nov 2026
+msgctxt "treasury: hero, a holder of a treasury power"
+msgid "Your treasury desks"
+msgstr "Sus escritorios de tesorería"
+
+# needs-native-review: the Treasury, the first screen's heading for a member, 27 Nov 2026
+msgctxt "treasury: hero, a member"
+msgid "The village's cash, in the open"
+msgstr "El efectivo de la aldea, a la vista"
+
+# needs-native-review: the Treasury, the desk board read aloud, 27 Nov 2026
+msgctxt "treasury: the desk board, read aloud"
+msgid "Your desks"
+msgstr "Sus escritorios"
+
+# needs-native-review: the Treasury, a holder of one desk, 27 Nov 2026
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the power behind this desk by its vote."
+msgstr "La aldea le dio, por su voto, el poder detrás de este escritorio."
+
+# needs-native-review: the Treasury, a holder of several desks, 27 Nov 2026
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the powers behind these {0} desks by its vote."
+msgstr "La aldea le dio, por su voto, los poderes detrás de estos {0} escritorios."
+
+# needs-native-review: the Treasury, a member's one act, 27 Nov 2026
+msgctxt "treasury: hero, a member's one act"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
+
+# needs-native-review: the Treasury, a member's link to the budget lines, 27 Nov 2026
+msgctxt "treasury: hero, a member's link to the lines"
+msgid "Read the budget, line by line"
+msgstr "Lea el presupuesto, línea por línea"
+
+# needs-native-review: the Treasury, the quiet link to the budget under a holder's desks, 27 Nov 2026
+msgctxt "treasury: the quiet link to the budget, under a holder's desks"
+msgid "The cash budget, line by line"
+msgstr "El presupuesto en efectivo, línea por línea"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The other desks"
+msgstr "Los otros escritorios"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The treasurer's desks"
+msgstr "Los escritorios del tesorero"
+
+# needs-native-review: the Treasury, the End of Moon review's settings folded, 27 Nov 2026
+msgctxt "treasury: the End of Moon review's settings, folded"
+msgid "End of Moon review settings"
+msgstr "Ajustes de la revisión de Fin de Luna"
+
+# needs-native-review: a member's budget suggestion, sent, 27 Nov 2026
+msgctxt "budget suggestion sent"
+msgid "Sent. It goes to whoever holds the budget power, or to a village vote when nobody does."
+msgstr "Enviada. Va a quien tiene el poder del presupuesto, o a una votación de la aldea cuando nadie lo tiene."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+msgctxt "budget suggestion error"
+msgid "The suggestion was not sent. Try again in a moment."
+msgstr "La sugerencia no se envió. Inténtelo de nuevo en un momento."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+msgctxt "budget suggestion error"
+msgid "The server could not be reached, so nothing was sent. Check the connection and try again."
+msgstr "No se pudo contactar al servidor, así que no se envió nada. Revise la conexión e inténtelo de nuevo."
+
+# needs-native-review: a member's budget suggestion, the form's heading, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
+
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Name one line and what it should pay this moon."
+msgstr "Nombre una línea y lo que debería pagar esta luna."
+
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Whoever holds the budget power decides, or the village votes."
+msgstr "Decide quien tiene el poder del presupuesto, o vota la aldea."
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "What the line is for"
+msgstr "Para qué es la línea"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Kind"
+msgstr "Tipo"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Amount, in {0}"
+msgstr "Monto, en {0}"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Why"
+msgstr "Por qué"
+
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+msgctxt "budget suggestion button"
+msgid "Send the suggestion"
+msgstr "Enviar la sugerencia"
+
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+msgctxt "budget suggestion button"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: the hand mint's rules, the cap, 27 Nov 2026
+msgctxt "hand-mint rules, the cap"
+msgid "At most {capWords} a moon"
+msgstr "Como máximo {capWords} por luna"
+
+# needs-native-review: the hand mint's rules, the second signer, 27 Nov 2026
+msgctxt "hand-mint rules, the second signer"
+msgid "Over {cosignWords} waits for a second signer"
+msgstr "Más de {cosignWords} espera a una segunda firma"
+
+# needs-native-review: the hand mint's rules, self, 27 Nov 2026
+msgctxt "hand-mint rules, self"
+msgid "You can't mint to yourself"
+msgstr "No puede emitir para usted mismo"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Reason"
+msgstr "Motivo"
+
+# needs-native-review: the Treasury, the budget section's line, 27 Nov 2026
+msgctxt "treasury: budget"
+msgid "Every member reads it. Whoever holds the budget power changes it."
+msgstr "Cada miembro lo lee. Quien tiene el poder del presupuesto lo cambia."
+
+# needs-native-review: the Treasury, the purses read aloud, 27 Nov 2026
+msgctxt "treasury: the purses, read aloud"
+msgid "This moon's cash"
+msgstr "El efectivo de esta luna"
+
+# needs-native-review: the Treasury, the mint form's failed read, 27 Nov 2026
+msgctxt "treasury: mint"
+msgid "The mint form did not load. Try again in a moment."
+msgstr "El formulario de emisión no se cargó. Inténtelo de nuevo en un momento."
+
+# needs-native-review: Admin's pricing desk, the door for a Treasurer who is not an admin, 27 Nov 2026
+msgctxt "pricing desk"
+msgid "A Treasurer who is not an admin opens this desk under Governance, Treasury"
+msgstr "Un Tesorero que no es administrador abre este escritorio en Gobernanza, Tesorería"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: who keeps the books, for a reader without these powers"
+msgid "Each opens for whoever holds its power, which the village gives by its vote."
+msgstr "Cada uno se abre para quien tiene su poder, que la aldea da por su voto."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "Save the sheet as CSV, or paste its cells below."
+msgstr "Guarde la hoja como CSV, o pegue sus celdas abajo."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like."
+msgstr "La primera fila nombra las columnas: periodo, etiqueta, categoría y planificado, y luego círculo, rol, moneda y nota si lo desea."
+
+# needs-native-review: the budget upload, a line of help, 27 Nov 2026
+msgctxt "budget upload"
+msgid "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
+msgstr "Un periodo es una luna, un mes como 2026-11, una temporada o dos fechas. Usted lee lo que cambia antes de que se guarde nada."
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Token"
+msgstr "Token"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Member"
+msgstr "Miembro"
+
+# needs-native-review: the pricing desk, the first step on the Treasurer's path, 27 Nov 2026
+msgctxt "pricing desk, the first step on the Treasurer's path"
+msgid "What {equity} means"
+msgstr "Qué significa {equity}"
+
+# needs-native-review: the hand mint's rules, no second signer set, 27 Nov 2026
+msgctxt "hand-mint rules, the second signer"
+msgid "Any amount goes through on your signature alone"
+msgstr "Cualquier monto se aprueba solo con su firma"
+
+# needs-native-review: the hand mint's form, a picker's placeholder, 27 Nov 2026
+msgctxt "hand-mint form, a picker's placeholder"
+msgid "Choose…"
+msgstr "Elija…"
