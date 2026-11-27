@@ -53,10 +53,13 @@ export function useFindAnythingReady(): boolean {
 
 // ── The menu, opened from the search (the same pattern, the other way round) ─────────────────────────────────
 //
-// When nothing matches, the search offers the menu. The menu belongs to the shell (the nav lane's Layout and
-// MoreSheet), so the search only asks: it dispatches MENU_OPEN_EVENT, and draws its "Open the menu" button only
-// while the shell has said, with `setVillageMenuReady(true)`, that it is listening. A shell that never says so
-// gets no button, so the search never promises a door that does not open.
+// When nothing matches, the search offers the menu. The menu belongs to the shell (Layout, the nav lane's #1881),
+// which cannot import this file, so the two meet on window alone. The shell's contract:
+//   - it listens for MENU_OPEN_EVENT;
+//   - while mounted it sets `window.__openMenuReady = true` and fires MENU_READY_EVENT with `detail: true`, and on
+//     unmount clears the flag and fires it with `detail: false`.
+// The search dispatches MENU_OPEN_EVENT and draws its "Open the menu" button only while that flag stands, so it
+// never promises a door that does not open.
 
 /** Dispatched on `window` to open the site's menu. */
 export const MENU_OPEN_EVENT = "village:open-menu";
@@ -65,7 +68,7 @@ export const MENU_READY_EVENT = "village:open-menu-ready";
 
 declare global {
   interface Window {
-    __villageMenuReady?: boolean;
+    __openMenuReady?: boolean;
   }
 }
 
@@ -75,16 +78,8 @@ export function openVillageMenu(): void {
   window.dispatchEvent(new Event(MENU_OPEN_EVENT));
 }
 
-/** For the shell: say the menu is listening for MENU_OPEN_EVENT (true on mount), or no longer (false on unmount). */
-export function setVillageMenuReady(ready: boolean): void {
-  if (typeof window === "undefined") return;
-  if (ready) window.__villageMenuReady = true;
-  else delete window.__villageMenuReady;
-  window.dispatchEvent(new CustomEvent(MENU_READY_EVENT, { detail: ready }));
-}
-
 function villageMenuReady(): boolean {
-  return typeof window !== "undefined" && window.__villageMenuReady === true;
+  return typeof window !== "undefined" && window.__openMenuReady === true;
 }
 
 function subscribeMenu(onChange: () => void): () => void {
@@ -92,7 +87,7 @@ function subscribeMenu(onChange: () => void): () => void {
   return () => window.removeEventListener(MENU_READY_EVENT, onChange);
 }
 
-/** True while the shell listens for MENU_OPEN_EVENT; the search's "Open the menu" shows only then. */
+/** True while `window.__openMenuReady` stands; the search's "Open the menu" shows only then. */
 export function useVillageMenuReady(): boolean {
   return useSyncExternalStore(subscribeMenu, villageMenuReady, () => false);
 }

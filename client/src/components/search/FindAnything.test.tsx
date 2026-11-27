@@ -9,7 +9,18 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import userEvent from "@testing-library/user-event";
 import { FindAnything, isFindShortcut } from "./FindAnything";
 import { forgetFindIndex } from "./FindAnythingDialog";
-import { FIND_ANYTHING_READY_EVENT, MENU_OPEN_EVENT, openFindAnything, setVillageMenuReady, useFindAnythingReady } from "./findAnythingDoor";
+import { FIND_ANYTHING_READY_EVENT, MENU_OPEN_EVENT, openFindAnything, useFindAnythingReady } from "./findAnythingDoor";
+
+/**
+ * The nav lane's Layout exactly as #1881 (840ed132) does it, nothing imported: on mount the window flag and a plain
+ * "village:open-menu-ready" event; on unmount the flag deleted, with no event. The search must follow both.
+ */
+function shellMenu(ready: boolean): void {
+  if (ready) {
+    (window as any).__openMenuReady = true;
+    window.dispatchEvent(new Event("village:open-menu-ready"));
+  } else delete (window as any).__openMenuReady;
+}
 import type { FindIndex } from "@shared/findAnything";
 
 let index: FindIndex;
@@ -247,23 +258,30 @@ describe("Find anything", () => {
   it("offers 'Open the menu' when nothing matches, only while the shell listens, and asks the shell to open it", async () => {
     let opened = 0;
     const shell = () => void (opened += 1);
-    window.addEventListener(MENU_OPEN_EVENT, shell);
+    expect(MENU_OPEN_EVENT).toBe("village:open-menu");
+    window.addEventListener("village:open-menu", shell);
     render(<FindAnything />);
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
     let d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
     await within(d).findByRole("option", { name: /Ask Sol/ });
     expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
-    act(() => setVillageMenuReady(true));
+    act(() => shellMenu(true));
+    await within(d).findByRole("button", { name: "Open the menu" });
+    // The shell leaves with no event (as #1881 does): the next draw reads the flag again and the button goes.
+    act(() => shellMenu(false));
+    await userEvent.type(within(d).getByRole("combobox"), "s");
+    expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
+    act(() => shellMenu(true));
     await userEvent.click(await within(d).findByRole("button", { name: "Open the menu" }));
     expect(opened).toBe(1);
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    act(() => setVillageMenuReady(false));
+    act(() => shellMenu(false));
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
     d = await dialog();
     await userEvent.type(within(d).getByRole("combobox"), "plantas");
     await within(d).findByRole("option", { name: /Ask Sol/ });
     expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
-    window.removeEventListener(MENU_OPEN_EVENT, shell);
+    window.removeEventListener("village:open-menu", shell);
   });
 });
