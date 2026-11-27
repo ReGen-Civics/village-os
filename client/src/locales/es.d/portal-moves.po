@@ -1,0 +1,84 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the portal's next moves, My work's door to Quests, 27 Nov 2026
+msgctxt "profile My work: the door to the Quests page, heading"
+msgid "The village's quests"
+msgstr "Las misiones de la aldea"
+
+# needs-native-review: the portal's next moves, My work's door to Quests, 27 Nov 2026
+msgctxt "profile My work: the door to Quests, for a member who holds a role"
+msgid "Your roles carry your work. Quests are how others in the village chip in, and the board is there whenever you want one."
+msgstr "Sus roles llevan su trabajo. Las misiones son la forma en que otras personas de la aldea aportan, y el tablero está ahí cuando quiera una."
+
+# needs-native-review: the portal's next moves, My work's door to Quests, 27 Nov 2026
+msgctxt "profile My work: the door to Quests, for a member with no role"
+msgid "Quests are a way to take part, alone or with others. Find one that fits on the Quests page."
+msgstr "Las misiones son una forma de participar, a solas o con otras personas. Encuentre una que le encaje en la página de Misiones."
+
+# needs-native-review: the portal's next moves, My work's door to Quests, 27 Nov 2026
+msgctxt "profile My work: the door to the village's Quests page"
+msgid "Open Quests"
+msgstr "Abrir Misiones"
+
+# needs-native-review: the portal's next moves, Your quests, 27 Nov 2026
+msgctxt "profile: quests the village consented to, the newest few"
+msgid "Done"
+msgstr "Hechas"
+
+# needs-native-review: the portal's next moves, Your quests, 27 Nov 2026
+msgctxt "profile: a quest the village consented to"
+msgid "Complete. The village consented to it."
+msgstr "Completa. La aldea dio su consentimiento."
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's part of the member's commitment, split"
+msgid "Your part: {0}% of you, {1}% of what you give"
+msgstr "Su parte: {0}% de usted, {1}% de lo que da"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's part of the member's commitment, not split"
+msgid "Shares the {0}% you give with your other roles"
+msgstr "Comparte con sus otros roles el {0}% que usted da"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: the commitment of a member's only role"
+msgid "You give it {0}% of yourself"
+msgstr "Le da el {0}% de usted"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's doors, aria-label"
+msgid "Doors for {0}"
+msgstr "Puertas de {0}"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's door to My moon"
+msgid "This moon"
+msgstr "Esta luna"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's door to the season plan"
+msgid "Season plan"
+msgstr "Plan de temporada"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: a role's door to its place on the Roles page"
+msgid "On the roles page"
+msgstr "En la página de roles"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: the proposing door, eyebrow"
+msgid "Proposing"
+msgstr "Proponer"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: the proposing door, heading"
+msgid "Take on a role"
+msgstr "Asuma un rol"
+
+# needs-native-review: the portal's next moves, My roles one card per role, 27 Nov 2026
+msgctxt "profile My roles: the empty state, what will appear"
+msgid "Each role you take on gets its own card here, with its circle, its term and the moon it works to."
+msgstr "Cada rol que asuma tendrá aquí su propia tarjeta, con su círculo, su plazo y la luna con la que trabaja."

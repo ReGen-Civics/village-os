@@ -34,6 +34,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { Pencil } from "lucide-react";
 import { EDIT_WORDS } from "@shared/playerCardEdit";
 import type { PlayerCardPayload } from "@shared/playerCardPayload";
+import type { RoleOut, TileOut } from "@shared/playerCard";
 import {
   CardEditContext,
   ChangedContext,
@@ -95,6 +96,32 @@ export function UnwrittenLine({ count, onWrite }: { count: number; onWrite: () =
   );
 }
 
+/**
+ * THE PROFILE'S MY ROLES: ONE CARD PER ROLE (the lead, 27 Nov 2026, the portal's next moves: "On My
+ * roles, Your roles and the player card could merge into one card per role." His answer: "yes").
+ *
+ * Given, the card draws its roles first, right under the owner's portrait, each role carrying its tile
+ * (`mark`, beside its title) and `lead` (after its chips and health) in place of the tile strip, and
+ * then the parts that are about the person across their roles. Absent, the card is drawn exactly as
+ * everywhere else.
+ */
+export interface RolesLayout {
+  /** The roles' heading, in place of "Each role in full". */
+  heading: string;
+  /** Beside each role's title: the tile's art. */
+  mark: (tile: TileOut | null) => ReactNode;
+  /** After each role's chips and health: the member's part of their commitment and the doors. */
+  lead: (role: RoleOut) => ReactNode;
+  /** A role the member holds that the card did not draw, as its own short card. */
+  extra?: ReactNode;
+  /** In place of the roles, for a member who holds none. */
+  empty?: ReactNode;
+  /** Right after the roles: how much the member gives across them. */
+  after?: ReactNode;
+  /** The proposing door, before the member's role history. */
+  door?: ReactNode;
+}
+
 /** The card itself, from a payload already read. Exported so tests draw it without a fetch. */
 export function PlayerRoleCardView({
   data,
@@ -102,6 +129,7 @@ export function PlayerRoleCardView({
   className = "",
   mode = "live",
   changed,
+  roles: layout,
 }: {
   data: PlayerCardPayload;
   reload?: () => void;
@@ -109,6 +137,8 @@ export function PlayerRoleCardView({
   mode?: CardViewMode;
   /** A role proposal's changed words by role id, drawn in gold (role proposals PR C). */
   changed?: Readonly<Record<string, ChangedWords>>;
+  /** The profile's My roles layout: one card per role. */
+  roles?: RolesLayout;
 }) {
   // The fixed lines the server sent for a reader in another language; this card's components read them too.
   const { i18n } = useLingui();
@@ -118,11 +148,8 @@ export function PlayerRoleCardView({
   const mayEdit = viewer.isSelf && mode === "live";
   const unwritten = countUnwritten(card);
   const walletHref = mode === "live" ? links.wallet : undefined;
-  const health = new Map(
-    card.tiles.items.kind === "shown"
-      ? card.tiles.items.value.map(t => [t.roleId, t.health])
-      : []
-  );
+  const noRoles = !!layout && !card.roles.length && !layout.extra;
+  const tiles = new Map(card.tiles.items.kind === "shown" ? card.tiles.items.value.map(t => [t.roleId, t]) : []);
   const actions =
     mayEdit || walletHref ? (
       <>
@@ -158,21 +185,17 @@ export function PlayerRoleCardView({
         >
           <div className="pc-wrap">
             <CardHero header={card.header} actions={actions} />
-            <RoleTiles tiles={card.tiles} />
+            {layout ? null : <RoleTiles tiles={card.tiles} />}
             {mayEdit && !editing ? <UnwrittenLine count={unwritten} onWrite={() => setEditing(true)} /> : null}
 
-            <AcrossSection
-              across={card.across}
-              sheets={sheets}
-              timeZone={timeZone}
-            />
+            {layout ? null : <AcrossSection across={card.across} sheets={sheets} timeZone={timeZone} />}
 
-            {card.roles.length ? (
+            {card.roles.length || layout?.extra ? (
               <section aria-labelledby="pc-roles-h" className="pc-roles">
                 <div className="pc-headgroup">
-                  <Eyebrow gold>{W.myNRoles(card.roles.length)}</Eyebrow>
+                  {card.roles.length ? <Eyebrow gold>{W.myNRoles(card.roles.length)}</Eyebrow> : null}
                   <h3 id="pc-roles-h" className="pc-h2">
-                    {W.eachInFull(card.roles.length)}
+                    {layout ? layout.heading : W.eachInFull(card.roles.length)}
                   </h3>
                   {/* 0274: once, above the roles, what an underlined heading does. */}
                   {card.termsKey ? (
@@ -184,15 +207,28 @@ export function PlayerRoleCardView({
                     key={r.id}
                     value={changed?.[r.id] ?? null}
                   >
-                    <RoleInFull role={r} health={health.get(r.id) ?? null} />
+                    <RoleInFull
+                      role={r}
+                      health={tiles.get(r.id)?.health ?? null}
+                      mark={layout ? layout.mark(tiles.get(r.id) ?? null) : null}
+                      lead={layout ? layout.lead(r) : null}
+                    />
                   </ChangedContext.Provider>
                 ))}
+                {layout?.extra}
               </section>
-            ) : null}
+            ) : (
+              layout?.empty
+            )}
+            {layout?.after}
+            {/* With no role the door is the next act, so it follows the empty roles, and nothing is drawn across none. */}
+            {noRoles ? layout?.door : null}
 
+            {layout && !noRoles ? <AcrossSection across={card.across} sheets={sheets} timeZone={timeZone} /> : null}
             <MoonTimeline timeline={card.timeline} />
             <AccomplishedSection accomplished={card.accomplished} />
             <HowIHold howIHold={card.howIHold} />
+            {noRoles ? null : layout?.door}
             <MyApplications applications={card.applications} />
             <Agreements
               agreements={card.agreements}

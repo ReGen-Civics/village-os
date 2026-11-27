@@ -4,14 +4,17 @@
  *
  *   doing       every quest in the member's hands or turned in, from the same
  *               `/api/game/me` claims the rest of the profile reads;
+ *   done        the last few the village consented to, newest first, which the
+ *               short Quests card used to carry before it left My work;
  *   suited      open quests suited to the roles they hold, from
  *               `/api/game/quests/suited`: a quest whose role gate they hold,
  *               or whose circle one of their seats sits in. Nothing else links
  *               a quest to a role, so a member whose roles no quest names sees
  *               that list left out, never a guess.
  *
- * The profile's short Quests card (GameDashboard) stays as it was; this is the
- * full list it points into.
+ * The profile's short Quests card (GameDashboard) left My work on the lead's
+ * "yes" to the portal's next moves (27 Nov 2026): it repeated this list and the
+ * village's board, and a door to Quests (QuestsDoor.tsx) stands in its place.
  */
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -25,6 +28,9 @@ interface SuitedQuest {
   circle: string | null;
   why: "role" | "circle";
 }
+
+/** How many finished quests the list keeps: the newest few, the record of the rest lives on the treasury tab. */
+const DONE_SHOWN = 3;
 
 const ROW = "flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -41,7 +47,11 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
   }, []);
 
   const doing = claims.filter((c) => c.status === "claimed" || c.status === "submitted");
-  if (doing.length === 0 && !suited?.length) return null;
+  const done = claims
+    .filter((c) => c.status === "consented")
+    .sort((a, b) => String(b.resolvedAt ?? b.claimedAt ?? "").localeCompare(String(a.resolvedAt ?? a.claimedAt ?? "")))
+    .slice(0, DONE_SHOWN);
+  if (doing.length === 0 && done.length === 0 && !suited?.length) return null;
 
   return (
     <section id="your-quests" className="mb-6 scroll-mt-28 rounded-2xl border border-border bg-card p-5 sm:p-6" aria-labelledby="your-quests-heading">
@@ -65,6 +75,28 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
                           ? t({ message: "Taken back to change. Turn it in again when ready.", context: "profile: a quest taken back after turning it in" })
                           : t({ message: "In your hands. Turn it in when it is done.", context: "profile: a quest the member holds" })
                         : t({ message: "Turned in. Waiting on a steward.", context: "profile: a quest the member turned in" })}
+                    </span>
+                  </span>
+                  <ArrowRight className="size-4 shrink-0 text-notice" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {done.length > 0 && (
+        <>
+          <h3 className="mb-2 mt-5 text-sm font-semibold text-muted-foreground">
+            {t({ message: "Done", context: "profile: quests the village consented to, the newest few" })}
+          </h3>
+          <ul className="m-0 list-none space-y-2 p-0">
+            {done.map((c) => (
+              <li key={c.id}>
+                <Link href={`/quests/${encodeURIComponent(c.questId)}`} className={ROW} data-your-quest={c.status}>
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{c.questTitle}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {t({ message: "Complete. The village consented to it.", context: "profile: a quest the village consented to" })}
                     </span>
                   </span>
                   <ArrowRight className="size-4 shrink-0 text-notice" aria-hidden="true" />
