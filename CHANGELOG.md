@@ -40,6 +40,42 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.94 (2026-11-27)
+
+### What changed for your village
+
+- **A Treasury in Govern.** The cash budget lives in Governance as its own Treasury tab, at /governance/treasury. Every member reads it; whoever holds the budget power changes it and uploads the sheet there. /budget opens the new place.
+- **A role card names the drafts waiting on it.** Whoever may edit a role sees "A change to this role is waiting:" with a link to each open draft, so nobody edits a card live while a draft of it waits.
+- **A new role gets its own id.** When a proposed role asks for an id a retired role still holds, it takes the next free one, and the rest of the draft follows it.
+- **The review page lists a draft once**, and a link carrying a code or draft id (`?find=`) opens the review page with the search made.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.93 still works.
+
+---
+
+## 1.3.93 (2026-11-27)
+
+### What changed for your village
+
+- **A weathered map for light mode.** The light mode paper setting's old-map choice, now called "Weathered map" in Admin, draws aged, mottled paper with no grid. Cards are worn pages with seven different torn edges, five stain places and three foxing spots, so neighbours never look alike, and a page looks the same on every visit. A small compass mark sits under each page's main heading. Dark mode and Admin are unchanged, and high contrast and print get the plain page.
+- **A lighter build.** The member pages ship in eight shared files instead of many small ones, so the whole build takes 100 KB less room and a first visit loads a little less.
+
+### What you must do
+
+Nothing. To use the weathered map, choose it under Admin, Game Mechanics, "Light mode's paper".
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.92 still works.
+
+---
+
 ## 1.3.92 (2026-11-27)
 
 ### What changed for your village

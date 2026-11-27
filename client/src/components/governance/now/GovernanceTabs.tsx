@@ -1,7 +1,8 @@
 /**
- * THE GOVERNANCE PAGE'S VIEWS (Governance brief, section F): Now, Decisions, Your work, How we decide. Plain links,
- * each its own address, so a view can be shared and the back button works. Your work is a member's, and only offered
- * signed in; the page itself says when somebody holds no work.
+ * THE GOVERNANCE PAGE'S VIEWS (Governance brief, section F): Now, Decisions, Your work, Treasury, How we decide.
+ * Plain links, each its own address, so a view can be shared and the back button works. Your work is a member's, and
+ * only offered signed in; the page itself says when somebody holds no work. Treasury holds the cash budget (the lead,
+ * 27 Nov 2026) and is offered signed in too, because the budget read refuses anyone not admitted.
  */
 import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -27,6 +28,7 @@ export default function GovernanceTabs({ signedIn }: { signedIn: boolean }) {
       {tab("/governance", <Trans context="governance: a view">Now</Trans>)}
       {tab("/governance/decisions", <Trans context="governance: a view">Decisions</Trans>)}
       {signedIn ? tab("/governance/work", <Trans context="governance: a view">Your work</Trans>) : null}
+      {signedIn ? tab("/governance/treasury", <Trans context="governance: a view">Treasury</Trans>) : null}
       {tab("/governance/how", <Trans context="governance: a view">How we decide</Trans>)}
     </nav>
   );

@@ -110,11 +110,11 @@ describe("/governance, the Now view", () => {
     expect((await screen.findByRole("alert")).textContent).toContain("This did not load");
   });
 
-  it("offers the four views, Your work only signed in", async () => {
+  it("offers the five views, Your work and Treasury only signed in", async () => {
     answer(200, ANSWER);
     render(<GovernanceNow />);
     await screen.findByTestId("governance-now");
     const views = screen.getByRole("navigation", { name: "Governance views" });
-    expect(within(views).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["/governance", "/governance/decisions", "/governance/work", "/governance/how"]);
+    expect(within(views).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["/governance", "/governance/decisions", "/governance/work", "/governance/treasury", "/governance/how"]);
   });
 });
