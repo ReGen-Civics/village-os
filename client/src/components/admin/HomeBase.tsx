@@ -6,6 +6,7 @@
  * next visit open the form list instead.
  */
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import type { NavGroup } from "@/components/admin/adminNavGroups";
 import { ADMIN_AREAS, setHomeBaseOn, tabsInArea, type AreaId } from "./adminAreas";
@@ -126,6 +127,18 @@ export default function HomeBase({
         <p className="text-base text-gray-600"><Trans context="HomeBase, p">Reading what is waiting...</Trans></p>
       )}
       {!problem && needs && <RoleApplicationsList rows={roleApps} heading="Role applications waiting" />}
+      {/* How roles are going, its own page (the lead, 27 Nov 2026: "add this to admin here as a button to see this
+          information"). Always offered, whether or not an application waits. */}
+      <p>
+        <Link
+          href="/admin/role-progress"
+          data-role-progress-door=""
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-border bg-card px-4 text-base font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {t({ message: "See how roles are going", context: "HomeBase, door to the role progress page" })}
+          <span aria-hidden="true">→</span>
+        </Link>
+      </p>
       {/* The review lane's one list, read as this person (NeedsYouNow.tsx). */}
       <NeedsYouNow />
       <div className="grid gap-2 sm:grid-cols-2">
