@@ -97,6 +97,9 @@ const ALLOWLIST = {
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
+  "/feedback": "a redirect to the page the member came from with the guide's panel open on Share feedback (lib/guideFeedback.ts); the footer and the corner open the panel in place",
+  // The old all-photos page (the places fold, 26 Nov 2026). It redirects to /places#photos; old bookmarks and links already sent are its doors.
+  "/photographs": "a redirect to /places#photos, the all-photos page's old address, kept for old links",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.
@@ -105,6 +108,18 @@ const ALLOWLIST = {
   // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
   "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
+  // The folds into Governance (the lead, 27 Nov 2026): the approval inbox is a section of Your work, and change
+  // requests are a kind of decision under Decisions. Each old address redirects to its new place with an anchor, for
+  // notices and links already sent; nothing in the app links to them any more, on purpose.
+  "/approvals": "a redirect to /governance/work#approvals, the approval inbox's old address, kept for notices already sent",
+  "/changes": "a redirect to /governance/decisions#changes, the change requests list's old address, kept for links already sent",
+  "/changes/:id": "a redirect to one change request under Decisions, kept for notices already sent",
+  "/governance/decisions/changes": "a redirect to /governance/decisions#changes, for the address people guess at",
+  // One change request's page. Every door to it is built by `changeRequestHref(id)` in shared/changeRequestAddress.ts,
+  // because the address carries the id: each row of the Change requests section of Decisions, the Now view's and Your
+  // work's change request rows, the Suggest control's "added to" link, and the review notices. A literal-string scan
+  // cannot see a built address, so it counts none of them.
+  "/governance/decisions/changes/:id": "one change request's page, linked by changeRequestHref from Decisions, Now, Your work, Suggest and its notices",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

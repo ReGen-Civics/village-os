@@ -238,7 +238,7 @@ describe("/steward", () => {
     auth.admin = true;
     show();
     expect(await screen.findByText("Stewarding the roles")).toBeInTheDocument();
-    expect(hrefOf(/^Open the approval inbox/)).toEqual(["/approvals"]);
+    expect(hrefOf(/^Open the approval inbox/)).toEqual(["/governance/work#approvals"]);
     expect(hrefOf(/^Open admin/)).toEqual(["/admin"]);
   });
 

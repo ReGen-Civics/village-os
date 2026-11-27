@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.97 (2026-11-27)
+
+### What changed for your village
+
+- **Approvals live in Your work, change requests in Decisions.** What waits for your sign-off is a section of Govern > Your work, and change requests are a kind of decision, listed under Decisions with each one at its own address. /approvals and /changes open the new places, and links already sent keep working.
+- **Share feedback with the guide.** Reporting a bug or asking for a feature now happens in the guide's panel. A member can add a screenshot and draw on it to point at the spot; location data is removed, and only admins can see the picture. Everything goes into the village's own feedback queue. /feedback opens the panel.
+- **Places and photographs on one page.** /places holds every place, all photos and, for curators, the reports queue, with a viewer that steps through a place's photos. /photographs opens the new place.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+Yes, lightly. Migration 0443 adds a feedback kind and an optional screenshot file to feedback. It only adds; nothing is rewritten. Going back to 1.3.96 still works: the older version ignores the new column.
+
+---
+
 ## 1.3.96 (2026-11-27)
 
 ### What changed for your village

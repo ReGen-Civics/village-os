@@ -97,11 +97,10 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/campaign": "Crowdpool",
   // One line covers the shelf and every place, by the same longest-prefix
   // rule the module library uses above.
-  "/places": "Places, photographed",
-  // Its own address rather than /places/photos, because a place key called
-  // "photos" would shadow it and because this is a different object from a
-  // place: the whole village's record on one page.
-  "/photographs": "Every photograph",
+  "/places": "Places",
+  // Every photo is a view of the same page (/places#photos) since the fold.
+  // /photographs only redirects there, and reads as the page it lands on.
+  "/photographs": "Places",
   "/admin": "Village settings",
   "/journal": "Journal",
   "/protocols": "Protocols",
@@ -134,6 +133,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/training/steward": "Steward training",
   "/training/resident": "Resident training",
   "/governance": "Governance",
+  // One change request, a kind of decision since 27 Nov 2026; /changes above stays for links already sent.
+  "/governance/decisions/changes": "Change request",
   "/decisions": "Decisions",
   "/propose": "Start a proposal",
   "/propose-a-role": "Apply", // the founding application (QA P1-17); without it the prefix read "Start a proposal"

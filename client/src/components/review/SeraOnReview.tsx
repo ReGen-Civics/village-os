@@ -93,6 +93,7 @@ export function SeraTop({
   sera,
   queue,
   witness,
+  approvals = 0,
   onReload,
 }: {
   sera: SeraOnReview;
@@ -100,10 +101,12 @@ export function SeraTop({
   onReload?: () => Promise<void>;
   queue: { batches?: QueueBatch[]; openDrafts?: unknown[] } | null;
   witness: number;
+  /** The one-tap approvals waiting on this person (Your work's Approvals section). */
+  approvals?: number;
 }) {
   return (
     <>
-      <SeraSummaryLine read={sera.read} witness={witness} />
+      <SeraSummaryLine read={sera.read} witness={witness} approvals={approvals} />
       <SeraDifferences read={sera.read} draftOpen={(queue?.openDrafts ?? []).length > 0} onRetry={sera.load} onReload={onReload} />
     </>
   );

@@ -295,7 +295,7 @@ export function register(app: Express, deps: Deps): void {
    * The curator's queue. Capability-gated and outside `/api/admin` on purpose.
    *
    * A member can flag a photograph, and this is where that flag arrives. It
-   * has a browser surface (`/places`, the Reports panel) and the same people
+   * has a browser surface (`/places#reports`, the Reports view) and the same people
    * who can open it are the people the notification rings, so a report goes
    * to somebody who can act on it and the reporter hears when it closes.
    */
@@ -503,7 +503,7 @@ export function register(app: Express, deps: Deps): void {
         userId: recipient,
         type: "moderation",
         title: "A photograph on the map was flagged for review",
-        link: "/places",
+        link: "/places#reports",
         dedupeKey: `place-photo-report:${photo.id}:${user.id}:${recipient}`,
       });
     }
@@ -578,7 +578,7 @@ export function register(app: Express, deps: Deps): void {
           userId: recipient,
           type: "moderation",
           title: "Someone asked for a photograph of themselves to come down",
-          link: "/places",
+          link: "/places#reports",
           dedupeKey: `place-photo-subject:${photo.id}:${user.id}:${recipient}`,
         });
       }

@@ -82,16 +82,14 @@ const PAGES = [
   "client/src/pages/SeasonalFestivals.tsx",
   // The gratitude wall, its threads in the night world (Phase C, decision 4).
   "client/src/pages/GratitudeWall.tsx",
-  "client/src/pages/Feedback.tsx",
   "client/src/pages/Places.tsx",
   "client/src/pages/WorkWithUs.tsx",
   "client/src/pages/Modules.tsx",
   "client/src/pages/RequestMembership.tsx",
-  "client/src/pages/Photographs.tsx",
   "client/src/pages/EmailPages.tsx",
   "client/src/pages/ProposeQuest.tsx",
   "client/src/pages/Crowdpool.tsx",
-  "client/src/pages/Approvals.tsx",
+  "client/src/pages/ChangeRequest.tsx",
   "client/src/pages/VerifyEmail.tsx",
   "client/src/pages/SetPassword.tsx",
   "client/src/pages/Register.tsx",
@@ -127,6 +125,17 @@ const PAGES = [
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // Share feedback, in the guide's panel since the fold of /feedback (26 Nov 2026): born inside the rule.
+  "client/src/components/feedback/GuideFeedback.tsx",
+  "client/src/components/feedback/ShotEditor.tsx",
+  // What /places draws since the places fold (26 Nov 2026): the shelf, one place, the viewer, every photo and the queue.
+  "client/src/components/places/PlaceCard.tsx",
+  "client/src/components/places/PlaceGallery.tsx",
+  "client/src/components/places/PhotoGrid.tsx",
+  "client/src/components/places/PhotoViewer.tsx",
+  "client/src/components/places/PhotoIndex.tsx",
+  "client/src/components/places/PhotoReportsPanel.tsx",
+  "client/src/components/places/placesApi.ts",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",
@@ -226,7 +235,8 @@ const JOURNEY = [
   "client/src/components/review/ConsentQueue.tsx",
   "client/src/components/review/OwedPostings.tsx",
   "client/src/components/review/OwedCancels.tsx",
-  "client/src/components/review/AgentProposalsCard.tsx",
+  "client/src/components/governance/ChangeRequestsSection.tsx",
+  "client/src/components/governance/work/ApprovalsSection.tsx",
   "client/src/components/review/QuestProposalCard.tsx",
   // The review page's batch and change cards, in the role card's hand (2026-11-16).
   "client/src/components/proposals/BatchCard.tsx",

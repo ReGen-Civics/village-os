@@ -1,0 +1,187 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: Admin's approval inbox, the door to Your work, 27 Nov 2026
+msgctxt "approval inbox, admin"
+msgid "Open it in Your work"
+msgstr "Ábrala en Tu trabajo"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Approved"
+msgstr "Aprobada"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Declined"
+msgstr "Rechazada"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Lapsed"
+msgstr "Caducada"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Put back"
+msgstr "Revertida"
+
+# needs-native-review: the approval inbox, retry a failed read, 27 Nov 2026
+msgctxt "approval inbox: retry a failed read"
+msgid "Try again"
+msgstr "Intente de nuevo"
+
+# needs-native-review: the approval inbox, how it works, 27 Nov 2026
+msgctxt "approval inbox: how it works"
+msgid "Nothing here is live yet."
+msgstr "Nada de esto está activo todavía."
+
+# needs-native-review: the approval inbox, how it works, 27 Nov 2026
+msgctxt "approval inbox: how it works"
+msgid "Approve runs the change as you, so it works only where you hold the power."
+msgstr "Aprobar aplica el cambio a su nombre, así que solo funciona donde usted tiene el poder."
+
+# needs-native-review: the approval inbox, how it works, 27 Nov 2026
+msgctxt "approval inbox: how it works"
+msgid "A proposal lapses seven days after it was filed."
+msgstr "Una propuesta caduca siete días después de presentarse."
+
+# needs-native-review: the approval inbox, who proposed it and when, 27 Nov 2026
+msgid "Proposed by {0} on {1}."
+msgstr "Propuesta por {0} el {1}."
+
+# needs-native-review: the approval inbox, when an undecided proposal lapses, 27 Nov 2026
+msgctxt "approval inbox: when an undecided proposal lapses"
+msgid "Lapses {0}."
+msgstr "Caduca el {0}."
+
+# needs-native-review: Your work, the Approvals section's eyebrow, 27 Nov 2026
+msgctxt "your work: approvals, eyebrow"
+msgid "One tap, as you"
+msgstr "Un toque, a su nombre"
+
+# needs-native-review: Your work, the Approvals section's heading, 27 Nov 2026
+msgctxt "your work: approvals, heading"
+msgid "Approvals"
+msgstr "Aprobaciones"
+
+# needs-native-review: Your work, how many approvals wait, 27 Nov 2026
+msgctxt "your work: approvals, how many wait"
+msgid "{0} waiting"
+msgstr "{0} en espera"
+
+# needs-native-review: Your work, the summary line, one approval, 27 Nov 2026
+msgctxt "your work: summary line"
+msgid "{approvals} approval"
+msgstr "{approvals} aprobación"
+
+# needs-native-review: Your work, the summary line, several approvals, 27 Nov 2026
+msgctxt "your work: summary line"
+msgid "{approvals} approvals"
+msgstr "{approvals} aprobaciones"
+
+# needs-native-review: Decisions, the change requests section's heading, 27 Nov 2026
+msgctxt "decisions: the change requests section"
+msgid "Change requests"
+msgstr "Solicitudes de cambio"
+
+# needs-native-review: Decisions, the change requests section's line, 27 Nov 2026
+msgctxt "decisions: the change requests section"
+msgid "Several setting changes, one reason, one vote. The village reads each one before it goes to the vote."
+msgstr "Varios cambios de ajustes, una razón, una votación. La aldea lee cada una antes de que pase a votación."
+
+# needs-native-review: Decisions, the change requests section while it reads, 27 Nov 2026
+msgctxt "decisions: the change requests section"
+msgid "Reading the change requests."
+msgstr "Leyendo las solicitudes de cambio."
+
+# needs-native-review: Decisions, the change requests section when its read failed, 27 Nov 2026
+msgctxt "decisions: the change requests section"
+msgid "The change requests did not load. Some may be waiting for your voice."
+msgstr "Las solicitudes de cambio no cargaron. Puede que alguna espere su voz."
+
+# needs-native-review: one change request, its steps read aloud, 27 Nov 2026
+msgctxt "change request steps, read aloud"
+msgid "Where this change request is"
+msgstr "En qué punto está esta solicitud de cambio"
+
+# needs-native-review: one change request, signed out, 27 Nov 2026
+msgctxt "change request: sign in"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: one change request, what review means, 27 Nov 2026
+msgctxt "change request: what review means"
+msgid "The village can ask, raise concerns and objections, and suggest edits."
+msgstr "La aldea puede preguntar, plantear inquietudes y objeciones, y sugerir cambios."
+
+# needs-native-review: one change request, what review means, 27 Nov 2026
+msgctxt "change request: what review means"
+msgid "The people whose roles look after these settings are asked to look."
+msgstr "Se pide que la revisen las personas cuyos roles cuidan estos ajustes."
+
+# needs-native-review: Decisions, the change requests section's eyebrow, 27 Nov 2026
+msgctxt "decisions: the change requests section, eyebrow"
+msgid "Read before a vote"
+msgstr "Se leen antes de votar"
+
+# needs-native-review: one change request, the author's next step, eyebrow, 27 Nov 2026
+msgctxt "change request: the author's next step, eyebrow"
+msgid "Your next step"
+msgstr "Su siguiente paso"
+
+# needs-native-review: one change request, the reason, eyebrow, 27 Nov 2026
+msgctxt "change request: the reason, eyebrow"
+msgid "The reason"
+msgstr "La razón"
+
+# needs-native-review: one change request, the changes, eyebrow, 27 Nov 2026
+msgctxt "change request: the changes, eyebrow"
+msgid "What changes"
+msgstr "Qué cambia"
+
+# needs-native-review: one change request, the checklist, eyebrow, 27 Nov 2026
+msgctxt "change request: the checklist, eyebrow"
+msgid "What is still needed"
+msgstr "Lo que aún falta"
+
+# needs-native-review: one change request, the review, eyebrow, 27 Nov 2026
+msgctxt "change request: the review, eyebrow"
+msgid "What the village said"
+msgstr "Lo que dijo la aldea"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Done by hand"
+msgstr "Hecha a mano"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Dismissed"
+msgstr "Descartada"
+
+# needs-native-review: the approval inbox, a seating made by hand, 27 Nov 2026
+msgctxt "approval inbox: a seating made by hand"
+msgid "Already seated by hand"
+msgstr "Ya se asignó a mano"
+
+# needs-native-review: the approval inbox, a seating made by hand, 27 Nov 2026
+msgctxt "approval inbox: a seating made by hand"
+msgid "Marked done by hand"
+msgstr "Marcada como hecha a mano"
+
+# needs-native-review: the approval inbox, a connector's role change, 27 Nov 2026
+msgctxt "approval inbox: a connector's role change"
+msgid "Read the draft"
+msgstr "Leer el borrador"
+
+# needs-native-review: the approval inbox, how many changes a draft holds, 27 Nov 2026
+msgid "{changes, plural, one {# change} other {# changes}}"
+msgstr "{changes, plural, one {# cambio} other {# cambios}}"
+
+# needs-native-review: one change request, where it stands while in review, 27 Nov 2026
+msgctxt "change request: where it stands, in review"
+msgid "In review · review ends {ends}"
+msgstr "En revisión · la revisión termina el {ends}"

@@ -110,7 +110,6 @@ const ATTRIBUTION_DEFAULT = {
   "client/src/components/admin/goLivePlan.ts": { lines: 2, why: "names the publisher as the host on its own hosted path, and says what it never holds" },
   "client/src/components/modules/PoolStatement.tsx": { lines: 1, why: "the builders' pool lives on the publisher's hub, and a builder's account is held there" },
   "shared/modulePool.test.ts": { lines: 2, why: "the builders' pool lives on the publisher's hub, and a builder's account is held there" },
-  "client/src/pages/Feedback.tsx": { lines: 1, why: "says the feedback relay copies the publisher's platform team, the hub that listens" },
   "shared/lunar.test.ts": { lines: 1, why: "the lunar constants are pinned to the publisher's own code, which this test names as their source" },
 };
 const attributionArg = process.argv.indexOf("--attribution");

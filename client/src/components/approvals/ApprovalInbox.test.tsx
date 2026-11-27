@@ -9,7 +9,7 @@
  *   6. An approved card that can be put back offers it.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import ApprovalInbox from "./ApprovalInbox";
 
 const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
@@ -102,5 +102,59 @@ describe("the approval inbox", () => {
     const first = await screen.findByText("The older one");
     const second = screen.getByText("The newer one");
     expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("closes a seating already made by hand through its own route, and names it Done by hand", async () => {
+    const seat = { ...A, id: "prop_s", kind: "seating", title: "Seat Ana in Kitchen from 2026-12-01", canRevert: false };
+    const done = { ...seat, id: "prop_t", title: "Seat Bo in Water", state: "taken", decision: null, resolvedAt: "2026-12-03T10:00:00.000Z" };
+    const calls: Array<{ url: string; method: string; body: any }> = [];
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? "GET";
+      calls.push({ url: String(url), method, body: init?.body ? JSON.parse(String(init.body)) : null });
+      if (method === "GET") return { ok: true, status: 200, json: async () => ({ waiting: [seat, B], decided: [done] }) };
+      return { ok: true, status: 200, json: async () => ({ success: true }) };
+    }));
+    render(<ApprovalInbox headers={() => ({})} />);
+    await screen.findByText("Seat Ana in Kitchen from 2026-12-01");
+    // Only a seating offers it.
+    expect(screen.getAllByRole("button", { name: "Already seated by hand" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Already seated by hand" }));
+    await waitFor(() => expect(calls.some((c) => c.url === "/api/agent-proposals/prop_s/resolve")).toBe(true));
+    expect(calls.find((c) => c.url.endsWith("/resolve"))).toMatchObject({ method: "POST", body: { status: "taken" } });
+    // Nothing was approved or declined on the way.
+    expect(calls.some((c) => c.url.includes("/api/approval-inbox/prop_s/"))).toBe(false);
+    expect(within(screen.getByTestId("decided-prop_t")).getByText("Done by hand")).toBeTruthy();
+    // A close that writes no decision still says when it left the list.
+    expect(screen.getByTestId("decided-prop_t").textContent).toContain(new Date("2026-12-03T10:00:00.000Z").toLocaleDateString("en", { day: "numeric", month: "short" }));
+  });
+
+  it("shows a connector role change's count and its draft, and offers no Approve for an empty draft", async () => {
+    const full = { ...A, id: "draft:d1", kind: "role_change", title: "Kitchen Steward, new words", at: null, expiresAt: null, changes: 2 };
+    const empty = { ...full, id: "draft:d2", title: "Asks on the Water role", changes: 0 };
+    stub({ waiting: [full, empty] });
+    render(<ApprovalInbox headers={() => ({})} />);
+    await screen.findByText("Kitchen Steward, new words");
+    const one = screen.getByTestId("inbox-draft:d1");
+    expect(within(one).getByTestId("draft-changes-draft:d1").textContent).toBe("2 changes");
+    expect(within(one).getByRole("link", { name: /Read the draft/ }).getAttribute("href")).toBe("/governance/decisions/drafts/d1");
+    expect(within(one).getByRole("button", { name: "Approve" })).toBeTruthy();
+    const two = screen.getByTestId("inbox-draft:d2");
+    expect(within(two).queryByRole("button", { name: "Approve" })).toBeNull();
+    // Nothing to approve, so nothing to tick; the full draft keeps its box.
+    expect(within(two).queryByRole("checkbox")).toBeNull();
+    expect(within(one).getByRole("checkbox")).toBeTruthy();
+    expect(within(two).getByRole("button", { name: "Decline" })).toBeTruthy();
+  });
+
+  it("lights one gold act: a card's Approve is edged when several wait, gold when it is the only one", async () => {
+    stub();
+    const { unmount } = render(<ApprovalInbox headers={() => ({})} />);
+    await screen.findByText("Set Start after open to 14");
+    for (const b of screen.getAllByRole("button", { name: "Approve" })) expect(b.className).toContain("border-notice");
+    unmount();
+    stub({ waiting: [A] });
+    render(<ApprovalInbox headers={() => ({})} />);
+    await screen.findByText("Set Start after open to 14");
+    expect(screen.getByRole("button", { name: "Approve" }).className).toContain("bg-notice");
   });
 });

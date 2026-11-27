@@ -66,7 +66,8 @@ import { toast } from "sonner";
 import { Inbox } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
-import AgentProposalsCard from "@/components/review/AgentProposalsCard";
+import ApprovalsSection, { useApprovalsKey } from "@/components/governance/work/ApprovalsSection";
+import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
 import QuestProposalCard, { type QuestCard, type QuestTyped } from "@/components/review/QuestProposalCard";
 import type { Batch, ProposalCard, Queue, StuckDraft } from "@/components/review/queueTypes";
 import { draftToBody, loadPayOptions } from "@/components/WorkValueEditor";
@@ -208,6 +209,8 @@ export default function Review() {
   const consent = useConsentClaims(headers);
   // The outside service's differences, one list (components/review/SeraDifferences.tsx).
   const sera = useSeraOnReview();
+  // The Approvals section, once /approvals (the lead, 27 Nov 2026): whether this person holds a key that opens it.
+  const approvals = useApprovalsKey(user?.id);
 
   /**
    * Ask every unconfirmed store again. This is the only thing that can finish
@@ -306,6 +309,14 @@ export default function Review() {
   useEffect(() => {
     void load();
   }, [load, user?.id]);
+
+  // A link to a section (#approvals from /approvals, #witness from a bell) lands on it once the page has drawn it.
+  const drawn = !loading && approvals.open !== null;
+  useEffect(() => {
+    if (!drawn) return;
+    const id = window.location.hash.replace(/^#/, "");
+    if (id) document.getElementById(id)?.scrollIntoView?.({ block: "start" });
+  }, [drawn]);
 
   /**
    * The edited payload for one card, or a sentence saying why it cannot be
@@ -562,10 +573,23 @@ export default function Review() {
     );
   }
 
-  // The whole page refuses only when both reads did. Somebody refused one key
-  // and given the other is shown the section they hold. A member still sees
-  // how many of the service's changes wait and who decides them (spec R38).
-  if (forbidden && consent.refused) {
+  // The whole page refuses only when every read did: the queue, the claims and
+  // the approvals. Somebody refused one key and given another is shown the
+  // section they hold. A member still sees how many of the service's changes
+  // wait and who decides them (spec R38). While the approvals key is still
+  // being asked, the page waits rather than refuse a person who holds it.
+  if (forbidden && consent.refused && approvals.open === null) {
+    return (
+      <Layout>
+        <div className={WORLD}>
+        <div className="max-w-4xl mx-auto px-4 py-10">
+          <p className="text-sm text-muted-foreground"><Trans context="Review, p">Reading what is waiting.</Trans></p>
+        </div>
+        </div>
+      </Layout>
+    );
+  }
+  if (forbidden && consent.refused && approvals.shut) {
     return (
       <Layout>
         <div className={WORLD}>
@@ -587,7 +611,7 @@ export default function Review() {
   const totalDropped = drops.reduce((n, d) => n + d.dropped, 0);
   const readsProposals = queue?.scope?.proposals ?? true;
   const nothingWaiting =
-    queue !== null && (queue.counts?.proposals ?? 0) === 0 && (queue.counts?.quests ?? 0) === 0 && sera.waits === 0;
+    queue !== null && (queue.counts?.proposals ?? 0) === 0 && (queue.counts?.quests ?? 0) === 0 && sera.waits === 0 && approvals.waiting === 0;
 
   return (
     <Layout>
@@ -615,12 +639,13 @@ export default function Review() {
             <Link href="/admin/review" className={LINK}><Trans context="Review, a door to the one list">Find it here</Trans></Link>
           </p>
         </div>
+        <GovernanceTabs signedIn={!!authToken()} />
 
-        <SeraTop sera={sera} queue={queue} witness={(consent.claims ?? []).filter((c) => c.status === "submitted").length} onReload={load} />
+        <SeraTop sera={sera} queue={queue} witness={(consent.claims ?? []).filter((c) => c.status === "submitted").length} approvals={approvals.waiting} onReload={load} />
         {/* Everything below keeps the page's own measure; only the Sera list widens at 1280. */}
         <div className="max-w-4xl space-y-6">
-        <AgentProposalsCard headers={headers} />
-        <Link href="/approvals" className={`${LINK} inline-flex min-h-11 items-center text-sm`}><Trans>Open the approval inbox</Trans></Link>
+        {/* Approvals, once /approvals (the lead, 27 Nov 2026); the connector's role changes and seatings are listed here, once. */}
+        <ApprovalsSection approvals={approvals} headers={headers} />
 
         {/* Finished work, the summary line's other jump. Consent is the one step that
             releases value, and a claim sitting here is somebody's work going unpaid. */}
