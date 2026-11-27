@@ -188,6 +188,12 @@ describe("Rights and agreements", () => {
     expect(chapter("steward-rights")).toHaveAccessibleName("Steward rights Your Rights and Responsibilities");
   });
 
+  it("names a chapter whose list name is its heading by the heading alone, so it is never read twice", () => {
+    render(<RightsAndAgreements />);
+    expect(chapter("good-neighbor")).toHaveAccessibleName("Good Neighbor chapter");
+    expect(chapter("leaving-well")).toHaveAccessibleName("Leaving chapter");
+  });
+
   it("names the chapter in the tab", () => {
     at("/rights#leaving-well");
     render(<RightsAndAgreements />);

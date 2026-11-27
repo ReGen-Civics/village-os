@@ -268,7 +268,7 @@ export default function LeavingWellChapter() {
               </p>
             )}
             {user && hasIntake && (
-              <div className="border-t border-border pt-3 space-y-2 print:hidden">
+              <div className="border-t border-border pt-3 space-y-2">
                 <p className="text-xs text-muted-foreground">
                   <Trans>
                     Start a private intake. It reaches only the people holding
@@ -280,9 +280,9 @@ export default function LeavingWellChapter() {
                 </p>
                 <textarea value={intake} onChange={(e) => setIntake(e.target.value)} rows={3}
                   placeholder={t`What happened, in your own words…`}
-                  className={`${FIELD} w-full px-3 py-2 text-base`} />
+                  className={`${FIELD} w-full px-3 py-2 text-base print:hidden`} />
                 <button onClick={sendIntake} disabled={!intake.trim()}
-                  className={`${BTN_PRIMARY} text-sm`}>
+                  className={`${BTN_PRIMARY} text-sm print:hidden`}>
                   <Trans context="button that sends a private restorative intake">Send privately</Trans>
                 </button>
               </div>
@@ -294,7 +294,7 @@ export default function LeavingWellChapter() {
 
           {user && (
             // The delete screen's "Leave the village instead" lands here (`?focus=begin-departure`).
-            <div id="begin-departure" className={`${CARD} scroll-mt-40 print:hidden lg:scroll-mt-28`}>
+            <div id="begin-departure" className={`${CARD} scroll-mt-40 lg:scroll-mt-28`}>
               <h3 className="font-display text-xl font-bold text-card-foreground mb-2"><Trans>Begin your own departure</Trans></h3>
               <p className="text-xs text-muted-foreground mb-3">
                 <Trans>
@@ -308,7 +308,7 @@ export default function LeavingWellChapter() {
               <CashOwedNotice count={cashOwed} door="departure" />
               <VotesCastNotice />
               <LeavingNotices notices={leavingNotices} />
-              <div className="space-y-2">
+              <div className="space-y-2 print:hidden">
                 <IdentityConfirmField state={identity} action="request-exit"
                   password={password} onPassword={setPassword}
                   placeholder={t`Confirm with your password`}

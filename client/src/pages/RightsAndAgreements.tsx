@@ -81,6 +81,13 @@ const EMBLEM: Record<RightsChapter, ComponentType<{ className?: string }>> = {
 /** Ids that live inside a chapter and may be linked to directly, with the chapter that holds them. */
 const INNER: Record<string, RightsChapter> = { "begin-departure": "leaving-well" };
 
+/**
+ * The chapters whose list name IS their heading: the Good Neighbor chapter's name is its own headline field, and
+ * Leaving Well's is the string its heading prints. Each is named by its heading alone, so a screen reader never
+ * says it twice. The two rights chapters may share a heading, so they are named by the list's name and the heading.
+ */
+const NAMED_BY_HEADING: ReadonlySet<RightsChapter> = new Set<RightsChapter>(["good-neighbor", "leaving-well"]);
+
 const isChapter = (id: string): id is RightsChapter => (RIGHTS_CHAPTERS as readonly string[]).includes(id);
 
 /** The chapter the address names, by its anchor or by a `?focus=` target inside one. Null when it names none. */
@@ -368,7 +375,8 @@ export default function RightsAndAgreements() {
                     <span className={`${RING} size-8 border`} aria-hidden="true">
                       <ActiveEmblem className="size-4" />
                     </span>
-                    <span className="min-w-0 flex-1 truncate font-display text-lg text-foreground" aria-hidden="true">
+                    {/* The name wraps: a long one ("Good Neighbor Criteria") is read whole at 375px, never cut short. */}
+                    <span className="min-w-0 flex-1 break-words font-display text-base leading-tight text-foreground" aria-hidden="true">
                       {title[active] || " "}
                     </span>
                     <button type="button" onClick={toList} className="jw-btn inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-notice hover:bg-muted">
@@ -396,13 +404,15 @@ export default function RightsAndAgreements() {
                       key={id}
                       id={id}
                       data-chapter={id}
-                      // The list's name for the chapter, then its own title: two chapters may share a heading.
-                      aria-labelledby={`${id}-name ${chapterHeadingId(id)}`}
+                      // The list's name for the chapter, then its own title, where two chapters may share a heading.
+                      aria-labelledby={NAMED_BY_HEADING.has(id) ? chapterHeadingId(id) : `${id}-name ${chapterHeadingId(id)}`}
                       className={`scroll-mt-40 lg:scroll-mt-28 ${id === active && !retryHere ? "" : "hidden print:mt-12 print:block"}`}
                     >
-                      <span id={`${id}-name`} className="sr-only">
-                        {title[id]}
-                      </span>
+                      {!NAMED_BY_HEADING.has(id) && (
+                        <span id={`${id}-name`} className="sr-only">
+                          {title[id]}
+                        </span>
+                      )}
                       <Body />
                       {served.length > 1 && (
                         <nav

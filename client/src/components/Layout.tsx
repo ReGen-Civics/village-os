@@ -233,7 +233,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           contents keep their indentation so this stays a four-line change. */}
       {/* The class stays one literal: designConsistency.test.ts reads it as the site header's known position. On a
           phone, `data-header-scrolls-on-phone` lets the header scroll away (index.css). */}
-      <header className="sticky top-0 z-50" data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
+      <header className="sticky top-0 z-50 print:hidden" data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
       <nav className="bg-teal-deep text-white shadow-lg">
         <div className="container py-4 flex items-center justify-between">
           {/* One anchor, not two. wouter's Link renders the <a> itself, so a
@@ -585,7 +585,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
 
       {/* Main Content */}
       {/* R47: the Trail, a member's one next step, on every page. */}
-      <NextStepTrail />
+      {/* The site's chrome stays off paper (calendar/print.css): the header and footer here, the path strip too. */}
+      <div className="contents print:hidden"><NextStepTrail /></div>
       {/* The shortcuts button floats over the page's bottom-right corner on a
           phone. The page ends with room for it, so it never sits on the last
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
@@ -597,7 +598,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
       </main>
 
       {/* Footer */}
-      <footer className="bg-teal-deep text-white py-16">
+      <footer className="bg-teal-deep text-white py-16 print:hidden">
         <div className="container">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             {/* Brand */}
