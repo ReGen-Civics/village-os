@@ -102,9 +102,10 @@ describe("the walkthrough", () => {
     served = { status: 200, body: walk({ track: { stages: stages("agreement"), now: "agreement", who: "the circle", next: "Decide.", primary: "decide" } }) };
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" decideOnPage />);
     expect((await screen.findByRole("link", { name: ONBOARDING_WORDS.primary.decide })).getAttribute("data-walk-decide")).toBe("edged");
-    // QA round 4: on a phone the floating panel holds Adopt and Decline, so the words point there and the link waits for lg.
-    expect(screen.getByText(ONBOARDING_WORDS.decideBelow).className.split(" ")).toContain("lg:hidden");
-    expect(screen.getByRole("link", { name: ONBOARDING_WORDS.primary.decide }).parentElement?.className.split(" ")).toEqual(expect.arrayContaining(["hidden", "lg:block"]));
+    // QA rounds 4 and 5: below md the floating panel holds Adopt and Decline, so the words point there; from md up
+    // (no floating bar) the link shows.
+    expect(screen.getByText(ONBOARDING_WORDS.decideBelow).className.split(" ")).toContain("md:hidden");
+    expect(screen.getByRole("link", { name: ONBOARDING_WORDS.primary.decide }).parentElement?.className.split(" ")).toEqual(expect.arrayContaining(["hidden", "md:block"]));
     cleanup();
     // CONTROL: with no decide panel on the page, the link is the page's gold act.
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
@@ -160,6 +161,21 @@ describe("the walkthrough", () => {
     fireEvent.click(screen.getByRole("button", { name: ONBOARDING_WORDS.notesSave }));
     await screen.findByText("Done.");
     expect(posts).toEqual([{ url: "/api/governance/applications/op-0123456789abcdef0123/references/7/notes", body: { notes: "Called her.", followedUp: true } }]);
+  });
+
+  it("QA round 5: at our review the founder's 'Go to our review' shows at every width, and never says 'Adopt or decline below'", async () => {
+    for (const now of ["received", "review"] as const) {
+      served = { status: 200, body: walk({ track: { stages: stages(now), now, who: "the holders of the power to place people in roles", next: "Read it.", primary: "review" } }) };
+      render(<Walkthrough applicationRef="op-0123456789abcdef0123" decideOnPage />);
+      const link = await screen.findByRole("link", { name: ONBOARDING_WORDS.primary.review });
+      // Gold-edged beside the panel's own gold act, and nothing hides it at any width.
+      expect(link.getAttribute("data-walk-decide")).toBe("edged");
+      for (let el: HTMLElement | null = link; el && !el.hasAttribute("data-walkthrough"); el = el.parentElement) {
+        expect(el.className.split(" ").filter((c) => /(^|:)hidden$/.test(c)), `${now}: ${el.tagName}`).toEqual([]);
+      }
+      expect(screen.queryByText(ONBOARDING_WORDS.decideBelow)).toBeNull();
+      cleanup();
+    }
   });
 
   it("QA round 4: a section reads a kicker, one line of privacy with the rest behind a disclosure, and the follow-up day in words", async () => {

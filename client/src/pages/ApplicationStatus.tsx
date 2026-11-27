@@ -351,7 +351,8 @@ export default function ApplicationStatus() {
                   style={{ animationDelay: `${i * 80}ms`, ["--jw-delay" as string]: `${i * 80}ms` }}
                 >
                   <span className="jw-stone flex w-11 shrink-0 justify-center" data-state={p.state === "done" ? "done" : p.state === "now" ? "here" : "ahead"} aria-hidden="true">
-                    <span className="jw-stone-face !m-0">{p.state === "done" ? <Check className="size-4" /> : p.state === "now" ? i + 1 : ""}</span>
+                    {/* The gold fill says "you are here"; no number on it (QA round 5: dark on gold read at 2.35:1). */}
+                    <span className="jw-stone-face !m-0">{p.state === "done" ? <Check className="size-4" /> : ""}</span>
                   </span>
                   <span className={`grid gap-0.5 ${hints?.[i] ? "pt-2.5" : ""}`}>
                     <span className={p.state === "later" ? "text-muted-foreground" : p.state === "now" ? "font-bold text-foreground" : "font-medium text-foreground"}>{p.label}</span>

@@ -95,8 +95,8 @@ msgstr "La conversación final está abierta. La persona que postula la reserva 
 
 # needs-native-review: the team's move to the final conversation, 27 Nov 2026
 msgctxt "applicant onboarding: finalExists"
-msgid "The final conversation is already open."
-msgstr "La conversación final ya está abierta."
+msgid "The final conversation is already open or done."
+msgstr "La conversación final ya está abierta o terminada."
 
 # needs-native-review: the team's move to the final conversation, 27 Nov 2026
 msgctxt "applicant onboarding: finalTalksFirst"
@@ -165,8 +165,8 @@ msgstr "Qué contiene"
 
 # needs-native-review: the team page's kickers, QA round 4
 msgctxt "open proposal: the kicker above the roles asked for"
-msgid "The roles"
-msgstr "Los roles"
+msgid "What they ask to hold"
+msgstr "Lo que pide sostener"
 
 # needs-native-review: the team page's kickers, QA round 4
 msgctxt "open proposal: the kicker above the two cards side by side"
@@ -175,5 +175,5 @@ msgstr "Las tarjetas"
 
 # needs-native-review: the team page's kickers, QA round 4
 msgctxt "open proposal: the kicker above why and what they would do"
-msgid "In their words"
-msgstr "En sus palabras"
+msgid "Why they apply"
+msgstr "Por qué se postula"

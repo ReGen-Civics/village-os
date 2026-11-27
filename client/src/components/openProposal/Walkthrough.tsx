@@ -199,13 +199,21 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
       case "final_conversation":
         return <a className={BTN_PRIMARY} href="#scorecards">{label}</a>;
       case "review":
+        // "Go to our review" shows at every width (QA round 5): our review card holds no floating bar, so this link is
+        // how a phone reaches it. Gold-edged while the decide panel's own gold act is on the page.
+        return (
+          <a className={decideOnPage ? BTN_NOTICE : BTN_PRIMARY} href={decideHref} data-walk-decide={decideOnPage ? "edged" : "gold"}>
+            {label}
+          </a>
+        );
       case "decide":
-        // On a phone the decide panel floats its own Adopt and Decline (QA round 4): a second door to the same choice
-        // only covered the track, so there the words point below; from lg up the link stays, gold-edged.
+        // Below md the decide panel floats its own Adopt and Decline (DecideDock), so a second door to the same choice
+        // only covered the track (QA round 4): there the words point below. From md up there is no floating bar, so
+        // the link stays, gold-edged (QA round 5).
         return decideOnPage ? (
           <>
-            <p className={`lg:hidden ${HINT}`} data-walk-decide-below="">{OW.decideBelow}</p>
-            <span className="hidden lg:block">
+            <p className={`md:hidden ${HINT}`} data-walk-decide-below="">{OW.decideBelow}</p>
+            <span className="hidden md:block">
               <a className={BTN_NOTICE} href={decideHref} data-walk-decide="edged">{label}</a>
             </span>
           </>

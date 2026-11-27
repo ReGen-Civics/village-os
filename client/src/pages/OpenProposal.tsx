@@ -65,7 +65,7 @@ import { DOOR, type DoorReason } from "@shared/openProposalDecide";
 import { type ConsentAnswer } from "@shared/roleProposalConsent";
 import { consentWords } from "@/components/roleProposal/consentWords";
 import { civilDayWords } from "@shared/seasonPlans";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, H2, WORLD } from "@/components/journey/look";
 import { decideWords, useDecideWords } from "@/components/openProposal/decideWords";
 
 /** One proposal as the page reads it (`GET /api/governance/open-proposals/:id`). */
@@ -392,8 +392,8 @@ export default function OpenProposal() {
             {p.agent && <AgentView agent={p.agent} />}
 
             <section aria-labelledby="op-roles">
-              <p className={EYEBROW}>{t({ message: "The roles", context: "open proposal: the kicker above the roles asked for" })}</p>
-              <h2 id="op-roles" className="mt-1 text-lg font-bold text-foreground">
+              <p className={EYEBROW}>{t({ message: "What they ask to hold", context: "open proposal: the kicker above the roles asked for" })}</p>
+              <h2 id="op-roles" className={`mt-1 ${H2}`}>
                 {DW.rolesHeading}
               </h2>
               <ul className="mt-3 space-y-3">
@@ -412,7 +412,7 @@ export default function OpenProposal() {
             {!p.agent && <section aria-labelledby="op-cards" className="grid gap-3">
               <div>
               <p className={EYEBROW}>{t({ message: "The cards", context: "open proposal: the kicker above the two cards side by side" })}</p>
-              <h2 id="op-cards" className="mt-1 text-lg font-bold text-foreground">
+              <h2 id="op-cards" className={`mt-1 ${H2}`}>
                 {t({ message: "Their card beside the open card", context: "open proposal side by side" })}
               </h2>
               </div>
@@ -431,8 +431,8 @@ export default function OpenProposal() {
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
 
             <section aria-labelledby="op-words">
-              <p className={EYEBROW}>{t({ message: "In their words", context: "open proposal: the kicker above why and what they would do" })}</p>
-              <h2 id="op-words" className="mt-1 text-lg font-bold text-foreground">
+              <p className={EYEBROW}>{t({ message: "Why they apply", context: "open proposal: the kicker above why and what they would do" })}</p>
+              <h2 id="op-words" className={`mt-1 ${H2}`}>
                 {DW.wordsHeading}
               </h2>
               <dl className="mt-3 space-y-4">

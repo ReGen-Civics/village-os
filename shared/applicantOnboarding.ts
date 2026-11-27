@@ -459,7 +459,7 @@ export const ONBOARDING_WORDS = {
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
   finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
-  finalExists: "The final conversation is already open.",
+  finalExists: "The final conversation is already open or done.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
   finalAtReferences: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.",
   finalNoRole: "No role is named for the final call. A founder names it in the village's settings.",
