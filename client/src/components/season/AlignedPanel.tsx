@@ -20,6 +20,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -307,6 +308,23 @@ export default function AlignedPanel({
 }) {
   const [mine, setMine] = useState<ServedAlignment[] | null>(null);
   const [agreement, setAgreement] = useState<ConfidentialityState | null>(null);
+  // A link to #confidentiality (the newcomer's "align first" step) lands on the agreement once it has drawn, once.
+  const landed = useRef(false);
+  const onAgreement = useCallback((s: ConfidentialityState) => {
+    setAgreement(s);
+    if (
+      landed.current ||
+      s === "none" ||
+      window.location.hash !== "#confidentiality"
+    )
+      return;
+    landed.current = true;
+    requestAnimationFrame(() =>
+      document
+        .getElementById("confidentiality")
+        ?.scrollIntoView?.({ block: "start" })
+    );
+  }, []);
 
   const loadMine = useCallback(async () => {
     const a = await fetchMyAlignments();
@@ -336,9 +354,7 @@ export default function AlignedPanel({
         data-aligned-standing=""
       >
         <p className={EYEBROW}>
-          <Trans context="season page, aligned tab eyebrow">
-            Asked of you
-          </Trans>
+          <Trans context="season page, aligned tab eyebrow">Asked of you</Trans>
         </p>
         <h2 id="aligned-standing-h" className={`${H2} mt-1`}>
           {waiting && waiting.length > 0 ? (
@@ -391,7 +407,7 @@ export default function AlignedPanel({
         )}
       </section>
 
-      <ConfidentialityCard onState={setAgreement} />
+      <ConfidentialityCard onState={onAgreement} />
 
       <Register />
     </div>

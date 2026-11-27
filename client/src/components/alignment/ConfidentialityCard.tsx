@@ -51,7 +51,7 @@ export default function ConfidentialityCard({
 
   if (!agreement) return null;
   return (
-    <section id="confidentiality" aria-labelledby="confidentiality-h" data-confidentiality="" className={embedded ? "" : `${CARD} mb-8`}>
+    <section id="confidentiality" aria-labelledby="confidentiality-h" data-confidentiality="" className={embedded ? "scroll-mt-40" : `${CARD} mb-8 scroll-mt-40`}>
       <h2 id="confidentiality-h" className={`${H2} flex items-center gap-2`}>
         <Canopy className="size-5 shrink-0 text-notice" aria-hidden="true" />
         {CONFIDENTIALITY_WORDS.heading(agreement.title)}

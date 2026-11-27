@@ -72,7 +72,7 @@ export function SeasonLine({ startsOn, endsOn, day, of }: { startsOn: string; en
   const closesOn = civilDayWords(endsOn);
   return (
     <div className="grid gap-1.5" data-season-line="">
-      <div className="relative mt-5 h-2 rounded-full bg-muted" aria-hidden="true">
+      <div className="relative mt-5 h-2 rounded-full bg-border" aria-hidden="true">
         {share !== null ? (
           <>
             <div className="absolute inset-y-0 left-0 rounded-full bg-notice/70" style={{ width: `${share * 100}%` }} />

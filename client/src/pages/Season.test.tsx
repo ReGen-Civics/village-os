@@ -54,6 +54,18 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
   prefersReducedMotion: () => true,
 }));
 vi.mock("@/lib/newcomer", () => ({ useNewcomer: () => !signedIn }));
+// One tab can be made to throw while it draws, to prove the others survive it (QA round 1).
+let planThrows = false;
+vi.mock("@/components/season/YourPlan", async orig => {
+  const real = await orig<typeof import("@/components/season/YourPlan")>();
+  return {
+    ...real,
+    default: (props: Parameters<typeof real.default>[0]) => {
+      if (planThrows) throw new Error("a malformed answer");
+      return real.default(props);
+    },
+  };
+});
 
 const SEASON = {
   current: {
@@ -230,6 +242,10 @@ describe("your steps through the season", () => {
       steps.querySelector('[data-step="aligned"]')!.getAttribute("data-state")
     ).toBe("done");
     expect(tab("Season").getAttribute("aria-selected")).toBe("true");
+    // The gold act names where it goes, never the step's title again (QA round 1).
+    expect(steps.querySelector("[data-season-next]")!.textContent).toBe(
+      "Open your plan"
+    );
     fireEvent.click(steps.querySelector("[data-season-next]")!);
     expect(tab("Your plan").getAttribute("aria-selected")).toBe("true");
     expect(window.location.hash).toBe("#plan");
@@ -298,6 +314,76 @@ describe("the address picks the tab", () => {
   });
 });
 
+describe("arriving for a tab", () => {
+  it("opens it and brings its tab bar to the top, keeping an anchor such as #confidentiality", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id || this.getAttribute("role") || "");
+    };
+    window.history.replaceState(null, "", "/season#confidentiality");
+    render(<Season />);
+    await waitFor(() =>
+      expect(tab("Aligned").getAttribute("aria-selected")).toBe("true")
+    );
+    await waitFor(() =>
+      expect(scrolled.some(id => id.endsWith("-bar"))).toBe(true)
+    );
+    expect(window.location.hash).toBe("#confidentiality");
+  });
+
+  it("CONTROL: a bare /season stays on the hero and scrolls nowhere", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    render(<Season />);
+    await screen.findByRole("tablist");
+    await new Promise(r => setTimeout(r, 50));
+    expect(tab("Season").getAttribute("aria-selected")).toBe("true");
+    expect(scrolled).toEqual([]);
+  });
+});
+
+describe("the tab bar", () => {
+  it("moves with Left, Right, Home and End, and only the selected tab is in the tab order", async () => {
+    render(<Season />);
+    const bar = await screen.findByRole("tablist");
+    expect(tab("Season").tabIndex).toBe(0);
+    expect(tab("Join").tabIndex).toBe(-1);
+    fireEvent.keyDown(bar, { key: "ArrowRight" });
+    expect(tab("Join").getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(tab("Join"));
+    fireEvent.keyDown(bar, { key: "End" });
+    expect(tab("Aligned").getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(bar, { key: "ArrowRight" });
+    expect(tab("Season").getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(bar, { key: "ArrowLeft" });
+    expect(tab("Aligned").getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(bar, { key: "Home" });
+    expect(tab("Season").getAttribute("aria-selected")).toBe("true");
+  });
+
+  it("a tab that fails to draw shows Try again in its own panel, and the rest of the page stays", async () => {
+    planThrows = true;
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      window.history.replaceState(null, "", "/season#plan");
+      render(<Season />);
+      expect(
+        await screen.findByText("This part of the season could not be drawn.")
+      ).toBeTruthy();
+      expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Lay the ground" })
+      ).toBeTruthy();
+      expect(screen.getByRole("tablist")).toBeTruthy();
+    } finally {
+      planThrows = false;
+      quiet.mockRestore();
+    }
+  });
+});
+
 describe("the Season tab", () => {
   it("draws the commons once, moss where the village reached a goal", async () => {
     render(<Season />);
@@ -315,6 +401,7 @@ describe("seasonSteps", () => {
     join: "Join",
     plan: "Plan",
     align: "Align",
+    acts: { join: "open join", plan: "open plan", aligned: "open aligned" },
     joinLine: { none: "none", applied: "applied", picked: "picked" },
     planLine: {
       filed: "filed",

@@ -239,7 +239,6 @@ describe("the village page", () => {
     expect(screen.getByText("Kitchen keeper")).toBeTruthy();
     expect(document.body.textContent).not.toMatch(/Recorded here|XTS/);
   });
-
 });
 
 describe("your own season", () => {

@@ -20,8 +20,15 @@
  * a person, and a count shown is the village's (goals met) or the member's own
  * (texts waiting on them).
  */
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
-import { ArrowRight, Check } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { SignInDoors } from "@/components/modules/ModuleGate";
@@ -30,7 +37,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/lib/gameApi";
 import { useNewcomer } from "@/lib/newcomer";
 import { GoalRing, SeasonLine } from "@/components/SeasonBanner";
-import { DaySun, SeedOfLife, Triad, Vesica } from "@/components/sacred/glyphs";
+import { DaySun, SeedOfLife } from "@/components/sacred/glyphs";
 import CommonsPanel from "@/components/commons/CommonsPanel";
 import JoinSeason, { type JoinState } from "@/components/season/JoinSeason";
 import YourPlan, {
@@ -42,11 +49,9 @@ import VillagePlans from "@/components/season/VillagePlans";
 import AlignedPanel, {
   type AlignedStatus,
 } from "@/components/season/AlignedPanel";
-import { Fireflies } from "@/components/journey/nature";
+import TabBoundary from "@/components/season/TabBoundary";
 import {
-  BTN_PRIMARY,
   CARD,
-  CARD_FEATURED,
   EYEBROW,
   H1,
   HINT,
@@ -56,156 +61,19 @@ import {
 import { seasonView, type SeasonGoalView } from "@shared/seasonGoalsView";
 import { civilDayWords } from "@shared/seasonPlans";
 
-export const SEASON_TABS = ["season", "join", "plan", "aligned"] as const;
-export type SeasonTab = (typeof SEASON_TABS)[number];
-
-/** Which tab an anchor opens. The old pages' anchors and their sections' ids land on the tab that holds them. */
-export const TAB_OF_ANCHOR: Readonly<Record<string, SeasonTab>> = {
-  season: "season",
-  goals: "season",
-  everyone: "season",
-  join: "join",
-  plan: "plan",
-  aligned: "aligned",
-  confidentiality: "aligned",
-};
-
-function tabFromHash(
-  hash: string,
-  shown: readonly SeasonTab[]
-): SeasonTab | null {
-  const t = TAB_OF_ANCHOR[hash.replace(/^#/, "")];
-  return t && shown.includes(t) ? t : null;
-}
-
-type StepState = "done" | "now" | "wait";
-interface Step {
-  tab: SeasonTab;
-  title: string;
-  line: string;
-  state: StepState;
-}
-
-/**
- * The member's three steps, in the order a season asks them: join it, plan it,
- * align with what it asks. A step whose tab is off for this village, or whose
- * read has not answered, is left out or waits; nothing is guessed.
- */
-export function seasonSteps(
-  input: {
-    join: JoinState | null;
-    plan: PlanStatus | null;
-    aligned: AlignedStatus | null;
-  },
-  words: {
-    join: string;
-    plan: string;
-    align: string;
-    joinLine: Record<"none" | "applied" | "picked", string>;
-    planLine: {
-      filed: string;
-      changed: string;
-      notFiled: string;
-      before: (on: string) => string;
-    };
-    alignLine: {
-      clear: string;
-      waiting: (n: number) => string;
-      agreement: string;
-    };
-  },
-  opensOn: string | null
-): Step[] {
-  const out: Step[] = [];
-  const j = input.join;
-  if (j === "none" || j === "applied" || j === "picked") {
-    out.push({
-      tab: "join",
-      title: words.join,
-      line: words.joinLine[j],
-      state: j === "picked" ? "done" : j === "applied" ? "wait" : "now",
-    });
-  }
-  const p = input.plan;
-  if (p && p.state === "ready") {
-    const done = p.filed && !p.changed;
-    const before = p.window === "before";
-    out.push({
-      tab: "plan",
-      title: words.plan,
-      line: done
-        ? words.planLine.filed
-        : p.filed
-          ? words.planLine.changed
-          : before && opensOn
-            ? words.planLine.before(opensOn)
-            : words.planLine.notFiled,
-      state: done ? "done" : before ? "wait" : "now",
-    });
-  }
-  const a = input.aligned;
-  if (a && a.waiting !== null && a.agreement !== null) {
-    const waiting = a.waiting + (a.agreement === "asked" ? 1 : 0);
-    out.push({
-      tab: "aligned",
-      title: words.align,
-      line:
-        waiting === 0
-          ? words.alignLine.clear
-          : a.waiting === 0
-            ? words.alignLine.agreement
-            : words.alignLine.waiting(waiting),
-      state: waiting === 0 ? "done" : "now",
-    });
-  }
-  return out;
-}
-
-/**
- * Each step's glyph, from the sacred set: three circles meeting for joining a circle's team, the seed of life for a
- * plan that grows, the vesica (two circles, each through the other's centre) for two parties aligning.
- */
-const STEP_GLYPH: Record<SeasonTab, typeof SeedOfLife> = {
-  season: SeedOfLife,
-  join: Triad,
-  plan: SeedOfLife,
-  aligned: Vesica,
-};
-
-/** One step as a stone: a gold ring once done, filled gold while it is the next act, an edge while it waits on someone else. */
-function Stone({ step, onGo }: { step: Step; onGo: () => void }) {
-  const Glyph = STEP_GLYPH[step.tab];
-  return (
-    <button
-      type="button"
-      onClick={onGo}
-      data-step={step.tab}
-      data-state={step.state}
-      className={`jw-btn flex min-h-11 w-full items-center gap-3 rounded-xl border p-3 text-left sm:flex-col sm:items-start sm:p-4 ${step.state === "now" ? "border-notice bg-notice/10" : "border-border bg-muted hover:border-notice"}`}
-    >
-      <span
-        aria-hidden="true"
-        className={`grid size-11 shrink-0 place-items-center rounded-full border-2 ${step.state === "done" ? "border-notice text-notice" : step.state === "now" ? "border-notice bg-notice text-background" : "border-border text-muted-foreground"}`}
-      >
-        {step.state === "done" ? (
-          <Check className="size-5" />
-        ) : (
-          <Glyph className="size-6" />
-        )}
-      </span>
-      <span className="min-w-0">
-        <span className="block font-semibold text-foreground">
-          {step.title}
-        </span>
-        <span
-          className={`block text-sm ${step.state === "done" ? "text-open" : step.state === "now" ? "text-notice" : "text-muted-foreground"}`}
-        >
-          {step.line}
-        </span>
-      </span>
-    </button>
-  );
-}
+import {
+  SEASON_TABS,
+  StepsCard,
+  seasonSteps,
+  tabFromHash,
+  type SeasonTab,
+} from "@/components/season/seasonSteps";
+export {
+  SEASON_TABS,
+  TAB_OF_ANCHOR,
+  seasonSteps,
+  type SeasonTab,
+} from "@/components/season/seasonSteps";
 
 export default function Season() {
   const { t } = useLingui();
@@ -232,32 +100,108 @@ export default function Season() {
   const onPlan = useCallback((s: PlanStatus) => setPlan(s), []);
   const onAligned = useCallback((s: AlignedStatus) => setAligned(s), []);
 
-  // The address picks the tab: a redirect from an old page, a link from the profile, or the back button.
+  /**
+   * Open a tab. `scroll` brings the tab bar to the top of the screen, so the tab's own content is the first thing
+   * under it; `keepHash` leaves an arrival's anchor in place (#confidentiality, which the Aligned tab scrolls to).
+   */
+  const open = useCallback(
+    (next: SeasonTab, scroll = true, keepHash = false) => {
+      setTab(next);
+      if (typeof window === "undefined") return;
+      if (!keepHash)
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${window.location.pathname}${window.location.search}#${next}`
+        );
+      if (scroll)
+        requestAnimationFrame(() =>
+          document
+            .getElementById(`${tabsId}-bar`)
+            ?.scrollIntoView?.({ block: "start" })
+        );
+    },
+    [tabsId]
+  );
+
+  // The address picks the tab: a redirect from an old page, a notice, a link from the profile, or the back button.
+  // Arriving for a tab other than Season opens it AND brings it up, once, so the first phone screen shows what the
+  // link was for; a bare /season stays on the hero.
+  const arrived = useRef(false);
+  /** Set on an arrival for a tab other than Season, until the landing below has brought it up. */
+  const landing = useRef(false);
   useEffect(() => {
-    if (!modules.loaded) return;
+    if (!modules.loaded || !user) return;
     const go = () => {
       const next = tabFromHash(window.location.hash, shown);
-      if (next) setTab(next);
+      if (!next) return;
+      if (next === "season") setTab(next);
+      else open(next, true, true);
     };
-    go();
+    if (!arrived.current) {
+      arrived.current = true;
+      const next = tabFromHash(window.location.hash, shown);
+      if (next && next !== "season") landing.current = true;
+      go();
+    }
     window.addEventListener("hashchange", go);
     return () => window.removeEventListener("hashchange", go);
-  }, [modules.loaded, shown]);
+  }, [modules.loaded, user, shown, open]);
 
-  const open = (next: SeasonTab, scroll = true) => {
-    setTab(next);
-    if (typeof window !== "undefined") {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        `${window.location.pathname}${window.location.search}#${next}`
-      );
-      if (scroll)
-        document
-          .getElementById(`${tabsId}-bar`)
-          ?.scrollIntoView?.({ block: "start" });
-    }
+  /*
+   * LANDING, ONCE THE PAGE HAS SETTLED. The steps card above the tabs grows as each tab's read answers, which moved
+   * an early scroll off its mark (QA round 1: ?renew= left the role under the sticky bar). So the arrival is brought
+   * up again once every step has answered (or after a short wait for one that never does): the agreement for
+   * #confidentiality, the role for ?renew=, otherwise the tab bar with the tab's content under it.
+   */
+  const [waited, setWaited] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setWaited(true), 1500);
+    return () => clearTimeout(id);
+  }, []);
+  const settled =
+    waited ||
+    ((!places || (join !== null && join !== "loading")) &&
+      (!governance || plan !== null) &&
+      aligned?.waiting != null &&
+      aligned?.agreement != null);
+  useEffect(() => {
+    if (!settled || !landing.current) return;
+    landing.current = false;
+    const renew = new URLSearchParams(window.location.search).get("renew");
+    const target =
+      (window.location.hash === "#confidentiality"
+        ? document.getElementById("confidentiality")
+        : null) ??
+      (renew && tab === "plan"
+        ? document.getElementById(`seat-${renew}`)
+        : null) ??
+      document.getElementById(`${tabsId}-bar`);
+    requestAnimationFrame(() => target?.scrollIntoView?.({ block: "start" }));
+  }, [settled, tab, tabsId]);
+
+  /** The tab bar's keys: Left and Right move to the next tab, Home and End to the first and last (the ARIA tabs pattern). */
+  const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = shown.indexOf(tab);
+    const to =
+      e.key === "ArrowRight"
+        ? shown[(i + 1) % shown.length]
+        : e.key === "ArrowLeft"
+          ? shown[(i - 1 + shown.length) % shown.length]
+          : e.key === "Home"
+            ? shown[0]
+            : e.key === "End"
+              ? shown[shown.length - 1]
+              : null;
+    if (!to) return;
+    e.preventDefault();
+    open(to, false);
+    document.getElementById(`${tabsId}-tab-${to}`)?.focus();
   };
+  const failed = t({
+    message: "This part of the season could not be drawn.",
+    context: "season page, a tab that failed",
+  });
 
   const active = live?.current ?? null;
   const view = active
@@ -291,6 +235,20 @@ export default function Season() {
             context: "season page, step",
           }),
           align: t({ message: "Read and align", context: "season page, step" }),
+          acts: {
+            join: t({
+              message: "Open your application",
+              context: "season page, next act",
+            }),
+            plan: t({
+              message: "Open your plan",
+              context: "season page, next act",
+            }),
+            aligned: t({
+              message: "Open what waits on you",
+              context: "season page, next act",
+            }),
+          },
           joinLine: {
             none: t({
               message: "Not applied yet",
@@ -345,8 +303,6 @@ export default function Season() {
         live?.planWindow?.opensOn ?? null
       )
     : [];
-  const next = steps.find(s => s.state === "now") ?? null;
-  const allDone = steps.length > 0 && steps.every(s => s.state === "done");
 
   const tabLabel: Record<SeasonTab, string> = {
     season: t({ message: "Season", context: "season page, tab" }),
@@ -438,64 +394,13 @@ export default function Season() {
             </section>
           ) : (
             <>
-              {steps.length > 0 && (
-                <section
-                  aria-labelledby="season-you-h"
-                  className={CARD_FEATURED}
-                  data-season-steps=""
-                >
-                  <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <p className={EYEBROW}>
-                        <Trans context="season page, the member's steps eyebrow">
-                          Your season
-                        </Trans>
-                      </p>
-                      <h2
-                        id="season-you-h"
-                        className="mt-1 font-display text-2xl leading-snug text-card-foreground sm:text-3xl"
-                      >
-                        {allDone ? (
-                          <Trans context="season page, every step done">
-                            Your season is set.
-                          </Trans>
-                        ) : (
-                          <Trans context="season page, the steps heading">
-                            Where you stand
-                          </Trans>
-                        )}
-                      </h2>
-                    </div>
-                    {next ? (
-                      <Fireflies>
-                        <button
-                          type="button"
-                          className={BTN_PRIMARY}
-                          onClick={() => open(next.tab)}
-                          data-season-next=""
-                        >
-                          {next.title}
-                          <ArrowRight className="size-4" aria-hidden="true" />
-                        </button>
-                      </Fireflies>
-                    ) : null}
-                  </div>
-                  <ol
-                    className={`mt-4 grid gap-2 ${steps.length === 3 ? "sm:grid-cols-3" : steps.length === 2 ? "sm:grid-cols-2" : ""}`}
-                  >
-                    {steps.map(s => (
-                      <li key={s.tab}>
-                        <Stone step={s} onGo={() => open(s.tab)} />
-                      </li>
-                    ))}
-                  </ol>
-                </section>
-              )}
+              <StepsCard steps={steps} onOpen={open} />
 
               {/* THE TABS. Sticky under the site header, so the four doors stay one tap away on a long tab. */}
               <div
                 id={`${tabsId}-bar`}
                 role="tablist"
+                onKeyDown={onTabKey}
                 aria-label={t({
                   message: "The season's parts",
                   context: "season page, tabs",
@@ -512,6 +417,7 @@ export default function Season() {
                     type="button"
                     role="tab"
                     aria-selected={tab === x}
+                    tabIndex={tab === x ? 0 : -1}
                     aria-controls={`${tabsId}-panel-${x}`}
                     onClick={() => open(x, false)}
                     className={`jw-btn relative flex min-h-11 items-center justify-center rounded-xl px-2 text-sm ${tab === x ? "bg-notice font-semibold text-background" : "font-medium text-muted-foreground hover:text-foreground"}`}
@@ -528,38 +434,41 @@ export default function Season() {
                 hidden={tab !== "season"}
                 className="space-y-5"
               >
-                {goals.length > 0 ? (
-                  <section
-                    id="goals"
-                    className={CARD}
-                    aria-label={MY_SEASON_WORDS.commonsHeading}
-                  >
-                    <CommonsPanel
-                      goals={goals}
-                      head={
-                        <>
-                          <p className={EYEBROW}>
-                            {MY_SEASON_WORDS.commonsEyebrow}
-                          </p>
-                          <h2 className="mt-2 font-display text-2xl text-card-foreground">
-                            {MY_SEASON_WORDS.commonsHeading}
-                          </h2>
-                          <p className={`mt-2 ${HINT}`}>
-                            <Trans context="season page, the commons line">
-                              The village's goals for this season. Moss spreads
-                              into a goal when the whole village reaches it.
-                            </Trans>
-                          </p>
-                        </>
-                      }
-                    />
-                  </section>
-                ) : null}
-                {governance ? (
-                  <div id="everyone">
-                    <VillagePlans />
-                  </div>
-                ) : null}
+                <TabBoundary message={failed}>
+                  {goals.length > 0 ? (
+                    <section
+                      id="goals"
+                      className={CARD}
+                      aria-label={MY_SEASON_WORDS.commonsHeading}
+                    >
+                      <CommonsPanel
+                        goals={goals}
+                        head={
+                          <>
+                            <p className={EYEBROW}>
+                              {MY_SEASON_WORDS.commonsEyebrow}
+                            </p>
+                            <h2 className="mt-2 font-display text-2xl text-card-foreground">
+                              {MY_SEASON_WORDS.commonsHeading}
+                            </h2>
+                            <p className={`mt-2 ${HINT}`}>
+                              <Trans context="season page, the commons line">
+                                The village's goals for this season. Moss
+                                spreads into a goal when the whole village
+                                reaches it.
+                              </Trans>
+                            </p>
+                          </>
+                        }
+                      />
+                    </section>
+                  ) : null}
+                  {governance ? (
+                    <div id="everyone">
+                      <VillagePlans />
+                    </div>
+                  ) : null}
+                </TabBoundary>
               </div>
 
               {places ? (
@@ -569,7 +478,9 @@ export default function Season() {
                   aria-labelledby={`${tabsId}-tab-join`}
                   hidden={tab !== "join"}
                 >
-                  <JoinSeason onStatus={onJoin} />
+                  <TabBoundary message={failed}>
+                    <JoinSeason onStatus={onJoin} />
+                  </TabBoundary>
                 </div>
               ) : null}
 
@@ -580,7 +491,9 @@ export default function Season() {
                   aria-labelledby={`${tabsId}-tab-plan`}
                   hidden={tab !== "plan"}
                 >
-                  <YourPlan onStatus={onPlan} />
+                  <TabBoundary message={failed}>
+                    <YourPlan onStatus={onPlan} />
+                  </TabBoundary>
                 </div>
               ) : null}
 
@@ -590,7 +503,9 @@ export default function Season() {
                 aria-labelledby={`${tabsId}-tab-aligned`}
                 hidden={tab !== "aligned"}
               >
-                <AlignedPanel onStatus={onAligned} />
+                <TabBoundary message={failed}>
+                  <AlignedPanel onStatus={onAligned} />
+                </TabBoundary>
               </div>
             </>
           )}

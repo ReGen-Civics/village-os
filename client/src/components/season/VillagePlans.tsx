@@ -9,8 +9,10 @@
  *   ONE CARD EACH  every present member, ordered by name and never by progress
  *                  (PlanCard)
  *   (The "Waiting on the village" filter left with the season fold: each card
- *   already names where its applications stand, and the village answers them
- *   on its work queue, /governance/work.)
+ *   already names where its applications stand, and an application that waits
+ *   reaches the people who answer it on its own: in the holder's "Waiting on
+ *   you" on the profile and the Today strip, and as a ballot when it goes to a
+ *   vote.)
  *   NOT FILED YET  the members who have not filed, by name (Rye, 2026-10-09)
  *
  * No terms and no money reach this panel. An application's terms are read on

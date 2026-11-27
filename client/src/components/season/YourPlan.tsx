@@ -408,11 +408,18 @@ export default function YourPlan({
     });
   }, [onStatus, state, data]);
 
+  // The term warning's ?renew= lands on its role: after the plan has drawn and after the page has opened this tab,
+  // to the top of the screen, clear of the sticky header and tab bar (scroll-mt-40 on the seat).
   useEffect(() => {
     if (state !== "ready" || !renew) return;
-    document
-      .getElementById(`seat-${renew}`)
-      ?.scrollIntoView({ block: "center" });
+    const id = requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        document
+          .getElementById(`seat-${renew}`)
+          ?.scrollIntoView?.({ block: "start" })
+      )
+    );
+    return () => cancelAnimationFrame(id);
   }, [state, renew]);
 
   const body = useMemo((): PlanBody => {
@@ -555,7 +562,7 @@ export default function YourPlan({
                 <li
                   key={seat.id}
                   id={`seat-${seat.id}`}
-                  className={`rounded-xl border bg-muted p-4 ${lit ? "border-notice ring-2 ring-notice/30" : "border-border"}`}
+                  className={`scroll-mt-40 rounded-xl border bg-muted p-4 ${lit ? "border-notice ring-2 ring-notice/30" : "border-border"}`}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="font-display text-lg font-bold text-foreground">
@@ -873,16 +880,17 @@ export default function YourPlan({
         </div>
       </section>
 
-      {/* On a phone the act stays in thumb reach, just above the site's tab bar, while the plan is written. */}
+      {/* On a phone the act stays in thumb reach: one thin strip just above the site's tab bar, File wide and Save
+          beside it, so it never covers the field being typed. On a wide screen it is the panel that closes the plan. */}
       <div
-        className={`${CARD} z-20 flex flex-col gap-3 max-sm:sticky max-sm:bottom-[var(--tabbar-h,0px)] max-sm:p-4 sm:flex-row sm:items-center`}
+        className="z-20 flex items-center gap-2 border-t border-border bg-card p-2 max-sm:sticky max-sm:bottom-[var(--tabbar-h,0px)] max-sm:-mx-4 sm:rounded-2xl sm:border sm:p-6 sm:shadow-sm"
         data-plan-actions=""
       >
         <button
           type="button"
           disabled={busy}
           onClick={() => void save(true)}
-          className={`${BTN_PRIMARY} sm:flex-1`}
+          className={`${BTN_PRIMARY} flex-1`}
         >
           {MY_SEASON_WORDS.file}
         </button>
@@ -894,15 +902,15 @@ export default function YourPlan({
         >
           {MY_SEASON_WORDS.save}
         </button>
-        {said && (
-          <p
-            role={said.ok ? "status" : "alert"}
-            className={`text-sm font-medium ${said.ok ? "text-open" : "text-destructive"}`}
-          >
-            {said.text}
-          </p>
-        )}
       </div>
+      {said && (
+        <p
+          role={said.ok ? "status" : "alert"}
+          className={`text-sm font-medium ${said.ok ? "text-open" : "text-destructive"}`}
+        >
+          {said.text}
+        </p>
+      )}
     </div>
   );
 }

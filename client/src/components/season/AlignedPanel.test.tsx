@@ -441,3 +441,36 @@ describe("where the reader stands", () => {
     );
   });
 });
+
+describe("a link to the agreement", () => {
+  it("lands on #confidentiality once the agreement has drawn (the newcomer's align-first step)", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    window.history.replaceState(null, "", "/season#confidentiality");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        url.startsWith("/api/confidentiality")
+          ? json({
+              agreement: {
+                title: "Confidentiality agreement",
+                body: "Keep it inside.",
+                intent: "I align.",
+                version: "v1",
+                document: null,
+              },
+              you: { holds: false, confirmFresh: true },
+              message: null,
+            })
+          : url.startsWith("/api/profile/alignments")
+            ? json({ alignments: [] })
+            : page(ROWS)
+      )
+    );
+    render(<Aligned />);
+    await waitFor(() => expect(scrolled).toContain("confidentiality"));
+    window.history.replaceState(null, "", "/");
+  });
+});

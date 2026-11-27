@@ -199,3 +199,23 @@ msgstr "Su plan"
 msgctxt "season page, step"
 msgid "Read and align"
 msgstr "Lea y alinéese"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, next act"
+msgid "Open your application"
+msgstr "Abra su solicitud"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, next act"
+msgid "Open your plan"
+msgstr "Abra su plan"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, next act"
+msgid "Open what waits on you"
+msgstr "Abra lo que le espera"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, a tab that failed"
+msgid "This part of the season could not be drawn."
+msgstr "Esta parte de la temporada no se pudo mostrar."

@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { Link } from "wouter";
 import { civilDayWords, questPipsWords } from "@shared/seasonPlans";
 import type { PlanApplication, PlanCard as PlanCardData } from "./seasonPlansApi";
+import { EYEBROW, TILE } from "@/components/journey/look";
 
 export const PLAN_CARD_WORDS = {
   filed: "Filed",
@@ -76,7 +77,7 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
   const served = card.servesGoals?.length ? card.servesGoals : card.servesGoal ? [{ goal: card.servesGoal, howItHelps: null }] : [];
   const seasonal = card.seasonalGoals ?? [];
   return (
-    <article className="rounded-xl border border-border bg-muted p-5 text-card-foreground" aria-labelledby={`plan-${card.userId}`}>
+    <article className="rounded-xl border border-border bg-card p-4 text-card-foreground sm:p-5" aria-labelledby={`plan-${card.userId}`}>
       <header className="flex flex-wrap items-baseline justify-between gap-2">
         <H id={`plan-${card.userId}`} className="font-display text-lg font-bold text-foreground">
           {card.handle ? (
@@ -93,15 +94,15 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
       </header>
 
       <dl className="mt-3 space-y-3 text-sm">
-        <div>
-          <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.holds}</dt>
-          <dd className="mt-1 flex flex-wrap gap-1.5">
+        <div className={TILE}>
+          <dt className={EYEBROW}>{PLAN_CARD_WORDS.holds}</dt>
+          <dd className="mt-2 flex flex-wrap gap-1.5">
             {card.seats.length ? card.seats.map((s) => <Chip key={s.id}>{s.name}</Chip>) : <span className="text-muted-foreground">{PLAN_CARD_WORDS.noSeats}</span>}
           </dd>
         </div>
         {card.handingBack.length > 0 && (
           <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.handsBack}</dt>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.handsBack}</dt>
             <dd className="mt-1 flex flex-wrap gap-1.5">
               {card.handingBack.map((s) => (
                 <Chip key={s.id} tone="amber">
@@ -113,7 +114,7 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
         )}
         {card.applications.length > 0 && (
           <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.applied}</dt>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.applied}</dt>
             <dd className="mt-1 flex flex-wrap gap-1.5">
               {card.applications.map((a) => (
                 <ApplicationChip key={a.id} app={a} />
@@ -122,14 +123,14 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
           </div>
         )}
         {card.aim && (
-          <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.aim}</dt>
-            <dd className="mt-0.5 whitespace-pre-wrap text-base text-foreground">{card.aim}</dd>
+          <div className={TILE}>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.aim}</dt>
+            <dd className="mt-1 whitespace-pre-wrap font-display text-lg leading-snug text-foreground">{card.aim}</dd>
           </div>
         )}
         {served.length > 0 && (
-          <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.serves}</dt>
+          <div className={TILE}>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.serves}</dt>
             <dd>
               <ul className="mt-1 space-y-1.5" data-testid="plan-serves">
                 {served.map((g) => (
@@ -148,7 +149,7 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
         )}
         {seasonal.length > 0 && (
           <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.seasonalGoals}</dt>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.seasonalGoals}</dt>
             <dd>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-foreground" data-testid="plan-seasonal">
                 {seasonal.map((g, i) => (
@@ -166,14 +167,14 @@ export default function PlanCard({ card, headingLevel = 3 }: { card: PlanCardDat
           </div>
         )}
         <div>
-          <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.thisMoon}</dt>
+          <dt className={EYEBROW}>{PLAN_CARD_WORDS.thisMoon}</dt>
           <dd className="mt-1">
             <QuestPips done={card.questsThisMoon.done} min={card.questsThisMoon.min} max={card.questsThisMoon.max} />
           </dd>
         </div>
         {card.measures.length > 0 && (
           <div>
-            <dt className="font-semibold text-muted-foreground">{PLAN_CARD_WORDS.measures}</dt>
+            <dt className={EYEBROW}>{PLAN_CARD_WORDS.measures}</dt>
             <dd>
               <ul className="mt-1 list-disc space-y-0.5 pl-5 text-foreground">
                 {card.measures.map((m, i) => (
