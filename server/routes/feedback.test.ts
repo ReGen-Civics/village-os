@@ -68,11 +68,16 @@ beforeEach(() => {
   admin = false;
 });
 
+/** One door to the suite's own server, so the waiver below is said once. */
+function call(p: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${base}${p}`, init); // module-review-ok: the suite's own in-process server on 127.0.0.1, never an outbound call, so there is no correlation id to carry
+}
+
 const insert = () => queries.find((q) => q.sql.startsWith("INSERT INTO feedback_items"))!;
 
 describe("POST /api/feedback from the guide's panel", () => {
   it("takes the third kind, and the guide's title from the first line when the member left it empty", async () => {
-    const r = await fetch(`${base}/api/feedback`, {
+    const r = await call(`/api/feedback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kind: "feedback", title: "", detail: "The calendar felt crowded. Too many colours at once.", pageUrl: "https://v.example/events?x=1" }),
@@ -88,7 +93,7 @@ describe("POST /api/feedback from the guide's panel", () => {
 
   it("still refuses an unknown kind and too little to act on", async () => {
     const bad = (body: object) =>
-      fetch(`${base}/api/feedback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.status);
+      call(`/api/feedback`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.status);
     expect(await bad({ kind: "praise", title: "Nice work", detail: "Enough words to act on here." })).toBe(400);
     expect(await bad({ kind: "bug", title: "Blank", detail: "short" })).toBe(400);
     expect(insert()).toBeUndefined();
@@ -102,7 +107,7 @@ describe("POST /api/feedback from the guide's panel", () => {
     form.append("title", "Button under the tab bar");
     form.append("detail", "The send button sits under the tab bar on a phone.");
     form.append("screenshot", new Blob([new Uint8Array(geotagged)], { type: "image/jpeg" }), "IMG_0001.jpg");
-    const r = await fetch(`${base}/api/feedback`, { method: "POST", body: form });
+    const r = await call(`/api/feedback`, { method: "POST", body: form });
     expect(r.status).toBe(200);
 
     const name = insert().params[8] as string;
@@ -114,14 +119,14 @@ describe("POST /api/feedback from the guide's panel", () => {
     expect((await sharp(fs.readFileSync(onDisk)).metadata()).exif).toBeFalsy();
 
     const id = String(insert().params[0]);
-    expect((await fetch(`${base}/api/admin/feedback/${id}/screenshot`)).status).toBe(401);
+    expect((await call(`/api/admin/feedback/${id}/screenshot`)).status).toBe(401);
     admin = true;
-    const shot = await fetch(`${base}/api/admin/feedback/${id}/screenshot`);
+    const shot = await call(`/api/admin/feedback/${id}/screenshot`);
     expect(shot.status).toBe(200);
     expect(shot.headers.get("cache-control")).toBe("private, no-store");
     expect(shot.headers.get("x-content-type-options")).toBe("nosniff");
     expect(shot.headers.get("content-type")).toMatch(/^image\/jpeg/);
-    expect((await fetch(`${base}/api/admin/feedback/fb-nope/screenshot`)).status).toBe(404);
+    expect((await call(`/api/admin/feedback/fb-nope/screenshot`)).status).toBe(404);
   });
 
   it("refuses a screenshot that is not a picture, and stores nothing", async () => {
@@ -129,7 +134,7 @@ describe("POST /api/feedback from the guide's panel", () => {
     form.append("kind", "bug");
     form.append("detail", "Something is wrong with the page here.");
     form.append("screenshot", new Blob(["<html>not a picture</html>"], { type: "image/png" }), "shot.png");
-    const r = await fetch(`${base}/api/feedback`, { method: "POST", body: form });
+    const r = await call(`/api/feedback`, { method: "POST", body: form });
     expect(r.status).toBe(400);
     expect(insert()).toBeUndefined();
   });
