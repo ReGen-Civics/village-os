@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { CONTAIN_WHEN_CUT_OVER, DEFAULT_ART_FOCUS, FOUNDING_CARD_ART, artFocusOr, parseArtFocus, pathArtFocus, shouldShowWhole } from "./pathCardArt";
+import { DEFAULT_ART_FOCUS, FOUNDING_CARD_ART, artFocusOr, parseArtFocus, pathArtFocus } from "./pathCardArt";
 import { NATURE_ART_URL } from "./natureArt";
 
 describe("parseArtFocus", () => {
@@ -32,29 +32,6 @@ describe("pathArtFocus", () => {
       investorHeroFocus: "50% 80%",
     });
     expect(pathArtFocus(undefined)).toEqual({});
-  });
-});
-
-describe("shouldShowWhole", () => {
-  it("cuts a portrait to fill a square or a 4:5 frame", () => {
-    expect(shouldShowWhole(1120, 1400, 358, 358)).toBe(false);
-    expect(shouldShowWhole(640, 960, 358, 358)).toBe(false);
-    expect(shouldShowWhole(1120, 1400, 230, 288)).toBe(false);
-  });
-
-  it("shows a wide landscape whole in a portrait frame", () => {
-    expect(shouldShowWhole(1600, 900, 230, 288)).toBe(true);
-    expect(shouldShowWhole(2400, 800, 358, 358)).toBe(true);
-  });
-
-  it("keeps the cover when a size is unknown", () => {
-    expect(shouldShowWhole(0, 0, 358, 358)).toBe(false);
-    expect(shouldShowWhole(1600, 900, 0, 0)).toBe(false);
-  });
-
-  it("draws the line where it says", () => {
-    expect(CONTAIN_WHEN_CUT_OVER).toBeGreaterThan(0.34); // a 2:3 photo in a square loses a third and is still cut
-    expect(CONTAIN_WHEN_CUT_OVER).toBeLessThan(0.5);
   });
 });
 
