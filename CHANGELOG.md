@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.99 (2026-11-27)
+
+### What changed for your village
+
+- **A menu shaped by who is reading it.** The menu has four groups: Village (the place: Library, Village health, Places and homes), Community (the people and the story), Join (first for a visitor) and Govern (how the village is run, renamed from Governance). Each level shows five rows or fewer, with folders for the rest, and every page is still reachable. A signed-out visitor sees no Wallet, Village health, Library or Game Mechanics. Quests appear in both Village and Govern. Your First Walk is gone, and its address opens the home page. The footer follows the same groups, and the Module Library is last.
+- **Your own quick cards.** The cards at the top of the phone's More sheet hold six places. Press and hold a card to rearrange, remove or add one, the way a phone's home screen works; a + on an empty place opens a picker with search and the pages you open most.
+- **A lighter app.** The production build no longer ships an unused label on each of about 14,000 translations, about 260 KB less to download. Every word reads the same in English and Spanish.
+
+### What you must do
+
+Nothing. Each member's quick cards start as the four you know.
+
+### Does it touch your data
+
+No migration in this release. Each member's quick cards are kept in their own preferences, and going back to 1.3.98 still works: the older version ignores them.
+
+---
+
 ## 1.3.98 (2026-11-27)
 
 ### What changed for your village
