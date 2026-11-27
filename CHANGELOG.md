@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.93 (2026-11-27)
+
+### What changed for your village
+
+- **A weathered map for light mode.** The light mode paper setting's old-map choice, now called "Weathered map" in Admin, draws aged, mottled paper with no grid. Cards are worn pages with seven different torn edges, five stain places and three foxing spots, so neighbours never look alike, and a page looks the same on every visit. A small compass mark sits under each page's main heading. Dark mode and Admin are unchanged, and high contrast and print get the plain page.
+- **A lighter build.** The member pages ship in eight shared files instead of many small ones, so the whole build takes 100 KB less room and a first visit loads a little less.
+
+### What you must do
+
+Nothing. To use the weathered map, choose it under Admin, Game Mechanics, "Light mode's paper".
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.92 still works.
+
+---
+
 ## 1.3.92 (2026-11-27)
 
 ### What changed for your village

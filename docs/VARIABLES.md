@@ -1465,7 +1465,7 @@ Every cash budget line belongs to a circle. A line for the whole village, like a
 
 ### Light mode's paper
 
-How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are.
+How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are.
 
 | Fact | Value |
 | --- | --- |
@@ -1480,11 +1480,11 @@ How light mode draws the member pages. Plain is the clean Golden Hour page. Sea 
 What it may be set to:
 
 - `plain` Plain. The clean Golden Hour page.
-- `sea-chart` Sea chart. Aged paper, torn cards and Garamond headings.
+- `sea-chart` Weathered map. Weathered paper, pages torn each their own way, and Garamond headings.
 
 ### Light or dark on a first visit
 
-Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.
+Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode.
 
 | Fact | Value |
 | --- | --- |
@@ -1498,7 +1498,7 @@ Which mode a person sees the first time they arrive, before they have chosen one
 
 What it may be set to:
 
-- `light` Light. The day page, and Sea chart where the village chose it.
+- `light` Light. The day page, and Weathered map where the village chose it.
 - `dark` Dark. The night page.
 
 ### Fill the phone's bottom bar from where members go
