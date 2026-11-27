@@ -299,9 +299,10 @@ export const NAV: readonly NavEntry[] = [
       // How we work (the lead, round 2: "the how we work and the game mechanics and all of that would also be under
       // the governance"). Renamed on 2026-09-28 with the page it opens; the route stays put.
       { href: "/governance/how", label: "How we work together", sub: "How we work" },
+      // A section of How we work together since fold 4 (#1854, 1.3.96); /game-mechanics redirects there. The lead's rule
+      // names it in Govern, so it keeps a row of its own, as Leaving Well does. The rules are a member's.
+      { href: "/governance/how#game-mechanics", label: "Game Mechanics", newcomers: "never", sub: "How we work" },
       { href: "/how-we-create", brochure: true, label: "How We Create", sub: "How we work" },
-      // No Game Mechanics entry: fold 4 (#1854) put it inside How we work together (/governance/how#game-mechanics, members
-      // only), and /game-mechanics redirects there. How we work together is its door.
       // Every email the village sends and when, read-only, with a door to propose a change. A member's.
       { href: "/village-email", label: "Village Email", module: "comms", newcomers: "never", sub: "How we work" },
       // Last of all, for every reader (the lead, 27 Nov 2026: "module library at the bottom").

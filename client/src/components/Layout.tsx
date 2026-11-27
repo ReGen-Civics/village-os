@@ -376,7 +376,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         transition={{ duration: 0.15 }}
                         className="absolute top-full right-0 mt-2 w-60 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        <p data-menu-eyebrow="" className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="the phone's More sheet: heading">Yours</Trans></p>
+                        <p data-menu-eyebrow="" className="pl-11 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="the phone's More sheet: heading">Yours</Trans></p>
                         <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex min-h-11 w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted" listClassName="ml-4 border-l-2 border-border [&_a]:pl-3" renderLink={(item) => (
                           <Link
                             href={item.href}

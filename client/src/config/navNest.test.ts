@@ -115,6 +115,8 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     // Guides holds Rights and agreements and a row for its Leaving Well chapter; the old addresses have no entry.
     expect(at("/rights")).toEqual(["Govern/Guides"]);
     expect(at("/rights#leaving-well")).toEqual(["Govern/Guides"]);
+    // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
+    expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
     for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
     expect(at("/library")).toEqual(["Village/"]);
     expect(at("/village-health")).toEqual(["Village/"]);

@@ -147,6 +147,7 @@ Govern
     Leaving Well  `/rights#leaving-well`
   How we work ▸
     How we work together  `/governance/how`
+    Game Mechanics  `/governance/how#game-mechanics`
     How We Create  `/how-we-create`
     Village Email  `/village-email`
     Module Library  `/modules`
@@ -235,6 +236,7 @@ Govern
     Leaving Well  `/rights#leaving-well`
   How we work ▸
     How we work together  `/governance/how`
+    Game Mechanics  `/governance/how#game-mechanics`
     How We Create  `/how-we-create`
     Village Email  `/village-email`
     Module Library  `/modules`
@@ -325,6 +327,7 @@ Govern
     Leaving Well  `/rights#leaving-well`
   How we work ▸
     How we work together  `/governance/how`
+    Game Mechanics  `/governance/how#game-mechanics`
     How We Create  `/how-we-create`
     Village Email  `/village-email`
     Module Library  `/modules`
@@ -469,7 +472,7 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/email/unsubscribe` |  | V N M | - | - | STAY | an email link |
 | `/email/a` |  | V N M | - | - | STAY | an email's one-tap action |
 | `/forgot-password` | Set a new password | V | - | - | STAY | reached from Sign in |
-| `/game-mechanics` | redirects to `/governance/how` | - | Guides / Game Mechanics | - | FOLDED | into How we work together (/governance/how#game-mechanics, members only) by fold 4, #1854 (1.3.96, merged into this branch); redirects there |
+| `/game-mechanics` | redirects to `/governance/how` | - | Guides / Game Mechanics | Govern / How we work / Game Mechanics (`/governance/how#game-mechanics`) | FOLDED | into How we work together (/governance/how#game-mechanics, members only) by fold 4, #1854 (1.3.96, merged into this branch); redirects there. Govern, How we work keeps a Game Mechanics row for members that opens the section |
 | `/changes` | Change requests | - | Governance / Change Requests | - | FOLDED | into Decisions (/governance/decisions#changes) by folds 6 and 7, #1861 |
 | `/changes/:id` |  | M R A | - | - | STAY | reached from the change requests inside Decisions |
 | `/village-email` | How the village emails | M R A | Guides / Village Email | Govern / How we work / Village Email | STAY | out of Guides (the lead: "the village emails can be nested somewhere else"), into Govern's How we work; a member's |
@@ -527,12 +530,13 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 - **Village:** the maps (the hidden map beside the Living Map for a member), Quests, Places and homes (Housing, Stay, Good Neighbor Criteria, a chapter of Rights and agreements since #1857, Places, which holds the photographs since #1856), the Library and Village Health as their own entries.
 - **Community:** Our story (Our Team, Master Plan, the Love Letter, Village Network), Conversations (Feed, Forum, Village Tools, Share Feedback), Gratitude, Gatherings, Welcoming.
 - **Join:** the paths, Open Roles, Plan a Visit, Build with us (Become a partner, Propose a quest, Business Opportunities, Work With Us), Fund the village.
-- **Govern:** Decide (What's happening now, Decisions, which holds change requests since #1861, Treasury, Make a Proposal), Circles & Roles (Circles, Roles, What We Look After, How roles are going, a section of Circles since 1.3.95), This season (Season, the one page the season fold #1862 makes of Season Plans, Join the Season and the aligned terms; Funding Rounds; Quests), Guides (Co-Creators Guide, Training, Rights and agreements since #1857, Leaving Well), How we work (How we work together, which holds Game Mechanics since #1854, How We Create, Village Email, Module Library).
+- **Govern:** Decide (What's happening now, Decisions, which holds change requests since #1861, Treasury, Make a Proposal), Circles & Roles (Circles, Roles, What We Look After, How roles are going, a section of Circles since 1.3.95), This season (Season, the one page the season fold #1862 makes of Season Plans, Join the Season and the aligned terms; Funding Rounds; Quests), Guides (Co-Creators Guide, Training, Rights and agreements since #1857, Leaving Well), How we work (How we work together, Game Mechanics, a section of it since #1854 with a row of its own for members, How We Create, Village Email, Module Library).
 - **The account menu, the member's own:** My Profile, Messages, My tasks (each with its count), Your things (Waiting on you, Wallet, Journal, Protocols, Badges), Running the village (Launch Plan, Treasury desk, Command Centre, Review, Village Settings).
 - **New doors:** Become a partner, Propose a quest, How roles are going, the admin's Review page, and the footer's Library and hidden map.
 - **The QA round (27 Nov 2026):** one folder open at a time; "Choose your path" open for a newcomer; folder rows and icon-less links keep the icon gutter; Escape returns focus; the footer says Govern, matches the menu's words and hides Village Health from a visitor; the phone sheet shows each page once.
 - **The QA round 2 (27 Nov 2026):** a dropdown clicked open, or clicked inside, stays open when the pointer leaves, and closes on a click outside, Escape or a link; folders are indented with their rule at the icon gutter; the dropdowns are w-64 so no label wraps; each dropdown is headed with what its group holds (The place, The people and the story, Ways in, How we're run); the footer's columns are the menu's groups (Village, Community, Join, Govern) beside Connect.
 - **The QA round 3 (27 Nov 2026):** every menu row is 44px with one left edge, glyph or none (main's glyphs, no new ones); the eyebrows read in the light palette's dark accent by day and gold by night; the menus are solid paper on the weathered map; the account menu is headed "Yours"; the footer leaves Waiting on you to the account menu and puts Events in Community.
+- **The QA round 4 (27 Nov 2026):** Game Mechanics gets its own members' row in How we work, as the lead's rule names it; the phone sheet's eyebrows take the dark ink too; a visitor's Sign in or join tile wears the Profile glyph; and the eyebrows start where the rows' words do.
 - **Gated as before:** no gate was added. A newcomer meets none of a member's working areas.
 
 ## Folds to consider next (not done here)

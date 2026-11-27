@@ -143,7 +143,7 @@ export default function NavDropdown({
           >
             {/* What the group holds, as the More sheet heads its sections (the menu's QA, round 2). Words only. */}
             {group.holds ? (
-              <p data-menu-eyebrow="" className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
+              <p data-menu-eyebrow="" className="pl-15 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
             ) : null}
             <MenuRows
               links={items}

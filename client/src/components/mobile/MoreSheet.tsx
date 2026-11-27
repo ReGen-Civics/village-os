@@ -253,7 +253,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
         ) : (
           // One tile for a visitor: Work With Us is in Join's Build with us, so it is not drawn twice (QA, 27 Nov 2026).
           <section className="mt-2 grid grid-cols-1 gap-2">
-            <Tile href="/login" label={t({ message: "Sign in or join", context: "the phone's More sheet: a visitor's tile" })} onGo={close} />
+            <Tile href="/login" label={t({ message: "Sign in or join", context: "the phone's More sheet: a visitor's tile" })} onGo={close} Icon={ProfileGlyph} />
           </section>
         )}
 
@@ -321,4 +321,13 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
       </div>
     </div>
   );
+}
+
+/**
+ * The Profile tile's glyph, for a visitor's Sign in or join: /login has no glyph of its own, and its words sat under an
+ * empty slot at the bottom of a 72px tile (the menu's QA, round 4). Kept down here, apart from the tiles above, which
+ * the speed cards (#1860) replace.
+ */
+function ProfileGlyph({ className }: { className?: string }) {
+  return <MenuIcon href="/profile" className={className} />;
 }
