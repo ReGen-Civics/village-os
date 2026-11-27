@@ -134,7 +134,7 @@ function StepAdd({ questId, index, onAdded }: { questId: string; index: number; 
         </label>
       </div>
       {busy && <p className="text-xs text-muted-foreground">{t({ message: "Saving…", context: "quest step: a piece is being saved" })}</p>}
-      {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
@@ -148,7 +148,7 @@ function Piece({ s, canRemove, onRemove }: { s: StepSubmissionView; canRemove: b
           <span className="whitespace-pre-wrap text-foreground">{s.body}</span>
         ) : s.kind === "photo" && s.fileUrl ? (
           <a href={s.fileUrl} target="_blank" rel="noreferrer" className="inline-block">
-            <img src={s.fileUrl} alt={t({ message: "A photo you added for this step", context: "quest step: a photo's alt text" })} className="max-h-40 rounded-md" loading="lazy" />
+            <img src={s.fileUrl} alt={t({ message: "A photo you added for this step", context: "quest step: a photo's alt text" })} className="max-h-40 rounded-lg" loading="lazy" />
           </a>
         ) : s.fileUrl ? (
           <a href={s.fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-teal-deep underline underline-offset-2">
@@ -238,7 +238,7 @@ export default function QuestSteps({
           );
         })}
       </ol>
-      {error && <p role="alert" className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-xs text-destructive">{error}</p>}
     </>
   );
 }

@@ -83,7 +83,7 @@ function StepEvidence({ steps, titles }: { steps: StepSubmissionView[]; titles: 
                   <span className="whitespace-pre-wrap text-muted-foreground">{s.body}</span>
                 ) : s.kind === "photo" && s.fileUrl ? (
                   <a href={s.fileUrl} target="_blank" rel="noopener noreferrer">
-                    <img src={s.fileUrl} alt={t({ message: "A photo given for this step", context: "consent queue: a step photo's alt text" })} className="max-h-48 rounded-md" loading="lazy" />
+                    <img src={s.fileUrl} alt={t({ message: "A photo given for this step", context: "consent queue: a step photo's alt text" })} className="max-h-48 rounded-lg" loading="lazy" />
                   </a>
                 ) : s.fileUrl ? (
                   <a href={s.fileUrl} target="_blank" rel="noopener noreferrer" className="text-notice underline">
