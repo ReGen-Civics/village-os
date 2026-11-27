@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.96 (2026-11-27)
+
+### What changed for your village
+
+- **Game Mechanics now lives inside How we work together.** /governance/how reads first as how the village works together, in panels a member can fold away once read, then (for members only) the full rules of the game behind its own heading, each part folded so people can go straight to what they need. A member sees "Skip to the game mechanics" at the top. A signed-out visitor sees only how we work together. /game-mechanics opens the new place and keeps its ?dial= and ?focus= links.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.95 still works.
+
+---
+
 ## 1.3.95 (2026-11-27)
 
 ### What changed for your village
