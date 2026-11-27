@@ -85,4 +85,31 @@ describe("the conversation notes panel", () => {
     expect(calls[0].path).toBe("/api/governance/applications/op-1/interviews/7/notes");
     expect(JSON.parse(String(calls[0].init.body))).toEqual({ body: "Talked about the budget." });
   });
+
+  it("QA round 2: the guide is drawn once above the conversations, and every note box has its own id", () => {
+    const guide = { items: [{ key: "c:c1", kind: "criterion" as const, text: "Keeps books" }, { key: "q:care", kind: "quality" as const, text: "Care" }], notes: [] };
+    render(
+      <I18nProvider i18n={i18n}>
+        <ConversationNotes base="/api/governance/applications/op-1" conversations={[conv([]), { ...conv([]), interviewId: 8, label: "Conversation with Data Role" }]} guide={guide} onSaved={() => {}} />
+      </I18nProvider>,
+    );
+    expect(document.querySelectorAll("[data-conversation-guide]")).toHaveLength(1);
+    const ids = Array.from(document.querySelectorAll("textarea, input")).map((el) => el.id).filter(Boolean);
+    expect(new Set(ids).size).toBe(ids.length);
+    // The guide sits above the list of conversations.
+    const guideEl = document.querySelector("[data-conversation-guide]")!;
+    const first = document.querySelector("[data-conversation]")!;
+    expect(guideEl.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("QA round 2: the hidden file input comes before its label, so the label can show the keyboard's focus", () => {
+    draw([conv([])]);
+    fireEvent.click(screen.getByRole("button", { name: "Add a note or file" }));
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const label = document.querySelector("[data-file-choose]") as HTMLLabelElement;
+    expect(input.className.split(" ")).toContain("peer");
+    expect(label.className).toMatch(/peer-focus-visible:ring-2/);
+    expect(input.nextElementSibling).toBe(label);
+    expect(label.htmlFor).toBe(input.id);
+  });
 });

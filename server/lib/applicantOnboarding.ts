@@ -541,7 +541,14 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
       mayAskReferences: open && s.holdsPower && !s.recused && (member ? member.firstRole : shortlist === "yes" && kindOfRef(ref) === "open") && !steps.some((x) => x.kind === "refs_asked"),
-      mayAddFinal: !member && open && (s.holdsPower || s.isFinalCall) && !s.recused && shortlist === "yes" && !!finalRole && !interviews.some((i) => i.final && i.state !== "waiting"),
+      // The older path (QA round 2): a final the role's own list named, waiting, needs no final-call role or shortlist to move to.
+      mayAddFinal:
+        !member &&
+        open &&
+        (s.holdsPower || s.isFinalCall) &&
+        !s.recused &&
+        !interviews.some((i) => i.final && i.state !== "waiting") &&
+        (interviews.some((i) => i.final && i.state === "waiting") || (shortlist === "yes" && !!finalRole)),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,
     },
@@ -745,11 +752,18 @@ async function trackFactsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Pro
 }
 
 /**
- * WHAT THE APPLICANT'S OWN PAGE READS OF THE SIX STAGES: each stage's key and state, the stage they stand at, and
- * whether they may refine their proposal. Stage keys and states only: never a note, a score, a reference or a name.
+ * WHAT THE APPLICANT'S OWN PAGE READS OF THE SIX STAGES: each stage's key and state, the stage they stand at,
+ * whether they may refine their proposal, whether it was shortlisted, and, once their references are in, the role
+ * that acts next. Never a note, a score, a reference or a person's name: a role's name at most.
  * Open proposals only; a member's own application keeps its own page. Null otherwise.
  */
-export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<{ stages: Array<{ key: TrackStage; state: TrackState }>; now: TrackStage; refine: RefineView } | null> {
+export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<{
+  stages: Array<{ key: TrackStage; state: TrackState }>;
+  now: TrackStage;
+  refine: RefineView;
+  shortlisted: boolean;
+  next: { act: "follow_up" | "move"; role: string | null } | null;
+} | null> {
   if (kindOfRef(ref) !== "open") return null;
   const read = await trackFactsOf(deps, ref);
   if (!read) return null;
@@ -758,9 +772,20 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
   const finalFrozen = finalFreezes(read.finals);
   const decided = read.facts.decided !== null;
   const open = mayRefine({ stage: now, decided, finalFrozen });
+  // Once the references are in at References and proposal, the ROLE that acts next (QA round 2): the follow-up role
+  // while a reference waits on its follow-up, then the role named for the final call. Role names only, never a person.
+  let next: { act: "follow_up" | "move"; role: string | null } | null = null;
+  if (now === "references" && !decided && read.facts.refsGiven) {
+    const act = read.facts.references.every((r) => r.followedUp) ? "move" : "follow_up";
+    const roleId = stringVar(act === "follow_up" ? FOLLOWUP_ROLE_VARIABLE : FINAL_CALL_ROLE_VARIABLE).trim();
+    const role = roleId ? ((await review.roleNamesById(deps.getPool(), [roleId])).get(roleId) ?? null) : null;
+    next = { act, role };
+  }
   return {
     stages: TRACK.map((key) => ({ key, state: state[key] })),
     now,
+    shortlisted: read.facts.shortlist === "yes",
+    next,
     refine: {
       open,
       // Frozen is said only once there was a time to refine: from References and proposal on.

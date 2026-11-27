@@ -15,7 +15,7 @@
  * references, the follow-ups and the decision. Nothing here ranks, scores or judges the applicant: the
  * scorecards are shown as written, untotalled.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import { FOLLOWUP_NOTE_MAX, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
@@ -113,6 +113,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
     if (w) onStage?.(w.track.now);
   }, [w, onStage]);
 
+  // A bell's link lands on a part this card draws (#conversation-notes): the browser looked for it before the card
+  // had loaded, so once it has, go there once (QA round 2).
+  const landed = useRef(false);
+  useEffect(() => {
+    if (!w || landed.current || typeof window === "undefined") return;
+    landed.current = true;
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(decodeURIComponent(hash));
+    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "start" });
+  }, [w]);
+
   const act = async (path: string, body?: unknown) => {
     setBusy(true);
     setSaid(null);
@@ -164,17 +176,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
       <h2 id="walk-heading" className={H2}>{OW.heading}</h2>
       <p className={`mt-1 ${HINT}`}>{OW.intro}</p>
 
-      {/* The stage track: one row each on a phone, wrapping across on a wide screen. */}
-      <ol className="mt-4 grid gap-2 sm:flex sm:flex-wrap" data-walk-track="">
-        {t.stages.map((s, i) => (
-          <li key={s.key} className={`flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-sm ${STATE_CLASS[s.state]}`} data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
-            <span aria-hidden="true" className="tabular-nums">{i + 1}</span>
-            <span>{s.label}</span>
-            <span className="sr-only">{OW.stateWords[s.state]}</span>
-          </li>
-        ))}
-      </ol>
-
+      {/* Who acts next and the act come first, so the act is on a phone's first screen (QA round 2). */}
       <div className={`mt-4 ${TILE}`} data-walk-next="">
         <p className={LABEL}>{OW.whoActs}</p>
         <p className="text-foreground" data-walk-who="">{t.who}</p>
@@ -183,6 +185,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         {primary && <div className="mt-3">{primary}</div>}
         {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
       </div>
+
+      {/* The stage track: on a phone one row of six small stones (the stage's name is the eyebrow above); from sm up,
+          each stone carries its name and the row wraps. */}
+      <ol className="mt-4 flex gap-1.5 sm:flex-wrap sm:gap-2" data-walk-track="">
+        {t.stages.map((s, i) => (
+          <li key={s.key} className={`flex size-8 items-center justify-center gap-2 rounded-lg border text-sm sm:size-auto sm:min-h-11 sm:justify-start sm:px-3 sm:py-2 ${STATE_CLASS[s.state]}`} data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
+            <span aria-hidden="true" className="tabular-nums">{i + 1}</span>
+            <span className="sr-only sm:not-sr-only">{s.label}</span>
+            <span className="sr-only">{OW.stateWords[s.state]}</span>
+          </li>
+        ))}
+      </ol>
 
       {(w.references.asked || w.references.list.length > 0) && (
         <References w={w} busy={busy} act={act} />

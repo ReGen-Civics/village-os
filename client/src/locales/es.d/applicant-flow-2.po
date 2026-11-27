@@ -38,10 +38,10 @@ msgctxt "proposal versions: the heading"
 msgid "Earlier versions of the proposal"
 msgstr "Versiones anteriores de la propuesta"
 
-# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+# needs-native-review: the proposal's earlier versions, QA round 2
 msgctxt "proposal versions: what they are"
-msgid "The applicant refined their proposal. Each earlier version sits beside the words it became."
-msgstr "La persona que postula mejoró su propuesta. Cada versión anterior está junto a las palabras en que se convirtió."
+msgid "The applicant refined their proposal. Their words now come first, then each earlier version, newest first."
+msgstr "La persona que postula mejoró su propuesta. Primero van sus palabras actuales y luego cada versión anterior, de la más reciente a la más antigua."
 
 # needs-native-review: the proposal's earlier versions, 27 Nov 2026
 msgctxt "proposal versions: the words until that day"

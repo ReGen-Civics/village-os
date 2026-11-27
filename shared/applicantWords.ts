@@ -229,11 +229,20 @@ export interface ApplicantMessages {
         received: string;
         review: string;
         reviewBook(role: string): string;
+        /** At our review with a conversation open but no shortlist (the invitation path): never "you are shortlisted". */
+        reviewInvited(role: string): string;
         references: string;
         referencesTalk(role: string): string;
         /** At References and proposal once the refine form is closed: no "refine below". */
         referencesFixed: string;
         referencesFixedTalk(role: string): string;
+        /**
+         * Once the references are in (QA round 2): says so and names the role that acts next. `refine` adds that the
+         * proposal can still be refined below.
+         */
+        referencesInTalk(role: string, refine: boolean): string;
+        referencesInFollow(role: string | null, refine: boolean): string;
+        referencesInMove(role: string | null, refine: boolean): string;
         final(role: string | null): string;
         /** Agreement with our answer still to come: nothing to answer yet. */
         agreementWaiting: string;
@@ -244,6 +253,8 @@ export interface ApplicantMessages {
       /** Stage 3 as a task list: three rows, each with its state in words. */
       tasks: {
         heading: string;
+        /** The stage card's one gold act while the references wait (QA round 2). */
+        add: string;
         references: string;
         proposal: string;
         conversation(role: string | null): string;
@@ -512,10 +523,14 @@ const en: ApplicantMessages = {
         received: "We have your proposal. Our review comes next.",
         review: "We are reading your proposal. If we shortlist it, you book your first conversation here.",
         reviewBook: (role) => `You are shortlisted. Book your conversation with ${role} below.`,
+        reviewInvited: (role) => `Book your first conversation with ${role} below. It is part of our review.`,
         references: "Add your references and refine your proposal below. Your next conversation opens here when it is ready.",
         referencesTalk: (role) => `Add your references, refine your proposal below, and book your conversation with ${role}.`,
         referencesFixed: "Add your references below. Your next conversation opens here when it is ready.",
         referencesFixedTalk: (role) => `Add your references below, and book your conversation with ${role}.`,
+        referencesInTalk: (role, refine) => `Your references are in. Book your conversation with ${role} below.${refine ? " You can still refine your proposal." : ""}`,
+        referencesInFollow: (role, refine) => `Your references are in. ${role ?? "The team"} contacts them next. Then we move your application to the final conversation.${refine ? " Until then you can still refine your proposal below." : ""}`,
+        referencesInMove: (role, refine) => `Your references are in. ${role ?? "The team"} moves your application to the final conversation next.${refine ? " Until then you can still refine your proposal below." : ""}`,
         final: (role) => (role ? `Book your final conversation with ${role}. Bring your proposal: you present it there.` : "Your final conversation opens here soon. Bring your proposal: you present it there."),
         agreementWaiting: "We are answering your proposal: we accept it, or we counter it. Our answer comes here.",
         agreement: "We countered your proposal. Answer each line below. We go back and forth until we agree.",
@@ -523,6 +538,7 @@ const en: ApplicantMessages = {
       },
       tasks: {
         heading: "Three things at this stage",
+        add: "Add your references",
         references: "Your references",
         proposal: "Your proposal",
         conversation: (role) => (role ? `Your conversation with ${role}` : "Your next conversation"),
@@ -798,10 +814,14 @@ const es: ApplicantMessages = {
         received: "Tenemos su propuesta. Sigue nuestra revisión.",
         review: "Estamos leyendo su propuesta. Si la preseleccionamos, usted reserva aquí su primera conversación.",
         reviewBook: (role) => `Su propuesta está preseleccionada. Reserve abajo su conversación con ${role}.`,
+        reviewInvited: (role) => `Reserve abajo su primera conversación con ${role}. Es parte de nuestra revisión.`,
         references: "Agregue sus referencias y mejore su propuesta abajo. Su siguiente conversación se abre aquí cuando esté lista.",
         referencesTalk: (role) => `Agregue sus referencias, mejore su propuesta abajo y reserve su conversación con ${role}.`,
         referencesFixed: "Agregue sus referencias abajo. Su siguiente conversación se abre aquí cuando esté lista.",
         referencesFixedTalk: (role) => `Agregue sus referencias abajo y reserve su conversación con ${role}.`,
+        referencesInTalk: (role, refine) => `Sus referencias ya llegaron. Reserve abajo su conversación con ${role}.${refine ? " Aún puede mejorar su propuesta." : ""}`,
+        referencesInFollow: (role, refine) => `Sus referencias ya llegaron. ${role ?? "El equipo"} las contacta ahora. Luego pasamos su solicitud a la conversación final.${refine ? " Mientras tanto, aún puede mejorar su propuesta abajo." : ""}`,
+        referencesInMove: (role, refine) => `Sus referencias ya llegaron. ${role ?? "El equipo"} pasa ahora su solicitud a la conversación final.${refine ? " Mientras tanto, aún puede mejorar su propuesta abajo." : ""}`,
         final: (role) => (role ? `Reserve su conversación final con ${role}. Traiga su propuesta: usted la presenta allí.` : "Su conversación final se abre aquí pronto. Traiga su propuesta: usted la presenta allí."),
         agreementWaiting: "Estamos respondiendo a su propuesta: la aceptamos o hacemos una contraoferta. Nuestra respuesta llega aquí.",
         agreement: "Hicimos una contraoferta a su propuesta. Responda cada línea abajo. Seguimos hasta llegar a un acuerdo.",
@@ -809,6 +829,7 @@ const es: ApplicantMessages = {
       },
       tasks: {
         heading: "Tres cosas en esta etapa",
+        add: "Agregar sus referencias",
         references: "Sus referencias",
         proposal: "Su propuesta",
         conversation: (role) => (role ? `Su conversación con ${role}` : "Su siguiente conversación"),
@@ -980,6 +1001,10 @@ export interface StatusServedForView {
     stages: ReadonlyArray<{ key: SixStageKey; state: "done" | "now" | "later" | "skipped" }>;
     now: SixStageKey;
     refine: { open: boolean; frozen: boolean; why: string; aim: string; versions: number };
+    /** The application was shortlisted (QA round 2: "You are shortlisted" only then). Absent on an older server. */
+    shortlisted?: boolean;
+    /** Once the references are in: the ROLE that acts next and its act. A role's name, never a person's. */
+    next?: { act: "follow_up" | "move"; role: string | null } | null;
   } | null;
 }
 
@@ -1008,6 +1033,8 @@ export interface StatusView {
   applicantActs: boolean;
   /** The booking button is the page's one gold act (at References and proposal the references form is, while it waits). */
   bookGold: boolean;
+  /** The stage card's own gold act, when it is not a booking: "Add your references" at References and proposal. */
+  primary: { label: string; href: string } | null;
   /** Stage 3 as a task list, or null at every other stage. */
   tasks: Array<{ key: "references" | "proposal" | "conversation"; label: string; state: string; href: string | null }> | null;
 }
@@ -1116,23 +1143,31 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     const role = bookable ? bookable.label || bookable.role : null;
     const refineOpen = six.refine.open;
     const hasOffer = !!s.offer && (s.offer.rows?.length ?? 0) > 0;
+    const refsToDo = !!s.referencesAsked?.mayAdd;
+    // The references are in: given, and the form no longer waits on them.
+    const refsIn = !refsToDo && typeof s.referencesAsked?.given === "number";
     const sixMove =
       s.outcome === "adopted"
         ? w.move.adopted
         : six.now === "received"
           ? sw.move.received
           : six.now === "review"
-            ? role ? sw.move.reviewBook(role) : sw.move.review
+            ? role ? (six.shortlisted ? sw.move.reviewBook(role) : sw.move.reviewInvited(role)) : sw.move.review
             : six.now === "references"
-              ? refineOpen
-                ? role ? sw.move.referencesTalk(role) : sw.move.references
-                : role ? sw.move.referencesFixedTalk(role) : sw.move.referencesFixed
+              ? refsIn
+                ? role
+                  ? sw.move.referencesInTalk(role, refineOpen)
+                  : six.next?.act === "follow_up"
+                    ? sw.move.referencesInFollow(six.next.role, refineOpen)
+                    : sw.move.referencesInMove(six.next?.role ?? null, refineOpen)
+                : refineOpen
+                  ? role ? sw.move.referencesTalk(role) : sw.move.references
+                  : role ? sw.move.referencesFixedTalk(role) : sw.move.referencesFixed
               : atFinal
                 ? sw.move.final(role)
                 : six.now === "agreement"
                   ? hasOffer ? sw.move.agreement : sw.move.agreementWaiting
                   : sw.move.start;
-    const refsToDo = !!s.referencesAsked?.mayAdd;
     const applicantActs = !decided && (!!bookable || refsToDo || (six.now === "references" && refineOpen) || (six.now === "agreement" && !!s.offer?.mayAnswer));
     const tasks: StatusView["tasks"] =
       six.now === "references" && !decided
@@ -1158,6 +1193,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
       applicantActs,
       // One gold act: at References and proposal the references form holds it while it waits.
       bookGold: !!bookable && !(six.now === "references" && refsToDo),
+      primary: six.now === "references" && refsToDo && !decided ? { label: sw.tasks.add, href: "#reference-form" } : null,
       tasks,
     };
   }
@@ -1175,6 +1211,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     six: false,
     applicantActs: false,
     bookGold: false,
+    primary: null,
     tasks: null,
   };
 }

@@ -31,7 +31,8 @@ describe("the applicant's six stages", () => {
 
   it("says what to do next at the stage, and offers only that stage's booking button", () => {
     const bookNow = { role: "Operations Role", label: "Operations Role (Rye)", url: "https://cal.example.test/ops", links: [{ who: null, url: "https://cal.example.test/ops" }] };
-    const v = statusView("en", served({ sixStages: six("review"), bookNow }));
+    // Shortlisted (QA round 2: the words say so only then).
+    const v = statusView("en", served({ sixStages: { ...six("review")!, shortlisted: true }, bookNow }));
     expect(v.move).toBe("You are shortlisted. Book your conversation with Operations Role (Rye) below.");
     expect(v.booking?.text).toBe("");
     expect(v.booking?.book && "links" in v.booking.book ? v.booking.book.links.map((l) => l.url) : []).toEqual(["https://cal.example.test/ops"]);
@@ -96,5 +97,44 @@ describe("the applicant's six stages", () => {
     expect(countered.applicantActs).toBe(true);
     // The fixed line never shows at Agreement.
     expect(countered.refine).toBeNull();
+  });
+
+  it("QA round 2: 'You are shortlisted' only when it was; invited without a shortlist reads otherwise", () => {
+    const bookNow = { role: "Operations Role", label: "Operations Role", url: "https://cal.example.test/ops", links: [{ who: null, url: "https://cal.example.test/ops" }] };
+    const invited = statusView("en", served({ sixStages: { ...six("review")!, shortlisted: false }, bookNow }));
+    expect(invited.move).toBe("Book your first conversation with Operations Role below. It is part of our review.");
+    expect(invited.move).not.toMatch(/shortlist/i);
+    // An older server sends no flag: never claim a shortlist it did not say.
+    expect(statusView("en", served({ sixStages: six("review"), bookNow })).move).not.toMatch(/shortlist/i);
+    expect(statusView("es", served({ sixStages: six("review"), bookNow })).move).not.toMatch(/preseleccionada/);
+  });
+
+  it("QA round 2: at References and proposal the stage card's gold act is 'Add your references'; the booking beside it is gold-edged", () => {
+    const bookNow = { role: "Community Role", label: "Community Role", url: "https://cal.example.test/c", links: [{ who: null, url: "https://cal.example.test/c" }] };
+    const v = statusView("en", served({ sixStages: six("references", { open: true, frozen: false, why: "a", aim: "b", versions: 0 }), referencesAsked: { given: null, mayAdd: true }, bookNow }));
+    expect(v.primary).toEqual({ label: "Add your references", href: "#reference-form" });
+    expect(v.bookGold).toBe(false);
+    expect(v.booking).not.toBeNull();
+    // CONTROL: once they are in, no primary, and the booking is the one gold act again.
+    const sent = statusView("en", served({ sixStages: six("references", { open: true, frozen: false, why: "a", aim: "b", versions: 0 }), referencesAsked: { given: 2, mayAdd: false }, bookNow }));
+    expect(sent.primary).toBeNull();
+    expect(sent.bookGold).toBe(true);
+    expect(statusView("en", served({ sixStages: six("review") })).primary).toBeNull();
+  });
+
+  it("QA round 2: once the references are in, the card says so and names the role that acts next", () => {
+    const refine = { open: true, frozen: false, why: "a", aim: "b", versions: 0 };
+    const follow = statusView("en", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: "Operations Role" } }, referencesAsked: { given: 2, mayAdd: false } }));
+    expect(follow.move).toMatch(/^Your references are in\. Operations Role contacts them next\./);
+    expect(follow.move).toMatch(/still refine your proposal below/);
+    expect(follow.move).not.toMatch(/Add your references/);
+    const move = statusView("en", served({ sixStages: { ...six("references", { ...refine, open: false })!, next: { act: "move", role: "Final Call Role" } }, referencesAsked: { given: 2, mayAdd: false } }));
+    expect(move.move).toBe("Your references are in. Final Call Role moves your application to the final conversation next.");
+    // No role named: the team.
+    const team = statusView("en", served({ sixStages: { ...six("references", refine)!, next: { act: "move", role: null } }, referencesAsked: { given: 1, mayAdd: false } }));
+    expect(team.move).toMatch(/^Your references are in\. The team moves/);
+    expect(statusView("es", served({ sixStages: { ...six("references", refine)!, next: { act: "follow_up", role: null } }, referencesAsked: { given: 1, mayAdd: false } })).move).toMatch(/^Sus referencias ya llegaron\. El equipo las contacta/);
+    // CONTROL: before they are in, the card still asks for them.
+    expect(statusView("en", served({ sixStages: six("references", refine), referencesAsked: { given: null, mayAdd: true } })).move).toMatch(/^Add your references/);
   });
 });

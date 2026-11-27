@@ -3,9 +3,10 @@
  * section is where the conversation notes are held ... where we can have whatever notes we want, or upload the whole
  * transcript and more for the conversation").
  *
- * ONE PLACE FOR NOTES (QA round 1): each conversation the reader may read holds its notes and files, the conversation
- * guide's questions for it, and, behind one "Add a note or file" button, the box to write a note and the picker for a
- * transcript, a recording or a document. Quiet rows, never a box inside a box. Never shown to the applicant: the
+ * ONE PLACE FOR NOTES (QA round 1): the conversation guide's questions, drawn ONCE above the list (QA round 2: one
+ * copy per conversation repeated its boxes, and a stale copy could overwrite a note), then each conversation the
+ * reader may read with its notes and files and, behind one "Add a note or file" button, the box to write a note and
+ * the picker for a transcript, a recording or a document. Quiet rows, never a box inside a box. Never shown to the applicant: the
  * walkthrough door answers them 404, so this panel never draws. Nothing here is scored, ranked or read by an AI.
  *
  * A file opens through its own door, which asks who the reader is again, so the bytes are fetched with the reader's
@@ -42,11 +43,12 @@ export default function ConversationNotes({
 }: {
   base: string;
   conversations: ConversationNotesView[];
-  /** The conversation guide's questions, folded into each conversation (QA round 1). */
+  /** The conversation guide's questions, drawn once above the conversations. */
   guide?: GuideView | null;
   onSaved: () => void;
 }) {
   const { t } = useLingui();
+  const question = useGuideQuestion();
   if (!conversations.length) return null;
   return (
     <section id={CONVERSATION_NOTES_ID} aria-labelledby="conversation-notes-heading" className="mt-6 min-w-0 scroll-mt-24" data-walk-conversation-notes="">
@@ -60,18 +62,29 @@ export default function ConversationNotes({
           context: "conversation notes: who reads them",
         })}
       </p>
+      {guide && guide.items.length > 0 && (
+        <details className="mt-3 min-w-0" data-conversation-guide="">
+          <summary className="flex min-h-11 cursor-pointer items-center font-medium text-foreground">
+            {t({ message: "Questions to talk through", context: "conversation notes: the guide's questions, folded in" })}
+          </summary>
+          <ul className="grid grid-cols-[minmax(0,1fr)] divide-y divide-border/60">
+            {guide.items.map((i) => (
+              <GuideLine key={i.key} item={i} q={question(i)} base={base} notes={guide.notes.filter((x) => x.key === i.key)} onSaved={onSaved} quiet />
+            ))}
+          </ul>
+        </details>
+      )}
       <ul className="mt-3 grid grid-cols-[minmax(0,1fr)] divide-y divide-border">
         {conversations.map((c) => (
-          <Conversation key={c.interviewId} base={base} c={c} guide={guide} onSaved={onSaved} />
+          <Conversation key={c.interviewId} base={base} c={c} onSaved={onSaved} />
         ))}
       </ul>
     </section>
   );
 }
 
-function Conversation({ base, c, guide, onSaved }: { base: string; c: ConversationNotesView; guide: GuideView | null; onSaved: () => void }) {
+function Conversation({ base, c, onSaved }: { base: string; c: ConversationNotesView; onSaved: () => void }) {
   const { t } = useLingui();
-  const question = useGuideQuestion();
   const day = useDayWords();
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
@@ -145,19 +158,6 @@ function Conversation({ base, c, guide, onSaved }: { base: string; c: Conversati
         </ul>
       )}
 
-      {guide && guide.items.length > 0 && (
-        <details className="mt-3 min-w-0" data-conversation-guide="">
-          <summary className="flex min-h-11 cursor-pointer items-center font-medium text-foreground">
-            {t({ message: "Questions to talk through", context: "conversation notes: the guide's questions, folded in" })}
-          </summary>
-          <ul className="grid grid-cols-[minmax(0,1fr)] divide-y divide-border/60">
-            {guide.items.map((i) => (
-              <GuideLine key={i.key} item={i} q={question(i)} base={base} notes={guide.notes.filter((x) => x.key === i.key)} onSaved={onSaved} quiet />
-            ))}
-          </ul>
-        </details>
-      )}
-
       {!adding ? (
         <button type="button" className={`mt-3 ${BTN_NOTICE}`} onClick={() => setAdding(true)} data-conversation-add="">
           {t({ message: "Add a note or file", context: "conversation notes: opens the note box and the file picker" })}
@@ -184,12 +184,13 @@ function Conversation({ base, c, guide, onSaved }: { base: string; c: Conversati
                 </label>
               ))}
             </div>
-            {/* The picker drawn as a button; the input itself is visually hidden but kept for keyboards and screen readers. */}
+            {/* The picker drawn as a button; the input itself is visually hidden but kept for keyboards and screen readers.
+                The input comes first so its label can show the keyboard's focus ring (QA round 2: peer-focus-visible). */}
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <label htmlFor={fileId} className={`${BTN_SECONDARY} cursor-pointer`}>
+              <input id={fileId} ref={fileRef} type="file" className="peer sr-only w-full min-w-0" onChange={(e) => setChosen(e.target.files?.[0]?.name ?? "")} />
+              <label htmlFor={fileId} className={`${BTN_SECONDARY} cursor-pointer peer-focus-visible:ring-2 peer-focus-visible:ring-notice peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background`} data-file-choose="">
                 {t({ message: "Choose the file", context: "conversation notes: the file input" })}
               </label>
-              <input id={fileId} ref={fileRef} type="file" className="sr-only w-full min-w-0" onChange={(e) => setChosen(e.target.files?.[0]?.name ?? "")} />
               {chosen ? <span className="min-w-0 break-all text-sm text-foreground">{chosen}</span> : null}
             </div>
             <button type="button" className={`justify-self-start ${BTN_SECONDARY}`} disabled={busy || !chosen} onClick={() => void sendFile()}>

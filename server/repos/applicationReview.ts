@@ -124,9 +124,12 @@ const ivOf = (r: any): StoredInterview => ({
 
 /** Write the ordered interviews; the first opens now, the rest wait. Idempotent on (ref, position). */
 /** The role's conversations, copied in order. The first opens at once unless our review comes first (`openFirst` false): then every one waits for the invitation. */
-export async function insertInterviews(db: Db, ref: string, list: ReadonlyArray<{ roleId: string; minutes: number; final: boolean }>, at: Date, openFirst = true): Promise<void> {
+export async function insertInterviews(db: Db, ref: string, given: ReadonlyArray<{ roleId: string; minutes: number; final: boolean }>, at: Date, openFirst = true): Promise<void> {
+  // The final conversation always comes last, wherever a role's list put it, so nothing opens it by itself (QA round 2):
+  // only the team's move to the final conversation does (server/lib/applicantOnboarding.ts `addFinalConversation`).
+  const list = [...given.filter((x) => !x.final), ...given.filter((x) => x.final)];
   for (let i = 0; i < list.length; i++) {
-    const open = i === 0 && openFirst;
+    const open = i === 0 && openFirst && !list[i].final;
     await db.query(
       "INSERT IGNORE INTO application_interviews (application_ref, position, interviewer_role_id, minutes, is_final, state, opened_at) VALUES (?,?,?,?,?,?,?)",
       [ref, i + 1, list[i].roleId, list[i].minutes, list[i].final ? 1 : 0, open ? "open" : "waiting", open ? at : null],

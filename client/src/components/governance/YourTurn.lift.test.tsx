@@ -12,7 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import { Router } from "wouter";
 
 vi.mock("@/components/natural/useReducedMotion", () => ({
@@ -36,6 +36,23 @@ describe("the guide button and the your-turn bar", () => {
     );
     expect(container.querySelectorAll('[data-your-turn="sticky"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-your-turn="door"]')).toHaveLength(1);
+  });
+
+  it("QA round 2: steps aside on a phone while a text field has focus, and the shortcuts button drops with it", () => {
+    const { container } = render(
+      <Router>
+        <textarea aria-label="A note" />
+        <YourTurn to="#round" label="Take your turn" shape="sticky" />
+      </Router>,
+    );
+    const field = container.querySelector("textarea")!;
+    act(() => field.focus());
+    const bar = container.querySelector("[data-your-turn]")!;
+    expect(bar.getAttribute("data-your-turn")).toBe("sticky-aside");
+    expect(bar.className).toMatch(/\bhidden lg:block\b/);
+    act(() => field.blur());
+    expect(bar.getAttribute("data-your-turn")).toBe("sticky");
+    expect(bar.className).not.toMatch(/\bhidden\b/);
   });
 
   it("lifts the shortcuts button below lg while a sticky your-turn bar shows", () => {

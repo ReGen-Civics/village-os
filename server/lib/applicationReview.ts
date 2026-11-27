@@ -208,7 +208,9 @@ export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify"
  */
 export async function stepBookingOf(db: Db, ref: string, roleId: string): Promise<StepBooking> {
   const recused = new Set(await repo.recusedUsers(db, ref));
-  const holders = (await repo.liveHoldersOfRole(db, roleId)).filter((u) => !recused.has(u));
+  // The applicant never books with themselves, even when they hold the role (QA round 2).
+  const applicant = (await confirmedDetail(db, ref))?.applicantUserId ?? null;
+  const holders = (await repo.liveHoldersOfRole(db, roleId)).filter((u) => !recused.has(u) && u !== applicant);
   const people = await repo.bookingLinksOfMembers(db, holders);
   const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
   const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;

@@ -404,9 +404,15 @@ export default function ApplicationStatus() {
                   {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
                   {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
                   {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
-                  {view.six && view.booking?.book && "links" in view.booking.book && (
+                  {/* The stage's own gold act (QA round 2): "Add your references" while they wait, the booking gold-edged beside it. */}
+                  {view.six && (view.primary || (view.booking?.book && "links" in view.booking.book)) && (
                     <div className="mt-4 flex flex-wrap gap-2" data-stage-book="">
-                      {view.booking.book.links
+                      {view.primary && (
+                        <a href={view.primary.href} className={BTN_PRIMARY} data-stage-primary="">
+                          {view.primary.label}
+                        </a>
+                      )}
+                      {view.booking?.book && "links" in view.booking.book && view.booking.book.links
                         .filter((l) => /^https:\/\//.test(l.url))
                         .map((l) => (
                           <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={view.bookGold ? BTN_PRIMARY : BTN_NOTICE} data-book-now="" data-book-gold={view.bookGold ? "" : undefined}>

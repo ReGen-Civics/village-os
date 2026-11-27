@@ -563,7 +563,9 @@ export default function OpenProposal() {
                             disabled={busy || adoptWaits}
                             aria-describedby={p.beforeAdopt && (p.beforeAdopt.conversations.length || p.beforeAdopt.seatsFull.length) ? "op-before-adopt" : undefined}
                             onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}) }, true)}
-                            className={PRIMARY}
+                            // One gold act on the page (QA round 2): before Agreement, adopting is not the act, so it stays plain.
+                            className={stage === null || stage === "agreement" ? PRIMARY : SECONDARY}
+                            data-adopt-gold={stage === null || stage === "agreement" ? "" : undefined}
                           >
                             <Check className="h-4 w-4" aria-hidden="true" />
                             {p.beforeAdopt?.seatsFull.length ? DW.adoptWhenASeatOpens : (record ?? DW.adopt)}

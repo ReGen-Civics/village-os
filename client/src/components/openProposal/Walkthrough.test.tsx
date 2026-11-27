@@ -77,6 +77,35 @@ describe("the walkthrough", () => {
     expect(posts).toEqual([{ url: "/api/governance/applications/op-0123456789abcdef0123/shortlist", body: { answer: "yes" } }]);
   });
 
+  it("QA round 2: who acts next and the act come before the stage track, so the act is on a phone's first screen", async () => {
+    served = { status: 200, body: walk({ you: { ...you, mayShortlist: true, holdsPower: true } }) };
+    render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
+    await screen.findByRole("heading", { level: 2, name: ONBOARDING_WORDS.heading });
+    const next = document.querySelector("[data-walk-next]")!;
+    const track = document.querySelector("[data-walk-track]")!;
+    expect(next.compareDocumentPosition(track) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(next.querySelector("[data-walk-shortlist]")).toBeTruthy();
+  });
+
+  it("QA round 2: a bell's link to a part of the card lands there once the card has loaded", async () => {
+    const seen: string[] = [];
+    const was = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (this: Element) {
+      seen.push(this.id);
+    } as typeof was;
+    window.history.replaceState(null, "", "#walk-heading");
+    try {
+      served = { status: 200, body: walk() };
+      render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
+      await screen.findByRole("heading", { level: 2, name: ONBOARDING_WORDS.heading });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(seen).toEqual(["walk-heading"]);
+    } finally {
+      Element.prototype.scrollIntoView = was;
+      window.history.replaceState(null, "", "#");
+    }
+  });
+
   it("a reader who may not shortlist sees the stage and no button", async () => {
     served = { status: 200, body: walk() };
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);

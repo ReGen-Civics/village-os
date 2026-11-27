@@ -205,8 +205,10 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     expect(await nowOf(id)).toBe("review");
     await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [await interviewOf(id)]);
     expect(await nowOf(id)).toBe("references");
-    // Stage keys and states only: no note, score, reference or name rides on it.
-    expect(Object.keys(s.sixStages).sort()).toEqual(["now", "refine", "stages"]);
+    // Stage keys and states, the shortlist flag and the next ROLE (QA round 2): no note, score, reference or person rides on it.
+    expect(Object.keys(s.sixStages).sort()).toEqual(["next", "now", "refine", "shortlisted", "stages"]);
+    expect(s.sixStages.shortlisted).toBe(false);
+    expect(s.sixStages.next).toBeNull();
   });
 
   it("refining is refused before References and proposal, saves there with the earlier version kept, and the team reads what changed", async () => {
@@ -285,6 +287,38 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
       expect(s2.sixStages.refine).toMatchObject({ open: false, frozen: true });
       expect(s2.bookNow?.final).toBe(true);
     } finally {
+      await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
+    }
+  });
+
+  it("QA ROUND 2: a final listed FIRST never opens on confirm, and with no final-call role the team can still move to it", async () => {
+    // The role's own list names the final first, and the village names no final-call role (the older path).
+    await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleFinal, minutes: 30, final: true }, { roleId: roleA, minutes: 30, final: false }]), gate]);
+    await variable("org.final_call_role", "");
+    try {
+      const id = await confirmed("flow-final-first@example.test");
+      const rows = async () => (await q("SELECT position, is_final, state FROM application_interviews WHERE application_ref = ? ORDER BY position", [id])).map((r: any) => [Number(r.position), Number(r.is_final), r.state]);
+      // The final went last, and nothing about it is open.
+      const after = await rows();
+      expect(after.map((r: any[]) => r[1])).toEqual([0, 1]);
+      expect(after[1][2]).toBe("waiting");
+      expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+      // The invitation (or the confirm itself) opens the NON-final conversation, never the final.
+      const [nonFinal] = await q("SELECT id, state FROM application_interviews WHERE application_ref = ? AND is_final = 0", [id]);
+      if (nonFinal.state === "waiting") await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ?", [nonFinal.id]);
+      expect((await rows())[1][2]).toBe("waiting");
+      await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [nonFinal.id]);
+      expect((await rows())[1][2]).toBe("waiting");
+      // The page offers the move (it named the final but showed no button before), and the server accepts it.
+      const w = await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id);
+      expect(w.status, w.text).toBe(200);
+      expect(w.body.walkthrough.you.mayAddFinal).toBe(true);
+      const moved = await call("POST", `${app(id)}/final-conversation`, {}, FOUNDER.id);
+      expect(moved.status, moved.text).toBe(200);
+      expect((await rows())[1][2]).toBe("open");
+      expect((await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id)).body.walkthrough.you.mayAddFinal).toBe(false);
+    } finally {
+      await variable("org.final_call_role", roleFinal);
       await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
     }
   });

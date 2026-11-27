@@ -327,5 +327,11 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     expect(own.status, own.text).toBe(200);
     for (const leak of [SECRET, "secret-call.txt", "conversation-notes", "Every word."]) expect(own.text).not.toContain(leak);
     expect(await notesOf(id)).toHaveLength(2);
+    // QA round 2: their own booking names the role's other holder, never themselves.
+    await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ?", [iv]);
+    const booking = (await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id)).body.status.bookNow;
+    expect(booking, "the open conversation offers its booking").toBeTruthy();
+    expect(String(booking.label ?? "")).not.toContain(APPLICANT_HOLDER.name.split(" ")[0]);
+    expect(String(booking.label ?? "")).toContain(IA.name.split(" ")[0]);
   });
 });

@@ -4,7 +4,7 @@
  * There is no score, level, rank or rating here, and nothing is totalled or compared. Read by the
  * reviewers and the final-call role; the notes go when the application's review does.
  */
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_SECONDARY, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
@@ -57,7 +57,9 @@ export function GuideLine({ item, q, base, notes, onSaved, quiet = false }: { it
       setState("failed");
     }
   };
-  const id = `guide-${item.key.replace(/[^a-z0-9]/gi, "-")}`;
+  // Unique per box on the page (QA round 2): two boxes for one question once shared an id, and a stale copy could
+  // overwrite a note. One guide is drawn now, and the id stays unique even if it were drawn twice.
+  const id = `guide-${item.key.replace(/[^a-z0-9]/gi, "-")}-${useId().replace(/[^a-z0-9]/gi, "")}`;
   return (
     <li className={quiet ? "min-w-0 py-3" : TILE} data-walk-guide-line={item.key}>
       <label htmlFor={id} className={LABEL}>
