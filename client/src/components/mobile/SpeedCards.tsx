@@ -501,7 +501,7 @@ function EditCard({
         data-speed-face=""
         aria-pressed={picked}
         onClick={() => onPick(card.id)}
-        className={`${CARD} ${EDIT_EDGE} cursor-grab focus-visible:outline-2 focus-visible:outline-ring ${picked ? "border-notice bg-card" : ""} ${lifted ? "shadow-sm" : ""}`}
+        className={`${CARD} ${EDIT_EDGE} cursor-grab focus-visible:outline-2 focus-visible:outline-ring ${picked ? "border-notice bg-card ring-2 ring-notice ring-offset-2 ring-offset-card" : ""} ${lifted ? "shadow-sm" : ""}`}
       >
         <Face card={card} />
       </button>
