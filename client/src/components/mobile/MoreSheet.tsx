@@ -3,10 +3,13 @@
  * https://claude.ai/artifact/ADtgLo9i5uu5DLNrRz2mXL).
  *
  * The bar's More used to open the header's drawer, the same one the header's
- * menu button opened, so a phone had two doors into one room. Below `md` the
- * header's button is gone and More opens this sheet, rising from the bar where
- * the thumb already is. From `md` up nothing here draws: there is no bar, and
- * the header keeps its drawer (Layout.tsx).
+ * menu button opened. Below `md` More opens this sheet, rising from the bar where
+ * the thumb already is, and since 27 Nov 2026 the header's menu button opens this
+ * same sheet too (the lead: "another button for menu to then open up the same
+ * thing that the bottom right more button opens up"), beside the header's Paths
+ * (PathsSheet.tsx). One sheet, two doors, so the two can never differ. From `md`
+ * up nothing here draws: there is no bar, and the header keeps its drawer
+ * (Layout.tsx).
  *
  *   Yours         six tiles: Profile, Pay (once credits are in use,
  *                 shared/payGate.ts), Messages and My tasks with their counts,
