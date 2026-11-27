@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.2 (2026-11-27)
+
+### What changed for your village
+
+- **"I've read this" on How we work together.** A member ticks the box at the end of the chapter and it folds to one line, "How we work together, read on <date>", with Read it again. Their profile keeps a "What you have read" card with the date and a link back. A visitor sees the chapter as before. Only the member sees their own read.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. The read is kept in each member's own preferences, and going back to 1.4.1 still works: the older version ignores it.
+
+---
+
 ## 1.4.1 (2026-11-27)
 
 ### What changed for your village
