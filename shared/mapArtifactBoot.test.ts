@@ -91,6 +91,8 @@ const { JSDOM, VirtualConsole } = createRequire(import.meta.url)("jsdom") as Jsd
 const DESK = { width: 1440, height: 900 };
 /** The phone the pocket profile was measured on. */
 const PHONE = { width: 390, height: 844 };
+/** The home page's map card on a phone: 16 by 9 inside a 375 px screen. */
+const PEEK = { width: 343, height: 193 };
 /** A place the artifact's own scene carries. The deep-link case checks the
     panel really opened, so a renamed place fails here by name. A missing key
     would otherwise only raise the artifact's "no longer on the map" toast. */
@@ -298,6 +300,13 @@ const CASES: Case[] = [
     viewport: PHONE,
     pocket: true,
     skipsTo: "#hud=pocket",
+  },  {
+    // The home page's window onto the map (client/src/components/MapPeek.tsx, PEEK_SRC), at a phone's card size.
+    name: "the home page's peek, #peek&skipIntro",
+    hash: "#peek&skipIntro",
+    viewport: PEEK,
+    pocket: true,
+    skipsTo: "#peek",
   },
 ];
 
@@ -613,5 +622,60 @@ describe("whose map, and whose guide (customizability, 2026-10-31)", () => {
     expect(b.window.document.getElementById("maiaMin")?.getAttribute("aria-label")).toMatch(/Sol$/);
     expect(read<string>(b, "mapGuideCap()")).toBe("Sol");
     expect(b.uncaught).toEqual([]);
+  });
+});
+
+/*
+ * THE PEEK IS A CLEAN VIEW OF THE MAP (the lead, 27 Nov 2026: "we shouldn't show those big annoying buttons ... a
+ * really nice clean view of the map as it currently stands with the building scale properly"). jsdom lays nothing
+ * out, so this reads the two things the peek is made of: the page is marked before anything draws, and every
+ * building is drawn at the frame's scale. The CSS that takes the controls off is read as text, and a control is
+ * checked by name, so a control added later that the rule does not name is caught by the list below.
+ */
+describe("the home page's peek, #peek", () => {
+  let b: Booted;
+  let desk: Booted;
+  const read = <T,>(w: Booted, js: string): T => evalIn<T>(w.window, js);
+  beforeAll(async () => {
+    b = boot("#peek&skipIntro", PEEK);
+    desk = boot("#skipIntro", DESK);
+    await settle(SETTLE_MS);
+  });
+  afterAll(() => {
+    b?.window.close();
+    desk?.window.close();
+  });
+
+  it("marks the page as a peek and shrinks every building to the frame", () => {
+    expect(b.window.document.documentElement.classList.contains("peek")).toBe(true);
+    const k = read<number>(b, "window.PEEK_K");
+    expect(k).toBeGreaterThanOrEqual(0.42);
+    expect(k).toBeLessThan(0.5);
+    expect(read<number>(b, "window.GSCALE")).toBeCloseTo(k, 5);
+    read<void>(b, "setGScale(150,true)");
+    expect(read<number>(b, "window.GSCALE")).toBeCloseTo(1.5 * k, 5);
+  });
+
+  it("leaves the full map exactly as it was (the control)", () => {
+    expect(desk.window.document.documentElement.classList.contains("peek")).toBe(false);
+    expect(read<number>(desk, "window.PEEK_K")).toBe(1);
+    expect(read<number>(desk, "window.GSCALE")).toBe(1);
+  });
+
+  it("opens nothing from its own address", () => {
+    expect(b.window.location.hash).toBe("#peek");
+    expect(read<string>(b, "routeNow()")).toBe("");
+  });
+
+  it("takes every control, card, seal and name off the land", () => {
+    const rule = /html\.peek :is\(([^)]*)\)\{display:none!important\}/.exec(html);
+    expect(rule, "the peek's hiding rule").not.toBeNull();
+    const hidden = new Set((rule?.[1] ?? "").split(",").map((x) => x.trim()));
+    for (const id of ["topNav", "vitals", "dock", "pbar", "pnav", "minimapWrap", "maia", "attention", "badges", "banners", "introCard", "ghint", "toasts"]) {
+      expect(hidden.has(`#${id}`), `#${id} is hidden in the peek`).toBe(true);
+      expect(b.window.document.getElementById(id) ?? id === "introCard", `#${id} exists in the map`).toBeTruthy();
+    }
+    // The land itself stays.
+    for (const id of ["scene", "icons"]) expect(hidden.has(`#${id}`)).toBe(false);
   });
 });

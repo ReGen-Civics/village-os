@@ -1,0 +1,5 @@
+{
+  "_what": "Amora's village guide's name (the lead, 27 Nov 2026: Scarlet replaces Maia). The guide's name lives in the work-with-us document as assistantName; set live on production 27 Nov 2026 through the connector.",
+  "_apply": "PUT /api/admin/work-with-us-config with the body below; the route merges it onto the saved document.",
+  "assistantName": "Scarlet"
+}

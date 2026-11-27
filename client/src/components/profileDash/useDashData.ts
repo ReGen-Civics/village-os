@@ -18,6 +18,7 @@
  *   /api/sessions                  the next meeting of a circle this member sits in
  *   /api/quests                    what a claimed quest pays when it is consented
  *   /api/asks                      what other members asked of this member
+ *   /api/admin/quest-claims        quest work waiting for a check, for a member holding quest.consent
  *
  * EVERY FIELD IS NULL UNTIL ITS DOOR ANSWERS, and stays null when the door is
  * closed (a module off answers 404) or fails. The components draw nothing, or
@@ -36,6 +37,7 @@ import type { WorkPay } from "@shared/workValue";
 import type { FlowerBadge } from "@/components/badges/BadgeFlower";
 import type { InboxConversation } from "@/lib/messaging";
 import { partiesOf, type Party } from "./PartiesCard";
+import { mayAsk } from "@/lib/myCapabilities";
 
 export interface WalletRowLite {
   token: string;
@@ -91,6 +93,13 @@ export interface DashData {
   questPay: Record<string, WorkPay> | null;
   /** Open asks waiting on this member, and how many of them someone is stuck on. */
   asks: { waiting: number; blocking: number } | null;
+  /**
+   * Quest work turned in and waiting for a check, for a member who may consent
+   * it (the lead, 27 Nov 2026: only when there are submissions to check). Read
+   * from the consent queue itself, so there is no second inbox. Null for
+   * everybody else, and the Today card is left out.
+   */
+  toCheck: { waiting: number; newest: string | null } | null;
 }
 
 const EMPTY: DashData = {
@@ -111,6 +120,7 @@ const EMPTY: DashData = {
   meetings: null,
   questPay: null,
   asks: null,
+  toCheck: null,
 };
 
 /** The body of a door that answered, or null for one that did not. Never throws. */
@@ -144,6 +154,14 @@ export function useDashData(userId: string | number | null | undefined): DashDat
     const load = () => {
       read<{ rows: WalletRowLite[] }>("/api/me/wallet").then((w) => put({ wallet: w?.rows ?? null }));
       read<{ entries: LedgerLine[] }>("/api/game/ledger").then((l) => put({ ledger: l?.entries ?? null }));
+      // Work waiting for this member's check: asked only of a member who holds the power, from the queue itself.
+      void mayAsk("quest.consent").then((may) => {
+        if (!may) return;
+        read<Array<{ status?: string; questTitle?: string }>>("/api/admin/quest-claims").then((rows) => {
+          const waiting = Array.isArray(rows) ? rows.filter((r) => r.status === "submitted") : null;
+          put({ toCheck: waiting ? { waiting: waiting.length, newest: waiting[0]?.questTitle ?? null } : null });
+        });
+      });
       read<MoonWindow & { daysRemaining?: number }>("/api/game/cycle").then((c) =>
         put({ cycle: c?.startsAt ? { ...c, daysRemaining: typeof c.daysRemaining === "number" ? c.daysRemaining : null } : null }),
       );

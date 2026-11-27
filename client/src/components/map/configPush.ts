@@ -27,6 +27,8 @@
  * once per boot and hands the same answer to both.
  */
 import { blankScene } from "@shared/mapFromMasterplan";
+import { walkPush } from "@shared/mapAddress";
+import { landGroundOf } from "./landGround";
 
 export type LandAnswer = Record<string, any> | null;
 
@@ -65,4 +67,66 @@ export function configScene(
     return { scene: blankScene(), sceneVersion: 0, blank: true };
   }
   return null;
+}
+
+/**
+ * Push the village's own map into a frame: its skin, walk, vocabulary, name, the published scene and its ground.
+ *
+ * ONE PUSH FOR EVERY FRAME. The Living Map's shell (pages/LivingMap.tsx) sends it when the artifact announces itself
+ * and again when the wizard saves; the home page's peek (components/MapPeek.tsx) sends it once, so the small window
+ * shows the village's map as it stands and never the artifact's own sample village (the lead, 27 Nov 2026: "it's
+ * actually not reflecting the latest map").
+ *
+ * A message goes on EVERY path, a bare `{type:'config'}` when the fetch fails: the artifact keeps its land covered
+ * until the shell has said what it will say about the land, and a bare message changes nothing while it ends the
+ * wait. The village's own ground also goes on its own the moment it is known, so the picture downloads while the
+ * config is still on its way. `blankSent` is per frame: the blank scene goes once.
+ */
+export async function pushVillageConfig(
+  win: Window,
+  opts: { blankSent: { current: boolean }; land?: Promise<LandAnswer> },
+): Promise<void> {
+  const payload: Record<string, unknown> = { type: "config" };
+  const ground = (opts.land ?? readLand()).then((body) => {
+    const g = landGroundOf(body);
+    if (g) {
+      try {
+        win.postMessage({ type: "ground", ...g }, window.location.origin);
+      } catch {
+        /* The frame went away: nobody is waiting. */
+      }
+    }
+    return g;
+  });
+  try {
+    // Where the village stands rides the boot push only.
+    const [res, landBody] = await Promise.all([fetch("/api/map/config"), opts.land ?? Promise.resolve(null)]);
+    const seedGround = seedGroundOf(landBody);
+    if (seedGround !== null) payload.seedGround = seedGround;
+    if (!res.ok) return;
+    const body = await res.json();
+    // One push carries skin, walk and vocabulary; the artifact applies each part only when present.
+    if (body?.skin) payload.skin = body.skin;
+    Object.assign(payload, walkPush(body));
+    if (body?.vocabulary) payload.vocabulary = body.vocabulary;
+    // The village's own name and its guide's, for the map's top bar and dock.
+    if (body?.village) payload.village = body.village;
+    // The published land, or the blank one when nothing is published: the map's own seed is another village's land.
+    const told = configScene(body, opts.blankSent.current);
+    if (told) {
+      payload.scene = told.scene;
+      payload.sceneVersion = told.sceneVersion;
+      if (told.blank) opts.blankSent.current = true;
+    }
+  } catch {
+    /* The map keeps whatever it is already wearing. */
+  } finally {
+    const g = await ground;
+    if (g) payload.ground = g;
+    try {
+      win.postMessage(payload, window.location.origin);
+    } catch {
+      /* The frame went away under the fetch: nobody is waiting. */
+    }
+  }
 }

@@ -10,7 +10,7 @@
  * the same switch, and it must still be there.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 
 const switches = { brochurePages: true, brochureHidden: [] as string[] };
@@ -80,6 +80,16 @@ describe("a story page switched off on its own", () => {
     expect(linksTo("/housing")).toHaveLength(0);
     expect(footerLinksTo("/visit")).toHaveLength(1);
     expect(footerLinksTo("/team")).toHaveLength(1);
+  });
+
+  it("takes a chapter's entry with it: Good Neighbor's switch still governs /rights#good-neighbor (fold 3, #1857)", () => {
+    openVillage();
+    expect(linksTo("/rights#good-neighbor")).toHaveLength(1);
+    cleanup();
+    switches.brochureHidden = ["/good-neighbor"];
+    openVillage();
+    expect(linksTo("/rights#good-neighbor")).toHaveLength(0);
+    expect(linksTo("/housing").length).toBeGreaterThan(0);
   });
 
   it("drops from the phone's menu drawer too", () => {

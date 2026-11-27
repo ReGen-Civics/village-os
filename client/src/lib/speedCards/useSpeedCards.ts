@@ -40,10 +40,14 @@ export interface SpeedCardsState {
   save: (slots: SpeedCardSlots | null) => Promise<boolean>;
   /** The last save did not reach the server. */
   failed: boolean;
+  /** This device has an answer: its own copy, or the server's. False on a new device until the server answers. */
+  known: boolean;
 }
 
 export function useSpeedCards(who: string | null): SpeedCardsState {
-  const [slots, setSlots] = useState<SpeedCardSlots | null>(() => (who ? (readLocal(who) ?? null) : null));
+  const [first] = useState(() => (who ? readLocal(who) : undefined));
+  const [slots, setSlots] = useState<SpeedCardSlots | null>(first ?? null);
+  const [known, setKnown] = useState(first !== undefined);
   const [failed, setFailed] = useState(false);
   // A save made while the first read is in flight wins over that read's answer.
   const saved = useRef(false);
@@ -55,13 +59,14 @@ export function useSpeedCards(who: string | null): SpeedCardsState {
     gameFetch("/api/profile/speed-cards")
       .then((r) => (r.ok ? (r.json() as Promise<{ slots?: unknown }>) : null))
       .then((body) => {
+        if (live) setKnown(true);
         if (!live || saved.current || !body) return;
         const parsed = parseSpeedCardSlots(body.slots ?? null);
         if (!parsed.ok) return;
         setSlots(parsed.value);
         writeLocal(who, parsed.value);
       })
-      .catch(() => undefined);
+      .catch(() => live && setKnown(true));
     return () => {
       live = false;
     };
@@ -71,6 +76,7 @@ export function useSpeedCards(who: string | null): SpeedCardsState {
     async (next: SpeedCardSlots | null) => {
       if (!who) return false;
       saved.current = true;
+      setKnown(true);
       setSlots(next);
       writeLocal(who, next);
       try {
@@ -85,5 +91,5 @@ export function useSpeedCards(who: string | null): SpeedCardsState {
     [who],
   );
 
-  return { slots, save, failed };
+  return { slots, save, failed, known };
 }

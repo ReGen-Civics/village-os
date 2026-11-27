@@ -42,12 +42,13 @@ export interface SpeedCard {
 /**
  * A REGISTERED CARD: one that is not a menu row. `useShown` is a hook, called once per sheet for each registered
  * card in a fixed order (SpeedCards.tsx renders one probe per card), and answers whether this member sees it now.
- * Absent means always. Answer false while it is unknown, so a card never flashes in and out.
+ * Absent means always. Answer null while it is not known yet: the sheet holds the card's default slot quietly
+ * until the answer comes, so a card never flashes "+" and then fills.
  */
 export interface SpeedCardDef extends Omit<SpeedCard, "group"> {
   /** The picker group it sits in. Absent: "Yours". */
   group?: string;
-  useShown?: () => boolean;
+  useShown?: () => boolean | null;
   /**
    * Where it stands in a new member's six: the place among the defaults it fills when shown (DEFAULT_ORDER).
    * Absent: never a default, only in the picker.
@@ -122,7 +123,7 @@ export function buildRegistry({ entries, itemsOf, account, registered, words, sh
  * defaults when that card is missing), only the cards this member may keep, then open slots. With Human Design or
  * Gene Keys off that is two open slots: Profile, Messages, My tasks, Journal, +, +.
  */
-export function defaultSlots(reg: Registry, registered: readonly SpeedCardDef[]): SpeedCardSlots {
+export function defaultSlots(reg: Registry, registered: readonly SpeedCardDef[], pending: ReadonlySet<string> = new Set()): SpeedCardSlots {
   const order = [...DEFAULT_ORDER];
   const placed = new Map<string, number>();
   for (const d of registered) {
@@ -133,7 +134,8 @@ export function defaultSlots(reg: Registry, registered: readonly SpeedCardDef[])
     order.splice(at === -1 ? order.length : at + 1 + n, 0, d.id);
     placed.set(d.defaultAfter, n + 1);
   }
-  const slots: SpeedCardSlots = order.filter((id) => reg.byId.has(id)).slice(0, SPEED_CARD_SLOTS);
+  // A registered card still waiting on its rule keeps its place (`pending`): the sheet draws it as a quiet slot.
+  const slots: SpeedCardSlots = order.filter((id) => reg.byId.has(id) || pending.has(id)).slice(0, SPEED_CARD_SLOTS);
   while (slots.length < SPEED_CARD_SLOTS) slots.push(null);
   return slots;
 }
@@ -178,13 +180,31 @@ export function firstOpen(slots: SpeedCardSlots, reg: Registry): number {
   return resolveSlots(slots, reg).findIndex((c) => c === null);
 }
 
-/** Cards matching a search: every word of it, in the label, its folder or its group, any case. */
+/** True when `a` becomes `b` by one letter added, dropped or changed (a typo), or they are equal. */
+function withinOne(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1);
+  return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
+}
+
+/** A typed word found in the text: as written, or (four letters or more) one typo away from the start of a word in it. */
+function wordFound(word: string, hay: string, tokens: readonly string[]): boolean {
+  if (hay.includes(word)) return true;
+  if (word.length < 4) return false;
+  return tokens.some((tok) => [word.length - 1, word.length, word.length + 1].some((n) => n <= tok.length && withinOne(word, tok.slice(0, n))));
+}
+
+/** Cards matching a search: every word of it, in the label, its folder or its group, any case, forgiving one typo a word. */
 export function searchCards(reg: Registry, query: string): SpeedCard[] {
   const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
   const all = reg.groups.flatMap((g) => g.cards);
   if (!words.length) return all;
   return all.filter((c) => {
     const hay = `${c.label} ${c.sub ?? ""} ${c.group}`.toLocaleLowerCase();
-    return words.every((w) => hay.includes(w));
+    const tokens = hay.split(/[^a-z0-9À-ɏ]+/).filter(Boolean);
+    return words.every((w) => wordFound(w, hay, tokens));
   });
 }

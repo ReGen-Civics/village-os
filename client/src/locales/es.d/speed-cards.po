@@ -127,3 +127,28 @@ msgstr "Nada coincide. Pruebe otra palabra."
 msgctxt "the speed-card picker: this page is already one of the member's cards"
 msgid "On your cards"
 msgstr "Ya está en sus tarjetas"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move left"
+msgstr "Mover a la izquierda"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move right"
+msgstr "Mover a la derecha"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip, the picked card and its place"
+msgid "{label}, place {place} of {total}"
+msgstr "{label}, lugar {place} de {total}"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+msgctxt "the phone's More sheet: the move strip's hint in edit mode"
+msgid "Drag a card, or use its arrows."
+msgstr "Arrastre una tarjeta, o use sus flechas."
+
+# needs-native-review: the speed cards, the picker, QA round 1, 27 Nov 2026
+msgctxt "the speed-card picker: the kicker over its heading"
+msgid "Your quick cards"
+msgstr "Sus tarjetas rápidas"

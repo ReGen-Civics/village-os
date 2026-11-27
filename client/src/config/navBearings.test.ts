@@ -61,6 +61,12 @@ describe("bearingsFor", () => {
     expect(bearingsFor("/", SEEN)).toBeNull();
   });
 
+  it("lights Rights and agreements on its page, over the two doors to its chapters (fold 3, #1857)", () => {
+    expect(bearingsFor("/rights", [], [], NAV)?.item.label).toBe("Rights and agreements");
+    expect(bearingsFor("/rights", [], [], NAV)?.exact).toBe(true);
+    expect(bearingsFor("/rights#leaving-well", [], [], NAV)?.item.label).toBe("Leaving Well");
+  });
+
   it("knows every page the platform's menu lists, each in its own group", () => {
     for (const e of NAV) {
       if (!isGroup(e)) continue;

@@ -30,24 +30,17 @@ import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { ChevronDown, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useModules } from "@/modules/ModuleProvider";
-import { useNewcomer } from "@/lib/newcomer";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import MenuIcon from "@/components/nav/MenuIcon";
 import MenuRows from "@/components/nav/MenuRows";
+import { useNewcomer } from "@/lib/newcomer";
 import { isGroup, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
 import { currentFor, type Lit } from "@/config/navBearings";
 import { DEFAULT_ORDER } from "@/lib/speedCards/registry";
 import SpeedCards from "./SpeedCards";
 
 type AccountLink = NavLink & { count?: "tasks" | "messages" };
-
-/**
- * The hidden map, a tap away on the phone (it was the lotus's row): logging a place happens out where
- * the place is. Shown to an admitted member while its module is on; its other door is the Village menu.
- */
-const HIDDEN_MAP = { href: "/hidden-map", module: "hidden-map" } as const;
 
 export interface MoreSheetProps {
   /** The menu, as Layout filtered it (modules, roles, the brochure switch). */
@@ -133,11 +126,10 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
 
   // The addresses on the member's cards, so the list under them leaves those out (SpeedCards reports them).
   const [onCards, setOnCards] = useState<readonly string[]>(DEFAULT_ORDER);
-  const { modules } = useModules();
+  // The rest of the member's own entries. The hidden map is not added here any more: it sits in Village's Maps folder,
+  // and a page shows once in the sheet (the menu's QA, 27 Nov 2026).
   const newcomer = useNewcomer();
-  const hiddenMapOn = !!user && !newcomer && Array.isArray(modules) && modules.some((m) => m.id === HIDDEN_MAP.module && m.lifecycle !== "off");
   const rest: AccountLink[] = account.filter((a) => !onCards.includes(a.href));
-  if (hiddenMapOn && !onCards.includes(HIDDEN_MAP.href) && !rest.some((a) => a.href === HIDDEN_MAP.href)) rest.push({ href: HIDDEN_MAP.href, label: t({ message: "Hidden map", context: "the phone's More sheet: the hidden map, for logging places out on the land" }) });
 
   const eyebrow = "text-xs font-semibold uppercase tracking-widest text-notice";
   return (
@@ -168,7 +160,8 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                   asListItems
                   links={rest}
                   here={lit?.href}
-                  rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-2 text-left text-sm text-foreground hover:underline"
+                  gutter={<span aria-hidden="true" className="size-5 shrink-0" />}
+                  rowClassName="flex min-h-11 w-full items-center gap-2 py-2 text-left text-sm text-foreground hover:underline"
                   listClassName="mb-2 ml-1 border-l border-border pl-3"
                   renderLink={(a) => (
                     <Link href={a.href} onClick={close} className="flex min-h-11 items-center gap-2 py-2 text-sm text-foreground hover:underline">
@@ -181,9 +174,9 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
             ) : null}
           </section>
         ) : (
-          <section className="mt-2 grid grid-cols-2 gap-2">
+          // One tile for a visitor: Work With Us is in Join's Build with us, so it is not drawn twice (QA, 27 Nov 2026).
+          <section className="mt-2 grid grid-cols-1 gap-2">
             <Tile href="/login" label={t({ message: "Sign in or join", context: "the phone's More sheet: a visitor's tile" })} onGo={close} />
-            <Tile href="/work-with-us" label={t({ message: "Work with us", context: "the phone's More sheet: a visitor's tile" })} onGo={close} />
           </section>
         )}
 
@@ -212,8 +205,10 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                       <MenuRows
                         asListItems
                         links={itemsOf(e)}
+                        opens={newcomer || !user ? e.opens : null}
                         here={lit?.href}
-                        rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-1.5 text-left text-sm text-foreground hover:underline"
+                        gutter={<span aria-hidden="true" className="size-5 shrink-0" />}
+                        rowClassName="flex min-h-11 w-full items-center gap-2 py-1.5 text-left text-sm text-foreground hover:underline"
                         listClassName="mb-1 ml-1 border-l border-border pl-3"
                         renderLink={(l) => (
                           <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>

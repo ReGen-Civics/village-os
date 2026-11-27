@@ -111,6 +111,22 @@ describe("search", () => {
     expect(searchCards(r, "your things").map((c) => c.id)).toEqual(["/journal", "/badges"]);
     expect(searchCards(r, "nothing like this")).toEqual([]);
   });
+
+  it("forgives one typo a word of four letters or more, and never on a short word", () => {
+    const r = reg();
+    expect(searchCards(r, "libary").map((c) => c.id)).toEqual(["/library"]);
+    expect(searchCards(r, "quets").map((c) => c.id)).toEqual(["/quests"]);
+    expect(searchCards(r, "jornal").map((c) => c.id)).toEqual(["/journal"]);
+    expect(searchCards(r, "mao")).toEqual([]);
+    expect(searchCards(r, "librxyz")).toEqual([]);
+  });
+});
+
+describe("a registered default still waiting on its rule", () => {
+  it("keeps its place among the defaults, so the sheet can hold it quietly", () => {
+    const r = reg();
+    expect(defaultSlots(r, [PULL], new Set([PULL_A_CARD_ID]))).toEqual(["/profile", "/messages", TASK_BOARD_PATH, "/journal", PULL_A_CARD_ID, null]);
+  });
 });
 
 describe("what the server keeps (shared/speedCards.ts)", () => {
