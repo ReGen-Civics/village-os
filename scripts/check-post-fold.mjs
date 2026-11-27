@@ -95,7 +95,14 @@ export function plan({ fold, tests }) {
   }
   steps.push(["catalogs", process.execPath, ["scripts/check-i18n-catalogs.mjs"], { GENERATED_DOCS_MODE: "strict" }]);
   if (tests.length) {
-    steps.push(["locale-tests", process.execPath, [path.join("node_modules", "vitest", "vitest.mjs"), "run", ...tests], {}]);
+    // CI: "" because these files read catalogs and need no database, and the docs bot's job
+    // (generated-docs.yml) has none. vitest's teardown (server/db/provisioningReport.ts) holds
+    // any run with CI set and no TEST_DATABASE_URL to be a hollow run and fails it, filtered
+    // or not, so the gate failed 22 green files and held back the first regeneration after
+    // 1.3.85 (run 45909752640, 26 Nov 2026). Clearing CI here takes the demand off this one
+    // step: REQUIRE_TEST_DB is left alone, every ci.yml shard keeps CI, and ci.yml's verify
+    // runs this step with its database anyway. Held by check-post-fold.test.mjs.
+    steps.push(["locale-tests", process.execPath, [path.join("node_modules", "vitest", "vitest.mjs"), "run", ...tests], { CI: "" }]);
   }
   return steps;
 }

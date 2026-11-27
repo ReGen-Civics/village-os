@@ -103,4 +103,12 @@ check("generated-docs.yml runs this BEFORE it pushes to main, and pushes only wh
   assert.match(commitStep, /if: steps\.gate\.outcome == 'success'/, "the push to main no longer waits for the gate");
 });
 
-console.log(`check-post-fold.test: ${passed}/8 checks passed`);
+check("the locale tests run with CI cleared: they need no database, and the docs bot's job has none", () => {
+  const steps = plan({ fold: false, tests: ["a.test.ts"] });
+  const env = steps.find((s) => s[0] === "locale-tests")[3];
+  assert.strictEqual(env.CI, "", "with CI set and no TEST_DATABASE_URL, vitest's teardown fails a green run (45909752640)");
+  assert.ok(!("REQUIRE_TEST_DB" in env), "an explicit demand for a database is never cleared");
+  assert.strictEqual(steps.find((s) => s[0] === "catalogs")[3].CI, undefined, "only the test step is touched");
+});
+
+console.log(`check-post-fold.test: ${passed} checks passed`);
