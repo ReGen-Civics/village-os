@@ -9,6 +9,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testi
 import userEvent from "@testing-library/user-event";
 import { FindAnything, isFindShortcut } from "./FindAnything";
 import { forgetFindIndex } from "./FindAnythingDialog";
+import { FIND_ANYTHING_READY_EVENT, openFindAnything, useFindAnythingReady } from "./findAnythingDoor";
 import type { FindIndex } from "@shared/findAnything";
 
 let index: FindIndex;
@@ -160,5 +161,46 @@ describe("Find anything", () => {
     await userEvent.click(await within(d).findByRole("option", { name: /Ask Sol where to find it/ }));
     expect(await within(d).findByText("Sol has rested for today. The search still works on its own.")).toBeTruthy();
     expect(within(d).getByRole("option", { name: /Garden Lead/ })).toBeTruthy();
+  });
+
+  it("opens from openFindAnything() anywhere, with the focus in the field and back on the link after", async () => {
+    render(
+      <>
+        <button type="button" onClick={openFindAnything}>Search the village</button>
+        <FindAnything />
+      </>,
+    );
+    const link = screen.getByRole("button", { name: "Search the village" });
+    await userEvent.click(link);
+    const d = await dialog();
+    await waitFor(() => expect(within(d).getByRole("combobox")).toHaveFocus());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(link).toHaveFocus());
+  });
+
+  it("says it is ready only while a mount is here, and says so again when the last one goes", async () => {
+    function Door() {
+      return <p>{useFindAnythingReady() ? "ready" : "not here"}</p>;
+    }
+    const heard: unknown[] = [];
+    const listen = (e: Event) => heard.push((e as CustomEvent).detail);
+    window.addEventListener(FIND_ANYTHING_READY_EVENT, listen);
+    const door = render(<Door />);
+    expect(door.getByText("not here")).toBeTruthy();
+    expect(window.__findAnythingReady).toBeUndefined();
+    const one = render(<FindAnything />);
+    const two = render(<FindAnything />);
+    expect(window.__findAnythingReady).toBe(true);
+    await waitFor(() => expect(door.getByText("ready")).toBeTruthy());
+    one.unmount();
+    expect(window.__findAnythingReady).toBe(true);
+    two.unmount();
+    expect(window.__findAnythingReady).toBeUndefined();
+    await waitFor(() => expect(door.getByText("not here")).toBeTruthy());
+    // Asking with nothing mounted opens nothing.
+    openFindAnything();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(heard).toEqual([true, false]);
+    window.removeEventListener(FIND_ANYTHING_READY_EVENT, listen);
   });
 });

@@ -9,12 +9,16 @@
  * one state, one key listener and one dialog. The dialog closes back to whatever opened it, the button pressed or
  * the element that had the focus when the keys were.
  *
+ * Any page can open it too: `openFindAnything()` and `useFindAnythingReady()` in findAnythingDoor.ts, which imports
+ * nothing of the search, so a link costs its page a few lines and shows only while a mount is here to answer.
+ *
  * In Admin's own page the admin search keeps Ctrl K (components/admin/search): that page draws no site header, so
  * no mount is there, and a key the admin search already took (`defaultPrevented`) is never taken twice.
  */
 import { lazy, Suspense, useEffect, useRef, useSyncExternalStore } from "react";
 import { Search } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
+import { FIND_ANYTHING_EVENT, setFindAnythingReady } from "./findAnythingDoor";
 
 const loadDialog = () => import("./FindAnythingDialog");
 const FindAnythingDialog = lazy(loadDialog);
@@ -62,6 +66,11 @@ export function isFindShortcut(e: Pick<KeyboardEvent, "key" | "ctrlKey" | "metaK
   return (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && String(e.key).toLowerCase() === "k";
 }
 
+/** `openFindAnything()` from anywhere (findAnythingDoor.ts): open, with the focus back on whatever asked. */
+function onAsk(): void {
+  openFind(null);
+}
+
 function onKey(e: KeyboardEvent): void {
   if (e.defaultPrevented || e.isComposing || !isFindShortcut(e)) return;
   // The browser's own Ctrl K is its address bar's search; on this site the keys are the site's search.
@@ -80,10 +89,18 @@ export function FindAnything({ className }: { className?: string }) {
   useEffect(() => {
     const me = id.current;
     mounts.push(me);
-    if (mounts.length === 1) document.addEventListener("keydown", onKey);
+    if (mounts.length === 1) {
+      document.addEventListener("keydown", onKey);
+      window.addEventListener(FIND_ANYTHING_EVENT, onAsk);
+      setFindAnythingReady(true);
+    }
     return () => {
       mounts.splice(mounts.indexOf(me), 1);
-      if (!mounts.length) document.removeEventListener("keydown", onKey);
+      if (!mounts.length) {
+        document.removeEventListener("keydown", onKey);
+        window.removeEventListener(FIND_ANYTHING_EVENT, onAsk);
+        setFindAnythingReady(false);
+      }
       // A mount leaving with the dialog open hands it to the next one, or closes it.
       if (state.open && state.owner === me) {
         if (mounts.length) setState({ ...state, owner: mounts[0] });
