@@ -4,6 +4,8 @@ import WhyCostaRica from "@/components/WhyCostaRica";
 import FaqSection from "@/components/FaqSection";
 import PathConsentBox, { FORM_CONSENT_FIELD } from "@/components/comms/PathConsentBox";
 import InvestorSummary from "@/components/InvestorSummary";
+import InvestorInterest from "@/components/investor/InvestorInterest";
+import { investorHeaders, useInvestorAccess, useInvestorPage } from "@/lib/investorAccess";
 import { Emphasized, Highlighted } from "@/components/PageText";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import {
@@ -27,9 +29,10 @@ import {
 import { SeedOfLife } from "@/components/journey/nature";
 import { useJourneyContent, useJourneyProgress } from "@/hooks/useJourneyContent";
 import { buttonAction, percent, stepPoints, type TargetContext } from "@/lib/journeyPage";
-import { INVESTOR_FIGURE_IDS, INVESTOR_JOURNEY, JOURNEY_LEGACY_STEP_IDS } from "@shared/pageContent/journeys";
+import { INVESTOR_FIGURE_IDS, JOURNEY_LEGACY_STEP_IDS } from "@shared/pageContent/journeys";
+import type { PageSpec } from "@shared/pageContent/types";
+import { fillWords, type InvestorWordKey } from "@shared/investorInterest";
 import { useEffect, useState } from "react";
-import { useLingui, Trans } from "@lingui/react/macro";
 import { m, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
@@ -103,8 +106,49 @@ const SECTION_H2 = "font-display text-3xl leading-tight text-foreground sm:text-
 const PACK_FORM = "pack-form";
 const CALL_FORM = "call-form";
 
+/**
+ * THE INVESTOR GATE (the lead, 27 Nov 2026: "hide all the wording on investor for now to just give a form for
+ * investors to give their information if they are interested"). A reader the team let in sees the whole page below,
+ * unchanged; everybody else sees only the interest form (components/investor/InvestorInterest.tsx). The server keeps
+ * the summary, the packet and the page's own words for the readers it lets in (server/routes/investorAccess.ts).
+ */
 export default function InvestorJourney() {
-  const page = useJourneyContent(INVESTOR_JOURNEY);
+  const { state, reload } = useInvestorAccess();
+  if (state?.access) return <InvestorJourneyServed onRefused={reload} />;
+  return (
+    <Layout>
+      <div className={WORLD} data-investor-gate="">
+        {state === undefined ? <div className="min-h-[60vh]" aria-busy="true" /> : <InvestorInterest state={state} onSent={reload} />}
+      </div>
+    </Layout>
+  );
+}
+
+/**
+ * The page as the server sends it (GET /api/investor/page): its spec, with every default word, and its labels in the
+ * reader's language. Nothing of the investor page is in this script (the lead, 27 Nov 2026: "hide the generic text").
+ */
+function InvestorJourneyServed({ onRefused }: { onRefused: () => void }) {
+  const served = useInvestorPage();
+  // Refused after all (access taken back while the page was open): back to the form.
+  // Once per refusal: `onRefused` is a new function on every render of the gate.
+  useEffect(() => {
+    if (served === null) onRefused();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [served]);
+  if (served === null) return null;
+  if (!served) {
+    return (
+      <Layout>
+        <div className={WORLD}><div className="min-h-[60vh]" aria-busy="true" /></div>
+      </Layout>
+    );
+  }
+  return <InvestorJourneyFull spec={served.spec} words={served.words} />;
+}
+
+function InvestorJourneyFull({ spec, words }: { spec: PageSpec; words: Record<InvestorWordKey, string> }) {
+  const page = useJourneyContent(spec);
   const hero = page?.hero.fields;
   const figures = page?.figures;
   const personas = page?.personas;
@@ -118,7 +162,6 @@ export default function InvestorJourney() {
   const accreditationOn = !!page && !page.accreditation.hidden;
   const brand = useBrandImages();
   const settings = useVillageSettings();
-  const { t } = useLingui();
   // NULL IS "NOT LOADED YET", NEVER "NOTHING STATED". Without this line the
   // page tells every visitor "this village has not published any figures" for
   // the length of one fetch, including on a village that has published four,
@@ -135,7 +178,7 @@ export default function InvestorJourney() {
   const progress = useJourneyProgress("amora-investor-progress", steps, JOURNEY_LEGACY_STEP_IDS.investor);
   const walkedCount = progress.doneCount;
   const stepCount = progress.total;
-  const countLine = t({ message: `${walkedCount} of ${stepCount} steps completed`, context: "investor path ticked off" });
+  const countLine = fillWords(words.stepsDone, { walkedCount, stepCount });
   const [expandedStep, setExpandedStep] = useState<number | null>(0);
   const [showPackForm, setShowPackForm] = useState(false);
   const [showCallForm, setShowCallForm] = useState(false);
@@ -163,7 +206,7 @@ export default function InvestorJourney() {
   const [packReady, setPackReady] = useState<boolean | null>(null);
   useEffect(() => {
     let live = true;
-    fetch("/api/investor-summary")
+    fetch("/api/investor-summary", { credentials: "same-origin", headers: investorHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { if (live && j && typeof j.packReady === "boolean") setPackReady(j.packReady); })
       .catch(() => {});
@@ -172,7 +215,7 @@ export default function InvestorJourney() {
   const packClosed = packReady === false;
   const formDisabled = (form: string) => form === PACK_FORM && packClosed;
   const opensPack = (b: { action: { kind: string; form?: string } } | null | undefined) => !!b && b.action.kind === "form" && b.action.form === PACK_FORM;
-  const packPreparing = t({ message: "The investor pack is being prepared.", context: "investor page: under a disabled request-the-pack button" });
+  const packPreparing = words.packPreparing;
   const heroPrimary = buttonAction(hero?.primaryLabel, hero?.primaryTarget, targets);
   const heroSecondary = buttonAction(hero?.secondaryLabel, hero?.secondaryTarget, targets);
   const closingPrimary = buttonAction(closing?.fields.primaryLabel, closing?.fields.primaryTarget, targets);
@@ -181,9 +224,7 @@ export default function InvestorJourney() {
   // published address the sentence simply stops after "try again": pointing a
   // failed investor at a mailbox this village does not own is how the lead
   // disappears without anybody noticing.
-  const retryNote = contactEmail
-    ? `Something went wrong. Please try again or email ${contactEmail}.`
-    : "Something went wrong. Please try again.";
+  const retryNote = contactEmail ? fillWords(words.retryWithEmail, { email: contactEmail }) : words.retry;
 
   const handlePackFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,7 +241,8 @@ export default function InvestorJourney() {
        */
       const response = await fetch("/api/investor-docs/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        headers: investorHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           name: packFormData.name,
           email: packFormData.email,
@@ -212,7 +254,7 @@ export default function InvestorJourney() {
       });
       if (response.ok) {
         const result = await response.json().catch(() => ({}));
-        setFormSuccess(result.message || "Check your email - we've sent you the full investor packet.");
+        setFormSuccess(result.message || words.packSent);
         setShowPackForm(false);
         setPackFormData({ name: "", email: "", investmentRange: "", message: "", accredited: false });
         setPackConsent(false);
@@ -359,7 +401,7 @@ export default function InvestorJourney() {
             >
               <img
                 src={heroArt}
-                alt={altOr(brand.investorHeroAlt, "The land and the buildings on it")}
+                alt={altOr(brand.investorHeroAlt, words.heroAlt)}
                 className="h-52 w-full object-cover min-[420px]:h-64 sm:h-80 lg:h-[30rem]"
                 style={brand.investorHeroFocus ? { objectPosition: brand.investorHeroFocus } : undefined}
               />
@@ -448,7 +490,7 @@ export default function InvestorJourney() {
       </section>
       )}
 
-      <InvestorSummary />
+      <InvestorSummary eyebrow={words.summaryEyebrow} />
 
       {/* Who invests in this village. A short row each on a phone, a card each from sm up. */}
       {personas && !personas.hidden && (
@@ -561,7 +603,7 @@ export default function InvestorJourney() {
                       <div className="min-w-0 flex-1">
                         <div className="mb-1.5 flex items-center justify-between gap-3">
                           <span className={`${CHIP_SOFT} break-words`}>
-                            <Trans context="InvestorJourney, span">Stage: {step.stage}</Trans>
+                            {fillWords(words.stage, { stage: step.stage })}
                           </span>
                           <m.span
                             className="shrink-0"
@@ -606,7 +648,7 @@ export default function InvestorJourney() {
                       >
                         <div className="px-4 pb-5 sm:px-5 sm:pl-[4.75rem]">
                           <div className={`${TILE} mb-4`}>
-                            <h4 className="mb-3 text-sm font-semibold text-foreground"><Trans context="InvestorJourney, h4">What you'll accomplish:</Trans></h4>
+                            <h4 className="mb-3 text-sm font-semibold text-foreground">{words.accomplish}</h4>
                             <ul className="grid gap-2 sm:grid-cols-2">
                               {stepPoints(step).map((detail, i) => (
                                 <li key={i} className="flex min-w-0 items-start gap-2 text-sm text-muted-foreground break-words">
@@ -723,7 +765,7 @@ export default function InvestorJourney() {
       </section>
       )}
 
-      {page && <FaqSection pathway="investor" heading={page.faq.fields.heading} />}
+      {page && <FaqSection pathway="investor" heading={page.faq.fields.heading} headers={investorHeaders()} />}
 
       {/* The closing invitation: the one panel on the page that says "start here". */}
       {closing && !closing.hidden && (
@@ -781,15 +823,13 @@ export default function InvestorJourney() {
         <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-card-foreground">
-              <Trans context="InvestorJourney, DialogTitle">Request Investor Pack
-            </Trans></DialogTitle>
+              {words.packTitle}</DialogTitle>
             <DialogDescription className="sr-only">
-              <Trans context="InvestorJourney, DialogDescription">Request the full investor pack with financials and development timeline.
-            </Trans></DialogDescription>
+              {words.packDescription}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePackFormSubmit} className="space-y-4">
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Name</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.name}</label>
               <input
                 type="text"
                 value={packFormData.name}
@@ -799,7 +839,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Email</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.email}</label>
               <input
                 type="email"
                 value={packFormData.email}
@@ -809,7 +849,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Investment Range</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.range}</label>
               <input
                 type="text"
                 placeholder={page?.packForm.fields.rangeHint || undefined}
@@ -819,7 +859,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Message (optional)</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.message}</label>
               <textarea
                 value={packFormData.message}
                 onChange={(e) => setPackFormData({ ...packFormData, message: e.target.value })}
@@ -843,9 +883,8 @@ export default function InvestorJourney() {
             <PathConsentBox checked={packConsent} onChange={setPackConsent} />
             {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
             <button type="submit" className={`${BTN_PRIMARY} w-full`}>
-              <Trans context="InvestorJourney, button"><Send className="size-4" aria-hidden="true" />
-              Send Request
-            </Trans></button>
+              <Send className="size-4" aria-hidden="true" />
+              {words.sendRequest}</button>
           </form>
         </DialogContent>
       </Dialog>
@@ -855,15 +894,13 @@ export default function InvestorJourney() {
         <DialogContent className="sheet-night max-h-[90vh] overflow-y-auto rounded-2xl border-border bg-card p-6 text-card-foreground shadow-sm sm:max-w-md sm:p-8">
           <DialogHeader>
             <DialogTitle className="font-display text-2xl text-card-foreground">
-              <Trans context="InvestorJourney, DialogTitle">Schedule a Call
-            </Trans></DialogTitle>
+              {words.callTitle}</DialogTitle>
             <DialogDescription className="sr-only">
-              <Trans context="InvestorJourney, DialogDescription">Schedule a one-on-one investment call with our team.
-            </Trans></DialogDescription>
+              {words.callDescription}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCallFormSubmit} className="space-y-4">
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Name</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.name}</label>
               <input
                 type="text"
                 value={callFormData.name}
@@ -873,7 +910,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Email</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.email}</label>
               <input
                 type="email"
                 value={callFormData.email}
@@ -883,7 +920,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Preferred Time</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.preferredTime}</label>
               <input
                 type="text"
                 placeholder={page?.callForm.fields.timeHint || undefined}
@@ -893,7 +930,7 @@ export default function InvestorJourney() {
               />
             </div>
             <div>
-              <label className={`${LABEL} mb-1.5 block`}><Trans context="InvestorJourney, label">Message (optional)</Trans></label>
+              <label className={`${LABEL} mb-1.5 block`}>{words.message}</label>
               <textarea
                 value={callFormData.message}
                 onChange={(e) => setCallFormData({ ...callFormData, message: e.target.value })}
@@ -904,9 +941,8 @@ export default function InvestorJourney() {
             <PathConsentBox checked={callConsent} onChange={setCallConsent} />
             {notice ? <p className="text-xs leading-relaxed text-muted-foreground">{notice}</p> : null}
             <button type="submit" className={`${BTN_PRIMARY} w-full`}>
-              <Trans context="InvestorJourney, button"><Send className="size-4" aria-hidden="true" />
-              Request Call
-            </Trans></button>
+              <Send className="size-4" aria-hidden="true" />
+              {words.requestCall}</button>
           </form>
         </DialogContent>
       </Dialog>

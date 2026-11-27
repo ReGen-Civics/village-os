@@ -237,6 +237,7 @@ import { cancelSubscription, stripeConfigured } from "./payments";
 import { forgetSeatJournalNames, SEAT_JOURNAL_ROWS_SQL } from "../repos/orgSeatErasure";
 import { leaveEveryCrewOf } from "../repos/questCrewErasure";
 import { releaseOpenClaimsOf } from "../repos/questClaimErasure";
+import { deleteStepSubmissionsOfMember, stepSubmissionsOfMember } from "../repos/questStepSubmissions";
 import { forgetReportReasonsOf } from "../repos/placePhotos";
 import { heldByAnotherAccount, usersRepo } from "../repos/users";
 import { forgetPulseLinesNaming } from "../repos/pulseLines";
@@ -1798,6 +1799,25 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
+       * What they gave for the steps of a quest (0439): their words, and the
+       * photos and documents, which can show a face, a home or papers, and
+       * whose address needs no sign-in. The files come off the volume first and
+       * the rows after, so a file that will not come off stops this step with
+       * the rows still naming it, and a resume tries again.
+       *
+       * AFTER THE TOMBSTONE, for the reason the needs step gives: the step
+       * doors write for anybody signed in until the sessions die.
+       */
+      name: "quest-step-submissions-after-tombstone",
+      run: async () => {
+        for (const row of await stepSubmissionsOfMember(pool, target.id)) {
+          if (row.fileName) unlink(deps.uploadsDir, row.fileName);
+        }
+        await deleteStepSubmissionsOfMember(pool, target.id);
+      },
+    },
+    {
+      /*
        * Place-photo reports (0093): the words they typed go, the reports stay.
        * The curators' queue serves them to every holder of `map.curatePhotos`,
        * a role or badge power, and a subject request often names the person.
@@ -2509,6 +2529,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "member-tasks-after-tombstone",
   "quest-crews-after-tombstone",
   "quest-claims-after-tombstone",
+  "quest-step-submissions-after-tombstone",
   "photo-report-reasons-after-tombstone",
   "session-cards-after-tombstone",
   "reward-moments-after-tombstone",

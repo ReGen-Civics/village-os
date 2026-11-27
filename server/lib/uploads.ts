@@ -331,7 +331,9 @@ export function stampedName(prefix: string, ext: string): string {
  *
  * `portrait` is a member's face (`lib/characterPortraits.ts`,
  * `routes/characterPortraits.ts`) and `proposal` is what they attached to a
- * form, which on some forks is a CV or an ID scan. The village's own files
+ * form, which on some forks is a CV or an ID scan. `queststep` is a photo or a
+ * document a member gave for one step of a quest (0439, routes/questSteps.ts),
+ * which can show their face, their home or their papers. The village's own files
  * carry `brand`, `sitepull` and `land-<provider>`, and those are the village's
  * to serve to anybody.
  *
@@ -344,7 +346,7 @@ export function stampedName(prefix: string, ext: string): string {
  * a vault file that happens to be an image is not, and that is a separate
  * question from this one.
  */
-export const MEMBER_UPLOAD_PREFIXES = ["portrait", "proposal"] as const;
+export const MEMBER_UPLOAD_PREFIXES = ["portrait", "proposal", "queststep"] as const;
 
 /**
  * Whether a stored file belongs to one member rather than to the village.

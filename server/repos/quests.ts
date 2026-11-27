@@ -17,6 +17,7 @@ import { rootsFrom } from "../../shared/archetypeRoots";
 import { parseRewardRange } from "../../shared/questRewards";
 import { readValueTokens, readWorkValue, valueTokensToStore, type TokenAmount } from "../../shared/workValue";
 import { storedCommitmentPct } from "../../shared/commitment";
+import { anyStepNeeds, readStepNeeds, stepsMoved } from "../../shared/questStepNeeds";
 import { lostConcurrencyRace } from "../db/concurrency";
 import { calendarRemove, calendarUpsert } from "../lib/calendar";
 import { questCalendarInput } from "../lib/calendarProviders";
@@ -149,6 +150,12 @@ export interface QuestRecord {
   archetypes?: string[];
   /** True while the roots are still the boot seed's guess and nobody has confirmed them. */
   archetypesSuggested?: boolean;
+  /**
+   * Which steps need their own submission (0439), one boolean per step in the
+   * order of `steps`. All false, or absent, behaves as a quest always did.
+   * Written only by `setQuestStepNeeds`, never by the quest's own save.
+   */
+  stepNeeds?: boolean[];
 }
 
 /**
@@ -212,7 +219,7 @@ const QUEST_SELECT =
   // is_example is selected so consumers can filter. Without it no downstream
   // code could tell an example quest from a real one â€” the work-exchange
   // suggester was offering seeded quests to real guests as paid work.
-  "SELECT id, title, subtitle, description, impact, story, first_step, steps, deliverable, tips, image_url, gratitude, duration, difficulty, circle, status, icon, role_required, min_stage, requires_role, stay_credit_reward, tags, sort_order, is_example, starts_at, ends_at, due_at, value_minor, value_currency, value_tokens, cash_minor, cash_currency, archetypes, archetypes_suggested, commitment_pct FROM quests";
+  "SELECT id, title, subtitle, description, impact, story, first_step, steps, deliverable, tips, image_url, gratitude, duration, difficulty, circle, status, icon, role_required, min_stage, requires_role, stay_credit_reward, tags, sort_order, is_example, starts_at, ends_at, due_at, value_minor, value_currency, value_tokens, cash_minor, cash_currency, archetypes, archetypes_suggested, commitment_pct, step_needs FROM quests";
 
 /** JSON column â†’ string array, tolerant of junk: an empty list renders fine. */
 function toList(v: unknown): string[] {
@@ -263,6 +270,8 @@ function rowToQuest(r: RowDataPacket): QuestRecord {
     cashCurrency: readWorkValue(r.cash_minor, r.cash_currency)?.currency ?? null,
     archetypes: rootsFrom(r.archetypes),
     archetypesSuggested: Number(r.archetypes_suggested ?? 0) === 1,
+    // Which steps need their own submission (0439), as long as the steps.
+    stepNeeds: readStepNeeds(r.step_needs, toList(r.steps).length),
   };
 }
 
@@ -375,6 +384,9 @@ export function questsRepo(pool: Pool): QuestsRepo {
           return null;
         }
         const quest = rowToQuest(rows[0]);
+        const stepsBefore = [...(quest.steps ?? [])];
+        // The stored ticks, read before the save: a body that carries `stepNeeds` back does not write them (their own door does).
+        const ticked = anyStepNeeds(quest.stepNeeds);
         mutate(quest);
         const p = questParams({ ...quest, id });
         await conn.query(
@@ -384,6 +396,19 @@ export function questsRepo(pool: Pool): QuestsRepo {
             "value_minor=?, value_currency=?, value_tokens=?, cash_minor=?, cash_currency=?, commitment_pct=? WHERE id=?",
           [...p.slice(1), id],
         );
+        /*
+         * THE TICKS ARE KEPT BY POSITION, so a save that moves the steps clears
+         * them (the lead, 27 Nov 2026), whatever door the save came through: an
+         * admin sets them again on the steps as they now stand. Same transaction,
+         * so no read ever sees the new order under the old ticks.
+         */
+        if (ticked && stepsMoved(stepsBefore, quest.steps)) {
+          await conn.query("UPDATE quests SET step_needs = NULL WHERE id = ?", [id]);
+          quest.stepNeeds = (quest.steps ?? []).map(() => false);
+        } else {
+          // What is stored, laid over the steps as saved (steps added at the end start unticked).
+          quest.stepNeeds = readStepNeeds(rows[0].step_needs, (quest.steps ?? []).length);
+        }
         await conn.commit();
         await syncQuestCalendar(pool, { ...quest, id });
         return { ...quest, id };
@@ -445,6 +470,17 @@ export async function setQuestRoots(pool: Pool, id: string, roots: readonly stri
     "UPDATE `quests` SET `archetypes` = ?, `archetypes_suggested` = 0 WHERE `id` = ?",
     [JSON.stringify(roots), id],
   );
+  return Number(r.affectedRows ?? 0) > 0;
+}
+
+/**
+ * Which steps of a quest need their own submission (0439). Its own write, like
+ * the roots, so it never rides an unrelated edit. A list with no true in it
+ * stores NULL, which is what "no step needs one" has always meant.
+ */
+export async function setQuestStepNeeds(pool: Pool, id: string, needs: readonly boolean[]): Promise<boolean> {
+  const stored = needs.some(Boolean) ? JSON.stringify(needs.map(Boolean)) : null;
+  const [r] = await pool.query<ResultSetHeader>("UPDATE `quests` SET `step_needs` = ? WHERE `id` = ?", [stored, id]);
   return Number(r.affectedRows ?? 0) > 0;
 }
 
@@ -820,6 +856,17 @@ export interface ClaimsRepo {
     evidence: { artifactUrl: string; note: string; at: string },
   ): Promise<ClaimMoveOutcome>;
   /**
+   * The member takes back work they turned in, until it is paid (the lead,
+   * 27 Nov 2026: "Until it's paid, yes"). `submitted` becomes `claimed` under
+   * the row lock, and nothing else changes: the link, the words, the step
+   * submissions and `submitted_at` all stay, so the member edits what they
+   * gave and the next turn-in can be told apart from a correction. A claim a
+   * steward consented is paid in the same commit that consents it
+   * (`consentOnce`), so `consented` is where taking back stops; a declined
+   * claim is a resolution too. Both are refused with the status found.
+   */
+  pullBackOnce(id: string): Promise<ClaimMoveOutcome>;
+  /**
    * Put back a quest that was picked up and not yet worked on.
    *
    * Deliberately NOT the same as declining. A decline is a steward's judgement
@@ -1186,6 +1233,18 @@ export function claimsRepo(pool: Pool): ClaimsRepo {
         (c) => {
           c.status = "declined";
           c.resolvedAt = at;
+        },
+        null,
+      );
+    },
+
+    async pullBackOnce(id) {
+      return moveUnderLock(
+        pool,
+        id,
+        ["submitted"],
+        (c) => {
+          c.status = "claimed";
         },
         null,
       );

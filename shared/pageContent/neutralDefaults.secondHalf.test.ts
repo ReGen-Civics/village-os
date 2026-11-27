@@ -27,7 +27,9 @@ import { RIGHTS_RESIDENT_PAGE, RIGHTS_STEWARD_PAGE } from "./rights";
 import { GOOD_NEIGHBOR_PAGE } from "./goodNeighbor";
 import { HOW_WE_CREATE_PAGE } from "./howWeCreate";
 import { CO_CREATORS_GUIDE_PAGE } from "./coCreatorsGuide";
-import { JOURNEY_PAGES, INVESTOR_JOURNEY } from "./journeys";
+import { JOURNEY_PAGES } from "./journeys";
+// The investor page's spec and words are the server's since 27 Nov 2026; its defaults are held to the same rules.
+import { INVESTOR_JOURNEY } from "../../server/lib/investorJourney";
 import { fillVars, resolvePage } from "./resolve";
 import { pageVarsFrom } from "./vars";
 import type { FieldKind, PageSpec } from "./types";
@@ -39,6 +41,7 @@ const SPECS: readonly PageSpec[] = [
   HOW_WE_CREATE_PAGE,
   CO_CREATORS_GUIDE_PAGE,
   ...JOURNEY_PAGES,
+  INVESTOR_JOURNEY,
 ];
 
 interface DefaultText {

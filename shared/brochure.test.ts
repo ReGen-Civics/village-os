@@ -14,11 +14,12 @@ import {
   brochurePathServed,
   brochureState,
 } from "./brochure";
-import { PAGE_SPECS } from "./pageContent";
+import { EDITED_PAGE_PATHS } from "./pageContent";
 
 describe("which pages carry a switch of their own", () => {
   it("is every story page the Pages editor edits, and nothing else", () => {
-    const edited = PAGE_SPECS.map((s) => s.path).filter((p) => (BROCHURE_PATHS as readonly string[]).includes(p));
+    // The investor page counts: its spec is the server's (KEPT_PAGES), and the editor still edits it.
+    const edited = EDITED_PAGE_PATHS.filter((p) => (BROCHURE_PATHS as readonly string[]).includes(p));
     expect([...SWITCHABLE_PAGES].sort()).toEqual([...new Set(edited)].sort());
   });
 });

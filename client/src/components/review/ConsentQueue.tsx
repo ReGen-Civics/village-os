@@ -33,7 +33,8 @@ import { toast } from "sonner";
 import { authToken } from "@/lib/gameApi";
 import type { WorkPay } from "@shared/workValue";
 import WorkPayBlock from "@/components/WorkPayBlock";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import type { StepSubmissionView } from "@/components/QuestSteps";
 import { mayAsk } from "@/lib/myCapabilities";
 
 /** One row of `GET /api/admin/quest-claims`: `ClaimRecord` in server/repos/quests.ts, plus `pay`. */
@@ -55,6 +56,47 @@ export interface ConsentClaim {
   confidenceNote?: string | null;
   /** What saying yes releases. `null` when the claim's quest is gone, so nothing is advertised. */
   pay?: WorkPay | null;
+  /** What the member gave for each step (0439), on work turned in; absent when no step carries any. */
+  steps?: StepSubmissionView[];
+  /** The quest's steps, so each piece sits under the step it answers. */
+  stepTitles?: string[];
+}
+
+/** Each step's pieces under its own words: text as it was written, a photo as a picture, a document as a link. */
+function StepEvidence({ steps, titles }: { steps: StepSubmissionView[]; titles: string[] }) {
+  const { t } = useLingui();
+  const indexes = Array.from(new Set(steps.map((s) => s.stepIndex))).sort((a, b) => a - b);
+  return (
+    <div className="mt-3 space-y-2" data-step-evidence>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {t({ message: "What they gave for each step", context: "consent queue: the step submissions heading" })}
+      </p>
+      {indexes.map((i) => (
+        <div key={i} className="rounded-lg border border-border px-3 py-2">
+          <p className="text-sm font-medium text-foreground">
+            {i + 1}. {titles[i] ?? ""}
+          </p>
+          <ul className="mt-1 space-y-1">
+            {steps.filter((s) => s.stepIndex === i).map((s) => (
+              <li key={s.id} className="text-sm">
+                {s.kind === "text" ? (
+                  <span className="whitespace-pre-wrap text-muted-foreground">{s.body}</span>
+                ) : s.kind === "photo" && s.fileUrl ? (
+                  <a href={s.fileUrl} target="_blank" rel="noopener noreferrer">
+                    <img src={s.fileUrl} alt={t({ message: "A photo given for this step", context: "consent queue: a step photo's alt text" })} className="max-h-48 rounded-lg" loading="lazy" />
+                  </a>
+                ) : s.fileUrl ? (
+                  <a href={s.fileUrl} target="_blank" rel="noopener noreferrer" className="text-notice underline">
+                    {s.originalName || t({ message: "A document", context: "consent queue: a step document with no name" })}
+                  </a>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 interface Props {
@@ -179,6 +221,8 @@ export default function ConsentQueue({ claims, refused, error, headers, onChange
               ) : (
                 <p className="text-sm text-muted-foreground mt-1 break-all">{c.artifactUrl}</p>
               ))}
+            {/* What the member gave for each step (0439), read before saying yes. */}
+            {c.steps && c.steps.length > 0 && <StepEvidence steps={c.steps} titles={c.stepTitles ?? []} />}
 
             <div className="mt-4 rounded-lg bg-muted/40 px-3 py-2">
               {c.pay ? (

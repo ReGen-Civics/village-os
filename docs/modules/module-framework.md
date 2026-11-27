@@ -3,7 +3,7 @@
 Provenance: platform
 
 > **Corrections, 2026-08-14.** This file is a DESIGN document from before the build, and three things
-> in it are now wrong. It is not on Maia's shelf (`MODULE_DOCS` excludes it deliberately), so nothing
+> in it are now wrong. It is not on the village guide's shelf (`MODULE_DOCS` excludes it deliberately), so nothing
 > quotes it to a founder, and it is kept as the record of the design.
 >
 > 1. **The `ModuleDef` quoted below is stale.** The live interface is `shared/modules.ts` and carries

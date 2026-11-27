@@ -8,6 +8,8 @@
  *                  (/api/sessions/tasks/count)
  *   unread         the newest unread conversation (/api/messages)
  *   a session      the next meeting of a circle they sit in (/api/sessions)
+ *   work to check  quest work turned in and waiting, for a member who may
+ *                  consent it, only while some waits (/api/admin/quest-claims)
  *
  * Each card stands only when its read answered with something to say, so a
  * village with the sessions module off simply has fewer cards. The design's
@@ -50,7 +52,7 @@ const dayWords = (iso: string, now = new Date()): string => {
 };
 
 /** The cards, in the design's order. Pure, so the order and the wording are testable. */
-export function todayCards(d: Pick<DashData, "consents" | "tasks" | "messages" | "session"> & Partial<Pick<DashData, "asks">>, now = new Date()): TodayCard[] {
+export function todayCards(d: Pick<DashData, "consents" | "tasks" | "messages" | "session"> & Partial<Pick<DashData, "asks" | "toCheck">>, now = new Date()): TodayCard[] {
   const out: TodayCard[] = [];
   // Someone is stuck on this member first: an ask marked blocking leads the strip.
   if (d.asks && d.asks.waiting > 0) {
@@ -83,6 +85,17 @@ export function todayCards(d: Pick<DashData, "consents" | "tasks" | "messages" |
       title: d.tasks.waiting === 1 ? "One task from your sessions" : `${d.tasks.waiting} tasks from your sessions`,
       meta: "Open your task board",
       href: "/profile#my-tasks",
+      tone: "gold",
+    });
+  }
+  // Quest work waiting for a check, only while some waits (the lead, 27 Nov 2026), from the consent queue itself.
+  if (d.toCheck && d.toCheck.waiting > 0) {
+    out.push({
+      key: "to-check",
+      kicker: "Work to check",
+      title: d.toCheck.waiting === 1 ? (d.toCheck.newest ?? "One quest turned in") : `${d.toCheck.waiting} quests turned in`,
+      meta: "Read it and consent · Open the review page",
+      href: "/review",
       tone: "gold",
     });
   }

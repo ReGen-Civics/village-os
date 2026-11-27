@@ -47,6 +47,8 @@ import { oweQuestCash } from "../lib/cashOwed";
 import { readWorkValue } from "../../shared/workValue";
 import { rewardMultipliersFor } from "../lib/seasonPatterns";
 import { recordEvent } from "../lib/events";
+import { stepSubmissionsForClaims } from "../repos/questStepSubmissions";
+import { stepSubmissionView } from "./questSteps";
 import { EXAMPLE_REFUSAL_BODY, isExampleRow } from "../lib/examples";
 import { issuanceRefusal, readGameStart } from "../lib/gameStart";
 import { departedById } from "../lib/departed";
@@ -205,10 +207,27 @@ export function register(app: Express, deps: Deps): void {
       deps.dormantBadgeIds().then((dormant) => payBadgeBoosts(getPool(), dormant)).catch(() => []),
     ]);
     const questsById = new Map(quests.map((q) => [q.id, q]));
+    /*
+     * WHAT THE MEMBER GAVE FOR EACH STEP (0439), beside work waiting to be read,
+     * so the steward reads the photos, documents and words before saying yes.
+     * Only for claims turned in: a claim still in hand is the member's to change.
+     */
+    const waiting = claims.filter((c) => c.status === "submitted").map((c) => c.id);
+    const stepRows = await stepSubmissionsForClaims(getPool(), waiting).catch((err) => {
+      console.error("[quests] the consent queue could not read step submissions", err);
+      return [];
+    });
+    const stepsByClaim = new Map<string, ReturnType<typeof stepSubmissionView>[]>();
+    for (const s of stepRows) stepsByClaim.set(s.claimId, [...(stepsByClaim.get(s.claimId) ?? []), stepSubmissionView(s)]);
     res.json(
       claims.map((c) => {
         const quest = questsById.get(c.questId);
-        return { ...c, pay: quest ? withPayBadges(questPay(quest, rules), boosts) : null };
+        const steps = stepsByClaim.get(c.id);
+        return {
+          ...c,
+          pay: quest ? withPayBadges(questPay(quest, rules), boosts) : null,
+          ...(steps ? { steps, stepTitles: quest?.steps ?? [] } : {}),
+        };
       }),
     );
   });

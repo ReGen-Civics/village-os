@@ -144,7 +144,7 @@ FeedAdminTab in Admin.tsx (existing tab pattern): open-reports queue with severi
 - SOFT: Phase 3 notification spine — heart/mention/reply notifications attach when it lands; feed functions without it
 - Existing addActivity() + activity table (additive nullable actor/entity columns)
 - Admin.tsx tab pattern; client/src/config/mobileNav.ts for the mobile entry
-- NOT needed: scheduler (nothing mutates on a timer), Maia changes (v2 only), any Hypha write path (read/deep-link only)
+- NOT needed: scheduler (nothing mutates on a timer), the village guide changes (v2 only), any Hypha write path (read/deep-link only)
 
 ## v1 (ship first, useful alone)
 
@@ -152,7 +152,7 @@ Ships first, useful alone (3 sessions, sequenced immediately after Phase 4 forum
 
 ## v2 (the rest of the design)
 
-The full slide vision plus what 2026 knows better (2 sessions): tag filter pages + trending tags; pinned posts (pinnedAt); Gratitude filter chip rendering wall entries as feed cards (wall page kept as an alias — begins gently unifying the two gratitude surfaces); Maia integration as a new PROPOSAL_KINDS entry "event-post" helping role holders draft announcements through the existing injection-guarded /api/assistant/proposal plumbing; Phase 3 notification wiring (heart milestones 1/5/10/25, mentions, replies, optional weekly feed digest once a scheduler exists); heart-received highlights on member profiles ("what people keep thanking you for" themes per F3, never totals); internal closed-loop event-ticket credits through the one ledger (platform-governed, non-withdrawable) — explicitly gated behind real legal review before build; optional Hypha deep-link card at cycle close pointing at the village's configured DHO URL.
+The full slide vision plus what 2026 knows better (2 sessions): tag filter pages + trending tags; pinned posts (pinnedAt); Gratitude filter chip rendering wall entries as feed cards (wall page kept as an alias — begins gently unifying the two gratitude surfaces); the village guide integration as a new PROPOSAL_KINDS entry "event-post" helping role holders draft announcements through the existing injection-guarded /api/assistant/proposal plumbing; Phase 3 notification wiring (heart milestones 1/5/10/25, mentions, replies, optional weekly feed digest once a scheduler exists); heart-received highlights on member profiles ("what people keep thanking you for" themes per F3, never totals); internal closed-loop event-ticket credits through the one ledger (platform-governed, non-withdrawable) — explicitly gated behind real legal review before build; optional Hypha deep-link card at cycle close pointing at the village's configured DHO URL.
 
 ## Risks
 
