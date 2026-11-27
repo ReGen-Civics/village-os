@@ -3,7 +3,7 @@
  * THE MEMBER PORTAL'S TABS, round 2 of the menu (the lead, 27 Nov 2026: "I'm also looking at the member portal and I'm
  * seeing some things could be rearranged here too, following the same logic"). The member's own tabs never read as the
  * village's pages the site menu names Quests, Roles and Treasury; the ids stay, so every /profile#anchor still opens
- * its tab. Today keeps what is next: the hero moved to the Sheet, the door to proposing to My work and My roles.
+ * its tab. The door to proposing moved to My work and My roles; the hero stays on Today.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -34,10 +34,10 @@ describe("the member portal's tabs", () => {
     expect(TAB_OF_ANCHOR["sheet-paths"]).toBe("sheet");
   });
 
-  it("put the hero on the Sheet and the door to proposing on My work and My roles, so Today starts with what is next", () => {
+  it("keep the hero on Today, and put the door to proposing on My work and My roles", () => {
     const page = readFileSync(resolve(__dirname, "../../pages/Profile.tsx"), "utf8");
     const before = (marker: string) => page.slice(Math.max(0, page.indexOf(marker) - 400), page.indexOf(marker));
-    expect(before("<ProfileHero")).toMatch(/tabOf\("sheet"\)\}>\s*$/);
+    expect(before("<ProfileHero")).toMatch(/tabOf\("today"\)\}>\s*$/);
     expect(before("<ProposeBanner")).toContain('tabOf(["quests", "roles"])');
   });
 });

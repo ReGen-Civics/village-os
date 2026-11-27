@@ -36,19 +36,34 @@ function under(path: string, href: string): boolean {
   return path === h || path.startsWith(h + "/");
 }
 
-function find(path: string, entries: readonly NavEntry[], skip: readonly string[]): Bearings | null {
+/**
+ * How well an entry of the longest matching length fits: its own address with the anchor the location carries (2),
+ * the page itself (1), or a chapter of it, an anchor the location does not carry (0). Fold 3 (#1857) put three entries
+ * on /rights: Rights and agreements, and two doors to its chapters. The page lights Rights and agreements.
+ */
+function fit(location: string, href: string): number {
+  const at = location.indexOf("#");
+  if (at !== -1 && href === bearingsPath(location) + location.slice(at)) return 2;
+  return href.includes("#") ? 0 : 1;
+}
+
+function find(path: string, entries: readonly NavEntry[], skip: readonly string[], location = path): Bearings | null {
   const all = entries.flatMap((e): { item: NavLink; group: string | null }[] =>
     isGroup(e) ? e.items.map((item) => ({ item, group: e.label })) : [{ item: e, group: null }],
   );
   let best: Bearings | null = null;
   let bestLen = -1;
-  // The first of two equally long matches wins, so an entry listed twice lights where the menu lists it first.
+  let bestFit = -1;
+  // The first of two equally long, equally fitting matches wins, so an entry listed twice lights where the menu
+  // lists it first.
   for (const { item, group } of all) {
     if (skip.includes(item.href) || !under(path, item.href)) continue;
     const len = bearingsPath(item.href).length;
-    if (len <= bestLen) continue;
+    const f = fit(location, item.href);
+    if (len < bestLen || (len === bestLen && f <= bestFit)) continue;
     best = { item, group, exact: path === bearingsPath(item.href) };
     bestLen = len;
+    bestFit = f;
   }
   return best;
 }
@@ -71,10 +86,10 @@ export function bearingsFor(
   // a prefix of every Governance page, so a decision page must not fall back to it when its own entry is hidden from
   // this reader or from the village's menu: a page whose own entry the village hid lights nothing, and a page whose
   // own entry this reader is not offered lights its group and no entry, as before the hub had an entry.
-  const own = find(path, defined, []);
+  const own = find(path, defined, [], location);
   if (own && hidden.includes(own.item.href)) return null;
-  const mine = find(path, seen, hidden);
-  const whole = find(path, defined, hidden);
+  const mine = find(path, seen, hidden, location);
+  const whole = find(path, defined, hidden, location);
   if (whole && (!mine || bearingsPath(whole.item.href).length > bearingsPath(mine.item.href).length)) return whole;
   return mine ?? whole;
 }

@@ -8,11 +8,6 @@ msgctxt "site menu"
 msgid "Open Roles"
 msgstr "Roles abiertos"
 
-# needs-native-review: the menu by membership, Governance's hub, 27 Nov 2026
-msgctxt "site menu: Governance's own page, its Now view"
-msgid "Now"
-msgstr "Ahora"
-
 # needs-native-review: the menu by membership, a new entry, 27 Nov 2026
 msgctxt "site menu"
 msgid "Become a partner"
@@ -83,11 +78,6 @@ msgctxt "site menu: a folder"
 msgid "Running the village"
 msgstr "Llevar la aldea"
 
-# needs-native-review: the footer, the library beside the tools, 27 Nov 2026
-msgctxt "Layout, Link"
-msgid "Village Library"
-msgstr "Biblioteca de la aldea"
-
 # needs-native-review: the menu by membership, round 2, the group for how the village is run, 27 Nov 2026
 msgctxt "site menu: the group for how the village is run"
 msgid "Govern"
@@ -152,3 +142,63 @@ msgstr "Mi tesorería"
 msgctxt "ProfileTabs: the member's own tab, about them"
 msgid "Sheet"
 msgstr "Ficha"
+
+# needs-native-review: the menu's QA, Govern's own page, 27 Nov 2026
+msgctxt "site menu: Govern's own page, its Now view"
+msgid "What's happening now"
+msgstr "Lo que está pasando ahora"
+
+# needs-native-review: the menu's QA, a real name for Aligned, 27 Nov 2026
+msgctxt "site menu: the register of terms members aligned with"
+msgid "Agreed terms"
+msgstr "Términos acordados"
+
+# needs-native-review: the menu's QA, the account menu, 27 Nov 2026
+msgctxt "site menu: what waits on the member to decide"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, h2"
+msgid "Govern"
+msgstr "Gobernar"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Share Feedback"
+msgstr "Compartir comentarios"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Stay"
+msgstr "Hospedaje"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Library"
+msgstr "Biblioteca"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Places"
+msgstr "Lugares"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
+# needs-native-review: the footer, the hidden map, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Hidden map"
+msgstr "Mapa oculto"
+
+# needs-native-review: fold 3 (#1857) in the menu, the same words as its page title, 27 Nov 2026
+msgctxt "site menu"
+msgid "Rights and agreements"
+msgstr "Derechos y acuerdos"

@@ -497,9 +497,9 @@ export default function Profile() {
               {!firstDays && <ProposeRolesEntry />}
             </div>
             {/* WHO YOU ARE PLAYING, FIRST. No rung on the face (the prune): the hero
-                carries the person, their badges and their moons on the land. On a phone it opens the Sheet, the
-                tab that is about the member (round 2, 27 Nov 2026), so Today starts with what is next. */}
-            <div className={tabOf("sheet")}>
+                carries the person, their badges and their moons on the land. It stays on Today (the menu's QA,
+                27 Nov 2026: the lead did not ask for it to move). */}
+            <div className={tabOf("today")}>
               <ProfileHero
                 name={user.name}
                 handle={user.handle}
