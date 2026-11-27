@@ -2,7 +2,7 @@
  * How the budget desk talks to the server, and the shapes it reads back.
  *
  * The desk is drawn twice, in Admin (the admin's session as the bearer) and on
- * /budget (the member's session), so it takes a `call` and never builds a
+ * /governance/treasury (the member's session), so it takes a `call` and never builds a
  * header itself. Every route and its gate are in server/routes/budgets.ts; the
  * door the server answers with (`door.mayWrite`) is the only permission the
  * desk reads, and it decides nothing on its own.

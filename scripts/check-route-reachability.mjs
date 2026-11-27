@@ -97,10 +97,22 @@ const ALLOWLIST = {
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages became /rights, one chapter each. Each old
+  // address redirects to its chapter's anchor with its query; old links, notifications and saved page buttons are its doors.
+  "/exit-policy": "a redirect to /rights#leaving-well with its query, kept for links and notifications already sent",
+  "/good-neighbor": "a redirect to /rights#good-neighbor, kept for links already sent and the buttons villages saved",
+  "/resident-rights": "a redirect to /rights#resident-rights, kept for links already sent and the buttons villages saved",
+  "/steward-rights": "a redirect to /rights#steward-rights, kept for links already sent and the buttons villages saved",
   // Your First Walk was removed (the lead, 27 Nov 2026: "Let's get rid of this"); its address redirects home, for links already sent.
   "/first-walk": "a redirect to the home page, the removed first walk's old address, kept for old links",
+  // Folds 6 and 7 (#1861) put change requests inside Decisions (/governance/decisions#changes) and /changes becomes a
+  // redirect there; the menu entry went with it (the menu by membership, 27 Nov 2026).
+  "/changes": "folded into Decisions by #1861; the old address, kept for links already sent",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
+  // The cash budget's old page (the lead, 27 Nov 2026: build it into Governance's treasury). It redirects to
+  // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
+  "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and

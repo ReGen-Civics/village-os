@@ -106,7 +106,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
     forNewcomer(item) &&
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
-    (!item.brochure || storyShown(item.href)) &&
+    (!item.brochure || storyShown(item.story ?? item.href)) &&
     (!item.roles || (!!role && item.roles.includes(role))) &&
     (item.signedIn === undefined || item.signedIn === !!user) &&
     (!item.door || (item.door === "treasury" && !!user && treasuryOpen));
@@ -119,7 +119,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
     if (own) return { ...link, label: own };
     if (link.token) return { ...link, label: tokenName };
     // A story page carries the village's own name for it (Admin, Pages, Whole site).
-    const named = link.brochure ? siteMenu?.[link.href] : undefined;
+    const named = link.brochure ? siteMenu?.[link.story ?? link.href] : undefined;
     return platformWords(link, i18n, named?.subtitle, named?.label);
   };
   // The footer keeps its own wording for a story page until the village renames it; the commitment page follows the village's word.
@@ -149,6 +149,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const staysModule = moduleOn("stays");
   const toolsModule = moduleOn("tools");
   const libraryModule = moduleOn("library");
+  const hiddenMapModule = moduleOn("hidden-map");
   const healthModule = moduleOn("health");
   const mapModule = moduleOn("map");
 
@@ -313,6 +314,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   setOpen={(v) => setOpenGroup(v ? entry.label : null)}
                   lifecycleOf={lifecycleOf}
                   lit={lit}
+                  opens={newcomer ? entry.opens : null}
                 />
               ) : (
                 <Link
@@ -374,10 +376,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         transition={{ duration: 0.15 }}
                         className="absolute top-full right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        <MenuRows links={accountItems} here={lit?.href} rowClassName="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="border-l-2 border-border bg-muted/40" renderLink={(item) => (
+                        <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="border-l-2 border-border bg-muted/40" renderLink={(item) => (
                           <Link
                             href={item.href}
-                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
                             onClick={() => setAccountOpen(false)}
                           >
                             <MenuIcon href={item.href} fallback={item.icon} />{item.label}
@@ -388,7 +390,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         <button
                           type="button"
                           onClick={() => { setAccountOpen(false); logout(); }}
-                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-gray-50 transition-colors text-left border-t border-gray-100"
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-muted transition-colors text-left border-t border-gray-100"
                           // "Everywhere" is honest, not decorative: tokenVersion
                           // is the only revocation lever, so this ends the
                           // session on every device the member is signed in on.
@@ -500,11 +502,11 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                             exit={{ opacity: 0, height: 0 }}
                             className="overflow-hidden pl-3 border-l border-white/20 ml-1"
                           >
-                            <MenuRows links={groupItems(entry)} here={lit?.href} rowClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
+                            <MenuRows links={groupItems(entry)} here={lit?.href} opens={newcomer ? entry.opens : null} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex min-h-11 w-full items-center gap-2 py-1.5 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
                               <Link
                                 href={item.href}
                                 aria-current={currentFor(lit, item.href)}
-                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"} ${currentFor(lit, item.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
+                                className={`flex min-h-11 items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"} ${currentFor(lit, item.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
                                 onClick={() => { setMobileMenuOpen(false); setOpenMobileGroup(null); }}
                               >
                                 <MenuIcon href={item.href} fallback={item.icon} />{item.label}
@@ -537,7 +539,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   {!user && visitor && <VisitorLink place="menu" onClick={() => setMobileMenuOpen(false)} />}
                   {user ? (
                     <>
-                      <MenuRows links={accountItems} here={lit?.href} rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-2 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
+                      <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex min-h-11 w-full items-center gap-2 py-2 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
                         <Link
                           href={item.href}
                           className="flex min-h-11 items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
@@ -674,7 +676,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 )}
                 <li hidden={!showsHref("/gratitude")}>
                   <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">{tokenName} Wall</Trans>
+                    {tokenName}
                   </Link>
                 </li>
                 {/* Work with us: the four ways to build, top of /roles, and the partner form (the lead, 23 Nov 2026). */}
@@ -683,9 +685,9 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
               </ul>
             </div>
 
-            {/* Governance & Structure */}
+            {/* Govern: the footer's words match the menu's (the menu's QA, 27 Nov 2026). */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Governance</Trans></h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Govern</Trans></h2>
               <ul className="space-y-0">
                 <li>
                   <Link href="/governance/how" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
@@ -699,7 +701,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 </li>
                 <li>
                   <Link href="/roles" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Roles & Leadership</Trans>
+                    <Trans context="Layout, Link">Roles</Trans>
                   </Link>
                 </li>
                 {storyShown("/how-we-create") && (
@@ -747,7 +749,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 )}
                 {/* The health dashboard had one door in the whole client, the
                     Village menu, and a menu reshuffle would have taken it. */}
-                {healthModule && (
+                {healthModule && showsHref("/village-health") && (
                   <li>
                     <Link href="/village-health" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       <Trans context="Layout, Link">Village Health</Trans>
@@ -765,7 +767,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 {user && showsHref("/governance/work") && (
                   <li>
                     <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Your work</Trans>
+                      <Trans context="Layout, Link">Waiting on you</Trans>
                     </Link>
                   </li>
                 )}
@@ -785,7 +787,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 )}
                 <li>
                   <Link href="/feedback" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Report a Bug / Share an Idea</Trans>
+                    <Trans context="Layout, Link">Share Feedback</Trans>
                   </Link>
                 </li>
                 <li>
@@ -814,7 +816,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 {staysModule && (
                   <li>
                     <Link href="/stay" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Stay With Us</Trans>
+                      <Trans context="Layout, Link">Stay</Trans>
                     </Link>
                   </li>
                 )}
@@ -829,14 +831,22 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 {libraryModule && showsHref("/library") && (
                   <li>
                     <Link href="/library" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Village Library</Trans>
+                      <Trans context="Layout, Link">Library</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* The hidden map's second way in, a member's (it left the phone sheet's Also yours, QA 27 Nov 2026). */}
+                {hiddenMapModule && showsHref("/hidden-map") && (
+                  <li>
+                    <Link href="/hidden-map" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Hidden map</Trans>
                     </Link>
                   </li>
                 )}
                 {mapModule && showsHref("/places") && (
                   <li>
                     <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Places, Photographed</Trans>
+                      <Trans context="Layout, Link">Places</Trans>
                     </Link>
                   </li>
                 )}

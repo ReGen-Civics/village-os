@@ -290,6 +290,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "Somebody finished work and it is waiting to be read. Value moves when a steward says so.",
     many: "{n} pieces of finished work are waiting to be read.",
   },
+  quest_pulled_back: {
+    blurb: "Somebody took back work they had turned in. It left the review queue until they turn it in again.",
+    many: "{n} pieces of work were taken back.",
+  },
   quest_consented: {
     blurb: "A steward read your work and released what it was worth.",
     many: "{n} of your quests were consented.",

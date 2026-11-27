@@ -285,3 +285,52 @@ describe("the Module Library at the bottom", () => {
     });
   }
 });
+
+/* The menu's QA, 27 Nov 2026: the paths open for a newcomer, one folder at a time, and Escape gives focus back. */
+describe("the dropdowns' folders", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    brochure.on = true;
+    running.modules = [];
+  });
+
+  function shell(who: { id: string; name: string; role?: string; membershipGranted?: boolean } | null) {
+    authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
+    render(
+      <Router>
+        <Layout>
+          <p>page body</p>
+        </Layout>
+      </Router>,
+    );
+  }
+
+  it("opens Join to the paths for a visitor, and keeps the folder shut for a member", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(screen.getByRole("button", { name: /Choose your path/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(document.querySelector('#nav-menu-join a[href="/investor"]')).toBeTruthy();
+    cleanup();
+    shell({ id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(screen.getByRole("button", { name: /Choose your path/ }).getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("keeps one folder open at a time, so Govern never runs long", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Govern/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /^Guides$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^How we work$/ }));
+    const open = Array.from(document.querySelectorAll("#nav-menu-govern [data-nav-folder] > button")).filter((b) => b.getAttribute("aria-expanded") === "true");
+    expect(open.map((b) => b.textContent?.trim())).toEqual(["How we work"]);
+  });
+
+  it("gives focus back to the group's button when Escape closes it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.click(join);
+    fireEvent.keyDown(document.getElementById("nav-menu-join")!, { key: "Escape" });
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+    expect(document.activeElement).toBe(join);
+  });
+});

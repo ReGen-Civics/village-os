@@ -1,6 +1,7 @@
 import Layout from "@/components/Layout";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import GameDashboard from "@/components/GameDashboard";
+import YourQuests from "@/components/profileDash/YourQuests";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
 import ProfileSheet from "@/components/ProfileSheet";
@@ -496,9 +497,9 @@ export default function Profile() {
               {!firstDays && <ProposeRolesEntry />}
             </div>
             {/* WHO YOU ARE PLAYING, FIRST. No rung on the face (the prune): the hero
-                carries the person, their badges and their moons on the land. On a phone it opens the Sheet, the
-                tab that is about the member (round 2, 27 Nov 2026), so Today starts with what is next. */}
-            <div className={tabOf("sheet")}>
+                carries the person, their badges and their moons on the land. It stays on Today (the menu's QA,
+                27 Nov 2026: the lead did not ask for it to move). */}
+            <div className={tabOf("today")}>
               <ProfileHero
                 name={user.name}
                 handle={user.handle}
@@ -666,6 +667,7 @@ export default function Profile() {
                   </div>
                 )}
                 <div className={tabOf("quests")}>
+                  {me && <YourQuests claims={me.quests ?? []} />}{/* in full: doing, and suited to your roles (the lead, 27 Nov 2026) */}
                   <GameDashboard me={me} meFailed={meFailed} showNextStep={false} onAdvance={setAdvance} />
                 </div>
                 {/* Deeds: stage turns, firsts, recognition flows, the ledger. */}

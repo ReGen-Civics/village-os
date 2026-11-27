@@ -79,8 +79,9 @@ async function openJoin() {
   );
   fireEvent.click(await screen.findByRole("button", { name: /^Join/ }));
   // The paths sit in their folder since 27 Nov 2026 (config/navNest.ts); a lone path draws as a plain link.
+  // It opens by itself for a visitor (the menu's QA, 27 Nov 2026); open it only where it is shut.
   const folder = screen.queryAllByRole("button", { name: /Choose your path/ });
-  if (folder[0]) fireEvent.click(folder[0]);
+  if (folder[0]?.getAttribute("aria-expanded") === "false") fireEvent.click(folder[0]);
 }
 const menuEntry = (href: string) => document.querySelector(`#nav-menu-join a[href="${href}"]`)?.textContent ?? null;
 const footerEntry = (href: string) => document.querySelector(`footer a[href="${href}"]`)?.textContent?.trim() ?? null;

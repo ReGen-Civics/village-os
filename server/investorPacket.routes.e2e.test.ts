@@ -484,3 +484,48 @@ describe.skipIf(!DB_CONFIGURED)("a call to action cannot carry a scheme that run
     expect(res.status, res.text).toBe(200);
   });
 });
+
+/*
+ * THE INVESTOR GATE ON THE BUILT SERVER (the lead, 27 Nov 2026: "only those we accept should be able to see it").
+ * Last in the file on purpose: it turns the village's `investors.gate` dial on, and turns it off again at the end.
+ * What `allowed` answers for each reader is server/routes/investorAccess.test.ts; this proves the four doors in
+ * server/index.ts ask it, and that the desk's accept reports what it did.
+ */
+describe.skipIf(!DB_CONFIGURED)("the investor gate, on the built server", () => {
+  it("keeps the summary, the packet and the page's words for the readers the team let in, once the village turns it on", async () => {
+    expect((await call("GET", "/api/investor-summary", undefined, "")).status).toBe(200);
+    expect((await call("PUT", "/api/admin/variables/investors.gate", { value: true })).status).toBe(200);
+    try {
+      const summary = await call("GET", "/api/investor-summary", undefined, "");
+      expect(summary.status, summary.text).toBe(403);
+      expect(summary.json?.error).toBe("investor_only");
+      expect((await requestPacket("Gate Tester", "gate@example.test")).status).toBe(403);
+      expect((await call("GET", "/api/content/page-journey-investor", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/content/page-journey-investor/translation", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/investor/page", undefined, "")).status).toBe(403);
+      expect((await call("GET", "/api/faqs/investor", undefined, "")).status).toBe(403);
+      // The other pathways' questions stay public.
+      expect((await call("GET", "/api/faqs/resident", undefined, "")).status).toBe(200);
+      // The founder, an administrator, still reads it: the page has to be edited.
+      expect((await call("GET", "/api/investor-summary")).status).toBe(200);
+      const served = await call("GET", "/api/investor/page");
+      expect(served.status, served.text).toBe(200);
+      expect(served.json?.spec?.id).toBe("journey-investor");
+      expect((await call("GET", "/api/faqs/investor")).status).toBe(200);
+      expect((await call("GET", "/api/admin/page-specs/kept")).json?.specs?.[0]?.id).toBe("journey-investor");
+      expect((await call("GET", "/api/investor/access", undefined, "")).json?.access).toBe(false);
+      // A stranger's interest form lands on the desk; accepting it, from an address nobody proved, lets nobody in.
+      const sent = await call("POST", "/api/investor/interest", { name: "Gate Tester", email: "gate@example.test", checkSize: "25k-100k", consent: "words" }, "");
+      expect(sent.status, sent.text).toBe(200);
+      const rows = await call("GET", "/api/admin/submissions?type=investor-interest");
+      expect(rows.json?.[0]?.data).toMatchObject({ name: "Gate Tester", checkSize: "25k-100k", identity: "unverified" });
+      const put = await call("PUT", `/api/admin/submissions/${rows.json[0].id}/status`, { status: "accepted" });
+      expect(put.status, put.text).toBe(200);
+      expect(put.json?.investor).toEqual({ letIn: null, holder: null });
+      expect((await call("GET", "/api/investor-summary", undefined, "")).status).toBe(403);
+    } finally {
+      expect((await call("PUT", "/api/admin/variables/investors.gate", { value: false })).status).toBe(200);
+    }
+    expect((await call("GET", "/api/investor-summary", undefined, "")).status).toBe(200);
+  });
+});

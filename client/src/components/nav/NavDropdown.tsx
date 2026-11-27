@@ -1,5 +1,6 @@
 // Moved out of components/Layout.tsx whole (26 Nov 2026), when lighting the page's branch took the shell past the
 // 1000-line ratchet (scripts/check-file-lines.mjs).
+import { useRef } from "react";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
@@ -28,6 +29,7 @@ export default function NavDropdown({
   setOpen,
   lifecycleOf,
   lit,
+  opens = null,
 }: {
   group: NavGroup;
   items: readonly NavLink[];
@@ -35,7 +37,10 @@ export default function NavDropdown({
   setOpen: (open: boolean) => void;
   lifecycleOf: (id?: string) => string | undefined;
   lit: Lit | null;
+  /** The folder this reader meets open (Join's paths, for a newcomer). */
+  opens?: string | null;
 }) {
+  const trigger = useRef<HTMLButtonElement>(null);
   const here = lit?.group === group.label;
   // The join paths carry a second line; the rest are one word. A single width
   // for both leaves either the paths cramped or the short menus floating. The
@@ -72,9 +77,11 @@ export default function NavDropdown({
       className="relative"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
-      onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
+      // Escape closes the menu and gives focus back to its group's button (the menu's QA, 27 Nov 2026).
+      onKeyDown={(e) => { if (e.key === "Escape") { setOpen(false); trigger.current?.focus(); } }}
     >
       <button
+        ref={trigger}
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -100,9 +107,11 @@ export default function NavDropdown({
           >
             <MenuRows
               links={items}
+              opens={opens}
               here={lit?.href}
               renderLink={drawLink}
-              rowClassName="flex w-full items-center justify-between gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              gutter={<span aria-hidden="true" className="w-8 shrink-0" />}
+              rowClassName="flex w-full items-center gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
               listClassName="border-l-2 border-border bg-muted/40"
             />
           </m.div>
