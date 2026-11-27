@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+msgctxt "game variable look.light_paper, choice sea-chart, label"
+msgid "Weathered map"
+msgstr "Mapa envejecido"
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+msgctxt "game variable look.light_paper, choice sea-chart, hint"
+msgid "Weathered paper, pages torn each their own way, and Garamond headings."
+msgstr "Papel envejecido, páginas rasgadas cada una a su manera y títulos en Garamond."
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+msgctxt "game variable look.light_paper, description"
+msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are."
+msgstr "Cómo dibuja el modo claro las páginas de los miembros. Sencillo es la página limpia de Hora Dorada. Mapa envejecido la convierte en un mapa antiguo: papel envejecido, arrugado y manchado con el borde quemado, tarjetas en páginas gastadas rasgadas cada una a su manera, y títulos en Garamond. El modo oscuro y la Administración quedan como están."
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+msgctxt "game variable look.default_mode, choice light, hint"
+msgid "The day page, and Weathered map where the village chose it."
+msgstr "La página de día, y Mapa envejecido donde la aldea lo eligió."
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+msgctxt "game variable look.default_mode, description"
+msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode."
+msgstr "El modo que una persona ve la primera vez que llega, antes de haber elegido uno. Cualquiera puede cambiarlo en la cabecera, y su elección se mantiene a partir de entonces. Mapa envejecido solo se muestra en el modo claro."
