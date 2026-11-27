@@ -22,6 +22,7 @@ import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
 import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
 import { deleteGuideNotesOf, forgetGuideNotesBy } from "./applicationGuide";
+import { deleteConversationNotesOf, forgetConversationNotesBy } from "./applicationConversationNotes";
 
 type Db = Pool | PoolConnection;
 
@@ -123,9 +124,12 @@ const ivOf = (r: any): StoredInterview => ({
 
 /** Write the ordered interviews; the first opens now, the rest wait. Idempotent on (ref, position). */
 /** The role's conversations, copied in order. The first opens at once unless our review comes first (`openFirst` false): then every one waits for the invitation. */
-export async function insertInterviews(db: Db, ref: string, list: ReadonlyArray<{ roleId: string; minutes: number; final: boolean }>, at: Date, openFirst = true): Promise<void> {
+export async function insertInterviews(db: Db, ref: string, given: ReadonlyArray<{ roleId: string; minutes: number; final: boolean }>, at: Date, openFirst = true): Promise<void> {
+  // The final conversation always comes last, wherever a role's list put it, so nothing opens it by itself (QA round 2):
+  // only the team's move to the final conversation does (server/lib/applicantOnboarding.ts `addFinalConversation`).
+  const list = [...given.filter((x) => !x.final), ...given.filter((x) => x.final)];
   for (let i = 0; i < list.length; i++) {
-    const open = i === 0 && openFirst;
+    const open = i === 0 && openFirst && !list[i].final;
     await db.query(
       "INSERT IGNORE INTO application_interviews (application_ref, position, interviewer_role_id, minutes, is_final, state, opened_at) VALUES (?,?,?,?,?,?,?)",
       [ref, i + 1, list[i].roleId, list[i].minutes, list[i].final ? 1 : 0, open ? "open" : "waiting", open ? at : null],
@@ -263,6 +267,8 @@ export async function clearReviewOf(db: Db, refs: readonly string[], at: Date): 
   await deleteReferencesOf(db, refs);
   // The reviewers' conversation notes (0417) go with the scores: words about a person, kept only as long as the review.
   await deleteGuideNotesOf(db, refs);
+  // Each conversation's private notes and files (0444) go with them, files off the disk too.
+  await deleteConversationNotesOf(db, refs);
   await db.query("UPDATE application_recusals SET reason = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_interviews SET scorer_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_steps SET actor_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
@@ -302,6 +308,8 @@ export async function refsDueForClearing(db: Db, before: Date): Promise<string[]
 export async function forgetMemberReview(db: Db, userId: string, at: Date): Promise<number> {
   await db.query("DELETE FROM application_scores WHERE scorer_user_id = ?", [userId]);
   await forgetGuideNotesBy(db, userId);
+  // The conversation notes and files they added (0444).
+  await forgetConversationNotesBy(db, userId);
   await db.query("DELETE FROM application_recusals WHERE user_id = ?", [userId]);
   // The follow-up notes they wrote on a reference go, and their name leaves every reference they owned (0412).
   await forgetMemberReferences(db, userId);

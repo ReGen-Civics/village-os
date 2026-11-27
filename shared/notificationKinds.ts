@@ -364,6 +364,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // A conversation's notes were added (0444). To the other interviewers only, never the applicant; no note words ride on it.
+  application_conversation_notes: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
   // A member taking on their first long-term role is asked for references, on their own application's page.
   application_references_asked: {
     group: "decisions",

@@ -16,11 +16,10 @@ export type TrackStageWords = Drawn<typeof TRACK_WORDS>;
 export const TRACK_STAGE_MIRROR: WordMirror<typeof TRACK_WORDS> = {
   received: msg({ message: "Received", context: "application stage" }),
   review: msg({ message: "Our review", context: "application stage" }),
-  shortlist: msg({ message: "Shortlist", context: "application stage" }),
-  references: msg({ message: "References", context: "application stage" }),
-  followups: msg({ message: "Follow-ups and intuition conversations", context: "application stage" }),
+  references: msg({ message: "References and proposal", context: "application stage" }),
   final_interview: msg({ message: "Final conversation", context: "application stage" }),
-  decision: msg({ message: "Decision", context: "application stage" }),
+  agreement: msg({ message: "Agreement", context: "application stage" }),
+  start: msg({ message: "Start", context: "application stage" }),
 };
 
 /** The stages in `i18n`'s language, for code outside a component. */

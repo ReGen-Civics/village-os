@@ -35,6 +35,7 @@ import CommitmentReview, { type CommitmentReviewData } from "@/components/openPr
 import ContractPrice, { type ContractPriceData } from "@/components/openProposal/ContractPrice";
 import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
+import RoleArtBeside from "@/components/roleCard/RoleArtBeside";
 import TermsWeOffer, { HeldByThem, OpenTalksWarning, OverLimitWarning, prefillFromSearch, type ServedDeciderOffer, type ServedOverLimit } from "@/components/openProposal/TermsWeOffer";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
@@ -64,7 +65,7 @@ import { DOOR, type DoorReason } from "@shared/openProposalDecide";
 import { type ConsentAnswer } from "@shared/roleProposalConsent";
 import { consentWords } from "@/components/roleProposal/consentWords";
 import { civilDayWords } from "@shared/seasonPlans";
-import { BTN_PRIMARY, BTN_SECONDARY, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, H2, WORLD } from "@/components/journey/look";
 import { decideWords, useDecideWords } from "@/components/openProposal/decideWords";
 
 /** One proposal as the page reads it (`GET /api/governance/open-proposals/:id`). */
@@ -227,6 +228,8 @@ export default function OpenProposal() {
   const governance = useModule("governance");
   const [p, setP] = useState<ServedOpenProposal | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "members" | "missing" | "error">("loading");
+  /** The walkthrough's stage, when this reader has one: the phone's adopt row floats only at Agreement (QA round 1). */
+  const [stage, setStage] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<Said | null>(null);
@@ -349,14 +352,19 @@ export default function OpenProposal() {
                 </p>
               )}
               <WayInNote id={p.id} conversation={p.kind === "conversation"} early={p.roles.filter((r) => r.early).map((r) => r.name ?? DW.roleGone)} mayInvite={p.status === "confirmed" && p.you.mayDecline} />
-              <h1 className="mt-1 font-display text-3xl font-bold text-foreground">
+              {/* The role's own painting beside the heading, the same piece the applicant's page shows (QA round 4). */}
+              <div className="mt-1 flex items-start gap-3" data-open-proposal-heading="">
+              {!p.agent && <RoleArtBeside roleId={p.roles[0]?.id ?? null} size="md" />}
+              <h1 className="min-w-0 font-display text-3xl font-bold text-foreground">
                 {p.agent
                   ? <AgentHeading name={p.agent.name} roles={p.roles.map((r) => r.name ?? DW.roleGone).join(", ")} />
                   : founding
                     ? DW.applies(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone))
                     : DW.heading(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone), !!p.term)}
               </h1>
-              <p className="mt-2 leading-relaxed text-muted-foreground">
+              </div>
+              {/* Below sm the lede waits, so the walkthrough's act reaches a phone's first screen (QA round 3). */}
+              <p className="mt-2 hidden leading-relaxed text-muted-foreground sm:block" data-open-proposal-lede="">
                 {p.agent ? (
                   t({ message: "An agent, proposed by the member who keeps it. Adopted, it is seated on these roles at once, marked as an agent, with its keeper beside it.", context: "open proposal: an agent's proposal" })
                 ) : founding ? (
@@ -374,12 +382,18 @@ export default function OpenProposal() {
 
             {/* The walkthrough (shared/applicantOnboarding.ts): where this application stands, who acts next and the one act that moves it.
                 The door answers 404 to anybody who is not part of this application, and then nothing renders. */}
-            <Walkthrough applicationRef={p.id} onChanged={() => void load()} />
+            <Walkthrough
+              applicationRef={p.id}
+              onChanged={() => void load()}
+              onStage={setStage}
+              decideOnPage={!!side && p.status === "confirmed" && (p.you.mayAdopt || p.you.mayDecline || (!!p.you.mayReview && !!p.review))}
+            />
 
             {p.agent && <AgentView agent={p.agent} />}
 
             <section aria-labelledby="op-roles">
-              <h2 id="op-roles" className="text-lg font-bold text-foreground">
+              <p className={EYEBROW}>{t({ message: "What they ask to hold", context: "open proposal: the kicker above the roles asked for" })}</p>
+              <h2 id="op-roles" className={`mt-1 ${H2}`}>
                 {DW.rolesHeading}
               </h2>
               <ul className="mt-3 space-y-3">
@@ -396,9 +410,12 @@ export default function OpenProposal() {
             </section>
             {/* The two cards side by side, gaps named (Rye, 9 Nov 2026; components/openProposal/RoleCardBridge.tsx). */}
             {!p.agent && <section aria-labelledby="op-cards" className="grid gap-3">
-              <h2 id="op-cards" className="text-lg font-bold text-foreground">
+              <div>
+              <p className={EYEBROW}>{t({ message: "The cards", context: "open proposal: the kicker above the two cards side by side" })}</p>
+              <h2 id="op-cards" className={`mt-1 ${H2}`}>
                 {t({ message: "Their card beside the open card", context: "open proposal side by side" })}
               </h2>
+              </div>
               <CardSideBySide roles={p.roles} card={p.card ?? null} membershipAligned={!!p.membership?.aligned} />
             </section>}
             {/* Beside each piece of the role card, what they would change, find missing or deliver (Rye, 14 Nov 2026). */}
@@ -414,7 +431,8 @@ export default function OpenProposal() {
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
 
             <section aria-labelledby="op-words">
-              <h2 id="op-words" className="text-lg font-bold text-foreground">
+              <p className={EYEBROW}>{t({ message: "Why they apply", context: "open proposal: the kicker above why and what they would do" })}</p>
+              <h2 id="op-words" className={`mt-1 ${H2}`}>
                 {DW.wordsHeading}
               </h2>
               <dl className="mt-3 space-y-4">
@@ -550,6 +568,7 @@ export default function OpenProposal() {
                       // On a wide screen the row stays at the foot of the side panel while its note and checks scroll above it.
                       <div className="mt-4 lg:sticky lg:bottom-0 lg:-mx-5 lg:-mb-5 lg:rounded-b-xl lg:bg-card lg:px-5 lg:py-4">
                       <DecideDock
+                        float={stage === null || stage === "agreement"}
                         label={DW.deciderHeading}
                         note={adoptWaits ? t({ message: "Something waits before you can adopt. It is in the card further down.", context: "open proposal: the floating decision row on a phone" }) : undefined}
                       >
@@ -560,7 +579,9 @@ export default function OpenProposal() {
                             disabled={busy || adoptWaits}
                             aria-describedby={p.beforeAdopt && (p.beforeAdopt.conversations.length || p.beforeAdopt.seatsFull.length) ? "op-before-adopt" : undefined}
                             onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}) }, true)}
-                            className={PRIMARY}
+                            // One gold act on the page (QA round 2): before Agreement, adopting is not the act, so it stays plain.
+                            className={stage === null || stage === "agreement" ? PRIMARY : SECONDARY}
+                            data-adopt-gold={stage === null || stage === "agreement" ? "" : undefined}
                           >
                             <Check className="h-4 w-4" aria-hidden="true" />
                             {p.beforeAdopt?.seatsFull.length ? DW.adoptWhenASeatOpens : (record ?? DW.adopt)}
