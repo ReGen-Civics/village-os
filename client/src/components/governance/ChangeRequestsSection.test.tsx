@@ -48,8 +48,12 @@ describe("the Change requests section of Decisions", () => {
     show();
     const mine = await screen.findByTestId("cr-row-cr1");
     expect(mine.getAttribute("href")).toBe("/governance/decisions/changes/cr1");
-    expect(mine.textContent).toContain("Step 1 of 4: Gathering");
-    expect(screen.getByTestId("cr-row-cr2").textContent).toContain("Step 2 of 4: In review");
+    // The step is a word in a chip, never a counter (fold QA round 1).
+    expect(mine.textContent).toContain("Gathering");
+    expect(mine.textContent).not.toMatch(/of 4/);
+    expect(screen.getByTestId("cr-row-cr2").textContent).toContain("In review");
+    // The heading counts what the reader can open from here, theirs and everyone's in review, once each.
+    expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Change requests(2)");
     expect(screen.getByTestId("cr-row-cr2").textContent).toContain("Started by Bo");
     expect(document.getElementById("changes")).toBeTruthy();
   });

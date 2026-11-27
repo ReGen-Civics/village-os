@@ -63,6 +63,9 @@ describe("one change request, under Decisions", () => {
     expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe("2");
     expect(screen.getByRole("link", { name: "Decisions" }).getAttribute("aria-current")).toBe("page");
     expect(screen.getByRole("link", { name: /All change requests/ }).getAttribute("href")).toBe("/governance/decisions#changes");
+    // Where it stands, in words and with no counter (fold QA round 1).
+    expect(screen.getByText(/^In review · review ends /)).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/Step \d of 4/);
     // The review is open to this reader: every way to take part is offered.
     expect(screen.getByRole("button", { name: "I can live with this" })).toBeTruthy();
   });
@@ -74,5 +77,15 @@ describe("one change request, under Decisions", () => {
     show();
     expect(f).not.toHaveBeenCalled();
     expect(screen.getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe("/login");
+  });
+
+  it("keeps the author's one act in reach on a phone while gathering", async () => {
+    const gathering = { ...CR, yours: true, author: "Mara", state: "gathering", review: null };
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => gathering })));
+    show();
+    const bar = await screen.findByTestId("cr-phone-act");
+    expect(bar.className).toContain("sticky");
+    expect(bar.className).toContain("sm:hidden");
+    expect(bar.textContent).toBe("Open for review");
   });
 });

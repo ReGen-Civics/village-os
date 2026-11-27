@@ -223,6 +223,10 @@ export default function Decisions() {
                 </p>
               )}
 
+              {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list that was /changes. With no vote
+                  waiting on the reader they lead the page, so a phone opens on what a member can take part in now. */}
+              {groups.mine.length === 0 ? <ChangeRequestsSection /> : null}
+
               {/* No ballot has ever run here, open or closed (UNFINISHED-AREAS 13): the area is coming, said plainly. */}
               {ballots.length === 0 && (
                 <ComingSoonPanel
@@ -243,8 +247,8 @@ export default function Decisions() {
                   ) : null
                 }
               />
-              {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list that was /changes. */}
-              <ChangeRequestsSection />
+              {/* A vote waiting on the reader comes first; the change requests follow it. */}
+              {groups.mine.length > 0 ? <ChangeRequestsSection /> : null}
               <Group
                 title={t({ message: "Waiting to be closed", context: "Decisions, title" })}
                 blurb="The voting period ended. Nothing here closes itself: a person has to close it and say what the village decided."

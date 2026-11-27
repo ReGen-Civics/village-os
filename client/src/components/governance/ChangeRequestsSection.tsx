@@ -2,9 +2,13 @@
  * CHANGE REQUESTS, AS A KIND OF DECISION (the lead, 27 Nov 2026: "Change Requests become a kind of decision under
  * Decisions"). The Change requests section of /governance/decisions (`#changes`), which was the /changes list page.
  *
- *   - Open for your voice: other members' change requests in review, each a door to the page where you take part.
+ *   - In review across the village: other members' change requests in review, each a door to the page where you take
+ *     part.
  *   - Yours: what you started, with the step each one stands on.
  *   - Start one: a name and a why, behind one button, so the section reads as a list first.
+ *
+ * One panel with a display heading and its count, and each list a quest log: a row with its step in a chip, its
+ * title, one line saying where it stands, and an arrow to its own page (the profile's YourQuests rows).
  *
  * Every rule is the server's, unchanged: `GET /api/change-requests` answers anyone signed in (the reader's own, and
  * everyone's in review or in a vote), and starting one asks `mechanics.propose` through the one gate, so a member who
@@ -18,12 +22,11 @@ import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { ArrowRight } from "lucide-react";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { headers, refusal, type ChangeRequestSummary } from "@/components/governance/changeRequestClient";
-import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import { changeRequestHref } from "@shared/changeRequestAddress";
 
 type State = ChangeRequestSummary["state"];
 
-const STEP_NUMBER: Record<State, number> = { gathering: 1, in_review: 2, voting: 3, closed: 4 };
 const STEP_WORDS: Record<State, MessageDescriptor> = {
   gathering: msg({ message: "Gathering", context: "change request step" }),
   in_review: msg({ message: "In review", context: "change request step" }),
@@ -33,24 +36,22 @@ const STEP_WORDS: Record<State, MessageDescriptor> = {
 
 const field = `${FIELD} mt-1 block min-h-11 text-base`;
 
+/** The quest log's row (the profile's YourQuests): a door to the thing's own page, the arrow in gold. */
+const ROW =
+  "group flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 function Row({ c }: { c: ChangeRequestSummary }) {
   const { t, i18n } = useLingui();
   const step = STEP_WORDS[c.state] ? i18n._(STEP_WORDS[c.state]) : "";
-  const n = STEP_NUMBER[c.state] ?? 1;
   const author = c.author;
   const who = c.yours ? t({ message: "Yours", context: "a change request you started" }) : t({ message: `Started by ${author}`, context: "who started a change request" });
   const when = i18n.date(new Date(c.updatedAt), { day: "numeric", month: "short" });
+  const live = c.state === "in_review" || c.state === "voting";
   return (
     <li>
-      <Link href={changeRequestHref(c.id)} className={`${QUIET} group flex min-h-11 items-center justify-between gap-3 hover:border-notice`} data-testid={`cr-row-${c.id}`}>
+      <Link href={changeRequestHref(c.id)} className={ROW} data-testid={`cr-row-${c.id}`}>
         <span className="min-w-0 space-y-1">
-          <span className="flex flex-wrap items-center gap-2">
-            <span className={`${CHIP_SOFT} ${c.state === "in_review" || c.state === "voting" ? "border-notice/60 text-notice" : ""}`}>
-              <Trans context="change requests: a row's step">
-                Step {n} of 4: {step}
-              </Trans>
-            </span>
-          </span>
+          {step ? <span className={`${CHIP_SOFT} ${live ? "border-notice/60 text-notice" : ""}`}>{step}</span> : null}
           <span className="block break-words font-semibold text-foreground">{c.title}</span>
           <span className="block text-sm text-muted-foreground">
             <Plural value={c.changes} one="# change" other="# changes" /> · {who} · {when}
@@ -98,17 +99,21 @@ export default function ChangeRequestsSection() {
     window.location.assign(changeRequestHref(String(id)));
   };
 
+  // Every change request the reader can open from here, theirs and everyone's in review, counted once.
+  const count = mine === null ? null : new Set([...mine, ...open].map((c) => c.id)).size;
+
   return (
-    <section id="changes" aria-labelledby="cr-heading" className="scroll-mt-24 space-y-4" data-testid="change-requests">
+    <section id="changes" aria-labelledby="cr-heading" className={`${CARD} scroll-mt-24 space-y-5`} data-testid="change-requests">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className={EYEBROW}>
             <Trans context="decisions: the change requests section, eyebrow">Read before a vote</Trans>
           </p>
-          <h2 id="cr-heading" className="mt-1 font-display text-xl font-bold text-foreground">
+          <h2 id="cr-heading" className={`${H2} mt-1`}>
             <Trans context="decisions: the change requests section">Change requests</Trans>
+            {count !== null ? <span className="ml-2 text-lg font-normal text-muted-foreground">({count})</span> : null}
           </h2>
-          <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+          <p className={`${HINT} mt-1`}>
             <Trans context="decisions: the change requests section">Several setting changes, one reason, one vote. The village reads each one before it goes to the vote.</Trans>
           </p>
         </div>
@@ -164,13 +169,13 @@ export default function ChangeRequestsSection() {
           <Trans context="decisions: the change requests section">Reading the change requests.</Trans>
         </p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2">
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <h3 className={EYEBROW}>
               <Trans context="heading on the change requests page">In review across the village</Trans>
             </h3>
             {open.length === 0 ? (
-              <p className={`${TILE} ${HINT}`}>
+              <p className={HINT}>
                 <Trans>Nothing is being weighed right now.</Trans>
               </p>
             ) : (
@@ -178,11 +183,11 @@ export default function ChangeRequestsSection() {
             )}
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <h3 className={EYEBROW}>
               <Trans context="heading on the change requests page">Your change requests</Trans>
             </h3>
             {mine.length === 0 ? (
-              <p className={`${TILE} ${HINT}`}>
+              <p className={HINT}>
                 <Trans>You have none yet. Gather several changes here and the village votes on them together.</Trans>
               </p>
             ) : (

@@ -19,9 +19,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, TICK, TILE } from "@/components/journey/look";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
+import { Link } from "wouter";
+import { ArrowRight } from "lucide-react";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK, TICK, TILE } from "@/components/journey/look";
 import { byArrival } from "@/components/governance/deciderOrder";
+import { draftPageHref } from "@shared/orgDraftView";
 
 interface Card {
   id: string;
@@ -34,7 +37,11 @@ interface Card {
   canRevert: boolean;
   decision: { state: string; by: string | null; at: string } | null;
   state: string;
+  /** A connector's role change (`draft:<id>`): how many changes its draft holds. */
+  changes?: number;
 }
+
+const DRAFT_PREFIX = "draft:";
 
 /** What the read found, for the page around the inbox. `waiting` is 0 unless the read answered. */
 export interface InboxRead {
@@ -48,6 +55,9 @@ const DECIDED_WORDS: Record<string, MessageDescriptor> = {
   declined: msg({ message: "Declined", context: "approval inbox: a decided proposal" }),
   expired: msg({ message: "Lapsed", context: "approval inbox: a decided proposal" }),
   reverted: msg({ message: "Put back", context: "approval inbox: a decided proposal" }),
+  // A seating somebody filled by hand in Admin, closed with "Already seated by hand" (agentProposals.ts `/resolve`).
+  taken: msg({ message: "Done by hand", context: "approval inbox: a decided proposal" }),
+  dismissed: msg({ message: "Dismissed", context: "approval inbox: a decided proposal" }),
 };
 
 const DAY_MS = 86_400_000;
@@ -111,6 +121,25 @@ export default function ApprovalInbox({
       const d = (await r.json().catch(() => ({}))) as { message?: string };
       if (!r.ok) toast.error(d.message ?? t`That could not be done`);
       else toast.success(action === "approve" ? t({ message: `Approved`, context: "approval inbox" }) : action === "decline" ? t({ message: `Declined`, context: "approval inbox" }) : t({ message: `Put back`, context: "approval inbox" }));
+    } finally {
+      setBusy(null);
+      void load();
+    }
+  };
+
+  /**
+   * A seating a holder already made by hand in Admin. Approve would ask the holders route to seat the person a second
+   * time and be refused, and Decline would record a no that is not true, so this closes it as done. It is the route
+   * the connector card used (`POST /api/agent-proposals/:id/resolve`), with its own gate: an admin or a holder of
+   * the power to fill roles.
+   */
+  const seatedByHand = async (id: string) => {
+    setBusy(id);
+    try {
+      const r = await fetch(`/api/agent-proposals/${encodeURIComponent(id)}/resolve`, { method: "POST", headers: headers(), body: JSON.stringify({ status: "taken" }) });
+      const d = (await r.json().catch(() => ({}))) as { message?: string };
+      if (!r.ok) toast.error(d.message ?? t`That could not be done`);
+      else toast.success(t({ message: `Marked done by hand`, context: "approval inbox: a seating made by hand" }));
     } finally {
       setBusy(null);
       void load();
@@ -187,6 +216,8 @@ export default function ApprovalInbox({
           const lapses = c.expiresAt ? Date.parse(c.expiresAt) : Number.NaN;
           // Inside two days of lapsing is said in gold, the one light a card carries.
           const soon = Number.isFinite(lapses) && lapses - now < 2 * DAY_MS;
+          const isDraft = c.id.startsWith(DRAFT_PREFIX);
+          const changes = typeof c.changes === "number" ? c.changes : 0;
           return (
             <li key={c.id} className={`${TILE} sm:p-5 ${soon ? "border-notice/60" : ""}`} data-testid={`inbox-${c.id}`}>
               <label className="flex min-h-11 items-start gap-3">
@@ -217,10 +248,29 @@ export default function ApprovalInbox({
                   <dd className="whitespace-pre-line break-words text-foreground">{c.words.after}</dd>
                 </div>
               </dl>
+              {isDraft ? (
+                <p className={`${HINT} mt-2 flex flex-wrap items-center gap-x-3 gap-y-1`}>
+                  <span data-testid={`draft-changes-${c.id}`}>
+                    <Plural value={changes} one="# change" other="# changes" />
+                  </span>
+                  <Link href={draftPageHref(c.id.slice(DRAFT_PREFIX.length))} className={`${LINK} group inline-flex min-h-11 items-center gap-1`}>
+                    <Trans context="approval inbox: a connector's role change">Read the draft</Trans>
+                    <ArrowRight className="size-4 motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
+                  </Link>
+                </p>
+              ) : null}
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" className={BTN_PRIMARY} disabled={busy !== null} onClick={() => void post(c.id, "approve")}>
-                  <Trans context="approval inbox">Approve</Trans>
-                </button>
+                {/* A draft with no change in it has nothing to publish: only Decline, as the connector card had. */}
+                {isDraft && changes === 0 ? null : (
+                  <button type="button" className={waiting.length === 1 ? BTN_PRIMARY : BTN_NOTICE} disabled={busy !== null} onClick={() => void post(c.id, "approve")}>
+                    <Trans context="approval inbox">Approve</Trans>
+                  </button>
+                )}
+                {c.kind === "seating" ? (
+                  <button type="button" className={BTN_SECONDARY} disabled={busy !== null} onClick={() => void seatedByHand(c.id)}>
+                    <Trans context="approval inbox: a seating made by hand">Already seated by hand</Trans>
+                  </button>
+                ) : null}
                 <button type="button" className={BTN_SECONDARY} disabled={busy !== null} onClick={() => void post(c.id, "decline")}>
                   <Trans context="approval inbox">Decline</Trans>
                 </button>

@@ -85,7 +85,6 @@ interface ChangeRequest {
 type I18n = ReturnType<typeof useLingui>["i18n"];
 
 const STEPS: readonly State[] = ["gathering", "in_review", "voting", "closed"];
-const STEP_NUMBER: Record<State, number> = { gathering: 1, in_review: 2, voting: 3, closed: 4 };
 
 // Words chosen outside a component are `msg` descriptors, rendered with
 // i18n._ where they are shown, so the macro compiles them (spec i18n US6.1).
@@ -556,7 +555,6 @@ function DetailPage({ id }: { id: string }) {
       </p>
     );
 
-  const n = STEP_NUMBER[cr.state];
   const words = stepWords(i18n, cr.state);
   const ends = cr.review ? day(i18n, cr.review.endsAt) : "";
   const author = cr.author;
@@ -570,13 +568,9 @@ function DetailPage({ id }: { id: string }) {
       <header className="space-y-3">
         <p className={EYEBROW}>
           {cr.state === "in_review" && cr.review ? (
-            <Trans>
-              Step {n} of 4: {words}. Review ends {ends}
-            </Trans>
+            <Trans context="change request: where it stands, in review">In review · review ends {ends}</Trans>
           ) : (
-            <Trans context="which step a change request is on">
-              Step {n} of 4: {words}
-            </Trans>
+            words
           )}
         </p>
         <h1 className="break-words font-display text-3xl leading-tight text-foreground sm:text-4xl">{cr.title}</h1>
@@ -604,7 +598,8 @@ function DetailPage({ id }: { id: string }) {
             </li>
           </ul>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={primary} disabled={count === 0} onClick={() => void act("/open-review", "POST", { revision: cr.revision })}>
+            {/* On a phone this act rides above the tab bar instead (the end of the page), so it is always in reach. */}
+            <button type="button" className={`${primary} max-sm:hidden`} disabled={count === 0} onClick={() => void act("/open-review", "POST", { revision: cr.revision })}>
               <Trans context="open a change request for review">Open for review</Trans>
             </button>
             <button
@@ -766,6 +761,16 @@ function DetailPage({ id }: { id: string }) {
           )}
           {cr.state === "in_review" && <ReviewForm cr={cr} act={act} />}
         </section>
+      )}
+
+      {/* THE ONE ACT, IN REACH ON A PHONE (as /roles keeps its apply act): while the author gathers, "Open for review"
+          sticks above the tab bar from the first screen to the last. From sm up it sits in its panel above. */}
+      {cr.yours && cr.state === "gathering" && (
+        <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-10 sm:hidden" data-testid="cr-phone-act">
+          <button type="button" className={`${primary} w-full shadow-sm`} disabled={count === 0} onClick={() => void act("/open-review", "POST", { revision: cr.revision })}>
+            <Trans context="open a change request for review">Open for review</Trans>
+          </button>
+        </div>
       )}
     </div>
   );

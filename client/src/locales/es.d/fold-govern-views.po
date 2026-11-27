@@ -102,11 +102,6 @@ msgctxt "decisions: the change requests section"
 msgid "The change requests did not load. Some may be waiting for your voice."
 msgstr "Las solicitudes de cambio no cargaron. Puede que alguna espere su voz."
 
-# needs-native-review: Decisions, a change request row's step, 27 Nov 2026
-msgctxt "change requests: a row's step"
-msgid "Step {n} of 4: {step}"
-msgstr "Paso {n} de 4: {step}"
-
 # needs-native-review: one change request, its steps read aloud, 27 Nov 2026
 msgctxt "change request steps, read aloud"
 msgid "Where this change request is"
@@ -156,3 +151,37 @@ msgstr "Lo que aún falta"
 msgctxt "change request: the review, eyebrow"
 msgid "What the village said"
 msgstr "Lo que dijo la aldea"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Done by hand"
+msgstr "Hecha a mano"
+
+# needs-native-review: the approval inbox, a decided proposal, 27 Nov 2026
+msgctxt "approval inbox: a decided proposal"
+msgid "Dismissed"
+msgstr "Descartada"
+
+# needs-native-review: the approval inbox, a seating made by hand, 27 Nov 2026
+msgctxt "approval inbox: a seating made by hand"
+msgid "Already seated by hand"
+msgstr "Ya se asignó a mano"
+
+# needs-native-review: the approval inbox, a seating made by hand, 27 Nov 2026
+msgctxt "approval inbox: a seating made by hand"
+msgid "Marked done by hand"
+msgstr "Marcada como hecha a mano"
+
+# needs-native-review: the approval inbox, a connector's role change, 27 Nov 2026
+msgctxt "approval inbox: a connector's role change"
+msgid "Read the draft"
+msgstr "Leer el borrador"
+
+# needs-native-review: the approval inbox, how many changes a draft holds, 27 Nov 2026
+msgid "{changes, plural, one {# change} other {# changes}}"
+msgstr "{changes, plural, one {# cambio} other {# cambios}}"
+
+# needs-native-review: one change request, where it stands while in review, 27 Nov 2026
+msgctxt "change request: where it stands, in review"
+msgid "In review · review ends {ends}"
+msgstr "En revisión · la revisión termina el {ends}"

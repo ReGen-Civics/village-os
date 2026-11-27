@@ -215,6 +215,7 @@ const JOURNEY = [
   "client/src/components/review/OwedPostings.tsx",
   "client/src/components/review/OwedCancels.tsx",
   "client/src/components/governance/ChangeRequestsSection.tsx",
+  "client/src/components/governance/work/ApprovalsSection.tsx",
   "client/src/components/review/QuestProposalCard.tsx",
   // The review page's batch and change cards, in the role card's hand (2026-11-16).
   "client/src/components/proposals/BatchCard.tsx",

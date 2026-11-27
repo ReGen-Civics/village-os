@@ -2851,16 +2851,19 @@ html:has(#sera-changes [data-sera-strip-on]) {
   font-weight: 700;
 }
 /* A passed stone is a gold ring, the way the sheet draws what is held (its stat tiles); the stone you stand on is filled gold. */
+/* The stones read --sheet-notice where they stand, the pair BTN_PRIMARY draws (bg-notice, text-background), and never
+   --jw-gold: that one resolves once on :root, so inside .sheet-night it kept the light gold and the "here" stone's
+   number measured 2.35:1 in dark and 3.81:1 in light (fold QA, 27 Nov 2026). */
 .jw-stone[data-state="done"] .jw-stone-face {
   background: var(--muted);
-  border-color: var(--jw-gold);
-  color: var(--jw-gold);
+  border-color: var(--sheet-notice, #8d5e19);
+  color: var(--sheet-notice, #8d5e19);
 }
 .jw-stone[data-state="here"] .jw-stone-face {
-  background: var(--jw-gold);
-  border-color: var(--jw-gold);
+  background: var(--sheet-notice, #8d5e19);
+  border-color: var(--sheet-notice, #8d5e19);
   color: var(--background);
-  box-shadow: 0 0 0 5px color-mix(in srgb, var(--jw-gold) 22%, transparent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--sheet-notice, #8d5e19) 22%, transparent);
 }
 .jw-stone:disabled {
   cursor: not-allowed;
