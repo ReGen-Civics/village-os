@@ -59,7 +59,15 @@ export interface UpdateFacts {
   bookingLinks?: readonly BookingLink[];
 }
 
-export type TellApplicant = (ref: string, kind: ApplicantUpdateKind, facts?: UpdateFacts) => Promise<void>;
+/**
+ * Tell the applicant one update. Its two companions send the next-step letters (server/lib/applicantStageLetters.ts):
+ * `stage` the letter of the stage the application stands at, once per stage; `refined` the one letter after a first
+ * refinement. Each answers true when a letter went now. A test's plain function carries neither, and tells no stage.
+ */
+export type TellApplicant = ((ref: string, kind: ApplicantUpdateKind, facts?: UpdateFacts) => Promise<void>) & {
+  stage?: (ref: string) => Promise<boolean>;
+  refined?: (ref: string) => Promise<boolean>;
+};
 
 
 const keyOf = (ref: string, kind: ApplicantUpdateKind, part?: string) => `${ref}:update:${kind}${part ? `:${part}` : ""}`;
@@ -91,7 +99,7 @@ async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUr
 }
 
 export function makeApplicantTeller(deps: TellDeps): TellApplicant {
-  return async (ref, kind, facts = {}) => {
+  const tell: TellApplicant = async (ref, kind, facts = {}) => {
     try {
       const p = await proposals.readOpenProposal(deps.getPool(), ref);
       // Anonymised or unconfirmed: nobody to tell.
@@ -116,6 +124,10 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
       console.error(`[open-proposals] the ${kind} update for ${ref} was not sent`, e);
     }
   };
+  // Loaded when first used: the stage letters read the review, which reads this file's type.
+  tell.stage = async (ref) => (await import("./applicantStageLetters")).tellStageLetter(deps, ref);
+  tell.refined = async (ref) => (await import("./applicantStageLetters")).tellRefinedLetter(deps, ref);
+  return tell;
 }
 
 /** Drops the "Your status page link" line (the notice carries its own link) and the blank lines around it. Split, not a regex, so a long run of newlines costs one pass. */

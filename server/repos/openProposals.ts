@@ -312,6 +312,16 @@ export async function adoptedForAddress(db: Db, emailKey: string): Promise<Store
  * A confirmed application from this address (its folded key) still waiting for the village, for any of these
  * roles; the oldest, or null (shared/applicationAgain.ts). Anonymised rows carry no key, so they never match.
  */
+/** Every confirmed application from this address still waiting for the village, newest first (the applicant's profile card). */
+export async function waitingAllFromAddress(db: Db, emailKey: string): Promise<StoredOpenProposal[]> {
+  if (!emailKey) return [];
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status = 'confirmed' AND email_key = ? AND anonymised_at IS NULL ORDER BY created_at DESC, id LIMIT 20`,
+    [emailKey],
+  );
+  return rows.map(rowOf);
+}
+
 export async function waitingFromAddress(db: Db, emailKey: string, roleIds: readonly string[]): Promise<StoredOpenProposal | null> {
   if (!emailKey || roleIds.length === 0) return null;
   const [rows] = await db.query<RowDataPacket[]>(

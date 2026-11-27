@@ -69,6 +69,7 @@ import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { emailKeyOf } from "../../shared/comms/address";
 import { civilDateKey } from "../../shared/lunar";
 import {
+  APPLICATION_CLOSE_DAYS_VARIABLE,
   OPEN_ANONYMISE_DAYS,
   OPEN_CONFIRM_HOURS,
   OPEN_NAME_MAX,
@@ -118,6 +119,7 @@ import { deleteReferencesOf, memberReferencesDecidedBefore } from "../repos/appl
 import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
+import { recordEvent } from "../lib/events";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { loadEmailVillage } from "../lib/comms/render";
 import { comeAndPlayFor } from "../lib/comms/villageLetter";
@@ -1216,18 +1218,27 @@ export function register(app: Express, deps: Deps): void {
 export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, closing?: ClosingDeps): Promise<string> {
   const deleted = await store.deleteUnconfirmedBefore(pool, new Date(at.getTime() - OPEN_CONFIRM_HOURS * 60 * 60_000));
   const cutoff = new Date(at.getTime() - OPEN_ANONYMISE_DAYS * 24 * 60 * 60_000);
-  // Confirmed, and nobody decided it in 90 days: closed as withdrawn, and the name and address go now (red team, 9 Nov).
-  // With a post office handed in, each one first gets its one closed letter (keyed per application), while the address is still here.
+  // THE ONE STEP OF AN APPLICATION THAT HAPPENS WITHOUT A PERSON. Everything else in an application moves only by a
+  // person's act; this is the lead's explicit exception (27 Nov 2026: "yes close in 90 days"). A confirmed application
+  // nobody decided `org.application_close_days` (default 90) after it arrived is closed as withdrawn, and the name and
+  // address go now (red team, 9 Nov). With a post office handed in, each one first gets its one closed letter (keyed
+  // per application) while the address is still here, then the close is recorded as an event. An adopted, declined
+  // or withdrawn application is never touched: only `status = 'confirmed'` rows are read.
+  const closeDays = Math.max(1, Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || OPEN_ANONYMISE_DAYS);
+  const closeCutoff = new Date(at.getTime() - closeDays * 24 * 60 * 60_000);
   let expired: number;
   let letters = 0;
   if (closing) {
-    const due = await store.undecidedBefore(pool, cutoff);
+    const due = await store.undecidedBefore(pool, closeCutoff);
     letters = await sendClosedLetters(pool, closing, due);
-    const closed = await store.expireUndecided(pool, due.map((p) => p.id), cutoff, at);
+    const closed = await store.expireUndecided(pool, due.map((p) => p.id), closeCutoff, at);
     await stampQuietClose(pool, closed, at);
+    for (const id of closed) {
+      await recordEvent(pool, { kind: "application_closed", text: `an application nobody decided in ${closeDays} days was closed, and its applicant told`, actorKind: "system", entityType: "open_proposal", entityRef: id, audience: "admin" });
+    }
     expired = closed.length;
   } else {
-    expired = await store.expireUndecidedBefore(pool, cutoff, at);
+    expired = await store.expireUndecidedBefore(pool, closeCutoff, at);
   }
   let anonymised = await store.anonymiseDecidedBefore(pool, cutoff, at);
   for (const p of await store.adoptedDecidedBefore(pool, cutoff)) {

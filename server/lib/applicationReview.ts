@@ -80,7 +80,8 @@ import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
-import { stepBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
+import { roleBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
+import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { FINAL_CALL_ROLE_VARIABLE } from "../../shared/applicantOnboarding";
 
 /** The people holding the role the village names for the final call (`org.final_call_role`), or none when it names none. */
@@ -214,17 +215,23 @@ export async function stepBookingOf(db: Db, ref: string, roleId: string): Promis
   const people = await repo.bookingLinksOfMembers(db, holders);
   const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
   const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;
-  return stepBookingFor(roleName, people, roleUrl);
+  // By the role only (the lead, 27 Nov 2026: "Just the Role - Ops, Community, Visionary"): its short label, and the
+  // role's own link before any holder's (shared/interviewBooking.ts `roleBookingFor`).
+  return roleBookingFor(roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE)), people, roleUrl);
 }
 
 export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
   const pool = deps.getPool();
   // The person who proposed hears the next conversation is asked for, once each (stable part). The first opens as they confirm, and their status email covers it.
   if (kindOfRef(ref) === "open" && deps.tellApplicant && position > 1) {
-    // The conversation that just opened is booked with the person holding its role (their own link), else the role's link, or we write with times.
-    // It is named "Role (First, First)".
-    const step = await stepBookingOf(pool, ref, roleId);
-    await deps.tellApplicant(ref, "conversation", { part: String(position), withRole: step.label, minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    // ONE LETTER FOR THE MOMENT (the lead, 27 Nov 2026): a conversation opening can begin a stage (the final one
+    // begins Final conversation), and that stage's next-step letter carries this conversation's booking link. When
+    // the stage's letter had already gone, the conversation's own letter says it opened.
+    if (!(await deps.tellApplicant.stage?.(ref))) {
+      // Booked by the role only: its short label, the role's link first (`stepBookingOf`).
+      const step = await stepBookingOf(pool, ref, roleId);
+      await deps.tellApplicant(ref, "conversation", { part: String(position), withRole: step.label, minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    }
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
   for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
@@ -337,9 +344,13 @@ async function afterMove(deps: ReviewDeps, ref: string, opened: { position: numb
     const name = kindOfRef(ref) === "open" ? ((await proposals.readOpenProposal(deps.getPool(), ref))?.name ?? null) : null;
     await tellInterviewers(deps, ref, opened.position, opened.roleId, opened.minutes, firstName(name));
   }
+  // A written-up conversation can begin References and proposal (the first) or Agreement (the final one): that
+  // stage's next-step letter, once (server/lib/applicantStageLetters.ts).
+  const staged = kindOfRef(ref) === "open" ? !!(await deps.tellApplicant?.stage?.(ref)) : false;
   if (scoresIn) {
     await deps.notifyAdmins("governance", REVIEW_WORDS.interviewsDone(await roleNamesOf(deps, ref)), `app:${ref}:scores-in`, scorecardHref(ref));
-    if (holdConsent) await openConsentRound(deps, ref);
+    // The Agreement letter that just went already says what comes next: the consent round's own letter stays quiet.
+    if (holdConsent) await openConsentRound(deps, ref, { tellApplicant: !staged });
   }
 }
 
@@ -359,7 +370,7 @@ async function roleNamesOf(deps: ReviewDeps, ref: string): Promise<string[]> {
  * Does nothing twice: a proposal that already has asks, or is no longer waiting,
  * is left alone.
  */
-export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<boolean> {
+export async function openConsentRound(deps: ReviewDeps, ref: string, opts: { tellApplicant?: boolean } = {}): Promise<boolean> {
   if (kindOfRef(ref) !== "open") return false;
   const pool = deps.getPool();
   const p = await proposals.readOpenProposal(pool, ref);
@@ -387,7 +398,7 @@ export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<b
   // An AI agent holding a role is never asked (D31); the round says so.
   const agents = await repo.agentRoleNamesInCircles(pool, circles);
   await repo.stampStep(pool, { ref, kind: "consent", at, detail: agents.length ? { skippedAgents: agents } : undefined });
-  if (deps.tellApplicant) await deps.tellApplicant(ref, "consent");
+  if (deps.tellApplicant && opts.tellApplicant !== false) await deps.tellApplicant(ref, "consent");
   const names = await roleNamesOf(deps, ref);
   const closesOn = civilDateKey(new Date(closesAt.getTime() - 1), deps.calendar().timezone || "UTC");
   for (const a of asked) {

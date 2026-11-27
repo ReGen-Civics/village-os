@@ -517,7 +517,8 @@ const en: ApplicantMessages = {
         roles.length <= 1
           ? `After the invitation, you book the conversation${roles[0] ? ` with ${roles[0]}` : ""} at a time you choose.`
           : `After the invitation, you book each conversation at times you choose, in this order: ${roles[0]} first, then ${roles.slice(1).join(", then ")}. Each one opens once the one before it is written up.`,
-      bookNow: (role) => `Book a time with ${role}`,
+      // The role only (the lead, 27 Nov 2026): "Book with Ops".
+      bookNow: (role) => `Book with ${role}`,
       writeNow: (role) => `We'll write to you with times for your conversation with ${role}.`,
     },
     six: {
@@ -808,7 +809,7 @@ const es: ApplicantMessages = {
         roles.length <= 1
           ? `Después de la invitación, usted reserva la conversación${roles[0] ? ` con ${roles[0]}` : ""} en el horario que elija.`
           : `Después de la invitación, usted reserva cada conversación en los horarios que elija, en este orden: primero ${roles[0]}, luego ${roles.slice(1).join(", luego ")}. Cada una se abre cuando la anterior esté escrita.`,
-      bookNow: (role) => `Reserve un horario con ${role}`, // needs-native-review: new words, 16 Nov 2026
+      bookNow: (role) => `Reserve con ${role}`, // needs-native-review: the role only, 27 Nov 2026
       writeNow: (role) => `Le escribiremos con horarios para su conversación con ${role}.`,
     },
     // needs-native-review: the six stages, 27 Nov 2026
@@ -1049,7 +1050,8 @@ function bookDoors(w: ApplicantMessages["status"], b: NonNullable<StatusServedFo
   const links = b.links?.length ? b.links : b.url ? [{ who: null, url: b.url }] : [];
   if (!links.length) return { text: w.booking.writeNow(who) };
   const label = w.booking.bookNow(who);
-  return { label, links: links.map((l) => ({ label: links.length > 1 && l.who ? l.who : label, url: l.url })) };
+  // Several ways in are numbered, never named (the lead, 27 Nov 2026: "Just the Role").
+  return { label, links: links.map((l, n) => ({ label: links.length > 1 ? `${label} (${n + 1})` : label, url: l.url })) };
 }
 
 const CONVERSATION_LABEL = /^Conversation with (.+) \((\d+) minutes\)$/;

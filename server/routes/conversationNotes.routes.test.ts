@@ -332,6 +332,8 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const booking = (await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id)).body.status.bookNow;
     expect(booking, "the open conversation offers its booking").toBeTruthy();
     expect(String(booking.label ?? "")).not.toContain(APPLICANT_HOLDER.name.split(" ")[0]);
-    expect(String(booking.label ?? "")).toContain(IA.name.split(" ")[0]);
+    // By the role only since the lead's answer (27 Nov 2026): no holder is named at all.
+    expect(String(booking.label ?? "")).not.toContain(IA.name.split(" ")[0]);
+    expect(booking.label).toBe("Operations Role");
   });
 });

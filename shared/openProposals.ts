@@ -134,6 +134,8 @@ export function safeGreeting(name: string): string | null {
  * from the decision.
  */
 export const OPEN_ANONYMISE_DAYS = 90;
+/** The village variable for the days before an undecided application closes (default 90; shared/gameVariables.ts). */
+export const APPLICATION_CLOSE_DAYS_VARIABLE = "org.application_close_days";
 
 export const OPEN_PROPOSAL_STATUSES = ["unconfirmed", "confirmed", "adopted", "declined", "withdrawn"] as const;
 export type OpenProposalStatus = (typeof OPEN_PROPOSAL_STATUSES)[number];

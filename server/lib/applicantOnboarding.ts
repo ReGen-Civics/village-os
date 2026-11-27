@@ -170,6 +170,8 @@ export async function answerShortlist(deps: ReviewDeps, ref: string, viewerId: s
   if (reviewStageOf(steps) === "review") return refuse(409, "review_first", ONBOARDING_WORDS.shortlistWaitsReview);
   if (reviewStageOf(steps) === "not_invited") return refuse(409, "decided", ONBOARDING_WORDS.decided);
   if (!(await review.stampStep(pool, { ref, kind: "shortlist", at: deps.now(), actorUserId: viewerId, detail: { answer } }))) return refuse(409, "done", ONBOARDING_WORDS.shortlistDone);
+  // A yes can move the application to References and proposal: that stage's next-step letter, once.
+  if (answer === "yes") await deps.tellApplicant?.stage?.(ref);
   return { ok: true, answer };
 }
 
@@ -197,7 +199,11 @@ export async function askForReferences(deps: ReviewDeps, ref: string, viewerId: 
     // The member hears it on their bell, linked to the form on their own application's page. No name or contact rides on it.
     const names = await roleNamesOfApplication(pool, ref);
     await deps.notify({ userId: member.candidateUserId, type: "application_references_asked", title: ONBOARDING_NOTICES.memberAskedTitle(names), body: ONBOARDING_NOTICES.memberAskedBody, link: `${applicationHref(ref)}#your-references`, actorUserId: null, dedupeKey: `app:${ref}:refs-asked:${member.candidateUserId}` });
-  } else await deps.tellApplicant?.(ref, "references");
+  } else {
+    // The references letter is this moment's one letter: it carries the form's link. The stage's own next-step letter
+    // goes when its next conversation opens or the first conversation is written up (server/lib/applicantStageLetters.ts).
+    await deps.tellApplicant?.(ref, "references");
+  }
   return { ok: true };
 }
 
@@ -733,6 +739,9 @@ async function tellNotesAdded(deps: ReviewDeps, ref: string, interview: review.S
 // ── The applicant's own view of the six stages, and refining their proposal ─
 
 /** The facts the track reads, for one application, from what is stored. Null for a ref with no confirmed step. */
+/** The track's facts for an application, for the applicant's next-step letters (server/lib/applicantStageLetters.ts). */
+export const applicantTrackFactsOf = (deps: Pick<ReviewDeps, "getPool">, ref: string) => trackFactsOf(deps, ref);
+
 async function trackFactsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Promise<{ facts: TrackFacts; finals: Array<{ state: string; booked: boolean }> } | null> {
   const pool = deps.getPool();
   const steps = await review.stepsOf(pool, ref);
@@ -818,7 +827,7 @@ export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown
   if (!words.ok) return { ok: false, status: 400, error: words.error };
   const pool = deps.getPool();
   const at = deps.now();
-  return inTransaction(pool, async (conn) => {
+  const out = await inTransaction(pool, async (conn) => {
     const p = await proposals.readOpenProposal(conn, ref, true);
     if (!p || p.status !== "confirmed") return { ok: false, status: 409, error: "closed" } as RefineOutcome;
     if (p.body.why === words.why && p.body.aim === words.aim) return { ok: false, status: 400, error: "unchanged" } as RefineOutcome;
@@ -826,6 +835,9 @@ export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown
     if (!(await proposals.refineOpenProposal(conn, ref, words.why, words.aim, versions))) return { ok: false, status: 409, error: "closed" } as RefineOutcome;
     return { ok: true, versions: versions.length } as RefineOutcome;
   });
+  // The one letter after a refinement: keyed once per application, so a second save sends nothing.
+  if (out.ok) await deps.tellApplicant?.refined?.(ref);
+  return out;
 }
 
 /** The earlier versions and the words now, for the team's walkthrough: only for the reviewers and the final call. */

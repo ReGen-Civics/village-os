@@ -3016,6 +3016,27 @@ export const VARIABLES: VariableDef[] = [
     default: "",
   },
   {
+    key: "org.role_short_labels",
+    category: "The village's people",
+    label: "Short role names on an applicant's booking buttons",
+    description:
+      "What an applicant's booking button calls each role, one role per line as role-id = Label (for example ops-role = Ops). The button then reads Book with Ops, and never names a person. A role with no line here reads its full name. Paste each role id from the org chart.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.application_close_days",
+    category: "The village's people",
+    label: "Days before an undecided application closes",
+    description:
+      "An application nobody has decided this many days after it arrived is closed, and the applicant gets one letter saying so (the lead, 27 Nov 2026: yes close in 90 days). It is the only step in an application that happens without a person. An application that was adopted, declined or withdrawn is never touched.",
+    type: "integer",
+    default: "90",
+    min: 30,
+    max: 365,
+    unit: "days",
+  },
+  {
     key: "org.applicant_reply_days",
     category: "The village's people",
     label: "Longest reply in days a proposer was ever promised (a floor for the moon cycles)",

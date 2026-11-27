@@ -57,6 +57,7 @@ import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
 import { applicantStagesOf, refineProposal } from "../lib/applicantOnboarding";
+import { emailKeyOf } from "../../shared/comms/address";
 import { REFINE_ERRORS } from "../../shared/proposalRefine";
 import path from "node:path";
 
@@ -132,6 +133,26 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
     const out = await refineProposal(work, ref, req.body);
     out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
+  });
+
+  /**
+   * THE APPLICANT'S NEXT STEP ON THEIR OWN PROFILE (the lead, 27 Nov 2026: "show them clearly their next step in
+   * their profile"). The signed-in member's newest application still waiting, read through the same proof as the
+   * signed-in status page (`isApplicant`: an account the application is trusted to be), with the same served shape.
+   * No application of theirs waiting: `{ next: null }`, and the profile draws nothing.
+   */
+  app.get("/api/me/application-next", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-next:${String(viewer.id)}`, 60, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const email = typeof viewer.email === "string" ? viewer.email : "";
+    for (const p of email ? await store.waitingAllFromAddress(getPool(), emailKeyOf(email)) : []) {
+      if (!(await isApplicant(work, p.id, String(viewer.id)))) continue;
+      const s = await statusOf(work, p.id);
+      if (!s) continue;
+      return res.set("Cache-Control", "no-store").json({ next: { ref: p.id, status: { ...s, sixStages: await applicantStagesOf(work, p.id) } } });
+    }
+    res.set("Cache-Control", "no-store").json({ next: null });
   });
 
   app.get("/api/governance/applications/:ref/status", async (req, res) => {

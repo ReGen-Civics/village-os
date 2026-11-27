@@ -1,0 +1,16 @@
+# Spanish for the applicant flow, part 3 (the next step on the profile).
+# Folded into ../es.po after the merge (scripts/fold-po-fragments.mjs).
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the applicant's next-step card on their profile, 27 Nov 2026
+msgctxt "profile: the applicant's next-step card, kicker"
+msgid "Your application"
+msgstr "Su postulación"
+
+# needs-native-review: the applicant's next-step card on their profile, 27 Nov 2026
+msgctxt "profile: the applicant's next-step card, link to the status page"
+msgid "Open your application"
+msgstr "Abrir su postulación"

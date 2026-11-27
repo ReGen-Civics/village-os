@@ -206,15 +206,15 @@ describe("the status page's words (statusView)", () => {
 
   it("offers only the open conversation's way to book: its role's link, or our letter with times", () => {
     const withLink = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: "https://cal.example.test/welcome" } })).booking!;
-    expect(withLink.book).toEqual({ label: "Book a time with Welcome Role", links: [{ label: "Book a time with Welcome Role", url: "https://cal.example.test/welcome" }] });
-    // The role is named with the person holding it: "Role (First)".
-    const one = statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: "https://cal.example.test/ana", links: [{ who: null, url: "https://cal.example.test/ana" }] } })).booking!;
-    expect(one.book).toEqual({ label: "Book a time with Welcome Role (Ana)", links: [{ label: "Book a time with Welcome Role (Ana)", url: "https://cal.example.test/ana" }] });
-    // Several people, each with their own link: "Role (First, First)" above one door per person, by first name.
-    const several = statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana, Ben)", url: "https://cal.example.test/ana", links: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] } })).booking!;
-    expect(several.book).toEqual({ label: "Book a time with Welcome Role (Ana, Ben)", links: [{ label: "Ana", url: "https://cal.example.test/ana" }, { label: "Ben", url: "https://cal.example.test/ben" }] });
-    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: "https://cal.example.test/welcome" } })).booking!.book).toEqual({ label: "Reserve un horario con Welcome Role (Ana)", links: [{ label: "Reserve un horario con Welcome Role (Ana)", url: "https://cal.example.test/welcome" }] });
-    expect(statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome Role (Ana)", url: null } })).booking!.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome Role (Ana)." });
+    expect(withLink.book).toEqual({ label: "Book with Welcome Role", links: [{ label: "Book with Welcome Role", url: "https://cal.example.test/welcome" }] });
+    // The role only (the lead, 27 Nov 2026: "Just the Role - Ops, Community, Visionary"): the server sends the role's short label.
+    const one = statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome", url: "https://cal.example.test/welcome", links: [{ who: null, url: "https://cal.example.test/welcome" }] } })).booking!;
+    expect(one.book).toEqual({ label: "Book with Welcome", links: [{ label: "Book with Welcome", url: "https://cal.example.test/welcome" }] });
+    // Several ways in are numbered, never named, even when an older server names them.
+    const several = statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome", url: "https://cal.example.test/ana", links: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] } })).booking!;
+    expect(several.book).toEqual({ label: "Book with Welcome", links: [{ label: "Book with Welcome (1)", url: "https://cal.example.test/ana" }, { label: "Book with Welcome (2)", url: "https://cal.example.test/ben" }] });
+    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome", url: "https://cal.example.test/welcome" } })).booking!.book).toEqual({ label: "Reserve con Welcome", links: [{ label: "Reserve con Welcome", url: "https://cal.example.test/welcome" }] });
+    expect(statusView("en", served(input(), { bookNow: { role: "Welcome Role", label: "Welcome", url: null } })).booking!.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome." });
     const noLink = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: null } })).booking!;
     expect(noLink.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome Role." });
     expect(statusView("en", served(input())).booking!.book, "control: nothing open, nothing to book").toBeNull();

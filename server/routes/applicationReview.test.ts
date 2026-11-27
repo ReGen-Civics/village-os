@@ -456,11 +456,12 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("booklink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const first = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
+        // By the role only (the lead, 27 Nov 2026: "Just the Role"): no holder's name rides on the label.
+        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
         // The next conversation opens only once the first is written up, and then offers its own role's way in.
         await score(id, Number((await interviews(id))[0].id), IA.id);
         const second = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(second.body.status.bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
+        expect(second.body.status.bookNow).toEqual({ role: "Data Role", label: "Data Role", url: null, links: [] });
         // Control: an http link is not a booking link.
         await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["http://calendar.example.test/data", roleB]);
         expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.bookNow.url).toBeNull();
@@ -501,7 +502,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       }
     });
 
-    it("offers the link of the person holding the step's role, then the role's link, then our letter with times", async () => {
+    it("offers the role's own link, then the link of the person holding it, then our letter with times, by role only", async () => {
       await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["https://calendar.example.test/channel-role", roleA]);
       try {
         await saveLink(IA.id, IA_LINK);
@@ -509,11 +510,11 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("ownlink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const status = async () => (await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status;
-        // 1. The interviewer's own link beats the role's.
-        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
-        // 2. CONTROL: cleared, the role's link comes back.
-        await saveLink(IA.id, "");
-        expect((await status()).bookNow.url).toBe("https://calendar.example.test/channel-role");
+        // 1. The role's own link, set by the village for this step, beats a holder's (the lead, 27 Nov 2026: "Just the Role").
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: "https://calendar.example.test/channel-role", links: [{ who: null, url: "https://calendar.example.test/channel-role" }] });
+        // 2. CONTROL: the role's link cleared, the holder's own link comes in, still unnamed.
+        await q("UPDATE org_roles SET booking_url = NULL WHERE id = ?", [roleA]);
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
         // The next conversation's letter carries the next interviewer's own link, by role, never an email address.
         await saveLink(IA.id, IA_LINK);
         const sentBefore = state.sent.length;
@@ -524,12 +525,13 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect(JSON.stringify(await status())).not.toContain("hard to read");
         expect(JSON.stringify(await status())).not.toContain("unsure");
         const letter = state.sent.slice(sentBefore).find((m) => m.text.includes("Data Role"));
-        expect(letter?.text).toContain(`a conversation with Data Role (Ivo), about 20 minutes. Book a time with Data Role (Ivo): ${IB_LINK}`);
+        expect(letter?.text).toContain(`a conversation with Data Role, about 20 minutes. Book a time with Data Role: ${IB_LINK}`);
         expect(letter?.text).not.toContain(IB.email);
-        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
+        expect(letter?.text).not.toContain("Ivo");
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
         // 3. Neither a person's link nor the role's: nothing to follow, and the page says we write with times.
         await saveLink(IB.id, "");
-        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role", url: null, links: [] });
         expect(JSON.stringify(await status())).not.toContain("@example.test");
       } finally {
         await saveLink(IA.id, "");
