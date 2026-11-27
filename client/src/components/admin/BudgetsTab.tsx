@@ -23,7 +23,7 @@ export default function BudgetsTab({ password }: { password: string }) {
       <Suspense fallback={<p className="text-sm text-muted-foreground"><Trans context="admin budgets tab">Opening the budget…</Trans></p>}>
         <BudgetDesk bearer={password} look={ADMIN_LOOK} />
       </Suspense>
-      <p className="text-sm"><a className="underline font-semibold text-foreground" href="/budget"><Trans context="admin budgets tab">Open the budget as its own page, the one every member reads</Trans></a></p>
+      <p className="text-sm"><a className="underline font-semibold text-foreground" href="/governance/treasury#cash-budget"><Trans context="admin budgets tab">Open the budget as its own page, the one every member reads</Trans></a></p>
     </div>
   );
 }

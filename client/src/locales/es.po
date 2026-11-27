@@ -10034,7 +10034,7 @@ msgid "Who it is for"
 msgstr "Para quién es"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
 msgstr "El dinero que la aldea planea para el pago de roles y misiones en esta luna, línea por línea, y lo que queda después de restar el pago ya prometido. Todos los miembros pueden leerlo. Quienes tienen el poder del presupuesto lo cambian."
@@ -19364,7 +19364,7 @@ msgid "A suggestion from Sera or an outside service"
 msgstr "Una sugerencia de Sera o de un servicio externo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Sign in to read the village's cash budget."
 msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea."
@@ -23277,9 +23277,9 @@ msgstr "La cuadrilla del jueves"
 
 # needs-native-review: the light mode paper dial, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, choice sea-chart, hint"
-msgid "Aged paper, torn cards and Garamond headings."
-msgstr "Papel envejecido, tarjetas rasgadas y títulos en Garamond."
+#~ msgctxt "game variable look.light_paper, choice sea-chart, hint"
+#~ msgid "Aged paper, torn cards and Garamond headings."
+#~ msgstr "Papel envejecido, tarjetas rasgadas y títulos en Garamond."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/ConsentCard.tsx
@@ -28224,6 +28224,12 @@ msgctxt "circle card, not found"
 msgid "There is no circle here."
 msgstr "Aquí no hay ningún círculo."
 
+# needs-native-review: Governance's Treasury view, the door to the books, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
+msgid "The village's books: mint, End of Moon pay and cash to send"
+msgstr "Las cuentas de la aldea: emitir, el pago de Fin de Luna y el efectivo por enviar"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable assistant.synthesis_batch, label"
@@ -32291,9 +32297,9 @@ msgstr "editado"
 
 # needs-native-review: game mechanics dials, 2026-11-26
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.default_mode, choice light, hint"
-msgid "The day page, and Sea chart where the village chose it."
-msgstr "La página de día, y Carta náutica donde la aldea la eligió."
+#~ msgctxt "game variable look.default_mode, choice light, hint"
+#~ msgid "The day page, and Sea chart where the village chose it."
+#~ msgstr "La página de día, y Carta náutica donde la aldea la eligió."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetDesk.tsx
@@ -34380,6 +34386,12 @@ msgstr "{0}: {1} en espera"
 msgctxt "task board: dateChips.nextFullMoon"
 msgid "Next full moon"
 msgstr "Próxima luna llena"
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, description"
+msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are."
+msgstr "Cómo dibuja el modo claro las páginas de los miembros. Sencillo es la página limpia de Hora Dorada. Mapa envejecido la convierte en un mapa antiguo: papel envejecido, arrugado y manchado con el borde quemado, tarjetas en páginas gastadas rasgadas cada una a su manera, y títulos en Garamond. El modo oscuro y la Administración quedan como están."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/NoticeWordsPanel.tsx
@@ -41626,9 +41638,9 @@ msgstr "Necesita la dirección de un servicio WMS de Sentinel-2."
 
 # needs-native-review: the light mode paper dial, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, choice sea-chart, label"
-msgid "Sea chart"
-msgstr "Carta náutica"
+#~ msgctxt "game variable look.light_paper, choice sea-chart, label"
+#~ msgid "Sea chart"
+#~ msgstr "Carta náutica"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/CanvasPublicLines.tsx
@@ -48737,6 +48749,12 @@ msgstr "Proponer un cambio a lo que significa cerrar"
 msgctxt "game variable map.photo_max_mb, label"
 msgid "Largest photograph a member may upload"
 msgstr "La fotografía más grande que un miembro puede subir"
+
+# needs-native-review: Governance's Treasury view, the lede, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: lede"
+msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
+msgstr "El efectivo de la aldea, a la vista: lo que planea pagar esta luna y lo que queda."
 
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
@@ -64268,6 +64286,12 @@ msgstr "Esperando a {role}"
 #~ msgid "This role lists no outcomes yet."
 #~ msgstr ""
 
+# needs-native-review: Governance's Treasury view, a tab, 27 Nov 2026
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Treasury"
+msgstr "Tesorería"
+
 # needs-native-review: Mail settings, 2026-11-25
 #: client/src/components/admin/comms/DeliveryDangerZone.tsx
 msgctxt "Mail settings, danger zone heading"
@@ -64396,6 +64420,12 @@ msgstr "Propuesta a través de la página pública de la aldea. Si se adopta, oc
 msgctxt "approval inbox"
 msgid "Nothing is waiting."
 msgstr "No hay nada en espera."
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, choice light, hint"
+msgid "The day page, and Weathered map where the village chose it."
+msgstr "La página de día, y Mapa envejecido donde la aldea lo eligió."
 
 # needs-native-review: the role card, 26 Nov 2026
 #: client/src/components/power/roleSheetMirror.ts
@@ -67512,6 +67542,7 @@ msgstr "{cash}% en efectivo"
 
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: h1"
 msgid "Governance"
 msgstr "Gobernanza"
@@ -67681,7 +67712,7 @@ msgid "There is no signal, and this phone has not opened the map before. Open it
 msgstr "No hay señal, y este teléfono no ha abierto el mapa antes. Ábralo una vez con señal y después funciona sin conexión."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "What the village can pay in cash"
 msgstr "Lo que la aldea puede pagar en efectivo"
@@ -70070,6 +70101,12 @@ msgctxt "TransferCeremony, p"
 msgid "Whoever carries this can {0}."
 msgstr "Quien lleve esto puede {0}."
 
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, hint"
+msgid "Weathered paper, pages torn each their own way, and Garamond headings."
+msgstr "Papel envejecido, páginas rasgadas cada una a su manera y títulos en Garamond."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -70859,6 +70896,12 @@ msgstr "Atrás"
 msgctxt "Mail settings, danger zone confirm"
 msgid "Confirm disconnecting delivery reports"
 msgstr "Confirmar la desconexión de los informes de entrega"
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.light_paper, choice sea-chart, label"
+msgid "Weathered map"
+msgstr "Mapa envejecido"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Characters.tsx
@@ -75295,6 +75338,13 @@ msgctxt "Visit, div"
 msgid "Opening the ways to visit…"
 msgstr "Abriendo las formas de visitar…"
 
+# needs-native-review: the role card's link to its open drafts, 26 Nov 2026
+#. placeholder {0}: drafts.length
+#: client/src/components/roleEdit/EditRoleButton.tsx
+msgctxt "role card: open drafts of this role"
+msgid "{0, plural, one {A change to this role is waiting:} other {# changes to this role are waiting:}}"
+msgstr "{0, plural, one {Hay un cambio a este rol en espera:} other {Hay # cambios a este rol en espera:}}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
@@ -76558,9 +76608,9 @@ msgstr "Caminos"
 
 # needs-native-review: the light mode paper dial, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.light_paper, description"
-msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
-msgstr "Cómo dibuja el modo claro las páginas de los miembros. Sencillo es la página limpia de Hora Dorada. Carta náutica la convierte en una vieja carta de navegación: papel envejecido y arrugado con el borde quemado, tarjetas de roles en hojas rasgadas y chamuscadas, y títulos en Garamond. El modo oscuro y Admin quedan como están."
+#~ msgctxt "game variable look.light_paper, description"
+#~ msgid "How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are."
+#~ msgstr "Cómo dibuja el modo claro las páginas de los miembros. Sencillo es la página limpia de Hora Dorada. Carta náutica la convierte en una vieja carta de navegación: papel envejecido y arrugado con el borde quemado, tarjetas de roles en hojas rasgadas y chamuscadas, y títulos en Garamond. El modo oscuro y Admin quedan como están."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/limitProblems.ts
@@ -77932,9 +77982,9 @@ msgstr "Nunca por etapa (solo por rol o insignia)"
 
 # needs-native-review: game mechanics dials, 2026-11-26
 #: client/src/pages/gameMechanicsDialWords2.ts
-msgctxt "game variable look.default_mode, description"
-msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
-msgstr "El modo que una persona ve la primera vez que llega, antes de haber elegido uno. Cualquiera puede cambiarlo en la cabecera, y su elección se mantiene a partir de entonces. Carta náutica solo se muestra en el modo claro."
+#~ msgctxt "game variable look.default_mode, description"
+#~ msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode."
+#~ msgstr "El modo que una persona ve la primera vez que llega, antes de haber elegido uno. Cualquiera puede cambiarlo en la cabecera, y su elección se mantiene a partir de entonces. Carta náutica solo se muestra en el modo claro."
 
 # needs-native-review: the proposal wizard, 26 Nov 2026
 #: client/src/components/governance/decisionNounWords.ts
@@ -81785,7 +81835,7 @@ msgid "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit
 msgstr "La barra tiene {MAX_MAP_CHIPS} fichas y la luna, que es lo que cabe a lo ancho de un teléfono."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Cash budget"
 msgstr "Presupuesto de efectivo"
@@ -84371,6 +84421,7 @@ msgstr "En sus manos"
 
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: eyebrow"
 msgid "How the village decides"
 msgstr "Cómo decide la aldea"
@@ -85456,6 +85507,12 @@ msgstr "Aceptar y abrir los intercambios"
 msgctxt "game variable governance.steward_veto_tiers, label"
 msgid "Which sizes of decision a steward can stop"
 msgstr "Qué tamaños de decisión puede detener una persona custodia"
+
+# needs-native-review: the review list, an agent's proposal lapses undecided, 26 Nov 2026
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: item, an agent's proposal lapses undecided"
+msgid "Lapses on {lapses} if nobody decides it"
+msgstr "Caduca el {lapses} si nadie la decide"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -90942,6 +90999,12 @@ msgstr "al {0}. La cadena no respondió en este momento, así que este es el úl
 msgctxt "ModuleStewardPanel, p"
 msgid "Supported by whoever runs this deployment. One bill, one number to call."
 msgstr "Con el apoyo de quien opera esta instalación. Una sola factura, un solo número para llamar."
+
+# needs-native-review: the light-mode paper dial, renamed Weathered map, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable look.default_mode, description"
+msgid "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode."
+msgstr "El modo que una persona ve la primera vez que llega, antes de haber elegido uno. Cualquiera puede cambiarlo en la cabecera, y su elección se mantiene a partir de entonces. Mapa envejecido solo se muestra en el modo claro."
 
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"

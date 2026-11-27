@@ -286,8 +286,9 @@ const Badges = lazyPage(() => import("./pages/Badges"));
 const Powers = lazyPage(() => import("./pages/Powers"));
 // The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
 const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
-// The cash budget every member reads, and the holder of role.pay changes (budgets spec R23).
-const BudgetPage = lazyPage(() => import("./pages/Budget"));
+// The cash budget every member reads, and the holder of role.pay changes (budgets spec R23): the Governance page's
+// Treasury view since 27 Nov 2026 (the lead). /budget redirects there.
+const GovernanceTreasury = lazyPage(() => import("./pages/GovernanceTreasury"));
 const Review = lazyPage(() => import("./pages/Review"));
 const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
@@ -427,7 +428,8 @@ function Router() {
       <Route path="/badges" component={Badges} />
       <Route path="/powers" component={Powers} />
       <Route path="/pricing" component={PricingDeskPage} />
-      <Route path="/budget" component={BudgetPage} />
+      {/* The cash budget's old address, in links and notices already sent, lands on its Governance section. */}
+      <Route path="/budget">{() => <Redirect to="/governance/treasury#cash-budget" replace />}</Route>
       <Route path="/review/structure/:batchId" component={StructureReview} />
       <Route path="/approvals" component={Approvals} />
       {/* Governance (the lead, 26 Nov 2026: "Don't call it review, call it governance"). The deciders' queue is Your work
@@ -524,6 +526,7 @@ function Router() {
       {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we decide at /governance/how. */}
       <Route path="/governance" component={GovernanceNow} />
       <Route path="/governance/how" component={Governance} />
+      <Route path="/governance/treasury" component={GovernanceTreasury} />
       {/* The live surfaces sit BESIDE the explainer, never inside it: /governance
           says how the village decides, /decisions shows what it is deciding.
           The list route is declared before the detail route for the same reason
