@@ -209,6 +209,10 @@ export const DIAL_WORDS_2: Readonly<Record<string, DialWords>> = {
     label: msg({ message: "Ask visitors for their name and email before the portal", context: "game variable entrance.required, label" }),
     description: msg({ message: "On, a visitor who is not signed in meets one calm screen before the roles, the game, the quests, the circles and the map: their name and email, a WhatsApp number and a website or social link if they want, a box to tick for updates, and a check that they are a person. Their device is remembered for 90 days. The public pages stay open to everyone, and signed-in members never see the screen. Admin, Portal visitors lists everyone who entered, with a CSV. Off, everything that was public stays public.", context: "game variable entrance.required, description" }),
   },
+  "investors.gate": {
+    label: msg({ message: "Keep the investor page for the investors you accept", context: "game variable investors.gate, label" }),
+    description: msg({ message: "On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone.", context: "game variable investors.gate, description" }),
+  },
   "entrance.turnstile_site_key": {
     label: msg({ message: "Portal entrance: Turnstile site key", context: "game variable entrance.turnstile_site_key, label" }),
     description: msg({ message: "The public half of a Cloudflare Turnstile widget, which checks that a visitor at the portal entrance is a person. It works only together with its secret, typed under Admin, Integrations. Blank, or without the secret, the entrance uses its simpler check: a hidden field, a minimum time on the form and a limit per connection.", context: "game variable entrance.turnstile_site_key, description" }),

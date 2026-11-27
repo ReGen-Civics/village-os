@@ -48,6 +48,7 @@ const WHAT_THEY_SENT: Record<string, string> = {
   "investor-call": "your request for a call",
   "investor-pack": "your request for the investor pack",
   "investor-doc-request": "your request for the investor documents",
+  "investor-interest": "your investor interest form",
   prosperity: "what you sent us",
   contact: "what you sent us",
 };

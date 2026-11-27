@@ -13,13 +13,14 @@ interface FaqItem {
   answer: string;
 }
 
-export default function FaqSection({ pathway, heading = "Common Questions" }: { pathway: string; heading?: string }) {
+/** `headers`: the reader's token, for a pathway the server keeps for some readers (the investor page). */
+export default function FaqSection({ pathway, heading = "Common Questions", headers }: { pathway: string; heading?: string; headers?: Record<string, string> }) {
   const [items, setItems] = useState<FaqItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    fetch(`/api/faqs/${pathway}`)
+    fetch(`/api/faqs/${pathway}`, headers ? { headers } : undefined)
       .then((r) => (r.ok ? r.json() : []))
       .then((data) => { if (alive) { setItems(Array.isArray(data) ? data : []); setLoaded(true); } })
       .catch(() => { if (alive) setLoaded(true); });

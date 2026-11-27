@@ -109,6 +109,7 @@ import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerShareCardRoutes } from "./routes/shareCard";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger, VISITOR_NEUTRAL_NAME } from "./routes/peopleLock";
+import { register as registerInvestorAccess, INVESTOR_ONLY, INVESTOR_SECTION } from "./routes/investorAccess";
 import { register as registerEntrance, BREVO_CARD, ENTRANCE_PASS_CARD, pageBehindEntrance, portalGoogleVisitor, portalVisitorKnown, TURNSTILE_CARD } from "./routes/entrance";
 import { register as registerBrandRoutes } from "./routes/brand";
 import { register as registerBrandThemeRoutes, shellWithTheme } from "./routes/brandTheme";
@@ -7820,6 +7821,8 @@ async function startServer() {
     const signingAccepted = status === "accepted" && !wasAccepted && submissions[idx].type === "membership-508";
     const admitted: boolean | null = signingAccepted ? !!submissions[idx].userId : null;
     if (admitted) await members.update(String(submissions[idx].userId), (m: any) => { m.membershipGranted = true; });
+    // An investor interest answer: accepting it lets its person read the investor page, declining takes that back (server/routes/investorAccess.ts).
+    const investor = before === status ? null : await investorAccess.decided(submissions[idx], status, (await authedUser(req))?.id ?? adminActor(req)?.id ?? null);
     await submissionsRepo.replaceAll(submissions);
     if (status === "accepted" && !wasAccepted) raiseCanvasRevisitForSubmission(String(submissions[idx].type ?? ""), admitted === true);
     if (before !== status) commsSink.fire({ type: "submission_status", submissionId: String(submissions[idx].id), formType: String(submissions[idx].type ?? ""), status });
@@ -7866,7 +7869,7 @@ async function startServer() {
     // sentence, the status moved and the recognition did not, and the desk has
     // to be told which: "accepted" with a silent unpaid mint is the shape this
     // guard exists to stop.
-    res.json({ success: true, rewarded, rewardRefused, notified, admitted });
+    res.json({ success: true, rewarded, rewardRefused, notified, admitted, investor });
   });
 
   // Admin: Export Submissions as CSV
@@ -7974,6 +7977,8 @@ async function startServer() {
 
   app.get("/api/content/:section", async (req, res) => {
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(404).json({ error: CANVAS_SECTION_DOOR });
+    // The investor page's words, only for a reader the team let in (the lead, 27 Nov 2026; server/routes/investorAccess.ts).
+    if (req.params.section === INVESTOR_SECTION) { noSharedCache(res); if (!(await investorAccess.allowed(req))) return res.status(403).json(INVESTOR_ONLY); }
     const content = contentRepo.get();
     const section = content[req.params.section];
     if (section === undefined) {
@@ -8011,6 +8016,7 @@ async function startServer() {
     const section = String(req.params.section ?? "");
     const locale = readerLocale(req);
     noSharedCache(res);
+    if (section === INVESTOR_SECTION && !(await investorAccess.allowed(req))) return res.status(403).json(INVESTOR_ONLY); // the investor gate, as above
     if (!locale) return res.json({ translation: null });
     const content = contentRepo.get() ?? {};
     res.json({ translation: await pageTranslation(getPool(), section, content[section], locale) });
@@ -17721,8 +17727,13 @@ Send an empty drafts array when you are still listening. A role payload is {name
     res.sendFile(filePath);
   });
 
+  // Who may read the investor page: an interest form for everybody else, accepted on the submissions desk (server/routes/investorAccess.ts).
+  const investorAccess = registerInvestorAccess(app, { getPool, gateOn: () => boolVar("investors.gate"), secret: AUTH_TOKEN_SECRET, authedUser, isAdmin, clientIp, overLimit, submissions: submissionsRepo, alert: (entry) => { commsSink.fire(formSubmittedTrigger(entry.type, entry.id, entry.data)); const to = recipientsForType(entry.type); if (to.length) void sendResendEmail({ to, origin: "forms.team_alert", subject: `[${notifyDeps.projectName()}] New ${entry.type} submission from ${greetingName(entry.data)}`, html: buildSubmissionEmailHtml(entry.type, entry.data, `${notifyDeps.origin()}/admin`) }).catch(() => null); } });
+
   // Public: gated investor doc request
   app.post("/api/investor-docs/request", async (req, res) => {
+    // Only for a reader the team let in (the lead, 27 Nov 2026): the packet sits behind the investor gate.
+    if (!(await investorAccess.allowed(req))) return res.status(403).json(INVESTOR_ONLY);
     // Unthrottled, this was a free lead-spam channel AND an email cannon. Cap is admin-tunable and per-IP, so keep
     // it generous enough for a shared NAT. The limit counts requests, so ONE address per request: lib/publicAddress.ts.
     if (await overLimit(`investor-docs:${clientIp(req)}`, Math.max(1, numberVar("abuse.investor_docs_per_ip_hourly")), 60 * 60 * 1000)) {
@@ -17905,7 +17916,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   // â”€â”€ FAQs (NEW-1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  registerFaqRoutes(app, { isAdmin, guardCapability, faqsRepo });
+  registerFaqRoutes(app, { isAdmin, guardCapability, faqsRepo, mayRead: async (pathway, req) => pathway !== "investor" || investorAccess.allowed(req) }); // the investor gate: server/routes/investorAccess.ts
   registerBrochurePagesRoutes(app, { isAdmin, guardCapability });
   registerVillagePathsRoutes(app, { isAdmin, guardCapability, config: mergedConfig, valueTokenName: () => { const slug = String(stringVar("gratitude.pool_token")); return tokenDef(slug)?.name ?? slug; } });
 
@@ -18265,7 +18276,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   // â”€â”€ Investor Summary (NEW-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  app.get("/api/investor-summary", async (_req, res) => {
+  app.get("/api/investor-summary", async (req, res) => {
+    // Only for a reader the team let in (the lead, 27 Nov 2026); everybody else gets the interest form.
+    if (!(await investorAccess.allowed(req))) return res.status(403).json(INVESTOR_ONLY);
     // packReady: whether any document is in the pack, so the page can disable "request the pack" while there is none.
     res.json({ ...investorSummaryRepo.get(), packReady: investorDocsRepo.all().some((d) => d.inPacket === true) });
   });
