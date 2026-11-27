@@ -115,9 +115,9 @@ msgid "Show money in"
 msgstr "Show money in"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, label"
-msgid "Message (optional)"
-msgstr "Message (optional)"
+#~ msgctxt "InvestorJourney, label"
+#~ msgid "Message (optional)"
+#~ msgstr "Message (optional)"
 
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
@@ -212,6 +212,11 @@ msgstr "This season"
 msgctxt "GameMechanics, aria-label"
 msgid "Proposal title"
 msgstr "Proposal title"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "Under $25,000"
+msgstr "Under $25,000"
 
 #: client/src/components/setupGame/SpringPackets.tsx
 msgctxt "SpringPackets, span"
@@ -761,6 +766,11 @@ msgctxt "game variable stay.work_exchange_tag, description"
 msgid "Quests carrying this tag appear on the Stay page as ways to EARN credits. The reward itself lives on each quest (stay-credit reward field)."
 msgstr "Quests carrying this tag appear on the Stay page as ways to EARN credits. The reward itself lives on each quest (stay-credit reward field)."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: a failed send"
+msgid "That did not send. Please try again."
+msgstr "That did not send. Please try again."
+
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
 msgid "Ask the village to seat a member in one of its roles, until a date you pick or the end of the season."
@@ -775,6 +785,11 @@ msgstr "Tell us you're coming"
 msgctxt "guide panel title"
 msgid "Ask about {name}"
 msgstr "Ask about {name}"
+
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable investors.gate, description"
+msgid "On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone."
+msgstr "On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application choose, later roles note"
@@ -923,6 +938,11 @@ msgstr "Retry"
 msgctxt "connector setup panel, the switch"
 msgid "That did not save. Try again in a moment."
 msgstr "That did not save. Try again in a moment."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: name"
+msgid "Name"
+msgstr "Name"
 
 #. placeholder {0}: converted.words
 #: client/src/components/power/ResourcesPanel.tsx
@@ -1103,9 +1123,9 @@ msgid "How long a consent window stays open"
 msgstr "How long a consent window stays open"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, label"
-msgid "Investment Range"
-msgstr "Investment Range"
+#~ msgctxt "InvestorJourney, label"
+#~ msgid "Investment Range"
+#~ msgstr "Investment Range"
 
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, button"
@@ -3629,6 +3649,16 @@ msgctxt "game variable hiddenmap.unlock_pins, label"
 msgid "Vouched pins that open the whole map"
 msgstr "Vouched pins that open the whole map"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest"
+msgid "Land"
+msgstr "Land"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: privacy, what the team does"
+msgid "The team reads it and may write to you about investing."
+msgstr "The team reads it and may write to you about investing."
+
 #: client/src/components/governance/decisionNounWords.ts
 msgctxt "proposal wizard"
 msgid "Minting rule change"
@@ -3782,6 +3812,11 @@ msgstr "The wall didn't load. The thanks are still there; try again in a moment.
 msgctxt "ResourcesAdminPanel, p"
 msgid "The resources module is off. Turn it on under Module Library and this tab becomes the place to declare who may spend what, with whose approval, paid from where, and where the money comes from."
 msgstr "The resources module is off. Turn it on under Module Library and this tab becomes the place to declare who may spend what, with whose approval, paid from where, and where the money comes from."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: whatsapp"
+msgid "WhatsApp number"
+msgstr "WhatsApp number"
 
 #. placeholder {0}: code ? picked : "no currency of your own"
 #: client/src/components/admin/VillageCurrencyField.tsx
@@ -5180,6 +5215,11 @@ msgctxt "treasury sync"
 msgid "Paid {paidOn}"
 msgstr "Paid {paidOn}"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest"
+msgid "Homes"
+msgstr "Homes"
+
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, goal done by"
 msgid "Done by {day} when {w}"
@@ -5763,9 +5803,9 @@ msgid "Everybody the village writes to, what each person agreed to receive, and 
 msgstr "Everybody the village writes to, what each person agreed to receive, and every email they were sent."
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, DialogDescription"
-msgid "Schedule a one-on-one investment call with our team."
-msgstr "Schedule a one-on-one investment call with our team."
+#~ msgctxt "InvestorJourney, DialogDescription"
+#~ msgid "Schedule a one-on-one investment call with our team."
+#~ msgstr "Schedule a one-on-one investment call with our team."
 
 #: client/src/components/openProposal/ContractPrice.tsx
 msgctxt "open proposal: where the contract's pay comes from"
@@ -6629,9 +6669,9 @@ msgid "Carbon"
 msgstr "Carbon"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, button"
-msgid "<0/>Request Call"
-msgstr "<0/>Request Call"
+#~ msgctxt "InvestorJourney, button"
+#~ msgid "<0/>Request Call"
+#~ msgstr "<0/>Request Call"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -7587,6 +7627,11 @@ msgctxt "Mint, p"
 msgid "Sign in with your admin account to open the Mint."
 msgstr "Sign in with your admin account to open the Mint."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: an empty choice"
+msgid "Choose one"
+msgstr "Choose one"
+
 #: client/src/components/admin/SaberraBridgeBoard.tsx
 msgctxt "SaberraBridgeBoard, p"
 msgid "Reading Organisational Memory…"
@@ -8409,6 +8454,11 @@ msgstr "Getting started"
 msgctxt "proposed changes"
 msgid "Remove line {0}"
 msgstr "Remove line {0}"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: sent, heading"
+msgid "Thank you."
+msgstr "Thank you."
 
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
@@ -10475,9 +10525,9 @@ msgid "None"
 msgstr "None"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, DialogTitle"
-msgid "Request Investor Pack"
-msgstr "Request Investor Pack"
+#~ msgctxt "InvestorJourney, DialogTitle"
+#~ msgid "Request Investor Pack"
+#~ msgstr "Request Investor Pack"
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
@@ -10843,6 +10893,11 @@ msgstr "Tag one thing as meeting one need"
 msgctxt "game variable org.reassignment_cadence, choice pattern_change, label"
 msgid "When the season's shape changes"
 msgstr "When the season's shape changes"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: a missing name"
+msgid "Tell us your name."
+msgstr "Tell us your name."
 
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -11434,6 +11489,11 @@ msgstr "Letters"
 msgid "Your suggestion is open. It is listed under Adopt, with your name and today's date, until it is decided."
 msgstr "Your suggestion is open. It is listed under Adopt, with your name and today's date, until it is decided."
 
+#: client/src/components/admin/submissionStatus.ts
+msgctxt "submission desk: an accepted investor interest form declined"
+msgid "Declined. They can no longer read the investor page."
+msgstr "Declined. They can no longer read the investor page."
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.voice_clips_max, label"
 msgid "Voice clips an applicant may record beside their answers"
@@ -11819,6 +11879,11 @@ msgctxt "hidden map, one place's details"
 msgid "Sprout"
 msgstr "Sprout"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation"
+msgid "Not sure yet"
+msgstr "Not sure yet"
+
 #. placeholder {0}: d.startsOn
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -11968,6 +12033,11 @@ msgstr "Rests after"
 msgctxt "game variable nav.swap_margin_pct, label"
 msgid "How clearly a page must lead before it takes a place on the bottom bar"
 msgstr "How clearly a page must lead before it takes a place on the bottom bar"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: privacy, what is kept, with the village's name"
+msgid "We keep what you send here for the investor contacts of {village}."
+msgstr "We keep what you send here for the investor contacts of {village}."
 
 #: client/src/components/playerCard/playerCardHealthMessages.ts
 msgctxt "player card health, a second holder"
@@ -14116,6 +14186,11 @@ msgctxt "the agenda library: an item's aim"
 msgid "Not sure yet"
 msgstr "Not sure yet"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: heading"
+msgid "Investor interest"
+msgstr "Investor interest"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Nobody has backed this yet."
 msgstr "Nobody has backed this yet."
@@ -14758,6 +14833,11 @@ msgstr "One more step"
 msgctxt "AttendanceList, button"
 msgid "Save who came"
 msgstr "Save who came"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation"
+msgid "Not sure"
+msgstr "Not sure"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, th"
@@ -16543,6 +16623,11 @@ msgctxt "GeneKeys, p"
 msgid "Step 1 of 2 · One more check"
 msgstr "Step 1 of 2 · One more check"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: the welcome line, with the village's name"
+msgid "Tell us about yourself and how you invest. The team reads every form and opens the investor page of {village} to the people it accepts."
+msgstr "Tell us about yourself and how you invest. The team reads every form and opens the investor page of {village} to the people it accepts."
+
 #: client/src/components/calendar/CalendarFeedCard.tsx
 msgctxt "CalendarFeedCard, p"
 msgid "Google Calendar, Apple Calendar and Outlook all take a calendar by address. Add one of these and the village calendar stays a mirror in the app you already open, updated as things change."
@@ -17394,6 +17479,11 @@ msgstr "How this serves the village's purpose, in one line"
 msgctxt "JourneyToLaunch, p"
 msgid "Sign in to see how far this village is from opening its doors. Members can run the test over its settings; the checklist itself belongs to the team running the village."
 msgstr "Sign in to see how far this village is from opening its doors. Members can run the test over its settings; the checklist itself belongs to the team running the village."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: invest through an entity"
+msgid "Not sure yet"
+msgstr "Not sure yet"
 
 #. placeholder {0}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
@@ -18829,6 +18919,11 @@ msgstr "the character classes"
 msgctxt "open proposal: where the contract's pay comes from"
 msgid "From our counter-offer on the price, at {pct}% commitment."
 msgstr "From our counter-offer on the price, at {pct}% commitment."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type"
+msgid "A family office"
+msgstr "A family office"
 
 #: client/src/components/governance/now/NowView.tsx
 msgctxt "governance now: your voice"
@@ -21397,6 +21492,11 @@ msgctxt "AdminGate, aria-label"
 msgid "Email"
 msgstr "Email"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "$100,000 to $250,000"
+msgstr "$100,000 to $250,000"
+
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, p"
 msgid "This is what your village says it is for, in the words you would read out at its birthing. Every sentence here is read back from what was saved."
@@ -21762,6 +21862,11 @@ msgstr "Nothing is waiting. Every active intent has seen a proposal."
 msgid "Role whose agent has full access"
 msgstr "Role whose agent has full access"
 
+#: client/src/components/admin/submissionStatus.ts
+msgctxt "submission desk: an investor interest form accepted from an unproven address"
+msgid "Accepted. This form came from an address the entrance never proved, so nobody was let in. Ask them to confirm their email with the code and send the form again."
+msgstr "Accepted. This form came from an address the entrance never proved, so nobody was let in. Ask them to confirm their email with the code and send the form again."
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft step"
 msgid "Your Ikigai and your characters"
@@ -21943,6 +22048,11 @@ msgstr "Everybody here arrives by invitation. A link lets one person make an acc
 msgctxt "game variable category"
 msgid "Language"
 msgstr "Language"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: a form already sent, with its date"
+msgid "We have your form from {sentBefore}. Send it again to add or change anything."
+msgstr "We have your form from {sentBefore}. Send it again to add or change anything."
 
 #: client/src/components/admin/AdminGate.tsx
 msgctxt "AdminGate, aria-label"
@@ -22147,6 +22257,11 @@ msgstr "{0} who is not seated in {toWhom} stops passing this gate by being {1}. 
 msgctxt "module badges, benefit 4"
 msgid "Warning badges suspend specific capabilities until resolved"
 msgstr "Warning badges suspend specific capabilities until resolved"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: preferred structure"
+msgid "Debt or a loan"
+msgstr "Debt or a loan"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -22848,6 +22963,11 @@ msgstr "Publish your first real post, event or item. That room's examples clear 
 #~ msgid "The Exchange<0/>"
 #~ msgstr "The Exchange<0/>"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: email"
+msgid "Email"
+msgstr "Email"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.voice_clip_seconds, description"
 msgid "How long one voice clip beside a written answer on the public role application may run. The recording stops by itself at this length."
@@ -23155,9 +23275,9 @@ msgid "Step one"
 msgstr "Step one"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, label"
-msgid "Name"
-msgstr "Name"
+#~ msgctxt "InvestorJourney, label"
+#~ msgid "Name"
+#~ msgstr "Name"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind thread_activity"
@@ -25334,6 +25454,11 @@ msgstr "Loading..."
 msgid "The village can ask, raise concerns and objections, and suggest edits. The people whose roles look after these settings are asked to look."
 msgstr "The village can ask, raise concerns and objections, and suggest edits. The people whose roles look after these settings are asked to look."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "$25,000 to $100,000"
+msgstr "$25,000 to $100,000"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "No token pay this month."
@@ -25508,6 +25633,11 @@ msgstr "Proposed through the connector"
 msgctxt "draft page"
 msgid "Yes, publish it"
 msgstr "Yes, publish it"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: real estate experience"
+msgid "It is my profession"
+msgstr "It is my profession"
 
 #: client/src/components/mobile/MoreSheet.tsx
 msgctxt "the phone's More sheet: close button"
@@ -26127,6 +26257,11 @@ msgctxt "role editor"
 msgid "Sera has sent no figures for this role to go on."
 msgstr "Sera has sent no figures for this role to go on."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: preferred structure"
+msgid "Equity"
+msgstr "Equity"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exchange.price_change_max_pct, description"
 msgid "How far one posted price may move from the previous one, in percent. Big moves happen in bounded steps, each with its own note, so the price history stays a story, not a cliff. 0 removes the bound."
@@ -26480,6 +26615,11 @@ msgstr "Open a village vote on these words?"
 msgctxt "character card, role ideas the village does not have yet"
 msgid "Roles this character could open. Propose one and the village decides:"
 msgstr "Roles this character could open. Propose one and the village decides:"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: real estate experience"
+msgid "This would be my first"
+msgstr "This would be my first"
 
 #: client/src/pages/FirstWalk.tsx
 msgctxt "FirstWalk, p"
@@ -26957,6 +27097,11 @@ msgstr "A window that says when and where you are findable. The village calendar
 msgctxt "module canvas, benefit 1"
 msgid "A reading for each of the twelve blocks: a level and one sentence, with who recorded it and when"
 msgstr "A reading for each of the twelve blocks: a level and one sentence, with who recorded it and when"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type, question"
+msgid "What kind of investor are you?"
+msgstr "What kind of investor are you?"
 
 #: client/src/components/WalletCard.tsx
 msgctxt "WalletCard, label"
@@ -28912,6 +29057,11 @@ msgctxt "SittingFlow, button"
 msgid "Choose another practice"
 msgstr "Choose another practice"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "$1 million to $5 million"
+msgstr "$1 million to $5 million"
+
 #: client/src/pages/OrgDraft.tsx
 msgctxt "draft page: state"
 msgid "Cannot be published yet"
@@ -28961,6 +29111,11 @@ msgctxt "proposed changes"
 msgid "The change as JSON"
 msgstr "The change as JSON"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: thesis, question"
+msgid "Your investment thesis"
+msgstr "Your investment thesis"
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable comms.click_tracking, description"
 msgid "Off by default. When on, links in automated emails pass through the email provider first so a journey can see what people did next. Links in the emails a person asked for are never rewritten."
@@ -28970,6 +29125,11 @@ msgstr "Off by default. When on, links in automated emails pass through the emai
 msgctxt "SpringPackets, div"
 msgid "This planting is done. The words above say what it grants and how to undo it."
 msgstr "This planting is done. The words above say what it grants and how to undo it."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: sent, what happens next"
+msgid "The team will read your form and write to you."
+msgstr "The team will read your form and write to you."
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: ROLE_AUDIT_WORDS: expand"
@@ -29320,6 +29480,11 @@ msgstr "June solstice"
 msgctxt "role draft stat"
 msgid "{openPlaces} of {seats} open"
 msgstr "{openPlaces} of {seats} open"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation, question"
+msgid "Accreditation status"
+msgstr "Accreditation status"
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, end of moon"
@@ -31180,6 +31345,11 @@ msgctxt "live sessions: copyMinutes"
 msgid "Copy"
 msgstr "Copy"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: real estate experience"
+msgid "A few investments"
+msgstr "A few investments"
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: bell.marked"
 msgid "Beautiful work. The circle sees it at the next action check."
@@ -31677,9 +31847,9 @@ msgid "Yes, withdraw it"
 msgstr "Yes, withdraw it"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, DialogDescription"
-msgid "Request the full investor pack with financials and development timeline."
-msgstr "Request the full investor pack with financials and development timeline."
+#~ msgctxt "InvestorJourney, DialogDescription"
+#~ msgid "Request the full investor pack with financials and development timeline."
+#~ msgstr "Request the full investor pack with financials and development timeline."
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind role_proposal_window_open"
@@ -32933,6 +33103,11 @@ msgctxt "live session room: signedOut"
 msgid "Your sign-in ended. Sign in again to carry on in the room."
 msgstr "Your sign-in ended. Sign in again to carry on in the room."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation"
+msgid "$500,000 to $2 million"
+msgstr "$500,000 to $2 million"
+
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgctxt "an outside contact's organisation"
 msgid "Organisation (optional)"
@@ -33842,6 +34017,11 @@ msgstr "Add a sound"
 msgctxt "CarryAcross, p"
 msgid "Pick each person's role on the new chart and confirm it. They get the new role until the season ends, and their old role ends with its history kept."
 msgstr "Pick each person's role on the new chart and confirm it. They get the new role until the season ends, and their old role ends with its history kept."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest"
+msgid "Ventures on the land"
+msgstr "Ventures on the land"
 
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, moon line"
@@ -35858,6 +36038,11 @@ msgctxt "admin compare row"
 msgid "Role or quest"
 msgstr "Role or quest"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: anything else, question"
+msgid "Anything else we should know?"
+msgstr "Anything else we should know?"
+
 #: client/src/components/admin/NeedsYouNow.tsx
 msgctxt "Admin Today, needs you now"
 msgid "{total} things are waiting on you."
@@ -35944,6 +36129,11 @@ msgstr "Add a category"
 #~ msgid "Save your words"
 #~ msgstr "Save your words"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: real estate experience"
+msgid "Many investments"
+msgstr "Many investments"
+
 #: client/src/components/ProfileJourney.tsx
 msgctxt "ProfileJourney, p"
 msgid "Nothing yet. Consented quests and received {tokenNameLower} will appear here."
@@ -36026,6 +36216,11 @@ msgstr "Core team role"
 msgctxt "Admin, button"
 msgid "Mark picked up"
 msgstr "Mark picked up"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation, question"
+msgid "How much you might place here in all"
+msgstr "How much you might place here in all"
 
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, scanning a code"
@@ -36533,9 +36728,9 @@ msgid "Add"
 msgstr "Add"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, h4"
-msgid "What you'll accomplish:"
-msgstr "What you'll accomplish:"
+#~ msgctxt "InvestorJourney, h4"
+#~ msgid "What you'll accomplish:"
+#~ msgstr "What you'll accomplish:"
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: review.none"
@@ -37858,6 +38053,11 @@ msgctxt "open work board: status mark, a quest done this moon"
 msgid "Done this moon"
 msgstr "Done this moon"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: entity, question"
+msgid "Would you invest personally or through an entity?"
+msgstr "Would you invest personally or through an entity?"
+
 #: client/src/components/places/PhotoReportsPanel.tsx
 msgctxt "PhotoReportsPanel, Link"
 msgid "Open this place"
@@ -38331,6 +38531,11 @@ msgstr "The ids never change; the words are yours. Blank keeps the platform word
 msgctxt "live session room: sitEndedSay"
 msgid "The sit has ended."
 msgstr "The sit has ended."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: the check size and allocation ranges, their currency"
+msgid "In US dollars."
+msgstr "In US dollars."
 
 #: client/src/components/governance/seatPresetWords.ts
 msgctxt "role term preset platform:async-first, blurb"
@@ -41867,6 +42072,11 @@ msgctxt "sera answers"
 msgid "Added to the draft. It goes live when the draft is published."
 msgstr "Added to the draft. It goes live when the draft is published."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon"
+msgid "Not sure yet"
+msgstr "Not sure yet"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind approval_lapsing"
 msgid "{n} proposals lapse tomorrow if nobody decides them."
@@ -42302,6 +42512,11 @@ msgstr "Invitation link, to copy"
 msgid "Could not sign that grant"
 msgstr "Could not sign that grant"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: thesis, hint"
+msgid "What you look for in a project, in your own words."
+msgstr "What you look for in a project, in your own words."
+
 #. placeholder {0}: d.earliestStart
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -42399,6 +42614,11 @@ msgstr "<0/> Your proposal is ready"
 msgctxt "ConsentCard, button"
 msgid "Not yet"
 msgstr "Not yet"
+
+#: client/src/pages/gameMechanicsDialWords2.ts
+msgctxt "game variable investors.gate, label"
+msgid "Keep the investor page for the investors you accept"
+msgstr "Keep the investor page for the investors you accept"
 
 #. placeholder {0}: item.commitmentPct
 #: client/src/components/admin/CompareTab.tsx
@@ -42595,6 +42815,11 @@ msgstr "Cycle settlement report"
 msgctxt "Admin, title"
 msgid "Wear fee (blank = computed default)"
 msgstr "Wear fee (blank = computed default)"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation"
+msgid "$100,000 to $500,000"
+msgstr "$100,000 to $500,000"
 
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk no figure"
@@ -43155,6 +43380,11 @@ msgctxt "NotifyPrefsPanel, p"
 msgid "What you still hold here"
 msgstr "What you still hold here"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: the not-an-offer line"
+msgid "This form is an expression of interest. It is not an offer to sell, or a request to buy, any investment or security."
+msgstr "This form is an expression of interest. It is not an offer to sell, or a request to buy, any investment or security."
+
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, h1"
 msgid "Village Health"
@@ -43420,6 +43650,11 @@ msgstr "Closed. Tick to open reads."
 msgctxt "role proposal: opsFillsOpen"
 msgid "Anything left open, you fill in together with {ops}."
 msgstr "Anything left open, you fill in together with {ops}."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon"
+msgid "Under 3 years"
+msgstr "Under 3 years"
 
 #: client/src/components/IdentityPackPanel.tsx
 msgctxt "IdentityPackPanel, p"
@@ -44101,6 +44336,11 @@ msgctxt "Mail settings, paused note"
 msgid "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
 msgstr "Gathering emails, path emails and letters are held in the queue. Password links, confirmations people asked for and member notices still go. A held email that runs past its time is dropped."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: country, question"
+msgid "Country where you live"
+msgstr "Country where you live"
+
 #: client/src/components/admin/ModuleStewardPanel.tsx
 msgctxt "ModuleStewardPanel, button"
 msgid "Clear the examples now"
@@ -44512,6 +44752,11 @@ msgctxt "open work filter row"
 msgid "Where it happens"
 msgstr "Where it happens"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: invest through an entity"
+msgid "Through a company, trust or fund"
+msgstr "Through a company, trust or fund"
+
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: sessionTitleLabel"
 msgid "Session title"
@@ -44526,6 +44771,11 @@ msgstr "Delete the last digit"
 msgctxt "admin search, kind of result"
 msgid "Button or field"
 msgstr "Button or field"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: a hidden field only bots fill"
+msgid "Leave this empty"
+msgstr "Leave this empty"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: buttons.record"
@@ -44626,6 +44876,11 @@ msgstr "A tool library and a shared library, so things get used more than once."
 msgctxt "button that removes a practice"
 msgid "Remove this practice"
 msgstr "Remove this practice"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest, question"
+msgid "What interests you here?"
+msgstr "What interests you here?"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.role_card_first_review, label"
@@ -46249,6 +46504,11 @@ msgctxt "proposal wizard"
 msgid "Terms"
 msgstr "Terms"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: sending"
+msgid "Sending…"
+msgstr "Sending…"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
 #~ msgstr "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
@@ -47322,9 +47582,9 @@ msgid "The picture under the pins. Tiles load on each member's own phone from th
 msgstr "The picture under the pins. Tiles load on each member's own phone from the provider named here, with its credit always on screen, and nothing is stored on the village's server. The provider can see which squares of the world a phone asked for, which is why the zoom below is capped. A grid draws no picture at all and sends nothing anywhere."
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "investor page: under a disabled request-the-pack button"
-msgid "The investor pack is being prepared."
-msgstr "The investor pack is being prepared."
+#~ msgctxt "investor page: under a disabled request-the-pack button"
+#~ msgid "The investor pack is being prepared."
+#~ msgstr "The investor pack is being prepared."
 
 #: client/src/pages/VerifyEmail.tsx
 msgctxt "VerifyEmail, p"
@@ -48150,6 +48410,11 @@ msgstr "Sending"
 #~ msgid "Your companions: {names}. One draft waits for your yes."
 #~ msgstr "Your companions: {names}. One draft waits for your yes."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation, what it means"
+msgid "An accredited investor meets a legal test of income or net worth where they live. Choose what fits you. This is your own answer, and we check nothing here."
+msgstr "An accredited investor meets a legal test of income or net worth where they live. Choose what fits you. This is your own answer, and we check nothing here."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
@@ -48958,6 +49223,11 @@ msgctxt "SpringPackets, dt"
 msgid "Grants"
 msgstr "Grants"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type"
+msgid "A fund or institution"
+msgstr "A fund or institution"
+
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, tagline proposing"
 msgid "Proposing for {count} {n, plural, one {role} other {roles}}"
@@ -49538,6 +49808,11 @@ msgctxt "a held role that is still recruiting"
 msgid "More players welcome"
 msgstr "More players welcome"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type"
+msgid "An individual"
+msgstr "An individual"
+
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module hidden-map, data"
 msgid "Each pin's place, kind, words and photos, tied to the member who logged it and never shown with their name. Photos are stripped of every hidden detail. A record of who read the map, with no places in it."
@@ -49700,6 +49975,11 @@ msgstr "“{0}”, {1}"
 msgctxt "VillageHealth, summary"
 msgid "The numbers behind the rings"
 msgstr "The numbers behind the rings"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: privacy, how to ask, with the contact address"
+msgid "To see or delete what we keep, write to {contactEmail}."
+msgstr "To see or delete what we keep, write to {contactEmail}."
 
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, toast"
@@ -50505,9 +50785,9 @@ msgid "OpenAI only"
 msgstr "OpenAI only"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, DialogTitle"
-msgid "Schedule a Call"
-msgstr "Schedule a Call"
+#~ msgctxt "InvestorJourney, DialogTitle"
+#~ msgid "Schedule a Call"
+#~ msgstr "Schedule a Call"
 
 #: client/src/components/RedemptionQueue.tsx
 msgctxt "RedemptionQueue, p"
@@ -51911,6 +52191,11 @@ msgctxt "calendar spiral: what the drawing is"
 msgid "This moon's {n} days on a golden spiral, the new moon at the centre"
 msgstr "This moon's {n} days on a golden spiral, the new moon at the centre"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation"
+msgid "Not accredited"
+msgstr "Not accredited"
+
 #. placeholder {0}: r.person
 #. placeholder {1}: r.oldSeatName
 #. placeholder {2}: r.suggestion!.seatName
@@ -52148,6 +52433,11 @@ msgctxt "EventsAdminPanel, label"
 msgid "iCal address (https)"
 msgstr "iCal address (https)"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: preferred structure"
+msgid "Open to talk"
+msgstr "Open to talk"
+
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: SPLIT_PAY_WORDS: confirmed"
 msgid "The split is confirmed."
@@ -52337,6 +52627,11 @@ msgctxt "price ask summary"
 msgid "You propose {0}{1}."
 msgstr "You propose {0}{1}."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type"
+msgid "Something else"
+msgstr "Something else"
+
 #: client/src/components/admin/GameRolesTab.tsx
 msgctxt "GameRolesTab, div"
 msgid "Loading..."
@@ -52415,6 +52710,11 @@ msgstr "Close"
 msgctxt "pay page, receive"
 msgid "Your code"
 msgstr "Your code"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "$250,000 to $1 million"
+msgstr "$250,000 to $1 million"
 
 #: client/src/components/governance/decisionNounWords.ts
 msgctxt "proposal wizard"
@@ -53154,6 +53454,11 @@ msgctxt "proposal wizard"
 msgid "Put a finished quest's payout to the village, so releasing it is the village's act."
 msgstr "Put a finished quest's payout to the village, so releasing it is the village's act."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: privacy, how to ask, with no contact address"
+msgid "To see or delete what we keep, ask the team."
+msgstr "To see or delete what we keep, ask the team."
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome, the speaker before it has a name"
 msgid "Your companion"
@@ -53168,6 +53473,11 @@ msgstr "An ordinary vault. The treasury has to be funded before it can spend any
 msgctxt "PlayersTab, what the save bar saves"
 msgid "access and stages"
 msgstr "access and stages"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: send"
+msgid "Send my interest"
+msgstr "Send my interest"
 
 #: client/src/components/path/NextAct.tsx
 msgctxt "your path, the next act"
@@ -54182,6 +54492,11 @@ msgstr "No role is open right now. New roles open each season."
 msgctxt "player card, tensions answered this moon"
 msgid "{n} answered this moon"
 msgstr "{n} answered this moon"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: structure, question"
+msgid "The structure you prefer"
+msgstr "The structure you prefer"
 
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "QuestsTab, div"
@@ -55774,9 +56089,9 @@ msgid "Circle"
 msgstr "Circle"
 
 #: client/src/components/InvestorSummary.tsx
-msgctxt "InvestorSummary, p"
-msgid "Investment Summary"
-msgstr "Investment Summary"
+#~ msgctxt "InvestorSummary, p"
+#~ msgid "Investment Summary"
+#~ msgstr "Investment Summary"
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "badge on a venture taking proposals, not marked open now"
@@ -56133,6 +56448,11 @@ msgstr "Path, welcome and joining emails wait for this hour in the reader's own 
 msgctxt "ToolsHub, p"
 msgid "Everything the village runs on, in one place. Where to talk, where to decide, where the documents live."
 msgstr "Everything the village runs on, in one place. Where to talk, where to decide, where the documents live."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation"
+msgid "Under $100,000"
+msgstr "Under $100,000"
 
 #. placeholder {0}: j.active
 #: client/src/components/admin/comms/CommsJourneys.tsx
@@ -57634,6 +57954,11 @@ msgctxt "portal entrance: what draws you, curiosity"
 msgid "Just curious"
 msgstr "Just curious"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: invest through an entity"
+msgid "Personally"
+msgstr "Personally"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "What it is for"
@@ -58588,6 +58913,11 @@ msgctxt "WorkWithUsTab, div"
 msgid "Loading..."
 msgstr "Loading..."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation"
+msgid "Accredited investor"
+msgstr "Accredited investor"
+
 #: client/src/pages/EmailPages.tsx
 msgctxt "email preferences: a switch's line"
 msgid "Quests, roles, votes and messages. Your notification settings choose which ones."
@@ -58807,6 +59137,11 @@ msgstr "A note when the application changes"
 msgctxt "application backup file"
 msgid "Split"
 msgstr "Split"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon, question"
+msgid "Your time horizon"
+msgstr "Your time horizon"
 
 #: client/src/components/yourList/LibraryImportPanel.tsx
 msgctxt "LibraryImportPanel, h4"
@@ -59458,6 +59793,11 @@ msgstr "Portal entrance: minutes to look around before the code"
 msgctxt "proposal goals list"
 msgid "Add a goal"
 msgstr "Add a goal"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon"
+msgid "Over 10 years"
+msgstr "Over 10 years"
 
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: proposalConsentAsk"
@@ -62919,6 +63259,11 @@ msgctxt "SpringPackets, li"
 msgid "Name it for your village and choose Full access, so this screen can set up your domain for you."
 msgstr "Name it for your village and choose Full access, so this screen can set up your domain for you."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: investor type"
+msgid "A company"
+msgstr "A company"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "open proposal role"
 msgid "A background check happens for this role whatever the references say."
@@ -63202,6 +63547,11 @@ msgstr "Country (two-letter code)"
 msgctxt "Admin, p"
 msgid "Nothing yet. The door is at /feedback (also linked in the footer)."
 msgstr "Nothing yet. The door is at /feedback (also linked in the footer)."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest"
+msgid "Something else"
+msgstr "Something else"
 
 #: client/src/components/profileDash/YourCompanions.tsx
 msgctxt "YourCompanions, p"
@@ -64017,6 +64367,11 @@ msgctxt "sera answers"
 msgid "Keep or untick"
 msgstr "Keep or untick"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: check size, question"
+msgid "Your typical check size"
+msgstr "Your typical check size"
+
 #. placeholder {0}: i.servesGoal
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, the season goal an item serves"
@@ -64456,6 +64811,11 @@ msgstr "Send a new code in {secondsLeft} s"
 msgctxt "Mint, p"
 msgid "Queued for the next moon: {0}{1}"
 msgstr "Queued for the next moon: {0}{1}"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon"
+msgid "3 to 5 years"
+msgstr "3 to 5 years"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -64957,6 +65317,11 @@ msgstr "Runs in progress"
 #~ msgid "With {firstConversation}. Once we invite you, you book it at a time you choose, through the booking link in your invitation, or we'll write to you with times."
 #~ msgstr "With {firstConversation}. Once we invite you, you book it at a time you choose, through the booking link in your invitation, or we'll write to you with times."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: preferred structure"
+msgid "A revenue share"
+msgstr "A revenue share"
+
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, plan door"
 msgid "Plan my season"
@@ -65099,6 +65464,11 @@ msgctxt "game variable notify.daily_email_cap, description"
 msgid "Over this many notification emails in a rolling 24 hours, further ones stay in-app only (the notification itself is never lost; only the email is skipped). A ceiling on noisy days, not a quota: raise it for a large, busy village."
 msgstr "Over this many notification emails in a rolling 24 hours, further ones stay in-app only (the notification itself is never lost; only the email is skipped). A ceiling on noisy days, not a quota: raise it for a large, busy village."
 
+#: client/src/components/admin/submissionStatus.ts
+msgctxt "submission desk: an investor interest form accepted"
+msgid "Accepted. They can read the investor page now."
+msgstr "Accepted. They can read the investor page now."
+
 #: client/src/pages/SetupGame.tsx
 msgctxt "SetupGame, span"
 msgid "ready to rewild"
@@ -65173,6 +65543,11 @@ msgstr "add a language"
 msgctxt "Admin, h3"
 msgid "Land and money"
 msgstr "Land and money"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: marks a question as optional"
+msgid "(optional)"
+msgstr "(optional)"
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: applies"
@@ -66090,9 +66465,9 @@ msgid "Quorum"
 msgstr "Quorum"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "investor path ticked off"
-msgid "{walkedCount} of {stepCount} steps completed"
-msgstr "{walkedCount} of {stepCount} steps completed"
+#~ msgctxt "investor path ticked off"
+#~ msgid "{walkedCount} of {stepCount} steps completed"
+#~ msgstr "{walkedCount} of {stepCount} steps completed"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -67217,6 +67592,11 @@ msgctxt "HostRecapPanel, button"
 msgid "Draft it for me"
 msgstr "Draft it for me"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: total allocation"
+msgid "Over $2 million"
+msgstr "Over $2 million"
+
 #. placeholder {0}: labels[p.layer]
 #: client/src/components/hiddenMap/WorldMap.tsx
 msgid "A pin somewhere near here ({0})"
@@ -67641,6 +68021,11 @@ msgstr "Latest: \"{note}\" (noted by the facilitator)"
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgid "No gathering asks a seat fee yet."
 msgstr "No gathering asks a seat fee yet."
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: time horizon"
+msgid "5 to 10 years"
+msgstr "5 to 10 years"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Nothing changed: this is what the village already has on record."
@@ -68788,9 +69173,9 @@ msgid "How we create together<0/>"
 msgstr "How we create together<0/>"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, button"
-msgid "<0/>Send Request"
-msgstr "<0/>Send Request"
+#~ msgctxt "InvestorJourney, button"
+#~ msgid "<0/>Send Request"
+#~ msgstr "<0/>Send Request"
 
 #: client/src/components/map/statChipWords.ts
 msgctxt "map chip gatherings_ahead, under the number"
@@ -69731,6 +70116,11 @@ msgctxt "moon recap: MY_MOON_WORDS: taxForm"
 msgid "Tax form"
 msgstr "Tax form"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: link"
+msgid "Website or LinkedIn"
+msgstr "Website or LinkedIn"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
 msgid "Paste a list"
@@ -69945,6 +70335,11 @@ msgstr "Choose"
 #~ msgid "Not ready for a role yet"
 #~ msgstr "Not ready for a role yet"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: how they heard, question"
+msgid "How did you hear about us?"
+msgstr "How did you hear about us?"
+
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable redemption.rate_source, choice set, hint"
 msgid "The village pays back at its own number, whatever it sells at. Set it below."
@@ -70137,9 +70532,9 @@ msgid "{error}. There may be changes waiting; this is not an empty list."
 msgstr "{error}. There may be changes waiting; this is not an empty list."
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, label"
-msgid "Preferred Time"
-msgstr "Preferred Time"
+#~ msgctxt "InvestorJourney, label"
+#~ msgid "Preferred Time"
+#~ msgstr "Preferred Time"
 
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: told up front that a code was emailed, before the keep-in-touch question"
@@ -70484,6 +70879,11 @@ msgstr "Buy and exchange<0/>"
 msgctxt "a held role that is still recruiting: apply to join it"
 msgid "Apply"
 msgstr "Apply"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: the form's name"
+msgid "Investor interest form"
+msgstr "Investor interest form"
 
 #: client/src/pages/CrowdpoolCampaign.tsx
 msgctxt "CrowdpoolCampaign, p"
@@ -71991,6 +72391,11 @@ msgctxt "the bell: why a notice of this kind matters, kind session_task_back"
 msgid "A task from a session you facilitated was handed back. It comes up at the circle's next action check."
 msgstr "A task from a session you facilitated was handed back. It comes up at the circle's next action check."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: areas of interest"
+msgid "Impact"
+msgstr "Impact"
+
 #: client/src/pages/Introductions.tsx
 msgctxt "Introductions, p"
 msgid "The rest of this page opens when you sign in: your own intents, offers to confirm, and the introductions waiting for you."
@@ -72011,6 +72416,11 @@ msgstr "Write to everyone waiting for {roleName}"
 msgctxt "role pay"
 msgid "Use the suggestion, {0}"
 msgstr "Use the suggestion, {0}"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: eyebrow"
+msgid "Investors"
+msgstr "Investors"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "why a budget line does not count"
@@ -72425,6 +72835,11 @@ msgctxt "commitment split: no agreement covers the roles"
 msgid "No pay agreement covers these roles yet, so a split is only for your own planning."
 msgstr "No pay agreement covers these roles yet, so a split is only for your own planning."
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: name and email already held"
+msgid "We already have these from when you came in."
+msgstr "We already have these from when you came in."
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Sent"
@@ -72603,6 +73018,11 @@ msgctxt "HyphaModulePanel, h4"
 msgid "Outcomes that landed nowhere"
 msgstr "Outcomes that landed nowhere"
 
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: accreditation"
+msgid "Qualified purchaser"
+msgstr "Qualified purchaser"
+
 #: client/src/components/governance/TermsEight.tsx
 #~ msgid "We'll set this together."
 #~ msgstr "We'll set this together."
@@ -72633,9 +73053,9 @@ msgstr "1. Run the published image"
 
 #. placeholder {0}: step.stage
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, span"
-msgid "Stage: {0}"
-msgstr "Stage: {0}"
+#~ msgctxt "InvestorJourney, span"
+#~ msgid "Stage: {0}"
+#~ msgstr "Stage: {0}"
 
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, what deciding it does"
@@ -72889,9 +73309,9 @@ msgid "Apply: {0}"
 msgstr "Apply: {0}"
 
 #: client/src/pages/InvestorJourney.tsx
-msgctxt "InvestorJourney, label"
-msgid "Email"
-msgstr "Email"
+#~ msgctxt "InvestorJourney, label"
+#~ msgid "Email"
+#~ msgstr "Email"
 
 #. placeholder {0}: q.title
 #: client/src/components/valuation/PricingDesk.tsx
@@ -73198,6 +73618,11 @@ msgstr "Today"
 msgctxt "Mail settings, state heading"
 msgid "Mail is rehearsing"
 msgstr "Mail is rehearsing"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: a bad email"
+msgid "That email address does not look right."
+msgstr "That email address does not look right."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, a plant"
@@ -73753,6 +74178,11 @@ msgstr "Trees planted"
 msgctxt "CirclePeek, aria-label"
 msgid "Step out to {outTo}"
 msgstr "Step out to {outTo}"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: typical check size"
+msgid "Over $5 million"
+msgstr "Over $5 million"
 
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: handTo"
@@ -75196,6 +75626,11 @@ msgstr "Failed logins per account per 15 minutes"
 msgctxt "admin compare"
 msgid "Counter-offer sent"
 msgstr "Counter-offer sent"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: the optional questions, heading"
+msgid "A few questions, all optional"
+msgstr "A few questions, all optional"
 
 #: client/src/components/admin/PlayerCard.tsx
 msgctxt "PlayerCard, span"
@@ -77179,6 +77614,11 @@ msgstr "Cancel the change"
 msgctxt "agent paths, the box a list is pasted into"
 msgid "Pasted paths"
 msgstr "Pasted paths"
+
+#: client/src/components/investor/InvestorInterest.tsx
+msgctxt "investor interest: experience, question"
+msgid "Real estate or development experience"
+msgstr "Real estate or development experience"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable map.photo_report_hide_threshold, label"
