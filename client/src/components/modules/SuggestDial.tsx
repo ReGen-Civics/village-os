@@ -19,6 +19,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
 import { proposalHref } from "./switchModules";
+import { changeRequestHref } from "@shared/changeRequestAddress";
 import { addChange, myGathering, type ChangeRequestSummary } from "@/components/governance/changeRequestClient";
 
 interface PublicDial {
@@ -122,7 +123,7 @@ function SuggestOne({ d }: { d: PublicDial }) {
       {added ? (
         <p className="mt-1 text-sm" role="status">
           <AddedLine title={added.title} changes={added.changes} />{" "}
-          <Link href={`/changes/${added.id}`} className="text-teal-deep underline">
+          <Link href={changeRequestHref(added.id)} className="text-teal-deep underline">
             <Trans context="open the change request just added to">Open it</Trans>
           </Link>
         </p>

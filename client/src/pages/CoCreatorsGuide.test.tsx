@@ -178,7 +178,7 @@ describe("the token section (Rye, 2026-10-22)", () => {
         "Every quest and role shows what it is worth on its own card. Thanks is recognition from the community, and Willowbrook sets its own rules for it and its other tokens.",
       ),
     ).toBeInTheDocument();
-    expect(within(section).getByRole("link", { name: /See how they work here/ })).toHaveAttribute("href", "/game-mechanics");
+    expect(within(section).getByRole("link", { name: /See how they work here/ })).toHaveAttribute("href", "/governance/how#game-mechanics");
     expect(screen.getByRole("button", { name: "Thanks" })).toBeInTheDocument();
     // The live card of the open work stays, under its 2026-10-23 title.
     expect(within(section).getByText(fieldDefault("recognition", "cardTitle"))).toBeInTheDocument();
@@ -265,6 +265,6 @@ describe("words the village owns", () => {
 
     expect(within(section).getByRole("heading", { level: 2 })).toHaveTextContent("Our Village Agreements");
     expect(within(section).getByText(/The Our Village Agreements are essential/)).toBeInTheDocument();
-    expect(within(section).getByRole("link", { name: /Read the Full Our Village Agreements/ })).toHaveAttribute("href", "/good-neighbor");
+    expect(within(section).getByRole("link", { name: /Read the Full Our Village Agreements/ })).toHaveAttribute("href", "/rights#good-neighbor");
   });
 });

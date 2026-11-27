@@ -10,7 +10,7 @@
  * paid for: Escape spent on the menu, and a shut menu that takes no room.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import type { CompanionView } from "@shared/companionItems";
@@ -19,6 +19,7 @@ const session = vi.hoisted(() => ({
   user: null as null | { id: string; name: string; role?: string },
   admin: false,
   companions: null as null | unknown[],
+  entrance: false,
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
@@ -31,9 +32,14 @@ vi.mock("@/lib/gameApi", () => ({
     session.companions ? new Response(JSON.stringify({ companions: session.companions }), { status: 200 }) : new Response("{}", { status: 403 }),
   ),
 }));
+vi.mock("@/lib/entranceStatus", () => ({ useEntranceStands: () => session.entrance }));
 vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
+vi.mock("@/components/feedback/GuideFeedback", () => ({
+  default: ({ guide }: { guide: string }) => <p>the feedback form for {guide}</p>,
+}));
 
 import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows, guideDoors } from "./MobileFab";
+import { openGuideFeedback, releaseFeedback } from "@/lib/guideFeedback";
 
 const t = ({ message }: { message: string }) => message;
 /** A companion; the first a member has is their personal one, which the guide's row stands for. */
@@ -71,8 +77,13 @@ beforeEach(() => {
   session.user = null;
   session.admin = false;
   session.companions = null;
+  session.entrance = false;
 });
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  // The open form is held per page across corners (lib/guideFeedback.ts); a case starts with nothing held.
+  releaseFeedback();
+});
 
 /*
  * ONE GUIDE ROW (the lead, 27 Nov 2026): "Scarlet is Maia and Maia admin all 3 can be scarlet ... So I should only
@@ -93,11 +104,11 @@ describe("cornerRows", () => {
     expect(rows.some((r) => /^Ask /.test(r.label))).toBe(false);
   });
 
-  it("is the guide alone for a member with no companions, straight to the guide's help, in the village's macaw", () => {
+  it("is the guide alone for a member with no companions, opening its panel (help and feedback), in the village's macaw", () => {
     const rows = cornerRows({ signedIn: true, admin: false, army: [], guide: "Ceiba", t });
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ key: "guide", label: "Ceiba", sub: "How things work here, and who to ask", href: ASK_GUIDE_HREF, face: { look: { source: "nature", art: "scarlet-macaw" } } });
-    expect(rows[0].guidePanel).toBeUndefined();
+    expect(rows[0]).toMatchObject({ key: "guide", label: "Ceiba", sub: "Help, and a place to share feedback", guidePanel: true, face: { look: { source: "nature", art: "scarlet-macaw" } } });
+    expect(rows[0].href).toBeUndefined();
   });
 
   it("is one guide row for an admin too, and Admin's helper is a door inside the guide's panel", () => {
@@ -106,17 +117,24 @@ describe("cornerRows", () => {
     expect(rows[0].guidePanel).toBe(true);
     expect(guideDoors({ admin: true, t }).map((d) => [d.key, d.href, !!d.admin])).toEqual([
       ["ask", ASK_GUIDE_HREF, false],
+      ["feedback", undefined, false],
       ["admin", ADMIN_HELPER_HREF, true],
     ]);
-    expect(guideDoors({ admin: false, t }).map((d) => d.key)).toEqual(["ask"]);
+    expect(guideDoors({ admin: false, t }).map((d) => d.key)).toEqual(["ask", "feedback"]);
+    // Share feedback opens inside the panel; it is never a page of its own again.
+    expect(guideDoors({ admin: false, t })[1]).toMatchObject({ opens: "feedback", label: "Share feedback" });
     expect(ADMIN_HELPER_HREF).toBe("/admin?helper=open");
   });
 
-  it("sends a visitor to the guide on Work with us, and offers sign in", () => {
+  it("opens the guide's panel for a visitor too, its help door on Work with us, and offers sign in", () => {
     const rows = cornerRows({ signedIn: false, admin: false, army: null, guide: "the village guide", t });
-    expect(rows.map((r) => [r.key, r.href])).toEqual([
-      ["guide", "/work-with-us"],
-      ["signin", "/login"],
+    expect(rows.map((r) => [r.key, r.href, !!r.guidePanel])).toEqual([
+      ["guide", undefined, true],
+      ["signin", "/login", false],
+    ]);
+    expect(guideDoors({ admin: false, signedIn: false, t }).map((d) => [d.key, d.href])).toEqual([
+      ["ask", "/work-with-us"],
+      ["feedback", undefined],
     ]);
   });
 });
@@ -125,9 +143,12 @@ describe("the corner, drawn", () => {
   it("is the guide's spiral for a visitor, opening help", async () => {
     await renderAt();
     fireEvent.click(screen.getByRole("button", { name: "Open help" }));
-    expect(row(/Ceiba/)).toHaveAttribute("href", "/work-with-us");
     expect(row(/Sign in/)).not.toBeNull();
     expect(row(/Admin/)).toBeNull();
+    fireEvent.click(row(/Ceiba/)!);
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(document.querySelector('[data-guide-door="ask"]')).toHaveAttribute("href", "/work-with-us");
+    expect(document.querySelector('[data-guide-door="feedback"]')).not.toBeNull();
   });
 
   it("centres the macaw in the circle, and stands companions on its floor: one alignment each (the lead, 26 Nov 2026)", async () => {
@@ -263,5 +284,91 @@ describe("the corner, drawn", () => {
     expect(menu().style.transitionDelay).toBe("0s");
     fireEvent.click(screen.getByRole("button", { name: "Close your companions and help" }));
     expect(menu().style.transitionDelay).toBe("400ms");
+  });
+});
+
+/*
+ * SHARE FEEDBACK MOVED INTO THE GUIDE'S PANEL (the fold of /feedback, 26 Nov 2026): a door inside the
+ * panel, and three ways to open the panel straight on the form, on the page the member is looking at.
+ */
+describe("Share feedback, in the guide's panel", () => {
+  afterEach(() => window.history.replaceState(null, "", "/"));
+
+  it("opens the form inside the panel from its door, and goes back to the doors", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    fireEvent.click(row(/Ceiba/)!);
+    fireEvent.click(document.querySelector('[data-guide-door="feedback"]')!);
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(document.querySelector("[data-guide-doors]")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(document.querySelector('[data-guide-door="feedback"]')).not.toBeNull();
+  });
+
+  it("opens straight on the form for the footer's door, an event any page can send", async () => {
+    await renderAt("/quests");
+    act(() => openGuideFeedback());
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+  });
+
+  it("opens on #feedback, which is where /feedback sends a member, and takes the hash off", async () => {
+    window.history.replaceState(null, "", "/quests#feedback");
+    await renderAt("/quests");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+  });
+
+  /*
+   * A COLD /feedback LOST THE FORM 12 TIMES IN 16 (fold QA round 1). The loading screen drew a corner of its
+   * own, which read the hash, took it off and opened the form, and was then unmounted. The request is held
+   * outside the corner now, so the corner that replaces it opens on the form from its first render.
+   */
+  it("keeps the form open across a corner that unmounts and a new one that mounts, and lets it go on close", async () => {
+    window.history.replaceState(null, "", "/#feedback");
+    const first = await renderAt("/");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+    first.unmount();
+    await renderAt("/");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close your companions" }));
+    cleanup();
+    await renderAt("/");
+    expect(screen.queryByText("the feedback form for Ceiba")).toBeNull();
+  });
+
+  it("opens the form behind the portal entrance when the footer asks, and draws no corner there", async () => {
+    session.entrance = true;
+    const { container } = await renderAt("/gratitude");
+    expect(container.querySelector("[data-mobile-fab]")).toBeNull();
+    act(() => openGuideFeedback());
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+  });
+
+  it("keeps Tab inside the panel, and keeps the night in dark mode (a scene, not a dialog of words)", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    fireEvent.click(row(/Ceiba/)!);
+    const dialog = await screen.findByRole("dialog", { name: "Ceiba" });
+    expect(dialog).toHaveAttribute("data-scene");
+    // The doors open the way every section does: a kicker, then the guide's name.
+    expect(within(dialog).getByRole("heading", { name: "Ceiba" })).toBeInTheDocument();
+    const doors = Array.from(dialog.querySelectorAll<HTMLElement>("[data-guide-door]"));
+    const last = doors[doors.length - 1];
+    last.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(within(dialog).getByRole("button", { name: "Close your companions" }));
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(last);
+  });
+
+  it("opens the panel on a page that draws no corner, a founding page", async () => {
+    const { container } = await renderAt("/roles");
+    expect(container.querySelector("[data-mobile-fab]")).toBeNull();
+    act(() => openGuideFeedback());
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
   });
 });

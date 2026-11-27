@@ -40,6 +40,75 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.98 (2026-11-27)
+
+### What changed for your village
+
+- **Rights and agreements on one page.** /rights holds four chapters: Resident rights, Steward rights, Good Neighbor criteria and Leaving Well. The wording of every agreement is unchanged. Each chapter prints in full, and a member can begin their own departure from Leaving Well. /resident-rights, /steward-rights, /good-neighbor and /exit-policy open their chapter.
+- **One season page.** /season holds the season, your plan, joining and alignment as tabs. A renew link opens your plan on the role to renew, and the old season addresses open the right tab. Between seasons it says when the next one begins.
+- **Printing.** The site's own header, footer and path strip stay off paper, and the calendar and the rites packet print again.
+
+### What you must do
+
+Nothing. If your village saved its own name for the Good Neighbor page, it still shows.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.97 still works.
+
+---
+
+## 1.3.97 (2026-11-27)
+
+### What changed for your village
+
+- **Approvals live in Your work, change requests in Decisions.** What waits for your sign-off is a section of Govern > Your work, and change requests are a kind of decision, listed under Decisions with each one at its own address. /approvals and /changes open the new places, and links already sent keep working.
+- **Share feedback with the guide.** Reporting a bug or asking for a feature now happens in the guide's panel. A member can add a screenshot and draw on it to point at the spot; location data is removed, and only admins can see the picture. Everything goes into the village's own feedback queue. /feedback opens the panel.
+- **Places and photographs on one page.** /places holds every place, all photos and, for curators, the reports queue, with a viewer that steps through a place's photos. /photographs opens the new place.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+Yes, lightly. Migration 0443 adds a feedback kind and an optional screenshot file to feedback. It only adds; nothing is rewritten. Going back to 1.3.96 still works: the older version ignores the new column.
+
+---
+
+## 1.3.96 (2026-11-27)
+
+### What changed for your village
+
+- **Game Mechanics now lives inside How we work together.** /governance/how reads first as how the village works together, in panels a member can fold away once read, then (for members only) the full rules of the game behind its own heading, each part folded so people can go straight to what they need. A member sees "Skip to the game mechanics" at the top. A signed-out visitor sees only how we work together. /game-mechanics opens the new place and keeps its ?dial= and ?focus= links.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.95 still works.
+
+---
+
+## 1.3.95 (2026-11-27)
+
+### What changed for your village
+
+- **How roles are going lives with the circles.** The admins' numbers for each circle (applied, answered, first reply, seated, still in the role and the rest) now sit on Circles & Roles: a row per circle for the chosen season, and each circle's own page shows its two chains of five steps. Counts from fewer than three people stay hidden, and a step nobody is due for reads "not yet". /role-measures opens the new place.
+- **The weathered map reaches every band.** In light mode with the weathered map on, the setup strip under the header, the More and Paths sheets, the footer, dialogs and notices draw as worn paper too.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.94 still works.
+
+---
+
 ## 1.3.94 (2026-11-27)
 
 ### What changed for your village

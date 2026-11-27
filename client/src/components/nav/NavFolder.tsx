@@ -45,7 +45,9 @@ export default function NavFolder({
       type="button"
       onClick={onToggle}
       aria-expanded={open}
-      aria-controls={listId}
+      // Only while the list is drawn: a shut folder's list is not in the page, and aria-controls must name an element
+      // that is (the menu's QA, round 2, 27 Nov 2026).
+      aria-controls={open ? listId : undefined}
       aria-current={holdsHere ? "true" : undefined}
       className={`${rowClassName} ${holdsHere ? "font-semibold" : ""}`}
     >

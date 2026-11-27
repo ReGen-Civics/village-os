@@ -60,6 +60,9 @@ import { BTN_NOTICE, BTN_SECONDARY, EYEBROW, H1, LEDE, WORLD } from "@/component
 import YourTurn from "@/components/governance/YourTurn";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { byArrival } from "@/components/governance/deciderOrder";
+import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
+import ChangeRequestsSection from "@/components/governance/ChangeRequestsSection";
+import { authToken } from "@/lib/gameApi";
 
 /**
  * How much of the record one read buys. The route's own default, stated here
@@ -138,6 +141,14 @@ export default function Decisions() {
     setReadingMore(false);
   };
 
+  // A link to a section (#changes, the change requests) lands on it once the page has drawn it.
+  const drawn = ballots !== null;
+  useEffect(() => {
+    if (!drawn) return;
+    const id = window.location.hash.replace(/^#/, "");
+    if (id) document.getElementById(id)?.scrollIntoView?.({ block: "start" });
+  }, [drawn]);
+
   const groups = useMemo(() => {
     const all = ballots ?? [];
     const now = Date.now();
@@ -179,6 +190,9 @@ export default function Decisions() {
             Start a proposal
           </Trans></Link>
         </div>
+        <div className="mt-6">
+          <GovernanceTabs signedIn={!!authToken()} />
+        </div>
       </header>
 
       <div className="container max-w-6xl px-4 py-8">
@@ -209,6 +223,10 @@ export default function Decisions() {
                 </p>
               )}
 
+              {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list that was /changes. With no vote
+                  waiting on the reader they lead the page, so a phone opens on what a member can take part in now. */}
+              {groups.mine.length === 0 ? <ChangeRequestsSection /> : null}
+
               {/* No ballot has ever run here, open or closed (UNFINISHED-AREAS 13): the area is coming, said plainly. */}
               {ballots.length === 0 && (
                 <ComingSoonPanel
@@ -229,6 +247,8 @@ export default function Decisions() {
                   ) : null
                 }
               />
+              {/* A vote waiting on the reader comes first; the change requests follow it. */}
+              {groups.mine.length > 0 ? <ChangeRequestsSection /> : null}
               <Group
                 title={t({ message: "Waiting to be closed", context: "Decisions, title" })}
                 blurb="The voting period ended. Nothing here closes itself: a person has to close it and say what the village decided."

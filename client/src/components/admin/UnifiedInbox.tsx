@@ -83,8 +83,9 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
         const row = requestRow({ id: s.id, name: s.data?.name, type: s.type, status: s.status, submittedAt: s.submittedAt });
         return { ...inboxItem("requests", row.id, row.title, "submissions"), detail: row.detail, next: row.next };
       });
-      const notes = (Array.isArray(feedback?.items) ? feedback.items : []).slice(0, 30).map((f: { id?: string; body?: string; message?: string }) =>
-        inboxItem("feedback", String(f.id ?? ""), String(f.body || f.message || "A note"), "feedback"));
+      // A feedback row carries `title` (server/routes/feedback.ts); reading `body` showed "A note" for every one.
+      const notes = (Array.isArray(feedback?.items) ? feedback.items : []).slice(0, 30).map((f: { id?: string; title?: string; body?: string; message?: string }) =>
+        inboxItem("feedback", String(f.id ?? ""), String(f.title || f.body || f.message || "A note"), "feedback"));
       const tasks = (Array.isArray(bridge?.review) ? bridge.review : []).slice(0, 30).map((t: { feedbackId?: string; title?: string }) =>
         inboxItem("sera", String(t.feedbackId ?? ""), String(t.title || "A Sera task"), "modules"));
       // Only work waiting on a check shows; a quest still in somebody's hands asks nothing of an admin.

@@ -22,30 +22,22 @@
  *   Kept        on the server in the member's own prefs, so the cards follow them (useSpeedCards.ts), and in this
  *               browser for an instant first paint.
  */
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ChevronLeft, ChevronRight, ListChecks, MessagesSquare, NotebookPen, Plus, UserRound, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import MenuIcon from "@/components/nav/MenuIcon";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW } from "@/components/journey/look";
 import { navWord, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
-import { TASK_BOARD_PATH } from "@shared/taskMenu";
 import type { SpeedCardSlots } from "@shared/speedCards";
 import { buildRegistry, defaultSlots, moveSlot, placeAt, removeAt, resolveSlots, sixSlots, type SpeedCard, type SpeedCardDef } from "@/lib/speedCards/registry";
 import { cardLabel, REGISTERED_CARDS, type RegisteredCard } from "@/lib/speedCards/registered";
 import { useSpeedCards } from "@/lib/speedCards/useSpeedCards";
+import { fallbackGlyph } from "@/lib/speedCards/glyphs";
 
 const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 const SpeedCardPicker = lazy(() => import("./SpeedCardPicker"));
-
-/** A card's glyph where the page icons (config/routeIcons.ts) have none for its address. */
-const FALLBACK: Record<string, ComponentType<{ className?: string }>> = {
-  "/profile": UserRound,
-  "/messages": MessagesSquare,
-  [TASK_BOARD_PATH]: ListChecks,
-  "/journal": NotebookPen,
-};
 
 /** How long a press must hold to open edit mode. */
 export const HOLD_MS = 500;
@@ -311,6 +303,8 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
   };
 
   const pickedCard = pickedAt >= 0 ? cards[pickedAt] : null;
+  // An open slot names its place, so a screen reader hears which of the six it is.
+  const openSlotName = (place: number) => t({ message: `Add a card, place ${place} of ${total}`, context: "the phone's More sheet: an open slot, read aloud" });
   // Plain names, so the catalog reads "{label}, place {place} of {total}" and never "{0}".
   const label = pickedCard?.label ?? "";
   const place = pickedAt + 1;
@@ -367,7 +361,7 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
                     pickOpener.current = e.currentTarget;
                     setPickFor(at);
                   }}
-                  aria-label={t({ message: "Add a card", context: "the phone's More sheet: an open slot, read aloud" })}
+                  aria-label={openSlotName(at + 1)}
                   className="flex min-h-[4.5rem] w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-border px-1.5 py-2.5 text-sm font-medium text-muted-foreground hover:border-notice hover:text-notice focus-visible:outline-2 focus-visible:outline-ring"
                 >
                   <Plus aria-hidden="true" className="size-6" />
@@ -435,10 +429,10 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
 
 /** What a card shows: its glyph, its name, and its count. */
 function Face({ card, who }: { card: SpeedCard; who?: string }) {
-  const Icon = card.icon;
+  const Icon = fallbackGlyph(card);
   return (
     <>
-      {card.href ? <MenuIcon href={card.href} fallback={Icon ?? FALLBACK[card.href]} className="size-6 shrink-0" /> : Icon ? <Icon aria-hidden="true" className="size-6 shrink-0" /> : null}
+      {card.href ? <MenuIcon href={card.href} fallback={Icon} className="size-6 shrink-0" /> : <Icon aria-hidden="true" className="size-6 shrink-0" />}
       <span className="leading-tight">{card.label}</span>
       {who && card.count === "tasks" ? <Suspense fallback={null}><span className="absolute right-2 top-1.5"><TaskCountBadge who={who} /></span></Suspense> : null}
       {who && card.count === "messages" ? <Suspense fallback={null}><span className="absolute right-2 top-1.5"><MessageCountBadge who={who} /></span></Suspense> : null}
@@ -447,8 +441,22 @@ function Face({ card, who }: { card: SpeedCard; who?: string }) {
 }
 
 const CARD = "relative flex min-h-[4.5rem] w-full select-none flex-col items-center justify-center gap-1 rounded-xl border border-border bg-muted px-1.5 py-2.5 text-center text-sm font-medium text-foreground [-webkit-touch-callout:none]";
-/** Edit mode's steady sign, for everyone: a dashed gold edge drawn inside the card, where a frame can't cover it. */
-const EDIT_EDGE = "after:pointer-events-none after:absolute after:inset-1 after:rounded-lg after:border-2 after:border-dashed after:border-notice/70";
+/**
+ * Edit mode's steady sign, for everyone: a dashed edge in full gold (3:1 or better on the paper, QA round 2), drawn
+ * 10px inside the card, clear of the paper skin's torn edge (seaChart.css tears a bordered tile 9px deep). A span of
+ * its own, never the button's ::after: on a touch screen index.css owns every button's ::after for the 44px tap
+ * overlay (top 50%, full size), which would draw the edge at the very rim, where the paper's tear hides it.
+ */
+const EDIT_EDGE = "pointer-events-none absolute inset-2.5 rounded-md border-2 border-dashed border-notice";
+/**
+ * The paper the card stands on. The light sea-chart skin dresses `.bg-muted.border.rounded-xl` and skips buttons
+ * (seaChart.css), so an edit card is a skinned box with a transparent button filling it (QA round 2: edit cards went
+ * flat beige).
+ */
+const PAPER = "relative rounded-xl border border-border bg-muted";
+// The paper's 1px border above and below is inside the card's 72px, so the button inside is 2px shorter (QA round 3:
+// filled cards measured 74px in edit mode against 72px at rest).
+const FILL ="relative flex min-h-[calc(4.5rem-2px)] w-full select-none flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground [-webkit-touch-callout:none]";
 
 /** A card at rest: a door, and a hold opens edit mode. */
 function Card({ card, who, current, onGo, onHold }: { card: SpeedCard; who: string; current: boolean; onGo: () => void; onHold: (byHold: boolean) => void }) {
@@ -495,16 +503,24 @@ function EditCard({
   const { t } = useLingui();
   const label = card.label;
   return (
-    <div data-speed-card={card.id} data-edit-card="" className={`relative touch-none ${lifted ? "z-10 scale-105" : ""}`} {...pointer}>
-      <button
-        type="button"
-        data-speed-face=""
-        aria-pressed={picked}
-        onClick={() => onPick(card.id)}
-        className={`${CARD} ${EDIT_EDGE} cursor-grab focus-visible:outline-2 focus-visible:outline-ring ${picked ? "border-notice bg-card ring-2 ring-notice ring-offset-2 ring-offset-card" : ""} ${lifted ? "shadow-sm" : ""}`}
-      >
-        <Face card={card} />
-      </button>
+    <div
+      data-speed-card={card.id}
+      data-edit-card=""
+      className={`relative touch-none rounded-xl ${picked ? "outline-2 outline-offset-2 outline-notice" : ""} ${lifted ? "z-10 scale-105" : ""}`}
+      {...pointer}
+    >
+      <div data-speed-paper="" className={PAPER}>
+        <button
+          type="button"
+          data-speed-face=""
+          aria-pressed={picked}
+          onClick={() => onPick(card.id)}
+          className={`${FILL} cursor-grab focus-visible:outline-2 focus-visible:outline-ring`}
+        >
+          <span aria-hidden="true" data-speed-edge="" className={EDIT_EDGE} />
+          <Face card={card} />
+        </button>
+      </div>
       <button
         type="button"
         data-remove=""
@@ -568,9 +584,13 @@ export function useHold(onHold: (byHold: boolean) => void) {
   };
   useEffect(() => stop, []);
   const fire = () => {
+    // A hold, or a contextmenu that arrives while a press is still down (Android's long press): the finger is still
+    // on the glass, so its lift is guarded. Windows Chrome fires contextmenu after the right button comes up; nothing
+    // is left to lift, and guarding would eat the member's next click (QA round 2).
+    const pressed = start.current !== null;
     fired.current = true;
     stop();
-    onHold(true);
+    onHold(pressed);
   };
   return {
     holding,

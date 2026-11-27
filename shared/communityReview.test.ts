@@ -50,7 +50,7 @@ describe("the community face's projection: an allowlist, never the deciders' pay
       open: [{ ...SECRET, id: "c1", title: "Shorter quiet hours", state: "voting", author: "Cy Author", changes: 3 }],
       mine: [{ ...SECRET, id: "c2", title: "My own request", state: "in_review", yours: true }],
     });
-    expect(open.map((c) => [c.id, c.title, c.state, c.href])).toEqual([["c1", "Shorter quiet hours", "voting", "/changes/c1"]]);
+    expect(open.map((c) => [c.id, c.title, c.state, c.href])).toEqual([["c1", "Shorter quiet hours", "voting", "/governance/decisions/changes/c1"]]);
     expect(yours.map((c) => [c.id, c.title, c.state])).toEqual([["c2", "My own request", "in_review"]]);
     expectClean([...open, ...yours]);
   });

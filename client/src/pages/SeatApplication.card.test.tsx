@@ -113,7 +113,7 @@ function proposalPayload(): PlayerCardPayload {
     viewer: { level: "member", isSelf: false },
     timeZone: "UTC",
     sheets: {},
-    links: { apply: "/roles", plan: "/season-plans/mine" },
+    links: { apply: "/roles", plan: "/season#plan" },
   };
 }
 

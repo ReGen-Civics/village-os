@@ -136,7 +136,11 @@ describe("the defaults", () => {
   it("without Human Design or Gene Keys: Profile, Messages, My tasks, Journal and two open slots", async () => {
     const { container } = await draw();
     expect(slots(container)).toEqual(["/profile", "/messages", TASK_BOARD_PATH, "/journal", "+", "+"]);
-    expect(screen.getAllByRole("button", { name: "Add a card" })).toHaveLength(2);
+    // Each open slot names its place for a screen reader.
+    expect(screen.getAllByRole("button", { name: /^Add a card, place / }).map((b) => b.getAttribute("aria-label"))).toEqual([
+      "Add a card, place 5 of 6",
+      "Add a card, place 6 of 6",
+    ]);
   });
 
   it("with either on: Pull a card fifth, one open slot", async () => {
@@ -196,7 +200,7 @@ describe("a new device", () => {
 describe("the picker", () => {
   it("offers only pages the menu offers this member, in the menu's groups, each with a glyph row", async () => {
     await draw();
-    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[0]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     expect(within(picker).getByText("Your quick cards")).toBeInTheDocument();
     expect(within(picker).getByRole("region", { name: "Village" })).toBeInTheDocument();
@@ -209,7 +213,7 @@ describe("the picker", () => {
 
   it("finds a page by search, forgives a typo, and says so when nothing matches", async () => {
     await draw();
-    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[0]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     const ids = () => Array.from(picker.querySelectorAll("[data-speed-pick]")).map((b) => b.getAttribute("data-speed-pick"));
     fireEvent.change(within(picker).getByRole("searchbox"), { target: { value: "libr" } });
@@ -223,7 +227,7 @@ describe("the picker", () => {
   it("puts the pages this device opens most first, as tiles, only those the member may keep", async () => {
     session.most = ["/library", "/admin"];
     await draw();
-    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[0]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     await settle();
     const first = within(picker).getByRole("region", { name: "You open most" });
@@ -232,7 +236,7 @@ describe("the picker", () => {
 
   it("adds the tapped page into the slot, saves it, and puts focus on the new card", async () => {
     const { container } = await draw();
-    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[1]);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[1]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     fireEvent.click(within(picker).getByRole("button", { name: /Living Map/ }));
     await settle();
@@ -298,7 +302,21 @@ describe("edit mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
     expect(container.querySelector("[data-edit-card] [data-dir]")).toBeNull();
     expect(container.querySelector("[data-move-strip] [data-dir='left']")).toBeTruthy();
-    expect(container.querySelector("[data-speed-face]")?.className).toContain("min-h-[4.5rem]");
+    expect(container.querySelector("[data-speed-face]")?.className).toContain("min-h-[calc(4.5rem-2px)]");
+  });
+
+  it("keeps the paper: the skin sits on a box (the light skin skips buttons), with a clear button filling it", async () => {
+    const { container } = await draw();
+    fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
+    const paper = container.querySelector<HTMLElement>("[data-speed-paper]")!;
+    expect(paper.tagName).toBe("DIV");
+    expect(paper.className.split(" ")).toEqual(expect.arrayContaining(["bg-muted", "border", "rounded-xl"]));
+    const face = paper.querySelector<HTMLElement>("[data-speed-face]")!;
+    expect(face.className).toContain("bg-transparent");
+    expect(face.className).not.toMatch(/(^| )bg-muted( |$)/);
+    // The dashed edge in full gold (3:1 or better), drawn clear of the paper's torn edge.
+    const edge = face.querySelector<HTMLElement>("[data-speed-edge]")!;
+    expect(edge.className.split(" ")).toEqual(expect.arrayContaining(["border-dashed", "border-notice", "inset-2.5"]));
   });
 
   it("does not open when the press moves (a scroll), or lets go early (a tap)", async () => {
@@ -320,17 +338,30 @@ describe("edit mode", () => {
     expect(container.querySelector("[data-editing]")).toBeNull();
   });
 
-  it("opens on a right-click (a desktop's long press)", async () => {
+  it("opens on a right-click, and never eats the next click (Windows Chrome fires contextmenu after mouseup)", async () => {
     const { container } = await draw();
+    // The right button is already up when contextmenu arrives: no press is down.
     fireEvent.contextMenu(screen.getByRole("link", { name: /Journal/ }));
     expect(container.querySelector("[data-editing]")).toBeTruthy();
-    // The button comes up; a tap a moment later is the member's own again.
-    fireEvent.pointerUp(document.body, { pointerId: 1 });
+    // The very next click is the member's own.
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(container.querySelector("[data-editing]")).toBeNull();
+  });
+
+  it("guards the lift when contextmenu arrives while a press is down (Android's long press)", async () => {
+    const { container } = await draw();
+    const journal = screen.getByRole("link", { name: /Journal/ });
+    fireEvent.pointerDown(journal, { button: 0, clientX: 10, clientY: 10, pointerId: 1, pointerType: "touch" });
+    fireEvent.contextMenu(journal);
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    const under = screen.getByRole("button", { name: "Remove Journal" });
+    fireEvent.pointerUp(under, { pointerId: 1 });
+    fireEvent.click(under);
+    expect(slots(container)).toEqual(["/profile", "/messages", TASK_BOARD_PATH, "/journal", "+", "+"]);
+    // A moment later the guard has let go, so the next test starts clean.
     await act(async () => {
       await new Promise((done) => setTimeout(done, 80));
     });
-    fireEvent.click(screen.getByRole("button", { name: "Done" }));
-    expect(container.querySelector("[data-editing]")).toBeNull();
   });
 
   it("opens from the Edit button too, so nobody depends on a long press, with its hint in words", async () => {
@@ -342,7 +373,7 @@ describe("edit mode", () => {
     expect(screen.getByRole("button", { name: "Move Profile right" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Move Profile left" })).toBeDisabled();
     expect(screen.getByText("Drag a card, or use its arrows.")).toBeVisible();
-    expect(screen.getAllByRole("button", { name: "Add a card" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /^Add a card, place / })).toHaveLength(2);
   });
 
   it("reorders by keyboard, keeps focus on the arrow, and saves on Done", async () => {
@@ -418,7 +449,7 @@ describe("edit mode", () => {
     let r = await draw();
     fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
     expect(r.container.querySelector("[data-speed-cards]")?.getAttribute("data-motion")).toBe("moves");
-    expect(r.container.querySelector("[data-speed-face]")?.className).toContain("after:border-dashed");
+    expect(r.container.querySelector("[data-speed-face] [data-speed-edge]")?.className).toContain("border-dashed");
     expect(animate).toHaveBeenCalled();
     expect(animate.mock.calls[0][1].iterations ?? 1).toBe(1);
     expect(animate.mock.calls[0][1].duration).toBeLessThanOrEqual(600);
@@ -429,7 +460,7 @@ describe("edit mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
     expect(r.container.querySelector("[data-speed-cards]")?.getAttribute("data-motion")).toBe("still");
     expect(animate).not.toHaveBeenCalled();
-    expect(r.container.querySelector("[data-speed-face]")?.className).toContain("after:border-dashed");
+    expect(r.container.querySelector("[data-speed-face] [data-speed-edge]")?.className).toContain("border-dashed");
     delete (HTMLElement.prototype as any).animate;
   });
 });

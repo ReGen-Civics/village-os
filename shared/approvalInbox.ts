@@ -20,6 +20,16 @@
 export const INBOX_KINDS = ["setting", "listing", "page_copy", "map_publish", "seating"] as const;
 export type InboxKind = (typeof INBOX_KINDS)[number];
 
+/**
+ * The powers whose holders open the inbox, beside an admin (server/routes/approvalInbox.ts `READERS`, and the lapse
+ * notice tells exactly these people). Here so the browser can ask first (`mayAsk`) and make no request a member would
+ * only be refused; the route still decides.
+ */
+export const APPROVAL_INBOX_READERS = ["org.decide", "org.seat", "story.tell", "map.publish", "intake.moderate"] as const;
+
+/** Where the inbox lives: the Approvals section of Your work (the lead, 27 Nov 2026). /approvals redirects here. */
+export const APPROVALS_HREF = "/governance/work#approvals";
+
 /** A proposal that nobody has decided lapses after this long. */
 export const EXPIRES_AFTER_DAYS = 7;
 export const EXPIRES_AFTER_MS = EXPIRES_AFTER_DAYS * 24 * 60 * 60 * 1000;

@@ -325,7 +325,7 @@ const AGREEMENT_KEY: Record<StartStep, PathKey> = {
 /** Where the confidentiality agreement is aligned: inline, on the profile's own card. */
 export const BEFORE_YOU_START_HREF = "/profile#before-you-start";
 export const applicationPathHref = (id: string): string => `/role-applications/${encodeURIComponent(id)}`;
-export const renewHref = (roleId: string): string => `/season-plans/mine?renew=${encodeURIComponent(roleId)}`;
+export const renewHref = (roleId: string): string => `/season?renew=${encodeURIComponent(roleId)}#plan`;
 
 type Rule = (f: PathFacts, today: string) => Hit | null;
 

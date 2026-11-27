@@ -170,7 +170,7 @@ export default function HowWeCreate() {
                 </p>
                 {tokens.fields.linkLabel && (
                   <Link
-                    href="/game-mechanics"
+                    href="/governance/how#game-mechanics"
                     className="inline-flex items-center gap-1 text-notice font-semibold hover:underline"
                   >
                     {tokens.fields.linkLabel}

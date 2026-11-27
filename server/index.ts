@@ -13070,7 +13070,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   });
 
   // ── S66: feedback — the local queue is the feature, the relay is a copy ──
-  registerFeedbackRoutes(app, { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName: notifyDeps.projectName });
+  registerFeedbackRoutes(app, { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName: notifyDeps.projectName, uploadsDir: UPLOADS_DIR });
   registerSubmissionHandlingRoutes(app, { isAdmin, getPool, adminActor });
 
   // S70: the stewards' organizing counsel. Moved to server/routes/organize.ts whole
@@ -25780,7 +25780,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     "/", "/investor", "/steward", "/resident", "/prosperity", "/love-letter",
     "/visit", "/gratitude", "/work-with-us", "/governance", "/circles", "/roles",
     "/how-we-create", "/good-neighbor", "/team", "/game-mechanics", "/exit-policy",
-    "/co-creators-guide", "/feedback", "/quests", "/housing", "/opportunities",
+    "/co-creators-guide", "/quests", "/housing", "/opportunities",
     "/master-plan",
   ];
   /*

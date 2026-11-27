@@ -117,6 +117,9 @@ describe("search", () => {
     expect(searchCards(r, "libary").map((c) => c.id)).toEqual(["/library"]);
     expect(searchCards(r, "quets").map((c) => c.id)).toEqual(["/quests"]);
     expect(searchCards(r, "jornal").map((c) => c.id)).toEqual(["/journal"]);
+    // Two neighbours swapped count as one typo.
+    expect(searchCards(r, "qeusts").map((c) => c.id)).toEqual(["/quests"]);
+    expect(searchCards(r, "lbirary").map((c) => c.id)).toEqual(["/library"]);
     expect(searchCards(r, "mao")).toEqual([]);
     expect(searchCards(r, "librxyz")).toEqual([]);
   });

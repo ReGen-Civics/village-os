@@ -111,7 +111,7 @@ describe("a signed-in account the village has not admitted", () => {
   it("sees the same front door as a visitor, and none of the members' working pages", async () => {
     user = { id: "u2", name: "Ana Applicant", role: "member", stageGranted: "guest" };
     const hrefs = await menuHrefs();
-    for (const h of [...UNFINISHED, "/season-plans", "/aligned", "/changes", "/governance/work", "/journey-to-launch"]) expect(hrefs, h).not.toContain(h);
+    for (const h of [...UNFINISHED, "/season", "/season-plans", "/aligned", "/changes", "/governance/work", "/journey-to-launch"]) expect(hrefs, h).not.toContain(h);
     expect(hrefs).toContain("/quests");
   });
 });
@@ -153,13 +153,14 @@ describe("the footer", () => {
     // The gratitude wall is public since #1528 (first names only), so the footer offers it to a visitor;
     // the engine room's rules are for members.
     expect(hrefs).toContain("/gratitude");
-    expect(hrefs).not.toContain("/game-mechanics");
+    expect(hrefs).not.toContain("/governance/how#game-mechanics");
     expect(hrefs).toContain("/quests");
   });
 
   it("CONTROL: keeps them for a member", async () => {
     user = { id: "u1", name: "Ora Vale", role: "member", membershipGranted: true };
     const hrefs = await footerShows();
-    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/work", "/game-mechanics"]) expect(hrefs, h).toContain(h);
+    // Waiting on you left the footer for the account menu (the menu's QA, round 3), so it is not here for anyone.
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/how#game-mechanics"]) expect(hrefs, h).toContain(h);
   });
 });

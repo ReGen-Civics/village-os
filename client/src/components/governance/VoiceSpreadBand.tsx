@@ -33,7 +33,7 @@ const EVENNESS_WORDS: Record<Evenness, string> = {
 
 function Tile({ label, value, tip }: { label: string; value: string; tip?: React.ReactNode }) {
   return (
-    <div data-spread-tile className="rounded-xl border border-border bg-card px-4 py-3">
+    <div data-spread-tile className="rounded-xl border border-border bg-muted px-4 py-3">
       <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}{tip}</div>
       <div className="mt-1 font-display text-2xl font-bold text-card-foreground">{value}</div>
     </div>
@@ -60,9 +60,9 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
   const { spread, ballots } = view;
 
   return (
-    <section className="border-b border-border bg-muted py-12" aria-labelledby="voice-spread-heading">
-      <div className="container mx-auto max-w-5xl px-4">
-        <h2 id="voice-spread-heading" className="font-display text-2xl md:text-3xl font-bold text-foreground break-words">
+    <section id="voice" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8" aria-labelledby="voice-spread-heading">
+      <div className="min-w-0">
+        <h2 id="voice-spread-heading" className="font-display text-2xl text-card-foreground break-words">
           {heading}
           <GlossaryTip slot="voice" word={t({ message: "Voice", context: "glossary: the word a tip explains" })} />
         </h2>
@@ -91,9 +91,9 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
                           <Trans context="VoiceSpreadBand, span">The top <strong>{b.topPct}%</strong> of voters hold <strong>{b.sharePct}%</strong> of the Voice
                         </Trans></span>
                       </div>
-                      <div className="relative mt-2.5 mb-1 h-4 rounded-full bg-card" aria-hidden="true">
+                      <div className="relative mt-2.5 mb-1 h-4 rounded-full bg-muted" aria-hidden="true">
                         <div data-spread-fill className="h-full rounded-full bg-notice" style={{ width: `${b.sharePct}%` }} />
-                        <div data-spread-even className="absolute -top-1.5 h-7 w-1 -translate-x-1/2 rounded-full bg-foreground ring-2 ring-muted" style={{ left: `${b.topPct}%` }} />
+                        <div data-spread-even className="absolute -top-1.5 h-7 w-1 -translate-x-1/2 rounded-full bg-foreground ring-2 ring-card" style={{ left: `${b.topPct}%` }} />
                       </div>
                     </li>
                   ))}

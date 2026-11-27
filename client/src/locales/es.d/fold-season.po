@@ -1,0 +1,221 @@
+# Spanish for the season fold (/season), 27 Nov 2026. Main folds it into es.po after the merge.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "What you align with"
+msgstr "Con lo que usted se alinea"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Where you stand"
+msgstr "Dónde está usted"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Join"
+msgstr "Unirse"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Plan your season"
+msgstr "Planee su temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "This season"
+msgstr "Esta temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Each of these starts once every party aligns. Read the words, then align."
+msgstr "Cada uno empieza cuando todas las partes se alinean. Lea las palabras y luego alinéese."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "{met} of {0} goals met"
+msgstr "{met} de {0} metas cumplidas"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Asked of you"
+msgstr "Lo que se le pide"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Sign in to take part in the season."
+msgstr "Inicie sesión para participar en la temporada."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Applied. The picker picks next."
+msgstr "Solicitud enviada. Ahora elige quien escoge."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Changes not filed yet"
+msgstr "Cambios sin presentar"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Waiting on you"
+msgstr "Esperándole a usted"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "The register"
+msgstr "El registro"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "No terms wait on you."
+msgstr "Ningún término le espera."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "{n} wait on you"
+msgstr "{n} le esperan"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Not filed yet"
+msgstr "Aún sin presentar"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "One waits on you"
+msgstr "Uno le espera"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "The season"
+msgstr "La temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Filed"
+msgstr "Presentado"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Opens on {0}"
+msgstr "Abre el {0}"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Aligned"
+msgstr "Alineado"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "The agreement waits on you"
+msgstr "El acuerdo le espera"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Which circle you ask to join"
+msgstr "A qué círculo pide unirse"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "The village's goals for this season. Moss spreads into a goal when the whole village reaches it."
+msgstr "Las metas de la aldea para esta temporada. El musgo se extiende sobre una meta cuando toda la aldea la alcanza."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Your plan"
+msgstr "Su plan"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Not applied yet"
+msgstr "Aún sin solicitar"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "You're in"
+msgstr "Ya está dentro"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Join the season"
+msgstr "Únase a la temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Your season is set."
+msgstr "Su temporada está lista."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Nothing waits on you"
+msgstr "Nada le espera"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Season"
+msgstr "Temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "The season's parts"
+msgstr "Las partes de la temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Your season"
+msgstr "Su temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "What happens to {0}"
+msgstr "Qué pasa con {0}"
+
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Read and align"
+msgstr "Lea y alinéese"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Open your application"
+msgstr "Abra su solicitud"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Open your plan"
+msgstr "Abra su plan"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Open what waits on you"
+msgstr "Abra lo que le espera"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "This part of the season could not be drawn."
+msgstr "Esta parte de la temporada no se pudo mostrar."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Held this season"
+msgstr "Los que tiene esta temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Begins on {0}."
+msgstr "Empieza el {0}."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Renew this role"
+msgstr "Renueve este rol"

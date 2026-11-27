@@ -39,6 +39,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/partner": "Become a partner",
   "/pricing": "Pricing desk",
   "/budget": "Cash budget", // redirects to /governance/treasury#cash-budget (27 Nov 2026)
+  // The lead's name for the page, the same as its menu entry and its Governance tab (26 Nov 2026).
+  "/governance/how": "How we work together",
   "/governance/treasury": "Treasury", // the cash budget, folded in from /budget (27 Nov 2026)
   "/roles": "Roles",
   "/roles/select": "Find your roles",
@@ -85,6 +87,9 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/game-mechanics": "Game Mechanics",
   // Change requests: the list and, by longest prefix, each one.
   "/changes": "Change requests",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages in one. Their old addresses redirect here and keep a
+  // line each below, so a tab never reads blank for the moment a redirect takes.
+  "/rights": "Rights and agreements",
   "/exit-policy": "Leaving well",
   "/tools": "Tools",
   // One line covers the shelf and every detail page: keys match by longest
@@ -96,11 +101,10 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/campaign": "Crowdpool",
   // One line covers the shelf and every place, by the same longest-prefix
   // rule the module library uses above.
-  "/places": "Places, photographed",
-  // Its own address rather than /places/photos, because a place key called
-  // "photos" would shadow it and because this is a different object from a
-  // place: the whole village's record on one page.
-  "/photographs": "Every photograph",
+  "/places": "Places",
+  // Every photo is a view of the same page (/places#photos) since the fold.
+  // /photographs only redirects there, and reads as the page it lands on.
+  "/photographs": "Places",
   "/admin": "Village settings",
   "/journal": "Journal",
   "/protocols": "Protocols",
@@ -133,6 +137,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/training/steward": "Steward training",
   "/training/resident": "Resident training",
   "/governance": "Governance",
+  // One change request, a kind of decision since 27 Nov 2026; /changes above stays for links already sent.
+  "/governance/decisions/changes": "Change request",
   "/decisions": "Decisions",
   "/propose": "Start a proposal",
   "/propose-a-role": "Apply", // the founding application (QA P1-17); without it the prefix read "Start a proposal"
@@ -142,6 +148,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/role-measures": "How roles are going", // admins only, counts and medians from stamped times
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
+  "/season": "The season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned
   "/season-plans": "The village's season",
   "/welcome": "Welcome",
   "/aboard": "Join",

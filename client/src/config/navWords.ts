@@ -95,7 +95,13 @@ export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   // The menu by membership (27 Nov 2026): two new entries, and the folders inside the groups (config/navNest.ts).
   "Open Roles": msg({ message: "Open Roles", context: "site menu" }),
   "What's happening now": msg({ message: "What's happening now", context: "site menu: Govern's own page, its Now view" }),
-  "Agreed terms": msg({ message: "Agreed terms", context: "site menu: the register of terms members aligned with" }),
+  // The season, one page since the season fold (#1862).
+  "Season": msg({ message: "Season", context: "site menu" }),
+  // What each group holds, the eyebrow over its dropdown (NavGroup.holds, the menu's QA, round 2).
+  "The place": msg({ message: "The place", context: "site menu: what a group holds, over its dropdown" }),
+  "The people and the story": msg({ message: "The people and the story", context: "site menu: what a group holds, over its dropdown" }),
+  "Ways in": msg({ message: "Ways in", context: "site menu: what a group holds, over its dropdown" }),
+  "How we're run": msg({ message: "How we're run", context: "site menu: what a group holds, over its dropdown" }),
   "Waiting on you": msg({ message: "Waiting on you", context: "site menu: what waits on the member to decide" }),
   "Choose your path": msg({ message: "Choose your path", context: "site menu: a folder" }),
   "Build with us": msg({ message: "Build with us", context: "site menu: a folder" }),
