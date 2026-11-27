@@ -35,7 +35,7 @@ import { sayNotice } from "../../shared/noticeKeyMessages";
 import { noticeMailWords } from "../../shared/noticeMailWords";
 import type { MailLanguage } from "../../shared/mailLanguage";
 import { languageOfMember } from "./mailLanguage";
-import { noticeSayFor } from "./catalogSpeech";
+import { manyLineIn, noticeSayFor } from "./catalogSpeech";
 
 /**
  * Fallback only — the live ceiling is the notify.daily_email_cap game
@@ -261,6 +261,8 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
     // step the whole loop stalls on, and a digest tomorrow means a member who
     // finished work today waits a day for anyone to know.
     case "quest_submitted":
+    // The same work taken back again, read from the same side.
+    case "quest_pulled_back":
     // Somebody flagged themselves at risk or stuck on work they took on.
     // Same preference, same reasoning: asking for help must not cost a week,
     // and a steward who turned quest emails off has said what they want.
@@ -691,13 +693,14 @@ async function maybeEmailImmediate(deps: NotifyDeps, n: NotifyInput & { id: stri
  * the bell folds at four, client/src/lib/notificationFeed.ts). Every row
  * stays its own row, keyed per block for the canvas moon, and every row is
  * still stamped as emailed. Every other kind is one line per row, as before.
+ * The folded line is said in the member's language, as the bell says it (`manyLineIn`).
  */
-function digestLines(rows: RowDataPacket[]): Array<{ title: string; link: string | null }> {
+function digestLines(rows: RowDataPacket[], lang: MailLanguage = "en"): Array<{ title: string; link: string | null }> {
   const canvas = rows.filter((r) => String(r.type) === "canvas_revisit");
   const lines: Array<{ title: string; link: string | null }> = [];
   for (const r of rows) {
     if (canvas.length > 1 && String(r.type) === "canvas_revisit") {
-      if (r === canvas[0]) lines.push({ title: manyLine("canvas_revisit", canvas.length), link: r.link ?? null });
+      if (r === canvas[0]) lines.push({ title: (lang !== "en" && manyLineIn(lang, "canvas_revisit", canvas.length)) || manyLine("canvas_revisit", canvas.length), link: r.link ?? null });
       continue;
     }
     lines.push({ title: String(r.title), link: r.link ?? null });
@@ -744,6 +747,7 @@ export async function runNotificationDigest(deps: NotifyDeps): Promise<{ users: 
       lang === "en"
         ? daily
         : daily.map((r) => ({ ...r, title: noticeIn(lang, { title: String(r.title), words: readNoticeWords(r.words, String(r.title), String(r.type)) }).title }) as RowDataPacket),
+      lang,
     );
     const subject = lines.length === 1 ? lines[0].title : W.digest.subjectMany(lines.length);
     const accent = accentOf(deps);

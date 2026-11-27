@@ -366,6 +366,12 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
         <ChangeBody face={face} kind={c.kind} before={c.live} after={body} labels={c.labels} zone={zone} whole={whole} />
       )}
 
+      {c.payHidden ? (
+        <p className="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground" data-testid={`pay-hidden-${c.id}`}>
+          <Trans context="proposed changes: a role card's pay, for a reader who may not read terms">The pay on offer changes too. Only people who may read a role's terms see how.</Trans>
+        </p>
+      ) : null}
+
       {confirming && (
         <div className="space-y-3 rounded-xl border border-notice/60 bg-card p-4" role="group" aria-label={t({ message: "Confirm accepting this change", context: "proposed changes: conflict" })} data-testid={`conflict-confirm-${c.id}`}>
           <p className="font-semibold text-card-foreground">

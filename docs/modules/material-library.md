@@ -24,7 +24,7 @@ Estimated sessions: 10
 - Inflation control made explicit: credits are minted only against appraised replacement value at intake (contributor gets 100%); the v2 purchase premium (120%) is where the pool captures spread; repairs/writeoffs BURN pool credits to sys:library-sink so supply tracks the real backing. The slide never closed this loop.
 - Recognition firewall respected (F4): Library Credits cannot be bought with Gratitude, grant no voice, and are rejected by the same boot invariant pattern — a materially useful token deliberately kept out of the recognition and governance economies.
 - Zero scheduler dependency: decay computes at settlement from elapsed time and overdue state evaluates lazily on read, so the module ships on today's cron-less platform; the Phase 3 scheduler only ADDS digests/reminders, it isn't load-bearing.
-- Maia helps with intake: a new 'library-item-intake' PROPOSAL_KIND reuses the existing injection-guarded assistant plumbing to help members write a good item listing with a replacement-value estimate for the steward.
+- The village guide helps with intake: a new 'library-item-intake' PROPOSAL_KIND reuses the existing injection-guarded assistant plumbing to help members write a good item listing with a replacement-value estimate for the steward.
 - Front-loaded decay is an actual formula (break-in half-life over cumulative borrow-days), tunable per fork via fail-loud game variables — the slide's '0.1-1%... more at the beginning... slows down' made concrete and white-labelable.
 - Condition photos on handoff events (reusing the just-shipped sharp upload pipeline) give disputes evidence instead of memory.
 
@@ -130,7 +130,7 @@ Estimated sessions: 10
 - `GET /api/library/steward/queue — intake pending, disputes, overdue (lazy-evaluated), return_pending, below writeoff_health_floor`
 - `GET /api/admin/library/pool — pool balance + inflow/outflow ledger lines`
 - `POST /api/admin/library/pool/grant — manual steward reward or acquisition grant with reason (also runs automatically at lunar cycle close)`
-- `POST /api/assistant/proposal {kind:'library-item-intake'} — new PROPOSAL_KIND in the existing Maia plumbing; helps a member draft a listing + replacement-value estimate`
+- `POST /api/assistant/proposal {kind:'library-item-intake'} — new PROPOSAL_KIND in the existing village guide plumbing; helps a member draft a listing + replacement-value estimate`
 
 ## Surfaces
 
@@ -197,7 +197,7 @@ Module toggle (library.enabled) gating routes, nav, and the admin tab. All tunab
 - Phase 1b repository layer: library ships DB-NATIVE (its tables have no JSON legacy, and escrow/dual-sign genuinely need transactions) — it should be the pattern-setter or immediate follower of the first domain cutover; no data/ JSON files, so no ensureDataFiles()/seeds entries needed for records (only roles-seed + category config)
 - Village Pulse addActivity (SHIPPED) for public events
 - Resend email (SHIPPED) for v1's two blocking notifications (reservation ready, confirm needed); Phase 3 notification spine replaces/extends when it lands (NOT a v1 blocker)
-- Maia PROPOSAL_KINDS (SHIPPED; one new kind)
+- The village guide PROPOSAL_KINDS (SHIPPED; one new kind)
 
 ## v1 (ship first, useful alone)
 

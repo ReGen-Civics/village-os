@@ -50,6 +50,7 @@ import { pickedSeats } from "./SeatPicksField";
 import { offerPrefill, renewalPrefill } from "./roleApplicationType";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { plural } from "@lingui/core/macro";
 import { useWizardWords } from "@/components/governance/wizardWords";
 
 const AUTOSAVE_PAUSE_MS = 1500;
@@ -87,7 +88,7 @@ export interface WizardStart {
   answers: Record<string, unknown>;
 }
 
-export default function ProposalWizard({ start = null, leaveTo = "/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
+export default function ProposalWizard({ start = null, leaveTo = "/governance/decisions" }: { start?: WizardStart | null; leaveTo?: string } = {}) {
   const ww = useWizardWords();
   const { t } = useLingui();
   const [, navigate] = useLocation();
@@ -473,7 +474,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
           )}
           <button
             type="button"
-            onClick={() => navigate("/decisions")}
+            onClick={() => navigate("/governance/decisions")}
             className="min-h-[44px] rounded-lg bg-notice px-5 text-sm font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Trans context="ProposalWizard, button">See what the village is deciding
@@ -525,7 +526,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             {practiceType ? (
               <PracticeVote
                 about={practiceType}
-                onOpened={(ballotId) => navigate(`/decisions/${ballotId}`)}
+                onOpened={(ballotId) => navigate(`/governance/decisions/${ballotId}`)}
                 onCancel={() => setPracticeType(null)}
               />
             ) : (
@@ -646,7 +647,7 @@ export default function ProposalWizard({ start = null, leaveTo = "/decisions" }:
             {problems.length > 0 && (
               <div role="alert" className="rounded-xl border-2 border-destructive bg-destructive/10 p-4">
                 <p className="text-sm font-bold text-destructive">
-                  {problems.length === 1 ? "One thing is not ready" : `${problems.length} things are not ready`}
+                  {t({ message: plural(problems.length, { one: "One thing is not ready", other: "# things are not ready" }), context: "proposal wizard: review" })}
                 </p>
                 <ul className="mt-2 space-y-2">
                   {problems.map((p) => (

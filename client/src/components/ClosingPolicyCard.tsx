@@ -296,7 +296,7 @@ export function ClosingAdvisoryDoor() {
     return (
       <p className={line}>
         <Trans>The village is deciding a change to this right now.</Trans>{" "}
-        <Link href={`/decisions/${running}`} className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
+        <Link href={`/governance/decisions/${running}`} className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
           <Trans>Go to the vote</Trans>
         </Link>
       </p>
@@ -349,7 +349,7 @@ export function ClosingAdvisoryDoor() {
             submitLabel: t({ message: "Ask the village", context: "button that opens the closing-policy vote" }),
             cancelLabel: t({ message: "Not now", context: "button that closes the closing-policy ask" }),
           }}
-          onOpened={(ballotId) => navigate(`/decisions/${ballotId}`)}
+          onOpened={(ballotId) => navigate(`/governance/decisions/${ballotId}`)}
           onCancel={() => setAsking(false)}
         />
       </Suspense>

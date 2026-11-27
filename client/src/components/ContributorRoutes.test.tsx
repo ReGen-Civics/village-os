@@ -9,19 +9,22 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 
 let config: any = null;
 let served = false;
+/** Whether the village serves its investor page, the investor sheet (26 Nov 2026). */
+let investorShown = false;
 vi.mock("@/lib/gameApi", () => ({ useGameConfig: () => config }));
-vi.mock("@/lib/brochure", () => ({ useStoryPageShown: () => (href: string) => served && href === "/work-with-us" }));
+vi.mock("@/lib/brochure", () => ({ useStoryPageShown: () => (href: string) => (served && href === "/work-with-us") || (investorShown && href === "/investor") }));
 /** Whether the reader is a member; a newcomer has no new-role door to fall back to (25 Nov 2026). */
 let member = true;
 vi.mock("@/lib/newcomer", () => ({ useNewcomerOrVisitor: () => !member }));
 
-import ContributorRoutes, { StartVentureButton, useFourWaysHeading, useReplyPromise } from "./ContributorRoutes";
+import ContributorRoutes, { FourWaysSection, StartVentureButton, useFourWaysHeading, useReplyPromise } from "./ContributorRoutes";
 
 afterEach(() => {
   cleanup();
   config = null;
   member = true;
   served = false;
+  investorShown = false;
 });
 
 function Headed() {
@@ -43,7 +46,7 @@ describe("the four cards", () => {
     expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     // Compensation for a role; "rewarded" is for quests only.
     expect(within(cards[0] as HTMLElement).getByText("The compensation the role's terms set out, agreed together.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles#founding-team");
+    expect(screen.getByRole("link", { name: "Join the Core Team" }).getAttribute("href")).toBe("/roles#founding-team");
     // Start a venture lands on the proposal form set up for a venture (the lead, 24 Nov 2026).
     expect(screen.getByRole("link", { name: "Start a venture" }).getAttribute("href")).toBe("/work-with-us?kind=venture");
     expect(screen.getByRole("link", { name: "Become a partner" }).getAttribute("href")).toBe("/partner");
@@ -152,7 +155,7 @@ describe("the compact tiles, the application's register and the nonprofit line",
   it("draws the tiles with the verb and a few words only, no promise", () => {
     render(<ContributorRoutes variant="tiles" />);
     expect(Array.from(document.querySelectorAll("[data-route-door]")).map((a) => a.textContent)).toEqual([
-      "Join the teamA role on the team, with its own terms.",
+      "Join the Core TeamA role on the team, with its own terms.",
       "Start a ventureYour own business on the land.",
       "Become a partnerPartner with us, thrive together.",
       "Propose a questA one-off piece of work, rewarded.",
@@ -184,7 +187,7 @@ describe("the other three, beside a role", () => {
     expect(document.querySelectorAll("[data-route-promise]")).toHaveLength(0);
     cleanup();
     render(<ContributorRoutes hrefs={{ team: "/roles/select" }} />);
-    expect(screen.getByRole("link", { name: "Join the team" }).getAttribute("href")).toBe("/roles/select");
+    expect(screen.getByRole("link", { name: "Join the Core Team" }).getAttribute("href")).toBe("/roles/select");
   });
 });
 
@@ -242,5 +245,22 @@ describe("the in-page anchors on /roles", () => {
     expect(seen).toEqual(["auto"]);
     expect(document.activeElement?.id).toBe("founding-team");
     window.matchMedia = mm;
+  });
+});
+
+describe("the top of /roles, where the reader is already on the team's page", () => {
+  it("puts the investor's door to the cap table first, in place of Join the Core Team (the lead, 26 Nov 2026)", () => {
+    investorShown = true;
+    render(<FourWaysSection />);
+    const doors = Array.from(document.querySelectorAll("[data-route-door]"));
+    expect(doors.map((a) => a.getAttribute("data-route-door"))).toEqual(["investor", "venture", "partner", "quest"]);
+    expect(screen.getByRole("link", { name: /Join the cap table/ }).getAttribute("href")).toBe("/investor");
+    expect(screen.queryByRole("link", { name: /Join the Core Team/ })).toBeNull();
+  });
+
+  it("keeps Join the Core Team when the village switched its investor page off", () => {
+    render(<FourWaysSection />);
+    const doors = Array.from(document.querySelectorAll("[data-route-door]"));
+    expect(doors.map((a) => a.getAttribute("data-route-door"))).toEqual(["team", "venture", "partner", "quest"]);
   });
 });

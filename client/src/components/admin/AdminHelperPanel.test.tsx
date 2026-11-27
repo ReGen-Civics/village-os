@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 /**
  * The Admin helper panel's three states: off (connect steps), ready (a
- * conversation), and proposing a change (a card whose Apply goes to the
- * dial's own admin route). Plus how it opens: the header menu row and Ctrl+/.
+ * conversation), and proposing a change (a card whose Review and save hands
+ * the change to the page's one save bar; AdminHelperHost.review.test.tsx walks
+ * the Save). Plus how it opens: the header menu row and Ctrl+/.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
@@ -116,7 +117,7 @@ describe("the Admin helper panel", () => {
     expect(onOpenTab).toHaveBeenCalledWith("variables");
   });
 
-  it("PROPOSING: draws the change as a card, and Apply goes through the dial's own route", async () => {
+  it("PROPOSING: draws the change as a card whose Review and save hands it to the save bar, and writes nothing itself", async () => {
     const answer: HelperAnswer = {
       reply: "I can switch that for you.",
       open: null,
@@ -124,27 +125,24 @@ describe("the Admin helper panel", () => {
       refused: null,
       consulted: [],
     };
-    const calls = mockFetch({
-      "POST /api/admin/helper/ask": () => ({ body: answer }),
-      "PUT /api/admin/variables/feed.show_birthdays": () => ({ body: { success: true, message: "Saved. The rule is live" } }),
-    });
-    panel({ initialStatus: { on: true, guide: "Maia", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Maia" } } });
+    const calls = mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer }) });
+    const onReview = vi.fn();
+    panel({ initialStatus: { on: true, guide: "Maia", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Maia" } }, onReview });
     await userEvent.type(screen.getByRole("textbox", { name: "Your question" }), "show birthdays{Enter}");
     const card = await screen.findByTestId("helper-proposal");
     expect(card.textContent).toContain("Show birthdays");
     expect(card.textContent).toContain("false");
     expect(card.textContent).toContain("true");
-    // Nothing is written until the admin presses Apply.
+    expect(screen.queryByRole("button", { name: "Apply" })).toBeNull();
+    // Take me there opens the dial's own place, by the address admin search uses.
+    expect(screen.getByRole("link", { name: "Take me there" }).getAttribute("href")).toBe("/admin?tab=variables&variable=feed.show_birthdays");
+    await userEvent.click(screen.getByRole("button", { name: "Review and save" }));
+    expect(onReview).toHaveBeenCalledWith(answer.proposal);
+    // The guide never writes: only the save bar's Save does (AdminHelperHost).
     expect(calls.filter((c) => c.init.method === "PUT")).toEqual([]);
-    await userEvent.click(screen.getByRole("button", { name: "Apply" }));
-    await waitFor(() => expect(screen.getByText(/Applied\./)).toBeTruthy());
-    const put = calls.find((c) => c.init.method === "PUT")!;
-    expect(put.url).toBe("/api/admin/variables/feed.show_birthdays");
-    expect(JSON.parse(put.init.body)).toEqual({ value: "true" });
-    expect(put.init.headers.Authorization).toBe("Bearer pw");
   });
 
-  it("PROPOSING: shows the route's own refusal when Apply is refused, and Not now leaves it", async () => {
+  it("PROPOSING: a card waiting on the bar says so and can come off it; Not now leaves it as it was", async () => {
     const answer: HelperAnswer = {
       reply: "Here you go.",
       open: null,
@@ -152,16 +150,13 @@ describe("the Admin helper panel", () => {
       refused: null,
       consulted: [],
     };
-    mockFetch({
-      "POST /api/admin/helper/ask": () => ({ body: answer }),
-      "PUT /api/admin/variables/feed.x": () => ({ status: 403, body: { error: "This needs a village vote" } }),
-    });
-    panel({ initialStatus: { on: true, guide: "Maia", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Maia" } } });
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer }) });
+    const onUnreview = vi.fn();
+    panel({ initialStatus: { on: true, guide: "Maia", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Maia" } }, waiting: ["feed.x=2"], onUnreview });
     await userEvent.type(screen.getByRole("textbox", { name: "Your question" }), "x{Enter}");
-    await userEvent.click(await screen.findByRole("button", { name: "Apply" }));
-    expect(await screen.findByText("This needs a village vote")).toBeTruthy();
-    await userEvent.click(screen.getByRole("button", { name: "Not now" }));
-    expect(screen.getByText("Left as it was.")).toBeTruthy();
+    expect(await screen.findByText(/Waiting on the save bar at the bottom\./)).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Take it off the bar" }));
+    expect(onUnreview).toHaveBeenCalledWith(answer.proposal);
   });
 
   it("turns itself off when the server says the key went away", async () => {

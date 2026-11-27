@@ -72,7 +72,8 @@ describe("the phone's doors (v4)", () => {
   it("never puts Messages in the corner", () => {
     const keys = cornerRows({ signedIn: true, admin: true, army: null, guide: "the guide", t: ({ message }) => message }).map((r) => r.key);
     expect(keys).not.toContain("messages");
-    expect(keys).toEqual(["ask-guide", "ask-admin"]);
+    // One guide row for an admin too: Admin's helper is a door inside the guide's panel (the lead, 27 Nov 2026).
+    expect(keys).toEqual(["guide"]);
   });
 
 });

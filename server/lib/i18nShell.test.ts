@@ -23,4 +23,10 @@ describe("the language of the first byte (spec i18n US1, §8 R16)", () => {
     expect(setShellLang(SHELL, "ar-XB")).toContain('<html lang="ar-XB" dir="rtl">');
     expect(setShellLang(SHELL, "en")).toContain('<html lang="en" dir="ltr">');
   });
+
+  it("keeps the marks the other splices put on the html element", () => {
+    const marked = SHELL.replace('<html lang="en">', '<html lang="en" data-scheme="dark" data-village-mode="dark" data-village-paper="sea-chart">');
+    expect(setShellLang(marked, "es")).toContain('<html lang="es" dir="ltr" data-scheme="dark" data-village-mode="dark" data-village-paper="sea-chart">');
+    expect(setShellLang(setShellLang(marked, "es"), "ar-XB")).toContain('<html lang="ar-XB" dir="rtl" data-scheme="dark" data-village-mode="dark" data-village-paper="sea-chart">');
+  });
 });

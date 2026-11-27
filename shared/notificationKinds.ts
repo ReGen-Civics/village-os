@@ -403,6 +403,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // An agent's seating or setting lapses tomorrow if nobody decides it (server/lib/approvalLapseNotice.ts). Bell only.
+  approval_lapsing: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
   submission: {
     group: "decisions",
     celebrate: false,
@@ -528,6 +534,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     group: "work",
     celebrate: false,
     waits: true,
+  },
+  // A member took back work they had turned in (the quest card, 27 Nov 2026).
+  // It asks nothing of the steward, so it does not wait.
+  quest_pulled_back: {
+    group: "work",
+    celebrate: false,
   },
   quest_consented: {
     group: "work",

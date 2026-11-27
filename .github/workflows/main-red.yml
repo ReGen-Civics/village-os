@@ -1,0 +1,79 @@
+# Main is red: say so once, with the cause (scripts/main-red.mjs).
+#
+# On 26 Nov 2026 main's push run went red five times. Every pull_request run merges
+# main, so each open pull request inherited the red, thirteen showed as sent back at
+# once, and five lanes each re-diagnosed the same failure. When ci.yml finishes a
+# push run on main this keeps ONE issue, "main is red" (label main-red), with the sha
+# and a cause line, and ONE comment on each open, non-draft pull request whose
+# failures are all main's, edited rather than re-posted. When main is green again it
+# closes the issue and says so on those comments. The coordinator and the fleet feed
+# watch the main-red label.
+#
+# A pull request that changes this rehearses it: a dry run against a187ce0's red
+# run (45869759398), printing what it would write and writing nothing.
+name: main-red
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [main]
+  pull_request:
+    paths:
+      - "scripts/main-red.mjs"
+      - "scripts/main-red.test.mjs"
+      - ".github/workflows/main-red.yml"
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "The ci.yml run on main to report"
+        required: true
+        type: string
+      dry_run:
+        description: "Print what it would write, and write nothing"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+# One at a time, in order: a green right after a red must close what the red opened.
+concurrency:
+  group: main-red
+  cancel-in-progress: false
+
+jobs:
+  alarm:
+    # Push runs only: ci.yml's runs on main are push runs, and nothing else is main's verdict.
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: The alarm refuses what it should
+        run: node scripts/main-red.test.mjs
+
+      - name: Report main's verdict
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RUN_FROM_CI: ${{ github.event.workflow_run.id }}
+          RUN_FROM_INPUT: ${{ inputs.run_id }}
+          DRY_INPUT: ${{ inputs.dry_run }}
+        run: |
+          case "$EVENT" in
+            workflow_run)      node scripts/main-red.mjs --run "$RUN_FROM_CI" ;;
+            workflow_dispatch) if [ "$DRY_INPUT" = "true" ]; then node scripts/main-red.mjs --run "$RUN_FROM_INPUT" --dry-run; else node scripts/main-red.mjs --run "$RUN_FROM_INPUT"; fi ;;
+            pull_request)      node scripts/main-red.mjs --run 45869759398 --dry-run ;;
+          esac

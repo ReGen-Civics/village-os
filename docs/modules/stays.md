@@ -159,7 +159,7 @@ One "Stays" tab in Admin.tsx (existing tab pattern): (1) Occupancy — requested
 - SOFT: Phase 3 notification spine + existing Resend email — low-balance warnings and payment receipts; v1 works without them
 - SOFT: Stripe account + STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET env per deployment (each fork brings its own); manual payment recording covers the gap
 - EXISTING, reused: shared/capabilities.ts (new stay.member_rate key), shared/gameVariables.ts registry, quest consent path (stay-credit rewards), visit-config doc (visitTypeId link), addActivity, Admin tab pattern, mobileNav config, drawer.tsx
-- OPTIONAL v2: Maia — one new PROPOSAL_KINDS entry 'stay-inquiry' reusing the existing guarded assistant plumbing, zero new AI infra
+- OPTIONAL v2: The village guide — one new PROPOSAL_KINDS entry 'stay-inquiry' reusing the existing guarded assistant plumbing, zero new AI infra
 
 ## v1 (ship first, useful alone)
 
@@ -167,7 +167,7 @@ Ships alone and useful (3 sessions): admin defines accommodations with explicit 
 
 ## v2 (the rest of the design)
 
-The full slide vision plus operations (2 sessions, after Phase 3 lands): scheduler-driven nightly autopay at the configured village-timezone hour with grace nights and admin attention flags; low-balance notifications ("3 nights left — here are two work-exchange quests") through the notification spine with dedupe keys, plus the nextActions 'stay-low-balance' rule; date-range bookings with per-date capacity checks (still deliberately not a PMS — no housekeeping, no room assignment, no channel management); occupancy dashboard upgrades (arrivals this week, projected nights, revenue by token); Stripe refund handling; equity/Voice display beside the purchase panel with Hypha deep link; Maia 'stay-inquiry' proposal kind; optional F2 wiring where the Gratitude cycle-close release can target stay credits if a village ever wants recognition to feed lodging through the governed-pool mechanism instead of (or alongside) direct quest rewards.
+The full slide vision plus operations (2 sessions, after Phase 3 lands): scheduler-driven nightly autopay at the configured village-timezone hour with grace nights and admin attention flags; low-balance notifications ("3 nights left — here are two work-exchange quests") through the notification spine with dedupe keys, plus the nextActions 'stay-low-balance' rule; date-range bookings with per-date capacity checks (still deliberately not a PMS — no housekeeping, no room assignment, no channel management); occupancy dashboard upgrades (arrivals this week, projected nights, revenue by token); Stripe refund handling; equity/Voice display beside the purchase panel with Hypha deep link; the village guide 'stay-inquiry' proposal kind; optional F2 wiring where the Gratitude cycle-close release can target stay credits if a village ever wants recognition to feed lodging through the governed-pool mechanism instead of (or alongside) direct quest rewards.
 
 ## Risks
 

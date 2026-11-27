@@ -103,7 +103,7 @@ export default function VillageAgreements() {
             <ul className="mt-2 space-y-1">
               {voting.map((a) => (
                 <li key={a.id}>
-                  <Link href={`/decisions/${a.ballotId}`} className="text-sm font-medium text-teal-deep underline">
+                  <Link href={`/governance/decisions/${a.ballotId}`} className="text-sm font-medium text-teal-deep underline">
                     {a.title}
                   </Link>
                 </li>

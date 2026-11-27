@@ -22,7 +22,7 @@
  * runs, so the line under a field is the sentence the server would answer:
  * the handover and CCOS parsers, and 3 to 6 things a role answers for.
  */
-import { CARD_WORDS as W } from "@shared/playerCard";
+import { cardHeadingNow, type CardHeadingKey } from "@/components/playerCard/cardHeadings";
 import type { RoleTermKey } from "@shared/playerCardWords";
 import { ROLE_WORD_FIELD, type RoleEditKey } from "@shared/playerCardEdit";
 import { ROLE_CCOS_WORDS } from "@shared/roleCcos";
@@ -46,19 +46,23 @@ export interface EditField {
   group?: "holding";
 }
 
+/** A field whose heading is read in the language active now, each time it is read. */
+const withLabel = (f: Omit<EditField, "label">): EditField =>
+  Object.defineProperty({ ...f }, "label", { enumerable: true, get: () => cardHeadingNow(f.key as CardHeadingKey) }) as EditField;
+
 export const EDIT_FIELDS: readonly EditField[] = [
-  { field: "aim", key: "purpose", label: W.purpose, term: "purpose", list: false, multiline: true },
-  { field: "existsWhile", key: "existsWhile", label: W.existsWhile, term: "existsWhile", list: false, multiline: true, hint: ROLE_CCOS_WORDS.existsWhileHint },
-  { field: "domain", key: "decide", label: W.decide, term: "decide", list: false, multiline: true },
-  { field: "authorities", key: "authorities", label: W.authorities, term: "authorities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.authoritiesHint },
-  { field: "accountabilities", key: "countOnMe", label: W.countOnMe, term: "countOnMe", list: true, multiline: true, hint: proposalWords().countOnMeHint },
-  { field: "responsibilities", key: "responsibilities", label: W.responsibilities, term: "responsibilities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.responsibilitiesHint },
-  { field: "bringMe", key: "bringMe", label: W.bringMe, term: null, list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.bringMeHint },
-  { field: "notMine", key: "notMine", label: W.notMine, term: "notMine", list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.notMineHint },
-  { field: "signsStretched", key: "signsStretched", label: W.signsStretched, term: "signsStretched", list: false, multiline: true, hint: ROLE_CCOS_WORDS.signsStretchedHint, group: "holding" },
-  { field: "flowsBack", key: "flowsBack", label: W.flowsBack, term: "flowsBack", list: false, multiline: true, hint: ROLE_CCOS_WORDS.flowsBackHint, group: "holding" },
-  { field: "stepBack", key: "stepBack", label: W.stepBack, term: "stepBack", list: false, multiline: true, hint: ROLE_CCOS_WORDS.stepBackHint, group: "holding" },
-  { field: "timeCommitment", key: "timeCommitment", label: W.timeCommitment, term: "timeCommitment", list: false, multiline: true, hint: ROLE_CCOS_WORDS.timeCommitmentHint },
+  withLabel({ field: "aim", key: "purpose", term: "purpose", list: false, multiline: true }),
+  withLabel({ field: "existsWhile", key: "existsWhile", term: "existsWhile", list: false, multiline: true, hint: ROLE_CCOS_WORDS.existsWhileHint }),
+  withLabel({ field: "domain", key: "decide", term: "decide", list: false, multiline: true }),
+  withLabel({ field: "authorities", key: "authorities", term: "authorities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.authoritiesHint }),
+  withLabel({ field: "accountabilities", key: "countOnMe", term: "countOnMe", list: true, multiline: true, hint: proposalWords().countOnMeHint }),
+  withLabel({ field: "responsibilities", key: "responsibilities", term: "responsibilities", list: true, multiline: true, hint: ROLE_CCOS_WORDS.responsibilitiesHint }),
+  withLabel({ field: "bringMe", key: "bringMe", term: null, list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.bringMeHint }),
+  withLabel({ field: "notMine", key: "notMine", term: "notMine", list: true, multiline: true, hint: ROLE_HANDOVER_WORDS.notMineHint }),
+  withLabel({ field: "signsStretched", key: "signsStretched", term: "signsStretched", list: false, multiline: true, hint: ROLE_CCOS_WORDS.signsStretchedHint, group: "holding" }),
+  withLabel({ field: "flowsBack", key: "flowsBack", term: "flowsBack", list: false, multiline: true, hint: ROLE_CCOS_WORDS.flowsBackHint, group: "holding" }),
+  withLabel({ field: "stepBack", key: "stepBack", term: "stepBack", list: false, multiline: true, hint: ROLE_CCOS_WORDS.stepBackHint, group: "holding" }),
+  withLabel({ field: "timeCommitment", key: "timeCommitment", term: "timeCommitment", list: false, multiline: true, hint: ROLE_CCOS_WORDS.timeCommitmentHint }),
 ];
 
 /** The new role's name: a field of its words, and the only one a new role must have. */

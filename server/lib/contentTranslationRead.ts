@@ -91,6 +91,8 @@ export interface RoleCardTranslation {
   /** The addresses shown from a machine draft ("role_card:aim"), for the page to mark. */
   machine: string[];
   locale: string;
+  /** Set on a binding page: these words are its reading copy, and the English stays the binding text. */
+  readingCopy?: true;
 }
 
 /**
@@ -184,13 +186,16 @@ export function pageEnglishAt(section: string, stored: unknown, address: string)
   return null;
 }
 
-/** A page's words in the reader's language. Null for a page that is not translated, or is binding text. */
+/** A page's words in the reader's language, or a binding page's reading copy (marked). Null when there are none. */
 export async function pageTranslation(pool: Pool, section: string, stored: unknown, locale: string): Promise<PageTranslation | null> {
-  if (!section.startsWith(PAGE_SECTION_PREFIX) || PROTECTED_PAGES.includes(section.slice(PAGE_SECTION_PREFIX.length))) return null;
+  if (!section.startsWith(PAGE_SECTION_PREFIX)) return null;
   if (!pageSpecForSection(section)) return null;
-  const rows = await translationsFor(pool, "page_section", [section], locale);
-  const out: PageTranslation = { fields: {}, machine: [], locale };
+  // A binding page has no translation, only its reading copy, and only the lines a person accepted.
+  const binding = PROTECTED_PAGES.includes(section.slice(PAGE_SECTION_PREFIX.length));
+  const rows = await translationsFor(pool, binding ? "reading_copy" : "page_section", [section], locale);
+  const out: PageTranslation = { fields: {}, machine: [], locale, ...(binding ? { readingCopy: true as const } : {}) };
   for (const row of rows) {
+    if (binding && row.status !== "approved") continue;
     if (!translationTarget(row.kind, row.refKey, row.field).ok) continue;
     if (!fresh(row, pageEnglishAt(section, stored, row.field))) continue;
     out.fields[row.field] = row.text;

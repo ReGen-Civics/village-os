@@ -40,6 +40,158 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.92 (2026-11-27)
+
+### What changed for your village
+
+- **An investor gate, off until you turn it on.** With the village variable `investors.gate` on, the investor page shows only a welcome line and an interest form to anyone the village has not let in. The form asks for a name and an email (filled in from the entrance when the visitor already gave them) and offers optional questions: investor type, country, accreditation (self-reported), check size, structure, time horizon, thesis, interests, experience and how they heard. Answers land on the Form Submissions desk. Accepting a request only opens the investor page to that person: no account, no invite, no email. The server holds back every investor word, the summary, the packet, the investor FAQ and the page's own default text from anyone not let in.
+
+### What you must do
+
+Nothing. To gate your investor page, turn on `investors.gate` in Admin, Game Mechanics.
+
+### Does it touch your data
+
+One new table, `investor_access`, added on the way up (migration 0440). Nothing is removed or changed, so going back to 1.3.91 still works.
+
+---
+
+## 1.3.91 (2026-11-27)
+
+### What changed for your village
+
+- **Quests, end to end.** A member can take back work they turned in until it is approved, and the stewards are told. The profile lists every quest a member is doing and the open quests suited to their roles. A quest's steps can each ask for words, photos or documents, and a ticked step must be filled before the quest is turned in; reordering the steps clears the ticks. "Work to check" shows in Today, and in the admin inbox, only while something waits.
+- **The home page.** Every path picture fills its card. The season reads as one card: its name once, a ring of goals met, a time line to its close, and one Plan your season button. "Who comes here" is the last section.
+- **One guide in the corner.** The corner menu shows a member's own companions and one row for the village guide, in the guide's own name and picture, with Admin help inside it for an admin. Every animal picture is round. The guide's knowledge files no longer name a guide.
+- **A clean peek at the map.** The home page's map window shows the village's own map, with buildings sized to the window and no controls in it.
+
+### What you must do
+
+Nothing. An admin can tick which quest steps need a submission in the quest editor.
+
+### Does it touch your data
+
+One new column on quests and one new table for what members give per step (migration 0439), added on the way up. Nothing is removed or changed, so going back to 1.3.90 still works.
+
+---
+
+## 1.3.90 (2026-11-27)
+
+### What changed for your village
+
+- **Paths and Menu at the top of a phone.** The phone's top bar reads logo, Paths, bell, Menu. Paths opens the village's paths, each with its picture and one line; Menu opens the same sheet as More, and works for a visitor too. Wide screens are unchanged.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.89 still works.
+
+---
+
+## 1.3.89 (2026-11-27)
+
+### What changed for your village
+
+- **The entrance on a phone.** The header scrolls away with the page, and the form's card drops its blur and its rise, so scrolling over the video is smooth. Wide screens are unchanged.
+- **Talk to your guide.** The chat box says one line: "<name> is your Village Guide". Where the words go is still said, with the Yes button, before a member agrees.
+- **The top of the roles page.** A reader there is already on the team's page, so the first tile is "Join the cap table", to the investor page. A village with that page switched off keeps "Join the Core Team".
+- **Gratitude first.** In the treasury the Gratitude purse sits at the top, above cash.
+- **One card per quest.** Each "Coming when you finish" quest in the treasury opens its own page. A member who took a quest reads "You took this quest" there, with a jump to the next step, and can put a quest back before turning it in.
+- **Goal and terms checks in the reader's language.** The checks on a role's goals and terms carry a code, so they read in Spanish too.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.88 still works.
+
+---
+
+## 1.3.88 (2026-11-27)
+
+### What changed for your village
+
+- **Governance is the village's dashboard.** Review is now Governance, with its own addresses; old links keep working. Its pages read in short steps and bullets.
+- **The Now view.** /governance opens on what the village is deciding now, and a guest first reads the village's own line about who owns and governs it, editable under Pages.
+- **Every draft has a page.** "Read the draft" opens the draft itself: what it changes, before and after for each field, edits kept as revisions with a note, leaving one change out, and the publish, vote and withdraw buttons.
+- **A lighter first page.** The first page's own code now ships as one file, so a visit loads less and the whole build takes 116 KB less room.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+One new table, `org_draft_revisions`, added on the way up (migration 0437), which keeps a draft's edits. Nothing is removed or changed, so going back to 1.3.87 still works.
+
+---
+
+## 1.3.87 (2026-11-27)
+
+### What changed for your village
+
+- **Make this yours, step one.** Setup starts with "Bring your agent or guide", and the guide's Review and save goes through the one save bar.
+- **A word before a proposal lapses.** An agent's proposal shows when it lapses, and the people who may decide it get a notice in the bell a day before.
+- **Sea chart's wayfinding.** In the light chart look, the current menu section and the breadcrumb trail take a nautical style; a role page now marks "Circles & Roles" as the way there.
+- **Apply by, plainly, on phones too.**
+- **More Spanish:** the proposal wizard's checks and the role application checks.
+- **Steadier checks:** the generated files' commit no longer runs a full check of its own, the duplicate run on release branches is gone, each pull request is told its size against the limit, and two tests that could fail by chance are fixed.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+None. No migration in this release, so going back to 1.3.86 still works.
+
+---
+
+## 1.3.86 (2026-11-26)
+
+### What changed for your village
+
+- **Pay stays with those who may read terms.** The proposed-changes list showed a role's pay to anyone who could open it. It now shows pay only to people with the right to read terms; everyone else sees that pay changes, with no figure, and nothing they save can erase it.
+- **A fix to the platform's own checks:** the step that tidies generated files after each release no longer stops on a missing test database.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. Going back to 1.3.85 still works.
+
+---
+
+## 1.3.85 (2026-11-26)
+
+### What changed for your village
+
+- **The menu shows where you are.** The section a page belongs to lights up in the menu bar and on the phone, and deeper pages carry a short trail back.
+- **Faces on Roles.** A founding role shows its holder's portrait when that person has chosen to show it on their profile, and the initial otherwise.
+- **Each village chooses its first-visit look.** A new setting picks light or dark for someone arriving for the first time; the platform default is light.
+- **Reading copies of binding pages.** The Love Letter's sections, both rights pages and Good Neighbor can carry a Spanish reading copy, clearly marked: the English text stays the binding version.
+- **"Join the Core Team"** on the team path's cards.
+- **More Spanish:** the player card's role health, open proposals and signs, the role words' headings, role-proposal reads, circle consent, consent round answers and application stages, the digest's batched line, and the voting day on the decide doors.
+- **Drafts remember what they changed.** A role or circle change now records the card as it stood when the change was drafted, ready for a page that shows each draft's before and after.
+- **Steadier checks.** Fixes to how the platform checks its own changes, so a release cannot leave the main line broken, and a reservation test that miscounted emails now counts only its own.
+
+### What you must do
+
+Nothing. A village that wants dark for first visits sets it under the look settings.
+
+### Does it touch your data
+
+One new optional column, `org_draft_changes.base_json`, added on the way up (migration 0436). Nothing is removed or changed, so going back to 1.3.84 still works.
+
+---
+
 ## 1.3.84 (2026-11-26)
 
 ### What changed for your village

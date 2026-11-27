@@ -40,6 +40,7 @@ import { ArrowLeft} from "lucide-react";
 import { CouncilCircle } from "@/components/sacred/living";
 import { Link, useRoute } from "wouter";
 import { Trans } from "@lingui/react/macro";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 // Keyed by the union the registry declares, so a new data class cannot ship
 // without the plain-words line this page prints under it.
@@ -61,6 +62,7 @@ export default function ModuleDetail() {
   const { all: adminRows, extra, reload: reloadAdmin } = useAdminModules(!!steward);
   const { history } = useModuleHistory(id, !!viewer && viewer.mode !== "visitor");
   const basket = useBasket();
+  useCrumbLeaf(data?.modules.find((x) => x.id === id)?.name); // the last crumb (components/nav/Breadcrumbs.tsx)
 
   if (failed) {
     return (
@@ -267,7 +269,7 @@ export default function ModuleDetail() {
               {runningLine(door.proposal)}
             </h2>
             <Link
-              href={door.proposal.ballotId ? `/decisions/${door.proposal.ballotId}` : proposalHref(door.proposal.id)}
+              href={door.proposal.ballotId ? `/governance/decisions/${door.proposal.ballotId}` : proposalHref(door.proposal.id)}
               className="mt-3 inline-flex min-h-[44px] items-center rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white"
             >
               {door.proposal.ballotId ? "Go to the vote" : "Go to the proposal"}

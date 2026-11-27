@@ -45,7 +45,8 @@ type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "
 };
 
 /** The powers whose holders see the inbox besides an admin. The routes behind each card still decide who may approve. */
-const READERS = ["org.decide", "org.seat", "story.tell", "map.publish", "intake.moderate"] as const;
+/** The powers that open the inbox, beside an admin. Exported for the lapse notice, which tells exactly these people. */
+export const READERS = ["org.decide", "org.seat", "story.tell", "map.publish", "intake.moderate"] as const;
 
 const firstName = (name: unknown) => String(name ?? "").trim().split(/\s+/)[0] || "Someone";
 const DRAFT_PREFIX = "draft:";

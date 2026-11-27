@@ -117,8 +117,14 @@ export default function QuestActions({
   decimals = 0,
   pay,
   isExample = false,
+  owedSteps = [],
+  stepsCarryEvidence = false,
   onChanged,
 }: {
+  /** Steps that need a submission and have none yet (0439), zero-based. The turn-in waits on them. */
+  owedSteps?: number[];
+  /** The steps already carry the evidence, so the link and the words are optional. */
+  stepsCarryEvidence?: boolean;
   questId: string;
   signedIn: boolean;
   /**
@@ -141,9 +147,13 @@ export default function QuestActions({
 }) {
   const [busy, setBusy] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
-  const [artifactUrl, setArtifactUrl] = useState("");
-  const [note, setNote] = useState("");
+  // Work taken back keeps what was given, so the form opens on it (the lead, 27 Nov 2026).
+  const [artifactUrl, setArtifactUrl] = useState(claim?.artifactUrl ?? "");
+  const [note, setNote] = useState(claim?.note ?? "");
   const [error, setError] = useState("");
+  // Put it back (the lead, 27 Nov 2026): a two-step ask, then one plain line once it is done.
+  const [askingBack, setAskingBack] = useState(false);
+  const [putBack, setPutBack] = useState(false);
   const { t } = useLingui();
 
   if (isExample && (!claim || claim.status === "declined")) {
@@ -200,6 +210,52 @@ export default function QuestActions({
     setBusy(false);
   };
 
+  /*
+   * PUT IT BACK. Only a claim still `claimed` can go back; the route refuses a
+   * turned-in claim and says who can hand it back. The quest leaves the
+   * member's lists and opens for somebody else, and the page reads the claims
+   * again so the act turns back into "Take this Quest".
+   */
+  const doPutBack = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await gameFetch(`/api/game/quests/${questId}/withdraw`, { method: "POST" });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.message ?? d.error ?? t({ message: "That didn't go through. Try again.", context: "quest page: putting a quest back failed" }));
+      } else {
+        setPutBack(true);
+      }
+      setAskingBack(false);
+      onChanged();
+    } catch {
+      setError(t({ message: "That didn't go through. Try again.", context: "quest page: putting a quest back failed" }));
+    }
+    setBusy(false);
+  };
+
+  /*
+   * TAKE IT BACK, until it is paid (the lead, 27 Nov 2026). The work goes back
+   * into the member's hands with everything they gave, so they change it and
+   * turn it in again; it leaves the steward's queue, and the steward is told.
+   */
+  const doTakeBack = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await gameFetch(`/api/game/quests/${questId}/pull-back`, { method: "POST" });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.message ?? d.error ?? t({ message: "That didn't go through. Try again.", context: "quest page: taking work back failed" }));
+      }
+      onChanged();
+    } catch {
+      setError(t({ message: "That didn't go through. Try again.", context: "quest page: taking work back failed" }));
+    }
+    setBusy(false);
+  };
+
   const doSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -239,6 +295,11 @@ export default function QuestActions({
       ) : claim.status === "claimed" ? (
         showSubmit ? (
           <form onSubmit={doSubmit} className="space-y-2">
+            {stepsCarryEvidence && (
+              <p className="m-0 text-xs text-muted-foreground">
+                {t({ message: "Your steps hold your work. You can add a link or a few more words if you like.", context: "quest page: the turn-in form when the steps carry the evidence" })}
+              </p>
+            )}
             <input
               type="url"
               value={artifactUrl}
@@ -263,17 +324,85 @@ export default function QuestActions({
             </div>
           </form>
         ) : (
-          <button
-            onClick={() => setShowSubmit(true)}
-            className="inline-flex items-center gap-2 text-sm font-semibold bg-amber text-foreground px-4 py-2 rounded-lg hover:bg-amber/90 transition-colors pointer-coarse:min-h-11"
-          >
-            <Trans context="QuestActions, button"><Send className="w-4 h-4" /> Turn in your work
-          </Trans></button>
+          <div className="flex flex-col items-start gap-2">
+            <button
+              onClick={() => {
+                // The claim arrives after the first paint, so what was given is laid in when the form opens.
+                setArtifactUrl((a) => a || claim.artifactUrl || "");
+                setNote((n) => n || claim.note || "");
+                setShowSubmit(true);
+              }}
+              disabled={owedSteps.length > 0}
+              className="inline-flex items-center gap-2 text-sm font-semibold bg-amber text-foreground px-4 py-2 rounded-lg hover:bg-amber/90 transition-colors disabled:opacity-50 pointer-coarse:min-h-11"
+            >
+              <Trans context="QuestActions, button"><Send className="w-4 h-4" /> Turn in your work
+            </Trans></button>
+            {owedSteps.length > 0 && (
+              <p className="m-0 text-xs text-muted-foreground" data-steps-owed>
+                {owedSteps.length === 1
+                  ? t({ message: `Step ${owedSteps[0] + 1} needs something from you first.`, context: "quest page: the turn-in waits on one step" })
+                  : t({ message: `Steps ${owedSteps.map((i) => i + 1).join(", ")} need something from you first.`, context: "quest page: the turn-in waits on several steps" })}
+              </p>
+            )}
+            {claim.submittedAt && (
+              <p className="m-0 text-xs text-muted-foreground">
+                {t({ message: "You took this back. Change what you need, then turn it in again.", context: "quest page: work taken back, in hand again" })}
+              </p>
+            )}
+            {askingBack ? (
+              <div className="w-full rounded-lg border border-border p-3" data-put-back-ask>
+                <p className="m-0 text-sm text-foreground">
+                  {t({ message: "Put this quest back? It leaves your quests and opens for someone else.", context: "quest page: the ask before putting a quest back" })}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={doPutBack}
+                    disabled={busy}
+                    className="inline-flex min-h-11 items-center rounded-lg border border-border px-3 text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-50"
+                  >
+                    {busy
+                      ? t({ message: "Putting it back…", context: "quest page: putting a quest back, in progress" })
+                      : t({ message: "Yes, put it back", context: "quest page: confirm putting a quest back" })}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAskingBack(false)}
+                    className="inline-flex min-h-11 items-center px-3 text-sm text-muted-foreground"
+                  >
+                    {t({ message: "Keep it", context: "quest page: keep the quest, do not put it back" })}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAskingBack(true)}
+                className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                data-put-back
+              >
+                {t({ message: "Put this quest back", context: "quest page: let go of a quest you took" })}
+              </button>
+            )}
+          </div>
         )
       ) : claim.status === "submitted" ? (
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-700">
-          <Trans context="QuestActions, span"><Send className="w-4 h-4" /> Turned in! Waiting on the circle's yes.
-        </Trans></span>
+        <div>
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-700">
+            <Trans context="QuestActions, span"><Send className="w-4 h-4" /> Turned in! Waiting on the circle's yes.
+          </Trans></span>
+          <div className="mt-1.5">
+            <button
+              type="button"
+              onClick={doTakeBack}
+              disabled={busy}
+              className="inline-flex min-h-11 items-center text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground disabled:opacity-50"
+              data-take-back
+            >
+              {t({ message: "Take it back to change it", context: "quest page: take back work turned in, until it is paid" })}
+            </button>
+          </div>
+        </div>
       ) : (
         <ConsentedReward claim={claim} decimals={decimals} pay={pay} />
       )}
@@ -282,6 +411,11 @@ export default function QuestActions({
           role a member using a screen reader presses Claim, hears nothing,
           and has no way to learn the quest was already taken. */}
       {error && <p role="alert" className="text-xs text-red-600 mt-1.5">{error}</p>}
+      {putBack && (!claim || claim.status === "declined") && (
+        <p role="status" className="text-xs text-muted-foreground mt-1.5">
+          {t({ message: "Put back. It has left your quests and is open for someone else.", context: "quest page: after putting a quest back" })}
+        </p>
+      )}
     </div>
   );
 }

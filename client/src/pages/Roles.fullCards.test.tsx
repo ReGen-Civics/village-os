@@ -247,19 +247,19 @@ describe("open ventures: what a venture is, the pitch, and the ones open now fir
     expect(group.querySelector("[data-open-now]")).toBeNull();
   });
 
-  it("opens with the four ways to build as compact tiles, largest commitment first, Join the team and Start a venture scrolling down this page", async () => {
+  it("opens with the four ways to build as compact tiles: the investor's cap table first (the reader is already on the team's page, the lead, 26 Nov 2026), Start a venture scrolling down this page", async () => {
     renderRoles();
     await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const four = screen.getByRole("region", { name: /^Four ways to build/ });
     expect(four.querySelector("[data-contributor-routes]")?.getAttribute("data-contributor-routes")).toBe("tiles");
     const doors = Array.from(four.querySelectorAll("[data-route-door]"));
     expect(doors.map((a) => a.textContent)).toEqual([
-      "Join the teamA role on the team, with its own terms.",
+      "Join the cap tableInvest in the village as a capital contributor.",
       "Start a ventureYour own business on the land.",
       "Become a partnerPartner with us, thrive together.",
       "Propose a questA one-off piece of work, rewarded.",
     ]);
-    expect(doors.map((a) => a.getAttribute("href"))).toEqual(["#founding-team", "#open-ventures", "/partner", "/propose-quest"]);
+    expect(doors.map((a) => a.getAttribute("href"))).toEqual(["/investor", "#open-ventures", "/partner", "/propose-quest"]);
     // Both anchors are real sections on the page, each with a heading that takes focus.
     const team = document.getElementById("founding-team") as HTMLElement;
     expect(team.querySelector("[data-section-focus]")?.textContent).toBe("Join the founding team");

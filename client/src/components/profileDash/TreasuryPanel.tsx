@@ -218,6 +218,38 @@ export default function TreasuryPanel({
       </div>
 
       <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        {/* Gratitude first, above cash (the lead, 26 Nov 2026). */}
+        {data.gratitude ? (
+          <Purse
+            coin="thanks"
+            glyph={thanksName.trim().slice(0, 1).toUpperCase()}
+            name={thanksName}
+            value={whole(data.gratitude.receivedThisCycle)}
+            delta="received this cycle"
+            what={null}
+            actions={
+              <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
+                <Trans context="TreasuryPanel, Link">Send {thanksName.toLowerCase()}</Trans>
+              </Link>
+            }
+          >
+            {data.gratitude.total > 0 ? (
+              <div className="flex flex-col gap-1">
+                <div className="h-2 overflow-hidden rounded bg-dash-track">
+                  <div
+                    className="h-full bg-dash-thanks"
+                    style={{ width: `${Math.round((Math.min(data.gratitude.remaining, data.gratitude.total) / data.gratitude.total) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  <Trans context="TreasuryPanel, span">{whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
+                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}</Trans>
+                </span>
+              </div>
+            ) : null}
+          </Purse>
+        ) : null}
+
         {cash ? (
           <Purse
             coin="cash"
@@ -312,36 +344,6 @@ export default function TreasuryPanel({
           />
         ) : null}
 
-        {data.gratitude ? (
-          <Purse
-            coin="thanks"
-            glyph={thanksName.trim().slice(0, 1).toUpperCase()}
-            name={thanksName}
-            value={whole(data.gratitude.receivedThisCycle)}
-            delta="received this cycle"
-            what={null}
-            actions={
-              <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
-                <Trans context="TreasuryPanel, Link">Send {thanksName.toLowerCase()}</Trans>
-              </Link>
-            }
-          >
-            {data.gratitude.total > 0 ? (
-              <div className="flex flex-col gap-1">
-                <div className="h-2 overflow-hidden rounded bg-dash-track">
-                  <div
-                    className="h-full bg-dash-thanks"
-                    style={{ width: `${Math.round((Math.min(data.gratitude.remaining, data.gratitude.total) / data.gratitude.total) * 100)}%` }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  <Trans context="TreasuryPanel, span">{whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
-                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}</Trans>
-                </span>
-              </div>
-            ) : null}
-          </Purse>
-        ) : null}
       </ul>
 
       <div className="flex flex-wrap gap-4">
@@ -396,11 +398,23 @@ export default function TreasuryPanel({
               </Link></Trans>
             </p>
           ) : (
+            /* Each quest in hand opens its own page, where the member sees the whole quest, turns it in or puts it
+               back (the lead, 27 Nov 2026). The key is the quest's id, the same door the board and the bell open. */
             coming.map((c) => (
-              <div key={c.key} className="border-b border-dash-edge pb-2.5 last:border-b-0">
-                <p className="m-0 text-sm font-medium"><Trans context="TreasuryPanel, p">{c.title} (quest)</Trans></p>
-                <p className="m-0 mt-0.5 text-[13px] text-dash-gold-lit">{c.pay}</p>
-              </div>
+              <Link
+                key={c.key}
+                href={`/quests/${encodeURIComponent(c.key)}`}
+                className="-mx-2 flex min-h-11 items-center gap-3 rounded-xl border-b border-dash-edge px-2 pb-2.5 pt-1 text-foreground no-underline last:border-b-0 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                data-coming-quest={c.key}
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium"><Trans context="TreasuryPanel, p">{c.title} (quest)</Trans></span>
+                  <span className="mt-0.5 block text-[13px] text-dash-gold-lit">{c.pay}</span>
+                </span>
+                <span aria-hidden="true" className="shrink-0 text-dash-gold-lit">
+                  →
+                </span>
+              </Link>
             ))
           )}
           {latest.length > 0 ? (

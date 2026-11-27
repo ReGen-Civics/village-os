@@ -76,6 +76,7 @@ import {
   type WeightRecord as WeightRecordData,
 } from "@/components/governance/governanceApi";
 import { useDecisionNoun } from "@/components/governance/decisionNounWords";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
 
 /**
  * WHAT EACH METHOD MEANS, and its authority is `BALLOT_METHODS` in
@@ -306,6 +307,8 @@ export default function Decision() {
     setBusy(false);
   };
 
+  useCrumbLeaf(ballot?.title); // the last crumb (components/nav/Breadcrumbs.tsx)
+
   if (modules.loaded && !governance) return <ModuleGate moduleId="governance" name="Decisions" />;
 
   if (missing) {
@@ -316,7 +319,7 @@ export default function Decision() {
           <h1 className={H2}><Trans context="Decision, h1">No such decision</Trans></h1>
           <p className="mt-2 text-muted-foreground"><Trans context="Decision, p">It may have been withdrawn, or the link may be wrong.</Trans></p>
           <Link
-            href="/decisions"
+            href="/governance/decisions"
             className={`${BTN_NOTICE} mt-6`}
           >
             <Trans context="Decision, Link">Everything the village is deciding
@@ -365,7 +368,7 @@ export default function Decision() {
       {/* A phone keeps room at the bottom for the bar under the thumb when it is the reader's turn. */}
       <div className={`container max-w-6xl px-4 py-8${myTurn ? " pb-32 lg:pb-8" : ""}`}>
         <Link
-          href="/decisions"
+          href="/governance/decisions"
           className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-notice focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Trans context="Decision, Link"><ArrowLeft className="w-4 h-4" aria-hidden="true" />
@@ -842,7 +845,7 @@ function PriorAttempts({ attempts }: { attempts: PriorAttempt[] }) {
           return (
             <li key={p.id} className="border-l-2 border-border pl-3">
               <Link
-                href={`/decisions/${p.id}`}
+                href={`/governance/decisions/${p.id}`}
                 className="text-sm font-semibold text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {word ? `${word}, ` : ""}

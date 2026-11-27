@@ -54,13 +54,14 @@ function writtenSections(): Promise<ReadonlySet<string> | null> {
  * returned as it came, whatever its shape, because the team cards are an array
  * and every other section is an object; each caller checks its own.
  */
-export function readVillageSection(section: string): Promise<unknown> {
+export function readVillageSection(section: string, headers?: Record<string, string>): Promise<unknown> {
   return writtenSections()
     .then((written) => {
       // Known to be unwritten: the answer the section route would give,
       // without the request the browser would have logged.
       if (written && !written.has(section)) return null;
-      return fetch(`/api/content/${section}`).then((r) =>
+      // `headers`: a page the server keeps for some readers sends the reader's token (the investor page, usePageContent).
+      return fetch(`/api/content/${section}`, headers ? { headers } : undefined).then((r) =>
         // The route 404s with {error: "Section not found"} when nothing has
         // been saved for this key yet: the expected state for a fresh
         // instance, not a fetch failure.

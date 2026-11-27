@@ -97,7 +97,8 @@ export function useRouteWords(register: "plain" | "founding" = "plain"): Record<
   const questVerb = register === "founding" ? t({ message: "Offer a one-off piece of work", context: "four ways to build: a quest, on the application page and its thank-you pages" }) : t({ message: "Propose a quest", context: "four ways to build: a quest" });
   return {
     team: {
-      verb: t({ message: "Join the team", context: "four ways to build: a role" }),
+      // The lead, 26 Nov 2026: "Join the Core Team", the Village Steward path card's own line.
+      verb: t({ message: "Join the Core Team", context: "four ways to build: a role" }),
       line: t({ message: "Hold a role on the team, with its own accountabilities and terms.", context: "four ways to build: a role, in one line" }),
       short: t({ message: "A role on the team, with its own terms.", context: "four ways to build: a role, a compact tile" }),
       bring: t({ message: "Your time and skills, held in one role.", context: "four ways to build: a role, what you bring" }),
@@ -143,6 +144,21 @@ export function useFourWaysHeading(): string {
   return name ? t({ message: `Four ways to build ${name}`, context: "four ways to build: the heading, with the village's name" }) : t({ message: "Four ways to build the village", context: "four ways to build: the heading, before the village has a name" });
 }
 
+/** A door drawn before the four, in the compact tiles only. */
+export interface LeadTile {
+  door: string;
+  href: string;
+  verb: string;
+  short: string;
+}
+
+/** The investor's door to the cap table (the lead, 26 Nov 2026): the investor journey page, the investor sheet. */
+export const INVESTOR_SHEET = { href: "/investor" };
+
+/** A compact tile's link (the top of /roles). */
+const TILE_LINK =
+  "m-touch group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3";
+
 export default function ContributorRoutes({
   variant = "cards",
   except = [],
@@ -151,6 +167,7 @@ export default function ContributorRoutes({
   headingAs = variant === "cards" ? "h2" : "p",
   hrefs = {},
   register = "plain",
+  lead,
   className = "",
 }: {
   /**
@@ -166,6 +183,8 @@ export default function ContributorRoutes({
   /** A page that holds one of the routes itself points its card there (the roles page's open roles). */
   /** A route's own address here; null leaves the route out (a door this reader cannot open). */
   hrefs?: Partial<Record<ContributorRoute, string | null>>;
+  /** One more door drawn first among the compact tiles (the investor tile at the top of /roles). */
+  lead?: LeadTile | null;
   className?: string;
 }) {
   const { t } = useLingui();
@@ -201,11 +220,22 @@ export default function ContributorRoutes({
       <div className={className} data-contributor-routes="tiles">
         {heading ? <Heading id={headingId} className="mb-2 font-display text-lg leading-tight text-foreground sm:mb-3 sm:text-2xl">{heading}</Heading> : null}
       <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+        {lead ? (
+          <li className="m-germ min-w-0" data-route={lead.door}>
+            <Link href={lead.href} className={TILE_LINK} data-route-door={lead.door}>
+              <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
+                {lead.verb}
+                <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground group-hover:text-notice sm:mt-1" aria-hidden="true" />
+              </span>
+              <span className="text-xs leading-snug text-muted-foreground">{lead.short}</span>
+            </Link>
+          </li>
+        ) : null}
         {routes.map((r) => (
           <li key={r} className="m-germ min-w-0" data-route={r}>
             {go(
               r,
-              "m-touch group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
+              TILE_LINK,
               <>
                 {/* The arrow sits on the verb's first line when a long verb wraps (QA, 23 Nov 2026). */}
                 <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
@@ -287,12 +317,29 @@ export default function ContributorRoutes({
   );
 }
 
-/** The top of the roles page: the four ways, named as a region; its words a paragraph, so the page keeps one h1. */
+/**
+ * The top of the roles page: the four ways, named as a region; its words a paragraph, so the page keeps one h1.
+ *
+ * A reader on /roles is already on the team's page, so the first tile is the investor's door to the cap table, the
+ * investor sheet, in place of Join the Core Team (the lead, 26 Nov 2026). A village that switched the investor page
+ * off keeps Join the Core Team there.
+ */
 export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string | null>> }) {
+  const { t } = useLingui();
   const heading = useFourWaysHeading();
+  const shown = useStoryPageShown();
+  const investor = shown(INVESTOR_SHEET.href);
+  const lead: LeadTile | null = investor
+    ? {
+        door: "investor",
+        href: INVESTOR_SHEET.href,
+        verb: t({ message: "Join the cap table", context: "four ways to build: the investor tile at the top of /roles" }),
+        short: t({ message: "Invest in the village as a capital contributor.", context: "four ways to build: the investor tile, a compact tile" }),
+      }
+    : null;
   return (
     <section id="four-ways" aria-labelledby="four-ways-heading" className="mx-auto mb-6 max-w-4xl scroll-mt-24 sm:mb-8 lg:max-w-6xl" data-four-ways="">
-      <ContributorRoutes variant="tiles" heading={heading} headingId="four-ways-heading" headingAs="p" hrefs={hrefs} />
+      <ContributorRoutes variant="tiles" heading={heading} headingId="four-ways-heading" headingAs="p" hrefs={hrefs} except={investor ? ["team"] : []} lead={lead} />
     </section>
   );
 }

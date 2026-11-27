@@ -46,6 +46,9 @@ import {
   currentClaims, gateFix, gateLabel, relativeWhen, statusIs,
   type BoardQuest, type FieldSigns,
 } from "@/lib/questBoard";
+import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
+import QuestSteps, { useStepSubmissions } from "@/components/QuestSteps";
+import { anyStepNeeds, missingSteps } from "@shared/questStepNeeds";
 
 export default function QuestDetail() {
   const [, params] = useRoute("/quests/:id");
@@ -158,6 +161,10 @@ export default function QuestDetail() {
   const now = new Date();
   const Icon = iconFor(quest?.icon);
   const steps = quest?.steps ?? [];
+  const stepNeeds = steps.map((_, i) => quest?.stepNeeds?.[i] === true);
+  // What the member gave for each step (0439), read once here so the steps and the turn-in agree.
+  const stepRows = useStepSubmissions(quest?.id ?? questId, claim);
+  const owedSteps = missingSteps(stepNeeds, stepRows.rows);
   const tips = quest?.tips ?? [];
   /*
    * WHAT IT ASKS FOR, THEN WHY IT MATTERS (2026-10-23).
@@ -174,6 +181,7 @@ export default function QuestDetail() {
   const why = story && story !== lead ? story : "";
   // Whoever runs the place, in the village's own word (Admin, Make This Yours).
   const catalyst = villageWord(cfg?.project?.catalystName, CATALYST_FALLBACK);
+  useCrumbLeaf(quest?.title); // the last crumb (components/nav/Breadcrumbs.tsx)
 
   if (loaded && !quest) {
     return (
@@ -317,6 +325,24 @@ export default function QuestDetail() {
             )}
           </div>
 
+          {/* YOURS (the lead, 27 Nov 2026): a member who holds this quest, arriving
+              from the treasury, the board or the bell, reads that it is theirs at
+              once and reaches what to do next in one tap. On a phone the doing
+              card sits below the whole story, so the strip points down to it. */}
+          {(claim?.status === "claimed" || claim?.status === "submitted") && (
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-notice/40 bg-card px-4 py-3" data-your-quest={claim.status}>
+              <Footprints className="size-5 shrink-0 text-notice" aria-hidden="true" />
+              <p className="m-0 min-w-0 flex-1 text-sm text-foreground">
+                {claim.status === "claimed"
+                  ? t({ message: "You took this quest. Turn in your work when it is done, or put it back.", context: "quest page: the strip for a member holding the quest" })
+                  : t({ message: "You turned this in. A steward will read it soon.", context: "quest page: the strip for a member whose work is turned in" })}
+              </p>
+              <a href="#your-quest" className="inline-flex min-h-11 items-center text-sm font-semibold text-teal-deep underline underline-offset-2 hover:text-teal">
+                {t({ message: "Your next step", context: "quest page: jump to the member's actions on this quest" })}
+              </a>
+            </div>
+          )}
+
           {/* What this quest is for. A description of the work and never a
               condition on it: the claim gate reads the stage floor and the
               role gate above, and no tag reaches either. */}
@@ -422,16 +448,15 @@ export default function QuestDetail() {
                   <Trans context="QuestDetail, h2"><ListChecks className="w-5 h-5 text-teal-deep" />
                   How to do this quest
                 </Trans></h2>
-                <ol className="space-y-3">
-                  {steps.map((step, i) => (
-                    <li key={i} className="flex gap-3 bg-card border border-border rounded-xl p-4">
-                      <span className="shrink-0 w-7 h-7 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-foreground/90 leading-relaxed pt-0.5">{step}</p>
-                    </li>
-                  ))}
-                </ol>
+                {/* Each step, what it needs, and what the member gave for it (0439). */}
+                <QuestSteps
+                  questId={quest.id}
+                  steps={steps}
+                  stepNeeds={stepNeeds}
+                  claim={claim}
+                  rows={stepRows.rows}
+                  reload={stepRows.reload}
+                />
               </div>
             )}
 
@@ -473,8 +498,8 @@ export default function QuestDetail() {
 
           {/* The doing column */}
           <aside className="lg:sticky lg:top-28 space-y-4">
-            {/* What you'll share, directly above the form it feeds */}
-            <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+            {/* What you'll share, directly above the form it feeds. `your-quest` is where the strip under the poster points. */}
+            <div id="your-quest" className="scroll-mt-20 bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
               <div className="p-5 pb-4">
                 <h2 className="font-display text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                   <Trans context="QuestDetail, h2"><ClipboardCheck className="w-5 h-5 text-teal-deep" />
@@ -500,6 +525,8 @@ export default function QuestDetail() {
                 decimals={payoutDecimals}
                 pay={quest.pay}
                 isExample={!!quest.isExample}
+                owedSteps={owedSteps}
+                stepsCarryEvidence={anyStepNeeds(stepNeeds) && stepRows.rows.length > 0}
                 onChanged={refreshClaims}
               />
               <TakeCurrentPrice claim={claim} quest={quest} onTaken={refreshClaims} />

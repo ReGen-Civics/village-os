@@ -55,7 +55,7 @@ import {
 import { AccomplishedSection } from "./AccomplishedSection";
 import { fetchApplicationCard, fetchCard } from "./playerCardApi";
 import "./playerCard.css";
-import { CardWordsContext, cardWordsFor } from "./cardWords";
+import { CardWordsContext, ProposalWordsContext, cardWordsFor } from "./cardWords";
 
 export const CARD_LOAD_WORDS = {
   failed: "This card did not load.",
@@ -146,6 +146,7 @@ export function PlayerRoleCardView({
     ) : null;
   return (
     <CardWordsContext.Provider value={data.card.words}>
+    <ProposalWordsContext.Provider value={data.card.proposalWords}>
     <CardEditContext.Provider
       value={{ editing: mayEdit && editing, owner: mayEdit, reload, quiet: mode !== "proposal" && !(mayEdit && editing) }}
     >
@@ -201,6 +202,7 @@ export function PlayerRoleCardView({
         </div>
       </NightContext.Provider>
     </CardEditContext.Provider>
+    </ProposalWordsContext.Provider>
     </CardWordsContext.Provider>
   );
 }

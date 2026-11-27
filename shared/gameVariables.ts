@@ -2871,6 +2871,17 @@ export const VARIABLES: VariableDef[] = [
     ring: "founder",
   },
   {
+    // The investor gate (the lead, 27 Nov 2026): server/routes/investorAccess.ts.
+    key: "investors.gate",
+    category: "The village's people",
+    label: "Keep the investor page for the investors you accept",
+    description:
+      "On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone.",
+    type: "boolean",
+    default: "false",
+    ring: "founder",
+  },
+  {
     key: "entrance.turnstile_site_key",
     category: "The village's people",
     label: "Portal entrance: Turnstile site key",
@@ -3963,6 +3974,23 @@ export const VARIABLES: VariableDef[] = [
     choices: [
       { value: "plain", label: "Plain", hint: "The clean Golden Hour page." },
       { value: "sea-chart", label: "Sea chart", hint: "Aged paper, torn cards and Garamond headings." },
+    ],
+  },
+
+  // THE VILLAGE'S DEFAULT MODE (the lead, 26 Nov 2026: a village dial, so a village chooses light or
+  // dark for a first visit). The server writes it onto <html> (server/routes/brandTheme.ts) and the
+  // first-paint script in client/index.html reads it, so there is no flash. A visitor's own choice wins.
+  {
+    key: "look.default_mode",
+    category: "Village",
+    label: "Light or dark on a first visit",
+    description:
+      "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.",
+    type: "choice",
+    default: "light",
+    choices: [
+      { value: "light", label: "Light", hint: "The day page, and Sea chart where the village chose it." },
+      { value: "dark", label: "Dark", hint: "The night page." },
     ],
   },
 

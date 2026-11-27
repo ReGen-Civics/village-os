@@ -15,6 +15,8 @@
  *   4. A generator is idempotent: a second run writes the same bytes.
  *   5. The workflow that owns the files is portable (no secret, no repo name)
  *      and is the one place strict mode is switched on.
+ *   6. The bot's own commit gets no ci run, and nothing else is skipped:
+ *      ci.yml's push paths-ignore is exactly BOT_COMMIT_PATHS.
  *
  * Run: node scripts/check-generated-docs-untouched.test.mjs
  */
@@ -25,7 +27,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { findViolations } from "./check-generated-docs-untouched.mjs";
-import { GENERATED_FILES, docsMode, driftIsFatal } from "./lib/generatedDocs.mjs";
+import { BOT_COMMIT_PATHS, BOT_COMMIT_SUBJECT, GENERATED_FILES, docsMode, driftIsFatal } from "./lib/generatedDocs.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -222,6 +224,34 @@ check("CONTROL: ci.yml never sets strict, because a merge commit is one bot comm
   const ci = fs.readFileSync(path.join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
   assert.doesNotMatch(ci, /GENERATED_DOCS_MODE:\s*strict/);
   assert.match(ci, /check-generated-docs-untouched\.mjs/);
+});
+// THE DOCS BOT'S COMMIT GETS NO ci RUN (the lead, 26 Nov 2026). ci.yml skips it with
+// paths-ignore, so that list IS the rule: a path on it that a person can change would
+// let a human commit land with no run, and a generated file missing from it would
+// bring the full run back for every bot commit that touches it.
+const ciYml = fs.readFileSync(path.join(ROOT, ".github", "workflows", "ci.yml"), "utf8");
+function pushPathsIgnore(text) {
+  const push = text.match(/^on:\n  push:\n([\s\S]*?)^  pull_request:/m)?.[1] ?? "";
+  const block = push.match(/^    paths-ignore:\n((?:      - .*\n)+)/m)?.[1] ?? "";
+  return block.split("\n").filter(Boolean).map((l) => l.replace(/^      - /, "").trim());
+}
+check("ci.yml's push paths-ignore is exactly BOT_COMMIT_PATHS: the generated files and the fragments the fold deletes", () => {
+  assert.deepEqual([...pushPathsIgnore(ciYml)].sort(), [...BOT_COMMIT_PATHS].sort());
+  for (const g of GENERATED_FILES) assert.ok(BOT_COMMIT_PATHS.includes(g.path), g.path);
+});
+check("CONTROL: a person's file on the list, or a generated file off it, is caught", () => {
+  const extra = ciYml.replace("      - client/src/locales/es.d/**\n", "      - client/src/locales/es.d/**\n      - client/src/App.tsx\n");
+  assert.notDeepEqual([...pushPathsIgnore(extra)].sort(), [...BOT_COMMIT_PATHS].sort());
+  const missing = ciYml.replace("      - docs/GOVERNANCE.md\n", "");
+  assert.notDeepEqual([...pushPathsIgnore(missing)].sort(), [...BOT_COMMIT_PATHS].sort());
+});
+check("pull requests are never path-filtered: every pull_request run is whole", () => {
+  const pr = ciYml.match(/^  pull_request:\n([\s\S]*?)^\S/m)?.[1] ?? "";
+  assert.doesNotMatch(pr, /paths(-ignore)?:/);
+});
+check("the bot commits with BOT_COMMIT_SUBJECT, the subject isBotCommit and its own-commit skip read", () => {
+  assert.ok(wf.includes(`commit -q -m "${BOT_COMMIT_SUBJECT}\n`), "generated-docs.yml's commit subject");
+  assert.ok(wf.includes(`startsWith(github.event.head_commit.message, '${BOT_COMMIT_SUBJECT}')`));
 });
 check("every generator in the registry exists", () => {
   for (const g of GENERATED_FILES) if (g.generator.startsWith("scripts/")) assert.ok(fs.existsSync(path.join(ROOT, g.generator)), g.generator);

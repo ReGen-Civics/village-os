@@ -47,6 +47,18 @@ describe("SaveBar", () => {
     expect(unsavedCount()).toBe(0);
   });
 
+  it("keeps its room at the end of the page while it shows, and gives it back", async () => {
+    document.body.style.paddingBottom = "";
+    render(<Surface onSave={async () => ({ ok: true })} />);
+    expect(document.body.style.paddingBottom).toBe("");
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Hearth Circle" } });
+    expect(document.body.style.paddingBottom).toBe("7rem");
+    // No spacer in the flow where the surface sits: that opened a gap mid-page.
+    expect(document.querySelector(".h-28")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Discard" }));
+    expect(document.body.style.paddingBottom).toBe("");
+  });
+
   it("says Saved only after an ok answer, then goes", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const onSave = vi.fn(async () => ({ ok: true as const }));

@@ -78,8 +78,20 @@ function linesOf(v: unknown): string[] {
   return [];
 }
 
+/**
+ * How `roleProposalsOut` reads its words. Plain outside a build; inside one, the player card passes the table read
+ * through its recorder (shared/playerCardSay.ts), so the server can say "Proposed on ..." again in the reader's
+ * language (shared/playerCardProposalMessages.ts). Passed in, so this file imports no recorder.
+ */
+export interface ProposalSayIn {
+  PW: typeof ROLE_PROPOSAL_WORDS;
+  day: (iso: string | null | undefined, withYear?: boolean, timeZone?: string | null) => string | null;
+}
+
+const PLAIN: ProposalSayIn = { PW: ROLE_PROPOSAL_WORDS, day: formatDay };
+
 /** The open proposals for one role, oldest first, each with the words it would put live. */
-export function roleProposalsOut(proposals: readonly RoleProposalIn[], timeZone: string): RoleProposalOut[] {
+export function roleProposalsOut(proposals: readonly RoleProposalIn[], timeZone: string, say: ProposalSayIn = PLAIN): RoleProposalOut[] {
   return [...proposals]
     .sort((a, b) => Date.parse(a.proposedAt) - Date.parse(b.proposedAt))
     .map((p) => {
@@ -89,7 +101,7 @@ export function roleProposalsOut(proposals: readonly RoleProposalIn[], timeZone:
         label: LABEL[key],
         lines: linesOf(body[ROLE_WORD_FIELD[key]]),
       }));
-      return { draftId: p.draftId, proposedOn: ROLE_PROPOSAL_WORDS.proposedOn(formatDay(p.proposedAt, true, timeZone) ?? ""), fields };
+      return { draftId: p.draftId, proposedOn: say.PW.proposedOn(say.day(p.proposedAt, true, timeZone) ?? ""), fields };
     })
     .filter((p) => p.fields.length > 0);
 }

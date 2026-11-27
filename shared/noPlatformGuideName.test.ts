@@ -58,6 +58,26 @@ describe("no village's guide name in platform code", () => {
     expect(found).toEqual([]);
   });
 
+  /*
+   * THE GUIDE'S OWN SHELVES (the lead, 27 Nov 2026: Scarlet replaces Maia). The guide reads docs/knowledge and the
+   * module contracts in docs/modules as what it knows (server/lib/knowledge.ts), so a "Maia" there is the guide
+   * calling itself by one village's old name in every village. They say "the village guide".
+   */
+  it("finds no \"Maia\" on the shelves the guide reads as its own knowledge", () => {
+    const found: string[] = [];
+    for (const dir of ["docs/knowledge", "docs/modules"]) {
+      for (const entry of fs.readdirSync(path.join(ROOT, dir))) {
+        if (!entry.endsWith(".md")) continue;
+        fs.readFileSync(path.join(ROOT, dir, entry), "utf8")
+          .split(/\r?\n/)
+          .forEach((line, i) => {
+            if (NAME.test(line)) found.push(`${dir}/${entry}:${i + 1}`);
+          });
+      }
+    }
+    expect(found).toEqual([]);
+  });
+
   it("sees a name inside a string and ignores identifiers and comments (the scanner's own control)", () => {
     expect(literalHits(`const a = x || "Maia";`)).toHaveLength(1);
     expect(literalHits("const p = `You are Maia, the guide`;")).toHaveLength(1);

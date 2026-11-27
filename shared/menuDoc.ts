@@ -51,7 +51,36 @@ export function menuDocOf(raw: unknown): MenuDoc {
   }
   const hidden = Array.isArray(d.hidden) ? Array.from(new Set(d.hidden.filter(isPath))) : [];
   const tabs = Array.isArray(d.tabs) ? d.tabs.filter(isPath).slice(0, MENU_TABS) : [];
-  return { labels, hidden, groups, tabs };
+  return carriedOver({ labels, hidden, groups, tabs });
+}
+
+/**
+ * MENU ENTRIES AND GROUPS THAT MOVED (Governance, 26 Nov 2026: "call it governance"). A village's document names an
+ * entry by its address and a group by the platform's name, so a village that renamed or hid "Review Queue" at
+ * /review, or renamed the "Decide" group, would lose that silently when the platform moved them. Read the old key as
+ * the new one, unless the village has already said something under the new key. Tabs are left alone: every old
+ * address still opens (as a redirect), and /governance is still a page.
+ */
+export const MOVED_ENTRIES: Readonly<Record<string, string>> = {
+  "/review": "/governance/work",
+  "/decisions": "/governance/decisions",
+  "/governance": "/governance/how",
+};
+export const MOVED_GROUPS: Readonly<Record<string, string>> = { Decide: "Governance" };
+
+function carriedOver(m: MenuDoc): MenuDoc {
+  const labels = { ...m.labels };
+  for (const [from, to] of Object.entries(MOVED_ENTRIES)) {
+    if (labels[from] !== undefined && labels[to] === undefined) labels[to] = labels[from]!;
+    delete labels[from];
+  }
+  const groups = { ...m.groups };
+  for (const [from, to] of Object.entries(MOVED_GROUPS)) {
+    if (groups[from] !== undefined && groups[to] === undefined) groups[to] = groups[from]!;
+    delete groups[from];
+  }
+  const hidden = Array.from(new Set(m.hidden.map((h) => MOVED_ENTRIES[h] ?? h)));
+  return { labels, hidden, groups, tabs: m.tabs };
 }
 
 /** True when the village changed nothing, so the menu is the platform's. */

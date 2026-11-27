@@ -14,13 +14,15 @@ const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { NAV, ACCOUNT_MENU, isGroup, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { currentFor, litFor } from "@/config/navBearings";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 const MobileFab = lazy(() => import("./mobile/MobileFab")); // the corner: companions and help (phone doors v4), fixed, so it arrives after the page and shifts nothing
-const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More (phone doors v4, 25 Nov 2026)
+const MoreSheet = lazy(() => import("./mobile/MoreSheet")); // the phone's one menu, opened by the bar's More and the header's menu button (27 Nov 2026)
+const PathsSheet = lazy(() => import("./mobile/PathsSheet")); // the village's paths, opened by the phone header's Paths (27 Nov 2026)
 const MemberMoments = lazy(() => import("./MemberMoments")); // nothing on arrival, so off the first page (MemberMoments.tsx)
 import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
@@ -30,14 +32,24 @@ import { MachineTranslationNote } from "@/i18n/machineTranslation";
 import { useNewcomerShows } from "@/lib/newcomer";
 import FooterBlurb from "@/components/FooterBlurb";
 import MenuIcon from "@/components/nav/MenuIcon";
+import LitRule from "@/components/nav/LitRule";
+import NavDropdown from "@/components/nav/NavDropdown";
+import Breadcrumbs from "@/components/nav/Breadcrumbs";
+import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 
 interface LayoutProps {
   children: React.ReactNode;
+  /**
+   * On a phone the header scrolls away with the page instead of following it (the entrance gate, the lead,
+   * 26 Nov 2026: "Header is following me on mobile"). A wide screen keeps it sticky.
+   */
+  headerScrollsOnPhone?: boolean;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, headerScrollsOnPhone = false }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pathsOpen, setPathsOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [accountOpen, setAccountOpen] = useState(false);
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
@@ -120,6 +132,9 @@ export default function Layout({ children }: LayoutProps) {
   const navEntries = NAV.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
     isGroup(e) ? { ...e, label: menu.groups[e.label] || navWord(e.label, i18n) } : withTokenLabel(e),
   );
+  // Where the page sits in the menu this reader sees, the village's renames and hidden entries included (config/navBearings.ts).
+  const lit = litFor(location, visible, menu, (g) => navWord(g, i18n));
+  const leaf = useCrumbLeafValue(); // the page's own name for the breadcrumb (nav/crumbLeaf.tsx)
   const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
@@ -177,6 +192,8 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
   // The bar's More button reads this for its aria-expanded (lib/mobileMenuState.ts).
   useEffect(() => announceMobileMenu(mobileMenuOpen), [mobileMenuOpen]);
+  const litGroup = lit?.group ?? null; // the drawer opens on the page's branch, as More does
+  useEffect(() => { if (mobileMenuOpen && litGroup) setOpenMobileGroup((g) => g ?? litGroup); }, [mobileMenuOpen, litGroup]);
   useEffect(() => {
     if (!mobileMenuOpen) return;
     focusDrawerIfAsked();
@@ -214,7 +231,9 @@ export default function Layout({ children }: LayoutProps) {
           header carries the sticky positioning now (a sticky child of a
           header only as tall as itself would scroll away with it). The
           contents keep their indentation so this stays a four-line change. */}
-      <header className="sticky top-0 z-50">
+      {/* The class stays one literal: designConsistency.test.ts reads it as the site header's known position. On a
+          phone, `data-header-scrolls-on-phone` lets the header scroll away (index.css). */}
+      <header className="sticky top-0 z-50" data-header-scrolls-on-phone={headerScrollsOnPhone ? "" : undefined}>
       <nav className="bg-teal-deep text-white shadow-lg">
         <div className="container py-4 flex items-center justify-between">
           {/* One anchor, not two. wouter's Link renders the <a> itself, so a
@@ -279,7 +298,7 @@ export default function Layout({ children }: LayoutProps) {
               half the width. This breakpoint and the mobile button's below are
               a matched pair and must always move together, or some viewport
               gets no navigation at all. */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-6">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-6" data-wayfinding="menu">
             {navEntries.map((entry) =>
               isGroup(entry) ? (
                 <NavDropdown
@@ -289,14 +308,17 @@ export default function Layout({ children }: LayoutProps) {
                   open={openGroup === entry.label}
                   setOpen={(v) => setOpenGroup(v ? entry.label : null)}
                   lifecycleOf={lifecycleOf}
+                  lit={lit}
                 />
               ) : (
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className="inline-flex min-h-6 items-center gap-1.5 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+                  aria-current={currentFor(lit, entry.href)}
+                  className={`relative inline-flex min-h-6 items-center gap-1.5 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep ${currentFor(lit, entry.href) ? "font-semibold" : ""}`}
                 >
                   <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
+                  {currentFor(lit, entry.href) ? <LitRule /> : null}
                 </Link>
               )
             )}
@@ -399,18 +421,32 @@ export default function Layout({ children }: LayoutProps) {
             )}
           </div>
 
-          {/* Mobile Menu Button (bell beside it when signed in) */}
+          {/* Mobile Menu Button (bell beside it when signed in). On a phone the bar reads Paths, the bell, Menu (the
+              lead, 27 Nov 2026: "one button for paths ... and another button for menu to then open up the same thing
+              that the bottom right more button opens up"): Menu opens the very sheet More opens (MoreSheet), so the
+              two doors can never show different menus, and a visitor with no More tab still has one. */}
           <div className="lg:hidden flex items-center gap-2 text-white">
             <span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
+            <button
+              type="button"
+              onClick={() => { setMobileMenuOpen(false); setPathsOpen(true); }}
+              aria-haspopup="dialog"
+              aria-expanded={pathsOpen}
+              data-header-paths=""
+              className="md:hidden inline-flex min-h-11 items-center rounded-full border border-white/40 px-4 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-white"
+            >
+              <Trans context="site header: the phone's Paths button">Paths</Trans>
+            </button>
             {user && <Suspense fallback={<span aria-hidden="true" className="inline-block size-9 pointer-coarse:size-11 pointer-coarse:-m-1 max-md:size-11 max-md:-m-1" />}><NotificationBell memberId={user.id} /></Suspense>}
-            {/* Icon-only, so it needs a spoken name and a state. Phones use the bar's More instead (MoreSheet). */}
+            {/* Icon-only, so it needs a spoken name and a state. On a phone it opens More's sheet (MoreSheet). */}
             <button
               ref={menuButton}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? t({ message: "Close menu", context: "site header" }) : t({ message: "Open menu", context: "site header" })}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
-              className="text-white hidden md:inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
+              data-header-menu=""
+              className="text-white inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg -m-2 focus-visible:outline-2 focus-visible:outline-white"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -422,6 +458,7 @@ export default function Layout({ children }: LayoutProps) {
           {mobileMenuOpen && (
             <m.div
               id="mobile-menu"
+              data-wayfinding="menu"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -446,9 +483,10 @@ export default function Layout({ children }: LayoutProps) {
                         type="button"
                         onClick={() => setOpenMobileGroup(openMobileGroup === entry.label ? null : entry.label)}
                         aria-expanded={openMobileGroup === entry.label}
-                        className="flex items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2"
+                        aria-current={lit?.group === entry.label ? "true" : undefined}
+                        className={`flex items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2 ${lit?.group === entry.label ? "font-semibold" : ""}`}
                       >
-                        <span>{entry.label}</span>
+                        <span className="relative">{entry.label}{lit?.group === entry.label ? <LitRule /> : null}</span>
                         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openMobileGroup === entry.label ? "rotate-180" : ""}`} />
                       </button>
                       <AnimatePresence>
@@ -463,7 +501,8 @@ export default function Layout({ children }: LayoutProps) {
                               <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"}`}
+                                aria-current={currentFor(lit, item.href)}
+                                className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"} ${currentFor(lit, item.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
                                 onClick={() => { setMobileMenuOpen(false); setOpenMobileGroup(null); }}
                               >
                                 <MenuIcon href={item.href} fallback={item.icon} />{item.label}
@@ -478,7 +517,8 @@ export default function Layout({ children }: LayoutProps) {
                     <Link
                       key={entry.href}
                       href={entry.href}
-                      className="flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
+                      aria-current={currentFor(lit, entry.href)}
+                      className={`flex items-center gap-2 text-white hover:underline transition-colors text-sm py-2 ${currentFor(lit, entry.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <MenuIcon href={entry.href} fallback={entry.icon} bare />{entry.label}
@@ -550,6 +590,8 @@ export default function Layout({ children }: LayoutProps) {
           phone. The page ends with room for it, so it never sits on the last
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
       <main id="main" tabIndex={-1} className="flex-1 min-h-svh max-md:pb-[var(--fab-clear)]">
+        {/* Below its menu entry, a page gets the trail back up (nav/Breadcrumbs.tsx); an entry's own page gets none. */}
+        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} item={{ href: lit.item.href, label: withTokenLabel(lit.item).label }} leaf={leaf} /> : null}
         {children}
         <MachineTranslationNote />
       </main>
@@ -645,7 +687,7 @@ export default function Layout({ children }: LayoutProps) {
               <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Governance</Trans></h2>
               <ul className="space-y-0">
                 <li>
-                  <Link href="/governance" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/governance/how" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">How we work together</Trans>
                   </Link>
                 </li>
@@ -719,10 +761,10 @@ export default function Layout({ children }: LayoutProps) {
                     looking may not open it, so a member who follows this link
                     without the capability gets a sentence and never a blank
                     screen. */}
-                {user && showsHref("/review") && (
+                {user && showsHref("/governance/work") && (
                   <li>
-                    <Link href="/review" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Review Queue</Trans>
+                    <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Your work</Trans>
                     </Link>
                   </li>
                 )}
@@ -901,99 +943,15 @@ export default function Layout({ children }: LayoutProps) {
           entirely on the routes that render no bar. */}
       {!bare && <div aria-hidden="true" style={{ height: "var(--tabbar-h)" }} />}
 
-      <MobileTabBar />
-      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} /></Suspense>}
+      <MobileTabBar inMenu={!!lit} />
+      {pathsOpen && <Suspense fallback={null}><PathsSheet onClose={() => setPathsOpen(false)} /></Suspense>}
+      {mobileMenuOpen && <Suspense fallback={null}><MoreSheet entries={navEntries} itemsOf={groupItems} account={accountItems} onClose={() => setMobileMenuOpen(false)} villageDefault={cfg?.defaultLocale ?? null} lit={lit} /></Suspense>}
       <Suspense fallback={null}><MobileFab /></Suspense>
       {/* ONCE, deliberately. The bell above renders twice (desktop bar, mobile
           bar) and CSS hides one of them; React mounts both. The celebration
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
       {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
-    </div>
-  );
-}
-
-/**
- * One grouped menu in the desktop bar.
- *
- * Hover opens it for a mouse, click toggles it for a keyboard, and Escape
- * closes it. All three matter: the dropdown this replaces opened on hover
- * ONLY, because its trigger carried no onClick, so Enter and Space fired a
- * click with no listener and its children never entered the tab order at any
- * desktop width. Escape is the second way out that a click-toggle needs, since
- * a mouse user whose pointer is still inside the wrapper fires no fresh
- * mouseenter and could not otherwise reopen it.
- */
-function NavDropdown({
-  group,
-  items,
-  open,
-  setOpen,
-  lifecycleOf,
-}: {
-  group: NavGroup;
-  items: readonly NavLink[];
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  lifecycleOf: (id?: string) => string | undefined;
-}) {
-  // The join paths carry a second line; the rest are one word. A single width
-  // for both leaves either the paths cramped or the short menus floating.
-  const wide = items.some((i) => i.subtitle);
-  const menuId = navMenuId(group.label);
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-    >
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-haspopup="true"
-        aria-controls={menuId}
-        className="flex min-h-6 items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
-      >
-        {group.label}
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <m.div
-            id={menuId}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
-          >
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-start gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors group"
-                onClick={() => setOpen(false)}
-              >
-                <MenuIcon href={item.href} fallback={item.icon} chip />
-                <span className="min-w-0">
-                  <span className={`block text-sm font-semibold ${item.accent ? "text-gold" : "text-foreground"}`}>
-                    {item.label}
-                    {/* Same badge the bar used to carry, in the ink the white
-                        sheet needs: amber-200 on white measured below 2:1. */}
-                    {lifecycleOf(item.module) === "preview" && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground align-middle"><Trans context="Layout, span">preview</Trans></span>
-                    )}
-                  </span>
-                  {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
-                </span>
-              </Link>
-            ))}
-          </m.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

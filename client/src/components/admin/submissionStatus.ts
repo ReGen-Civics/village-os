@@ -13,6 +13,8 @@
 import { toast } from "sonner";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { JOIN_ANSWER_WORDS, JOIN_REQUEST_TYPE } from "@shared/joinAnswers";
+import { i18n } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 
 /**
  * A yes or a no to a request to join, said out loud (sheet A5): the server
@@ -68,7 +70,7 @@ async function answerJoinRequest(password: string, id: string, answer: "accept" 
  * membership-request is somebody with no invitation asking to join, from
  * RequestMembership.tsx (Rye, 2026-09-09: requests sit in admin for a team to talk to them).
  */
-export const FORM_TYPES = ["work-with-us", "quest-proposal", "partner", "prosperity-packet", "visit-inquiry", "membership-508", "membership-request", "investor", "steward", "resident", "prosperity", "contact", "comms-change"] as const;
+export const FORM_TYPES = ["work-with-us", "quest-proposal", "partner", "prosperity-packet", "visit-inquiry", "membership-508", "membership-request", "investor", "investor-interest", "steward", "resident", "prosperity", "contact", "comms-change"] as const;
 
 export async function putSubmissionStatus(
   password: string,
@@ -94,6 +96,10 @@ export async function putSubmissionStatus(
     }
     if (data.rewarded) toast.success("Accepted. The member was welcomed into the game.");
     else if (data.admitted) toast.success("Accepted. They hold membership now.");
+    // The investor gate (server/routes/investorAccess.ts): who accepting the interest form let in, or could not.
+    else if (data.investor?.letIn === true) toast.success(i18n._(msg({ message: "Accepted. They can read the investor page now.", context: "submission desk: an investor interest form accepted" })));
+    else if (data.investor?.letIn === false) toast.success(i18n._(msg({ message: "Declined. They can no longer read the investor page.", context: "submission desk: an accepted investor interest form declined" })));
+    else if (status === "accepted" && data.investor && data.investor.holder === null) toast.success(i18n._(msg({ message: "Accepted. This form came from an address the entrance never proved, so nobody was let in. Ask them to confirm their email with the code and send the form again.", context: "submission desk: an investor interest form accepted from an unproven address" })));
     // A stranger signed with no account, so the accept stands and admits nobody.
     else if (data.admitted === false) toast.success("Accepted. This signing carries no account, so nobody was admitted. Invite them to join.");
     // A yes or a no to a request to join goes through `answerJoinRequest` above, which emails it.

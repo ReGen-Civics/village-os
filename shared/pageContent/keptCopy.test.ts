@@ -25,12 +25,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { adoptedDocument, pageDocumentProblems, pageSectionKey, PAGE_SPECS } from "./index";
+import { adoptedDocument, pageDocumentProblems, pageSectionKey, PAGE_SPECS as PUBLIC_SPECS } from "./index";
+// The investor page's spec is the server's since 27 Nov 2026 (server/lib/investorJourney.ts); its kept copy is held all the same.
+import { INVESTOR_JOURNEY } from "../../server/lib/investorJourney";
+const PAGE_SPECS = [...PUBLIC_SPECS, INVESTOR_JOURNEY];
 
 /** Page sections the first village holds no copy of, because their spec arrived after it adopted the rest. */
 // page-app-words (2026-11-15, gap G7): every box is blank by default and blank
 // keeps the platform's translated words, so there is nothing for a kept copy to hold.
-const NOT_HELD = ["page-governance", "page-circles", "page-app-words"];
+// page-governance-now (2026-11-26, Governance step 3): the Now view's line for guests. The first village writes its
+// own (the lead's words) through Admin, Pages, as its saved copy, after the spec is live.
+const NOT_HELD = ["page-governance", "page-governance-now", "page-circles", "page-app-words"];
 const HELD = PAGE_SPECS.filter((spec) => !NOT_HELD.includes(pageSectionKey(spec)));
 
 /**

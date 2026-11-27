@@ -51,7 +51,8 @@ import { MembershipAtApplication, type MembershipChoice } from "@/components/ope
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
 import type { ProposalLink } from "@shared/proposalAttachments";
 import { AskSera, DraftMark } from "@/components/proposalDrafts/AskSera";
-import { DRAFT_WORDS, goalsFromDraft, isTextDraft, placeDraftGoals, unconfirmedDrafts, type DraftMarks, type DraftableGoal } from "@shared/seraDrafts";
+import { goalsFromDraft, isTextDraft, placeDraftGoals, unconfirmedDrafts, type DraftMarks, type DraftableGoal } from "@shared/seraDrafts";
+import { draftBlocked } from "@/components/governance/applicationChecks";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import { CARD_LIMITS } from "@shared/openProposalCard";
 import { BreathingLoader } from "@/components/natural";
@@ -78,6 +79,7 @@ import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
+import { termsRefusal } from "@/components/governance/parsedChecks";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { MoonText } from "@/components/MoonWord";
 import { APPLY_MINUTES, LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
@@ -371,9 +373,9 @@ export default function ProposeARole() {
     const found: FormProblem[] = [];
     const add = (field: string, message: string, target = targetFor(field)) => found.push({ field, message, target });
     const valueDrafts = unconfirmedDrafts({ aim, story: "", marks, goals: items });
-    if (valueDrafts.length > 0) found.push({ field: "drafts:moon", message: DRAFT_WORDS.blocked(valueDrafts), target: null });
+    if (valueDrafts.length > 0) found.push({ field: "drafts:moon", message: draftBlocked(valueDrafts), target: null });
     const aboutDrafts = unconfirmedDrafts({ aim: "", story: about.story, marks, goals: [] });
-    if (aboutDrafts.length > 0) found.push({ field: "drafts:about", message: DRAFT_WORDS.blocked(aboutDrafts), target: null });
+    if (aboutDrafts.length > 0) found.push({ field: "drafts:about", message: draftBlocked(aboutDrafts), target: null });
     if (!name.trim()) add("name", OPEN_WORDS.needName);
     if (!email.trim()) add("email", OPEN_WORDS.needEmail); else if (/[,;]/.test(email) || addressProblem(email)) add("email", OPEN_WORDS.badEmail);
     if (!why.trim()) add("why", OPEN_WORDS.needWhy);
@@ -394,7 +396,7 @@ export default function ProposeARole() {
     // Every written setting answered and the commitment chosen, in the shared rules' words.
     if (role) {
       const judgedTerms = judgeTermsStep({ answers: termsStep.answers, commitmentPct: termsStep.commitmentPct }, writtenKeys([role, ...extraRoles].map((r) => ({ words: r?.terms?.words, commitmentPct: r?.terms?.commitmentPct ?? null }))));
-      if (!judgedTerms.ok) add("terms", judgedTerms.error);
+      if (!judgedTerms.ok) add("terms", termsRefusal(judgedTerms, i18n));
     }
     // Each role added: its own commitment, within what that role takes from one person.
     extras.forEach((x, i) => {

@@ -234,7 +234,7 @@ export default function AdminReview() {
           {forbidden ? (
             <p className={HINT}>
               <Trans context="review inbox: forbidden">This page is for people who decide suggestions. What you sent waits on</Trans>{" "}
-              <Link href="/review" className={LINK}>
+              <Link href="/governance/work" className={LINK}>
                 <Trans context="review inbox: forbidden link">Review</Trans>
               </Link>
               .

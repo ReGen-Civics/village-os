@@ -18,7 +18,7 @@ import {
   Sunset,
   Globe
 } from "lucide-react";
-import { MushroomNetwork, Pines, SeedGlint, SeedPin, SunLeaf, WovenBasket } from "@/components/sacred/living";
+import { MushroomNetwork, SeedPin, SunLeaf, WovenBasket } from "@/components/sacred/living";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
 import { BTN_SECONDARY, EYEBROW, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
@@ -33,8 +33,9 @@ import { HOME_PAGE } from "@shared/pageContent/home";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { uploadSrcSet } from "@shared/uploadVariants";
-import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr, shouldShowWhole } from "@shared/pathCardArt";
+import { FOUNDING_CARD_ART, FOUR_WAYS_ART, artFocusOr } from "@shared/pathCardArt";
 import { airWelcomeHere } from "@/lib/airWelcome";
+import { isCoreTeamCard, pathCardHref, useFoundingOn, visiblePathCards } from "@/lib/pathCards";
 
 const Air = lazy(() => import("@/components/motion/Air"));
 
@@ -63,14 +64,16 @@ const Air = lazy(() => import("@/components/motion/Air"));
  * the server cut around the centre: a portrait cut to 3:1 kept a quarter of
  * its height, and the cards showed sky or cut people off at the eyes.
  * `focus` is the village's own focal point or the top-weighted default
- * (shared/pathCardArt.ts), and a picture far from the frame's shape is shown
- * whole on the panel's soft ground instead of being cut.
+ * (shared/pathCardArt.ts). Every picture FILLS its frame (the lead, 27 Nov
+ * 2026: "Fix the cropping in the resident picture"): a portrait shown whole sat
+ * as a narrow column with bands of the panel's colour each side, so the frame
+ * always covers now, and the focal point (Admin, Make This Yours, Pictures)
+ * keeps the faces and the horizon in it.
  */
 const JOURNEY_ART_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 const JOURNEY_FRAME = "relative -mx-5 -mt-5 mb-4 block aspect-square overflow-hidden rounded-t-2xl bg-muted lg:aspect-[4/5]";
 function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcSet?: string; alt: string; focus: string }) {
   const [failed, setFailed] = useState(false);
-  const [whole, setWhole] = useState(false);
   if (!src || failed) {
     return (
       <div
@@ -95,25 +98,13 @@ function JourneyArt({ src, srcSet, alt, focus }: { src: string | undefined; srcS
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      onLoad={(e) => {
-        const img = e.currentTarget;
-        setWhole(shouldShowWhole(img.naturalWidth, img.naturalHeight, img.clientWidth, img.clientHeight));
-      }}
-      style={{ objectPosition: whole ? "50% 50%" : focus }}
-      data-art-fit={whole ? "whole" : "cover"}
-      className={`absolute inset-0 h-full w-full ${whole ? "object-contain" : "object-cover"} transition-transform duration-500 group-hover:scale-105`}
+      style={{ objectPosition: focus }}
+      data-art-fit="cover"
+      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
   );
 }
 
-
-/** What each path card needs that is not words: where it goes, its icon, its picture. */
-const PATH_CARD_LOOK = {
-  investor: { icon: Pines, href: "/investor", color: "bg-amber", imageKey: "investorHero", altKey: "investorHeroAlt", focusKey: "investorHeroFocus" },
-  steward: { icon: MushroomNetwork, href: "/steward", color: "bg-sage", imageKey: "stewardHero", altKey: "stewardHeroAlt", focusKey: "stewardHeroFocus" },
-  resident: { icon: HomeIcon, href: "/resident", color: "bg-teal", imageKey: "residentHero", altKey: "residentHeroAlt", focusKey: "residentHeroFocus" },
-  prosperity: { icon: SeedGlint, href: "/prosperity", color: "bg-teal-light", imageKey: "prosperityHero", altKey: "prosperityHeroAlt", focusKey: "prosperityHeroFocus" },
-} as const;
 
 /**
  * The headline steps down a size as it grows, so a village's own longer line
@@ -196,10 +187,8 @@ export default function Home() {
   // A journey switched off on its own in Admin, Pages takes its card with it,
   // and with no card left the section draws nothing, as if it were hidden.
   const pageOff = useStoryPageOffAlone();
-  const pathCards = (paths?.lists.cards ?? []).filter((card) => {
-    const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
-    return !!look && !pageOff(look.href);
-  });
+  // The same cards the phone header's Paths sheet lists (lib/pathCards.ts).
+  const pathCards = visiblePathCards(paths, pageOff);
   const personas = page?.personas;
   const cta = page?.cta;
   // Whether the village has its founding team on: its card leads the four ways at the
@@ -218,7 +207,7 @@ export default function Home() {
    * arrives below the screen moves nothing a visitor can see.
    */
   const ready = !!page && foundingRead !== null;
-  const pathsShown = !!paths && !paths.hidden && pathCards.length > 0;
+  const pathsShown = pathCards.length > 0;
   const waysShown = pathsShown;
   return (
     <Layout>
@@ -326,17 +315,16 @@ export default function Home() {
           )}
         <ul className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
           {pathsShown && pathCards.map((card) => {
-            const look = PATH_CARD_LOOK[card.id as keyof typeof PATH_CARD_LOOK];
-            if (!look) return null;
+            const look = card.look;
             const art = brand[look.imageKey];
             // Option B (the lead, 24 Nov 2026): "the Village Steward IS the core team and we
             // should make this clearer". While the village has its founding team on, the
             // steward card is that team's door: a Paid role label, one plain line, and the
             // button opens the founding team on /roles. Off, it is the steward path as before.
-            const coreTeam = founding && card.id === "steward";
+            const coreTeam = isCoreTeamCard(card.id, founding);
             return (
               <li key={card.id} className="m-germ min-w-0">
-                <Link href={coreTeam ? `/roles#${ROLES_SECTIONS.team}` : look.href} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
+                <Link href={pathCardHref(card, founding)} className={`${WAY_CARD} border border-border`} data-way={coreTeam ? "core-team" : undefined}>
                   {/* The village's own art for this way in, when it has added
                       some; a card without art is a quiet card, never a frame. */}
                   {art ? (
@@ -426,9 +414,57 @@ export default function Home() {
       {/* Seeing the place, after the ways in. */}
       <MapPeek />
 
-      {/* Who comes to this village */}
+      {/* CTA Section */}
+      {cta && !cta.hidden && (
+      <section className="border-t border-border/60 bg-card/40 py-24">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 lang={langOf("cta.heading")}
+              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-6"
+            >
+              {cta.fields.heading}
+            </h2>
+            <p lang={langOf("cta.body")}
+              className="m-germ text-xl text-muted-foreground mb-8"
+            >
+              <Emphasized text={cta.fields.body} />
+            </p>
+            <div
+              className="m-germ flex flex-wrap justify-center gap-4"
+            >
+              {eventsUrl && (
+                <a
+                  href={eventsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={BTN_SECONDARY}
+                >
+                  <Calendar className="w-5 h-5" />
+                  {cta.fields.primaryLabel}
+                </a>
+              )}
+              {eventsUrl && cta.fields.secondaryLabel && (
+                <a lang={langOf("cta.secondaryLabel")}
+                  href={eventsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={BTN_SECONDARY}
+                >
+                  {cta.fields.secondaryLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+      )}
+
+      <FourWaysToBuild founding={founding} />
+
+      {/* WHO COMES TO THIS VILLAGE, LAST (the lead, 27 Nov 2026: "Put The Who comes to Amora at the end of the
+          page"): after every other section, just before the footer. */}
       {personas && !personas.hidden && (
-      <section className="py-24">
+      <section className="border-t border-border/60 py-24" data-landing-personas="">
         <div className="container">
           <div className="text-center mb-16">
             <span lang={langOf("personas.eyebrow")}
@@ -495,53 +531,6 @@ export default function Home() {
         </div>
       </section>
       )}
-
-      {/* CTA Section */}
-      {cta && !cta.hidden && (
-      <section className="border-t border-border/60 bg-card/40 py-24">
-        <div className="container">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 lang={langOf("cta.heading")}
-              className="m-germ font-display text-4xl md:text-5xl text-foreground mb-6"
-            >
-              {cta.fields.heading}
-            </h2>
-            <p lang={langOf("cta.body")}
-              className="m-germ text-xl text-muted-foreground mb-8"
-            >
-              <Emphasized text={cta.fields.body} />
-            </p>
-            <div
-              className="m-germ flex flex-wrap justify-center gap-4"
-            >
-              {eventsUrl && (
-                <a
-                  href={eventsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={BTN_SECONDARY}
-                >
-                  <Calendar className="w-5 h-5" />
-                  {cta.fields.primaryLabel}
-                </a>
-              )}
-              {eventsUrl && cta.fields.secondaryLabel && (
-                <a lang={langOf("cta.secondaryLabel")}
-                  href={eventsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={BTN_SECONDARY}
-                >
-                  {cta.fields.secondaryLabel}
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-      )}
-
-      <FourWaysToBuild founding={founding} />
       </>
       ) : null}
       </div>
@@ -645,30 +634,3 @@ const WAY_CARD =
   "m-touch group flex h-full flex-col rounded-2xl bg-card p-5 shadow-sm transition-colors hover:border-notice/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 const WAY_BODY = "text-sm leading-relaxed text-muted-foreground sm:text-base";
 
-/** How long the landing page waits on the founding switch before it draws without it. */
-const FOUNDING_READ_WAIT_MS = 8000;
-
-/**
- * Whether the village has its founding team section on: null until the read
- * answers, false when it fails, and false once FOUNDING_READ_WAIT_MS has gone
- * by, so a stalled read never holds the page back. A late yes still turns the
- * section on.
- */
-function useFoundingOn(): boolean | null {
-  const [on, setOn] = useState<boolean | null>(null);
-  useEffect(() => {
-    let live = true;
-    const stall = setTimeout(() => live && setOn((v) => (v === null ? false : v)), FOUNDING_READ_WAIT_MS);
-    // The same public read the roles page makes (GET /api/org/founding-team),
-    // asked for its one yes or no; any failure is the section off.
-    fetch("/api/org/founding-team")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => live && setOn(d?.on === true && Array.isArray(d?.roleIds) && d.roleIds.length > 0))
-      .catch(() => live && setOn(false));
-    return () => {
-      live = false;
-      clearTimeout(stall);
-    };
-  }, []);
-  return on;
-}

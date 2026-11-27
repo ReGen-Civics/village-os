@@ -24,6 +24,8 @@ import { useCallback, useEffect, useState } from "react";
 import { QUIET_BUTTON, TAP } from "@/components/playerCard/cardParts";
 import { gameFetch } from "@/lib/gameApi";
 import { formatDay } from "@shared/roleSheet";
+import { dateLocale } from "@shared/civilDay";
+import { useLingui } from "@lingui/react/macro";
 
 export interface DecideDoorWords {
   adopt: string;
@@ -53,6 +55,20 @@ interface DecideAnswer {
   ballot: { id: string; closesAt: string } | null;
 }
 
+/**
+ * The day a village vote closes, in the reader's language. English keeps the short day the
+ * doors always read ("21 Mar 2027"); another language reads its own long form inside its
+ * sentence ("21 de marzo de 2027"). `closesAt` is an instant, so it is read in the reader's
+ * own zone, as formatDay reads it.
+ */
+export function votingDay(closesAt: string, locale: string | null | undefined): string {
+  const lang = dateLocale(locale);
+  if (lang === "en-GB") return formatDay(closesAt) ?? "";
+  const t = new Date(closesAt);
+  if (Number.isNaN(t.getTime())) return formatDay(closesAt) ?? "";
+  return t.toLocaleDateString(lang, { day: "numeric", month: "long", year: "numeric" });
+}
+
 type Step = "idle" | "confirm-adopt" | "confirm-put" | "busy";
 
 async function post(path: string, failed: string): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -78,6 +94,7 @@ export default function DecideDoors({
   /** Hears "Adopted ..." or "Put to the village ..." once the server has done it. */
   onDone?: (said: string) => void;
 }) {
+  const { i18n } = useLingui();
   const [answer, setAnswer] = useState<DecideAnswer | null>(null);
   const [step, setStep] = useState<Step>("idle");
   const [said, setSaid] = useState<string | null>(null);
@@ -125,7 +142,7 @@ export default function DecideDoors({
           </ul>
         </div>
       ) : null}
-      {answer.ballot ? <p className="text-sm">{W.voting(formatDay(answer.ballot.closesAt) ?? "")}</p> : null}
+      {answer.ballot ? <p className="text-sm">{W.voting(votingDay(answer.ballot.closesAt, i18n.locale))}</p> : null}
       {step === "confirm-adopt" ? (
         <div className="grid gap-2">
           <p className="text-sm font-medium">{W.adoptConfirm}</p>

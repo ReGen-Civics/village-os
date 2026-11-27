@@ -426,7 +426,7 @@ function DivergenceLine({ vote }: { vote: Detail["divergenceVote"] | null }) {
           <Trans>These quests are held until the village decides. The pot keeps their money for them until then.</Trans>
         )}{" "}
         {vote.ballotId && (
-          <Link href={`/decisions/${vote.ballotId}`} className="font-semibold underline">
+          <Link href={`/governance/decisions/${vote.ballotId}`} className="font-semibold underline">
             <Trans context="funding rounds">Vote on it</Trans>
           </Link>
         )}
