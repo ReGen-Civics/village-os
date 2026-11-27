@@ -13,6 +13,7 @@ import {
   brochurePatchProblem,
   brochurePathServed,
   brochureState,
+  isBrochurePath,
 } from "./brochure";
 import { EDITED_PAGE_PATHS } from "./pageContent";
 
@@ -106,3 +107,21 @@ describe("a member door opened to visitors (gap G15)", () => {
   });
 });
 
+
+describe("a story page that became a chapter of /rights (the rights fold, 27 Nov 2026)", () => {
+  it("follows its old page's switch under its anchor, in any case and with a query", () => {
+    const state = { enabled: true, hidden: ["/good-neighbor"] };
+    expect(brochurePathServed(state, "/rights#good-neighbor")).toBe(false);
+    expect(brochurePathServed(state, "/Rights?x=1#Good-Neighbor")).toBe(false);
+    expect(brochurePathServed(state, "/rights#resident-rights")).toBe(true);
+    expect(brochurePathServed({ enabled: false, hidden: [] }, "/rights#steward-rights")).toBe(false);
+  });
+
+  it("leaves /rights itself, and Leaving Well, always served", () => {
+    const off = { enabled: false, hidden: [] };
+    expect(isBrochurePath("/rights")).toBe(false);
+    expect(brochurePathServed(off, "/rights")).toBe(true);
+    expect(brochurePathServed(off, "/rights#leaving-well")).toBe(true);
+    expect(brochurePathServed(off, "/rights?focus=begin-departure#leaving-well")).toBe(true);
+  });
+});

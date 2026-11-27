@@ -713,7 +713,7 @@ export async function buildPlayerCards(
       sheets,
       links: {
         apply: "/roles",
-        plan: "/season-plans/mine",
+        plan: "/season#plan",
         ...(isSelf ? { wallet: "/wallet", newApplication: "/propose?type=role_application" } : {}),
       },
     });

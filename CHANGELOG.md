@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.98 (2026-11-27)
+
+### What changed for your village
+
+- **Rights and agreements on one page.** /rights holds four chapters: Resident rights, Steward rights, Good Neighbor criteria and Leaving Well. The wording of every agreement is unchanged. Each chapter prints in full, and a member can begin their own departure from Leaving Well. /resident-rights, /steward-rights, /good-neighbor and /exit-policy open their chapter.
+- **One season page.** /season holds the season, your plan, joining and alignment as tabs. A renew link opens your plan on the role to renew, and the old season addresses open the right tab. Between seasons it says when the next one begins.
+- **Printing.** The site's own header, footer and path strip stay off paper, and the calendar and the rites packet print again.
+
+### What you must do
+
+Nothing. If your village saved its own name for the Good Neighbor page, it still shows.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.97 still works.
+
+---
+
 ## 1.3.97 (2026-11-27)
 
 ### What changed for your village

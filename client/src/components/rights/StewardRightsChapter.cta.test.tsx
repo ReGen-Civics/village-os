@@ -22,7 +22,7 @@ vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: Reac
 vi.mock("@/hooks/useVillageContent", () => ({ readVillageSection: () => Promise.resolve(null) }));
 vi.mock("@/lib/gameApi", () => ({ useGameConfig: () => ({ project: { name: "Testville" } }) }));
 
-import StewardRights from "./StewardRights";
+import StewardRights from "./StewardRightsChapter";
 import { RIGHTS_STEWARD_PAGE } from "@shared/pageContent/rights";
 
 const cta = RIGHTS_STEWARD_PAGE.sections.find((s) => s.id === "cta")!.fields;

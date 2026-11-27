@@ -37,7 +37,7 @@ export default function ReadingCopyNote({ spec }: { spec: PageSpec }) {
       <p lang="en" className="text-sm text-muted-foreground">
         {BINDING_EN}
       </p>
-      <button type="button" onClick={copy.toggle} className={BTN_SECONDARY}>
+      <button type="button" onClick={copy.toggle} className={`${BTN_SECONDARY} print:hidden`}>
         {copy.showingEnglish
           ? i18n._(msg({ message: "Read the copy in my language", context: "binding page reading copy: the button" }))
           : i18n._(msg({ message: "Read the binding English", context: "binding page reading copy: the button" }))}

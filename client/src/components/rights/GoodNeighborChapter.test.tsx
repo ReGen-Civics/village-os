@@ -54,7 +54,7 @@ vi.mock("@/hooks/useVillageContent", () => ({
   readVillageSection: (section: string) => Promise.resolve(stored[section] ?? null),
 }));
 
-import GoodNeighbor from "./GoodNeighbor";
+import GoodNeighbor from "./GoodNeighborChapter";
 
 const renderPage = () =>
   render(
@@ -62,7 +62,8 @@ const renderPage = () =>
       <GoodNeighbor />
     </Router>,
   );
-const headline = () => screen.findByRole("heading", { level: 1 });
+// The chapter's title is its h2: the page it is a chapter of (/rights) holds the h1.
+const headline = () => screen.findByRole("heading", { level: 2 });
 
 beforeEach(() => {
   gameConfig = {
