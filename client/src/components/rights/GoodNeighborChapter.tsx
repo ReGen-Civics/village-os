@@ -87,8 +87,10 @@ export default function GoodNeighborChapter() {
       )}
 
       {/* The criteria, numbered as they always were. On a phone the panel's own frame comes off, so each
-          criterion is one tile on the ground and never three boxes deep (QA round 1). */}
-      <section className={`${PANEL} max-sm:border-0 max-sm:bg-transparent max-sm:p-0 max-sm:shadow-none`}>
+          criterion is one tile on the ground and never three boxes deep (QA round 1). Its padding stays: a
+          village's paper (the Weathered map, seaChart.css) draws its torn edge on any rounded bg-card, frame
+          or no frame, and without the padding that edge cut the first letters off (QA round 3). */}
+      <section className={`${PANEL} max-sm:border-0 max-sm:bg-transparent max-sm:shadow-none`}>
         <PanelHead heading={criteria.fields.heading} intro={criteria.fields.intro} />
         <ol className="space-y-4">
           {criteria.lists.items.map((criterion, index) => {
