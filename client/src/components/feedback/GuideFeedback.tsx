@@ -205,7 +205,7 @@ export default function GuideFeedback({
         <div className="min-w-0">
           <p className={EYEBROW}>{t({ message: "Share feedback", context: "the guide's panel: the door to the feedback form" })}</p>
           <h2 className="font-display text-2xl leading-tight text-foreground">{t({ message: `Tell ${guide} what you found`, context: "guide feedback: the heading, with the guide's name" })}</h2>
-          <p className={`${HINT} mt-0.5`}>{t({ message: `${guide} passes it to ${village}'s team, in your words.`, context: "guide feedback: under the heading" })}</p>
+          <p className={`${HINT} mt-0.5`}>{t({ message: `In your words, to ${village}'s team.`, context: "guide feedback: under the heading" })}</p>
         </div>
       </div>
 
@@ -323,8 +323,8 @@ export default function GuideFeedback({
           />
           <p className={`${HINT} mt-1.5`}>
             {titleTouched
-              ? t({ message: `${guide} passes this on in your words. The team decides what happens next.`, context: "guide feedback: what the guide does with it" })
-              : t({ message: `${guide} suggested this from your first line. Change it if you like.`, context: "guide feedback: under the suggested title" })}
+              ? t({ message: "Passed on in your words. The team decides what happens next.", context: "guide feedback: what the guide does with it" })
+              : t({ message: "Suggested from your first line. Change it if you like.", context: "guide feedback: under the suggested title" })}
           </p>
         </div>
       ) : null}

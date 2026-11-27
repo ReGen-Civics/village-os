@@ -115,8 +115,8 @@ msgstr "Cuéntele a {guide} lo que encontró"
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: under the heading"
-msgid "{guide} passes it to {village}'s team, in your words."
-msgstr "{guide} lo pasa al equipo de {village}, con sus propias palabras."
+msgid "In your words, to {village}'s team."
+msgstr "Con sus propias palabras, al equipo de {village}."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: the screenshot's heading"
@@ -175,13 +175,13 @@ msgstr "Título"
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: what the guide does with it"
-msgid "{guide} passes this on in your words. The team decides what happens next."
-msgstr "{guide} lo pasa con sus propias palabras. El equipo decide qué sigue."
+msgid "Passed on in your words. The team decides what happens next."
+msgstr "Se pasa con sus propias palabras. El equipo decide qué sigue."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: under the suggested title"
-msgid "{guide} suggested this from your first line. Change it if you like."
-msgstr "{guide} lo sugirió a partir de su primera línea. Cámbielo si quiere."
+msgid "Suggested from your first line. Change it if you like."
+msgstr "Sugerido a partir de su primera línea. Cámbielo si quiere."
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 msgctxt "guide feedback: where it goes, shared"

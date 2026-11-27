@@ -64,9 +64,9 @@ export function shotSize(img: HTMLImageElement): { width: number; height: number
   return fitWithin(img.naturalWidth || img.width, img.naturalHeight || img.height, FEEDBACK_SHOT_EDGE);
 }
 
-/** The pen's width for a picture this wide: readable on a phone screenshot and a wide monitor alike. */
-export function penWidth(width: number): number {
-  return Math.max(3, Math.round(width / 220));
+/** The pen's width for a picture this size, from its longer edge: readable on a tall phone screenshot and a wide monitor alike. */
+export function penWidth(longEdge: number): number {
+  return Math.max(4, Math.round(longEdge / 180));
 }
 
 function ink(canvas: HTMLCanvasElement): string {
@@ -105,7 +105,7 @@ function stroke(ctx: CanvasRenderingContext2D, m: Mark, w: number) {
 export function paint(canvas: HTMLCanvasElement, img: HTMLImageElement, marks: readonly Mark[]): void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  const w = penWidth(canvas.width);
+  const w = penWidth(Math.max(canvas.width, canvas.height));
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";

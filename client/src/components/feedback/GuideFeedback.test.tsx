@@ -66,7 +66,7 @@ describe("the feedback form in the guide's panel", () => {
     expect(heard.textContent).toContain("What Ceiba heard");
     expect(heard.textContent).toContain("Something broke on /");
     expect(screen.getByLabelText("Title")).toHaveValue("The map is blank");
-    expect(heard.textContent).toContain("Ceiba suggested this from your first line");
+    expect(heard.textContent).toContain("Suggested from your first line");
     // The guide repeats and suggests; it never ranks the report or the person.
     expect(heard.textContent).not.toMatch(/priority|urgent|severity|score/i);
     await user.clear(screen.getByLabelText("Title"));
