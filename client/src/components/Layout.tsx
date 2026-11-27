@@ -728,7 +728,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     optional module, so an ungated link would be a dead end on
                     a fresh fork. /exit-policy is core and always reachable. */}
                 <li hidden={newcomer /* the rules are for members (the lead, 24 Nov 2026); the page stays reachable */}>
-                  <Link href="/game-mechanics" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/governance/how#game-mechanics" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">Game Mechanics</Trans>
                   </Link>
                 </li>

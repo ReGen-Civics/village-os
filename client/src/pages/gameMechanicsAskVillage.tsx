@@ -1,3 +1,4 @@
+import { BTN_PRIMARY } from "@/components/journey/look";
 
 import { Trans } from "@lingui/react/macro";/**
  * THE DOOR FOR A HELD OUTCOME (readiness R039, and Rye, 2026-11-06:
@@ -26,7 +27,7 @@ export function AskVillageButton({ onAsk }: { onAsk: () => void }) {
     <button
       type="button"
       onClick={onAsk}
-      className="text-sm bg-teal-deep text-white rounded-lg px-3 py-1.5 font-medium hover:bg-teal-deep-dark"
+      className={BTN_PRIMARY}
     >
       <Trans context="gameMechanicsAskVillage, button">Ask the village to decide it here
     </Trans></button>

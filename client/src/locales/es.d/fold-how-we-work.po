@@ -1,0 +1,204 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: chapter"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "On this page"
+msgstr "En esta página"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "Our canvas"
+msgstr "Nuestro lienzo"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "Who decides what"
+msgstr "Quién decide qué"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "The Constitution"
+msgstr "La Constitución"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "The Dials"
+msgstr "Los controles"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "Proposals"
+msgstr "Propuestas"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: contents"
+msgid "Amendment History"
+msgstr "Historial de enmiendas"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: the jump"
+msgid "Read how we work together before?"
+msgstr "¿Ya leyó cómo trabajamos juntos?"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: the jump"
+msgid "Skip to the game mechanics"
+msgstr "Ir directo a las mecánicas del juego"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: the mechanics"
+msgid "For members"
+msgstr "Para miembros"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: the mechanics"
+msgid "Game mechanics"
+msgstr "Mecánicas del juego"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: the mechanics"
+msgid "We are open about how the game runs. The laws, the dials, the proposals and every change made are all below, each in its own section. Open the one you need."
+msgstr "Somos abiertos sobre cómo funciona el juego. Las leyes, los controles, las propuestas y cada cambio hecho están abajo, cada uno en su propia sección. Abra la que necesite."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "{lawCount} laws that no vote can change"
+msgstr "{lawCount} leyes que ningún voto puede cambiar"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "{0} dials in {allCategoryCount} groups"
+msgstr "{0} controles en {allCategoryCount} grupos"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "{0} dials in {allCategoryCount} groups, {tunedCount} tuned by the village"
+msgstr "{0} controles en {allCategoryCount} grupos, {tunedCount} ajustados por la aldea"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "{0} in play, {1} settled"
+msgstr "{0} en juego, {1} resueltas"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "Nothing in play, {0} settled"
+msgstr "Nada en juego, {0} resueltas"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, fold summary"
+msgid "Every change to the rules, who made it and why"
+msgstr "Cada cambio a las reglas, quién lo hizo y por qué"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, chip"
+msgid "community"
+msgstr "comunidad"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, chip"
+msgid "founder-held"
+msgstr "de los fundadores"
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, p"
+msgid "Change one by proposal. Adjust it below to begin."
+msgstr "Cámbielo mediante una propuesta. Ajústelo abajo para empezar."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, p"
+msgid "These stay with the founders."
+msgstr "Estos quedan en manos de los fundadores."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, p"
+msgid "Every dial only moves inside the bounds shown."
+msgstr "Cada control solo se mueve dentro de los límites que se muestran."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, p"
+msgid "Nothing is being proposed right now."
+msgstr "No se está proponiendo nada en este momento."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, Link"
+msgid "Adjust a community dial to start one."
+msgstr "Ajuste un control de la comunidad para empezar una."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, proposal path"
+msgid "Support gathers here."
+msgstr "El apoyo se reúne aquí."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, proposal path"
+msgid "Support gathers here. {supportThreshold} supporters send a proposal to the vote."
+msgstr "El apoyo se reúne aquí. {supportThreshold} apoyos llevan una propuesta a votación."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, proposal path"
+msgid "The binding vote runs here, on this village's own ballot."
+msgstr "La votación vinculante se hace aquí, en la boleta propia de esta aldea."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, proposal path"
+msgid "The binding vote runs on the village's Hypha."
+msgstr "La votación vinculante se hace en el Hypha de la aldea."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, proposal path"
+msgid "A proposal that carries is applied and recorded on the amendment ledger."
+msgstr "Una propuesta aprobada se aplica y queda registrada en el libro de enmiendas."
+
+# needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
+#: client/src/pages/GameMechanics.tsx
+msgctxt "GameMechanics, button"
+msgid "Copy for Hypha"
+msgstr "Copiar para Hypha"

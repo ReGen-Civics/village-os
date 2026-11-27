@@ -50,15 +50,15 @@ let stored: Record<string, unknown>;
 let hyphaConfigured: boolean;
 let isAdmin: boolean;
 /** The signed-in account the canvas sections read, or nobody. */
-let viewer: { id: string; name: string; role: string } | null = null;
+let viewer: { id: string; name: string; role: string; membershipGranted?: boolean } | null = null;
 /** What /api/game/mechanics answers: a veto window in hours, or a failure. */
 let mechanics: { vetoHours: number } | "down";
 
 vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
-// The live ballots are the village's real votes, not page words.
-vi.mock("@/components/governance/LiveDecisionsBand", () => ({ default: () => null }));
+// The game mechanics are their own suite (GameMechanics.folds.test.tsx); here only where they sit and who gets them.
+vi.mock("./GameMechanics", () => ({ default: () => <div data-testid="mechanics-folds" /> }));
 // The spread band's figures are the village's real ones; its two words are page fields, drawn as given.
 vi.mock("@/components/governance/VoiceSpreadBand", () => ({
   default: ({ heading, intro }: { heading: string; intro: string }) => (
@@ -190,8 +190,8 @@ describe("every field in the How We Govern spec reaches the page", () => {
     for (const hidden of ["principles", "circles", "conflict", "hypha", "cta"]) {
       expect(screen.queryByText(said(hidden)), hidden).toBeNull();
     }
-    expect(screen.getByText(said("decision"))).toBeInTheDocument();
-    expect(screen.getByText(said("rules"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("decision") })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("rules") })).toBeInTheDocument();
   });
 
   it("draws the circle cards a village writes, and none until it does", async () => {
@@ -235,7 +235,7 @@ describe("the page with nothing saved", () => {
     await headline();
 
     expect(screen.queryByText(said("cta"))).toBeNull();
-    expect(screen.getByText(said("circles"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("circles") })).toBeInTheDocument();
   });
 });
 
@@ -319,9 +319,10 @@ describe("a village that hides every section it may", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     // What is left is the canvas: its three headings and its own links, nothing the page words carry.
-    expect(Array.from(document.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(CANVAS_SECTION_HEADINGS);
+    expect(Array.from(document.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(["How we work together", ...CANVAS_SECTION_HEADINGS]);
     expect(document.querySelectorAll("h3")).toHaveLength(0);
-    for (const a of Array.from(document.querySelectorAll("a"))) {
+    // The page words' part only: the Governance views and the contents beside it are the page's own frame.
+    for (const a of Array.from(document.getElementById("how-we-work")!.querySelectorAll("a"))) {
       expect([CANVAS_CREDIT.url, "/canvas/workbook"], a.getAttribute("href") ?? "").toContain(a.getAttribute("href"));
     }
     for (const s of GOVERNANCE_PAGE.sections.filter((x) => x.hideable)) {
@@ -884,4 +885,50 @@ describe("the Governance page with the canvas modules off", () => {
     expect(fetched("GET /api/exit-policy")).toBe(true);
   });
 });
+});
+
+/*
+ * THE GAME MECHANICS, FOLDED IN (26 Nov 2026). The lead: first how we work
+ * together, then the mechanics, each folded, with a way to skip straight to
+ * them; and "Signed out visitor doesn't need to see game mechanics".
+ */
+describe("the game mechanics under How we work together", () => {
+  it("draws no mechanics, no jump and no fold for a signed-out visitor, and still the whole first part", async () => {
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(document.getElementById("how-we-work")).not.toBeNull();
+    expect(document.getElementById("game-mechanics")).toBeNull();
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Game mechanics" })).toBeNull();
+  });
+
+  it("draws none for a signed-in account the village has not admitted yet (CONTROL for the member case)", async () => {
+    viewer = { id: "u2", name: "Nell", role: "member" };
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(document.getElementById("game-mechanics")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+  });
+
+  it("puts them after How we work together for a member, with the jump at the top and a door to each fold", async () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("mechanics-folds")).toBeInTheDocument();
+    const jump = within(screen.getByTestId("mechanics-jump")).getByRole("link", { name: /Skip to the game mechanics/ });
+    expect(jump).toHaveAttribute("href", "#game-mechanics");
+    const first = document.getElementById("how-we-work")!;
+    const mechanics = document.getElementById("game-mechanics")!;
+    // The order the lead set: the first part, then the mechanics.
+    expect(first.compareDocumentPosition(mechanics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(mechanics).getByRole("heading", { level: 2, name: "Game mechanics" })).toBeInTheDocument();
+    // The contents beside the page name the chapter and a door to each fold (the folds are their own anchors).
+    const doors = within(screen.getByRole("navigation", { name: "On this page" }))
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(doors.filter((h) => h === "#game-mechanics" || h?.startsWith("#mechanics-"))).toEqual(["#game-mechanics", "#mechanics-constitution", "#mechanics-dials", "#mechanics-proposals", "#mechanics-history"]);
+  });
 });

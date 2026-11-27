@@ -62,26 +62,26 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
   return (
     <>
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <span className="font-medium text-stone-900">{h.label}</span>
-        <span className="text-xs text-stone-500">{day(h.at)}</span>
+        <span className="font-medium text-foreground">{h.label}</span>
+        <span className="text-xs text-muted-foreground">{day(h.at)}</span>
       </div>
-      <p className="text-sm text-stone-600 mt-0.5">
+      <p className="text-sm text-muted-foreground mt-0.5">
         <span className="sr-only"><Trans context="SettingHistory, span">From </Trans></span>
-        <del className="text-stone-500">{from}</del>
+        <del className="text-muted-foreground">{from}</del>
         <span aria-hidden="true"> → </span>
         <span className="sr-only"> <Trans context="SettingHistory, span">to </Trans></span>
-        <ins className="no-underline font-semibold text-teal-deep">{to}</ins>
+        <ins className="no-underline font-semibold text-notice">{to}</ins>
       </p>
-      <p className="text-xs text-stone-600 mt-0.5">{howChanged(h)}</p>
+      <p className="text-xs text-muted-foreground mt-0.5">{howChanged(h)}</p>
       {h.proposal?.title && (
-        <p className="text-xs text-stone-600 mt-0.5">
+        <p className="text-xs text-muted-foreground mt-0.5">
           Why: {h.proposal.title}
           {ballot && (
             <>
               {" "}
               <Link
                 href={`/governance/decisions/${ballot}`}
-                className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
+                className="inline-flex min-h-[44px] items-center text-notice underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Trans context="SettingHistory, Link">Read the vote
               </Trans></Link>
@@ -93,13 +93,13 @@ export function HistoryEntry({ h, valueOf }: { h: Amendment; valueOf: (key: stri
         <p className="text-xs mt-0.5">
           <Link
             href={`/governance/decisions/${ballot}`}
-            className="inline-flex min-h-[44px] items-center text-teal-deep underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
+            className="inline-flex min-h-[44px] items-center text-notice underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Trans context="SettingHistory, Link">Read the vote that decided this
           </Trans></Link>
         </p>
       )}
-      {h.note && <p className="text-[11px] text-stone-500 mt-0.5">{h.note}</p>}
+      {h.note && <p className="text-xs text-muted-foreground mt-0.5">{h.note}</p>}
     </>
   );
 }
@@ -143,25 +143,25 @@ export function SettingHistory({
         aria-expanded={open}
         aria-controls={panelId}
         aria-label={t({ message: `History of ${label}`, context: "SettingHistory, aria-label" })}
-        className="inline-flex min-h-[44px] items-center gap-1 text-[11px] text-teal-deep hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep rounded"
+        className="inline-flex min-h-[44px] items-center gap-1 text-xs text-notice hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
       >
         <Trans context="SettingHistory, button"><History className="w-3 h-3" aria-hidden="true" /> History
       </Trans></button>
       {open && (
-        <div id={panelId} className="mt-1 rounded-lg border border-stone-200 bg-stone-50" data-setting-history={settingKey}>
+        <div id={panelId} className="mt-1 rounded-lg border border-border bg-muted" data-setting-history={settingKey}>
           {failed ? (
-            <p className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs text-stone-600" role="alert">
+            <p className="flex flex-wrap items-center gap-2 px-3 py-2 text-xs text-muted-foreground" role="alert">
               That did not load.
-              <button type="button" onClick={load} className="min-h-[44px] font-semibold text-teal-deep hover:underline">
+              <button type="button" onClick={load} className="min-h-[44px] font-semibold text-notice hover:underline">
                 <Trans context="SettingHistory, button">Try again
               </Trans></button>
             </p>
           ) : rows === null ? (
-            <p className="px-3 py-2 text-xs text-stone-500" role="status"><Trans context="SettingHistory, p">Loading the record…</Trans></p>
+            <p className="px-3 py-2 text-xs text-muted-foreground" role="status"><Trans context="SettingHistory, p">Loading the record…</Trans></p>
           ) : rows.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-stone-600"><Trans context="SettingHistory, p">No changes yet. It has been this way since the village began.</Trans></p>
+            <p className="px-3 py-2 text-xs text-muted-foreground"><Trans context="SettingHistory, p">No changes yet. It has been this way since the village began.</Trans></p>
           ) : (
-            <ul className="divide-y divide-stone-200">
+            <ul className="divide-y divide-border">
               {rows.map((h) => (
                 <li key={h.id} className="px-3 py-2">
                   <HistoryEntry h={h} valueOf={valueOf} />

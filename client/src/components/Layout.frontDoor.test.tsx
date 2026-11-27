@@ -148,13 +148,13 @@ describe("the footer", () => {
     // The gratitude wall is public since #1528 (first names only), so the footer offers it to a visitor;
     // the engine room's rules are for members.
     expect(hrefs).toContain("/gratitude");
-    expect(hrefs).not.toContain("/game-mechanics");
+    expect(hrefs).not.toContain("/governance/how#game-mechanics");
     expect(hrefs).toContain("/quests");
   });
 
   it("CONTROL: keeps them for a member", async () => {
     user = { id: "u1", name: "Ora Vale", role: "member", membershipGranted: true };
     const hrefs = await footerShows();
-    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/work", "/game-mechanics"]) expect(hrefs, h).toContain(h);
+    for (const h of ["/gratitude", "/network", "/campaigns", "/tools", "/places", "/governance/work", "/governance/how#game-mechanics"]) expect(hrefs, h).toContain(h);
   });
 });
