@@ -51,7 +51,8 @@ import { MembershipAtApplication, type MembershipChoice } from "@/components/ope
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
 import type { ProposalLink } from "@shared/proposalAttachments";
 import { AskSera, DraftMark } from "@/components/proposalDrafts/AskSera";
-import { DRAFT_WORDS, goalsFromDraft, isTextDraft, placeDraftGoals, unconfirmedDrafts, type DraftMarks, type DraftableGoal } from "@shared/seraDrafts";
+import { goalsFromDraft, isTextDraft, placeDraftGoals, unconfirmedDrafts, type DraftMarks, type DraftableGoal } from "@shared/seraDrafts";
+import { draftBlocked } from "@/components/governance/applicationChecks";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import { CARD_LIMITS } from "@shared/openProposalCard";
 import { BreathingLoader } from "@/components/natural";
@@ -371,9 +372,9 @@ export default function ProposeARole() {
     const found: FormProblem[] = [];
     const add = (field: string, message: string, target = targetFor(field)) => found.push({ field, message, target });
     const valueDrafts = unconfirmedDrafts({ aim, story: "", marks, goals: items });
-    if (valueDrafts.length > 0) found.push({ field: "drafts:moon", message: DRAFT_WORDS.blocked(valueDrafts), target: null });
+    if (valueDrafts.length > 0) found.push({ field: "drafts:moon", message: draftBlocked(valueDrafts), target: null });
     const aboutDrafts = unconfirmedDrafts({ aim: "", story: about.story, marks, goals: [] });
-    if (aboutDrafts.length > 0) found.push({ field: "drafts:about", message: DRAFT_WORDS.blocked(aboutDrafts), target: null });
+    if (aboutDrafts.length > 0) found.push({ field: "drafts:about", message: draftBlocked(aboutDrafts), target: null });
     if (!name.trim()) add("name", OPEN_WORDS.needName);
     if (!email.trim()) add("email", OPEN_WORDS.needEmail); else if (/[,;]/.test(email) || addressProblem(email)) add("email", OPEN_WORDS.badEmail);
     if (!why.trim()) add("why", OPEN_WORDS.needWhy);
