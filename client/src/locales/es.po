@@ -98,6 +98,13 @@ msgctxt "admin protocols editor"
 msgid "Archive"
 msgstr "Archivar"
 
+# needs-native-review: the season page, 27 Nov 2026
+#. placeholder {0}: seat.name
+#: client/src/components/season/YourPlan.tsx
+msgctxt "season page"
+msgid "What happens to {0}"
+msgstr "Qué pasa con {0}"
+
 # needs-native-review: governance rename, 2026-11-26
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "review page"
@@ -3767,6 +3774,12 @@ msgctxt "role card"
 msgid "Key role"
 msgstr "Rol clave"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Filed"
+msgstr "Presentado"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: send in flight"
 msgid "Sending..."
@@ -4244,6 +4257,12 @@ msgstr "{0} a {1}"
 msgctxt "voice transcription"
 msgid "Add these words to the answer"
 msgstr "Añadir estas palabras a la respuesta"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/seasonSteps.tsx
+msgctxt "season page"
+msgid "Your season"
+msgstr "Su temporada"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journey/TestRun.tsx
@@ -5898,6 +5917,12 @@ msgctxt "CashOwedPanel, a"
 msgid "Record a bank transfer"
 msgstr "Registrar una transferencia bancaria"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: who a chapter is for"
+msgid "Residents"
+msgstr "Residentes"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/PowerGroupDialogs.tsx
 msgctxt "PowerGroupDialogs, button"
@@ -7155,6 +7180,12 @@ msgstr "Un sello en el retrato, dos palabras y dos números, que un miembro pued
 msgctxt "AI transcript refusal"
 msgid "The service heard no words in this recording."
 msgstr "El servicio no oyó palabras en esta grabación."
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: a chapter's name"
+msgid "Resident rights"
+msgstr "Derechos de residentes"
 
 # needs-native-review: new words, 24 Nov 2026
 #: client/src/components/VentureAccountsCard.tsx
@@ -9013,7 +9044,7 @@ msgid "The starting choice when a member logs a pin. It decides the finest place
 msgstr "La opción inicial cuando un miembro registra un punto. Decide el lugar más preciso que se le muestra a cualquiera fuera de los miembros con el mapa abierto: una copia descargada con un ajuste menos preciso, y los puntos que ve un miembro antes de que se abra su mapa cuando eso está encendido. Los miembros cuyo mapa ya se abrió siempre ven el lugar exacto. El miembro puede cambiarlo en cada punto."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "button that sends a private restorative intake"
 msgid "Send privately"
 msgstr "Enviar en privado"
@@ -10673,6 +10704,12 @@ msgctxt "JourneyDetail, aria-label"
 msgid "Timeline"
 msgstr "Línea de tiempo"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/JoinSeason.tsx
+msgctxt "season page"
+msgid "Which circle you ask to join"
+msgstr "A qué círculo pide unirse"
+
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 #~ msgctxt "role draft discover"
 #~ msgid "Draft this role"
@@ -11663,6 +11700,12 @@ msgctxt "Admin, toast"
 msgid "Recorded on the land's ledger"
 msgstr "Registrado en el libro mayor de la tierra"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: who a chapter is for"
+msgid "Anyone asking to join"
+msgstr "Quien pide unirse"
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Done when"
@@ -12387,6 +12430,12 @@ msgstr "Ver lo que tiene {serviceName}"
 msgctxt "LayerChips, aria-label"
 msgid "Calendar layers"
 msgstr "Capas del calendario"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Changes not filed yet"
+msgstr "Cambios sin presentar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequest.tsx
@@ -13490,6 +13539,12 @@ msgctxt "MapVocabularyPanel, h3"
 msgid "The map's words"
 msgstr "Las palabras del mapa"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "Each of these starts once every party aligns. Read the words, then align."
+msgstr "Cada uno empieza cuando todas las partes se alinean. Lea las palabras y luego alinéese."
+
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/components/orgDraft/FieldDiff.tsx
 msgctxt "draft page: a field"
@@ -14373,6 +14428,12 @@ msgstr "Está en la bandeja de entrada del equipo de {projectName}. No está en 
 msgid "This browser won't keep your selection (private mode or site data blocked). It stays until you leave the page."
 msgstr "Este navegador no guardará su selección (modo privado o datos del sitio bloqueados). Se queda hasta que salga de la página."
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: what a chapter holds"
+msgid "What you hold and what you carry as a resident"
+msgstr "Lo que usted tiene y lo que usted asume como residente"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks web heading"
 msgid "The web this moon"
@@ -14582,7 +14643,7 @@ msgid "Cash stays out of the picture unless you tick it. Your work and badges ar
 msgstr "El dinero queda fuera de la imagen a menos que usted lo marque. Su trabajo e insignias siempre aparecen."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/MySeason.tsx
+#: client/src/components/season/YourPlan.tsx
 msgctxt "MySeason, label"
 msgid "Reading your season"
 msgstr "Leyendo su temporada"
@@ -17451,6 +17512,12 @@ msgctxt "setup guide step, subtitle"
 msgid "Connect the AI that helps you through the rest of these steps."
 msgstr "Conecte la IA que lo acompaña en el resto de estos pasos."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "The season's parts"
+msgstr "Las partes de la temporada"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, button"
@@ -18843,7 +18910,7 @@ msgid "About this role"
 msgstr "Sobre este rol"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Confirm with your password"
 msgstr "Confirme con su contraseña"
 
@@ -19053,6 +19120,12 @@ msgstr "Nombre completo <0>*</0>"
 msgctxt "GeneKeysLines, p"
 msgid "Type, strategy and authority come from Human Design."
 msgstr "El tipo, la estrategia y la autoridad vienen del Diseño Humano."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/YourPlan.tsx
+msgctxt "season page"
+msgid "Renew this role"
+msgstr "Renueve este rol"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageHealth.tsx
@@ -19698,7 +19771,7 @@ msgid "No date yet. Agree one when you talk."
 msgstr "Todavía sin fecha. Acuerden una cuando hablen."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "What happened, in your own words…"
 msgstr "Lo que pasó, en sus propias palabras…"
 
@@ -19725,6 +19798,12 @@ msgstr "Esta recaudación no cargó. Vuelva en un rato."
 #: client/src/components/TakeCurrentPrice.tsx
 msgid "You took it on at its earlier price, and your claim keeps that one unless you choose the new price shown above."
 msgstr "Usted la tomó a su precio anterior, y su reclamo mantiene ese precio a menos que elija el nuevo precio que aparece arriba."
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the line under the title"
+msgid "What the village promises you, what it asks of you, and how leaving works. Choose one to read."
+msgstr "Lo que la aldea le promete, lo que le pide y cómo funciona la salida. Elija uno para leer."
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
@@ -20360,7 +20439,7 @@ msgid "The chips did not save"
 msgstr "Las etiquetas no se guardaron"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "the circle that decides an involuntary exit"
 msgid "Decided by:"
 msgstr "Lo decide:"
@@ -21812,6 +21891,12 @@ msgstr "Filtrar los tokens que tiene esta cuenta"
 #: client/src/pages/ChangeRequest.tsx
 msgid "Delete this change request? This cannot be undone."
 msgstr "¿Eliminar esta solicitud de cambio? No se puede deshacer."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "{n} wait on you"
+msgstr "{n} le esperan"
 
 # needs-native-review: fold of Game Mechanics into How we work together, 26 Nov 2026
 #: client/src/pages/Governance.tsx
@@ -23593,6 +23678,12 @@ msgctxt "Badges, p"
 msgid "Declare what you can do. It helps the village find you."
 msgstr "Declare lo que sabe hacer. Así la aldea lo encuentra."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/YourPlan.tsx
+msgctxt "season page"
+msgid "Held this season"
+msgstr "Los que tiene esta temporada"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable tools.click_tracking, label"
@@ -23954,6 +24045,12 @@ msgstr "Créditos por donación por miembro por ciclo"
 msgctxt "game variable org.tours_resumed, description"
 msgid "Off, the application's first step and the steward page's first steps show only the webinar or community call: every way, link or step that names a land tour, a visit to the land, a potluck or a shared meal is hidden. On, they all show again, as written. Nothing is deleted either way."
 msgstr "Apagado, el primer paso de la solicitud y los primeros pasos de la página de personas custodias muestran solo el seminario web o la llamada comunitaria: se oculta toda forma, enlace o paso que nombre un recorrido por la tierra, una visita a la tierra, un convivio o una comida compartida. Encendido, todos vuelven a mostrarse, tal como están escritos. En ningún caso se borra nada."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "Asked of you"
+msgstr "Lo que se le pide"
 
 #. placeholder {0}: voiceLength(recorder.left)
 #: client/src/components/voice/VoiceClips.tsx
@@ -24557,6 +24654,12 @@ msgstr "Todavía no hay nada en el calendario."
 msgctxt "constitution law \"Leaving well is guaranteed\", plain"
 msgid "Any member can see everything the village holds about them, take a copy, settle what is open, and leave. Their name is scrubbed everywhere while the village's shared record keeps its numbers. Departure is a supported path, not an escape."
 msgstr "Cualquier miembro puede ver todo lo que la aldea guarda sobre él, llevarse una copia, cerrar lo pendiente, y salir. Su nombre se borra en todas partes mientras el registro compartido de la aldea conserva sus números. Irse es un camino con apoyo, y nunca una huida."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/seasonSteps.tsx
+msgctxt "season page"
+msgid "Where you stand"
+msgstr "Dónde está usted"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
@@ -26402,6 +26505,12 @@ msgctxt "player card, bonus cap"
 msgid "Cap: {w}"
 msgstr "Tope: {w}"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Not applied yet"
+msgstr "Aún sin solicitar"
+
 # needs-native-review: the circle card, 26 Nov 2026
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, voting"
@@ -27110,9 +27219,9 @@ msgid "Village Health: the land's ledger"
 msgstr "Salud de la aldea: el libro de la tierra"
 
 #: client/src/pages/Aligned.tsx
-msgctxt "aligned page, signed out"
-msgid "Create an account"
-msgstr "Crear una cuenta"
+#~ msgctxt "aligned page, signed out"
+#~ msgid "Create an account"
+#~ msgstr "Crear una cuenta"
 
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/components/orgDraft/FieldDiff.tsx
@@ -27384,7 +27493,7 @@ msgid "Where the words and the settings part"
 msgstr "Donde las palabras y la configuración se separan"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Could not open the process"
 msgstr "No se pudo abrir el proceso"
 
@@ -27754,6 +27863,12 @@ msgstr "Guardado."
 #: client/src/pages/Roles.tsx
 #~ msgid "Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on), and links back to the {0}."
 #~ msgstr "Grupos de trabajo con autoridad real. Cada círculo tiene un propósito (hacia dónde trabaja) y un ámbito (sobre qué decide), y se vincula con “{0}”."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/seasonSteps.tsx
+msgctxt "season page"
+msgid "Your season is set."
+msgstr "Su temporada está lista."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -28784,7 +28899,7 @@ msgid "The search did not answer. Try again in a moment."
 msgstr "La búsqueda no respondió. Inténtelo de nuevo en un momento."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Nobody holds the {intakeRoleLabel} today, so a private intake would reach nobody."
 msgstr "Hoy nadie tiene el rol de {intakeRoleLabel}, así que un mensaje privado no le llegaría a nadie."
 
@@ -29341,6 +29456,12 @@ msgstr "Lo siguiente: {title}"
 #~ msgid "What happens after you propose"
 #~ msgstr "Qué pasa después de proponer"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: a chapter's name"
+msgid "Steward rights"
+msgstr "Derechos de custodios"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/notebook/NotebookAdd.tsx
 msgid " (leave it empty to use the file's name)"
@@ -29412,6 +29533,12 @@ msgctxt "budget line error"
 msgid "The line was not added. Try again in a moment."
 msgstr "La línea no se agregó. Intente de nuevo en un momento."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "The village's goals for this season. Moss spreads into a goal when the whole village reaches it."
+msgstr "Las metas de la aldea para esta temporada. El musgo se extiende sobre una meta cuando toda la aldea la alcanza."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: s.gates.Moon.gate
 #: client/src/components/sessionCard/PullACard.tsx
@@ -29433,7 +29560,7 @@ msgid "Send your answer"
 msgstr "Enviar su respuesta"
 
 # needs-native-review: new words, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "exit policy page eyebrow"
 msgid "How departure works"
 msgstr "Cómo funciona la partida"
@@ -31087,6 +31214,12 @@ msgctxt "NotifyPrefsPanel, p"
 msgid "<0>Leave the village instead</0>. Leaving keeps your account, your tokens and any cash owed to you, and you stay on as a former member."
 msgstr "<0>Mejor salir de la aldea</0>. Al salir conserva su cuenta, sus tokens y cualquier dinero que se le deba, y queda como exmiembro."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Not filed yet"
+msgstr "Aún sin presentar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: heldWords(draft.cashHeld)
 #: client/src/components/WorkValueEditor.tsx
@@ -31805,6 +31938,12 @@ msgctxt "start a conversation"
 msgid "About two minutes. Tell us who you are and why, and we shape your proposal together later."
 msgstr "Unos dos minutos. Cuéntenos quién es y por qué, y más adelante damos forma juntos a su propuesta."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Sign in to take part in the season."
+msgstr "Inicie sesión para participar en la temporada."
+
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module saberra, promise"
@@ -32031,6 +32170,12 @@ msgstr "Vienen con los módulos que las traen, así que una aldea nueva con sus 
 msgctxt "NeedsPanel, p"
 msgid "None yet."
 msgstr "Todavía ninguna."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "Waiting on you"
+msgstr "Esperándole a usted"
 
 # needs-native-review: player card, 26 Nov 2026
 #: client/src/components/playerCard/playerCardMessages.ts
@@ -32407,7 +32552,7 @@ msgid "The workbook prints each block on its own page, with room to write."
 msgstr "El cuaderno imprime cada bloque en su propia página, con espacio para escribir."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "These are the platform's starting terms. The community has not yet written its own. Treat them as a draft to be decided together, not a contract."
 msgstr "Estos son los términos iniciales de la plataforma. La comunidad todavía no ha escrito los suyos. Tómelos como un borrador para decidir juntos, no como un contrato."
 
@@ -33390,7 +33535,7 @@ msgid "Nothing is owed on this claim any more."
 msgstr "Ya no se debe nada en este reclamo."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Your message reached {reached, plural, one {# person} other {# people}} holding the {intakeRoleLabel}. They read it in their notifications here. Your words were not emailed."
 msgstr "Su mensaje le llegó a {reached, plural, one {# persona} other {# personas}} con el rol de {intakeRoleLabel}. Lo leen en sus notificaciones aquí. Sus palabras no se enviaron por correo."
 
@@ -34633,7 +34778,7 @@ msgid "Close credit sales"
 msgstr "Cerrar venta de créditos"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "exit policy section heading"
 msgid "Repair before departure"
 msgstr "Reparar antes de partir"
@@ -36548,6 +36693,12 @@ msgctxt "YourCompanions, p"
 msgid "Every companion is resting. Wake one in Customize this section."
 msgstr "Todos los compañeros están descansando. Despierte uno en Personalizar esta sección."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Open your application"
+msgstr "Abra su solicitud"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/power/CardBookingLink.tsx
 msgctxt "role card: book a conversation on WhatsApp"
@@ -36978,7 +37129,7 @@ msgid "Start a conversation"
 msgstr "Iniciar una conversación"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "You hear back within {replyHours, plural, one {# hour} other {# hours}}."
 msgstr "Recibe respuesta en menos de {replyHours, plural, one {# hora} other {# horas}}."
 
@@ -37478,7 +37629,7 @@ msgid "End"
 msgstr "Terminar"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Begin your own departure"
 msgstr "Iniciar su propia salida"
 
@@ -37904,6 +38055,12 @@ msgstr "¿Declinarla? Recibirá un correo breve y amable diciendo que no."
 msgctxt "game variable progression.unlock.exchange.swap, choice none, label"
 msgid "Never by stage (role or badge only)"
 msgstr "Nunca por etapa (solo por rol o insignia)"
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: a link named a chapter this village switched off"
+msgid "The part you asked for is not published here. Here is what is."
+msgstr "La parte que buscaba no está publicada aquí. Esto es lo que hay."
 
 #. placeholder {0}: moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -39958,6 +40115,7 @@ msgstr "Alrededor de 1 km"
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
+#: client/src/pages/RightsAndAgreements.tsx
 msgctxt "config card: ask the server again"
 msgid "Try again"
 msgstr "Intentar de nuevo"
@@ -40047,6 +40205,12 @@ msgctxt "PathsStagesEditor, p"
 msgid "{loadError} Saving is off until it reads, so nothing you have written gets overwritten."
 msgstr "{loadError} Guardar está apagado hasta que se pueda leer, para que nada de lo que usted escribió se sobrescriba."
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: what a chapter holds"
+msgid "What you hold and what you carry as a steward"
+msgstr "Lo que usted tiene y lo que usted asume como custodio"
+
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/pay/ScanLink.tsx
 msgctxt "pay page, opening a link"
@@ -40133,6 +40297,12 @@ msgstr "Salidas"
 #~ msgctxt "level-up moment eyebrow"
 #~ msgid "A new stage"
 #~ msgstr ""
+
+# needs-native-review: Leaving Well, the member's jump to their own departure card, 27 Nov 2026
+#: client/src/components/rights/LeavingWellChapter.tsx
+msgctxt "Leaving Well: a jump to the member's own departure card"
+msgid "Start your own departure"
+msgstr "Iniciar su propia salida"
 
 # needs-native-review: new words, 24 Nov 2026
 #. placeholder {0}: w.credits
@@ -40345,6 +40515,12 @@ msgctxt "venture redemption"
 msgid "Payment reference"
 msgstr "Referencia de pago"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "This season"
+msgstr "Esta temporada"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "ProposeQuest, button"
@@ -40518,6 +40694,12 @@ msgstr "Trabajo terminado por aceptar"
 msgctxt "Mail settings, test outcome"
 msgid "No test sent yet."
 msgstr "Aún no se ha enviado ninguna prueba."
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: who a chapter is for"
+msgid "Stewards"
+msgstr "Custodios"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -41449,6 +41631,12 @@ msgctxt "Admin, h2"
 msgid "Investor Vault"
 msgstr "Bóveda de inversionistas"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "The register"
+msgstr "El registro"
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, start a crew for this quest"
@@ -41542,6 +41730,12 @@ msgstr "El nuevo rol empieza sin publicar, con la puerta cerrada, en el círculo
 msgctxt "Bootstrap, placeholder"
 msgid "How the village should greet you"
 msgstr "Cómo debe saludarle la aldea"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Aligned"
+msgstr "Alineado"
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
@@ -41684,7 +41878,7 @@ msgid "Which roles give their holders a companion that speaks for the role. Writ
 msgstr "Qué roles les dan a sus personas titulares un acompañante que habla por el rol. Escriba all para todos los roles, déjelo vacío para ninguno, o pegue ids de roles desde el organigrama separados por comas. El acompañante personal siempre está ahí para cada miembro, diga lo que diga esto."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "a private intake was not sent"
 msgid "Could not send"
 msgstr "No se pudo enviar"
@@ -43037,6 +43231,12 @@ msgstr "Idiomas"
 msgctxt "proposal wizard"
 msgid "Circle"
 msgstr "Círculo"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Open your plan"
+msgstr "Abra su plan"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -44731,6 +44931,12 @@ msgctxt "TokensTab, p"
 msgid "Name tokens as you enable modules: stay credits, library credits, event tickets. The slug is permanent: history is never re-denominated."
 msgstr "Nombre los tokens a medida que activa módulos: créditos de estadía, créditos de biblioteca, entradas a eventos. El identificador es permanente: el historial nunca se vuelve a denominar."
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the list of chapters"
+msgid "Agreements on this page"
+msgstr "Acuerdos en esta página"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/power/MapToolStrip.tsx
 msgctxt "MapToolStrip, button"
@@ -44738,9 +44944,9 @@ msgid "Resources"
 msgstr "Recursos"
 
 #: client/src/pages/Aligned.tsx
-msgctxt "aligned page, signed out"
-msgid "Sign in"
-msgstr "Iniciar sesión"
+#~ msgctxt "aligned page, signed out"
+#~ msgid "Sign in"
+#~ msgstr "Iniciar sesión"
 
 #: client/src/components/roleCard/RolePieces.tsx
 msgctxt "role card rail: how many suggestions a piece carries"
@@ -45357,7 +45563,7 @@ msgid "Some words on this page are a machine translation. A person has not check
 msgstr "Algunas palabras de esta página son traducción automática. Una persona aún no las ha revisado."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "the named role a private intake reaches"
 msgid "{intakeRoleName} role"
 msgstr "Rol de {intakeRoleName}"
@@ -47840,6 +48046,12 @@ msgctxt "Admin, p"
 msgid "sys:mint → sys:treasury, under the shared per-cycle mint cap ({0}). Sales come OUT of this stock. An empty treasury fails a sale loudly instead of minting quietly."
 msgstr "sys:mint → sys:treasury, bajo el tope compartido de emisión por ciclo ({0}). Las ventas salen de este inventario. Una tesorería vacía hace fallar una venta de forma visible, sin emitir a escondidas."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "The agreement waits on you"
+msgstr "El acuerdo le espera"
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: first pass, messages newcomer refusal, 25 Nov 2026
 #: client/src/components/messages/MessagesMembersOnly.tsx
@@ -47923,7 +48135,7 @@ msgid "No payer pays your route yet."
 msgstr "Ningún pagador paga todavía su vía."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "You can also bring it to somebody outside the village"
 msgstr "También puede llevarlo a alguien fuera de la aldea"
 
@@ -49743,6 +49955,12 @@ msgctxt "admin compare"
 msgid "Save this split"
 msgstr "Guardar este reparto"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Season"
+msgstr "Temporada"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
 msgctxt "ModuleConfigPanels, p"
@@ -49863,6 +50081,12 @@ msgstr "{held}% ocupado · cubierto"
 msgctxt "YourListCard, p"
 msgid "This one belongs to a role nobody holds yet. A steward will see it."
 msgstr "Esta pertenece a un rol que nadie ocupa todavía. Un custodio la verá."
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Applied. The picker picks next."
+msgstr "Solicitud enviada. Ahora elige quien escoge."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -51567,7 +51791,7 @@ msgstr "Revocar"
 #~ msgstr "Por qué importa"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "A village that designs its exits before it needs them can afford to welcome people wholeheartedly. This is how departure works here."
 msgstr "Una aldea que diseña sus salidas antes de necesitarlas puede recibir a las personas de todo corazón. Así funciona la partida aquí."
 
@@ -52461,6 +52685,12 @@ msgctxt "VoterRoll, p"
 msgid "Votes here are on the record with a name against them. This village does not run secret ballots."
 msgstr "Aquí los votos quedan en el registro con un nombre. Esta aldea no hace votaciones secretas."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Open what waits on you"
+msgstr "Abra lo que le espera"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
@@ -52533,6 +52763,7 @@ msgstr "Alguien levantó la mano para un rol o una facultad, y la aldea le debe 
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
+#: client/src/pages/RightsAndAgreements.tsx
 msgid "We couldn't reach the village just now"
 msgstr "No pudimos comunicarnos con la aldea en este momento"
 
@@ -53784,7 +54015,7 @@ msgid "Do you consent to this agenda?"
 msgstr "¿Da su consentimiento a esta agenda?"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Start a private intake. It reaches only the people holding the {intakeRoleLabel}, who read your name and your words in their notifications here. If they get an email, it says only that an intake is waiting: your words and your name are never emailed."
 msgstr "Inicie una solicitud privada. Solo les llega a las personas que ocupan el {intakeRoleLabel}, quienes leen su nombre y sus palabras en sus notificaciones aquí. Si reciben un correo, solo dice que hay una solicitud esperando: su nombre y sus palabras nunca se envían por correo."
 
@@ -54041,7 +54272,7 @@ msgid "Hi friend:"
 msgstr "Hola, amiga o amigo:"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Anything you want the stewards to know (optional)"
 msgstr "Algo que quiera que sepan los custodios (opcional)"
 
@@ -54105,7 +54336,8 @@ msgid "{n} applications arrived in your circles."
 msgstr "Llegaron {n} solicitudes a sus círculos."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
+#: client/src/pages/RightsAndAgreements.tsx
 msgctxt "exit policy page title"
 msgid "Leaving Well"
 msgstr "Salir bien"
@@ -54185,7 +54417,7 @@ msgid "Loading this village's conflict steps…"
 msgstr "Cargando los pasos de esta aldea para los conflictos…"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "This opens the process above. It does not close your account. If you still hold tokens, or the village still owes you cash, when it ends, you stay on as a former member and keep your account and balances. Otherwise your identity is removed at the end and your contributions stay part of the village's record."
 msgstr "Esto abre el proceso descrito arriba. No cierra su cuenta. Si al terminar usted todavía tiene tokens, o la aldea todavía le debe dinero, usted sigue como exmiembro y conserva su cuenta y sus saldos. Si no, su identidad se borra al final y sus aportes siguen siendo parte del registro de la aldea."
 
@@ -55683,6 +55915,12 @@ msgstr "Nombre legal"
 msgid "Your suggestion is withdrawn. It is listed under Decided lately on this block."
 msgstr "Su sugerencia fue retirada. Aparece en Decidido hace poco en este bloque."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/ReadFailed.tsx
+msgctxt "season page"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/HousingTiersPanel.tsx
 msgctxt "HousingTiersPanel, p"
@@ -56372,7 +56610,7 @@ msgid "It would change:"
 msgstr "Cambiaría:"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Bring it to somebody outside the village"
 msgstr "Llevarlo a alguien fuera de la aldea"
 
@@ -56577,7 +56815,7 @@ msgid "Reach is the share of members who opened a module this cycle. Opening it 
 msgstr "El alcance es la parte de los miembros que abrió un módulo en este ciclo. Abrirlo otra vez no cuenta doble, y escribir en él tampoco, así que un módulo gana cuando lo abren más personas y nunca por pedirles más a las mismas."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "You can also bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr "También puede llevarlo a alguien fuera de la aldea, en {outsideOrganisation}. Los miembros ven quiénes son y cómo contactarlos."
 
@@ -57640,6 +57878,12 @@ msgstr "La pregunta y la descripción de cada bloque, y las palabras de los cinc
 msgid "The guide had no role to suggest from these answers."
 msgstr "La guía no tuvo ningún rol que sugerir con estas respuestas."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Plan your season"
+msgstr "Planee su temporada"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ChangeRequest.tsx
 msgctxt "pick a change to edit"
@@ -58021,6 +58265,12 @@ msgstr "La mejor manera de conocer la aldea mientras espera es acompañarnos en 
 msgctxt "proposed changes: kind of change"
 msgid "Calendar event"
 msgstr "Evento del calendario"
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the title"
+msgid "Rights and agreements"
+msgstr "Derechos y acuerdos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/map/MapSlate.tsx
@@ -59634,7 +59884,7 @@ msgid "What you've grown"
 msgstr "Lo que usted ha cultivado"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Notice period: {noticeDays} days. Nothing about your departure is automatic. Each step is walked with a person."
 msgstr "Período de aviso: {noticeDays} días. Nada de su partida es automático. Cada paso se recorre con una persona."
 
@@ -60391,6 +60641,12 @@ msgctxt "funding rounds"
 msgid "Save my choices"
 msgstr "Guardar mis elecciones"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "What you align with"
+msgstr "Con lo que usted se alinea"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal heading"
@@ -60628,6 +60884,12 @@ msgstr "El saldo completo mengua a la tasa de arriba. Esta es la decisión tal c
 msgctxt "Admin, h2"
 msgid "Feedback"
 msgstr "Comentarios"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Join"
+msgstr "Unirse"
 
 # needs-native-review: the guide's panel, Share feedback, 2026-11-26
 #: client/src/components/feedback/GuideFeedback.tsx
@@ -62229,7 +62491,7 @@ msgid "Open roles"
 msgstr "Roles abiertos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/SeasonPlans.tsx
+#: client/src/components/season/VillagePlans.tsx
 msgctxt "SeasonPlans, label"
 msgid "Reading the village's plans"
 msgstr "Leyendo los planes de la aldea"
@@ -64904,6 +65166,12 @@ msgctxt "visitor profile: heading when not signed in"
 msgid "Your visit"
 msgstr "Su visita"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/AlignedPanel.tsx
+msgctxt "season page"
+msgid "No terms wait on you."
+msgstr "Ningún término le espera."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -65707,6 +65975,12 @@ msgstr "Atendidos hoy en este dispositivo: {handled}"
 msgctxt "funding rounds"
 msgid "Reading the rounds"
 msgstr "Leyendo las rondas"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Join the season"
+msgstr "Únase a la temporada"
 
 #: client/src/components/fireflyPath/applyWords.ts
 msgctxt "founding application why starter"
@@ -66577,6 +66851,7 @@ msgstr "La línea pública de este bloque está oculta por ahora."
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
+#: client/src/pages/RightsAndAgreements.tsx
 msgid "Check your connection, then try again."
 msgstr "Revise su conexión y vuelva a intentarlo."
 
@@ -68129,7 +68404,7 @@ msgid "Say in a sentence why this is declined. The note is public, like the sugg
 msgstr "Diga en una oración por qué se rechaza. La nota es pública, igual que la sugerencia."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "If the village asks someone to leave"
 msgstr "Si la aldea le pide a alguien que se vaya"
 
@@ -70585,7 +70860,7 @@ msgid "On the land now: <0>{0}</0>"
 msgstr "En la tierra ahora: <0>{0}</0>"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr "Llévelo a alguien fuera de la aldea, en {outsideOrganisation}. Los miembros ven quiénes son y cómo contactarlos."
 
@@ -72915,7 +73190,7 @@ msgid "The village chooses together which quests the season funds, within a pot.
 msgstr "La aldea elige en conjunto qué misiones financia la temporada, dentro de un fondo. Los miembros comparten ideas en bruto, las convierten en misiones, marcan las que financiarían, y el conteo muestra tanto lo que eligió la Voz como lo que eligió un miembro, un voto. Las misiones financiadas reservan su parte del fondo y se pagan cuando el trabajo está hecho."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "the circle that hears an appeal against an exit"
 msgid "Appeals go to:"
 msgstr "Las apelaciones van a:"
@@ -74189,7 +74464,7 @@ msgid "Send it unsigned"
 msgstr "Enviarla sin firma"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "A rupture is not an exit. The restorative path comes first, and its content reaches only the people in the room:"
 msgstr "Una ruptura no es una salida. Primero va el camino restaurativo, y lo que se habla ahí llega solo a las personas presentes:"
 
@@ -74318,7 +74593,7 @@ msgid "This is inside the suggestion's band, so your word sets it."
 msgstr "Esto está dentro del rango sugerido, así que su palabra lo define."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "the role a private intake reaches, when it has no name"
 msgid "intake role"
 msgstr "rol de recepción"
@@ -75512,6 +75787,7 @@ msgstr "Estado<0/><1>{0}</1><2> · {1} de {2}</2>"
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/ConfigUnavailable.tsx
+#: client/src/pages/RightsAndAgreements.tsx
 msgctxt "config card: asking the server again"
 msgid "Trying again..."
 msgstr "Intentando de nuevo..."
@@ -77112,6 +77388,12 @@ msgctxt "review inbox: a row, the door"
 msgid "Read it"
 msgstr "Leerlo"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "One waits on you"
+msgstr "Uno le espera"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: a.feedback.sent
 #. placeholder {1}: a.feedback.queued
@@ -77303,9 +77585,9 @@ msgstr "El mapa y {agent} están al día"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/SeasonPlans.tsx
-msgctxt "SeasonPlans, aria-label"
-msgid "Show"
-msgstr "Mostrar"
+#~ msgctxt "SeasonPlans, aria-label"
+#~ msgid "Show"
+#~ msgstr "Mostrar"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/notebook/NotebookAdd.tsx
@@ -77674,6 +77956,12 @@ msgstr "Quitar"
 msgctxt "game variable feed.show_system_events, description"
 msgid "On, the feed mixes what the village DID (quests consented, seasons turning, people arriving) in among what people wrote. Off, it is only posts. A young village usually wants this on, because a feed with three posts and no events reads as abandoned."
 msgstr "Encendido, las novedades mezclan lo que la aldea HIZO (misiones con consentimiento, temporadas que cambian, personas que llegan) con lo que escribieron las personas. Apagado, son solo publicaciones. Una aldea joven por lo general quiere esto encendido, porque unas novedades con tres publicaciones y ningún evento se leen como abandonadas."
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the door to the next chapter"
+msgid "Next"
+msgstr "Siguiente"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/QuestSafetyEditor.tsx
@@ -79033,6 +79321,12 @@ msgctxt "live session room: roundEnd"
 msgid "End the round"
 msgstr "Terminar la ronda"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: what a chapter holds"
+msgid "Who the village welcomes, and what it asks of every neighbor"
+msgstr "A quién recibe la aldea y lo que le pide a cada vecino"
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: PACK_REFUSAL_WORDS: too_many_items"
@@ -79131,7 +79425,7 @@ msgid "Applied"
 msgstr "Postularon"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Open my departure process"
 msgstr "Abrir mi proceso de salida"
 
@@ -79218,6 +79512,13 @@ msgstr "Quitar {0}"
 msgctxt "VillageEmail, button"
 msgid "Send the proposal"
 msgstr "Enviar la propuesta"
+
+# needs-native-review: the season page, 27 Nov 2026
+#. placeholder {0}: goals.length
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "{met} of {0} goals met"
+msgstr "{met} de {0} metas cumplidas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/YourAgentPanel.tsx
@@ -79619,6 +79920,12 @@ msgstr "Encendido, un rol que llega desde una sincronización y se acepta empiez
 msgid "Small changes applying by themselves: off."
 msgstr "Cambios pequeños que se aplican solos: desactivado."
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the small label over the title, after the village's name"
+msgid "What we promise each other"
+msgstr "Lo que nos prometemos"
+
 # needs-native-review: account email addresses, 24 Nov 2026
 #: client/src/components/admin/MemberEmails.tsx
 msgctxt "admin member emails"
@@ -79779,7 +80086,7 @@ msgid ", still to be written down"
 msgstr ", aún por escribirse"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Your departure process is open. The stewards will walk each step with you. Nothing happens automatically."
 msgstr "Su proceso de salida está abierto. Los custodios lo acompañarán en cada paso. Nada sucede de forma automática."
 
@@ -81602,6 +81909,12 @@ msgctxt "game variable progression.unlock.exchange.swap, label"
 msgid "Stage that unlocks: exchange.swap"
 msgstr "Etapa que desbloquea: exchange.swap"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: what a chapter holds"
+msgid "How departure works, and how to begin it"
+msgstr "Cómo funciona la salida y cómo iniciarla"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Download this season file"
@@ -81928,7 +82241,7 @@ msgstr "Su DAO en Hypha, leída desde Base y mostrada aquí: los contratos que e
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: civilDayWords(seat.termEndsOn)
-#: client/src/pages/MySeason.tsx
+#: client/src/components/season/YourPlan.tsx
 msgctxt "MySeason, p"
 msgid "Term until {0}"
 msgstr "Periodo hasta {0}"
@@ -83605,6 +83918,12 @@ msgctxt "sera answers"
 msgid "Added {n} to the draft. They go live when the draft is published."
 msgstr "Se agregaron {n} al borrador. Se publican cuando se publique el borrador."
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Read and align"
+msgstr "Lea y alinéese"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/commandCentre/PlanEditor.tsx
 msgctxt "PlanEditor, AddButton"
@@ -83636,7 +83955,7 @@ msgid "Consent"
 msgstr "Consentir"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Bring it to the {intakeRoleLabel} and you hear back within {replyHours, plural, one {# hour} other {# hours}}."
 msgstr "Llévelo al {intakeRoleLabel} y recibirá respuesta en {replyHours, plural, one {# hora} other {# horas}}."
 
@@ -83833,6 +84152,12 @@ msgctxt "applicant onboarding: notYours"
 msgid "Only this reference's follow-up owner writes its notes."
 msgstr "Solo quien hace el seguimiento de esta referencia escribe sus notas."
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: back to the list of chapters"
+msgid "All agreements"
+msgstr "Todos los acuerdos"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/rites/Letter.tsx
 msgctxt "rites"
@@ -83965,6 +84290,12 @@ msgstr "Esa foto no se pudo preparar. Pruebe con otra."
 msgctxt "sera answers"
 msgid "Cancel"
 msgstr "Cancelar"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "This part of the season could not be drawn."
+msgstr "Esta parte de la temporada no se pudo mostrar."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -85591,6 +85922,13 @@ msgctxt "CarryAcross, h2"
 msgid "Carry people across"
 msgstr "Llevar a las personas"
 
+# needs-native-review: the season page, 27 Nov 2026
+#. placeholder {0}: civilDayWords(live.upcoming.startsOn)
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Begins on {0}."
+msgstr "Empieza el {0}."
+
 # needs-native-review: the proposal wizard, 26 Nov 2026
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -85746,6 +86084,13 @@ msgstr "Puede mirar. Únase para dar su número, agregar a la agenda y tomar acc
 msgctxt "level-up moment eyebrow, nothing new opened"
 msgid "A new step on your walk"
 msgstr "Un nuevo paso en su camino"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/components/season/YourPlan.tsx
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Your plan"
+msgstr "Su plan"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/SeatSettingsFields.tsx
@@ -85999,6 +86344,13 @@ msgstr "Estos son los montos estándar de la aldea."
 msgctxt "open proposal: our review, a conversation's length"
 msgid "{0} minutes"
 msgstr "{0} minutos"
+
+# needs-native-review: the season page, 27 Nov 2026
+#. placeholder {0}: civilDayWords(on)
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Opens on {0}"
+msgstr "Abre el {0}"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -88912,6 +89264,12 @@ msgctxt "rites"
 msgid "I have my invitation already"
 msgstr "Ya tengo mi invitación"
 
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Nothing waits on you"
+msgstr "Nada le espera"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/TypographyPanel.tsx
 msgctxt "admin typography: upload role picker"
@@ -91081,6 +91439,12 @@ msgctxt "game variable map.show_quests, label"
 msgid "Show open quests on the map"
 msgstr "Mostrar las misiones abiertas en el mapa"
 
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: who a chapter is for"
+msgid "Anyone leaving"
+msgstr "Quien se va"
+
 # needs-native-review: new words, 23 Nov 2026
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
@@ -91665,6 +92029,12 @@ msgstr "{n, plural, =0 {Esperando tu voz} one {Esperando tu voz · #} other {Esp
 msgctxt "module introductions, benefit 1"
 msgid "Say what you seek in your own words, with a privacy tier you choose"
 msgstr "Diga lo que busca con sus propias palabras, con el nivel de privacidad que usted elija"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "The season"
+msgstr "La temporada"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: day(c.startsAt)
@@ -92504,6 +92874,12 @@ msgstr "Compromiso profundo: {village} es su trabajo principal, unos cuatro día
 msgctxt "pricing desk"
 msgid "Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer."
 msgstr "Cada misión abierta, la sugerencia del sistema al lado y un toque para usarla. Para quien lleva la tesorería."
+
+# needs-native-review: Rights and agreements, one page from four, 27 Nov 2026
+#: client/src/pages/RightsAndAgreements.tsx
+msgctxt "rights and agreements page: the doors at a chapter's end"
+msgid "More agreements"
+msgstr "Más acuerdos"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor: commitment"
@@ -93573,7 +93949,7 @@ msgid "The thirteen moons of the year, by name"
 msgstr "Las trece lunas del año, por nombre"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
-#: client/src/pages/ExitPolicy.tsx
+#: client/src/components/rights/LeavingWellChapter.tsx
 msgctxt "exit policy section heading"
 msgid "Choosing to leave"
 msgstr "Decidir irse"
@@ -94313,6 +94689,12 @@ msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo fal
 msgctxt "governance now"
 msgid "Try again"
 msgstr "Inténtalo de nuevo"
+
+# needs-native-review: the season page, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "You're in"
+msgstr "Ya está dentro"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/VoteResult.tsx
