@@ -1125,6 +1125,8 @@ function eagerSet(getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIter
  * /roles 364.2 to 354.8, /propose-a-role 296.1 to 289.8, /steward 263.9 to 257.5.
  * Each part alone: the named first-page chunk with its packages left to rollup
  * 7892; React and its neighbours in shell-libs 7872; the follower limit lifted 7836.
+ * Re-measured on b2304d0 (1.3.87): 7956 KB before, 7840 after; main JS 291 to
+ * 22 KB; first-page JS 684 to 666 KB.
  */
 function isFirstPageSource(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): boolean {
   return (
