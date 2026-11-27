@@ -50,8 +50,13 @@ msgstr "Temporada"
 
 # needs-native-review: how roles are going on the circles pages, 27 Nov 2026
 msgctxt "role measures, a row"
-msgid "Roles in no circle"
-msgstr "Roles sin círculo"
+msgid "Roles not in a circle"
+msgstr "Roles que no están en un círculo"
+
+# needs-native-review: how roles are going on the circles pages, 27 Nov 2026
+msgctxt "role measures, nobody to count yet"
+msgid "not yet"
+msgstr "aún no"
 
 # needs-native-review: how roles are going on the circles pages, 27 Nov 2026
 msgctxt "role measures, door to a circle"

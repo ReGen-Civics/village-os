@@ -10,7 +10,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { MushroomNetwork } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
-import { Fragment, useEffect, useState, type ReactNode } from "react";
+import { Fragment, Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import CircleScene from "@/components/CircleScene";
 import CirclesMiniMap from "@/components/CirclesMiniMap";
 import { cssColourForCircle } from "@shared/circleView";
@@ -23,7 +23,8 @@ import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/Se
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
-import RoleMeasuresPanel from "@/components/roleMeasures/RoleMeasuresPanel";
+import { useIsAdmin } from "@/contexts/AuthContext";
+import { GROUP_BREAK } from "@/components/roleCard/groupLook";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
@@ -39,6 +40,9 @@ import { CIRCLES_PAGE, COORDINATOR_WORD } from "@shared/pageContent/circles";
 import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
+
+/** How roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
+const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
 
 /** The link from a circle's panel to its own card (`/circles/:id`). */
 const OPEN_CARD = "Open this circle's card";
@@ -277,6 +281,7 @@ export default function Circles() {
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
   const authUser = useUserOrVisitor();
+  const admin = useIsAdmin();
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
   // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else
@@ -573,14 +578,6 @@ export default function Circles() {
               </div>
             )}
 
-            {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
-                here): administrators only, renders nothing for anyone else. */}
-            {circles !== null ? (
-              <div className="mt-12">
-                <RoleMeasuresPanel />
-              </div>
-            ) : null}
-
             {/* The seat a chip opened, as the same role card the map draws,
                 in the phone sheet. `sheet-night` makes the sheet's own panel
                 the night ground, so the card sits in no light frame. The
@@ -634,6 +631,17 @@ export default function Circles() {
             </Link>
           </div>
           )}
+
+          {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
+              here): the page's last chapter, for administrators only. It reads its own numbers, so a failed
+              /api/org read never hides it. */}
+          {admin ? (
+            <div className={`mx-auto mt-16 max-w-4xl ${GROUP_BREAK}`}>
+              <Suspense fallback={null}>
+                <RoleMeasuresPanel />
+              </Suspense>
+            </div>
+          ) : null}
         </div>
       </section>
       </div>

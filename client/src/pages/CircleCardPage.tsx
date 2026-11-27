@@ -31,7 +31,7 @@
  * Nothing here scores or ranks a person: stones carry a role's letter,
  * plants describe work, and the seed counts who is coming to one evening.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import Layout from "@/components/Layout";
 import CircleCardView from "@/components/circleCard/CircleCardView";
@@ -40,7 +40,10 @@ import { LinkedCircles, QuietHearth, WeDecided, WeMeet, WeTend, WhoHolds } from 
 import { adoptionOf, hearthRoles, linkedCircles, meetFacts, stonesOf, threadsOf } from "@/components/circleCard/hearthModel";
 import { tendFor, useHearth } from "@/components/circleCard/useHearth";
 import CirclePulse from "@/components/sessions/CirclePulse";
-import RoleMeasuresPanel from "@/components/roleMeasures/RoleMeasuresPanel";
+import { useIsAdmin } from "@/contexts/AuthContext";
+
+/** How this circle's roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
+const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
 import { CARD, LINK, WORLD } from "@/components/journey/look";
 import { gameFetch } from "@/lib/gameApi";
 import type { CircleCard, CircleSection } from "@shared/circleCard";
@@ -156,6 +159,7 @@ function HearthPage({
   answer: ReturnType<typeof useHearth>["answer"];
 }) {
   const W = useCircleWords();
+  const admin = useIsAdmin();
   const roles = hearthRoles(card);
   const quiet = roles.kind === "none";
   const stones = roles.kind === "shown" ? stonesOf(roles.roles) : [];
@@ -215,8 +219,12 @@ function HearthPage({
                 lede={W.pulseLede}
               />
             ) : null}
-            {/* How this circle's roles are going (the fold of /role-measures): administrators only, renders nothing for anyone else. */}
-            <RoleMeasuresPanel circleId={circleId} />
+            {/* How this circle's roles are going (the fold of /role-measures): administrators only. */}
+            {admin ? (
+              <Suspense fallback={null}>
+                <RoleMeasuresPanel circleId={circleId} />
+              </Suspense>
+            ) : null}
           </div>
         </div>
       )}

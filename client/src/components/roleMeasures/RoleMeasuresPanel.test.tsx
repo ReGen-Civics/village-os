@@ -63,11 +63,13 @@ describe("RoleMeasuresPanel", () => {
     const list = await screen.findByTestId("measures-circles");
     await waitFor(() => expect(gameFetch).toHaveBeenCalledWith("/api/role-measures"));
     const names = Array.from(list.querySelectorAll("details > summary > span:first-child > span:first-child")).map((el) => el.textContent);
-    expect(names).toEqual(["Anchor Circle", "Garden Circle", "Roles in no circle"]);
+    expect(names).toEqual(["Anchor Circle", "Garden Circle", "Roles not in a circle"]);
     expect(screen.getByRole("button", { name: "Rains" }).getAttribute("aria-pressed")).toBe("true");
     const garden = list.querySelector('[data-circle-measures="c-garden"] summary')!;
-    expect(garden.textContent).toContain("Applied4");
-    expect(garden.textContent).toContain("Answered75%");
+    expect(garden.textContent).toContain("Applied 4");
+    expect(garden.textContent).toContain("Answered 75%");
+    // A summary holds phrasing content only: no description list inside it.
+    expect(list.querySelector("summary dl")).toBeNull();
   });
 
   it("switches season and links each named circle to its own measures", async () => {
@@ -77,7 +79,7 @@ describe("RoleMeasuresPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Dry" }));
     const list = screen.getByTestId("measures-circles");
     expect(list.querySelectorAll("details")).toHaveLength(1);
-    expect(list.querySelector("summary")!.textContent).toContain("Applied6");
+    expect(list.querySelector("summary")!.textContent).toContain("Applied 6");
     expect(within(list).getByRole("link").getAttribute("href")).toBe("/circles/c-garden#role-measures");
   });
 
@@ -92,8 +94,11 @@ describe("RoleMeasuresPanel", () => {
     expect(panel.textContent).toContain("30 hours");
     expect(panel.textContent).toContain("4 days");
     expect(panel.textContent).toContain("2 of 3");
-    // Decision median and path share were built from too few people.
+    // Decision median and path share were built from too few people; no renewal has come due at all.
     expect(panel.textContent).toContain("too few");
+    expect(panel.textContent).toContain("not yet");
+    // The arrival heading takes focus without drawing a box.
+    expect(screen.getByRole("heading", { level: 2 }).getAttribute("tabindex")).toBe("-1");
   });
 
   it("says so when a circle has nothing stamped", async () => {

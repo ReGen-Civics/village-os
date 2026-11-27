@@ -94,14 +94,14 @@ function Measures({ circleId }: { circleId?: string }) {
   const list = rowsFor(mine, shown, circleId);
 
   return (
-    <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} scroll-mt-24`} data-testid="role-measures-panel">
+    <section id={MEASURES_ANCHOR} aria-labelledby="role-measures-heading" className={`${CARD} @container scroll-mt-24`} data-testid="role-measures-panel">
       <div className="flex items-center gap-4">
         <span className={RING} aria-hidden="true">
           <SeedOfLife className="size-6" />
         </span>
         <div className="min-w-0">
           <p className={EYEBROW}>{t({ message: "Only administrators see this", context: "role measures, eyebrow" })}</p>
-          <h2 id="role-measures-heading" data-section-focus="" className={`${H2} mt-1`}>
+          <h2 id="role-measures-heading" tabIndex={-1} data-section-focus="" className={`${H2} mt-1 outline-none`}>
             {circleId === undefined ? t`How roles are going` : t({ message: "How roles are going here", context: "role measures, a circle's page" })}
           </h2>
         </div>
@@ -139,7 +139,7 @@ function Measures({ circleId }: { circleId?: string }) {
                   aria-pressed={s === shown}
                   onClick={() => setPicked(s)}
                   className={`jw-btn inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium ${
-                    s === shown ? "border-notice bg-notice text-background" : "border-border text-foreground hover:bg-muted"
+                    s === shown ? "border-2 border-notice bg-notice/10 text-foreground" : "border-border text-foreground hover:bg-muted"
                   }`}
                 >
                   {seasonName(s)}
@@ -173,22 +173,26 @@ function Measures({ circleId }: { circleId?: string }) {
 function CircleRow({ row }: { row: ServedRow }) {
   const { t } = useLingui();
   const answered = percent(row.applications.answered);
-  const name = row.circleId === null ? t({ message: "Roles in no circle", context: "role measures, a row" }) : (row.circleName ?? row.circleId);
+  const name = row.circleId === null ? t({ message: "Roles not in a circle", context: "role measures, a row" }) : (row.circleName ?? row.circleId);
   return (
     <li>
       <details className={`${ROW} group`} data-circle-measures={row.circleId ?? ""}>
         <summary className="grid cursor-pointer list-none gap-3 rounded-xl p-4 hover:bg-card/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center [&::-webkit-details-marker]:hidden">
           <span className="flex min-h-11 items-center justify-between gap-3">
             <span className="min-w-0 font-display text-xl text-foreground">{name}</span>
-            <ChevronDown className="size-5 shrink-0 text-notice transition-transform group-open:rotate-180 sm:hidden" aria-hidden="true" />
+            <ChevronDown className="size-5 shrink-0 text-notice motion-safe:transition-transform group-open:rotate-180 sm:hidden" aria-hidden="true" />
           </span>
           <span className="flex items-center gap-4">
-            <dl className="grid flex-1 grid-cols-3 gap-2 sm:w-80 sm:flex-none sm:gap-4">
+            <span className="grid flex-1 grid-cols-3 gap-2 sm:w-80 sm:flex-none sm:gap-4">
               <Headline label={t({ message: "Applied", context: "role measures, applying chain" })} value={String(row.applications.count)} />
-              <Headline label={t({ message: "Answered", context: "role measures, applying chain" })} value={answered === null ? null : `${answered}%`} />
+              <Headline
+                label={t({ message: "Answered", context: "role measures, applying chain" })}
+                value={answered === null ? null : `${answered}%`}
+                why={row.applications.answered.eligible === 0 ? "none" : "few"}
+              />
               <Headline label={t({ message: "Seated", context: "role measures, holding chain" })} value={String(row.holders.count)} />
-            </dl>
-            <ChevronDown className="hidden size-5 shrink-0 text-notice transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
+            </span>
+            <ChevronDown className="hidden size-5 shrink-0 text-notice motion-safe:transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
           </span>
         </summary>
         <div className="border-t border-border px-4 pb-4">
@@ -210,20 +214,31 @@ function CircleRow({ row }: { row: ServedRow }) {
 /** A circle's row on the circles page: a tile that opens. */
 const ROW = "rounded-xl border border-border bg-muted";
 
-/** One headline number on a circle's row: the numeral large, its name small above it. */
-function Headline({ label, value }: { label: string; value: string | null }) {
+/** Numerals that line up and never read as letters (the display face's old-style "1" reads as "I"). */
+const NUM = "lining-nums tabular-nums";
+
+/** Why a number is missing: nobody to count yet, or too few people to show it. */
+type Why = "none" | "few";
+
+/** The chip a missing number shows. */
+function Missing({ why }: { why: Why }) {
   const { t } = useLingui();
   return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5">
-        {value === null ? (
-          <span className={CHIP_SOFT}>{t({ message: "too few", context: "role measures, a withheld number" })}</span>
-        ) : (
-          <span className="font-display text-2xl leading-none text-foreground">{value}</span>
-        )}
-      </dd>
-    </div>
+    <span className={CHIP_SOFT}>
+      {why === "none" ? t({ message: "not yet", context: "role measures, nobody to count yet" }) : t({ message: "too few", context: "role measures, a withheld number" })}
+    </span>
+  );
+}
+
+/** One headline number on a circle's row, read as "Applied 7": its name small, the numeral large under it. */
+function Headline({ label, value, why = "few" }: { label: string; value: string | null; why?: Why }) {
+  return (
+    <span className="block min-w-0">
+      <span className="block text-xs text-muted-foreground">{label}</span>{" "}
+      <span className="mt-0.5 block">
+        {value === null ? <Missing why={why} /> : <span className={`font-display text-2xl leading-none text-foreground ${NUM}`}>{value}</span>}
+      </span>
+    </span>
   );
 }
 
@@ -233,15 +248,17 @@ interface Step {
   value: string | null;
   /** The size it was measured on ("9 of 12"), or a word on what kind of number it is. */
   sub?: string;
+  /** Why the value is missing, when it is. */
+  why?: Why;
 }
 
 /** The two chains: from applying to a decision, and from a seat to a renewal. */
 function Chains({ row }: { row: ServedRow }) {
   const { t } = useLingui();
   const of = ({ yes, eligible: all }: Share) => (all === 0 ? undefined : t({ message: `${yes} of ${all}`, context: "role measures, the size a share was measured on" }));
-  const share = (s: Share): Step["value"] => {
+  const share = (s: Share): Pick<Step, "value" | "sub" | "why"> => {
     const p = percent(s);
-    return p === null ? null : `${p}%`;
+    return { value: p === null ? null : `${p}%`, sub: of(s), why: s.eligible === 0 ? "none" : "few" };
   };
   const time = (h: number | null): Step["value"] => {
     const s = span(h);
@@ -252,19 +269,21 @@ function Chains({ row }: { row: ServedRow }) {
   const median = t({ message: "median", context: "role measures, a kind of number" });
   const a = row.applications;
   const h = row.holders;
+  // A median with no application to measure is "not yet"; with some, but under three, it is "too few".
+  const timed = (hours: number | null): Pick<Step, "value" | "sub" | "why"> => ({ value: time(hours), sub: median, why: a.count === 0 ? "none" : "few" });
   const applying: Step[] = [
     { label: t({ message: "Applied", context: "role measures, applying chain" }), value: String(a.count) },
-    { label: t({ message: "Answered", context: "role measures, applying chain" }), value: share(a.answered), sub: of(a.answered) },
-    { label: t({ message: "First reply", context: "role measures, applying chain" }), value: time(a.medianHoursToReply), sub: median },
-    { label: t({ message: "First interview", context: "role measures, applying chain" }), value: time(a.medianHoursToInterview), sub: median },
-    { label: t({ message: "Decision", context: "role measures, applying chain" }), value: time(a.medianHoursToDecision), sub: median },
+    { label: t({ message: "Answered", context: "role measures, applying chain" }), ...share(a.answered) },
+    { label: t({ message: "First reply", context: "role measures, applying chain" }), ...timed(a.medianHoursToReply) },
+    { label: t({ message: "First interview", context: "role measures, applying chain" }), ...timed(a.medianHoursToInterview) },
+    { label: t({ message: "Decision", context: "role measures, applying chain" }), ...timed(a.medianHoursToDecision) },
   ];
   const holding: Step[] = [
     { label: t({ message: "Seated", context: "role measures, holding chain" }), value: String(h.count) },
-    { label: t({ message: "Path done by day 30", context: "role measures, holding chain" }), value: share(h.pathCompleteBy30), sub: of(h.pathCompleteBy30) },
-    { label: t({ message: "First quest by day 14", context: "role measures, holding chain" }), value: share(h.firstQuestBy14), sub: of(h.firstQuestBy14) },
-    { label: t({ message: "Still in the role at day 90", context: "role measures, holding chain" }), value: share(h.stillInRoleAt90), sub: of(h.stillInRoleAt90) },
-    { label: t({ message: "Renewed at each moon", context: "role measures, holding chain" }), value: share(h.renewed), sub: of(h.renewed) },
+    { label: t({ message: "Path done by day 30", context: "role measures, holding chain" }), ...share(h.pathCompleteBy30) },
+    { label: t({ message: "First quest by day 14", context: "role measures, holding chain" }), ...share(h.firstQuestBy14) },
+    { label: t({ message: "Still in the role at day 90", context: "role measures, holding chain" }), ...share(h.stillInRoleAt90) },
+    { label: t({ message: "Renewed at each moon", context: "role measures, holding chain" }), ...share(h.renewed) },
   ];
   return (
     <div className="mt-5 grid gap-6">
@@ -277,26 +296,28 @@ function Chains({ row }: { row: ServedRow }) {
 /** A stone whose number was withheld: the ring's shape in the quiet edge. */
 const STONE_DIM = "inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border text-muted-foreground";
 
-/** Five stones on a thread: down the screen on a phone, across from `sm` up. */
+/**
+ * Five stones on a thread: down the screen while the panel is narrow (a phone, or a circle's page's
+ * reading column on a desktop), across once the panel itself is 42rem wide (`@2xl`, the section's container).
+ */
 function Chain({ title, steps }: { title: string; steps: readonly Step[] }) {
-  const { t } = useLingui();
   return (
     <div>
-      <h3 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">{title}</h3>
+      <h3 className={EYEBROW}>{title}</h3>
       <div className="relative mt-3">
-      <span aria-hidden="true" className="absolute bottom-6 left-[21px] top-6 w-px bg-border sm:bottom-auto sm:left-[10%] sm:right-[10%] sm:top-[21px] sm:h-px sm:w-auto" />
-      <ol className="relative grid gap-3 sm:grid-cols-5 sm:gap-2">
+      <span aria-hidden="true" className="absolute bottom-6 left-[21px] top-6 w-px bg-border @2xl:bottom-auto @2xl:left-[10%] @2xl:right-[10%] @2xl:top-[21px] @2xl:h-px @2xl:w-auto" />
+      <ol className="relative grid gap-3 @2xl:grid-cols-5 @2xl:gap-2">
         {steps.map((s, i) => (
-          <li key={s.label} className="relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:text-center">
-            <span className={`${s.value === null ? STONE_DIM : RING} bg-card text-sm font-semibold`} aria-hidden="true">
+          <li key={s.label} className="relative flex items-center gap-3 @2xl:flex-col @2xl:items-center @2xl:gap-2 @2xl:text-center">
+            <span className={`${s.value === null ? STONE_DIM : RING} bg-card text-sm font-semibold ${NUM}`} aria-hidden="true">
               {i + 1}
             </span>
-            <span className="min-w-0 flex-1 text-sm text-muted-foreground sm:order-3 sm:flex-none">{s.label}</span>
-            <span className="shrink-0 text-right sm:order-2 sm:text-center">
+            <span className="min-w-0 flex-1 text-sm text-muted-foreground @2xl:order-3 @2xl:flex-none">{s.label}</span>
+            <span className="shrink-0 text-right @2xl:order-2 @2xl:text-center">
               {s.value === null ? (
-                <span className={CHIP_SOFT}>{t({ message: "too few", context: "role measures, a withheld number" })}</span>
+                <Missing why={s.why ?? "few"} />
               ) : (
-                <span className="block font-display text-2xl leading-tight text-foreground">{s.value}</span>
+                <span className={`block font-display text-2xl leading-tight text-foreground ${NUM}`}>{s.value}</span>
               )}
               {s.sub && s.value !== null ? <span className="block text-xs text-muted-foreground">{s.sub}</span> : null}
             </span>
