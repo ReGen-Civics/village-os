@@ -18,7 +18,14 @@ import { alignConfidentiality, fetchConfidentiality, openAgreementDocument } fro
 
 type Agreement = { title: string; body: string; intent: string; version: string; document: { title: string; size: number; href: string } | null };
 
-export default function ConfidentialityCard({ onAligned, embedded = false }: { onAligned?: () => void; embedded?: boolean } = {}) {
+/** Where the reader stands with the agreement: none written, held, or asked of them. The season page's trail reads it. */
+export type ConfidentialityState = "none" | "holds" | "asked";
+
+export default function ConfidentialityCard({
+  onAligned,
+  onState,
+  embedded = false,
+}: { onAligned?: () => void; onState?: (s: ConfidentialityState) => void; embedded?: boolean } = {}) {
   const [agreement, setAgreement] = useState<Agreement | null>(null);
   const [holds, setHolds] = useState(false);
   // False once the server says the last identity confirmation is stale: the password is asked first, then the align is sent.
@@ -33,11 +40,13 @@ export default function ConfidentialityCard({ onAligned, embedded = false }: { o
       if (!alive || !a.ok) return;
       setAgreement(a.data.agreement);
       setHolds(!!a.data.you?.holds);
+      onState?.(!a.data.agreement ? "none" : a.data.you?.holds ? "holds" : "asked");
       setConfirmFresh(a.data.you?.confirmFresh !== false);
     });
     return () => {
       alive = false;
     };
+    // onState is read when the answer lands; a new identity for it is no reason to ask the server again.
   }, [reload]);
 
   if (!agreement) return null;
@@ -93,6 +102,7 @@ export default function ConfidentialityCard({ onAligned, embedded = false }: { o
                 setNotice("");
                 setAlignedAt(typeof d?.alignedAt === "string" ? d.alignedAt : new Date().toISOString());
                 onAligned?.();
+                onState?.("holds");
               }}
             />
           </>

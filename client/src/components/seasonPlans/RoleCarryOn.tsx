@@ -12,6 +12,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { authToken } from "@/lib/gameApi";
 import { CONTRIBUTION_MAX } from "@shared/moonRenewal";
 import { mayAsk } from "@/lib/myCapabilities";
+import { BTN_PRIMARY, FIELD, TILE } from "@/components/journey/look";
 
 interface Card {
   assignmentId: string;
@@ -33,8 +34,8 @@ const hdrs = (): Record<string, string> => {
 };
 const day = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long" });
 
-const box = "rounded-xl border border-border bg-card p-4";
-const primary = "rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground";
+const box = TILE;
+const primary = BTN_PRIMARY;
 
 export default function RoleCarryOn() {
   const { t } = useLingui();
@@ -123,7 +124,7 @@ export default function RoleCarryOn() {
           </label>
           <textarea
             id={`rco-${c.assignmentId}`}
-            className="mt-1 w-full rounded-md border border-border bg-background p-2 text-foreground"
+            className={`mt-1 ${FIELD}`}
             rows={3}
             maxLength={CONTRIBUTION_MAX}
             defaultValue={c.contribution ?? ""}
@@ -138,7 +139,7 @@ export default function RoleCarryOn() {
                 <span role="status" className="text-sm text-foreground">
                   <Trans>Filed. The village renews filed roles together.</Trans>
                 </span>
-                <button type="button" onClick={() => void takeBack(c)} className="text-sm text-foreground underline">
+                <button type="button" onClick={() => void takeBack(c)} className="min-h-11 text-sm text-foreground underline">
                   <Trans context="moon renewal action">Take it back</Trans>
                 </button>
               </>
@@ -174,10 +175,10 @@ export default function RoleCarryOn() {
               <li key={x.id} className="flex flex-wrap items-center justify-between gap-2 text-foreground">
                 <span>{x.kind === "grant" ? t({ message: `Give: ${x.label}`, context: "role access task" }) : t({ message: `Take back: ${x.label}`, context: "role access task" })}</span>
                 <span className="flex gap-3">
-                  <button type="button" className="font-semibold underline" onClick={() => void mark(x.id, "done")}>
+                  <button type="button" className="min-h-11 font-semibold underline" onClick={() => void mark(x.id, "done")}>
                     <Trans context="role access action">Done</Trans>
                   </button>
-                  <button type="button" className="underline" onClick={() => void mark(x.id, "not_needed")}>
+                  <button type="button" className="min-h-11 underline" onClick={() => void mark(x.id, "not_needed")}>
                     <Trans context="role access action">Not needed</Trans>
                   </button>
                 </span>

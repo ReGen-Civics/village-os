@@ -76,7 +76,8 @@ const PAGES = [
   "client/src/pages/ResidentRights.tsx",
   "client/src/pages/ExitPolicy.tsx",
   "client/src/pages/Quests.tsx",
-  "client/src/pages/MySeason.tsx",
+  // The season, one page (the season fold, 27 Nov 2026): it took in Your season, the village's season, Join the Season and Aligned.
+  "client/src/pages/Season.tsx",
   "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
@@ -98,7 +99,6 @@ const PAGES = [
   "client/src/pages/Register.tsx",
   "client/src/pages/Login.tsx",
   "client/src/pages/ForgotPassword.tsx",
-  "client/src/pages/Aligned.tsx",
   "client/src/pages/SeatApplication.tsx",
   "client/src/pages/ResidentJourney.tsx",
   "client/src/pages/Powers.tsx",
@@ -181,6 +181,14 @@ const JOURNEY = [
   "client/src/components/alignment/RegisterEntry.tsx",
   "client/src/components/alignment/AlignButton.tsx",
   "client/src/components/alignment/ConfidentialityCard.tsx",
+  // The season page's tabs and the cards they draw (the season fold).
+  "client/src/components/season/JoinSeason.tsx",
+  "client/src/components/season/VillagePlans.tsx",
+  "client/src/components/season/YourPlan.tsx",
+  "client/src/components/season/AlignedPanel.tsx",
+  "client/src/components/seasonPlans/PlanCard.tsx",
+  "client/src/components/seasonPlans/RoleCarryOn.tsx",
+  "client/src/components/seasonPlans/SeasonGoalsFields.tsx",
   // The decider and holder side of a proposal (audit M11). CircleConsent.tsx joined with decider calm, below.
   "client/src/components/openProposal/AboutYou.tsx",
   "client/src/components/openProposal/MembershipAtApplication.tsx",

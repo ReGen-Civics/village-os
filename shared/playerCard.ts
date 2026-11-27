@@ -644,7 +644,7 @@ const healthSay = (): HealthSayIn => ({
 
 export const ROLE_ANCHOR = (id: string) => `role-${id}`;
 export const APPLY_HREF = "/roles";
-export const PLAN_HREF = "/season-plans/mine";
+export const PLAN_HREF = "/season#plan";
 
 /** A civil date ("2026-12-31") or an instant, as the instant it names in the zone. */
 /**

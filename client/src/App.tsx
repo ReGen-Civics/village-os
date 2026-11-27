@@ -254,13 +254,11 @@ const SeatApplication = lazyPage(() => import("./pages/SeatApplication"));
 const RoleProposal = lazyPage(() => import("./pages/RoleProposal"));
 const NewRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.NewRoleProposal })));
 const SharedRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.SharedRoleProposal })));
-const SeasonPlans = lazyPage(() => import("./pages/SeasonPlans"));
-// Season places (module season-places): join the season, the season's circles, a role's path. Lazy: none touch the first page.
-const SeasonPlaces = lazyPage(() => import("./pages/SeasonPlaces"));
+// The season, one page (the season fold, 27 Nov 2026): the season and its goals, joining it, your plan, everyone's, and Aligned.
+const Season = lazyPage(() => import("./pages/Season"));
+// Season places (module season-places): the season's circles and a role's path. Lazy: neither touches the first page.
 const SeasonCircles = lazyPage(() => import("./pages/SeasonCircles"));
 const RolePath = lazyPage(() => import("./pages/RolePath"));
-const Aligned = lazyPage(() => import("./pages/Aligned"));
-const MySeason = lazyPage(() => import("./pages/MySeason"));
 const Visit = brochurePage(() => import("./pages/Visit"));
 const GratitudeWall = lazyPage(() => import("./pages/GratitudeWall"));
 const WorkWithUs = brochurePage(() => import("./pages/WorkWithUs"));
@@ -551,13 +549,14 @@ function Router() {
       <Route path="/role-proposals/new" component={NewRoleProposal} />
       <Route path="/role-proposals/shared/:token" component={SharedRoleProposal} />
       <Route path="/role-proposals/:id" component={RoleProposal} />
-      {/* Your season: your own plan, then the village's page of everyone's, by name. */}
-      <Route path="/season-plans/mine" component={MySeason} />
-      <Route path="/season-plans" component={SeasonPlans} />
+      {/* The season, one page. The three pages it replaced redirect to its tabs, keeping the query (?renew=, ?season=). */}
+      <Route path="/season" component={Season} />
+      <Route path="/season-plans/mine">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
+      <Route path="/season-plans">{() => <Redirect to={`/season${window.location.search}#everyone`} replace />}</Route>
       <Route path="/season-places/circles" component={SeasonCircles} />
-      <Route path="/season-places" component={SeasonPlaces} />
+      <Route path="/season-places">{() => <Redirect to={`/season${window.location.search}#join`} replace />}</Route>
       <Route path="/role-path/:roleId" component={RolePath} />
-      <Route path="/aligned" component={Aligned} />
+      <Route path="/aligned">{() => <Redirect to={`/season${window.location.search}${window.location.hash || "#aligned"}`} replace />}</Route>
       <Route path="/visit" component={Visit} />
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}

@@ -20,7 +20,8 @@ import { BTN_NOTICE, EYEBROW, HINT, LINK, RING } from "@/components/journey/look
  *   (members only: a visitor or someone not yet admitted does not see the village's working number, 24 Nov 2026);
  * - a time line from the season's first day to its close, today marked, and the close said once as a date (the
  *   art rules: a date, never a countdown);
- * - one "Plan your season" button, while the planning window is open, for a signed-in member (season plans RC1).
+ * - one "Plan your season" button, while the planning window is open, for a signed-in member (season plans RC1). It opens
+ *   the Your plan tab of the one season page, /season#plan (the season fold, 27 Nov 2026).
  *   The window's own closing day is said only when it differs from the season's.
  *
  * The ring and the line are SVG and CSS on the profile's tokens, so they follow dark and light and move nothing
@@ -30,7 +31,7 @@ import { BTN_NOTICE, EYEBROW, HINT, LINK, RING } from "@/components/journey/look
 const CARD = "rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-7";
 
 /** The goals as a ring: one segment per goal, the met ones lit. Decoration only: the count is in the words beside it. */
-function GoalRing({ met, total }: { met: number; total: number }) {
+export function GoalRing({ met, total }: { met: number; total: number }) {
   const r = 26;
   const c = 2 * Math.PI * r;
   const slot = c / total;
@@ -65,7 +66,7 @@ function GoalRing({ met, total }: { met: number; total: number }) {
 }
 
 /** The season's time line: its first day to its close, today marked. The dates are said in words under it. */
-function SeasonLine({ startsOn, endsOn, day, of }: { startsOn: string; endsOn: string; day: number | null; of: number | null }) {
+export function SeasonLine({ startsOn, endsOn, day, of }: { startsOn: string; endsOn: string; day: number | null; of: number | null }) {
   const { t } = useLingui();
   const share = day !== null && of ? Math.min(1, Math.max(0, (day - 0.5) / of)) : null;
   const closesOn = civilDayWords(endsOn);
@@ -112,7 +113,7 @@ function PlanButton({ window, cardSeason, cardCloses }: { window: { seasonName: 
   const sameDay = !!civilDayOf(cardCloses) && civilDayOf(window.closesOn) === civilDayOf(cardCloses);
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2" data-season-plan="">
-      <Link href="/season-plans/mine" className={BTN_NOTICE}>
+      <Link href="/season#plan" className={BTN_NOTICE}>
         <Trans context="SeasonBanner, the one button to plan the season">Plan your season</Trans>
         <ArrowRight className="size-4" aria-hidden="true" />
       </Link>
