@@ -23,6 +23,7 @@ import { CANVAS_PUBLIC_MATRIX_PATH } from "@shared/canvasPublicLines";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNewcomer } from "@/lib/newcomer";
 import { readOnDay, useHowWeWorkRead } from "@/lib/howWeWorkRead";
+import BreathingLoader from "@/components/natural/BreathingLoader";
 import { HOW_WE_WORK_ANCHOR } from "@shared/howWeWorkRead";
 import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, RING, TICK, TILE, WORLD } from "@/components/journey/look";
@@ -154,10 +155,14 @@ export default function Governance() {
   const [reopened, setReopened] = useState(() => typeof window !== "undefined" && CHAPTER_IDS.has(window.location.hash.slice(1)));
   const chapterRef = useRef<HTMLDivElement | null>(null);
   const foldRef = useRef<HTMLElement | null>(null);
+  // The box shows the press at once while it saves; a failed save rolls it back to what the server holds.
+  const [pressed, setPressed] = useState<boolean | null>(null);
   const folded = member && !!reading.readAt && !reopened;
   // A member whose read is not known yet: hold the chapter's place, so it never draws and then collapses (QA round 1:
   // a layout shift of 0.48). A failed read counts as known and unread (lib/howWeWorkRead.ts), so the chapter opens.
-  const readPending = member && reading.readAt === undefined;
+  // A link straight into the chapter (#conflict, the profile's #how-we-work) opens it at once, read or not, so it
+  // never waits here and the arrival scroll has a section to land on (QA round 2).
+  const readPending = member && reading.readAt === undefined && !reopened;
   useEffect(() => {
     const opened = () => {
       const id = window.location.hash.slice(1);
@@ -175,7 +180,9 @@ export default function Governance() {
   const tick = async (read: boolean) => {
     // A press while the last one is saving is ignored, never disabled: a disabled box drops the keyboard's focus.
     if (reading.saving) return;
+    setPressed(read);
     const saved = await reading.save(read);
+    setPressed(null);
     if (!saved || !read) return;
     // Folded: focus moves to the line that says so (a screen reader hears it), with the mechanics right under it.
     // Unticking leaves the chapter open and the focus on the box.
@@ -208,15 +215,26 @@ export default function Governance() {
       // too, as the #game-mechanics arrival does, so the row and the way in under it are on the first screen.
       const id = window.location.hash.slice(1) || (!member && asksForMechanics() ? GAME_MECHANICS_ANCHOR : "");
       if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
-      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({ block: "start" }));
+      window.requestAnimationFrame(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView?.({ block: "start" });
+        // The app's ScrollToTop answers a hash 100ms after a new page mounts, and sends a page whose anchor it
+        // could not find yet back to the very top. Land again if that is what happened in between.
+        window.setTimeout(() => {
+          if (window.scrollY === 0 && el.isConnected && el.getBoundingClientRect().top > window.innerHeight / 2) el.scrollIntoView?.({ block: "start" });
+        }, 160);
+      });
     };
-    // Once, when the words land; then again for a router link to this page's own anchor (the footer's
-    // "Game Mechanics" is one), which wouter sends by pushState and so fires no hashchange.
+    // Once when the words land, again when the reader turns out to be a member (the rows above the chapter change)
+    // and when a member's held place gives way to the chapter or its folded line
+    // (everything under it moved), and for a router link to this page's own anchor (the footer's "Game Mechanics"
+    // is one), which wouter sends by pushState and so fires no hashchange.
     go();
     window.addEventListener("pushState", go);
     return () => window.removeEventListener("pushState", go);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!!page]);
+  }, [!!page, readPending, member]);
 
   if (!page) {
     return (
@@ -356,9 +374,17 @@ export default function Governance() {
             <div className="min-w-0 space-y-6">
               {readPending ? (
                 // The chapter's place, held while the member's read is asked for.
-                <div id={HOW_WE_WORK_ANCHOR} aria-busy="true" className="min-h-[60vh] scroll-mt-24" data-testid="how-we-work-waiting" />
+                // Short when this device last saw the chapter read (a yes or no only, never when), tall otherwise.
+                <div
+                  id={HOW_WE_WORK_ANCHOR}
+                  aria-busy="true"
+                  className={`${reading.seenRead ? "min-h-16" : "min-h-[60vh]"} flex scroll-mt-24 items-start justify-center pt-4`}
+                  data-testid="how-we-work-waiting"
+                >
+                  <BreathingLoader size={32} label={chapterName} />
+                </div>
               ) : folded && reading.readAt ? (
-                <section ref={foldRef} id={HOW_WE_WORK_ANCHOR} tabIndex={-1} aria-labelledby="how-we-work-read-line" className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3 bg-card focus:outline-none focus-visible:ring-2 focus-visible:ring-ring`} data-testid="how-we-work-read">
+                <section ref={foldRef} id={HOW_WE_WORK_ANCHOR} tabIndex={-1} aria-labelledby="how-we-work-read-line" className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3 bg-card focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`} data-testid="how-we-work-read">
                   <p className={`${NOTE} flex min-w-0 items-center gap-2`}>
                     <CheckCircle2 className="size-5 shrink-0 text-open" aria-hidden="true" />
                     <span id="how-we-work-read-line">
@@ -617,7 +643,7 @@ export default function Governance() {
                       <input
                         type="checkbox"
                         className={TICK}
-                        checked={!!reading.readAt}
+                        checked={pressed ?? !!reading.readAt}
                         aria-disabled={reading.saving || undefined}
                         aria-describedby="how-we-work-read-hint"
                         onChange={(e) => void tick(e.target.checked)}
