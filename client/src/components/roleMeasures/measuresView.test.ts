@@ -7,7 +7,12 @@ const r = (seasonId: string | null, circleId: string | null, circleName: string 
   circleId,
   circleName,
   applications: { count: 1, answered: share, medianHoursToReply: null, medianHoursToInterview: null, medianHoursToDecision: null },
-  holders: { count: 0, pathCompleteBy30: share, stillInRoleAt90: share, renewed: share },
+  stages: { review: null, references: null, final_interview: null, agreement: null },
+  conversations: { booked: share, held: share },
+  references: { medianHoursToFollowUp: null },
+  outcomes: { offer: share, countered: share, withdrawn: share, declined: share, closed: share },
+  start: { medianHoursToStart: null },
+  holders: { count: 0, pathCompleteBy30: share, stillInRoleAt30: share, stillInRoleAt90: share, renewed: share },
 });
 
 describe("measuresView", () => {

@@ -117,6 +117,8 @@ const PAGES = [
   "client/src/pages/ProsperityJourney.tsx",
   // The Governance page's Now view (the Governance brief, 26 Nov 2026): born inside the rule.
   "client/src/pages/GovernanceNow.tsx",
+  // How roles are going, its own page (the lead, 27 Nov 2026): born inside the rule.
+  "client/src/pages/RoleProgress.tsx",
   // How we work together with the game mechanics folded in (26 Nov 2026): into the night world beside its sibling views.
   "client/src/pages/Governance.tsx",
 ];
@@ -164,8 +166,9 @@ const JOURNEY = [
   "client/src/components/rights/ResidentRightsChapter.tsx",
   "client/src/components/rights/StewardRightsChapter.tsx",
   "client/src/components/rights/LeavingWellChapter.tsx",
-  // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
-  "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
+  // How roles are going, its own page (27 Nov 2026): the pieces it draws with, and a circle's page's door to it.
+  "client/src/components/roleMeasures/parts.tsx",
+  "client/src/components/roleMeasures/CircleProgressLink.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",
   // The /quests example stamp and "Quests coming soon" (24 Nov 2026): born inside the rule.

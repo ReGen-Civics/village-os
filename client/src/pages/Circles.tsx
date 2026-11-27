@@ -10,7 +10,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { MushroomNetwork } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
-import { Fragment, Suspense, lazy, useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import CircleScene from "@/components/CircleScene";
 import CirclesMiniMap from "@/components/CirclesMiniMap";
 import { cssColourForCircle } from "@shared/circleView";
@@ -23,7 +23,6 @@ import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/Se
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
-import { useOptionalAuth } from "@/contexts/AuthContext";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
@@ -40,8 +39,11 @@ import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
 
-/** How roles are going (the fold of /role-measures): its own chunk, fetched only for someone signed in; the server decides who sees what. */
-const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
+/**
+ * How roles are going has its own page since 27 Nov 2026 (/admin/role-progress, the lead: "take it away from the end
+ * of circles"). A link already sent to /circles#role-measures still lands there, on the page's title.
+ */
+export const MOVED_MEASURES = { hash: "#role-measures", to: "/admin/role-progress#role-measures" } as const;
 
 /** The link from a circle's panel to its own card (`/circles/:id`). */
 const OPEN_CARD = "Open this circle's card";
@@ -280,7 +282,10 @@ export default function Circles() {
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
   const authUser = useUserOrVisitor();
-  const signedIn = !!useOptionalAuth()?.user;
+  // The old anchor of the measures: send it on to their own page.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === MOVED_MEASURES.hash) window.location.replace(MOVED_MEASURES.to);
+  }, []);
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
   // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else
@@ -631,14 +636,6 @@ export default function Circles() {
           </div>
           )}
 
-          {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
-              here): the page's last chapter, for administrators (every circle) and circle leads (their own). It reads its own numbers, so a failed
-              /api/org read never hides it. The chapter's gold rule is the panel's own, so a refused reader sees nothing. */}
-          {signedIn ? (
-            <Suspense fallback={null}>
-              <RoleMeasuresPanel chapter />
-            </Suspense>
-          ) : null}
         </div>
       </section>
       </div>

@@ -18,19 +18,44 @@
  * for null and the number for anything else, 0 included (`NO_DATA`).
  */
 
+import { TIMED_STAGES, stageHours, stageNow, type StageTimingFacts, type TimedStage } from "./applicationStageTiming";
+
 /** What a measure holds when nothing was recorded for it. Never 0: 0 is a measured zero. */
 export const NO_DATA = null;
 const HOUR = 3_600_000;
 const DAY = 86_400_000;
 
-/** One application, as stamped. Times are epoch milliseconds. */
+/** How an application was decided: adopted, declined, withdrawn by the applicant, or closed after 90 quiet days. */
+export type Outcome = "adopted" | "declined" | "withdrawn" | "closed";
+
+/** One application, as stamped. Times are epoch milliseconds. No ref, no person: only the door it came through. */
 export interface ApplicationFact {
   seasonId: string | null;
   circleId: string | null;
+  /** `open`: a proposal from outside (op-); `member`: a member's role application (sa-). */
+  door: "open" | "member";
   confirmedAt: number;
   firstReplyAt: number | null;
   firstInterviewAt: number | null;
   decidedAt: number | null;
+  outcome: Outcome | null;
+  /** The stamps the stages are timed from (shared/applicationStageTiming.ts). */
+  shortlistYesAt: number | null;
+  refsAskedAt: number | null;
+  /** When the last reference was followed up, once every one of them is; null while any is open, or none were given. */
+  refsAllFollowedUpAt: number | null;
+  /** The conversations, in order. */
+  interviews: ReadonlyArray<{ final: boolean; openedAt: number | null; bookedAt: number | null; scoredAt: number | null; skipped: boolean }>;
+  /** A proposal from outside whose terms the village countered before it was decided. False for a member's application. */
+  countered: boolean;
+}
+
+/** One adopted application that has seated somebody: when it was adopted, and when the seating began. */
+export interface StartFact {
+  seasonId: string | null;
+  circleId: string | null;
+  adoptedAt: number;
+  startedAt: number;
 }
 
 /** One seating that began, with its path and renewals. Times are epoch milliseconds. */
@@ -64,9 +89,36 @@ export interface MeasureRow {
     medianHoursToInterview: number | null;
     medianHoursToDecision: number | null;
   };
+  /** Median hours at each stage, over the applications that finished it (shared/applicationStageTiming.ts). */
+  stages: Record<TimedStage, number | null>;
+  conversations: {
+    /** Conversations opened, and of them booked. */
+    booked: Share;
+    /** Booked conversations that came to an end (written up, skipped, or their application decided), and of them written up. */
+    held: Share;
+  };
+  references: {
+    /** Median hours from asking for references to the last of them followed up. */
+    medianHoursToFollowUp: number | null;
+  };
+  outcomes: {
+    /** Decided applications that reached the final conversation, and of them adopted. */
+    offer: Share;
+    /** Adopted proposals from outside, and of them countered before agreement. */
+    countered: Share;
+    /** Of every application: withdrawn by the applicant, declined, closed after 90 quiet days. */
+    withdrawn: Share;
+    declined: Share;
+    closed: Share;
+  };
+  start: {
+    /** Median hours from adoption to the seating beginning. */
+    medianHoursToStart: number | null;
+  };
   holders: {
     count: number;
     pathCompleteBy30: Share;
+    stillInRoleAt30: Share;
     stillInRoleAt90: Share;
     renewed: Share;
   };
@@ -74,10 +126,15 @@ export interface MeasureRow {
 
 /** The closed key sets, held by the key-set test. */
 export const MEASURE_KEYS = {
-  row: ["seasonId", "circleId", "applications", "holders"],
+  row: ["seasonId", "circleId", "applications", "stages", "conversations", "references", "outcomes", "start", "holders"],
   applications: ["count", "answered", "medianHoursToReply", "medianHoursToInterview", "medianHoursToDecision"],
+  stages: [...TIMED_STAGES],
+  conversations: ["booked", "held"],
+  references: ["medianHoursToFollowUp"],
+  outcomes: ["offer", "countered", "withdrawn", "declined", "closed"],
+  start: ["medianHoursToStart"],
   // No quest step (the lead, 27 Nov 2026: "roles don't do quests normally ... not part of the flow").
-  holders: ["count", "pathCompleteBy30", "stillInRoleAt90", "renewed"],
+  holders: ["count", "pathCompleteBy30", "stillInRoleAt30", "stillInRoleAt90", "renewed"],
   share: ["eligible", "yes", "share"],
 } as const;
 
@@ -94,24 +151,50 @@ function share(eligible: number, yes: number): Share {
 }
 
 const hoursBetween = (from: number, to: number | null): number | null => (to === null || to < from ? null : Math.round(((to - from) / HOUR) * 10) / 10);
+const known = (xs: ReadonlyArray<number | null>): number[] => xs.filter((x): x is number => x !== null);
 
-export function buildMeasures(apps: readonly ApplicationFact[], holders: readonly HolderFact[], now: number): MeasureRow[] {
+/** The stamps an application's stages are timed from. */
+export const timingOf = (a: ApplicationFact): StageTimingFacts => ({
+  confirmedAt: a.confirmedAt,
+  shortlistYesAt: a.shortlistYesAt,
+  refsAskedAt: a.refsAskedAt,
+  interviews: a.interviews,
+  decidedAt: a.decidedAt,
+});
+
+export function buildMeasures(apps: readonly ApplicationFact[], holders: readonly HolderFact[], now: number, starts: readonly StartFact[] = []): MeasureRow[] {
   const keyOf = (s: string | null, c: string | null) => `${s ?? ""}\u0000${c ?? ""}`;
-  const rows = new Map<string, { seasonId: string | null; circleId: string | null; a: ApplicationFact[]; h: HolderFact[] }>();
+  const rows = new Map<string, { seasonId: string | null; circleId: string | null; a: ApplicationFact[]; h: HolderFact[]; s: StartFact[] }>();
   const slot = (s: string | null, c: string | null) => {
     const k = keyOf(s, c);
     let r = rows.get(k);
-    if (!r) rows.set(k, (r = { seasonId: s, circleId: c, a: [], h: [] }));
+    if (!r) rows.set(k, (r = { seasonId: s, circleId: c, a: [], h: [], s: [] }));
     return r;
   };
   for (const a of apps) slot(a.seasonId, a.circleId).a.push(a);
   for (const h of holders) slot(h.seasonId, h.circleId).h.push(h);
+  for (const x of starts) slot(x.seasonId, x.circleId).s.push(x);
 
   const out: MeasureRow[] = [];
   for (const r of Array.from(rows.values())) {
-    const reply = r.a.map((a) => hoursBetween(a.confirmedAt, a.firstReplyAt)).filter((x): x is number => x !== null);
-    const interview = r.a.map((a) => hoursBetween(a.confirmedAt, a.firstInterviewAt)).filter((x): x is number => x !== null);
-    const decision = r.a.map((a) => hoursBetween(a.confirmedAt, a.decidedAt)).filter((x): x is number => x !== null);
+    const reply = known(r.a.map((a) => hoursBetween(a.confirmedAt, a.firstReplyAt)));
+    const interview = known(r.a.map((a) => hoursBetween(a.confirmedAt, a.firstInterviewAt)));
+    const decision = known(r.a.map((a) => hoursBetween(a.confirmedAt, a.decidedAt)));
+
+    const stageTimes = r.a.map((a) => stageHours(timingOf(a)));
+    const stages = Object.fromEntries(TIMED_STAGES.map((st) => [st, median(known(stageTimes.map((t) => t[st] ?? null)))])) as Record<TimedStage, number | null>;
+
+    const talks = r.a.flatMap((a) => a.interviews.map((i) => ({ ...i, decided: a.decidedAt !== null })));
+    const opened = talks.filter((i) => i.openedAt !== null);
+    const booked = talks.filter((i) => i.bookedAt !== null);
+    const ended = booked.filter((i) => i.scoredAt !== null || i.skipped || i.decided);
+
+    const followUp = known(r.a.map((a) => (a.refsAskedAt === null ? null : hoursBetween(a.refsAskedAt, a.refsAllFollowedUpAt))));
+
+    const decided = r.a.filter((a) => a.outcome !== null);
+    const reachedFinal = decided.filter((a) => a.interviews.some((i) => i.final && i.openedAt !== null));
+    const adoptedOpen = r.a.filter((a) => a.door === "open" && a.outcome === "adopted");
+    const count = (o: Outcome) => r.a.filter((a) => a.outcome === o).length;
 
     // A share counts only people whose window has closed, so a recent seating is not "failed" yet.
     const by = (days: number, done: (h: HolderFact) => boolean, opened: (h: HolderFact) => number | null): Share => {
@@ -121,8 +204,8 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
       });
       return share(eligible.length, eligible.filter(done).length);
     };
+    const stayed = (days: number) => by(days, (h) => h.endedAt === null || h.endedAt >= h.startedAt + days * DAY, (h) => h.startedAt);
     const path = by(30, (h) => h.pathDoneAt !== null && h.pathOpenedAt !== null && h.pathDoneAt <= h.pathOpenedAt + 30 * DAY, (h) => h.pathOpenedAt);
-    const kept = by(90, (h) => h.endedAt === null || h.endedAt >= h.startedAt + 90 * DAY, (h) => h.startedAt);
     const due = r.h.reduce((n, h) => n + h.renewalsDue, 0);
     const renewed = r.h.reduce((n, h) => n + h.renewalsRenewed, 0);
 
@@ -136,10 +219,51 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
         medianHoursToInterview: median(interview),
         medianHoursToDecision: median(decision),
       },
-      holders: { count: r.h.length, pathCompleteBy30: path, stillInRoleAt90: kept, renewed: share(due, renewed) },
+      stages,
+      conversations: { booked: share(opened.length, opened.filter((i) => i.bookedAt !== null).length), held: share(ended.length, ended.filter((i) => i.scoredAt !== null).length) },
+      references: { medianHoursToFollowUp: median(followUp) },
+      outcomes: {
+        offer: share(reachedFinal.length, reachedFinal.filter((a) => a.outcome === "adopted").length),
+        countered: share(adoptedOpen.length, adoptedOpen.filter((a) => a.countered).length),
+        withdrawn: share(r.a.length, count("withdrawn")),
+        declined: share(r.a.length, count("declined")),
+        closed: share(r.a.length, count("closed")),
+      },
+      start: { medianHoursToStart: median(known(r.s.map((x) => hoursBetween(x.adoptedAt, x.startedAt)))) },
+      holders: { count: r.h.length, pathCompleteBy30: path, stillInRoleAt30: stayed(30), stillInRoleAt90: stayed(90), renewed: share(due, renewed) },
     });
   }
   return out.sort((a, b) => String(b.seasonId ?? "").localeCompare(String(a.seasonId ?? "")) || String(a.circleId ?? "").localeCompare(String(b.circleId ?? "")));
+}
+
+/**
+ * RIGHT NOW: how many undecided applications stand at each stage today, per
+ * circle, with how long the oldest has waited there. Counts and hours only,
+ * never a person; `open` and `member` say which door they came through, so a
+ * count can link to the review queue that lists them.
+ */
+export interface StageNowRow {
+  circleId: string | null;
+  stage: TimedStage;
+  count: number;
+  open: number;
+  member: number;
+  oldestHours: number;
+}
+
+export function rightNow(apps: readonly ApplicationFact[], now: number): StageNowRow[] {
+  const by = new Map<string, StageNowRow>();
+  for (const a of apps) {
+    const at = stageNow(timingOf(a));
+    if (!at) continue;
+    const k = `${a.circleId ?? ""}\u0000${at.stage}`;
+    const row = by.get(k) ?? { circleId: a.circleId, stage: at.stage, count: 0, open: 0, member: 0, oldestHours: 0 };
+    row.count += 1;
+    row[a.door] += 1;
+    row.oldestHours = Math.max(row.oldestHours, Math.round(((now - at.since) / HOUR) * 10) / 10);
+    by.set(k, row);
+  }
+  return Array.from(by.values());
 }
 
 /**

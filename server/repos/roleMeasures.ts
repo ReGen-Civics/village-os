@@ -12,7 +12,8 @@
  * UNIX_TIMESTAMP so the host's offset cannot shift them.
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import type { ApplicationFact, CircleLeadSeat, HolderFact } from "../../shared/roleMeasures";
+import type { ApplicationFact, CircleLeadSeat, HolderFact, Outcome, StartFact } from "../../shared/roleMeasures";
+import { counterOfferOf } from "../../shared/counterOffer";
 
 async function rows(pool: Pool, sql: string, params: unknown[] = []): Promise<RowDataPacket[]> {
   try {
@@ -42,11 +43,48 @@ function firstRoleOf(raw: unknown, key: "seat_ids" | "roles"): string | null {
   return typeof id === "string" && id ? id : null;
 }
 
+const json = (raw: unknown): any => {
+  if (typeof raw !== "string") return raw ?? null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+/** How the decided step says an application ended. A quiet withdrawal is the 90-day close. */
+function outcomeOf(detail: any): Outcome {
+  const how = detail?.how;
+  if (how === "adopted") return "adopted";
+  if (how === "withdrawn") return detail?.quiet === true ? "closed" : "withdrawn";
+  return "declined";
+}
+
+/** Where each application sat (its season and first role), keyed by its ref, with a member application's adoption. */
+async function placesOf(pool: Pool) {
+  const place = new Map<string, { seasonId: string | null; roleId: string | null; countered: boolean }>();
+  const adopted = new Map<string, number>();
+  for (const a of await rows(pool, "SELECT id, term_season_id AS season, seat_ids AS ids, status, UNIX_TIMESTAMP(decided_at) AS decided FROM seat_applications")) {
+    place.set(String(a.id), { seasonId: a.season ? String(a.season) : null, roleId: firstRoleOf(a.ids, "seat_ids"), countered: false });
+    const at = ms(a.decided);
+    if (String(a.status) === "adopted" && at !== null) adopted.set(String(a.id), at);
+  }
+  for (const a of await rows(pool, "SELECT id, target_season_id AS season, body_json AS body FROM open_role_proposals")) {
+    const body = json(a.body);
+    const co = counterOfferOf(body?.counterOffer);
+    place.set(String(a.id), { seasonId: a.season ? String(a.season) : null, roleId: firstRoleOf(a.body, "roles"), countered: !!co && co.revisions.length > 0 });
+  }
+  const circles = new Map<string, string | null>();
+  for (const r of await rows(pool, "SELECT id, circle_id FROM org_roles")) circles.set(String(r.id), r.circle_id ? String(r.circle_id) : null);
+  const circleOf = (roleId: string | null) => (roleId ? (circles.get(roleId) ?? null) : null);
+  return { place, adopted, circleOf };
+}
+
 export async function applicationFacts(pool: Pool): Promise<ApplicationFact[]> {
   const steps = await rows(
     pool,
     "SELECT application_ref AS ref, kind, UNIX_TIMESTAMP(MIN(stamped_at)) AS t FROM application_steps " +
-      "WHERE kind IN ('confirmed','first_reply','interview','decided') GROUP BY application_ref, kind",
+      "WHERE kind IN ('confirmed','first_reply','interview','decided','shortlist','refs_asked') GROUP BY application_ref, kind",
   );
   if (steps.length === 0) return [];
   const byRef = new Map<string, Record<string, number | null>>();
@@ -55,29 +93,77 @@ export async function applicationFacts(pool: Pool): Promise<ApplicationFact[]> {
     m[String(s.kind)] = ms(s.t);
     byRef.set(String(s.ref), m);
   }
-  // Where each application sat: its season and its first role's circle.
-  const place = new Map<string, { seasonId: string | null; roleId: string | null }>();
-  for (const a of await rows(pool, "SELECT id, term_season_id AS season, seat_ids AS ids FROM seat_applications")) {
-    place.set(String(a.id), { seasonId: a.season ? String(a.season) : null, roleId: firstRoleOf(a.ids, "seat_ids") });
+  // The answers the decided and shortlist steps carry: how it ended, and the shortlist's yes or no.
+  const details = new Map<string, { decided?: any; shortlist?: any }>();
+  for (const d of await rows(pool, "SELECT application_ref AS ref, kind, detail_json AS detail FROM application_steps WHERE kind IN ('decided','shortlist')")) {
+    const m = details.get(String(d.ref)) ?? {};
+    m[String(d.kind) as "decided" | "shortlist"] = json(d.detail);
+    details.set(String(d.ref), m);
   }
-  for (const a of await rows(pool, "SELECT id, target_season_id AS season, body_json AS body FROM open_role_proposals")) {
-    place.set(String(a.id), { seasonId: a.season ? String(a.season) : null, roleId: firstRoleOf(a.body, "roles") });
+  const talks = new Map<string, ApplicationFact["interviews"][number][]>();
+  for (const i of await rows(
+    pool,
+    "SELECT application_ref AS ref, is_final, state, UNIX_TIMESTAMP(opened_at) AS o, UNIX_TIMESTAMP(booked_at) AS b, UNIX_TIMESTAMP(scored_at) AS s " +
+      "FROM application_interviews ORDER BY application_ref, position",
+  )) {
+    const list = talks.get(String(i.ref)) ?? [];
+    list.push({ final: Number(i.is_final) === 1, openedAt: ms(i.o), bookedAt: ms(i.b), scoredAt: ms(i.s), skipped: String(i.state) === "skipped" });
+    talks.set(String(i.ref), list);
   }
-  const circles = new Map<string, string | null>();
-  for (const r of await rows(pool, "SELECT id, circle_id FROM org_roles")) circles.set(String(r.id), r.circle_id ? String(r.circle_id) : null);
+  const followed = new Map<string, number | null>();
+  for (const r of await rows(
+    pool,
+    "SELECT application_ref AS ref, COUNT(*) AS n, SUM(followed_up_at IS NULL) AS open_n, UNIX_TIMESTAMP(MAX(followed_up_at)) AS last FROM application_references GROUP BY application_ref",
+  )) {
+    followed.set(String(r.ref), Number(r.n) > 0 && Number(r.open_n) === 0 ? ms(r.last) : null);
+  }
+  const { place, circleOf } = await placesOf(pool);
 
   const out: ApplicationFact[] = [];
   for (const [ref, t] of Array.from(byRef.entries())) {
     if (t.confirmed == null) continue;
     const p = place.get(ref);
+    const d = details.get(ref);
     out.push({
       seasonId: p?.seasonId ?? null,
-      circleId: p?.roleId ? (circles.get(p.roleId) ?? null) : null,
+      circleId: circleOf(p?.roleId ?? null),
+      door: ref.startsWith("op-") ? "open" : "member",
       confirmedAt: t.confirmed,
       firstReplyAt: t.first_reply ?? null,
       firstInterviewAt: t.interview ?? null,
       decidedAt: t.decided ?? null,
+      outcome: t.decided == null ? null : outcomeOf(d?.decided),
+      shortlistYesAt: d?.shortlist?.answer === "yes" ? (t.shortlist ?? null) : null,
+      refsAskedAt: t.refs_asked ?? null,
+      refsAllFollowedUpAt: followed.get(ref) ?? null,
+      interviews: talks.get(ref) ?? [],
+      countered: p?.countered ?? false,
     });
+  }
+  return out;
+}
+
+/**
+ * Adoption to start: every adopted member application (the door a proposal from
+ * outside is seated through too) and the first seating that holds its terms
+ * (`org_role_assignments.application_id`). No person leaves this function.
+ */
+export async function startFacts(pool: Pool): Promise<StartFact[]> {
+  const firsts = await rows(
+    pool,
+    "SELECT application_id AS aid, UNIX_TIMESTAMP(MIN(started_at)) AS started FROM org_role_assignments " +
+      "WHERE application_id IS NOT NULL AND is_example = 0 GROUP BY application_id",
+  );
+  if (firsts.length === 0) return [];
+  const { place, adopted, circleOf } = await placesOf(pool);
+  const out: StartFact[] = [];
+  for (const f of firsts) {
+    const id = String(f.aid);
+    const adoptedAt = adopted.get(id);
+    const startedAt = ms(f.started);
+    if (adoptedAt === undefined || startedAt === null) continue;
+    const p = place.get(id);
+    out.push({ seasonId: p?.seasonId ?? null, circleId: circleOf(p?.roleId ?? null), adoptedAt, startedAt });
   }
   return out;
 }

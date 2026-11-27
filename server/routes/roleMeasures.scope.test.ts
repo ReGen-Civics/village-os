@@ -9,7 +9,8 @@ const state = vi.hoisted(() => ({
   seatings: [] as Array<Record<string, unknown>>,
   circles: [] as Array<{ id: string; leadRoleId: string | null; leadActive: boolean; leadIsExample: boolean }>,
   seatsFail: false,
-  limited: false,
+  /** The rate-limit keys that are over their limit, by prefix. */
+  limited: [] as string[],
 }));
 
 vi.mock("../repos/roleMeasures", () => {
@@ -17,15 +18,23 @@ vi.mock("../repos/roleMeasures", () => {
   const app = (circleId: string | null, reply: number | null) => ({
     seasonId: "s1",
     circleId,
+    door: "open",
     confirmedAt: T0,
     firstReplyAt: reply === null ? null : T0 + reply * 3_600_000,
     firstInterviewAt: null,
     decidedAt: null,
+    outcome: null,
+    shortlistYesAt: null,
+    refsAskedAt: null,
+    refsAllFollowedUpAt: null,
+    interviews: [],
+    countered: false,
   });
   return {
     // Garden: one application, answered in 5 hours. Kitchen: two, neither answered. One in no circle.
     applicationFacts: async () => [app("c-garden", 5), app("c-kitchen", null), app("c-kitchen", null), app(null, 1)],
     holderFacts: async () => [],
+    startFacts: async () => [],
     circleLeadSeats: async () => state.circles,
     circleNames: async () => new Map([["c-garden", "Garden"], ["c-kitchen", "Kitchen"]]),
   };
@@ -41,20 +50,21 @@ import { register } from "./roleMeasures";
 
 let who: string | null = null;
 let admin = false;
-let handler: (req: any, res: any) => Promise<unknown>;
-register({ get: (_p: string, h: any) => (handler = h) } as any, {
+const handlers = new Map<string, (req: any, res: any) => Promise<unknown>>();
+register({ get: (path: string, h: any) => handlers.set(path, h) } as any, {
   getPool: () => ({}) as any,
   authedUser: async () => (who ? ({ id: who } as any) : null),
   isAdmin: async () => !!who && admin,
-  overLimit: async () => state.limited,
+  overLimit: async (key: string) => state.limited.some((p) => key.startsWith(p)),
 });
 
-const call = async (query: Record<string, string> = {}) => {
+const callAt = async (path: string, query: Record<string, string> = {}) => {
   const out: { status: number; body: any } = { status: 200, body: undefined };
   const res: any = { status: (c: number) => ((out.status = c), res), json: (b: unknown) => ((out.body = b), res) };
-  await handler({ headers: {}, query }, res);
+  await handlers.get(path)!({ headers: {}, query }, res);
   return out;
 };
+const call = (query: Record<string, string> = {}) => callAt("/api/role-measures", query);
 const seat = (userId: string, orgRoleId: string, extra: Record<string, unknown> = {}) => ({ userId, orgRoleId, holderKind: "member", endedAt: null, lapsed: false, isExample: false, ...extra });
 const circlesOf = (body: any) => body.rows.map((r: any) => r.circleId);
 
@@ -67,7 +77,7 @@ describe("GET /api/role-measures: who reads which circle", () => {
       { id: "c-kitchen", leadRoleId: "r-kitchen-lead", leadActive: true, leadIsExample: false },
     ];
     state.seatsFail = false;
-    state.limited = false;
+    state.limited = [];
     state.seatings = [seat("lead-g", "r-garden-lead"), seat("member", "r-planter")];
   });
 
@@ -125,16 +135,55 @@ describe("GET /api/role-measures: who reads which circle", () => {
 
   it("only ever refuses a member who leads nothing: never the rate limit, never a 500", async () => {
     who = "member";
-    state.limited = true;
+    state.limited = ["role-measures:"];
     expect((await call()).status).toBe(403);
-    state.limited = false;
+    state.limited = [];
     state.seatsFail = true;
     expect((await call()).status).toBe(403);
-    // A lead the scope lets in does meet the rate limit.
+    // A lead the scope lets in does meet the rate limit, and says so.
     state.seatsFail = false;
-    state.limited = true;
+    state.limited = ["role-measures:"];
     who = "lead-g";
-    expect((await call()).status).toBe(429);
+    const out = await call();
+    expect(out.status).toBe(429);
+    expect(out.body.error).toBe("Slow down a little.");
+  });
+
+  it("throttles the seat reads themselves, and answers that as a refusal", async () => {
+    who = "member";
+    state.limited = ["role-measures-gate:"];
+    expect((await call()).status).toBe(403);
+    // A lead who would read their circle is refused too while the gate is over: it stands before the seat reads.
+    who = "lead-g";
+    expect((await call()).status).toBe(403);
+    state.limited = [];
+    expect((await call()).status).toBe(200);
+  });
+
+  it("returns right now and the whole-season totals, scoped like the rows", async () => {
+    who = "lead-g";
+    const body = (await call()).body;
+    expect(body.rightNow.map((r: any) => r.circleId)).toEqual(["c-garden"]);
+    expect(body.rightNow[0]).toMatchObject({ stage: "review", count: 1, open: 1, member: 0 });
+    expect(body.totals).toHaveLength(1);
+    expect(body.totals[0]).toMatchObject({ circleId: null, applications: { count: 1 } });
+    admin = true;
+    who = "admin";
+    const all = (await call()).body;
+    expect(all.totals[0].applications.count).toBe(4);
+    expect(all.rightNow.reduce((n: number, r: any) => n + r.count, 0)).toBe(4);
+  });
+
+  it("tells a circle's page whether to offer its door: admin, the circles a lead leads, or none", async () => {
+    who = "member";
+    expect((await callAt("/api/role-measures/scope")).body).toEqual({ scope: "none" });
+    who = "lead-g";
+    expect((await callAt("/api/role-measures/scope")).body).toEqual({ scope: "circles", circleIds: ["c-garden"] });
+    who = "admin";
+    admin = true;
+    expect((await callAt("/api/role-measures/scope")).body).toEqual({ scope: "village" });
+    who = null;
+    expect((await callAt("/api/role-measures/scope")).status).toBe(401);
   });
 
   it("shows counts under three, and a real zero as 0", async () => {

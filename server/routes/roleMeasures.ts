@@ -23,10 +23,10 @@
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
-import { buildMeasures, circlesLed, measuresScope, rowsInScope } from "../../shared/roleMeasures";
+import { buildMeasures, circlesLed, measuresScope, rightNow, rowsInScope, type MeasuresScope } from "../../shared/roleMeasures";
 import { liveSeatIdsFor } from "../../shared/sessionTasks";
 import { listOrgAssignments } from "../lib/orgChart";
-import { applicationFacts, circleLeadSeats, circleNames, holderFacts } from "../repos/roleMeasures";
+import { applicationFacts, circleLeadSeats, circleNames, holderFacts, startFacts } from "../repos/roleMeasures";
 
 type Deps = Pick<AppDeps, "getPool" | "authedUser" | "isAdmin"> & Partial<Pick<AppDeps, "overLimit" | "lapseContext">>;
 
@@ -34,34 +34,62 @@ const REFUSED = { error: "Only administrators and circle leads can see this." };
 
 export function register(app: Express, deps: Deps): void {
   const { getPool, authedUser, isAdmin, overLimit, lapseContext } = deps;
-  app.get("/api/role-measures", async (req, res) => {
-    const user = await authedUser(req);
-    if (!user) return res.status(401).json({ error: "Sign in to see this." });
-    const asked = typeof req.query?.circle === "string" && req.query.circle ? String(req.query.circle) : null;
+
+  /** Who this reader is to the measures. A failed seat lookup is a refusal, never an error. */
+  const scopeOf = async (req: any, userId: string): Promise<MeasuresScope> => {
     const pool = getPool();
     const admin = await isAdmin(req).catch(() => false);
     let led: string[] = [];
     if (!admin) {
       try {
-        led = circlesLed(await circleLeadSeats(pool), liveSeatIdsFor(await listOrgAssignments(pool, lapseContext?.()), String(user.id)));
+        led = circlesLed(await circleLeadSeats(pool), liveSeatIdsFor(await listOrgAssignments(pool, lapseContext?.()), userId));
       } catch {
         led = [];
       }
     }
-    const scope = measuresScope(admin, led);
+    return measuresScope(admin, led);
+  };
+
+  app.get("/api/role-measures", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "Sign in to see this." });
+    const asked = typeof req.query?.circle === "string" && req.query.circle ? String(req.query.circle) : null;
+    // A cheap gate before the seat reads, so nobody can make them run without end. It answers as a refusal (403),
+    // never 429, so a member who leads nothing learns nothing from it either.
+    if (overLimit && (await overLimit(`role-measures-gate:${user.id}`, 40, 60_000))) return res.status(403).json(REFUSED);
+    const scope = await scopeOf(req, String(user.id));
     if (scope.kind === "none") return res.status(403).json(REFUSED);
     if (asked !== null && scope.kind === "circles" && !scope.circleIds.includes(asked)) return res.status(403).json(REFUSED);
     if (overLimit && (await overLimit(`role-measures:${user.id}`, 20, 60_000))) return res.status(429).json({ error: "Slow down a little." });
     try {
-      const [apps, holders] = await Promise.all([applicationFacts(pool), holderFacts(pool)]);
+      const pool = getPool();
+      const [apps, holders, starts] = await Promise.all([applicationFacts(pool), holderFacts(pool), startFacts(pool)]);
       const names = await circleNames(pool).catch(() => new Map<string, string>());
-      const rows = rowsInScope(buildMeasures(apps, holders, Date.now()), scope, asked).map((r) => ({
-        ...r,
-        circleName: r.circleId ? (names.get(r.circleId) ?? null) : null,
-      }));
-      res.json({ rows, scope: scope.kind });
+      const now = Date.now();
+      const named = <R extends { circleId: string | null }>(r: R) => ({ ...r, circleName: r.circleId ? (names.get(r.circleId) ?? null) : null });
+      const rows = rowsInScope(buildMeasures(apps, holders, now, starts), scope, asked).map(named);
+      const stagesNow = rowsInScope(rightNow(apps, now), scope, asked).map(named);
+      // The same measures over every circle this reader may see (or the one asked for), one row per season: the
+      // page's key measures. Each fact is scoped first, then counted as one circle-less whole.
+      const whole = <F extends { circleId: string | null }>(facts: readonly F[]) => rowsInScope(facts, scope, asked).map((f) => ({ ...f, circleId: null }));
+      const totals = buildMeasures(whole(apps), whole(holders), now, whole(starts));
+      res.json({ rows, totals, rightNow: stagesNow, scope: scope.kind, at: new Date(now).toISOString() });
     } catch {
       res.status(500).json({ error: "Could not read the measures." });
     }
+  });
+
+  /**
+   * `GET /api/role-measures/scope`: may this reader open the measures, and for
+   * which circles. A circle's page asks it before it offers its quiet link, so
+   * the link shows only to an admin and that circle's lead. Seat lookups only;
+   * no measure is read.
+   */
+  app.get("/api/role-measures/scope", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "Sign in to see this." });
+    if (overLimit && (await overLimit(`role-measures-scope:${user.id}`, 60, 60_000))) return res.status(429).json({ error: "Slow down a little." });
+    const scope = await scopeOf(req, String(user.id));
+    res.json(scope.kind === "circles" ? { scope: "circles", circleIds: scope.circleIds } : { scope: scope.kind });
   });
 }

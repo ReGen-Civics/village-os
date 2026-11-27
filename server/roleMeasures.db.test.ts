@@ -30,7 +30,7 @@ describe.skipIf(!configured)("role measures, on a real schema", () => {
   beforeAll(async () => {
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 4 });
-    register({ get: (_p: string, h: any) => (handler = h) } as any, {
+    register({ get: (path: string, h: any) => path === "/api/role-measures" && (handler = h) } as any, {
       getPool: () => pool as any,
       authedUser: async () => (who ? ({ id: who } as any) : null),
       isAdmin: async () => !!who && admin,
@@ -69,21 +69,25 @@ describe.skipIf(!configured)("role measures, on a real schema", () => {
     await pool.query(
       "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `is_example`) VALUES ('s-lead', 'r-lead', 'member', 'lead-1', 'member:lead-1', 0)", // module-review-ok: fixture rows
     );
-    who = "lead-1";
-    admin = false;
-    const kept = await call();
-    expect(kept.status).toBe(200);
-    expect(kept.body.scope).toBe("circles");
-    // The circle rests the seat: its live holder reads nothing.
-    await pool.query("UPDATE `org_roles` SET `active` = 0 WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
-    expect((await call()).status).toBe(403);
-    // An example lead seat opens nothing either.
-    await pool.query("UPDATE `org_roles` SET `active` = 1, `is_example` = 1 WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
-    expect((await call()).status).toBe(403);
-    await pool.query("DELETE FROM `org_role_assignments` WHERE `id` = 's-lead'"); // module-review-ok: fixture rows
-    await pool.query("UPDATE `circles` SET `lead_role_id` = NULL WHERE `id` = 'c-lead'"); // module-review-ok: fixture rows
-    await pool.query("DELETE FROM `org_roles` WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
-    await pool.query("DELETE FROM `circles` WHERE `id` = 'c-lead'"); // module-review-ok: fixture rows
+    // The rows go whatever the assertions say, so a failure here never leaves a lead seat for the next test.
+    try {
+      who = "lead-1";
+      admin = false;
+      const kept = await call();
+      expect(kept.status).toBe(200);
+      expect(kept.body.scope).toBe("circles");
+      // The circle rests the seat: its live holder reads nothing.
+      await pool.query("UPDATE `org_roles` SET `active` = 0 WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
+      expect((await call()).status).toBe(403);
+      // An example lead seat opens nothing either.
+      await pool.query("UPDATE `org_roles` SET `active` = 1, `is_example` = 1 WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
+      expect((await call()).status).toBe(403);
+    } finally {
+      await pool.query("DELETE FROM `org_role_assignments` WHERE `id` = 's-lead'"); // module-review-ok: fixture rows
+      await pool.query("UPDATE `circles` SET `lead_role_id` = NULL WHERE `id` = 'c-lead'"); // module-review-ok: fixture rows
+      await pool.query("DELETE FROM `org_roles` WHERE `id` = 'r-lead'"); // module-review-ok: fixture rows
+      await pool.query("DELETE FROM `circles` WHERE `id` = 'c-lead'"); // module-review-ok: fixture rows
+    }
   });
 
   it("gives an admin rows with the declared keys and no person", async () => {
