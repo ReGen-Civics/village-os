@@ -2815,6 +2815,12 @@ msgctxt "rites"
 msgid "Walk beside them"
 msgstr "Walk beside them"
 
+#. placeholder {0}: readOnDay(reading.readAt, i18n.locale)
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "How we work together, read on {0}"
+msgstr "How we work together, read on {0}"
+
 #: client/src/components/LeavingNotices.tsx
 msgctxt "LeavingNotices, p"
 msgid "<0/>Recurring payments"
@@ -22768,6 +22774,11 @@ msgctxt "landing, the steward card's label while the founding team is on"
 msgid "Paid role"
 msgstr "Paid role"
 
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "Read it again"
+msgstr "Read it again"
+
 #: client/src/components/governance/seatPresetWords.ts
 msgctxt "role term preset platform:flat-monthly-allowance, blurb"
 msgid "One amount each month for the costs of the role."
@@ -23299,6 +23310,12 @@ msgstr "Which layer"
 msgctxt "role editor: role visibility"
 msgid "Open: listed and taking applications now"
 msgstr "Open: listed and taking applications now"
+
+#. placeholder {0}: readOnDay(readAt, i18n.locale)
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "Read on {0}"
+msgstr "Read on {0}"
 
 #: client/src/components/power/ResourcesAdminPanel.tsx
 msgctxt "ResourcesAdminPanel, button"
@@ -34650,6 +34667,11 @@ msgstr "Asking the guide…"
 #~ msgctxt "FirstWalk, p"
 #~ msgid "Walk complete"
 #~ msgstr "Walk complete"
+
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "How we work together"
+msgstr "How we work together"
 
 #: client/src/pages/Review.tsx
 msgctxt "Review, toast"
@@ -46322,6 +46344,11 @@ msgctxt "live sessions: agendaConsentAsk"
 msgid "Do you consent to this agenda?"
 msgstr "Do you consent to this agenda?"
 
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "It folds away for you, and your profile keeps it as read. Untick it to clear that."
+msgstr "It folds away for you, and your profile keeps it as read. Untick it to clear that."
+
 #: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Start a private intake. It reaches only the people holding the {intakeRoleLabel}, who read your name and your words in their notifications here. If they get an email, it says only that an intake is waiting: your words and your name are never emailed."
 msgstr "Start a private intake. It reaches only the people holding the {intakeRoleLabel}, who read your name and your words in their notifications here. If they get an email, it says only that an intake is waiting: your words and your name are never emailed."
@@ -48581,6 +48608,11 @@ msgstr "day {lunarDay} of {moonLength}"
 msgctxt "open proposal decide: loading"
 msgid "Reading the proposal"
 msgstr "Reading the proposal"
+
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "Read it again"
+msgstr "Read it again"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: next"
@@ -52418,6 +52450,11 @@ msgstr "Siddhi"
 msgctxt "conversation notes: save a written note"
 msgid "Save the note"
 msgstr "Save the note"
+
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "I've read this"
+msgstr "I've read this"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
@@ -56744,6 +56781,11 @@ msgstr "The {0}'s meetings"
 msgctxt "voice note"
 msgid "Recording is optional. Typed answers count just the same."
 msgstr "Recording is optional. Typed answers count just the same."
+
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable exchange.swap_spread_bps, label"
@@ -67554,6 +67596,11 @@ msgstr "not set"
 msgctxt "sera answers"
 msgid "{name} name"
 msgstr "{name} name"
+
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read: h2"
+msgid "What you have read"
+msgstr "What you have read"
 
 #: client/src/pages/VillageEmail.tsx
 msgctxt "VillageEmail, p"
