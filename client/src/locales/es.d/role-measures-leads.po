@@ -14,11 +14,6 @@ msgid "no data"
 msgstr "sin datos"
 
 # needs-native-review: how roles are going, its own page, 27 Nov 2026
-msgctxt "role measures, eyebrow on the circles page"
-msgid "Administrators see every circle; each lead sees their own"
-msgstr "Las personas administradoras ven cada círculo; cada líder ve el suyo"
-
-# needs-native-review: how roles are going, its own page, 27 Nov 2026
 msgctxt "role measures, a median shorter than an hour"
 msgid "under an hour"
 msgstr "menos de una hora"
@@ -139,11 +134,6 @@ msgid "Nobody waiting here"
 msgstr "Nadie espera aquí"
 
 # needs-native-review: how roles are going, its own page, 27 Nov 2026
-msgctxt "role progress, eyebrow"
-msgid "The season so far"
-msgstr "La temporada hasta ahora"
-
-# needs-native-review: how roles are going, its own page, 27 Nov 2026
 msgctxt "role progress, the measures section"
 msgid "Key measures"
 msgstr "Medidas clave"
@@ -162,11 +152,6 @@ msgstr "Postulaciones"
 msgctxt "role progress, a measure"
 msgid "Conversations booked"
 msgstr "Conversaciones reservadas"
-
-# needs-native-review: how roles are going, its own page, 27 Nov 2026
-msgctxt "role progress, a measure"
-msgid "Booked conversations held and written up"
-msgstr "Conversaciones reservadas que se hicieron y se escribieron"
 
 # needs-native-review: how roles are going, its own page, 27 Nov 2026
 msgctxt "role progress, a measure"
@@ -232,3 +217,48 @@ msgstr "Tiempo en cada etapa"
 msgctxt "role progress, the stage chain"
 msgid "From review to agreement"
 msgstr "De la revisión al acuerdo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, where you are: roles and the season"
+msgid "Roles · {here}"
+msgstr "Roles · {here}"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, where you are"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, who sees it"
+msgid "Administrators see every circle; each lead sees their own."
+msgstr "Las personas administradoras ven cada círculo; cada líder ve el suyo."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, signed out"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, refused: a door to the roles"
+msgid "See the roles"
+msgstr "Ver los roles"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a circle the reader does not lead was asked for"
+msgid "You can see the circles you lead, so these are yours."
+msgstr "Usted puede ver los círculos que lidera, así que estos son los suyos."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, clear a circle the reader does not lead"
+msgid "Show the circles you lead"
+msgstr "Mostrar los círculos que usted lidera"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the stage holding the longest wait"
+msgid "Longest wait"
+msgstr "Espera más larga"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Held and written up"
+msgstr "Hechas y escritas"

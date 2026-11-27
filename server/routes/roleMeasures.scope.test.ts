@@ -156,7 +156,15 @@ describe("GET /api/role-measures: who reads which circle", () => {
     // A lead who would read their circle is refused too while the gate is over: it stands before the seat reads.
     who = "lead-g";
     expect((await call()).status).toBe(403);
+    // An admin who trips it is told to slow down, never that the page is not for them.
+    who = "admin";
+    admin = true;
+    const out = await call();
+    expect(out.status).toBe(429);
+    expect(out.body.error).toBe("Slow down a little.");
     state.limited = [];
+    admin = false;
+    who = "lead-g";
     expect((await call()).status).toBe(200);
   });
 

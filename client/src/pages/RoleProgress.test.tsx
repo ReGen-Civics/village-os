@@ -35,7 +35,7 @@ vi.mock("wouter", () => ({
   ),
 }));
 
-import RoleProgress, { REFRESH_MS, reviewHrefFor } from "./RoleProgress";
+import RoleProgress, { READ_GAP_MS, REFRESH_MS, reviewHrefFor } from "./RoleProgress";
 
 const share = (eligible: number, yes: number): Share => ({ eligible, yes, share: eligible === 0 ? null : yes / eligible });
 const none = share(0, 0);
@@ -85,26 +85,39 @@ describe("/admin/role-progress", () => {
     vi.useRealTimers();
   });
 
-  it("asks nothing for a visitor, and says to sign in", () => {
+  it("asks nothing for a visitor, and offers a way to sign in", () => {
     auth.signedIn = false;
     show();
     expect(gameFetch).not.toHaveBeenCalled();
-    expect(screen.getByText("Sign in to see how roles are going.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe("/login?next=%2Fadmin%2Frole-progress");
+    expect(screen.queryByTestId("progress-how-to-read")).toBeNull();
   });
 
-  it("tells a refused member in one sentence, and shows no number", async () => {
+  it("tells a refused member in one sentence with a door to the roles, and shows no number", async () => {
     gameFetch.mockResolvedValue(answer(403, { error: "no" }));
     show();
-    expect((await screen.findByTestId("progress-refused")).textContent).toContain("administrators and circle leads");
+    const refused = await screen.findByTestId("progress-refused");
+    expect(refused.textContent).toContain("administrators and circle leads");
+    expect(within(refused).getByRole("link").getAttribute("href")).toBe("/roles");
     expect(screen.queryByTestId("progress-right-now")).toBeNull();
+    expect(screen.queryByTestId("progress-how-to-read")).toBeNull();
   });
 
-  it("shows right now, oldest first, each count a door to the review queue that lists them", async () => {
+  it("says where the reader is: roles and the season", async () => {
+    show();
+    await screen.findByTestId("progress-right-now");
+    expect(screen.getByText("Roles · Rains")).toBeTruthy();
+    expect(screen.getByTestId("progress-how-to-read").textContent).toContain("Administrators see every circle; each lead sees their own.");
+    expect(screen.getByTestId("progress-updated").hasAttribute("aria-live")).toBe(false);
+  });
+
+  it("shows right now in the track's order, the longest wait marked, each count a door to the review queue", async () => {
     show();
     const now = await screen.findByTestId("progress-right-now");
     const stages = Array.from(now.querySelectorAll("li[data-stage]")).map((li) => li.getAttribute("data-stage"));
-    // Agreement's oldest has waited 100 hours, our review's 30: agreement first, then the stages nobody waits at.
-    expect(stages).toEqual(["agreement", "review", "references", "final_interview"]);
+    expect(stages).toEqual(["review", "references", "final_interview", "agreement"]);
+    // Agreement's oldest has waited 100 hours, our review's 30: agreement is marked, and stays where it is.
+    expect(Array.from(now.querySelectorAll("li[data-oldest]")).map((li) => li.getAttribute("data-stage"))).toEqual(["agreement"]);
     const agreement = now.querySelector('li[data-stage="agreement"]')!;
     expect(agreement.textContent).toContain("1");
     expect(agreement.textContent).toContain("4 days");
@@ -161,14 +174,33 @@ describe("/admin/role-progress", () => {
     expect(screen.getByRole("button", { name: "Show every circle you lead" })).toBeTruthy();
   });
 
-  it("opens a lead's one circle from the start", async () => {
-    gameFetch.mockResolvedValue(ok({ rows: [ROWS[3]], scope: "circles" }));
+  it("draws a lead's one circle as its chains, never repeating its headline numbers in a row", async () => {
+    gameFetch.mockResolvedValue(ok({ rows: [ROWS[3]], rightNow: NOW.filter((r) => r.circleId === "c-anchor"), scope: "circles" }));
     show();
-    const list = await screen.findByTestId("measures-circles");
-    expect(list.querySelectorAll("details[open]")).toHaveLength(1);
+    expect(await screen.findByText("Holding the role")).toBeTruthy();
+    expect(screen.queryByTestId("measures-circles")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Anchor Circle" })).toBeTruthy();
   });
 
-  it("reads again every minute while in view, and when the window comes back", async () => {
+  it("gives a lead a door only to members' applications, the queue a lead can read", async () => {
+    gameFetch.mockResolvedValue(ok({ scope: "circles" }));
+    show();
+    const now = await screen.findByTestId("progress-right-now");
+    // Our review's two came from outside: no door for a lead. Agreement's one is a member's: a door.
+    expect(now.querySelector('li[data-stage="review"] a')).toBeNull();
+    expect(now.querySelector('li[data-stage="agreement"] a')?.getAttribute("href")).toBe("/admin/review?kind=application");
+  });
+
+  it("reads again without the filter when a lead asks for a circle they do not lead, and says so", async () => {
+    nav.search = "?circle=c-other";
+    gameFetch.mockImplementation(async (url: string) => (url.includes("c-other") ? answer(403, { error: "no" }) : ok({ rows: [ROWS[3]], scope: "circles" })));
+    show();
+    expect((await screen.findByTestId("progress-outside")).textContent).toContain("You can see the circles you lead");
+    expect(screen.queryByTestId("progress-refused")).toBeNull();
+    expect(await screen.findByText("Holding the role")).toBeTruthy();
+  });
+
+  it("reads again every minute while in view, and once when the window comes back", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     show();
     await waitFor(() => expect(gameFetch).toHaveBeenCalledTimes(1));
@@ -176,10 +208,19 @@ describe("/admin/role-progress", () => {
       vi.advanceTimersByTime(REFRESH_MS);
     });
     await waitFor(() => expect(gameFetch).toHaveBeenCalledTimes(2));
+    // Straight after a read, the window's return asks nothing more.
     await act(async () => {
       window.dispatchEvent(new Event("focus"));
     });
+    expect(gameFetch).toHaveBeenCalledTimes(2);
+    // Later, visibility and focus fire together: one read, not two.
+    await act(async () => {
+      vi.advanceTimersByTime(READ_GAP_MS + 1000);
+      document.dispatchEvent(new Event("visibilitychange"));
+      window.dispatchEvent(new Event("focus"));
+    });
     await waitFor(() => expect(gameFetch).toHaveBeenCalledTimes(3));
+    expect(gameFetch).toHaveBeenCalledTimes(3);
   });
 
   it("shows the server's own words when it refuses for a reason, and asks again on Try again", async () => {

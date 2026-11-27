@@ -1,10 +1,11 @@
 /**
- * How the role-journey measures are arranged for reading (the fold of
- * /role-measures into Circles & Roles, 27 Nov 2026). Pure: handed the rows
- * `GET /api/role-measures` serves, it picks the seasons, the order and the
- * circle, and says how each number reads. It never computes a measure: that
- * is shared/roleMeasures.ts on the server, which withholds a number built
- * from fewer than three people before it ever reaches here.
+ * How the role-journey measures are arranged for reading on the role progress
+ * page (/admin/role-progress). Pure: handed the rows `GET /api/role-measures`
+ * serves, it picks the seasons, the order and the circle, and says how each
+ * number reads. It never computes a measure: that is shared/roleMeasures.ts on
+ * the server, which shows every number built from at least one recorded fact
+ * (1s and 2s included) and sends null, read here as "no data", only where
+ * nothing was recorded.
  */
 import type { MeasureRow, Share } from "@shared/roleMeasures";
 

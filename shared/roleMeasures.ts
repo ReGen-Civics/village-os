@@ -45,7 +45,7 @@ export interface ApplicationFact {
   /** When the last reference was followed up, once every one of them is; null while any is open, or none were given. */
   refsAllFollowedUpAt: number | null;
   /** The conversations, in order. */
-  interviews: ReadonlyArray<{ final: boolean; openedAt: number | null; bookedAt: number | null; scoredAt: number | null; skipped: boolean }>;
+  interviews: ReadonlyArray<{ final: boolean; openedAt: number | null; bookedAt: number | null; scoredAt: number | null; skipped: boolean; waiting?: boolean }>;
   /** A proposal from outside whose terms the village countered before it was decided. False for a member's application. */
   countered: boolean;
 }

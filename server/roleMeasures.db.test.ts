@@ -62,12 +62,11 @@ describe.skipIf(!configured)("role measures, on a real schema", () => {
   });
 
   it("lets a circle's lead in through a kept lead seat, and refuses a rested or example one", async () => {
-    // module-review-ok: fixture rows on the scratch schema, for the lead-seat scope
-    await pool.query("INSERT INTO `circles` (`id`, `name`, `aliases`, `is_example`) VALUES ('c-lead', 'Lead circle', '[]', 0)");
+    await pool.query("INSERT INTO `circles` (`id`, `name`, `aliases`, `is_example`) VALUES ('c-lead', 'Lead circle', '[]', 0)"); // module-review-ok: fixture rows on the scratch schema, for the lead-seat scope
     await pool.query("INSERT INTO `org_roles` (`id`, `circle_id`, `name`, `active`, `is_example`) VALUES ('r-lead', 'c-lead', 'Lead seat', 1, 0)"); // module-review-ok: fixture rows
     await pool.query("UPDATE `circles` SET `lead_role_id` = 'r-lead' WHERE `id` = 'c-lead'"); // module-review-ok: fixture rows
-    await pool.query(
-      "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `is_example`) VALUES ('s-lead', 'r-lead', 'member', 'lead-1', 'member:lead-1', 0)", // module-review-ok: fixture rows
+    await pool.query( // module-review-ok: fixture rows
+      "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `is_example`) VALUES ('s-lead', 'r-lead', 'member', 'lead-1', 'member:lead-1', 0)",
     );
     // The rows go whatever the assertions say, so a failure here never leaves a lead seat for the next test.
     try {

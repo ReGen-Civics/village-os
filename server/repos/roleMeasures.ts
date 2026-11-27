@@ -107,7 +107,7 @@ export async function applicationFacts(pool: Pool): Promise<ApplicationFact[]> {
       "FROM application_interviews ORDER BY application_ref, position",
   )) {
     const list = talks.get(String(i.ref)) ?? [];
-    list.push({ final: Number(i.is_final) === 1, openedAt: ms(i.o), bookedAt: ms(i.b), scoredAt: ms(i.s), skipped: String(i.state) === "skipped" });
+    list.push({ final: Number(i.is_final) === 1, openedAt: ms(i.o), bookedAt: ms(i.b), scoredAt: ms(i.s), skipped: String(i.state) === "skipped", waiting: String(i.state) === "waiting" });
     talks.set(String(i.ref), list);
   }
   const followed = new Map<string, number | null>();

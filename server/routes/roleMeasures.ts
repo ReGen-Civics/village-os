@@ -56,7 +56,10 @@ export function register(app: Express, deps: Deps): void {
     const asked = typeof req.query?.circle === "string" && req.query.circle ? String(req.query.circle) : null;
     // A cheap gate before the seat reads, so nobody can make them run without end. It answers as a refusal (403),
     // never 429, so a member who leads nothing learns nothing from it either.
-    if (overLimit && (await overLimit(`role-measures-gate:${user.id}`, 40, 60_000))) return res.status(403).json(REFUSED);
+    // An admin is told plainly to slow down: they may read, so a refusal would be untrue for them.
+    if (overLimit && (await overLimit(`role-measures-gate:${user.id}`, 40, 60_000))) {
+      return (await isAdmin(req).catch(() => false)) ? res.status(429).json({ error: "Slow down a little." }) : res.status(403).json(REFUSED);
+    }
     const scope = await scopeOf(req, String(user.id));
     if (scope.kind === "none") return res.status(403).json(REFUSED);
     if (asked !== null && scope.kind === "circles" && !scope.circleIds.includes(asked)) return res.status(403).json(REFUSED);
