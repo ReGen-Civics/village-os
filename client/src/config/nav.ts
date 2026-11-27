@@ -342,13 +342,13 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
    * member's (the village test run; a stranger meets a sign-in wall), the Command Centre an admin's or a founder's,
    * the Treasury desk whoever holds a treasury power. They keep the amber that marks the machine room.
    */
-  { href: "/journey-to-launch", label: "🌳 Launch Plan", roles: ["member", "admin", "founder"], accent: true, newcomers: "never", sub: "Running the village" },
+  { href: "/journey-to-launch", label: "Launch Plan", roles: ["member", "admin", "founder"], accent: true, newcomers: "never", sub: "Running the village" },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15). "Treasury desk"
   // in the menu since round 2, so it does not read as Govern's Treasury tab, the budget every member reads. Since the
   // treasury fold (27 Nov 2026) it opens the desk board at the top of that same Treasury; /treasury redirects there.
   { href: "/governance/treasury#desks", label: "Treasury desk", door: "treasury", sub: "Running the village" },
   // Its own gate unlocks for admin and founder and walls everyone else.
-  { href: "/project-history", brochure: true, label: "🛠 Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
+  { href: "/project-history", brochure: true, label: "Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
   // The admin's one review page (the Governance lane folds /admin/proposals into it).
   { href: "/admin/review", label: "Review", roles: ["admin", "founder"], sub: "Running the village" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"], sub: "Running the village" },
