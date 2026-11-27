@@ -155,7 +155,7 @@ export default function Fleet() {
                     <p style={{ fontFamily: "var(--font-display)", fontSize: 20 }}>{f.joinTitle}</p>
                     {f.joinLine ? <p className="small muted" style={{ marginTop: 4 }}>{f.joinLine}</p> : null}
                     {f.joinLabel ? (
-                      <a className="btn ghost small" style={{ margin: "12px auto 0" }} href={f.joinHref || "/season-places"}>
+                      <a className="btn ghost small" style={{ margin: "12px auto 0" }} href={f.joinHref || "/season#join"}>
                         {f.joinLabel}
                       </a>
                     ) : null}
@@ -203,7 +203,7 @@ export default function Fleet() {
                   {f.applyKicker ? <p className="sc">{f.applyKicker}</p> : null}
                   <p className="small" style={{ marginTop: 6 }}>{f.applyLine}</p>
                   {f.applyLabel ? (
-                    <a className="btn gold small" style={{ marginTop: 12, width: "100%" }} href={f.applyHref || "/season-places"}>
+                    <a className="btn gold small" style={{ marginTop: 12, width: "100%" }} href={f.applyHref || "/season#join"}>
                       {f.applyLabel}
                     </a>
                   ) : null}

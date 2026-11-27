@@ -72,8 +72,9 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // feedback fold, 27 Nov 2026), and the
     // /photographs redirect to /places#photos (the places fold, 26 Nov 2026), and the four old
     // addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights, redirects
-    // to /rights since the rights fold, 27 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 24);
+    // to /rights since the rights fold, 27 Nov 2026), and the four old season addresses (/season-plans,
+    // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 28);
     expect(routes.length).toBeGreaterThan(60);
   });
 

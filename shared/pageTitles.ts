@@ -147,6 +147,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/role-measures": "How roles are going", // admins only, counts and medians from stamped times
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
+  "/season": "The season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned
   "/season-plans": "The village's season",
   "/welcome": "Welcome",
   "/aboard": "Join",
