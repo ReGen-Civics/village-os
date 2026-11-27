@@ -182,6 +182,14 @@ describe("GET /api/role-measures: who reads which circle", () => {
     expect(all.rightNow.reduce((n: number, r: any) => n + r.count, 0)).toBe(4);
   });
 
+  it("says whether the circle asked for exists, so an unknown id never reads as zeros", async () => {
+    who = "admin";
+    admin = true;
+    expect((await call({ circle: "c-nowhere" })).body.circle).toEqual({ id: "c-nowhere", known: false });
+    expect((await call({ circle: "c-garden" })).body.circle).toEqual({ id: "c-garden", known: true });
+    expect((await call()).body.circle).toBeNull();
+  });
+
   it("tells a circle's page whether to offer its door: admin, the circles a lead leads, or none", async () => {
     who = "member";
     expect((await callAt("/api/role-measures/scope")).body).toEqual({ scope: "none" });

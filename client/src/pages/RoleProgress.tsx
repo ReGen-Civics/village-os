@@ -54,6 +54,8 @@ interface Answer {
   at: string;
   /** The circle asked for is not one this reader leads: the answer is read without it. */
   outside: boolean;
+  /** The circle asked for exists. False only when the server knows no circle by that id. */
+  known: boolean;
 }
 type Load = { phase: "loading" } | { phase: "refused" } | { phase: "failed"; message: string } | { phase: "ready"; answer: Answer };
 
@@ -88,6 +90,7 @@ export function useRoleProgress(circle: string | null, enabled: boolean) {
           scope: body?.scope === "village" ? "village" : "circles",
           at: typeof body?.at === "string" ? body.at : new Date().toISOString(),
           outside,
+          known: body?.circle?.known !== false,
         },
       });
     } catch {
@@ -219,7 +222,15 @@ export default function RoleProgress() {
             </div>
           ) : (
             <>
-              {answer!.outside ? (
+              {circle && !answer!.known ? (
+                <p className={`${TILE} ${NOTE}`} data-testid="progress-unknown-circle">
+                  {t({ message: "No circle by that name.", context: "role progress, an unknown circle was asked for" })}{" "}
+                  <button type="button" onClick={() => pick(null)} className={`${LINK} inline-flex min-h-11 items-center`}>
+                    {t({ message: "Show every circle", context: "role progress, clear the circle filter" })}
+                  </button>
+                </p>
+              ) : null}
+              {circle && !answer!.known ? null : answer!.outside ? (
                 <p className={`${TILE} ${NOTE}`} data-testid="progress-outside">
                   {t({ message: "You can see the circles you lead, so these are yours.", context: "role progress, a circle the reader does not lead was asked for" })}{" "}
                   <button type="button" onClick={() => pick(null)} className={`${LINK} inline-flex min-h-11 items-center`}>
@@ -227,7 +238,7 @@ export default function RoleProgress() {
                   </button>
                 </p>
               ) : null}
-              <RightNow rows={answer!.rightNow} admin={answer!.scope === "village"} />
+              {circle && !answer!.known ? null : <RightNow rows={answer!.rightNow} admin={answer!.scope === "village"} />}
 
               <section aria-label={t({ message: "Season and circle", context: "role progress, filters" })} className="flex flex-wrap items-end gap-x-6 gap-y-3">
                 {seasons.length > 1 ? (
@@ -258,8 +269,8 @@ export default function RoleProgress() {
                 ) : null}
               </section>
 
-              {total ? <KeyMeasures row={total} season={seasonName(shown)} /> : <p className={HINT} data-testid="measures-empty">{t({ message: "Nothing has been stamped yet.", context: "role measures, empty" })}</p>}
-              {total ? <StageDays row={total} /> : null}
+              {circle && !answer!.known ? null : total ? <KeyMeasures row={total} season={seasonName(shown)} /> : <p className={HINT} data-testid="measures-empty">{t({ message: "Nothing has been stamped yet.", context: "role measures, empty" })}</p>}
+              {total && !(circle && !answer!.known) ? <StageDays row={total} /> : null}
 
               {list.length ? (
                 <section className={CARD} aria-labelledby="progress-circles">
@@ -318,8 +329,8 @@ export function reviewHrefFor(open: number, member: number): string {
  * waited, the stage holding the longest wait marked. An admin's counts are doors to the review queue that lists
  * them; a circle's lead gets a door only to members' applications, the queue a lead can read.
  */
-/** The tile of the stage holding the longest wait: TILE's shape, edged in gold. */
-const OLDEST_TILE = "rounded-xl border-2 border-notice/70 bg-muted p-4";
+/** The tile of the stage holding the longest wait: the standard tile, with a gold ring round it. */
+const OLDEST_TILE = `${TILE} ring-2 ring-notice/70`;
 
 function RightNow({ rows, admin }: { rows: ReadonlyArray<StageNowRow>; admin: boolean }) {
   const { t } = useLingui();
@@ -382,9 +393,9 @@ interface Tile {
 }
 
 /** A group of key measures: an eyebrow and tiles, each a numeral with what it was measured on. */
-function Tiles({ title, tiles }: { title: string; tiles: readonly Tile[] }) {
+function Tiles({ title, tiles, hidden = false }: { title: string; tiles: readonly Tile[]; hidden?: boolean }) {
   return (
-    <div>
+    <div className={hidden ? "hidden lg:block" : undefined} data-group-shown={hidden ? undefined : ""}>
       <h3>
         <span className={`font-body ${EYEBROW}`}>{title}</span>
       </h3>
@@ -406,15 +417,30 @@ function KeyMeasures({ row, season }: { row: MeasureRow; season: string }) {
   const { t } = useLingui();
   const { share, timed } = useReadings();
   const o = row.outcomes;
+  // On a phone one group at a time, picked by the tabs (the profile's phone-tab pattern); from lg all three show.
+  const [group, setGroup] = useState(0);
+  const groups = [
+    t({ message: "Moving through", context: "role progress, a group of measures" }),
+    t({ message: "How applications end", context: "role progress, a group of measures" }),
+    t({ message: "After adoption", context: "role progress, a group of measures" }),
+  ];
   return (
     <section className={CARD} aria-labelledby="progress-key" data-testid="progress-key-measures">
       <p className={EYEBROW}>{season}</p>
       <h2 id="progress-key" className={`${H2} mt-1`}>
         {t({ message: "Key measures", context: "role progress, the measures section" })}
       </h2>
+      <div role="group" aria-label={t({ message: "Which measures", context: "role progress, the phone tabs" })} className="mt-4 flex flex-wrap gap-2 lg:hidden">
+        {groups.map((g, i) => (
+          <button key={g} type="button" aria-pressed={group === i} onClick={() => setGroup(i)} className={group === i ? SEASON_ON : BTN_SECONDARY}>
+            {g}
+          </button>
+        ))}
+      </div>
       <div className="mt-5 grid gap-6">
         <Tiles
-          title={t({ message: "Moving through", context: "role progress, a group of measures" })}
+          hidden={group !== 0}
+          title={groups[0]}
           tiles={[
             { label: t({ message: "Applications", context: "role progress, a measure" }), value: String(row.applications.count) },
             { label: t({ message: "First reply", context: "role measures, applying chain" }), ...timed(row.applications.medianHoursToReply) },
@@ -426,7 +452,8 @@ function KeyMeasures({ row, season }: { row: MeasureRow; season: string }) {
           ]}
         />
         <Tiles
-          title={t({ message: "How applications end", context: "role progress, a group of measures" })}
+          hidden={group !== 1}
+          title={groups[1]}
           tiles={[
             { label: t({ message: "Withdrawn", context: "role progress, a measure" }), ...share(o.withdrawn) },
             { label: t({ message: "Declined", context: "role progress, a measure" }), ...share(o.declined) },
@@ -434,7 +461,8 @@ function KeyMeasures({ row, season }: { row: MeasureRow; season: string }) {
           ]}
         />
         <Tiles
-          title={t({ message: "After adoption", context: "role progress, a group of measures" })}
+          hidden={group !== 2}
+          title={groups[2]}
           tiles={[
             { label: t({ message: "Adoption to start", context: "role progress, a measure" }), ...timed(row.start.medianHoursToStart) },
             { label: t({ message: "Path done by day 30", context: "role measures, holding chain" }), ...share(row.holders.pathCompleteBy30) },

@@ -50,6 +50,16 @@ export interface StageTimingFacts {
    */
   interviews: ReadonlyArray<{ final: boolean; openedAt: number | null; scoredAt: number | null; skipped?: boolean; waiting?: boolean }>;
   decidedAt: number | null;
+  /**
+   * `member`: a member's first-role application, walked on its own track (`memberTrackOf`): no review and no
+   * conversations; References from the moment it is received, Agreement once every reference is followed up.
+   * Left out, the application is a proposal from outside, on `trackStates`.
+   */
+  door?: "open" | "member";
+  /** When the last reference was followed up, once every one of them is. Read for a member's application. */
+  refsAllFollowedUpAt?: number | null;
+  /** The decision was to adopt. Only an adoption ends Agreement; any other decision ends nothing. */
+  adopted?: boolean;
 }
 
 const HOUR = 3_600_000;
@@ -66,37 +76,63 @@ const hasOpened = (i: Talk) => (i.waiting === undefined ? i.openedAt !== null ||
 /** When a done conversation was done: written up, or for a skip (which keeps no time) its opening, else `fallback`. */
 const doneAt = (i: Talk, fallback: number | null): number | null => i.scoredAt ?? (i.skipped ? (i.openedAt ?? fallback) : null);
 
-/** When the application entered each stage, or null for a stage it has not reached or skipped. */
-export function stageEntries(f: StageTimingFacts): Record<TimedStage, number | null> {
+/**
+ * When the application entered each stage, or null for a stage it has not reached or skipped, and which of those
+ * instants are GUESSED: a skip keeps no time, so an entry placed at a skipped conversation's opening (or at the stage
+ * before it) is the clock's best placement, never a measurement.
+ */
+function stageParts(f: StageTimingFacts): { at: Record<TimedStage, number | null>; guessed: Set<TimedStage> } {
+  const guessed = new Set<TimedStage>();
+  if (f.door === "member") {
+    // A member's application (memberTrackOf): References from the start, Agreement once every reference is followed up.
+    return { at: { review: null, references: f.confirmedAt, final_interview: null, agreement: f.refsAllFollowedUpAt ?? null }, guessed };
+  }
   const talks = f.interviews.filter((i) => !i.final);
   const finals = f.interviews.filter((i) => i.final);
   let referencesAt: number | null = null;
   if (f.shortlistYesAt !== null) {
     const first = talks[0];
-    const ended = !first ? f.shortlistYesAt : minOf(isDone(first) ? doneAt(first, f.shortlistYesAt) : null, f.refsAskedAt);
+    const firstDone = first && isDone(first) ? doneAt(first, f.shortlistYesAt) : null;
+    const ended = !first ? f.shortlistYesAt : minOf(firstDone, f.refsAskedAt);
     referencesAt = ended === null ? null : Math.max(ended, f.shortlistYesAt);
-  } else if (talks.length === 0 && finals.length === 0) {
-    // A member's application: no review, no conversations; asking for references opens the stage.
-    referencesAt = f.refsAskedAt;
+    // Our review ended at a skip, which keeps no time: the moment is placed, not measured.
+    if (first && first.skipped && first.scoredAt === null && firstDone !== null && (f.refsAskedAt === null || firstDone < f.refsAskedAt)) guessed.add("references");
   }
+  // A proposal from outside with no shortlist yes stays at Our review, references asked or not: the track's rule.
   const opened = finals.filter(hasOpened);
   // The final opened: at its opening time, or (opened with none recorded) the moment the stage before it began.
-  const finalOpenedAt = opened.length ? (minOf(...opened.map((i) => i.openedAt)) ?? referencesAt ?? f.confirmedAt) : null;
+  const knownOpening = minOf(...opened.map((i) => i.openedAt));
+  const finalOpenedAt = opened.length ? (knownOpening ?? referencesAt ?? f.confirmedAt) : null;
+  if (opened.length && knownOpening === null) guessed.add("final_interview");
   if (referencesAt !== null && finalOpenedAt !== null && referencesAt > finalOpenedAt) referencesAt = finalOpenedAt;
-  const finalsDoneAt =
-    finals.length > 0 && finals.every(isDone) ? Math.max(...finals.map((i) => doneAt(i, finalOpenedAt) ?? finalOpenedAt ?? f.confirmedAt)) : null;
-  return { review: f.confirmedAt, references: referencesAt, final_interview: finalOpenedAt, agreement: finalsDoneAt };
+  const finalsDone = finals.length > 0 && finals.every(isDone);
+  const finalsDoneAt = finalsDone ? Math.max(...finals.map((i) => doneAt(i, finalOpenedAt) ?? finalOpenedAt ?? f.confirmedAt)) : null;
+  if (finalsDone && finals.some((i) => i.scoredAt === null)) guessed.add("agreement");
+  return { at: { review: f.confirmedAt, references: referencesAt, final_interview: finalOpenedAt, agreement: finalsDoneAt }, guessed };
 }
 
-/** Hours spent at each stage the application has finished. A stage it stands at, or skipped, is absent. */
+/** When the application entered each stage, or null for a stage it has not reached or skipped. */
+export function stageEntries(f: StageTimingFacts): Record<TimedStage, number | null> {
+  return stageParts(f).at;
+}
+
+/**
+ * Hours spent at each stage the application PASSED. A stage ends only where the next one begins, and a decision ends
+ * only Agreement, and only as an adoption: an application declined, withdrawn or closed after 90 quiet days stopped at
+ * its stage and never passed it, so that stage is absent (counting its whole wait as a pass is how an average of
+ * passers at 2, 4 and 9 days once read 43). A stage it stands at, or skipped, is absent, and so is a stage whose start
+ * or end the clock had to place because a skip kept no time: a skipped stretch counts neither as 0 nor as a guess.
+ */
 export function stageHours(f: StageTimingFacts): Partial<Record<TimedStage, number>> {
-  const at = stageEntries(f);
+  const { at, guessed } = stageParts(f);
   const out: Partial<Record<TimedStage, number>> = {};
   TIMED_STAGES.forEach((stage, i) => {
     const from = at[stage];
-    if (from === null) return;
-    const later = TIMED_STAGES.slice(i + 1).map((s) => at[s]);
-    const to = minOf(...later.filter((x) => x !== null && x >= from), f.decidedAt !== null && f.decidedAt >= from ? f.decidedAt : null);
+    if (from === null || guessed.has(stage)) return;
+    const next = TIMED_STAGES.slice(i + 1).find((s) => at[s] !== null && (at[s] as number) >= from);
+    if (next && guessed.has(next)) return;
+    const adoptedAt = stage === "agreement" && f.adopted === true && f.decidedAt !== null && f.decidedAt >= from ? f.decidedAt : null;
+    const to = next ? at[next] : adoptedAt;
     if (to === null) return;
     out[stage] = Math.round(((to - from) / HOUR) * 10) / 10;
   });
@@ -107,7 +143,7 @@ export function stageHours(f: StageTimingFacts): Partial<Record<TimedStage, numb
 export function stageNow(f: StageTimingFacts): { stage: TimedStage; since: number } | null {
   if (f.decidedAt !== null) return null;
   const at = stageEntries(f);
-  let now: { stage: TimedStage; since: number } = { stage: "review", since: f.confirmedAt };
+  let now: { stage: TimedStage; since: number } = { stage: f.door === "member" ? "references" : "review", since: f.confirmedAt };
   for (const stage of TIMED_STAGES) {
     const e = at[stage];
     if (e !== null && e >= now.since) now = { stage, since: e };

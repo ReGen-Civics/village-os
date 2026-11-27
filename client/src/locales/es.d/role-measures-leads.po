@@ -262,3 +262,13 @@ msgstr "Espera más larga"
 msgctxt "role progress, a measure"
 msgid "Held and written up"
 msgstr "Hechas y escritas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the phone tabs"
+msgid "Which measures"
+msgstr "Qué medidas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, an unknown circle was asked for"
+msgid "No circle by that name."
+msgstr "No hay ningún círculo con ese nombre."

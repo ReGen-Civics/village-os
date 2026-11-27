@@ -76,7 +76,10 @@ export function register(app: Express, deps: Deps): void {
       // page's key measures. Each fact is scoped first, then counted as one circle-less whole.
       const whole = <F extends { circleId: string | null }>(facts: readonly F[]) => rowsInScope(facts, scope, asked).map((f) => ({ ...f, circleId: null }));
       const totals = buildMeasures(whole(apps), whole(holders), now, whole(starts));
-      res.json({ rows, totals, rightNow: stagesNow, scope: scope.kind, at: new Date(now).toISOString() });
+      // Whether the circle asked for exists, so the page can say "no circle by that name" rather than draw zeros. A
+      // failed read of the names says nothing about it, so it never reads as unknown.
+      const circle = asked === null ? null : { id: asked, known: names.size === 0 || names.has(asked) };
+      res.json({ rows, totals, rightNow: stagesNow, scope: scope.kind, at: new Date(now).toISOString(), circle });
     } catch {
       res.status(500).json({ error: "Could not read the measures." });
     }

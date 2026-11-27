@@ -160,6 +160,9 @@ export const timingOf = (a: ApplicationFact): StageTimingFacts => ({
   refsAskedAt: a.refsAskedAt,
   interviews: a.interviews,
   decidedAt: a.decidedAt,
+  door: a.door,
+  refsAllFollowedUpAt: a.refsAllFollowedUpAt,
+  adopted: a.outcome === "adopted",
 });
 
 export function buildMeasures(apps: readonly ApplicationFact[], holders: readonly HolderFact[], now: number, starts: readonly StartFact[] = []): MeasureRow[] {
@@ -298,6 +301,7 @@ export function circlesLed(circles: readonly CircleLeadSeat[], liveSeatIds: read
   return circles.filter((c) => c.leadRoleId !== null && c.leadActive && !c.leadIsExample && seats.has(c.leadRoleId)).map((c) => c.id);
 }
 
+// No small-number threshold for a lead, ever: asked whether a lead whose circle has one or two applicants sees their exact times and outcomes, the lead answered "Show all, as now" (27 Nov 2026).
 export function measuresScope(isAdmin: boolean, led: readonly string[]): MeasuresScope {
   if (isAdmin) return { kind: "village" };
   return led.length ? { kind: "circles", circleIds: Array.from(new Set(led)) } : { kind: "none" };

@@ -114,14 +114,33 @@ describe("buildMeasures", () => {
     expect(row.holders.stillInRoleAt30).toEqual({ eligible: 2, yes: 2, share: 1 });
     expect(row.holders.stillInRoleAt90).toEqual({ eligible: 2, yes: 1, share: 0.5 });
   });
+  it("leaves a skipped final conversation out of the stage's median: neither 0 nor a guess", () => {
+    const held = app(1, null, 100, "c1", { shortlistYesAt: T0 + 10 * H, interviews: [talk({ opened: 10, scored: 30 }), talk({ final: true, opened: 60, scored: 80 })] });
+    const skipped = app(1, null, 100, "c1", { shortlistYesAt: T0 + 10 * H, interviews: [talk({ opened: 10, scored: 30 }), talk({ final: true, opened: 60, skipped: true })] });
+    const [row] = buildMeasures([held, skipped], [], T0);
+    expect(row.stages.final_interview).toBe(20);
+  });
   it("takes the median time at each stage from the one stage clock", () => {
-    const a = app(1, null, 100, "c1", { shortlistYesAt: T0 + 10 * H, interviews: [talk({ opened: 10, scored: 30 }), talk({ final: true, opened: 60, scored: 80 })] });
+    const a = app(1, null, 100, "c1", { outcome: "adopted", shortlistYesAt: T0 + 10 * H, interviews: [talk({ opened: 10, scored: 30 }), talk({ final: true, opened: 60, scored: 80 })] });
     const [row] = buildMeasures([a], [], T0);
     expect(row.stages).toEqual({ review: 30, references: 30, final_interview: 20, agreement: 20 });
   });
+  it("leaves applications that stopped at a stage out of its median (the admin page follows the stage clock)", () => {
+    // Three closed, withdrawn or declined at our review after long waits; three passed it at 2, 4 and 9 days.
+    const stopped = [30, 60, 90].map((d, i) => app(null, null, d * 24, "c1", { outcome: (["closed", "withdrawn", "declined"] as const)[i] }));
+    const passed = [2, 4, 9].map((d) => app(null, null, null, "c1", { shortlistYesAt: T0 + d * 24 * H }));
+    const [row] = buildMeasures([...stopped, ...passed], [], T0);
+    expect(row.stages.review).toBe(4 * 24);
+    // Before anything passed: no data, never the stopped ones' waits.
+    expect(buildMeasures(stopped, [], T0)[0].stages.review).toBe(NO_DATA);
+  });
   it("counts right now: undecided applications at each stage, per circle and door, with the oldest wait", () => {
     const apps = [app(null, null, null, "c1"), app(null, null, null, "c1", { door: "member", confirmedAt: T0 - 10 * H }), app(null, null, 5, "c1")];
-    expect(rightNow(apps, T0 + 2 * H)).toEqual([{ circleId: "c1", stage: "review", count: 2, open: 1, member: 1, oldestHours: 12 }]);
+    // The member's application stands at References from the start (its own track has no review).
+    expect(rightNow(apps, T0 + 2 * H)).toEqual([
+      { circleId: "c1", stage: "review", count: 1, open: 1, member: 0, oldestHours: 2 },
+      { circleId: "c1", stage: "references", count: 1, open: 0, member: 1, oldestHours: 12 },
+    ]);
   });
   it("splits by circle", () => {
     expect(buildMeasures([app(1, 1, 1, "c1"), app(1, 1, 1, "c2")], [], T0)).toHaveLength(2);

@@ -231,6 +231,25 @@ describe("/admin/role-progress", () => {
     expect(await screen.findByTestId("progress-right-now")).toBeTruthy();
   });
 
+  it("tells an admin who asks for an unknown circle so, with a way back, and draws no zeros", async () => {
+    nav.search = "?circle=c-nowhere";
+    gameFetch.mockResolvedValue(ok({ rows: [], totals: [], rightNow: [], circle: { id: "c-nowhere", known: false } }));
+    show();
+    expect((await screen.findByTestId("progress-unknown-circle")).textContent).toContain("No circle by that name.");
+    expect(screen.queryByTestId("progress-right-now")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show every circle" }));
+    expect(nav.navigate).toHaveBeenCalledWith("/admin/role-progress", { replace: true });
+  });
+
+  it("shows one group of key measures at a time on a phone, picked by its tab", async () => {
+    show();
+    const key = await screen.findByTestId("progress-key-measures");
+    const shown = () => Array.from(key.querySelectorAll("[data-group-shown] h3")).map((h) => h.textContent);
+    expect(shown()).toEqual(["Moving through"]);
+    fireEvent.click(within(key).getByRole("button", { name: "How applications end" }));
+    expect(shown()).toEqual(["How applications end"]);
+  });
+
   it("links a count to the queue for its door, and to every queue when both doors are in it", () => {
     expect(reviewHrefFor(2, 0)).toBe("/admin/review?kind=open");
     expect(reviewHrefFor(0, 1)).toBe("/admin/review?kind=application");
