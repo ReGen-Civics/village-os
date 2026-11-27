@@ -56,7 +56,7 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
-import { applicantStagesOf, refineProposal, withdrawApplication } from "../lib/applicantOnboarding";
+import { applicantStagesOf, bookedByApplicant, refineProposal, withdrawApplication } from "../lib/applicantOnboarding";
 import { emailKeyOf } from "../../shared/comms/address";
 import { REFINE_ERRORS } from "../../shared/proposalRefine";
 import path from "node:path";
@@ -143,6 +143,27 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
     const out = await withdrawApplication(work, ref);
     out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  // ── "I've booked it" (the lead, 27 Nov 2026; shared/callBooked.ts) ─────────
+  /* The applicant says when the call they booked is, for the conversation open now. By the emailed link, or signed in. */
+  app.post("/api/application-status/:ref/booked", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-booked:${deps.clientIp ? deps.clientIp(req) : "x"}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await bookedByApplicant(work, ref, req.body?.at);
+    out.ok ? res.json({ success: true, at: out.at }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/booked", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-booked:${String(viewer.id)}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
+    const out = await bookedByApplicant(work, ref, req.body?.at);
+    out.ok ? res.json({ success: true, at: out.at }) : res.status(out.status).json({ error: out.error });
   });
 
   /** The same, signed in as the applicant. */

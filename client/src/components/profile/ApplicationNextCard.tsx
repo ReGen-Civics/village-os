@@ -14,6 +14,7 @@ import { authToken, gameFetch } from "@/lib/gameApi";
 import { BTN_NOTICE, BTN_PRIMARY, CARD_FEATURED, DOOR, EYEBROW } from "@/components/journey/look";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
 import { sayOnProfile, statusView, type StatusServedForView } from "@shared/applicantWords";
+import BookedIt from "@/components/openProposal/BookedIt";
 
 type Next = { ref: string; status: StatusServedForView & { locale?: string } };
 
@@ -41,6 +42,17 @@ export default function ApplicationNextCard() {
   const view = statusView(lang, next.status);
   const page = `/application-status/${encodeURIComponent(next.ref)}`;
   const book = view.booking?.book && "links" in view.booking.book ? view.booking.book.links.filter((l) => /^https:\/\//.test(l.url)) : [];
+  // "I've booked it" beside the booking (the lead, 27 Nov 2026), signed in as the applicant.
+  const b = next.status.bookNow;
+  const bookedIt = view.booking && b && next.status.outcome == null ? (
+    <BookedIt
+      booked={b.booked ?? null}
+      zone={b.zone ?? ""}
+      lang={lang}
+      url={`/api/governance/applications/${encodeURIComponent(next.ref)}/booked`}
+      onSaved={(at) => setNext((cur) => (cur && cur.status.bookNow ? { ...cur, status: { ...cur.status, bookNow: { ...cur.status.bookNow, booked: at } } } : cur))}
+    />
+  ) : null;
   return (
     <section aria-labelledby="application-next-heading" className={CARD_FEATURED} data-application-next={next.ref}>
       <p className={EYEBROW}>{t({ message: "Your application", context: "profile: the applicant's next-step card, kicker" })}</p>
@@ -65,6 +77,7 @@ export default function ApplicationNextCard() {
           ))}
         </div>
       )}
+      {!view.tasks?.length && bookedIt && <div className="mt-2">{bookedIt}</div>}
       {/* The stage's buttons, the same as on the application's page (the lead, 27 Nov 2026). */}
       {view.tasks && view.tasks.length > 0 && (
         <ul className="mt-4 grid gap-2" data-application-next-tasks="">
@@ -79,6 +92,7 @@ export default function ApplicationNextCard() {
                   {task.action}
                 </a>
               )}
+              {task.key === "conversation" && bookedIt && <div className="basis-full">{bookedIt}</div>}
             </li>
           ))}
         </ul>

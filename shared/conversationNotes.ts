@@ -127,6 +127,12 @@ export interface ConversationNotesView {
   roleId: string;
   final: boolean;
   state: string;
+  /** The call's date and time once somebody said it ("I've booked it", shared/callBooked.ts). */
+  bookedAt?: string | null;
+  /** While the conversation is open, the team may set or correct it. */
+  mayBook?: boolean;
+  /** The village's zone, to say the booked time beside the reader's own. */
+  zone?: string;
   notes: ServedNote[];
 }
 

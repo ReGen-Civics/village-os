@@ -423,6 +423,63 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(String((await ivs(id))[0].state)).toBe("open");
   });
 
+  it("I'VE BOOKED IT (the lead, 27 Nov 2026): the applicant says the call's time, it shows in both zones, it stops the reminder; nobody else sets it, and a past time is refused", async () => {
+    const { nudgeTick } = await import("../lib/applicantNudges");
+    const { makeApplicantTeller } = await import("../lib/applicantUpdates");
+    const deps: any = { getPool: () => pool, notify: async (n: any) => { state.notices.push(n); return { fresh: true }; }, notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id], now: () => new Date(), calendar: () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" }), members: usersRepo(pool) };
+    deps.tellApplicant = makeApplicantTeller({ getPool: () => pool, members: usersRepo(pool), notify: deps.notify, postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN });
+    const id = await confirmed("booked@example.test");
+    const [first] = await ivs(id);
+    await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 6 * 86_400_000), first.id]);
+    const byToken = `/api/application-status/${id}/booked?token=${statusToken(id)}`;
+    const inTwoDays = new Date(Date.now() + 2 * 86_400_000);
+    inTwoDays.setUTCHours(16, 0, 0, 0);
+
+    // Nobody else: a wrong token and a stranger are the same 404; another member's account is too; no account is 401.
+    expect((await call("POST", `/api/application-status/${id}/booked?token=nope`, { at: inTwoDays.toISOString() })).status).toBe(404);
+    expect((await call("POST", `${app(id)}/booked`, { at: inTwoDays.toISOString() }, IB.id)).status).toBe(404);
+    expect((await call("POST", `${app(id)}/booked`, { at: inTwoDays.toISOString() })).status).toBe(401);
+    // A time past, a time too far ahead, and no time at all are refused, and nothing is stored.
+    expect((await call("POST", byToken, { at: new Date(Date.now() - 3_600_000).toISOString() })).body.error).toBe("past");
+    expect((await call("POST", byToken, { at: new Date(Date.now() + 120 * 86_400_000).toISOString() })).body.error).toBe("far");
+    expect((await call("POST", byToken, { at: "next Tuesday" })).body.error).toBe("when");
+    expect((await q("SELECT booked_at FROM application_interviews WHERE id = ?", [first.id]))[0].booked_at).toBeNull();
+
+    // The applicant says it, by their link.
+    const saved = await call("POST", byToken, { at: inTwoDays.toISOString() });
+    expect(saved.status, saved.text).toBe(200);
+    expect(saved.body.at).toBe(inTwoDays.toISOString());
+    const page = await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`);
+    expect(page.body.status.bookNow).toMatchObject({ booked: inTwoDays.toISOString() });
+    expect(typeof page.body.status.bookNow.zone).toBe("string");
+    // The conversation's row reads Booked, done.
+    const { statusView } = await import("../../shared/applicantWords");
+    const row = statusView("en", page.body.status).tasks?.find((x) => x.key === "conversation");
+    expect(row).toMatchObject({ state: "Booked", done: true });
+
+    // The 5-day reminder stops: the conversation is six days open, and no reminder goes.
+    state.fresh.length = 0;
+    await nudgeTick(deps);
+    expect(state.fresh.filter((m) => m.idempotencyKey === `open-proposal:${id}:nudge:book:${first.id}`)).toEqual([]);
+
+    // "Change": a later save corrects it.
+    const later = new Date(inTwoDays.getTime() + 86_400_000);
+    expect((await call("POST", byToken, { at: later.toISOString() })).status).toBe(200);
+    // The team sees it on the walkthrough, and may correct it there too.
+    const w = await call("GET", `${app(id)}/walkthrough`, undefined, IA.id);
+    const conv = w.body.walkthrough.conversations.find((c: any) => c.interviewId === Number(first.id));
+    expect(conv).toMatchObject({ bookedAt: later.toISOString(), mayBook: true });
+    const fixed = await call("POST", `${app(id)}/interviews/${first.id}/booked`, { at: inTwoDays.toISOString() }, IA.id);
+    expect(fixed.status, fixed.text).toBe(200);
+    // A member who may not read that conversation is the stranger's 404.
+    expect((await call("POST", `${app(id)}/interviews/${first.id}/booked`, { at: inTwoDays.toISOString() }, IB.id)).status).toBe(404);
+    expect(new Date((await q("SELECT booked_at FROM application_interviews WHERE id = ?", [first.id]))[0].booked_at).toISOString()).toBe(inTwoDays.toISOString());
+
+    // Once written up, it is no longer open: nothing more is set.
+    await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [first.id]);
+    expect((await call("POST", byToken, { at: later.toISOString() })).status).toBe(409);
+  });
+
   it("REFINE AT EVERY STAGE (the lead: 'they can refine proposal in each stage'): from Received on, until the circle", async () => {
     const id = await confirmed("refine-early@example.test");
     const saved = await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "Early why.", aim: "Early aim." });

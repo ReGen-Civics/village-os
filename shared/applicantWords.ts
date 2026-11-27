@@ -18,6 +18,7 @@
  */
 
 import { STEP_WORDS } from "./applicationReview";
+import { BOOKED_WORDS } from "./callBooked";
 
 export const APPLICANT_LANGUAGES = ["en", "es"] as const;
 export type ApplicantLanguage = (typeof APPLICANT_LANGUAGES)[number];
@@ -1161,7 +1162,8 @@ export interface StatusServedForView {
    * `label` is the role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts).
    * `links` is every way in: one link, or one per person holding the role, by first name. `url` is the first, for an older reader.
    */
-  bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }>; final?: boolean } | null;
+  /** `booked`: the call's time once the applicant said it ("I've booked it", shared/callBooked.ts); `zone`: the village's. */
+  bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }>; final?: boolean; booked?: string | null; zone?: string } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
   referencesGiven?: number | null;
   /** References asked of a shortlisted applicant: the form while it waits, a count once given. */
@@ -1367,8 +1369,9 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     const conversationTask: NonNullable<StatusView["tasks"]>[number] = {
       key: "conversation",
       label: sw.tasks.conversation(role),
-      state: bookLink ? sw.tasks.book : sw.tasks.notYet,
-      done: false,
+      // Once they said it is booked ("I've booked it"), the row reads Booked, done; the button stays to rebook.
+      state: bookable?.booked ? BOOKED_WORDS[lang === "es" ? "es" : "en"].state : bookLink ? sw.tasks.book : sw.tasks.notYet,
+      done: !!bookable?.booked,
       href: bookLink && /^https:\/\//.test(bookLink) ? bookLink : null,
       action: bookLink && role ? w.booking.bookNow(role) : null,
       external: true,

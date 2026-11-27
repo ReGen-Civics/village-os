@@ -80,6 +80,7 @@ import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
+import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
 import { roleBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { FINAL_CALL_ROLE_VARIABLE } from "../../shared/applicantOnboarding";
@@ -692,7 +693,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -744,7 +745,11 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   // When several people hold the role and each keeps a link, each is listed by first name so the applicant can pick.
   const openNow = bookingShown && !outcome ? interviews.find((i) => i.state === "open") ?? null : null;
   const now = openNow ? await stepBookingOf(pool, ref, openNow.roleId) : null;
-  const bookNow = openNow && now ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links, ...(openNow.final ? { final: true } : {}) } : null;
+  // With the time the applicant said they booked ("I've booked it", shared/callBooked.ts), and the village's zone to
+  // say it beside theirs. Never who it is with: the role only.
+  const bookNow = openNow && now
+    ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links, ...(openNow.final ? { final: true } : {}), booked: openNow.bookedAt ? openNow.bookedAt.toISOString() : null, zone: stringVar(ALL_HANDS_VARIABLES.zone).trim() }
+    : null;
   return {
     ...s,
     roles: (d?.roleIds ?? []).map((id) => roleNames.get(id) ?? id),

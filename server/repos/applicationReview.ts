@@ -185,8 +185,14 @@ export async function skipInterview(db: Db, id: number): Promise<boolean> {
   return Number(r.affectedRows ?? 0) === 1;
 }
 
-export async function markBooked(db: Db, id: number, at: Date): Promise<void> {
-  await db.query("UPDATE application_interviews SET booked_at = COALESCE(booked_at, ?) WHERE id = ?", [at, id]);
+/**
+ * THE CALL'S OWN DATE AND TIME ("I've booked it", the lead, 27 Nov 2026; shared/callBooked.ts): said by the applicant
+ * or set by the team. Only while the conversation is open, and a later save corrects it ("Change"). `booked_at` set
+ * is what the walkthrough and the role measures read as booked.
+ */
+export async function markBooked(db: Db, id: number, at: Date): Promise<boolean> {
+  const [r] = await db.query<ResultSetHeader>("UPDATE application_interviews SET booked_at = ? WHERE id = ? AND state = 'open'", [at, id]);
+  return Number(r.affectedRows ?? 0) === 1;
 }
 
 export async function markHeld(db: Db, id: number, at: Date): Promise<void> {

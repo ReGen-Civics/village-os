@@ -68,7 +68,9 @@ import { asksFor } from "../repos/roleProposals";
 import { inTransaction } from "../repos/liveSessions";
 import { readApplication as readSeatApplication } from "../repos/seatApplications";
 import { applicationHref } from "../../shared/seatApplications";
-import { finalCallHolders, isApplicant, scorecardHref, scorecardsFor, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
+import { finalCallHolders, isApplicant, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
+import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
+import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
 import { stringVar } from "./variables";
 
 type Db = Pool | PoolConnection;
@@ -711,6 +713,10 @@ async function conversationNotesFor(deps: ReviewDeps, ref: string, s: Standing, 
     roleId: i.roleId,
     final: i.final,
     state: i.state,
+    // The call's date and time when somebody said it ("I've booked it"), and whether it may still be set or corrected.
+    bookedAt: i.bookedAt ? i.bookedAt.toISOString() : null,
+    mayBook: i.state === "open",
+    zone: stringVar(ALL_HANDS_VARIABLES.zone).trim(),
     notes: stored
       .filter((n) => n.interviewId === i.id)
       .map(
@@ -914,6 +920,36 @@ export async function withdrawApplication(deps: ReviewDeps, ref: string): Promis
   if (!(await proposals.withdrawForErasure(pool, ref, at))) return { ok: false, status: 409, error: "closed" };
   if ((await review.stepsOf(pool, ref)).some((s) => s.kind === "confirmed")) await review.stampStep(pool, { ref, kind: "decided", at, detail: { how: "withdrawn", byApplicant: true } });
   return { ok: true };
+}
+
+/**
+ * "I'VE BOOKED IT" BY THE APPLICANT (the lead, 27 Nov 2026; shared/callBooked.ts): the date and time of the call they
+ * booked, for the conversation open now on their own application, the one their page offers to book. The caller has
+ * already proved they are the applicant (status token or account). A time past or too far ahead is refused here,
+ * whatever the page sent.
+ */
+export async function bookedByApplicant(deps: ReviewDeps, ref: string, raw: unknown): Promise<{ ok: true; at: string } | { ok: false; status: number; error: string }> {
+  const pool = deps.getPool();
+  const s = await statusOf(deps, ref);
+  // Only while the page offers this conversation's booking: open, undecided, invited.
+  const open = s?.bookNow ? (await review.interviewsOf(pool, ref)).find((i) => i.state === "open") : undefined;
+  if (!open) return { ok: false, status: 409, error: "closed" };
+  const read = readBookedAt(raw, deps.now());
+  if (!read.ok) return { ok: false, status: 400, error: read.error };
+  if (!(await review.markBooked(pool, open.id, read.at))) return { ok: false, status: 409, error: "closed" };
+  return { ok: true, at: read.at.toISOString() };
+}
+
+/** The same, set or corrected by the team from the walkthrough: anyone who may read that conversation, never the applicant. */
+export async function bookedByTeam(deps: ReviewDeps, ref: string, viewerId: string, interviewId: number, raw: unknown): Promise<{ ok: true; at: string } | Refusal> {
+  const at = await writableConversation(deps, ref, viewerId, interviewId);
+  if (!at.ok) return at;
+  const w = BOOKED_WORDS.en.errors;
+  if (at.interview.state !== "open") return refuse(409, "closed", w.closed);
+  const read = readBookedAt(raw, deps.now());
+  if (!read.ok) return refuse(400, read.error, w[read.error]);
+  if (!(await review.markBooked(deps.getPool(), interviewId, read.at))) return refuse(409, "closed", w.closed);
+  return { ok: true, at: read.at.toISOString() };
 }
 
 /** The average for one stage, from the last year, as `{ average }` or nothing. */

@@ -335,6 +335,8 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
       expect((await call("GET", `${app(id)}/walkthrough`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
       expect((await call("GET", href, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
       expect((await call("GET", `${app(id)}/conversation-notes/${dataNote.id}/file`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+      // Nor set a booked date from the team's side ("I've booked it"): the stranger's 404.
+      expect((await call("POST", `${app(id)}/interviews/${first}/booked`, { at: new Date(Date.now() + 86_400_000).toISOString() }, APPLICANT_HOLDER.id)).status).toBe(404);
       const own = await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id);
       for (const leak of ["AUDIO-FROM", "reflection.mp3", "conversation-notes"]) expect(own.text).not.toContain(leak);
     } finally {

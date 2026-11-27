@@ -31,6 +31,7 @@ import { chooseApplicantLanguage } from "@shared/applicantLanguage";
 import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
 import RefineProposal from "@/components/openProposal/RefineProposal";
 import WithdrawApplication from "@/components/openProposal/WithdrawApplication";
+import BookedIt from "@/components/openProposal/BookedIt";
 import { useLingui } from "@lingui/react/macro";
 import { TERM_NOTE_MAX } from "@shared/termsWords";
 import GrowingField from "@/components/form/GrowingField";
@@ -48,7 +49,7 @@ interface Served {
   booking: string | null;
   mode: "block" | "split";
   /** The conversation open now and how to book it: the interviewer's own link, else the role's (16 Nov 2026). */
-  bookNow?: { role: string; label?: string; url: string | null; links?: Array<{ who: string | null; url: string }> } | null;
+  bookNow?: { role: string; label?: string; url: string | null; links?: Array<{ who: string | null; url: string }>; booked?: string | null; zone?: string } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
   replyMoons?: number | null;
   /** Until the first reply, the roles open after the founding team (Rye, 14 Nov 2026). */
@@ -440,6 +441,18 @@ export default function ApplicationStatus() {
                     </div>
                   )}
                   {view.six && view.booking?.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
+                  {/* "I've booked it" beside the booking (the lead, 27 Nov 2026): optional, the date they picked. */}
+                  {view.six && view.booking && s.bookNow && s.outcome == null && (
+                    <div className="mt-2">
+                      <BookedIt
+                        booked={s.bookNow.booked ?? null}
+                        zone={s.bookNow.zone ?? ""}
+                        lang={lang}
+                        url={token ? `/api/application-status/${encodeURIComponent(ref)}/booked?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/booked`}
+                        onSaved={(at) => setS((cur) => (cur && cur.bookNow ? { ...cur, bookNow: { ...cur.bookNow, booked: at } } : cur))}
+                      />
+                    </div>
+                  )}
                   {s.outcome === "adopted" && (
                     <p className="mt-2 font-medium text-notice" data-adopted-line="">
                       {founding

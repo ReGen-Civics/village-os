@@ -3,8 +3,9 @@
  * no step, and decides nothing. Each goes once, under a stable key.
  *
  *   - the applicant: one reminder when a conversation has been open `org.nudge_book_days` (default 5) and is still
- *     open, with that conversation's booking link (the platform does not know whether they booked: booking happens on
- *     the role's own calendar, so the letter says "if you've booked already, thank you");
+ *     open, with that conversation's booking link. Booking happens on the role's own calendar, so the platform knows
+ *     only what somebody said with "I've booked it" (shared/callBooked.ts): once said, no reminder goes. Without it,
+ *     the letter says "if you've booked already, thank you";
  *   - the team: a heads-up to the role up next when its step has sat `org.nudge_step_days` (default 3): a conversation
  *     open and not written up, or a reference given and not followed up. A notice on the bell, never an email;
  *   - the team: a last warning `org.close_warning_days` (default 75) after an application arrived, before the
@@ -63,10 +64,12 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
     for (const iv of await repo.interviewsOf(pool, r.ref)) {
       if (iv.state !== "open" || !iv.openedAt) continue;
       const age = Math.floor((now.getTime() - iv.openedAt.getTime()) / DAY);
-      // The applicant: once per conversation, while it is still open.
-      if (age >= bookDays && kindOfRef(r.ref) === "open" && (await deps.tellApplicant?.nudge?.(r.ref, iv.id))) out.applicant++;
-      // The role up next: once per conversation.
-      if (age >= stepDays && teamWaits) {
+      // The applicant: once per conversation, while it is still open and nobody has said it is booked ("I've booked
+      // it", shared/callBooked.ts).
+      if (age >= bookDays && !iv.bookedAt && kindOfRef(r.ref) === "open" && (await deps.tellApplicant?.nudge?.(r.ref, iv.id))) out.applicant++;
+      // The role up next: once per conversation, and not while its booked call is still ahead.
+      const callAhead = !!iv.bookedAt && iv.bookedAt.getTime() > now.getTime();
+      if (age >= stepDays && teamWaits && !callAhead) {
         await notifyRole(iv.roleId, NUDGE_WORDS.conversation(await rolesNow(), age), `app:${r.ref}:nudge:conversation:${iv.id}`);
         out.team++;
       }

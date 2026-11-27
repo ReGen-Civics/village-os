@@ -38,7 +38,7 @@ import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
 import { addFinalConversation, answerShortlist, askForReferences, assignOwner, claimReference, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
-import { addConversationFile, addConversationText, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
+import { addConversationFile, addConversationText, bookedByTeam, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
 import { CONVERSATION_FILE_MAX_BYTES, CONVERSATION_NOTES_PER_HOUR, NOTES_WORDS, isConversationNoteKind, storedExtension } from "../../shared/conversationNotes";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume } from "../lib/uploads";
 import { noteFilePath, setNoteFilesDir, writeNoteFile } from "../lib/conversationNoteFiles";
@@ -219,6 +219,16 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     }
     return { viewerId, ref };
   }
+
+  /** The team sets or corrects a conversation's booked date from the walkthrough ("I've booked it", shared/callBooked.ts). */
+  app.post("/api/governance/applications/:ref/interviews/:id/booked", async (req, res) => {
+    const a = await noting(req, res);
+    if (!a) return;
+    const interviewId = idOf(req);
+    if (!interviewId) return res.status(404).json(NOT_HERE);
+    const out = await bookedByTeam(work, a.ref, a.viewerId, interviewId, req.body?.at);
+    answer(res, out, out.ok ? { at: out.at } : {});
+  });
 
   app.post("/api/governance/applications/:ref/interviews/:id/notes", async (req, res) => {
     const a = await noting(req, res);
