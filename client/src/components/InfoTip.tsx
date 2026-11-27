@@ -350,5 +350,5 @@ export function DialFact({
   if (v.key !== "economy.voice_decay_pct") return null;
   const pct = Number(staged ?? v.value ?? v.default);
   if (!Number.isFinite(pct)) return null;
-  return <span className="block text-teal-deep mt-1">{decayReachSentence(pct, "Voice")}</span>;
+  return <span className="block text-notice mt-1">{decayReachSentence(pct, "Voice")}</span>;
 }

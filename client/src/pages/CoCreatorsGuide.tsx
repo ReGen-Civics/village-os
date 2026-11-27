@@ -400,7 +400,7 @@ export default function CoCreatorsGuide() {
                 </p>
                 {recognition.fields.linkLabel && (
                   <Link
-                    href="/game-mechanics"
+                    href="/governance/how#game-mechanics"
                     className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
                   >
                     {recognition.fields.linkLabel}
