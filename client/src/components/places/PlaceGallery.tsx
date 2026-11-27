@@ -200,7 +200,8 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
 function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: string; maxMb: number; onAdded: () => void; onClose: () => void }) {
   const { t } = useLingui();
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [shown, setShown] = useState(false);
+  const canvas = useRef<HTMLCanvasElement | null>(null);
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
   const [takenOn, setTakenOn] = useState("");
@@ -215,15 +216,34 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
     input.current?.focus({ preventScroll: true });
   }, []);
 
-  // A local preview of the chosen file; its object URL is let go when it changes.
+  /*
+   * A local preview of the chosen file, painted as pixels on a canvas from an
+   * ImageBitmap. No address is ever built from the file, so nothing the file
+   * carries can reach the page as markup or a URL (CodeQL js/xss-through-dom).
+   * A picture the browser cannot decode (HEIC on most desktops) keeps the
+   * "Choose a picture" face; the upload itself is unaffected.
+   */
   useEffect(() => {
-    if (!file) {
-      setPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
+    setShown(false);
+    if (!file || typeof createImageBitmap !== "function") return;
+    let live = true;
+    createImageBitmap(file)
+      .then((bitmap) => {
+        const c = canvas.current;
+        const ctx = c?.getContext("2d");
+        if (live && c && ctx) {
+          const scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
+          c.width = Math.max(1, Math.round(bitmap.width * scale));
+          c.height = Math.max(1, Math.round(bitmap.height * scale));
+          ctx.drawImage(bitmap, 0, 0, c.width, c.height);
+          setShown(true);
+        }
+        bitmap.close();
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
   }, [file]);
 
   const failedLine = t({ message: "That did not save. Try again in a moment.", context: "place page" });
@@ -284,9 +304,8 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
             className="peer sr-only"
           />
           <span className="relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted hover:border-notice peer-focus-visible:ring-2 peer-focus-visible:ring-ring">
-            {preview ? (
-              <img src={preview} alt="" className="absolute inset-0 size-full object-cover" />
-            ) : (
+            <canvas ref={canvas} aria-hidden="true" className={shown ? "absolute inset-0 size-full object-cover" : "hidden"} />
+            {!shown && (
               <span className="flex flex-col items-center gap-1 p-4 text-center text-sm text-muted-foreground">
                 <Camera className="size-7 text-notice" aria-hidden="true" />
                 <Trans context="add a photo form">Choose a picture</Trans>
