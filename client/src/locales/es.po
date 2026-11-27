@@ -3339,6 +3339,13 @@ msgctxt "rites"
 msgid "Walk beside them"
 msgstr "Caminar a su lado"
 
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#. placeholder {0}: readOnDay(reading.readAt, i18n.locale)
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "How we work together, read on {0}"
+msgstr "Cómo trabajamos juntos, leído el {0}"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/LeavingNotices.tsx
 msgctxt "LeavingNotices, p"
@@ -26946,6 +26953,12 @@ msgctxt "landing, the steward card's label while the founding team is on"
 msgid "Paid role"
 msgstr "Rol pagado"
 
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "Read it again"
+msgstr "Leerlo de nuevo"
+
 # needs-native-review: role term presets, 26 Nov 2026
 #: client/src/components/governance/seatPresetWords.ts
 msgctxt "role term preset platform:flat-monthly-allowance, blurb"
@@ -27574,6 +27587,13 @@ msgstr "Qué capa"
 msgctxt "role editor: role visibility"
 msgid "Open: listed and taking applications now"
 msgstr "Abierto: publicado y recibiendo solicitudes ahora"
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#. placeholder {0}: readOnDay(readAt, i18n.locale)
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "Read on {0}"
+msgstr "Leído el {0}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/power/ResourcesAdminPanel.tsx
@@ -41014,6 +41034,12 @@ msgstr "Preguntándole a la guía…"
 #~ msgctxt "FirstWalk, p"
 #~ msgid "Walk complete"
 #~ msgstr "Caminata completa"
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "How we work together"
+msgstr "Cómo trabajamos juntos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Review.tsx
@@ -54840,6 +54866,12 @@ msgctxt "live sessions: agendaConsentAsk"
 msgid "Do you consent to this agenda?"
 msgstr "¿Da su consentimiento a esta agenda?"
 
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "It folds away for you, and your profile keeps it as read. Untick it to clear that."
+msgstr "Se pliega para usted, y su perfil lo guarda como leído. Desmárquelo para quitarlo."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/rights/LeavingWellChapter.tsx
 msgid "Start a private intake. It reaches only the people holding the {intakeRoleLabel}, who read your name and your words in their notifications here. If they get an email, it says only that an intake is waiting: your words and your name are never emailed."
@@ -57516,6 +57548,12 @@ msgstr "día {lunarDay} de {moonLength}"
 msgctxt "open proposal decide: loading"
 msgid "Reading the proposal"
 msgstr "Leyendo la propuesta"
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read"
+msgid "Read it again"
+msgstr "Leerlo de nuevo"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -62080,6 +62118,12 @@ msgstr "Siddhi"
 msgctxt "conversation notes: save a written note"
 msgid "Save the note"
 msgstr "Guardar la nota"
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "I've read this"
+msgstr "Ya lo leí"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -67198,6 +67242,12 @@ msgstr "Las reuniones de {0}"
 msgctxt "voice note"
 msgid "Recording is optional. Typed answers count just the same."
 msgstr "Grabar es opcional. Las respuestas escritas cuentan igual."
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/pages/Governance.tsx
+msgctxt "how we work together: read"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtelo de nuevo."
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -79995,6 +80045,12 @@ msgstr "sin definir"
 msgctxt "sera answers"
 msgid "{name} name"
 msgstr "Nombre de {name}"
+
+# needs-native-review: I've read this under How we work together, 27 Nov 2026
+#: client/src/components/profile/HowWeWorkReadCard.tsx
+msgctxt "Profile, what you have read: h2"
+msgid "What you have read"
+msgstr "Lo que ha leído"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageEmail.tsx
