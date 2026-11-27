@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.95 (2026-11-27)
+
+### What changed for your village
+
+- **How roles are going lives with the circles.** The admins' numbers for each circle (applied, answered, first reply, seated, still in the role and the rest) now sit on Circles & Roles: a row per circle for the chosen season, and each circle's own page shows its two chains of five steps. Counts from fewer than three people stay hidden, and a step nobody is due for reads "not yet". /role-measures opens the new place.
+- **The weathered map reaches every band.** In light mode with the weathered map on, the setup strip under the header, the More and Paths sheets, the footer, dialogs and notices draw as worn paper too.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.94 still works.
+
+---
+
 ## 1.3.94 (2026-11-27)
 
 ### What changed for your village
