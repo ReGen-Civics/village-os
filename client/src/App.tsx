@@ -227,7 +227,6 @@ const EmailPreferences = lazyPage(() => import("./pages/EmailPages").then((m) =>
 const EmailUnsubscribe = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailUnsubscribe })));
 const EmailAction = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailAction })));
 const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword"));
-const GameMechanics = lazyPage(() => import("./pages/GameMechanics"));
 const ChangeRequests = lazyPage(() => import("./pages/ChangeRequests"));
 const VillageEmail = lazyPage(() => import("./pages/VillageEmail"));
 const GoodNeighbor = brochurePage(() => import("./pages/GoodNeighbor"));
@@ -514,7 +513,8 @@ function Router() {
       <Route path="/email/unsubscribe" component={EmailUnsubscribe} />
       <Route path="/email/a" component={EmailAction} />
       <Route path="/forgot-password" component={ForgotPassword} />
-      <Route path="/game-mechanics" component={GameMechanics} />
+      {/* Game Mechanics folded into How we work together (26 Nov 2026). Old links keep their query (?dial=, ?focus=) and anchor; with none, they land on the mechanics. */}
+      <Route path="/game-mechanics">{() => <Redirect to={`/governance/how${window.location.search}${window.location.hash || "#game-mechanics"}`} replace />}</Route>
       <Route path="/changes" component={ChangeRequests} />
       <Route path="/changes/:id" component={ChangeRequests} />
       <Route path="/village-email" component={VillageEmail} />
@@ -525,7 +525,7 @@ function Router() {
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
       <Route path="/training" component={Training} />
-      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we decide at /governance/how. */}
+      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we work together at /governance/how. */}
       <Route path="/governance" component={GovernanceNow} />
       <Route path="/governance/how" component={Governance} />
       <Route path="/governance/treasury" component={GovernanceTreasury} />
