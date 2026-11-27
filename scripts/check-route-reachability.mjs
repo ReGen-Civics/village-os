@@ -97,6 +97,7 @@ const ALLOWLIST = {
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
+  "/feedback": "a redirect to the page the member came from with the guide's panel open on Share feedback (lib/guideFeedback.ts); the footer and the corner open the panel in place",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",

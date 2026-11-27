@@ -20,6 +20,7 @@ import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./li
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
 import { useConfigFailed, useGameConfig } from "./lib/gameApi";
 import ConfigUnavailable from "./components/ConfigUnavailable";
+import { feedbackRedirectTarget } from "./lib/guideFeedback";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
 
 /**
@@ -236,7 +237,6 @@ const SetupGame = lazyPage(() => import("./pages/SetupGame"));
 const CanvasWorkbook = lazyPage(() => import("./pages/CanvasWorkbook"));
 const ProjectHistory = brochurePage(() => import("./pages/ProjectHistory"));
 const Bootstrap = lazyPage(() => import("./pages/Bootstrap"));
-const Feedback = lazyPage(() => import("./pages/Feedback"));
 const Network = lazyPage(() => import("./pages/Network"));
 const Contribute = lazyPage(() => import("./pages/Contribute"));
 const SeasonalFestivals = lazyPage(() => import("./pages/SeasonalFestivals"));
@@ -378,7 +378,8 @@ function Router() {
       <Route path="/canvas/workbook" component={CanvasWorkbook} />
       <Route path="/project-history" component={ProjectHistory} />
       <Route path="/claim" component={Bootstrap} />
-      <Route path="/feedback" component={Feedback} />
+      {/* Feedback lives in the guide's panel since the fold (26 Nov 2026): back to the page they came from, panel open (lib/guideFeedback.ts). */}
+      <Route path="/feedback">{() => <Redirect to={feedbackRedirectTarget()} replace />}</Route>
       <Route path="/network" component={Network} />
       <Route path="/contribute" component={Contribute} />
       <Route path="/seasonal-festivals" component={SeasonalFestivals} />

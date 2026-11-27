@@ -3,8 +3,10 @@
  * with it.
  *
  *   GET  /api/feedback/config        what the form must disclose before anyone types
- *   POST /api/feedback               a bug or an idea, from a member or a stranger
+ *   POST /api/feedback               a bug, an idea or feedback, from a member or a stranger,
+ *                                    with a screenshot when one is attached (the guide's panel)
  *   GET  /api/admin/feedback         the local queue, and whether the relay is real
+ *   GET  /api/admin/feedback/:id/screenshot   the picture sent with an item, to an admin
  *   PUT  /api/admin/feedback/:id     triage, and the sentence the reporter gets back
  *
  * MOVED OUT OF server/index.ts UNCHANGED. Every line of the four handlers
@@ -21,19 +23,60 @@
  * module would have been a second answer to "is anything actually leaving",
  * which is the one question this domain must never answer two ways.
  */
-import type { Express } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import type { Express, Request, Response } from "express";
+import multer from "multer";
 import type { AppDeps } from "../lib/appDeps";
 import { boolVar } from "../lib/variables";
 import { recordEvent } from "../lib/events";
 import { feedbackHubUrl, feedbackIsShared, feedbackStatusNotice, recordFeedback } from "../lib/feedback";
+import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume, stampedName, writeToVolume } from "../lib/uploads";
+import { attachmentHeaders } from "../lib/submissionAttachments";
+import { FEEDBACK_DETAIL_MIN, FEEDBACK_SHOT_MAX_BYTES, FEEDBACK_TITLE_MIN, isFeedbackKind, suggestTitle } from "../../shared/feedbackItems";
 
 type Deps = Pick<
   AppDeps,
-  "isAdmin" | "authedUser" | "getPool" | "notify" | "overLimit" | "clientIp" | "projectName"
+  "isAdmin" | "authedUser" | "getPool" | "notify" | "overLimit" | "clientIp" | "projectName" | "uploadsDir"
 >;
 
+/**
+ * THE SCREENSHOT'S FOLDER, beside the uploads volume and never inside it (the guide's panel,
+ * 26 Nov 2026). `/api/uploads/:filename` answers anybody holding a name, and a picture of a page
+ * can show a member's own dashboard or other people's names, so it lives where a form's
+ * attachment lives (server/lib/submissionAttachments.ts): written through the strip, served to an
+ * admin alone, `private, no-store`.
+ */
+export const FEEDBACK_SHOT_DIRNAME = "private-feedback-shots";
+/** The prefix every stored screenshot carries, so the admin door reads only names this route minted. */
+export const FEEDBACK_SHOT_PREFIX = "feedbackshot";
+
+export function feedbackShotsDir(uploadsDir: string): string {
+  return path.join(path.dirname(uploadsDir), FEEDBACK_SHOT_DIRNAME);
+}
+
+/** A stored name this route minted, basenamed, or null. Pure. */
+export function feedbackShotName(raw: unknown): string | null {
+  const name = path.basename(String(raw ?? "").trim());
+  return /^feedbackshot-\d+-[a-z0-9]{1,8}\.(jpg|png|webp|avif|gif)$/.test(name) ? name : null;
+}
+
+/** multipart/form-data with one `screenshot`; JSON goes on through as it always did. */
+const takeShot = multer({ storage: multer.memoryStorage(), limits: { fileSize: FEEDBACK_SHOT_MAX_BYTES, files: 1 } }).single("screenshot");
+
+function parseShot(req: Request, res: Response): Promise<string | null> {
+  if (!String(req.headers["content-type"] ?? "").startsWith("multipart/form-data")) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    takeShot(req as any, res as any, (err: any) => {
+      if (!err) return resolve(null);
+      resolve(String(err?.code ?? "") === "LIMIT_FILE_SIZE" ? "That screenshot is too large. Try a smaller one." : "That screenshot did not arrive. Try again, or send it without one.");
+    });
+  });
+}
+
 export function register(app: Express, deps: Deps): void {
-  const { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName } = deps;
+  const { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName, uploadsDir } = deps;
+  const shotsDir = feedbackShotsDir(uploadsDir);
 
   /**
    * What the submission form needs to disclose, honestly, before anyone types.
@@ -52,16 +95,37 @@ export function register(app: Express, deps: Deps): void {
   });
 
   app.post("/api/feedback", async (req, res) => {
+    // The guide's panel sends a screenshot as multipart, with the words as fields beside it.
+    const refused = await parseShot(req, res);
+    if (refused) return res.status(400).json({ error: refused });
     // Same anti-abuse posture as every public form: honeypot + IP limit.
     if (typeof req.body?.hp === "string" && req.body.hp.length > 0) return res.json({ success: true });
     if (await overLimit(`feedback:${clientIp(req)}`, 5, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "That's a lot of feedback for one hour. Thank you, and give it a rest" });
     }
-    const kind = req.body?.kind === "bug" ? "bug" : req.body?.kind === "idea" ? "idea" : null;
-    const title = String(req.body?.title ?? "").trim();
+    const kind = isFeedbackKind(req.body?.kind) ? req.body.kind : null;
     const detail = String(req.body?.detail ?? "").trim();
-    if (!kind || title.length < 4 || detail.length < 10) {
-      return res.status(400).json({ error: "Say what kind it is, a short title, and enough detail to act on" });
+    // The member's title, or the guide's suggestion from their own first line when they left it empty.
+    const typed = String(req.body?.title ?? "").trim();
+    const title = typed.length >= FEEDBACK_TITLE_MIN ? typed : suggestTitle(detail);
+    if (!kind || title.length < FEEDBACK_TITLE_MIN || detail.length < FEEDBACK_DETAIL_MIN) {
+      return res.status(400).json({ error: "Say what kind it is, and enough detail to act on" });
+    }
+    // The screenshot goes through the strip (no metadata, no location) before a byte is kept.
+    let screenshotFile: string | null = null;
+    const file = (req as any).file as { buffer?: Buffer; originalname?: string } | undefined;
+    if (file?.buffer?.length) {
+      try {
+        const clean = await sanitiseForVolume(file.buffer, String(file.originalname ?? ""));
+        if (clean.kind !== "image") return res.status(400).json({ error: "That screenshot is not a picture. Try a PNG, JPEG or WebP." });
+        screenshotFile = stampedName(FEEDBACK_SHOT_PREFIX, clean.ext || ".png");
+        writeToVolume(shotsDir, screenshotFile, clean.bytes);
+      } catch (e) {
+        if (e instanceof CarriesLocationData || e instanceof LocationDataSurvived) {
+          return res.status(400).json({ error: "That screenshot kept hidden data through the strip, so it was not stored. Try another." });
+        }
+        return res.status(400).json({ error: "That screenshot could not be read. Try a PNG, JPEG or WebP." });
+      }
     }
     const user = await authedUser(req);
     // The disclosure the form showed IS the consent, so it is recorded with
@@ -71,6 +135,7 @@ export function register(app: Express, deps: Deps): void {
       kind, title, detail,
       pageUrl: typeof req.body?.pageUrl === "string" ? req.body.pageUrl : null,
       submittedBy: user?.id ?? null,
+      screenshotFile,
     }, mayRelay);
     void recordEvent(getPool(), {
       kind: "audit", text: `feedback:${kind}:${title.slice(0, 60)}`,
@@ -103,6 +168,21 @@ export function register(app: Express, deps: Deps): void {
       relayDialOn: boolVar("platform.feedback_relay"),
       hubConfigured: feedbackHubUrl().length > 0,
     });
+  });
+
+  /**
+   * The screenshot a member sent with an item, to an admin alone, with the attachment door's
+   * headers: `private, no-store`, nosniff and a sandboxing CSP, so no shared cache keeps it.
+   */
+  app.get("/api/admin/feedback/:id/screenshot", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const [[row]] = await getPool().query<any[]>("SELECT screenshot_file FROM feedback_items WHERE id = ? LIMIT 1", [req.params.id]);
+    const name = feedbackShotName(row?.screenshot_file);
+    if (!name) return res.status(404).json({ error: "Not found" });
+    const file = path.join(shotsDir, name);
+    if (!fs.existsSync(file)) return res.status(404).json({ error: "Not found" });
+    res.set(attachmentHeaders(name));
+    res.sendFile(file);
   });
 
   app.put("/api/admin/feedback/:id", async (req, res) => {

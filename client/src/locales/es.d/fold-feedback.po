@@ -1,0 +1,214 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "the guide's panel: the door to the feedback form"
+msgid "Share feedback"
+msgstr "Compartir comentarios"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the button that brings the panel back after a screenshot"
+msgid "Back to my feedback"
+msgstr "Volver a mis comentarios"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: back to the guide's doors"
+msgid "Back"
+msgstr "Volver"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: a screenshot that does not decode"
+msgid "That picture could not be opened. Try another one."
+msgstr "No se pudo abrir esa imagen. Pruebe con otra."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the screenshot, read aloud"
+msgid "Your screenshot. Marks on it: {markCount}"
+msgstr "Su captura de pantalla. Marcas en ella: {markCount}"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the drawing tools, read aloud"
+msgid "Draw on your screenshot"
+msgstr "Dibuje sobre su captura de pantalla"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: drawing tool"
+msgid "Arrow"
+msgstr "Flecha"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: drawing tool"
+msgid "Pen"
+msgstr "Lápiz"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: drawing tool"
+msgid "Undo"
+msgstr "Deshacer"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: drawing tool, removes every mark"
+msgid "Clear"
+msgstr "Borrar todo"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: takes the screenshot off"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: when capturing the screen fails or is cancelled"
+msgid "The screen was not shared. Choose a picture instead, or send it without one."
+msgstr "No se compartió la pantalla. Elija una imagen, o envíelo sin ella."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: after sending, shared"
+msgid "Your village's team has it. A copy of your words reaches the platform team so a fix can land for every village. Your name and your screenshot stay here."
+msgstr "El equipo de su aldea ya lo tiene. Una copia de sus palabras llega al equipo de la plataforma para que el arreglo sirva a todas las aldeas. Su nombre y su captura de pantalla se quedan aquí."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: closes the panel after sending"
+msgid "Done"
+msgstr "Listo"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the kind, how something felt"
+msgid "How it felt"
+msgstr "Cómo se sintió"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the words, for a bug"
+msgid "What happened, and what did you expect?"
+msgstr "¿Qué pasó, y qué esperaba?"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the words, for an idea"
+msgid "What would help, and who would it serve?"
+msgstr "¿Qué ayudaría, y a quién serviría?"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the words, for how something felt"
+msgid "What did you notice, and how did it feel?"
+msgstr "¿Qué notó, y cómo se sintió?"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, a bug and its page"
+msgid "Something broke on {page}."
+msgstr "Algo falló en {page}."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, an idea and its page"
+msgid "An idea, sent from {page}."
+msgstr "Una idea, enviada desde {page}."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, feedback and its page"
+msgid "How {page} felt to you."
+msgstr "Cómo sintió usted {page}."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the heading, with the guide's name"
+msgid "Tell {guide} what you found"
+msgstr "Cuéntele a {guide} lo que encontró"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: under the heading"
+msgid "{guide} passes it to {village}'s team, in your words."
+msgstr "{guide} lo pasa al equipo de {village}, con sus propias palabras."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the screenshot's heading"
+msgid "A screenshot, if it helps"
+msgstr "Una captura de pantalla, si ayuda"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: how to mark the screenshot"
+msgid "Draw an arrow to the spot, or circle it with the pen."
+msgstr "Dibuje una flecha hacia el lugar, o enciérrelo con el lápiz."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: capture the screen on a computer"
+msgid "Capture this screen"
+msgstr "Capturar esta pantalla"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: hide the panel so the member can take a phone screenshot"
+msgid "Step aside to take one"
+msgstr "Apartarse para tomarla"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: pick a screenshot from the device"
+msgid "Choose a picture"
+msgstr "Elegir una imagen"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: how a phone screenshot works"
+msgid "Step aside, take a screenshot with your phone, tap the way back, then choose it from your photos."
+msgstr "Apártese, tome una captura con su teléfono, toque el botón para volver y elíjala de sus fotos."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the read-back's heading, with the guide's name"
+msgid "What {guide} heard"
+msgstr "Lo que {guide} entendió"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, a marked screenshot"
+msgid "With your screenshot, and {marks} marks on it."
+msgstr "Con su captura de pantalla, y {marks} marcas en ella."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, a screenshot with one mark"
+msgid "With your screenshot, and one mark on it."
+msgstr "Con su captura de pantalla, y una marca en ella."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide heard, a screenshot"
+msgid "With your screenshot."
+msgstr "Con su captura de pantalla."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the title field"
+msgid "Title"
+msgstr "Título"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: what the guide does with it"
+msgid "{guide} passes this on in your words. The team decides what happens next."
+msgstr "{guide} lo pasa con sus propias palabras. El equipo decide qué sigue."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: under the suggested title"
+msgid "{guide} suggested this from your first line. Change it if you like."
+msgstr "{guide} lo sugirió a partir de su primera línea. Cámbielo si quiere."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: where it goes, shared"
+msgid "Where this goes: {village}'s team, and a copy of the words to the platform team, so a bug fixed once is fixed for every village. Your name and your screenshot stay here."
+msgstr "Adónde va: al equipo de {village}, y una copia de las palabras al equipo de la plataforma, para que una falla arreglada una vez quede arreglada en todas las aldeas. Su nombre y su captura de pantalla se quedan aquí."
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "guide feedback: the button"
+msgid "Send to {village}'s team"
+msgstr "Enviar al equipo de {village}"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "Admin, feedback: the screenshot"
+msgid "The screenshot sent with this feedback"
+msgstr "La captura de pantalla enviada con este comentario"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "Admin, feedback: the screenshot failed"
+msgid "The screenshot did not load. Try again"
+msgstr "La captura de pantalla no cargó. Intente de nuevo"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "Admin, feedback: open the screenshot"
+msgid "Show the screenshot"
+msgstr "Mostrar la captura de pantalla"
+
+# needs-native-review: the guide's panel, Share feedback, 2026-11-26
+msgctxt "Admin, p"
+msgid "Nothing yet. Members send it from the guide's panel in the corner (Share feedback), or from the footer's Report a Bug link."
+msgstr "Nada todavía. Los miembros lo envían desde el panel de la guía en la esquina (Compartir comentarios), o desde el enlace Reportar una falla del pie de página."

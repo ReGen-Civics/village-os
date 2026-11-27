@@ -23,6 +23,7 @@ import { createHash, randomUUID } from "crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import { guardedFetchJson } from "./toolcheck";
 import { boolVar } from "./variables";
+import type { FeedbackKind } from "../../shared/feedbackItems";
 
 /**
  * Where this village's feedback relay sends, if anywhere.
@@ -49,11 +50,17 @@ export function feedbackIsShared(): boolean {
 }
 
 export interface FeedbackInput {
-  kind: "bug" | "idea";
+  kind: FeedbackKind;
   title: string;
   detail: string;
   pageUrl?: string | null;
   submittedBy?: string | null;
+  /**
+   * The stamped name of the screenshot in the private folder (routes/feedback.ts), or null. Stored
+   * for the village's own queue only: `relayFeedback` never selects it, so a picture of a page,
+   * which can show other members' names, never leaves the village.
+   */
+  screenshotFile?: string | null;
 }
 
 export function feedbackFingerprint(kind: string, title: string, detail: string): string {
@@ -81,7 +88,7 @@ export function feedbackStatusNotice(
   status: string,
   kind: string,
 ): { headline: string; line: string } | null {
-  const thing = kind === "idea" ? "idea" : "report";
+  const thing = kind === "idea" ? "idea" : kind === "feedback" ? "feedback" : "report";
   switch (status) {
     case "seen":
       return {
@@ -90,12 +97,12 @@ export function feedbackStatusNotice(
       };
     case "planned":
       return {
-        headline: kind === "idea" ? "Your idea is on the list to build" : "Your report is on the list to fix",
+        headline: kind === "idea" ? "Your idea is on the list to build" : kind === "feedback" ? "Your feedback is on the list to act on" : "Your report is on the list to fix",
         line: "It has a place in the work now. There is no date on it yet.",
       };
     case "done":
       return {
-        headline: kind === "idea" ? "Your idea has been built" : "What you reported has been fixed",
+        headline: kind === "idea" ? "Your idea has been built" : kind === "feedback" ? "The team acted on your feedback" : "What you reported has been fixed",
         line: "Have a look, and send it back in if it is still wrong.",
       };
     case "declined":
@@ -129,7 +136,7 @@ export async function recordFeedback(
 ): Promise<{ id: string }> {
   const id = `fb-${Date.now()}-${randomUUID().slice(0, 8)}`;
   await pool.query(
-    "INSERT INTO feedback_items (id, kind, title, detail, page_url, submitted_by, fingerprint, may_relay) VALUES (?,?,?,?,?,?,?,?)",
+    "INSERT INTO feedback_items (id, kind, title, detail, page_url, submitted_by, fingerprint, may_relay, screenshot_file) VALUES (?,?,?,?,?,?,?,?,?)",
     [
       id,
       input.kind,
@@ -139,6 +146,7 @@ export async function recordFeedback(
       input.submittedBy ?? null,
       feedbackFingerprint(input.kind, input.title, input.detail),
       mayRelay ? 1 : 0,
+      input.screenshotFile ?? null,
     ],
   );
   return { id };
@@ -163,6 +171,7 @@ export async function relayFeedback(
   identity: RelayIdentity,
 ): Promise<{ sent: number }> {
   const [rows] = await pool.query<RowDataPacket[]>(
+    // screenshot_file is NOT selected, on purpose: the hub gets the words, never the picture.
     // may_relay = 1 is the consent recorded when the item was CAPTURED.
     // Anything submitted while the relay was off stays home forever, even
     // if the relay is switched on later — the form promised that, and a

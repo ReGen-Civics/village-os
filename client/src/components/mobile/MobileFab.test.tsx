@@ -32,8 +32,10 @@ vi.mock("@/lib/gameApi", () => ({
   ),
 }));
 vi.mock("@/components/profileDash/YourCompanions", () => ({ default: () => <p>the companions panel</p> }));
+vi.mock("@/components/feedback/GuideFeedback", () => ({ default: ({ guide }: { guide: string }) => <p>the feedback form for {guide}</p> }));
 
 import MobileFab, { ADMIN_HELPER_HREF, ASK_GUIDE_HREF, cornerRows, guideDoors } from "./MobileFab";
+import { openGuideFeedback } from "@/lib/guideFeedback";
 
 const t = ({ message }: { message: string }) => message;
 /** A companion; the first a member has is their personal one, which the guide's row stands for. */
@@ -93,11 +95,11 @@ describe("cornerRows", () => {
     expect(rows.some((r) => /^Ask /.test(r.label))).toBe(false);
   });
 
-  it("is the guide alone for a member with no companions, straight to the guide's help, in the village's macaw", () => {
+  it("is the guide alone for a member with no companions, opening its panel (help and feedback), in the village's macaw", () => {
     const rows = cornerRows({ signedIn: true, admin: false, army: [], guide: "Ceiba", t });
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ key: "guide", label: "Ceiba", sub: "How things work here, and who to ask", href: ASK_GUIDE_HREF, face: { look: { source: "nature", art: "scarlet-macaw" } } });
-    expect(rows[0].guidePanel).toBeUndefined();
+    expect(rows[0]).toMatchObject({ key: "guide", label: "Ceiba", sub: "Help, and a place to share feedback", guidePanel: true, face: { look: { source: "nature", art: "scarlet-macaw" } } });
+    expect(rows[0].href).toBeUndefined();
   });
 
   it("is one guide row for an admin too, and Admin's helper is a door inside the guide's panel", () => {
@@ -106,17 +108,24 @@ describe("cornerRows", () => {
     expect(rows[0].guidePanel).toBe(true);
     expect(guideDoors({ admin: true, t }).map((d) => [d.key, d.href, !!d.admin])).toEqual([
       ["ask", ASK_GUIDE_HREF, false],
+      ["feedback", undefined, false],
       ["admin", ADMIN_HELPER_HREF, true],
     ]);
-    expect(guideDoors({ admin: false, t }).map((d) => d.key)).toEqual(["ask"]);
+    expect(guideDoors({ admin: false, t }).map((d) => d.key)).toEqual(["ask", "feedback"]);
+    // Share feedback opens inside the panel; it is never a page of its own again.
+    expect(guideDoors({ admin: false, t })[1]).toMatchObject({ opens: "feedback", label: "Share feedback" });
     expect(ADMIN_HELPER_HREF).toBe("/admin?helper=open");
   });
 
-  it("sends a visitor to the guide on Work with us, and offers sign in", () => {
+  it("opens the guide's panel for a visitor too, its help door on Work with us, and offers sign in", () => {
     const rows = cornerRows({ signedIn: false, admin: false, army: null, guide: "the village guide", t });
-    expect(rows.map((r) => [r.key, r.href])).toEqual([
-      ["guide", "/work-with-us"],
-      ["signin", "/login"],
+    expect(rows.map((r) => [r.key, r.href, !!r.guidePanel])).toEqual([
+      ["guide", undefined, true],
+      ["signin", "/login", false],
+    ]);
+    expect(guideDoors({ admin: false, signedIn: false, t }).map((d) => [d.key, d.href])).toEqual([
+      ["ask", "/work-with-us"],
+      ["feedback", undefined],
     ]);
   });
 });
@@ -125,9 +134,12 @@ describe("the corner, drawn", () => {
   it("is the guide's spiral for a visitor, opening help", async () => {
     await renderAt();
     fireEvent.click(screen.getByRole("button", { name: "Open help" }));
-    expect(row(/Ceiba/)).toHaveAttribute("href", "/work-with-us");
     expect(row(/Sign in/)).not.toBeNull();
     expect(row(/Admin/)).toBeNull();
+    fireEvent.click(row(/Ceiba/)!);
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(document.querySelector('[data-guide-door="ask"]')).toHaveAttribute("href", "/work-with-us");
+    expect(document.querySelector('[data-guide-door="feedback"]')).not.toBeNull();
   });
 
   it("centres the macaw in the circle, and stands companions on its floor: one alignment each (the lead, 26 Nov 2026)", async () => {
@@ -263,5 +275,46 @@ describe("the corner, drawn", () => {
     expect(menu().style.transitionDelay).toBe("0s");
     fireEvent.click(screen.getByRole("button", { name: "Close your companions and help" }));
     expect(menu().style.transitionDelay).toBe("400ms");
+  });
+});
+
+/*
+ * SHARE FEEDBACK MOVED INTO THE GUIDE'S PANEL (the fold of /feedback, 26 Nov 2026): a door inside the
+ * panel, and three ways to open the panel straight on the form, on the page the member is looking at.
+ */
+describe("Share feedback, in the guide's panel", () => {
+  afterEach(() => window.history.replaceState(null, "", "/"));
+
+  it("opens the form inside the panel from its door, and goes back to the doors", async () => {
+    session.user = { id: "u1", name: "Ana" };
+    await renderAt();
+    fireEvent.click(screen.getByRole("button", { name: "Open help" }));
+    fireEvent.click(row(/Ceiba/)!);
+    fireEvent.click(document.querySelector('[data-guide-door="feedback"]')!);
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(document.querySelector("[data-guide-doors]")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(document.querySelector('[data-guide-door="feedback"]')).not.toBeNull();
+  });
+
+  it("opens straight on the form for the footer's door, an event any page can send", async () => {
+    await renderAt("/quests");
+    act(() => openGuideFeedback());
+    expect(await screen.findByRole("dialog", { name: "Ceiba" })).toBeInTheDocument();
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+  });
+
+  it("opens on #feedback, which is where /feedback sends a member, and takes the hash off", async () => {
+    window.history.replaceState(null, "", "/quests#feedback");
+    await renderAt("/quests");
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
+    expect(window.location.hash).toBe("");
+  });
+
+  it("opens the panel on a page that draws no corner, a founding page", async () => {
+    const { container } = await renderAt("/roles");
+    expect(container.querySelector("[data-mobile-fab]")).toBeNull();
+    act(() => openGuideFeedback());
+    expect(await screen.findByText("the feedback form for Ceiba")).toBeInTheDocument();
   });
 });

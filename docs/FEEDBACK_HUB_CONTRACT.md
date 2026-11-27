@@ -1,6 +1,6 @@
 # The feedback hub contract (S66)
 
-Every fork ships a feedback relay: bugs and ideas submitted at `/feedback`
+Every fork ships a feedback relay: bugs, ideas and feedback submitted in the village guide's panel (`/feedback` until 26 Nov 2026)
 land in the village's own admin queue ALWAYS. A copy ALSO flows to one
 central endpoint the platform team reads, but only when BOTH
 `platform.feedback_relay` is on (the default) AND the deployment's own
@@ -34,7 +34,7 @@ own hub's ingest address, e.g. `https://hub.example.org/api/feedback/ingest`:
   "items": [
     {
       "localId": "fb-…",          // village-local id, for future fix-status echoes
-      "kind": "bug",              // or "idea"
+      "kind": "bug",              // or "idea", or "feedback" (how something felt, since the guide panel)
       "title": "…",
       "detail": "…",
       "pageUrl": "https://…",     // where they stood, when captured: origin and path only, never a query or fragment
@@ -44,6 +44,11 @@ own hub's ingest address, e.g. `https://hub.example.org/api/feedback/ingest`:
   ]
 }
 ```
+
+**Never present:** the screenshot a member may attach. It is stripped of metadata and kept in
+the village's private folder for its own admins (`screenshot_file`, served only by
+`GET /api/admin/feedback/:id/screenshot`); a picture of a page can show other members' names,
+so the relay never selects it.
 
 **Never present:** who submitted it. `submitted_by` exists only in the
 village's local table. The hub sees content and provenance (which village,
