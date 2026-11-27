@@ -24,6 +24,7 @@ import { ENTRY_COOKIE as GATE_COOKIE } from "../../shared/entrance";
 import { register, INVESTOR_ONLY, INVESTOR_SECTION, type InvestorAccess } from "./investorAccess";
 import { INVESTOR_JOURNEY } from "../lib/investorJourney";
 import { pageSectionKey } from "../../shared/pageContent/types";
+import { KEPT_PAGES, keptPageSpecs } from "../../shared/pageContent";
 
 const configured = testDbConfigured();
 const SECRET = "test-secret-for-the-investor-routes-only"; // module-review-ok: a test fixture key for the HMAC, never a real credential
@@ -157,6 +158,10 @@ describe.skipIf(!configured)("the investor gate, over HTTP", () => {
     expect(served.spec.id).toBe("journey-investor");
     expect(served.spec.path).toBe("/investor");
     expect(served.words.packTitle).toBe("Request Investor Pack");
+  });
+
+  it("keeps exactly the specs the shared list names, by id and path", () => {
+    expect(keptPageSpecs().map((s) => ({ id: s.id, path: s.path }))).toEqual(KEPT_PAGES);
   });
 
   it("hands the kept specs to an administrator only", async () => {

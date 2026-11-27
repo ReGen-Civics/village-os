@@ -26,15 +26,25 @@ import { TRAINING_RESIDENT_PAGE, TRAINING_STEWARD_PAGE } from "./training";
 import { APP_WORDS_PAGE } from "./appWords";
 import { PAGE_SECTION_PREFIX, pageSectionKey, type PageSpec } from "./types";
 import { pageDocumentProblems } from "./resolve";
+import { INVESTOR_PAGE, INVESTOR_PAGE_ID } from "../investorInterest";
 
 export const PAGE_SPECS: readonly PageSpec[] = [HOME_PAGE, SITE_PAGE, RIGHTS_RESIDENT_PAGE, RIGHTS_STEWARD_PAGE, HOUSING_PAGE, OPPORTUNITIES_PAGE, VISIT_PAGE, WORK_WITH_US_PAGE, GOOD_NEIGHBOR_PAGE, HOW_WE_CREATE_PAGE, CO_CREATORS_GUIDE_PAGE, TEAM_PAGE, MASTER_PLAN_PAGE, LOVE_LETTER_PAGE, ...JOURNEY_PAGES, GOVERNANCE_PAGE, GOVERNANCE_NOW_PAGE, CIRCLES_PAGE, TRAINING_STEWARD_PAGE, TRAINING_RESIDENT_PAGE, APP_WORDS_PAGE];
 
 /**
- * Pages whose spec, and so whose default words, only the server holds: the investor page (server/lib/investorJourney.ts,
- * the lead, 27 Nov 2026). The server adds them at boot; in a browser this stays empty.
+ * The pages Admin, Pages edits whose spec, and so whose default words, only the server holds, by id and path alone:
+ * the investor page (server/lib/investorJourney.ts, the lead, 27 Nov 2026). It is still a story page a village can
+ * switch off (shared/brochure.ts), and the editor still edits it, reading its spec from GET /api/admin/page-specs/kept.
+ * No word of the page is here; server/routes/investorAccess.test.ts holds this list to the specs the server keeps.
  */
+export const KEPT_PAGES: readonly { id: string; path: string }[] = [{ id: INVESTOR_PAGE_ID, path: INVESTOR_PAGE }];
+
+/** Every page path Admin, Pages edits: the specs here, and the ones the server keeps. */
+export const EDITED_PAGE_PATHS: readonly string[] = [...PAGE_SPECS.map((s) => s.path), ...KEPT_PAGES.map((p) => p.path)];
+
+/** The kept specs themselves. The server adds them at boot; in a browser this stays empty. */
 const KEPT_SPECS: PageSpec[] = [];
 export function keepPageSpec(spec: PageSpec): void {
+  if (!KEPT_PAGES.some((p) => p.id === spec.id && p.path === spec.path)) throw new Error(`keepPageSpec: ${spec.id} is not named in KEPT_PAGES`);
   if (!KEPT_SPECS.some((s) => s.id === spec.id)) KEPT_SPECS.push(spec);
 }
 export function keptPageSpecs(): readonly PageSpec[] {
