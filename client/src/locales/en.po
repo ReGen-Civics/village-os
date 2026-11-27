@@ -3653,6 +3653,11 @@ msgctxt "game variable feed.max_post_length, description"
 msgid "Posts longer than this are cut off in the feed with the rest behind the post itself. Nothing is deleted; this only decides how much of a long piece takes over the page."
 msgstr "Posts longer than this are cut off in the feed with the rest behind the post itself. Nothing is deleted; this only decides how much of a long piece takes over the page."
 
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: close button"
+msgid "Close paths"
+msgstr "Close paths"
+
 #: client/src/pages/Review.tsx
 msgctxt "Review, a step"
 msgid "Reading what an outside service proposes, and witnessing finished quests, are jobs the village hands to somebody."
@@ -9943,6 +9948,11 @@ msgstr "That did not reach the server. The milestone is still here."
 msgctxt "ProfileImportDoor, p"
 msgid "Opening..."
 msgstr "Opening..."
+
+#: client/src/components/Layout.tsx
+msgctxt "site header: the phone's Paths button"
+msgid "Paths"
+msgstr "Paths"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -18232,6 +18242,11 @@ msgstr "The village's goals for next season"
 msgctxt "PoolStatement, p"
 msgid "No module has been opened this cycle, so the whole pool carries forward."
 msgstr "No module has been opened this cycle, so the whole pool carries forward."
+
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: when the village shows none"
+msgid "No paths are open yet."
+msgstr "No paths are open yet."
 
 #: client/src/components/CycleClock.tsx
 msgctxt "cycle clock: the clock has not answered yet"
@@ -62567,6 +62582,11 @@ msgctxt "review inbox: a row, the door"
 msgid "Read and approve"
 msgstr "Read and approve"
 
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: heading when the village has none"
+msgid "Paths"
+msgstr "Paths"
+
 #. placeholder {0}: mine.profile
 #. placeholder {0}: view.profile
 #: client/src/components/geneKeys/ProfileGeneKeys.tsx
@@ -72451,6 +72471,11 @@ msgstr "Machine translation, not yet checked by a person"
 msgctxt "PowerGroupDialogs, p"
 msgid "{memberName} sees the same ladder, with what opens each stage, on their own profile. Their stage today shows on the <0>Players tab</0>, and nobody was appointed."
 msgstr "{memberName} sees the same ladder, with what opens each stage, on their own profile. Their stage today shows on the <0>Players tab</0>, and nobody was appointed."
+
+#: client/src/components/mobile/PathsSheet.tsx
+msgctxt "the phone's Paths sheet: while the paths load"
+msgid "Loading the paths"
+msgstr "Loading the paths"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
