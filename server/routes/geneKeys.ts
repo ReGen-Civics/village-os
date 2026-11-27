@@ -23,7 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AppDeps } from "../lib/appDeps";
 import {
-  PEOPLE_READ_MAX, changeGeneKeysSettings, complementsFor, earnLinesFound, geneKeysOfHandle, geneKeysOfPeople, ownGeneKeys,
+  PEOPLE_READ_MAX, changeGeneKeysSettings, complementsFor, earnLinesFound, geneKeysOfHandle, geneKeysOfPeople, ownChartOf, ownGeneKeys,
   parseSave, parseSettings, removeGeneKeys, saveGeneKeys, LINES_FOUND_BADGE,
 } from "../lib/geneKeys";
 import { requireModule } from "../lib/modules";
@@ -32,7 +32,7 @@ import { withoutKeptCards } from "../lib/myCard";
 /** Re-exported so server/index.ts reaches them on its one exempt import line for this module. */
 export { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing } from "../lib/geneKeys";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit" | "notify"> & Partial<Pick<AppDeps, "members">>;
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit" | "notify" | "members">;
 
 /** The badge's own words for the notice, the same title cycle close sends (server/lib/cycleSettlement.ts). */
 const BADGE_TITLE = "Badge earned: Lines found";
@@ -58,6 +58,12 @@ export function register(app: Express, deps: Deps): void {
     return true;
   };
   let places: string | null = null;
+  /** The daily cards were drawn from the member's lines (shared/myCard.ts): new lines or none, and they go. */
+  const forgetCards = async (uid: string): Promise<void> => {
+    await members.update(uid, (u: any) => {
+      u.prefs = withoutKeptCards(u.prefs);
+    });
+  };
 
   app.use("/api/gene-keys", requireModule("gene-keys"));
 
@@ -76,8 +82,11 @@ export function register(app: Express, deps: Deps): void {
     }
     const save = parseSave(req.body);
     if (!save.ok) return res.status(400).json({ error: save.problem });
+    const before = await ownChartOf(getPool(), uid);
     const geneKeys = await saveGeneKeys(getPool(), uid, save);
     if (!geneKeys) return res.status(500).json({ error: "Your lines did not save. Try again." });
+    // A card drawn from other lines is no longer this member's card: a changed chart clears the kept ones.
+    if (JSON.stringify(before) !== JSON.stringify(save.chart)) await forgetCards(uid);
     res.json({ geneKeys, badgeEarned: (await earn(uid, geneKeys.visibility)) ? "Lines found" : null });
   });
 
@@ -97,10 +106,7 @@ export function register(app: Express, deps: Deps): void {
     const me = await authedUser(req);
     if (!me) return res.status(401).json({ error: "auth_required" });
     const removed = await removeGeneKeys(getPool(), String(me.id));
-    // The daily cards were drawn from these lines (shared/myCard.ts): they go with them.
-    await members?.update(String(me.id), (u: any) => {
-      u.prefs = withoutKeptCards(u.prefs);
-    });
+    await forgetCards(String(me.id));
     res.json({ removed });
   });
 

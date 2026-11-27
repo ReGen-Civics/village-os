@@ -21,7 +21,7 @@ import { analyse, AUTHORITY_WORDS, SPHERES, STRATEGY_WORDS, profileOf, type Char
 import { parseSky, plainReading, readRoom, skyLines, type CardSky } from "../../shared/sessionCard";
 import {
   MY_CARD_KEEP_DAYS, MY_CARD_PREFS_KEY, MY_CARD_REFUSALS, READING_ROWS, WOVEN_LIMITS, drawCard, parseCardDate, parseTodayFacts, plainCardReading, seedOf,
-  skyFitsDate, timeLine,
+  skyFitsDate, timeLine, twoSentences,
   type CardConsent, type CardReading, type MyCard, type MyCardAnswer, type TodayFacts,
 } from "../../shared/myCard";
 import { asTheVillageGuide } from "../../shared/guideName";
@@ -225,7 +225,8 @@ export async function weaveCard(deps: MyCardDeps, card: MyCard, userId: string, 
   const got = parseJsonReply<Record<string, unknown>>(call.text, {});
   const focus = undash(String(got.focus ?? ""));
   if (focus.length < 3 || focus.length > WOVEN_LIMITS.focus) return null;
-  const rows = Object.fromEntries(READING_ROWS.map((k) => [k, undash(String(got[k] ?? ""))])) as Record<(typeof READING_ROWS)[number], string>;
+  // Each row held to two sentences, as the plain rows are: a guide that runs on keeps its first two.
+  const rows = Object.fromEntries(READING_ROWS.map((k) => [k, twoSentences(undash(String(got[k] ?? "")))])) as Record<(typeof READING_ROWS)[number], string>;
   if (READING_ROWS.some((k) => rows[k].length < 3 || rows[k].length > WOVEN_LIMITS.row)) return null;
   const allowed = allowedNumbers(card);
   const words = [focus, ...READING_ROWS.map((k) => rows[k])];

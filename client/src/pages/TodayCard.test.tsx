@@ -7,7 +7,7 @@
  */
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("wouter", () => ({
   Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
@@ -34,7 +34,7 @@ vi.mock("@shared/geneKeysSky", () => ({ skyAt: (d: Date) => ({ at: d.toISOString
 const gameFetch = vi.fn();
 vi.mock("@/lib/gameApi", () => ({ gameFetch: (...a: unknown[]) => gameFetch(...a) }));
 
-import TodayCardPage from "./TodayCard";
+import TodayCardPage, { FACTS_WAIT_MS } from "./TodayCard";
 import { localDate } from "@/lib/todayCardApi";
 
 const answer = (body: unknown, status = 200) => Promise.resolve({ ok: status < 300, status, json: async () => body });
@@ -145,6 +145,54 @@ describe("Pull a card", () => {
     expect((await screen.findByText("Find your lines")).closest("a")?.getAttribute("href")).toBe("/profile/gene-keys");
     expect(screen.getByText("Find your lines to open your deck.")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Draw today's card" })).toBeNull();
+  });
+
+  it("reads the card again once the day's counts land, after a draw the wait let go without them", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      let release: () => void = () => undefined;
+      const gate = new Promise<void>((r) => (release = r));
+      const empty = { ...CARD, reading: { ...CARD.reading, waits: "Nothing waits on you in the village today." } };
+      const busy = { ...CARD, reading: { ...CARD.reading, waits: "A decision waits on you." } };
+      let pulls = 0;
+      doors({
+        "GET /api/me/today-card": () => answer({ card: null, consent: { state: "none" } }),
+        "GET /api/governance/waiting-on-me": () => gate.then(() => answer({ applications: [], drafts: [], toConsent: [{ proposalId: "p" }] })),
+        "POST /api/me/today-card": () => answer({ card: pulls++ === 0 ? empty : busy, consent: { state: "none" } }),
+      });
+      render(<TodayCardPage />);
+      await screen.findByRole("button", { name: "Reading your day" });
+      act(() => {
+        vi.advanceTimersByTime(FACTS_WAIT_MS);
+      });
+      fireEvent.click((await screen.findAllByRole("button", { name: "Draw today's card" })).at(-1)!);
+      expect(await screen.findByText("Nothing waits on you in the village today.")).toBeTruthy();
+      release();
+      expect(await screen.findByText("A decision waits on you.")).toBeTruthy();
+      const posts = gameFetch.mock.calls.filter(([u, i]) => u === "/api/me/today-card" && i?.method === "POST");
+      expect(posts).toHaveLength(2);
+      expect(JSON.parse(String(posts[0][1].body)).today).toBeUndefined();
+      expect(JSON.parse(String(posts[1][1].body)).today).toMatchObject({ decisions: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("shares the card's name and focus with every number taken out", async () => {
+    const shareSpy = vi.fn(async () => undefined);
+    Object.defineProperty(navigator, "share", { value: shareSpy, configurable: true });
+    try {
+      const card = { ...CARD, reading: { ...CARD.reading, focus: "Gate 12, line 2: let it be seen", source: "guide" } };
+      doors({ "GET /api/me/today-card": () => answer({ card, consent: { state: "given" } }) });
+      render(<TodayCardPage />);
+      fireEvent.click(await screen.findByRole("button", { name: "Share the card" }));
+      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+      const text = String((shareSpy.mock.calls[0] as unknown as [{ text: string }])[0].text);
+      expect(text).toBe("My card today: Radiance. Gate, line: let it be seen.");
+      expect(text).not.toMatch(/\d/);
+    } finally {
+      delete (navigator as { share?: unknown }).share;
+    }
   });
 
   it("holds the draw until the day's doors answer, so the card never says nothing waits on a busy day", async () => {

@@ -135,6 +135,15 @@ describe("pulling today's card", () => {
     expect(h.call.mock.calls[0][0]).toMatchObject({ mode: "card", userId: "7" });
   });
 
+  it("holds each of the guide's rows to two sentences", async () => {
+    lines.mockResolvedValue({ chart: WREN, maia: true });
+    const h = harness(KEYED, JSON.stringify({ ...WOVEN, design: "One sentence. Two sentences. Three sentences. Four." }));
+    h.setPrefs(withConsent({}, cardDisclosure("platform", null, "Testvale", KEYED), new Date(NOW).toISOString()));
+    const out = await pullTodayCard(h.deps, { id: "7", prefs: h.prefs() }, body(), NOW);
+    if (!out.ok) throw new Error(out.error);
+    expect(out.value.card?.reading).toMatchObject({ source: "guide", design: "One sentence. Two sentences." });
+  });
+
   it("does not take a yes the companion was given for the card's own: the card asks its own", async () => {
     lines.mockResolvedValue({ chart: WREN, maia: true });
     const h = harness();

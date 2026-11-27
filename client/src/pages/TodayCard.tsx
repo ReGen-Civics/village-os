@@ -290,6 +290,7 @@ export default function TodayCardPage() {
   const [shared, setShared] = useState(false);
   const [waited, setWaited] = useState(false);
   const focusRef = useRef<HTMLHeadingElement>(null);
+  const problemRef = useRef<HTMLDivElement>(null);
   const refreshed = useRef(false);
   const today = useTodayFacts(on && !!user);
 
@@ -323,8 +324,18 @@ export default function TodayCardPage() {
 
   // After the card turns over, the reader lands on the day's focus.
   useEffect(() => {
-    if (phase.kind === "up" && phase.fresh) focusRef.current?.focus();
-  }, [phase]);
+    if (!(phase.kind === "up" && phase.fresh)) return;
+    const h = focusRef.current;
+    if (!h) return;
+    h.focus({ preventScroll: true });
+    // A phone's tab bar covers the foot of the screen: the focus line comes to the middle, where it can be read.
+    if (typeof h.scrollIntoView === "function") h.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+  }, [phase, still]);
+
+  useEffect(() => {
+    const tile = problemRef.current;
+    if (problem && tile && typeof tile.scrollIntoView === "function") tile.scrollIntoView({ block: "center", behavior: still ? "auto" : "smooth" });
+  }, [problem, still]);
 
   const failed = (e: unknown, retry: "draw" | "reread") =>
     setProblem({ words: e instanceof TodayCardRefusal && e.message ? e.message : t({ message: "The card did not turn. Try again.", context: "today's card: a pull that failed" }), retry });
@@ -336,9 +347,10 @@ export default function TodayCardPage() {
     return a;
   };
 
-  // A plain card kept from earlier today picks up the day's counts once they are read, so its last row is current.
+  // A plain card picks up the day's counts once they are read, so its last row matches the village rows: one kept
+  // from earlier today, or one drawn this visit before the counts arrived.
   useEffect(() => {
-    if (refreshed.current || phase.kind !== "up" || phase.fresh || !today.ready || card?.reading.source !== "plain") return;
+    if (refreshed.current || phase.kind !== "up" || !today.ready || card?.reading.source !== "plain") return;
     refreshed.current = true;
     void take().catch(() => undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -369,7 +381,8 @@ export default function TodayCardPage() {
     setProblem(null);
     setPhase({ kind: "drawing" });
     try {
-      refreshed.current = true;
+      // Drawn with the day's counts, the card needs no second read; drawn without them, it reads again once they land.
+      refreshed.current = today.ready;
       await take();
       setPhase({ kind: "up", fresh: true });
     } catch (e) {
@@ -433,8 +446,10 @@ export default function TodayCardPage() {
 
   const share = async () => {
     if (!card) return;
-    // The card's name and focus, and nothing else: no gate, no line, nothing of the chart.
-    const text = t({ message: `My card today: ${card.card.name}. ${card.reading.focus}.`, context: "today's card: the words a share sends" });
+    // The card's name and focus, and nothing else: no gate, no line, nothing of the chart. A guide's focus line may
+    // name a gate, so every number comes out of it first.
+    const focus = card.reading.focus.replace(/\d+(?:[.-]\d+)*/g, "").replace(/\s+([,.:;])/g, "$1").replace(/\s{2,}/g, " ").trim();
+    const text = t({ message: `My card today: ${card.card.name}. ${focus}.`, context: "today's card: the words a share sends" });
     try {
       if (typeof navigator.share === "function") await navigator.share({ text });
       else await navigator.clipboard.writeText(text);
@@ -458,7 +473,7 @@ export default function TodayCardPage() {
   const waitingForDay = !factsReady && phase.kind === "down";
 
   const problemTile = problem ? (
-    <div role="alert" className={`${TILE} flex flex-wrap items-center justify-between gap-3`}>
+    <div ref={problemRef} role="alert" className={`${TILE} flex flex-wrap items-center justify-between gap-3`}>
       <p className="text-base text-foreground">{problem.words}</p>
       <button type="button" className={BTN_SECONDARY} onClick={retry}>
         <RotateCcw aria-hidden="true" className="size-4" />
@@ -535,19 +550,21 @@ export default function TodayCardPage() {
                     <p className={`max-w-[18rem] text-center ${HINT}`}>
                       <Trans context="today's card: under the draw button">One card a day, from your own lines and today's sky. The same card all day.</Trans>
                     </p>
+                    {/* A failed draw says so right under the button it came from, where the thumb already is. */}
+                    {problemTile}
                   </div>
                 ) : null}
               </div>
 
               {/* The reading. */}
               <div className="grid gap-5">
-                {problemTile}
+                {up ? problemTile : null}
                 {up && card ? (
                   <>
                     <section aria-labelledby={`${base}-focus`}>
                       {/* The eyebrow's look on a span: the sheet's own h2 rule would otherwise set the face. */}
                       <h2 id={`${base}-focus`} ref={focusRef} tabIndex={-1} className="focus:outline-none">
-                        <span className={EYEBROW}>
+                        <span className={`font-body ${EYEBROW}`}>
                           <Trans context="today's card: the focus line's eyebrow">Today's focus</Trans>
                         </span>
                       </h2>
@@ -573,7 +590,7 @@ export default function TodayCardPage() {
 
                     <section aria-labelledby={`${base}-village`}>
                       <h2 id={`${base}-village`}>
-                        <span className={EYEBROW}>
+                        <span className={`font-body ${EYEBROW}`}>
                           <Trans context="today's card: what waits on the member, heading">Today in the village</Trans>
                         </span>
                       </h2>
