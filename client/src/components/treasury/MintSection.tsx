@@ -12,6 +12,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useModules } from "@/modules/ModuleProvider";
 import { BreathingLoader } from "@/components/natural";
 import { HINT } from "@/components/journey/look";
+import { MINT_SHEET } from "./deskLooks";
 import { visibleTokens } from "@/components/admin/tokenCatalog";
 import type { MintMember, MintToken } from "@/components/admin/MintDesk";
 import type { ModuleLifecycle } from "@shared/modules";
@@ -60,7 +61,7 @@ export default function MintSection({ password }: { password: string }) {
   const tokens: MintToken[] = visibleTokens(options.tokens, lifecycles);
   return (
     <Suspense fallback={<BreathingLoader />}>
-      <MintDesk password={password} tokens={tokens} members={options.members} mintCap={options.mintCapPerCycle} />
+      <MintDesk password={password} tokens={tokens} members={options.members} mintCap={options.mintCapPerCycle} look={MINT_SHEET} />
     </Suspense>
   );
 }

@@ -17,7 +17,7 @@ import {
 } from "@shared/moonRecap";
 import SaveBar from "@/components/SaveBar";
 import { docChangeCount } from "@/lib/unsavedChanges";
-import { buttonClass, inputClass, labelClass, listOf, primaryClass, useSettingsDocument } from "./useSettingsDocument";
+import { listOf, useSettingsDocument, useSettingsKit } from "./useSettingsDocument";
 import { useMoonWords } from "@/components/myMoon/moonWords";
 
 
@@ -44,6 +44,8 @@ const fromDraft = (d: Draft): Payer => ({
 });
 
 export default function PayersEditor({ password }: { password: string }) {
+  // Admin's classes unless Governance's Treasury provides the sheet's (useSettingsDocument.ts, SettingsKit).
+  const { input: inputClass, label: labelClass, button: buttonClass, primary: primaryClass, box } = useSettingsKit();
   const W = useMoonWords().admin.payers;
   const MW = useMoonWords();
   const { state, save, saving, message } = useSettingsDocument<PayersDoc>("payers", password);
@@ -74,7 +76,7 @@ export default function PayersEditor({ password }: { password: string }) {
         <p data-testid="payers-gap" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-foreground">{W.empty}</p>
       )}
       {drafts.map((d, i) => (
-        <fieldset key={i} className="space-y-3 rounded-xl border border-border bg-white p-4">
+        <fieldset key={i} className={`space-y-3 ${box}`}>
           <legend className="px-1 text-sm font-semibold text-foreground">{d.legalName || W.newPayer}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className={labelClass}>{W.key}<input className={inputClass} value={d.key} onChange={(e) => set(i, { key: e.target.value })} /></label>

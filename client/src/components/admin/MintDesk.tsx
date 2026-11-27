@@ -27,6 +27,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { smallestUnit } from "@/lib/tokenAmount";
 import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
+import { MINT_ADMIN, type MintDeskLook } from "@/components/treasury/deskLooks";
 
 /** One token the picker may offer: platform-governed, real, and never Gratitude. */
 export interface MintToken {
@@ -42,8 +43,10 @@ export interface MintMember {
   handle?: string | null;
 }
 
-export default function MintDesk({ password, tokens, members, mintCap, onChanged }: {
+export default function MintDesk({ password, tokens, members, mintCap, onChanged, look = MINT_ADMIN }: {
   password: string;
+  /** Admin's light look by default; Governance's Treasury passes the sheet's (components/treasury/deskLooks.ts). */
+  look?: MintDeskLook;
   tokens: readonly MintToken[];
   members: readonly MintMember[];
   mintCap: number;
@@ -150,9 +153,21 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
 
   return (
     <div className="space-y-6">
-      <div className="border border-border rounded-xl p-5">
-        <h3 className="font-semibold text-foreground mb-1"><Trans context="heading of the hand-mint form">Mint by hand</Trans></h3>
-        <p className="text-xs text-muted-foreground mb-3">
+      <div className={look.formBox}>
+        <h3 className={look.heading}><Trans context="heading of the hand-mint form">Mint by hand</Trans></h3>
+        {look.rules === "bullets" ? (
+          // The sheet's three lines (fold QA round 1): the rules a treasurer acts on, without the settings' keys.
+          <ul className={look.rulesText} data-mint-rules>
+            <li>{t({ message: `At most ${capWords} a moon`, context: "hand-mint rules, the cap" })}</li>
+            <li>
+              {cosignOver > 0
+                ? t({ message: `Over ${cosignWords} waits for a second signer`, context: "hand-mint rules, the second signer" })
+                : t({ message: "No second signer is asked for at any amount", context: "hand-mint rules, the second signer" })}
+            </li>
+            <li>{t({ message: "You can't mint to yourself", context: "hand-mint rules, self" })}</li>
+          </ul>
+        ) : (
+        <p className={look.rulesText}>
           <Trans>
             Issues from the dedicated mint faucet, with a reason, audited. This village
             can bring at most {capWords} of a token into existence per
@@ -165,30 +180,46 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
             ? <Trans>A grant over {cosignWords} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over).</Trans>
             : <Trans>A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0).</Trans>}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
+        )}
+        <div className="flex flex-wrap items-end gap-2">
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">Token</Trans>
           <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
             aria-label={t({ message: "Token to mint", context: "hand-mint form, token picker" })}
-            className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
+            className={look.select}>
             <option value=""><Trans context="hand-mint form, token picker placeholder">Token…</Trans></option>
             {tokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
           </select>
+          </label>
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">Member</Trans>
           <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
             aria-label={t({ message: "Member to mint to", context: "hand-mint form, member picker" })}
-            className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
+            className={look.select}>
             <option value=""><Trans context="hand-mint form, member picker placeholder">Member…</Trans></option>
             {members.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
           </select>
+          </label>
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">Amount</Trans>
           <input value={mint.amount} onChange={(e) => setMint({ ...mint, amount: e.target.value })}
-            placeholder={t({ message: "Amount", context: "hand-mint form, amount box" })} type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-border rounded-lg px-3 py-2 w-28 bg-background text-foreground" />
+            placeholder={t({ message: "Amount", context: "hand-mint form, amount box" })} type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className={look.amount} />
+          </label>
+          <label className={`${look.label} min-w-48 flex-1`}>
+            <Trans context="hand-mint form, a field's label">Reason</Trans>
           <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
-            placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className="text-sm border border-border rounded-lg px-3 py-2 flex-1 min-w-48 bg-background text-foreground" />
+            placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className={look.reason} />
+          </label>
+          <label className={look.label}>
+            <Trans context="hand-mint form, a field's label">What stood behind it</Trans>
           <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
-            aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
+            aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className={look.select}>
             <option value="other">{t({ message: "Contributed: work or other", context: "admin mint form, what stood behind a grant" })}</option>
             <option value="cash">{t({ message: "Contributed: cash", context: "admin mint form, what stood behind a grant" })}</option>
           </select>
+          </label>
           <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
-            className="min-h-11 text-sm bg-teal-deep text-white border border-border rounded-lg px-4 py-2 font-medium disabled:opacity-40">
+            className={look.primary}>
             <Trans context="hand-mint form, submit button">Mint</Trans>
           </button>
         </div>
@@ -200,8 +231,8 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
         the record itself.
       */}
       {grants.length > 0 && (
-        <div className="border border-border rounded-xl p-5">
-          <h3 className="font-semibold text-foreground mb-1"><Trans context="heading of the hand-mint grants record">Grants and their signatures</Trans></h3>
+        <div className={look.grantsBox}>
+          <h3 className={look.heading}><Trans context="heading of the hand-mint grants record">Grants and their signatures</Trans></h3>
           <p className="text-xs text-muted-foreground mb-3">
             <Trans>
               A grant over the threshold moves nothing until a second steward agrees.
@@ -210,7 +241,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
           </p>
           <div className="space-y-2">
             {grants.map((g) => (
-              <div key={g.id} className="flex flex-wrap items-center gap-3 border border-border rounded-lg px-3 py-2.5">
+              <div key={g.id} className={look.row}>
                 <div className="flex-1 min-w-64">
                   <p className="text-sm text-foreground">
                     {/* `admin_mint_requests.amount` holds WHOLE tokens: the route stores
@@ -231,11 +262,11 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
                 {g.status === "pending" && (
                   <div className="flex items-center gap-2">
                     <button onClick={() => signGrant(g.id)}
-                      className="min-h-11 text-sm bg-teal-deep text-white border border-border rounded-lg px-3 py-2 font-medium">
+                      className={look.rowAct}>
                       <Trans context="hand-mint grants record, approve a grant">Sign it</Trans>
                     </button>
                     <button onClick={() => declineGrant(g.id)}
-                      className="min-h-11 text-sm border border-border text-foreground rounded-lg px-3 py-2 font-medium">
+                      className={look.secondary}>
                       <Trans context="hand-mint grants record, decline a grant">Turn it down</Trans>
                     </button>
                   </div>

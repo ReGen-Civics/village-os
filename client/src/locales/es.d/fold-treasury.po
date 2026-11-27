@@ -105,8 +105,163 @@ msgstr "La aldea le dio, por su voto, los poderes detrás de estos {0} escritori
 
 # needs-native-review: the Treasury, a member's one act, 27 Nov 2026
 msgctxt "treasury: hero, a member's one act"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
+
+# needs-native-review: the Treasury, a member's link to the budget lines, 27 Nov 2026
+msgctxt "treasury: hero, a member's link to the lines"
 msgid "Read the budget, line by line"
 msgstr "Lea el presupuesto, línea por línea"
+
+# needs-native-review: the Treasury, the quiet link to the budget under a holder's desks, 27 Nov 2026
+msgctxt "treasury: the quiet link to the budget, under a holder's desks"
+msgid "The cash budget, line by line"
+msgstr "El presupuesto en efectivo, línea por línea"
+
+# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
+msgctxt "treasury: a desk this reader does not hold"
+msgid "End of Moon pay opens for whoever holds the power to pay or to approve the moon alone."
+msgstr "El pago de Fin de Luna se abre para quien tiene el poder de pagar o de aprobar la luna por su cuenta."
+
+# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
+msgctxt "treasury: a desk this reader does not hold"
+msgid "Cash to pay out opens for whoever holds the treasurer's power to pay cash."
+msgstr "El efectivo por pagar se abre para quien tiene el poder del tesorero de pagar en efectivo."
+
+# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
+msgctxt "treasury: a desk this reader does not hold"
+msgid "Quest prices open for whoever holds the power to set pay, such as the Treasurer."
+msgstr "Los precios de las misiones se abren para quien tiene el poder de fijar pagos, como el Tesorero."
+
+# needs-native-review: the Treasury, a desk this reader does not hold, 27 Nov 2026
+msgctxt "treasury: a desk this reader does not hold"
+msgid "Mint tokens opens for whoever holds the power to mint."
+msgstr "Emitir tokens se abre para quien tiene el poder de emitir."
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The other desks"
+msgstr "Los otros escritorios"
+
+# needs-native-review: the Treasury, the desks this reader does not hold, 27 Nov 2026
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The treasurer's desks"
+msgstr "Los escritorios del tesorero"
+
+# needs-native-review: the Treasury, the End of Moon review's settings folded, 27 Nov 2026
+msgctxt "treasury: the End of Moon review's settings, folded"
+msgid "End of Moon review settings"
+msgstr "Ajustes de la revisión de Fin de Luna"
+
+# needs-native-review: a member's budget suggestion, sent, 27 Nov 2026
+msgctxt "budget suggestion sent"
+msgid "Sent. It goes to whoever holds the budget power, or to a village vote when nobody does."
+msgstr "Enviada. Va a quien tiene el poder del presupuesto, o a una votación de la aldea cuando nadie lo tiene."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+msgctxt "budget suggestion error"
+msgid "The suggestion was not sent. Try again in a moment."
+msgstr "La sugerencia no se envió. Inténtelo de nuevo en un momento."
+
+# needs-native-review: a member's budget suggestion, an error, 27 Nov 2026
+msgctxt "budget suggestion error"
+msgid "The server could not be reached, so nothing was sent. Check the connection and try again."
+msgstr "No se pudo contactar al servidor, así que no se envió nada. Revise la conexión e inténtelo de nuevo."
+
+# needs-native-review: a member's budget suggestion, the form's heading, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Suggest a change to the budget"
+msgstr "Sugiera un cambio al presupuesto"
+
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Name one line and what it should pay this moon."
+msgstr "Nombre una línea y lo que debería pagar esta luna."
+
+# needs-native-review: a member's budget suggestion, a line of help, 27 Nov 2026
+msgctxt "budget suggestion"
+msgid "Whoever holds the budget power decides, or the village votes."
+msgstr "Decide quien tiene el poder del presupuesto, o vota la aldea."
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "What the line is for"
+msgstr "Para qué es la línea"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Kind"
+msgstr "Tipo"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Amount, in {0}"
+msgstr "Monto, en {0}"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: a member's budget suggestion, a field, 27 Nov 2026
+msgctxt "budget suggestion field"
+msgid "Why"
+msgstr "Por qué"
+
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+msgctxt "budget suggestion button"
+msgid "Send the suggestion"
+msgstr "Enviar la sugerencia"
+
+# needs-native-review: a member's budget suggestion, a button, 27 Nov 2026
+msgctxt "budget suggestion button"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: the hand mint's rules, the cap, 27 Nov 2026
+msgctxt "hand-mint rules, the cap"
+msgid "At most {capWords} a moon"
+msgstr "Como máximo {capWords} por luna"
+
+# needs-native-review: the hand mint's rules, the second signer, 27 Nov 2026
+msgctxt "hand-mint rules, the second signer"
+msgid "Over {cosignWords} waits for a second signer"
+msgstr "Más de {cosignWords} espera a una segunda firma"
+
+# needs-native-review: the hand mint's rules, the second signer, 27 Nov 2026
+msgctxt "hand-mint rules, the second signer"
+msgid "No second signer is asked for at any amount"
+msgstr "No se pide una segunda firma para ningún monto"
+
+# needs-native-review: the hand mint's rules, self, 27 Nov 2026
+msgctxt "hand-mint rules, self"
+msgid "You can't mint to yourself"
+msgstr "No puede emitir para usted mismo"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Token"
+msgstr "Token"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Member"
+msgstr "Miembro"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "Reason"
+msgstr "Motivo"
+
+# needs-native-review: the hand mint's form, a field's label, 27 Nov 2026
+msgctxt "hand-mint form, a field's label"
+msgid "What stood behind it"
+msgstr "Qué lo respalda"
 
 # needs-native-review: the Treasury, the budget section's line, 27 Nov 2026
 msgctxt "treasury: budget"

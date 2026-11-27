@@ -27,6 +27,9 @@ describe("privileged pages never ride a shared page group", () => {
     // Pay by member (#1358) and the cash desk, each drawn by the Treasury and by Admin.
     expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\myMoon\\PayBoard.tsx")).toBe(false);
     expect(mayJoinSharedGroup("/repo/client/src/components/admin/CashPayoutsTab.tsx")).toBe(false);
+    // The End of Moon review's settings and their editors, drawn by Admin's cash desk and by Governance's Treasury.
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/moonReview/MoonReviewSettingsPanel.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\admin\\moonReview\\PayersEditor.tsx")).toBe(false);
     // The role waitlist's admin panel and its letter, which /roles draws only for an admin.
     expect(mayJoinSharedGroup("/repo/client/src/components/roleCard/WaitlistAdmin.tsx")).toBe(false);
     expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\roleCard\\WaitlistLetter.tsx")).toBe(false);

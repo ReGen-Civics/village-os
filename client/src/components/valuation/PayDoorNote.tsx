@@ -10,10 +10,13 @@ import { Trans } from "@lingui/react/macro";
 
 export type PayDoor = "holder" | "admin-before-launch" | "admin-no-steward" | null | undefined;
 
-export default function PayDoorNote({ door }: { door: PayDoor }) {
+const AMBER = "rounded-lg border border-amber-ink/30 bg-amber-light px-3 py-2 text-sm text-amber-ink";
+
+/** `className`: the note's box; Admin's amber by default, the sheet's tile in Governance's Treasury. */
+export default function PayDoorNote({ door, className = AMBER }: { door: PayDoor; className?: string }) {
   if (door !== "admin-before-launch" && door !== "admin-no-steward") return null;
   return (
-    <p className="rounded-lg border border-amber-ink/30 bg-amber-light px-3 py-2 text-sm text-amber-ink" data-pay-door={door}>
+    <p className={className} data-pay-door={door}>
       {door === "admin-before-launch" ? (
         <Trans context="pay door">You are setting pay as an admin. This stays open until the launch vote carries. After that, only whoever holds the pay power sets pay, or the village by vote.</Trans>
       ) : (

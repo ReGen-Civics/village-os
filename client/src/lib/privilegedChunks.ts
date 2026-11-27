@@ -21,7 +21,11 @@
  * panel and its letter (`components/roleCard/WaitlistAdmin.tsx`, drawn on
  * /roles only for an admin, and `WaitlistLetter.tsx`, opened only from it),
  * which would otherwise share a "lazy-" chunk with the role pieces every
- * visitor opens (dist headroom pass, 23 Nov 2026).
+ * visitor opens (dist headroom pass, 23 Nov 2026). And the End of Moon
+ * review's settings (the panel and its three editors under
+ * `components/admin/moonReview`), which Governance's Treasury draws too since
+ * 27 Nov 2026 and which joined the "midpages" group the moment it had a second
+ * importer (fold QA round 1).
  *
  * Kept out of vite.config.ts so a test can pin it without loading the build.
  */
@@ -30,7 +34,7 @@
 export const PRIVILEGED_PAGE = /client[\\/]src[\\/]pages[\\/](?:Treasury|Admin|Mint|Cash)[^\\/]*\.tsx$/;
 
 /** A component that carries one of those pages' powers, never a group member. */
-export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|roleCard[\\/]Waitlist(?:Admin|Letter)|treasury[\\/][^\\/]+)\.tsx$/;
+export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab|moonReview[\\/][^\\/]+)|myMoon[\\/]PayBoard|roleCard[\\/]Waitlist(?:Admin|Letter)|treasury[\\/][^\\/]+)\.tsx$/;
 
 /** Whether this module may join a shared page or component group at all. */
 export function mayJoinSharedGroup(id: string): boolean {

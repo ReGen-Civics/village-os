@@ -8,6 +8,8 @@
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 
 export interface BudgetLook {
+  /** The tag a part's heading takes: h2 in Admin, h3 under Governance's Treasury's own section heading. */
+  hTag: "h2" | "h3";
   panel: string;
   tile: string;
   eyebrow: string;
@@ -23,6 +25,7 @@ export interface BudgetLook {
 }
 
 export const SHEET_LOOK: BudgetLook = {
+  hTag: "h3",
   panel: CARD,
   tile: TILE,
   eyebrow: EYEBROW,
@@ -38,6 +41,7 @@ export const SHEET_LOOK: BudgetLook = {
 };
 
 export const ADMIN_LOOK: BudgetLook = {
+  hTag: "h2",
   panel: "rounded-xl border border-border bg-white p-6",
   tile: "rounded-xl border border-border bg-white p-4",
   eyebrow: "text-xs font-medium uppercase tracking-wide text-muted-foreground",

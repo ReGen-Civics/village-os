@@ -79,6 +79,7 @@ export default function BudgetDesk({ bearer, look, editable = true, call: given,
   const notCounted = figure?.working?.notCounted ?? [];
   const reasons = Array.from(new Set(notCounted.map((n) => n.reason))).map((r) => i18n._(NOT_COUNTED_WORDS[r]));
   const canEdit = editable && read.door?.mayWrite === true;
+  const Heading = look.hTag;
 
   return (
     <div className="flex flex-col gap-6" data-budget-desk>
@@ -122,7 +123,7 @@ export default function BudgetDesk({ bearer, look, editable = true, call: given,
         </Suspense>
       ) : (
         <section className={look.panel} aria-labelledby="budget-lines">
-          <h2 id="budget-lines" className={`${look.h2} mb-1`}>{t({ message: "The lines", context: "budget desk" })}</h2>
+          <Heading id="budget-lines" className={`${look.h2} mb-1`}>{t({ message: "The lines", context: "budget desk" })}</Heading>
           {read.door?.message && <p className={`${look.hint} mb-4`} data-budget-door>{read.door.message}</p>}
           {read.lines.length === 0 ? (
             <p className={look.hint}>{t({ message: "No budget line touches this moon yet.", context: "budget desk empty" })}</p>
