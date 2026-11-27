@@ -22,8 +22,8 @@
  * (`org.ccos_terms`), the words draw exactly as they are and nothing is
  * underlined.
  *
- * TAP TARGETS, 44px on a phone without moving any layout: an invisible hit
- * area centred on the words (`.info-word::before` in client/src/index.css).
+ * TAP TARGETS without moving any layout: the words' own inline padding, given
+ * back by an equal negative margin (`.info-word` in client/src/index.css).
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import InfoTip from "@/components/InfoTip";

@@ -71,11 +71,18 @@ describe("rootGlyph", () => {
   });
 });
 
+/** What a reader sees of an item: its text without a closed tip, which stays in the DOM hidden (InfoTip.tsx). */
+const seen = (el: HTMLElement): string => {
+  const copy = el.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll("[hidden]").forEach((n) => n.remove());
+  return copy.textContent ?? "";
+};
+
 describe("RootTags", () => {
   it("names the list 'Grows from' and says each root by the village's own name, without 'The'", async () => {
     render(<RootTags roots={["catalyzing", "researching"]} />, { wrapper: wrap });
     const list = screen.getByRole("list", { name: "Grows from" });
-    await waitFor(() => expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Connector + Catalyst", "Architect"]));
+    await waitFor(() => expect(within(list).getAllByRole("listitem").map(seen)).toEqual(["Connector + Catalyst", "Architect"]));
     // The drawing is decoration.
     expect(list.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });

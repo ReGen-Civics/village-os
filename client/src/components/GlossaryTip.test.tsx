@@ -61,7 +61,7 @@ describe("the glossary word", () => {
     const word = await screen.findByRole("button", { name: "Quorum" });
     fireEvent.focus(word);
     await waitFor(() => expect(word.getAttribute("aria-expanded")).toBe("true"));
-    fireEvent.keyDown(word, { key: "Enter" });
+    // Focus opened it, so the first Enter closes it.
     fireEvent.keyDown(word, { key: "Enter" });
     await waitFor(() => expect(word.getAttribute("aria-expanded")).toBe("false"));
     fireEvent.keyDown(word, { key: " " });

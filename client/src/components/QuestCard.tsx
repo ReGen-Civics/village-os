@@ -254,7 +254,7 @@ export default function QuestCard({
           </div>
 
           {/* The roots it grows from, drawn as small roots (shared/archetypeRoots.ts). */}
-          {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" /> : null}
+          {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" inLink /> : null}
 
           {(active > 0 || done > 0) && (
             <div className="flex flex-wrap items-center gap-3 text-xs">

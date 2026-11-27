@@ -73,9 +73,13 @@ import {
   type EventsPayload,
 } from "@/components/calendar/calendarTime";
 
-/** The calendar's own words for the moons, until the village writes its own (shared/glossary.ts). */
-const MOONS_TIP =
-  "The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does.";
+/**
+ * The calendar's own words for the moons, until the village writes its own (shared/glossary.ts). On a wide screen the
+ * tip sits on "moons" inside the lede, which already says the two clocks, so it says only what the lede does not (QA
+ * round 1, 27 Nov 2026); a phone hides the lede, so its tip says both.
+ */
+const MOONS_MORE = "The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does.";
+const MOONS_TIP = `The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. ${MOONS_MORE}`;
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -422,7 +426,7 @@ export default function Events() {
               behind "About the moons" (design pass M6), the tip on its own words. */}
           <p className="mt-2 max-w-2xl text-muted-foreground">
             <span className="hidden sm:inline">
-              <Trans context="calendar page lede">Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the <GlossaryTip slot="moon" fallback={MOONS_TIP}>moons</GlossaryTip> the land turns by.</Trans>
+              <Trans context="calendar page lede">Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the <GlossaryTip slot="moon" fallback={MOONS_MORE}>moons</GlossaryTip> the land turns by.</Trans>
             </span>
             {/* A phone hides the lede, so the tip rides on its own few words there. */}
             <span className="sm:hidden">

@@ -14,6 +14,7 @@
  * types appear only as TINTS on needs tiles, never as the hub's segmented
  * capital-stack widget.
  */
+import InfoTip from "@/components/InfoTip";
 import type { CSSProperties } from "react";
 import { BookOpen, Mountain, Package, Repeat, UserRound, type LucideIcon } from "lucide-react";
 import { SeedGlint, SeedPod, TendingHands } from "@/components/sacred/living";
@@ -433,7 +434,7 @@ export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number |
             ? "One day until the pool closes"
             : `${daysRemaining} days until the pool closes`;
   return (
-    <div className="cp-lantern" title={endsAt ? `Closes ${new Date(endsAt).toLocaleDateString()}` : undefined}>
+    <div className="cp-lantern">
       <svg viewBox="0 0 48 64" width="44" height="58" aria-hidden="true">
         <path d="M14 8 L34 8 L30 2 L18 2 Z" fill="#3a2b1a" stroke="#c9a25e" strokeWidth="1" />
         <path d="M12 10 L36 10 L32 46 L16 46 Z" fill="rgba(36,26,15,.9)" stroke="#c9a25e" strokeWidth="1.4" />
@@ -445,7 +446,8 @@ export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number |
         />
         <path d="M16 46 L32 46 L30 52 L18 52 Z" fill="#3a2b1a" stroke="#c9a25e" strokeWidth="1" />
       </svg>
-      <div className="cp-lantern-line">{line}</div>
+      {/* The closing date on the line's own words, where a phone can open it (a title reached only a mouse). */}
+      <div className="cp-lantern-line">{endsAt ? <InfoTip tip={`Closes ${new Date(endsAt).toLocaleDateString()}`}>{line}</InfoTip> : line}</div>
     </div>
   );
 }

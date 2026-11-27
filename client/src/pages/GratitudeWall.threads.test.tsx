@@ -188,7 +188,7 @@ describe("the wall on a phone", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "Carry a thanks" })[0]);
     const word = await screen.findByRole("button", { name: "allowance" });
     expect(word).toHaveAccessibleDescription(/Your allowance refills when the cycle turns/);
-    // The 44px touch target is the word's invisible hit area (`.info-word::before` in client/src/index.css).
+    // The touch target is the word's own padding, given back by a margin (`.info-word` in client/src/index.css).
     expect(word.className).toMatch(/\binfo-word\b/);
     expect(screen.queryByRole("button", { name: "How the allowance works" })).toBeNull();
   });

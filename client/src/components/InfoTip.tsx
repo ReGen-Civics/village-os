@@ -16,8 +16,9 @@
  * client/src/index.css, which cost the first view no JS). The trigger is an
  * INLINE span, so a phrase wraps exactly as the plain text would, line for
  * line; a <button> is always laid out as an inline-block, which cannot break
- * across lines and would move the paragraph. Its 44px touch target is an
- * absolutely placed `::before` centred on the word, which adds no layout.
+ * across lines and would move the paragraph. Its touch target is the word's
+ * own inline padding, given back by an equal negative margin, so it adds no
+ * layout and covers each line of a wrapped phrase exactly (`.info-word`).
  *
  * Why not the shadcn/Radix tooltip two doors down: Radix tooltips never open
  * on touch, and mobile is most of this audience. This trigger is a real
@@ -150,6 +151,23 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
       show();
     }
   };
+  // From the keyboard an open tip is one Enter or Space from closed, pinned or not: Tab has already opened it, so the
+  // first key a reader presses on it should never be one that seems to do nothing (QA round 1, 27 Nov 2026).
+  const toggleByKey = () => {
+    if (open) hide();
+    else {
+      pinned.current = true;
+      show();
+    }
+  };
+
+  // A tip inside a link or a button cannot work on a phone: the tap is the link's or the button's. Said in
+  // development, where the next call site that does it is being written; production builds drop this.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const host = triggerRef.current?.parentElement?.closest("a[href], button, [role='button']");
+    if (host) console.warn("InfoTip: a tip inside a link or a button cannot open on touch, since the tap belongs to the link. Put the tip beside it.", host);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -203,7 +221,7 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
           if (e.key !== "Enter" && e.key !== " ") return;
           // Space would scroll the page, Enter would submit a form around it.
           e.preventDefault();
-          if (!e.repeat) toggle();
+          if (!e.repeat) toggleByKey();
         }}
         onFocus={() => {
           if (!pointerDown.current) show();

@@ -22,7 +22,7 @@
  * a class name, because the class name is the implementation and it has
  * already changed once.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -370,5 +370,46 @@ describe("the word is the trigger (the lead, 27 Nov 2026: tooltips on the word, 
     await user.click(screen.getByRole("button", { name: "Quorum" }));
     expect(screen.getByRole("button", { name: "Quorum" })).toHaveAttribute("aria-expanded", "true");
     expect(box.checked).toBe(false);
+  });
+});
+
+describe("QA round 1 on the word trigger (27 Nov 2026)", () => {
+  it("closes on the first Enter or Space when Tab opened it", async () => {
+    const user = userEvent.setup();
+    renderInParagraph();
+    const trigger = screen.getByRole("button", { name: "crowdpool" });
+    await user.tab();
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard("{Enter}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await user.keyboard(" ");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    await user.keyboard(" ");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("warns in development when a tip sits inside a link or a button, since on touch the tap is theirs", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      render(
+        <a href="/quests">
+          A <InfoTip tip={TIP}>crowdpool</InfoTip> inside a link
+        </a>,
+      );
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(String(warn.mock.calls[0][0])).toMatch(/inside a link or a button/);
+      warn.mockClear();
+      render(
+        <button type="button">
+          <InfoTip tip={TIP}>crowdpool</InfoTip>
+        </button>,
+      );
+      expect(warn).toHaveBeenCalledTimes(1);
+      warn.mockClear();
+      renderInParagraph();
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
