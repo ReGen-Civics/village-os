@@ -65,6 +65,8 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     fresh: [] as OutgoingEmail[],
     keys: new Set<string>(),
     notices: [] as Array<{ userId: string; type: string; title: string; body?: string; dedupeKey: string }>,
+    /** A provider fault for keys starting with this, until cleared (the retry test). */
+    failing: null as string | null,
   };
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
@@ -74,6 +76,11 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
   };
   const postEmail = async (email: OutgoingEmail): Promise<PostResult> => {
     state.posted.push(email);
+    // A provider fault: the post office records the key as failed and never sends that key again.
+    if (state.failing && email.idempotencyKey.startsWith(state.failing)) {
+      state.keys.add(email.idempotencyKey);
+      return { status: "failed", messageId: null, reason: "failed" } as unknown as PostResult;
+    }
     if (state.keys.has(email.idempotencyKey)) return { status: "duplicate" } as PostResult;
     state.keys.add(email.idempotencyKey);
     state.fresh.push(email);
@@ -443,6 +450,51 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     // Everyone who reads sees who claimed it (QA pass 2: Community read "No references yet").
     const seen = (await call("GET", `${app(id)}/walkthrough`, undefined, IB.id)).body.walkthrough.references.list.find((r: any) => r.id === second.id);
     expect(seen.owner.userName).toMatch(/^(Iva|Ivo)$/);
+  });
+
+  it("THE LETTERS (QA round 4, item 3): the Received email reaches an account holder; the frame and its button; one email at References; a provider fault is tried again, once", async () => {
+    const { reviewClockTick } = await import("../lib/applicationReview");
+    const { makeApplicantTeller } = await import("../lib/applicantUpdates");
+    const users = usersRepo(pool);
+    const ACC = person("u-sl-account", "Ari Account");
+    if (!(await users.byId(ACC.id))) await users.add({ id: ACC.id, name: ACC.name, email: ACC.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    // 3b: an account holder gets the Received email, with a signed status link and their profile.
+    const own = await confirmed(ACC.email);
+    const received = state.posted.find((m) => m.idempotencyKey === `open-proposal:${own}:status`);
+    expect(received, "the Received email").toBeTruthy();
+    expect(received!.text).toContain(`${ORIGIN}/profile`);
+    expect(received!.text).toMatch(new RegExp(`${ORIGIN}/application-status/${own}\\?token=`));
+    // 3d: in the invitation's frame, the status link a button, the village's sign-off.
+    expect(received!.html).toContain("See your page");
+    expect(received!.text).toContain("With love,");
+    expect(received!.text).toContain("The Test Village team");
+
+    // 3c: shortlisted and asked for references in the same minute: ONE letter at References, which carries the ask.
+    const id = await confirmed("one-letter@example.test");
+    const [first] = await ivs(id);
+    await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ? AND state = 'waiting'", [first.id]);
+    state.fresh.length = 0;
+    expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    const mails = state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`));
+    expect(mails.map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:stage:references`]);
+    expect(mails[0].text).toMatch(/reference/i);
+
+    // 3f: the provider fails the Final conversation's letter; the review clock sends it again, once, under a new key.
+    await q("UPDATE application_interviews SET state = 'scored' WHERE application_ref = ? AND is_final = 0", [id]);
+    await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ?", [id]);
+    await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, { references: [{ name: "Eve Example", email: "eve@example.test", whatsapp: "+506 8888 1111", how: "We farmed together.", ally: "" }, { name: "Fay Example", email: "fay@example.test", signal: "fay.01", how: "She taught me.", ally: "" }] });
+    await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ?", [id]);
+    state.failing = `open-proposal:${id}:stage:final_interview`;
+    expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
+    state.failing = null;
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:stage:final_interview`))).toEqual([]);
+    const deps: any = { getPool: () => pool, notify: async () => ({ fresh: true }), notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id], now: () => new Date(), calendar: () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" }), members: usersRepo(pool) };
+    deps.tellApplicant = makeApplicantTeller({ getPool: () => pool, members: usersRepo(pool), notify: deps.notify, postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN });
+    await reviewClockTick(deps);
+    await reviewClockTick(deps);
+    const finals = state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:stage:final_interview`));
+    expect(finals.map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:stage:final_interview:r1`]);
   });
 
   it("NUDGES (the lead: 'yes' to nudges): once each, and never a move", async () => {

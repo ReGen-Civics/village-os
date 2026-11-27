@@ -114,9 +114,6 @@ export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0):
     if (!isLetterStage(now)) return false;
     // Once per stage: a letter already tried is the retry pass's to try again, never a second first attempt.
     if (attempt === 0 && (await attemptsOf(deps, ref, now)).length > 0) return false;
-    // ONE EMAIL PER STAGE (QA passes 1 and 3: two and three in a minute): References and proposal's letter waits for
-    // the references to be asked for, and carries the ask; the separate references letter then never goes.
-    if (now === "references" && !read.facts.refsAsked && !read.facts.refsGiven) return false;
     // The conversation open NOW at this stage: the final's only at Final conversation, a community one only before.
     const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && (now === "final_interview" ? i.final : !i.final));
     const step = open && now !== "agreement" ? await stepBookingOf(pool, ref, open.roleId) : null;

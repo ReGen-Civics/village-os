@@ -266,14 +266,18 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     // "they can also refine their proposal from this conversation": still open at the Final conversation.
     expect((await status(id)).sixStages.refine).toMatchObject({ open: true, frozen: false });
     expect((await refine(id, { why: "Third why.", aim: "Third aim." })).status).toBe(200);
-    // The final conversation written up sends it to the anchor circle (Agreement), which fixes it.
+    // RULING 7: the final written up fixes nothing; the applicant refines once more, then sends it to the anchor circle.
     await q("UPDATE application_interviews SET state = 'scored' WHERE application_ref = ? AND is_final = 1", [id]);
+    expect(await nowOf(id)).toBe("final_interview");
+    expect((await status(id)).sixStages).toMatchObject({ toCircle: true, refine: { open: true, frozen: false } });
+    expect((await refine(id, { why: "Fourth why.", aim: "Fourth aim." })).status).toBe(200);
+    expect((await call("POST", `/api/application-status/${id}/to-circle?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`)).status).toBe(200);
     expect(await nowOf(id)).toBe("agreement");
-    const frozen = await refine(id, { why: "Fourth why.", aim: "Fourth aim." });
+    const frozen = await refine(id, { why: "Fifth why.", aim: "Fifth aim." });
     expect([frozen.status, frozen.body.error]).toEqual([409, "closed"]);
     expect((await status(id)).sixStages.refine).toMatchObject({ open: false, frozen: true });
     const [row] = await q("SELECT JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.why')) AS why FROM open_role_proposals WHERE id = ?", [id]);
-    expect(row.why).toBe("Third why.");
+    expect(row.why).toBe("Fourth why.");
   });
 
   it("a stage never moves by itself: reading the page, refining and waiting change no step", async () => {
