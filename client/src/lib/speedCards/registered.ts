@@ -29,11 +29,14 @@ export function cardLabel(card: RegisteredCard, i18n: I18n = appI18n): string {
   return i18n._(card.label);
 }
 
-/** Credits are in use for this member (shared/payGate.ts): read once per opening of the sheet. */
-export function usePayShown(): boolean {
+/**
+ * Credits are in use for this member (shared/payGate.ts): read once per opening of the sheet. Null until the two
+ * reads answer, so the sheet holds Pay's slot quietly instead of drawing "+" and then filling it.
+ */
+export function usePayShown(): boolean | null {
   const { user } = useAuth();
   const signedIn = !!user;
-  const [shown, setShown] = useState(false);
+  const [shown, setShown] = useState<boolean | null>(signedIn ? null : false);
   useEffect(() => {
     if (!signedIn) return;
     let live = true;
