@@ -194,6 +194,23 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     return id;
   };
 
+  /**
+   * Everything References and proposal asks (QA round 4): the references asked if they were not, given by the
+   * applicant's own link, and each followed up (fixture SQL: the follow-up door is tested in applicantOnboarding.test).
+   */
+  const readyForFinal = async (id: string) => {
+    const [asked] = await q("SELECT COUNT(*) AS n FROM application_steps WHERE application_ref = ? AND kind = 'refs_asked'", [id]);
+    if (!Number(asked.n)) expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`, {
+      references: [
+        { name: "Ana Reference", contact: "ana.reference@example.test", how: "We kept the books of a farm together.", ally: "" },
+        { name: "Ben Reference", contact: "ben.reference@example.test", how: "He hired me for two harvests.", ally: "" },
+      ],
+    });
+    expect(given.status, given.text).toBe(200);
+    await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ?", [id]);
+  };
+
   it("the applicant's page reads the six stages in order, and the stage follows what the team does", async () => {
     const id = await confirmed("flow-stages@example.test");
     const s = await status(id);
@@ -238,6 +255,7 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
   it("freezes once the final conversation opens: refused, and the page says so", async () => {
     const id = await atReferences("flow-freeze@example.test");
     expect((await refine(id, { why: "Second why.", aim: "Second aim." })).status).toBe(200);
+    await readyForFinal(id);
     // Moving to the final conversation is the team's act, and it is what opens it (QA round 1).
     const moved = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
     expect(moved.status, moved.text).toBe(200);
@@ -280,6 +298,7 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
       expect(s1.sixStages.now).toBe("references");
       expect(s1.bookNow).toBeNull();
       expect(s1.sixStages.refine.open).toBe(true);
+      await readyForFinal(id);
       // The team moves it on: that opens the final conversation and fixes the proposal.
       expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
       const s2 = await status(id);
@@ -298,9 +317,9 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     try {
       const id = await confirmed("flow-final-first@example.test");
       // QA ROUND 3: the older path's waiting final is not movable before References and proposal (no shortlist, no
-      // first conversation written up): the door refuses, and the page offers nothing.
+      // first conversation written up): the door refuses (in its own words for what is first), and the page offers nothing.
       const early = await call("POST", `${app(id)}/final-conversation`, {}, FOUNDER.id);
-      expect([early.status, early.body?.error ?? early.body?.code]).toEqual([409, "not_references"]);
+      expect(early.status, early.text).toBe(409);
       expect((await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id)).body.walkthrough.you.mayAddFinal).toBe(false);
       const rows = async () => (await q("SELECT position, is_final, state FROM application_interviews WHERE application_ref = ? ORDER BY position", [id])).map((r: any) => [Number(r.position), Number(r.is_final), r.state]);
       // The final went last, and nothing about it is open.
@@ -314,6 +333,13 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
       expect((await rows())[1][2]).toBe("waiting");
       await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [nonFinal.id]);
       expect((await rows())[1][2]).toBe("waiting");
+      // QA ROUND 4, CASE B: the older path with no references asked. Before, the door let it through; now it refuses
+      // with the readiness words, and the page offers no move.
+      const noRefs = await call("POST", `${app(id)}/final-conversation`, {}, FOUNDER.id);
+      expect([noRefs.status, noRefs.body?.error]).toEqual([409, "not_references"]);
+      expect((await rows())[1][2]).toBe("waiting");
+      expect((await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id)).body.walkthrough.you.mayAddFinal).toBe(false);
+      await readyForFinal(id);
       // The page offers the move (it named the final but showed no button before), and the server accepts it.
       const w = await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id);
       expect(w.status, w.text).toBe(200);

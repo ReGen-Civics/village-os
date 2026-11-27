@@ -31,6 +31,7 @@ import {
   shortlistOf,
   trackOf,
   trackStates,
+  readyForFinalOf,
   TRACK,
   type ReferenceError,
   type ShortlistAnswer,
@@ -336,14 +337,11 @@ export async function addFinalConversation(deps: ReviewDeps, ref: string, viewer
   const s = await standingOf(deps, ref, viewerId);
   if (s.isApplicant || s.recused || !(s.holdsPower || s.isFinalCall)) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
   const steps = await review.stepsOf(pool, ref);
-  // A shortlist comes first, except when the role's own list already holds a final conversation waiting to be moved to
-  // (the review path before the shortlist existed, where nothing else opens it now).
-  const roleFinalWaits = (await review.interviewsOf(pool, ref)).some((i) => i.final && i.state === "waiting");
-  if (shortlistOf(steps) !== "yes" && !roleFinalWaits) return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
-  // Only from References and proposal (QA round 3): the older path's waiting final was movable from any stage, so a
-  // move with no shortlist and no references went through. The page offers it only there, and now so does the door.
+  // THE SAME READINESS THE PAGE USES (QA round 4): shortlisted, every conversation before the final written up, every
+  // reference given and followed up. The page offers the move only then (`readyForFinalOf`, which sets the
+  // "add_final" act), and the door now refuses anything earlier, on every path. Checked after an open final and
+  // unfinished conversations, so those keep their own words.
   const facts = await trackFactsOf(deps, ref);
-  if (facts && trackStates(facts.facts).now !== "references") return refuse(409, "not_references", ONBOARDING_WORDS.finalAtReferences);
   const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
   const at = deps.now();
   let opened: { position: number; roleId: string; minutes: number } | null = null;
@@ -355,6 +353,7 @@ export async function addFinalConversation(deps: ReviewDeps, ref: string, viewer
     if (reviewStageOf(steps) === "review") return refuse(409, "review_first", ONBOARDING_WORDS.shortlistWaitsReview);
     // One conversation open at a time: the ones before the final are written up first (the lead: "they passed this step").
     if (list.some((i) => !i.final && i.state !== "scored" && i.state !== "skipped")) return refuse(409, "talks_first", ONBOARDING_WORDS.finalTalksFirst);
+    if (!facts || !readyForFinalOf(facts.facts)) return refuse(409, "not_references", ONBOARDING_WORDS.finalAtReferences);
     if (final) {
       if (await review.openInterview(conn, final.id, at)) opened = { position: final.position, roleId: final.roleId, minutes: final.minutes };
       return null;
@@ -552,8 +551,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
         (s.holdsPower || s.isFinalCall) &&
         !s.recused &&
         !interviews.some((i) => i.final && i.state !== "waiting") &&
-        // Only from References and proposal, the same stage the door itself requires (QA round 3).
-        track.now === "references" &&
+        // Only when the page offers the move: the same readiness the door requires (QA round 4).
+        track.primary === "add_final" &&
         (interviews.some((i) => i.final && i.state === "waiting") || (shortlist === "yes" && !!finalRole)),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,
@@ -596,7 +595,7 @@ export async function stagesOf(deps: Pick<ReviewDeps, "getPool">, refs: readonly
   return out;
 }
 
-// ── The conversations' notes (0442) ─────────────────────────────────────────
+// ── The conversations' notes (0444) ─────────────────────────────────────────
 
 /** Whether this viewer may read, and add to, one conversation's notes. */
 function readsConversation(s: Standing, roleId: string): boolean {

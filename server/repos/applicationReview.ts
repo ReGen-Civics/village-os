@@ -267,7 +267,7 @@ export async function clearReviewOf(db: Db, refs: readonly string[], at: Date): 
   await deleteReferencesOf(db, refs);
   // The reviewers' conversation notes (0417) go with the scores: words about a person, kept only as long as the review.
   await deleteGuideNotesOf(db, refs);
-  // Each conversation's private notes and files (0442) go with them, files off the disk too.
+  // Each conversation's private notes and files (0444) go with them, files off the disk too.
   await deleteConversationNotesOf(db, refs);
   await db.query("UPDATE application_recusals SET reason = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_interviews SET scorer_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
@@ -308,7 +308,7 @@ export async function refsDueForClearing(db: Db, before: Date): Promise<string[]
 export async function forgetMemberReview(db: Db, userId: string, at: Date): Promise<number> {
   await db.query("DELETE FROM application_scores WHERE scorer_user_id = ?", [userId]);
   await forgetGuideNotesBy(db, userId);
-  // The conversation notes and files they added (0442).
+  // The conversation notes and files they added (0444).
   await forgetConversationNotesBy(db, userId);
   await db.query("DELETE FROM application_recusals WHERE user_id = ?", [userId]);
   // The follow-up notes they wrote on a reference go, and their name leaves every reference they owned (0412).

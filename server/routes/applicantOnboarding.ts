@@ -13,7 +13,7 @@
  *   POST /api/application-status/:ref/references?token=            the applicant gives their references, by the emailed link
  *   POST /api/governance/applications/:ref/references              the same, signed in as the applicant
  *   GET  /api/governance/applications/:ref/references/mine         a member's own first-role application: asked, and a count once given
- *   POST /api/governance/applications/:ref/interviews/:id/notes    a written note, or one file, on one conversation (0442)
+ *   POST /api/governance/applications/:ref/interviews/:id/notes    a written note, or one file, on one conversation (0444)
  *   DELETE /api/governance/applications/:ref/conversation-notes/:id         the author takes their note or file off
  *   GET  /api/governance/applications/:ref/conversation-notes/:id/file      one note's file, read again through who may read it
  *
@@ -193,7 +193,7 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     given(res, await giveReferences(work, ref, req.body?.references));
   });
 
-  // ── The conversations' notes (0442) ───────────────────────────────────────
+  // ── The conversations' notes (0444) ───────────────────────────────────────
 
   /** One notes act, counted per member: sixty in an hour, across every application. */
   async function noting(req: any, res: any): Promise<{ viewerId: string; ref: string } | null> {

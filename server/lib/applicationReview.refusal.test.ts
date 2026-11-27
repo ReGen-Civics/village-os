@@ -56,7 +56,7 @@ describe("the scan sees what it is told to look for", () => {
     expect(namesForbidden('import { guideItems } from "../../shared/conversationGuide"')).toContain("conversationGuide");
     expect(namesForbidden('import * as g from "../repos/applicationGuide"')).toContain("applicationGuide");
     expect(namesForbidden("POST /api/governance/applications/:ref/guide-notes")).toContain("guide-notes");
-    // Each conversation's private notes (0442): the table, its rules, its repo, its files and its door.
+    // Each conversation's private notes (0444): the table, its rules, its repo, its files and its door.
     expect(namesForbidden("SELECT body FROM application_conversation_notes")).toContain("application_conversation_notes");
     expect(namesForbidden('import { NOTES_WORDS } from "../../shared/conversationNotes"')).toContain("conversationNotes");
     expect(namesForbidden('import * as n from "../repos/applicationConversationNotes"')).toContain("applicationConversationNotes");

@@ -291,7 +291,7 @@ export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackSta
 }
 
 /** Everything References and proposal asks is in, and the final conversation has not opened. */
-function readyForFinalOf(f: TrackFacts): boolean {
+export function readyForFinalOf(f: TrackFacts): boolean {
   const talks = f.interviews.filter((i) => !i.final);
   const followedUp = f.refsGiven && f.references.every((r) => r.followedUp);
   return f.shortlist === "yes" && talks.every((i) => done(i.state)) && followedUp && !f.interviews.some((i) => i.final && i.state !== "waiting");
@@ -423,6 +423,9 @@ export const ONBOARDING_WORDS = {
   shortlistDone: "This application already has a shortlist answer.",
   shortlistWaitsReview: "Our review comes first: invite the applicant to the conversations before the shortlist.",
   referencesHeading: "References and follow-ups",
+  referencesKicker: "Who vouches for them",
+  referencesShort: "Private to the team, and deleted with the application.",
+  whoReads: "Who reads these",
   referencesPrivate: "Personal details of people who never signed up. Only the people who review this application, the role that makes the final call and each reference's owner read them. No AI reads them. They are deleted with the application.",
   referencesAsked: "References were asked for. The applicant adds them from their status page.",
   referencesAskedNow: "Asked. The letter went to the applicant in their language.",
@@ -448,13 +451,17 @@ export const ONBOARDING_WORDS = {
   ally: "Why they might be an ally or partner",
   contact: "How to reach them",
   gatheredHeading: "Gathered for the final call",
+  gatheredKicker: "Before the final conversation",
+  gatheredShort: (role: string) => `Everything ${role} reads, as written.`,
+  gatheredMore: "What this holds",
+  decideBelow: "Adopt or decline below.",
   gatheredIntro: (role: string) => `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`,
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
   finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
   finalExists: "The final conversation is already open.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
-  finalAtReferences: "The final conversation comes after References and proposal. Shortlist the application and write up its first conversation, then move it on.",
+  finalAtReferences: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.",
   finalNoRole: "No role is named for the final call. A founder names it in the village's settings.",
   notAllowed: "This is for the people who review this application.",
   notFound: "That application is not here.",

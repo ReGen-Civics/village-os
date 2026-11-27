@@ -33,6 +33,7 @@ import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 import { forgetMemberReview } from "../repos/applicationReview";
 import { register as registerProfile } from "./profile";
+import { signLink } from "../lib/comms/links";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[applicationReview] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -253,6 +254,18 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         // holder of the power shortlists it, and with the conversations before it written up it stands there.
         const listed = await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, state.powerHolders[0]);
         expect([200, 409], JSON.stringify(listed.body)).toContain(listed.status);
+        // ...and References and proposal is done (QA round 4: the door asks what the page asks): the references
+        // asked, given by the applicant's own link, and followed up (fixture SQL for the follow-up itself).
+        const asked = await call("POST", `/api/governance/applications/${id}/references/ask`, {}, state.powerHolders[0]);
+        expect([200, 409], JSON.stringify(asked.body)).toContain(asked.status);
+        const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`, {
+          references: [
+            { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a garden together.", ally: "" },
+            { name: "Ben Reference", contact: "ben.reference@example.test", how: "He hired me for two harvests.", ally: "" },
+          ],
+        });
+        expect([200, 409], JSON.stringify(given.body)).toContain(given.status);
+        await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ?", [id]);
         const moved = await call("POST", `/api/governance/applications/${id}/final-conversation`, {}, FOUNDER.id);
         expect(moved.status, JSON.stringify(moved.body)).toBe(200);
         ivs = await interviews(id);

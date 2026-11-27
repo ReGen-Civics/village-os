@@ -1,5 +1,5 @@
 /**
- * THE CONVERSATION NOTES' FILES ON DISK (0442; the contract is shared/conversationNotes.ts).
+ * THE CONVERSATION NOTES' FILES ON DISK (0444; the contract is shared/conversationNotes.ts).
  *
  * WHERE. `<data>/private-conversation-notes/`, beside the proposals' private files and OUTSIDE the uploads volume,
  * because `/api/uploads/:filename` answers anybody. Nothing serves this folder but the notes' own file door

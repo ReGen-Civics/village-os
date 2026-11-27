@@ -103,7 +103,77 @@ msgctxt "applicant onboarding: finalTalksFirst"
 msgid "Write up the conversations before it first. Then move the application to the final conversation."
 msgstr "Primero escriba las conversaciones anteriores. Después pase la postulación a la conversación final."
 
-# needs-native-review: the move to the final conversation only from References and proposal, QA round 3
+# needs-native-review: the move to the final conversation only once References and proposal is done, QA round 4
 msgctxt "applicant onboarding: finalAtReferences"
-msgid "The final conversation comes after References and proposal. Shortlist the application and write up its first conversation, then move it on."
-msgstr "La conversación final viene después de Referencias y propuesta. Preseleccione la postulación y escriba su primera conversación; después pásela a la siguiente etapa."
+msgid "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up."
+msgstr "La conversación final llega cuando Referencias y propuesta está completa: la postulación preseleccionada, sus conversaciones escritas y cada referencia entregada y contactada."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: referencesKicker"
+msgid "Who vouches for them"
+msgstr "Quién responde por esta persona"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: referencesShort"
+msgid "Private to the team, and deleted with the application."
+msgstr "Privado para el equipo, y se borra con la postulación."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: whoReads"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredKicker"
+msgid "Before the final conversation"
+msgstr "Antes de la conversación final"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredShort"
+msgid "Everything {role} reads, as written."
+msgstr "Todo lo que lee {role}, tal como se escribió."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "applicant onboarding: gatheredMore"
+msgid "What this holds"
+msgstr "Qué contiene"
+
+# needs-native-review: the phone's decide panel holds the choice, QA round 4
+msgctxt "applicant onboarding: decideBelow"
+msgid "Adopt or decline below."
+msgstr "Adopte o decline abajo."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation notes: the one line under the heading"
+msgid "Never shown to the applicant."
+msgstr "Nunca se muestran a la persona que postula."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation notes: opens who reads them"
+msgid "Who reads these"
+msgstr "Quién las lee"
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation guide: the one line under the heading"
+msgid "Notes only: nothing here is scored or ranked."
+msgstr "Solo notas: aquí nada se puntúa ni se clasifica."
+
+# needs-native-review: the team page's kickers and one-line privacy notes, QA round 4
+msgctxt "conversation guide: opens what it is"
+msgid "What this holds"
+msgstr "Qué contiene"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above the roles asked for"
+msgid "The roles"
+msgstr "Los roles"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above the two cards side by side"
+msgid "The cards"
+msgstr "Las tarjetas"
+
+# needs-native-review: the team page's kickers, QA round 4
+msgctxt "open proposal: the kicker above why and what they would do"
+msgid "In their words"
+msgstr "En sus palabras"

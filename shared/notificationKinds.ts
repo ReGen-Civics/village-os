@@ -364,7 +364,7 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
-  // A conversation's notes were added (0442). To the other interviewers only, never the applicant; no note words ride on it.
+  // A conversation's notes were added (0444). To the other interviewers only, never the applicant; no note words ride on it.
   application_conversation_notes: {
     group: "decisions",
     celebrate: false,

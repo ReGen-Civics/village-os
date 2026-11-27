@@ -168,6 +168,8 @@ export interface ApplicantMessages {
     heading: string;
     /** The heading for an application our review reads first. */
     headingApplication: string;
+    /** The kicker over the status page's heading (QA round 4). */
+    kicker: string;
     missing: string;
     nextLabel: string;
     by(day: string): string;
@@ -447,6 +449,7 @@ const en: ApplicantMessages = {
   status: {
     heading: "Where your proposal is",
     headingApplication: "Where your application is",
+    kicker: "Your application",
     missing: "That link does not match a proposal. Check the link in your email.",
     nextLabel: "What happens next",
     by: (day) => `By ${day}`,
@@ -735,6 +738,7 @@ const es: ApplicantMessages = {
   status: {
     heading: "Dónde está su propuesta",
     headingApplication: "Dónde está su postulación",
+    kicker: "Su postulación",
     missing: "Ese enlace no corresponde a ninguna propuesta. Revise el enlace de su correo.",
     nextLabel: "Lo que sigue",
     by: (day) => `Para el ${day}`,

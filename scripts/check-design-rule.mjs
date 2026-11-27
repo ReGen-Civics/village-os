@@ -131,6 +131,11 @@ const JOURNEY = [
   "client/src/components/openProposal/ConversationNotes.tsx",
   "client/src/components/openProposal/ProposalVersions.tsx",
   "client/src/components/openProposal/ConversationGuide.tsx",
+  // The team's walkthrough and its pieces (QA round 4). Held here, beside the pages: a page in PAGES must put WORLD
+  // (a min-h-screen night ground) on its outer element, and this is a card inside OpenProposal.tsx, which does.
+  "client/src/components/openProposal/Walkthrough.tsx",
+  "client/src/components/openProposal/PrivacyNote.tsx",
+  "client/src/components/roleCard/RoleArtBeside.tsx",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",

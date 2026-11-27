@@ -25,7 +25,7 @@ import { useModuleOn } from "@/modules/ModuleProvider";
 import { sayPath, tokenFacts, yourPath } from "@shared/yourPath";
 import { BreathingLoader, useReducedMotion } from "@/components/natural";
 import { gameFetch } from "@/lib/gameApi";
-import { useRoleArt } from "@/lib/natureArt";
+import RoleArtBeside from "@/components/roleCard/RoleArtBeside";
 import { DECLINED_PAGE_WORDS } from "@shared/openProposalDecide";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
 import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
@@ -381,7 +381,9 @@ export default function ApplicationStatus() {
         {state === "ready" && s && view && (
           <article className="space-y-6" data-application-step={s.step}>
             <header>
-              <h1 className={H1}>{view.heading}</h1>
+              {/* A kicker over the heading, like every page in the night world (QA round 4). */}
+              <p className={EYEBROW}>{w.status.kicker}</p>
+              <h1 className={`mt-1 ${H1}`}>{view.heading}</h1>
               {s.roles.length > 0 && (
                 <div className="mt-2 flex items-center gap-3" data-status-role="">
                   <RoleArtBeside roleId={s.roleIds?.[0] ?? null} />
@@ -593,27 +595,5 @@ export default function ApplicationStatus() {
       </div>
       </div>
     </Layout>
-  );
-}
-
-/**
- * THE ROLE'S OWN PAINTING beside its name under the heading (QA round 3: the page needed the village's art), framed
- * the way /roles frames it (components/roleCard/RoleRowArt.tsx). The painting the village already holds for that role;
- * until it answers, and for a role with none, the seed glyph in the same frame. Decorative: the name beside it says it.
- */
-function RoleArtBeside({ roleId }: { roleId: string | null }) {
-  const src = useRoleArt("sm")(roleId);
-  const [failed, setFailed] = useState(false);
-  if (src && !failed) {
-    return (
-      <span className="relative block aspect-[3/4] w-12 shrink-0 overflow-hidden rounded-xl border border-notice/40 shadow-sm" data-role-art="" aria-hidden="true">
-        <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} className="absolute inset-0 size-full object-cover" />
-      </span>
-    );
-  }
-  return (
-    <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-notice/40 bg-card shadow-sm" data-role-art-seed="" aria-hidden="true">
-      <SeedOfLife size="sm" total={6} walked={0} label="" />
-    </span>
   );
 }

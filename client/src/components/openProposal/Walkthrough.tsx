@@ -24,6 +24,8 @@ import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import ConversationNotes from "@/components/openProposal/ConversationNotes";
 import ProposalVersions from "@/components/openProposal/ProposalVersions";
+import PrivacyNote from "@/components/openProposal/PrivacyNote";
+import { useDayWords } from "@/components/openProposal/ConversationNotes";
 import type { ProposalVersion } from "@shared/proposalRefine";
 import type { GuideView } from "@shared/conversationGuide";
 import type { ConversationNotesView } from "@shared/conversationNotes";
@@ -60,7 +62,7 @@ interface ServedWalkthrough {
   } | null;
   roleNames: { followup: string | null; finalCall: string | null };
   guide?: GuideView | null;
-  /** Each conversation's private notes and files this reader may read (0442). Never served to the applicant. */
+  /** Each conversation's private notes and files this reader may read (0444). Never served to the applicant. */
   conversations?: ConversationNotesView[];
   /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts), and its words now. */
   proposalVersions?: ProposalVersion[];
@@ -139,8 +141,24 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
     landed.current = true;
     const hash = window.location.hash.slice(1);
     if (!hash) return;
-    const el = document.getElementById(decodeURIComponent(hash));
-    if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "start" });
+    const land = () => {
+      const el = document.getElementById(decodeURIComponent(hash));
+      if (el && typeof el.scrollIntoView === "function") el.scrollIntoView({ block: "start" });
+    };
+    land();
+    // The page grows after the jump (art, the decide panel, the scorecards), which once left the notes 1000px off
+    // (QA round 4). Land again after it settles, unless the reader has moved the page themselves.
+    let moved = false;
+    const mine = () => {
+      moved = true;
+    };
+    const events = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+    for (const e of events) window.addEventListener(e, mine, { passive: true, once: true });
+    const timers = [350, 1000, 2000].map((ms) => window.setTimeout(() => !moved && land(), ms));
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+      for (const e of events) window.removeEventListener(e, mine);
+    };
   }, [w]);
 
   const act = async (path: string, body?: unknown) => {
@@ -182,7 +200,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         return <a className={BTN_PRIMARY} href="#scorecards">{label}</a>;
       case "review":
       case "decide":
-        return <a className={decideOnPage ? BTN_NOTICE : BTN_PRIMARY} href={decideHref} data-walk-decide={decideOnPage ? "edged" : "gold"}>{label}</a>;
+        // On a phone the decide panel floats its own Adopt and Decline (QA round 4): a second door to the same choice
+        // only covered the track, so there the words point below; from lg up the link stays, gold-edged.
+        return decideOnPage ? (
+          <>
+            <p className={`lg:hidden ${HINT}`} data-walk-decide-below="">{OW.decideBelow}</p>
+            <span className="hidden lg:block">
+              <a className={BTN_NOTICE} href={decideHref} data-walk-decide="edged">{label}</a>
+            </span>
+          </>
+        ) : (
+          <a className={BTN_PRIMARY} href={decideHref} data-walk-decide="gold">{label}</a>
+        );
     }
   })();
 
@@ -211,7 +240,8 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         {t.stages.map((s, i) => (
           <li key={s.key} className="flex items-center gap-2 text-sm" data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
             <span className="jw-stone flex shrink-0" data-state={STONE_STATE[s.state]} aria-hidden="true">
-              <span className={`jw-stone-face !size-8 !text-xs ${STONE_FACE[s.state]}`}>{s.state === "done" ? <Check className="size-3.5" /> : s.state === "now" ? i + 1 : ""}</span>
+              {/* The gold fill says "you are here"; no number on it (QA round 4: dark on gold read at 2.35:1). */}
+              <span className={`jw-stone-face !size-8 !text-xs ${STONE_FACE[s.state]}`}>{s.state === "done" ? <Check className="size-3.5" /> : ""}</span>
             </span>
             <span className={`sr-only sm:not-sr-only ${STONE_LABEL[s.state]}`}>{s.label}</span>
             <span className="sr-only">{OW.stateWords[s.state]}</span>
@@ -239,8 +269,9 @@ function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act
   const OW = useOnboardingWords();
   return (
     <div id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="">
-      <h3 className="font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>
-      <p className={`mt-1 ${HINT}`}>{OW.referencesPrivate}</p>
+      <p className={EYEBROW}>{OW.referencesKicker}</p>
+      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>
+      <PrivacyNote line={OW.referencesShort} label={OW.whoReads} more={OW.referencesPrivate} />
       {!w.references.given && <p className="mt-2 text-foreground">{OW.referencesAsked}</p>}
       {w.references.given && w.references.list.length === 0 && <p className="mt-2 text-foreground">{OW.referencesNone}</p>}
       <ul className="mt-3 grid gap-3">
@@ -260,6 +291,7 @@ function ownerWords(r: ServedReference): string {
 
 function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
   const OW = useOnboardingWords();
+  const day = useDayWords();
   const [notes, setNotes] = useState(r.notes ?? "");
   const [done, setDone] = useState(r.followedUp);
   const [pick, setPick] = useState("");
@@ -316,7 +348,8 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
       ) : (
         r.notes && (
           <div className="mt-3">
-            <p className={LABEL}>{OW.notes}{r.notesOn ? ` (${r.notesOn})` : ""}</p>
+            {/* The day said like the note dates (QA round 4), never a raw 2026-11-27. */}
+            <p className={LABEL}>{OW.notes}{r.notesOn ? ` · ${day(r.notesOn)}` : ""}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">{r.notes}</p>
           </div>
         )
@@ -333,8 +366,9 @@ function Gathered({ w }: { w: ServedWalkthrough }) {
   const criterion = (id: string) => cards?.criteria.find((c) => c.id === id)?.text ?? id;
   return (
     <div className="mt-6" data-walk-gathered="">
-      <h3 className="font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</h3>
-      <p className={`mt-1 ${HINT}`}>{OW.gatheredIntro(role)}</p>
+      <p className={EYEBROW}>{OW.gatheredKicker}</p>
+      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</h3>
+      <PrivacyNote line={OW.gatheredShort(role)} label={OW.gatheredMore} more={OW.gatheredIntro(role)} />
       {w.references.list.length > 0 && (
         <ul className="mt-3 grid gap-2">
           {w.references.list.map((r) => (

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * EACH CONVERSATION'S NOTES on the team's walkthrough (0442): the panel draws only what the door served, offers the
+ * EACH CONVERSATION'S NOTES on the team's walkthrough (0444): the panel draws only what the door served, offers the
  * take-off button only on the reader's own notes, and posts a written note to the conversation's own door.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";

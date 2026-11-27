@@ -1,4 +1,4 @@
--- 0442: each conversation of an application keeps its own private notes and files (the lead, 27 Nov 2026).
+-- 0444: each conversation of an application keeps its own private notes and files (the lead, 27 Nov 2026).
 --
 -- THE CONTRACT IS shared/conversationNotes.ts; the SQL is server/repos/applicationConversationNotes.ts and
 -- the doors are server/routes/applicantOnboarding.ts.

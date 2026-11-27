@@ -369,6 +369,16 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(scored.status, JSON.stringify(scored.body)).toBe(200);
       expect((await interviews(id)).map((i: any) => Number(i.is_final))).toEqual([0]);
 
+      // QA ROUND 4, CASE A: references given but not followed up. The page offers no move, and the door refuses the
+      // final-call holder too: nothing opens and the proposal stays open to refine.
+      const notYet = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
+      expect([notYet.status, notYet.body.error]).toEqual([409, "not_references"]);
+      expect((await interviews(id)).map((i: any) => Number(i.is_final))).toEqual([0]);
+      expect((await walk(id, FINAL.id)).body.walkthrough.you.mayAddFinal).toBe(false);
+      // Each owner follows up (fixture: the follow-up itself is tested above).
+      await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ?", [id]);
+      expect((await walk(id, FINAL.id)).body.walkthrough.you.mayAddFinal).toBe(true);
+
       // The team moves it to the final conversation: it opens at once and its holder is asked.
       const added = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
       expect(added.status, JSON.stringify(added.body)).toBe(200);

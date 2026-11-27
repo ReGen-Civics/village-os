@@ -1,5 +1,5 @@
 /**
- * `application_conversation_notes` (0442): each conversation's private notes and files. Every statement the table runs
+ * `application_conversation_notes` (0444): each conversation's private notes and files. Every statement the table runs
  * lives here. The rules are shared/conversationNotes.ts and the work is server/lib/applicantOnboarding.ts. Raw SQL only.
  *
  * NOTES ONLY: the table has no score, level or rank column. NOTHING HERE IS READ BY A COMPANION:

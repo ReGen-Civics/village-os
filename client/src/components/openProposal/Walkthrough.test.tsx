@@ -102,6 +102,9 @@ describe("the walkthrough", () => {
     served = { status: 200, body: walk({ track: { stages: stages("agreement"), now: "agreement", who: "the circle", next: "Decide.", primary: "decide" } }) };
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" decideOnPage />);
     expect((await screen.findByRole("link", { name: ONBOARDING_WORDS.primary.decide })).getAttribute("data-walk-decide")).toBe("edged");
+    // QA round 4: on a phone the floating panel holds Adopt and Decline, so the words point there and the link waits for lg.
+    expect(screen.getByText(ONBOARDING_WORDS.decideBelow).className.split(" ")).toContain("lg:hidden");
+    expect(screen.getByRole("link", { name: ONBOARDING_WORDS.primary.decide }).parentElement?.className.split(" ")).toEqual(expect.arrayContaining(["hidden", "lg:block"]));
     cleanup();
     // CONTROL: with no decide panel on the page, the link is the page's gold act.
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
@@ -121,6 +124,13 @@ describe("the walkthrough", () => {
       await screen.findByRole("heading", { level: 2, name: ONBOARDING_WORDS.heading });
       await new Promise((r) => setTimeout(r, 0));
       expect(seen).toEqual(["walk-heading"]);
+      // QA round 4: the page grows after the jump, so it lands again once it settles...
+      await new Promise((r) => setTimeout(r, 400));
+      expect(seen).toEqual(["walk-heading", "walk-heading"]);
+      // ...and never again once the reader has moved the page themselves.
+      window.dispatchEvent(new Event("wheel"));
+      await new Promise((r) => setTimeout(r, 700));
+      expect(seen).toEqual(["walk-heading", "walk-heading"]);
     } finally {
       Element.prototype.scrollIntoView = was;
       window.history.replaceState(null, "", "#");
@@ -150,6 +160,26 @@ describe("the walkthrough", () => {
     fireEvent.click(screen.getByRole("button", { name: ONBOARDING_WORDS.notesSave }));
     await screen.findByText("Done.");
     expect(posts).toEqual([{ url: "/api/governance/applications/op-0123456789abcdef0123/references/7/notes", body: { notes: "Called her.", followedUp: true } }]);
+  });
+
+  it("QA round 4: a section reads a kicker, one line of privacy with the rest behind a disclosure, and the follow-up day in words", async () => {
+    served = {
+      status: 200,
+      body: walk({
+        track: { stages: stages("references"), now: "references", who: "People and Operations", next: "x", primary: "follow_up" },
+        references: { asked: true, given: true, list: [{ ...REF, notes: "Called her.", notesOn: "2026-11-27", followedUp: true }], total: 1, mayAssign: false },
+      }),
+    };
+    render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
+    const section = (await screen.findByText(ONBOARDING_WORDS.referencesHeading)).closest("[data-walk-references]")!;
+    expect(section.textContent).toContain(ONBOARDING_WORDS.referencesKicker);
+    const note = section.querySelector("[data-privacy-note]")!;
+    expect(note.querySelector("p")?.textContent).toBe(ONBOARDING_WORDS.referencesShort);
+    // The long words are kept, behind "Who reads these".
+    expect(note.querySelector("details summary")?.textContent).toBe(ONBOARDING_WORDS.whoReads);
+    expect(note.querySelector("details")?.textContent).toContain(ONBOARDING_WORDS.referencesPrivate);
+    expect(section.textContent).toContain("November 27, 2026");
+    expect(section.textContent).not.toContain("(2026-11-27)");
   });
 
   it("gathers the notes and the scorecards, as written, for the final call", async () => {

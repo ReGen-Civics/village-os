@@ -19,6 +19,7 @@ import { BTN_NOTICE, BTN_SECONDARY, EYEBROW, FIELD, H2, HINT, LABEL } from "@/co
 import { CONVERSATION_NOTE_MAX, type ConversationNoteKind, type ConversationNotesView, type ServedNote } from "@shared/conversationNotes";
 import type { GuideView } from "@shared/conversationGuide";
 import { GuideLine, useGuideQuestion } from "@/components/openProposal/ConversationGuide";
+import PrivacyNote from "@/components/openProposal/PrivacyNote";
 
 type FileKind = Exclude<ConversationNoteKind, "text">;
 const FILE_KINDS: readonly FileKind[] = ["transcript", "recording", "file"];
@@ -56,12 +57,14 @@ export default function ConversationNotes({
       <h3 id="conversation-notes-heading" className={`mt-1 ${H2}`}>
         {t({ message: "Conversation notes", context: "conversation notes: the heading" })}
       </h3>
-      <p className={`mt-1 ${HINT}`}>
-        {t({
+      <PrivacyNote
+        line={t({ message: "Never shown to the applicant.", context: "conversation notes: the one line under the heading" })}
+        label={t({ message: "Who reads these", context: "conversation notes: opens who reads them" })}
+        more={t({
           message: "Private to the people who hold each conversation, the role that makes the final call, and the people who place roles. Never shown to the applicant. No AI reads them.",
           context: "conversation notes: who reads them",
         })}
-      </p>
+      />
       {guide && guide.items.length > 0 && (
         <details className="mt-3 min-w-0" data-conversation-guide="">
           <summary className="flex min-h-11 cursor-pointer items-center font-medium text-foreground">

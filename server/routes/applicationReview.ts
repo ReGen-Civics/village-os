@@ -304,7 +304,7 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
   });
 
   // ── Shortlist, references, follow-ups and the final call (server/routes/applicantOnboarding.ts) ──
-  // The conversations' files (0442) sit beside the proposals' private files, outside the public uploads volume.
+  // The conversations' files (0444) sit beside the proposals' private files, outside the public uploads volume.
   const noteFilesDir = deps.proposalFileDir ? path.join(path.dirname(deps.proposalFileDir), "private-conversation-notes") : undefined;
   registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp, noteFilesDir });
 

@@ -7,7 +7,8 @@
 import { useId, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
-import { BTN_SECONDARY, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
+import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
+import PrivacyNote from "@/components/openProposal/PrivacyNote";
 import { GUIDE_LIMITS, type GuideItem, type GuideView } from "@shared/conversationGuide";
 
 /** A guide line said as a question, in the reader's language. Shared with each conversation's notes (QA round 1). */
@@ -24,13 +25,16 @@ export default function ConversationGuide({ base, guide, onSaved }: { base: stri
   const question = useGuideQuestion();
   return (
     <section className="mt-6" data-walk-guide="">
-      <h3 className="font-display text-xl font-bold text-foreground">{t({ message: "Conversation guide", context: "conversation guide: the heading" })}</h3>
-      <p className={`mt-1 ${HINT}`}>
-        {t({
+      <p className={EYEBROW}>{t({ message: "Private to the team", context: "conversation notes: the kicker" })}</p>
+      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{t({ message: "Conversation guide", context: "conversation guide: the heading" })}</h3>
+      <PrivacyNote
+        line={t({ message: "Notes only: nothing here is scored or ranked.", context: "conversation guide: the one line under the heading" })}
+        label={t({ message: "What this holds", context: "conversation guide: opens what it is" })}
+        more={t({
           message: "Questions from the role card to talk through. Write notes for yourself and the other reviewers. Nothing here is scored or ranked, and the notes are deleted with the application.",
           context: "conversation guide: what it is",
         })}
-      </p>
+      />
       <ul className="mt-3 grid gap-3">
         {guide.items.map((i) => (
           <GuideLine key={i.key} item={i} q={question(i)} base={base} notes={guide.notes.filter((n) => n.key === i.key)} onSaved={onSaved} />
