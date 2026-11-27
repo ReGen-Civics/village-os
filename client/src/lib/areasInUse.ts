@@ -14,7 +14,7 @@
  *     examples (`/api/examples`, the answer the examples banner reads; asked
  *     here without a token, which is a newcomer's answer: only an admin's
  *     differs, and an admin is never a newcomer);
- *   - places and photographs: at least one place has a photograph (`/api/places`);
+ *   - places (which holds the photographs since fold 5, #1856): at least one place has a photograph (`/api/places`);
  *   - pooling resources: at least one raising (`/api/crowdpool/campaigns`);
  *   - events: something on the calendar today or later beyond the season
  *     itself (`/api/events`);
@@ -41,7 +41,6 @@ export interface AreaAnswers {
 /** Which answer decides each address. An address not here is in use when its module shows no examples. */
 const ANSWER_OF: Readonly<Record<string, "places" | "campaigns" | "events">> = {
   "/places": "places",
-  "/photographs": "places",
   "/campaigns": "campaigns",
   "/events": "events",
 };

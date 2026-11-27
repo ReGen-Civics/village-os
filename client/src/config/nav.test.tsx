@@ -285,3 +285,137 @@ describe("the Module Library at the bottom", () => {
     });
   }
 });
+
+/* The menu's QA, 27 Nov 2026: the paths open for a newcomer, one folder at a time, and Escape gives focus back. */
+describe("the dropdowns' folders", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    brochure.on = true;
+    running.modules = [];
+  });
+
+  function shell(who: { id: string; name: string; role?: string; membershipGranted?: boolean } | null) {
+    authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
+    render(
+      <Router>
+        <Layout>
+          <p>page body</p>
+        </Layout>
+      </Router>,
+    );
+  }
+
+  it("opens Join to the paths for a visitor, and keeps the folder shut for a member", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(screen.getByRole("button", { name: /Choose your path/ }).getAttribute("aria-expanded")).toBe("true");
+    expect(document.querySelector('#nav-menu-join a[href="/investor"]')).toBeTruthy();
+    cleanup();
+    shell({ id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(screen.getByRole("button", { name: /Choose your path/ }).getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("keeps one folder open at a time, so Govern never runs long", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Govern/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /^Guides$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^How we work$/ }));
+    const open = Array.from(document.querySelectorAll("#nav-menu-govern [data-nav-folder] > button")).filter((b) => b.getAttribute("aria-expanded") === "true");
+    expect(open.map((b) => b.textContent?.trim())).toEqual(["How we work"]);
+  });
+
+  it("gives focus back to the group's button when Escape closes it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.click(join);
+    fireEvent.keyDown(document.getElementById("nav-menu-join")!, { key: "Escape" });
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+    expect(document.activeElement).toBe(join);
+  });
+
+  /*
+   * The menu's QA, round 2: a visitor opened Join, then "Build with us", and the menu vanished. The paths folder shut
+   * above the pointer, the panel shrank out from under it, and mouse-leave closed the dropdown.
+   */
+  it("stays open when the pointer leaves after a folder was clicked, and a press outside closes it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    const wrapper = join.parentElement!;
+    fireEvent.mouseEnter(wrapper);
+    fireEvent.click(screen.getByRole("button", { name: /Build with us/ }));
+    fireEvent.mouseLeave(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Build with us/ }).getAttribute("aria-expanded")).toBe("true");
+    fireEvent.mouseDown(document.body);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("still closes on mouse-leave when it was only hovered open, the control for the case above", () => {
+    shell(null);
+    const wrapper = screen.getAllByRole("button", { name: /^Join/i })[0]!.parentElement!;
+    fireEvent.mouseEnter(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.mouseLeave(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("stays open past mouse-leave when a click opened it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.click(join);
+    fireEvent.mouseLeave(join.parentElement!);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+  });
+
+  it("holds it open when its button is clicked after the pointer hovered it open, and a second click shuts it", () => {
+    // A mouse reaches the button before it clicks, so the hover has opened it already: the click must hold, not shut.
+    // This states the behaviour; it does not catch the defect that shipped once in round 2 (a capture-phase hold that a
+    // real browser re-rendered before the button's own click read it). jsdom passed that code. A real browser did not.
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.mouseEnter(join.parentElement!);
+    fireEvent.click(join);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.mouseLeave(join.parentElement!);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.click(join);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("draws every row 44px high, glyph or none, in a dropdown and in the account menu (the menu's QA, round 3)", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    fireEvent.click(screen.getAllByRole("button", { name: /^Govern/i })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: /^Decide$/ }));
+    const rows = Array.from(document.querySelectorAll("#nav-menu-govern a, #nav-menu-govern [data-nav-folder] > button"));
+    expect(rows.length).toBeGreaterThan(5);
+    for (const r of rows) expect(r.className, r.textContent ?? "").toContain("min-h-11");
+    fireEvent.keyDown(document.getElementById("nav-menu-govern")!, { key: "Escape" });
+    fireEvent.click(screen.getByRole("button", { name: /Your account/ }));
+    const account = document.getElementById("account-menu")!;
+    expect(account.querySelector("[data-menu-eyebrow]")?.textContent).toBe("Yours");
+    for (const r of Array.from(account.querySelectorAll("a, button"))) expect(r.className, r.textContent ?? "").toContain("min-h-11");
+  });
+
+  it("lays the footer out as the menu's groups, and leaves Waiting on you to the account menu", () => {
+    shell({ id: "u-ada", name: "Ada Stone", role: "admin" });
+    const footer = document.querySelector("footer")!;
+    expect(Array.from(footer.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(["Village", "Community", "Join", "Govern", "Connect"]);
+    expect(footer.querySelector('a[href="/governance/work"]')).toBeNull();
+  });
+
+  it("heads each dropdown with what its group holds, in words", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(document.getElementById("nav-menu-join")!.querySelector("p")?.textContent).toBe("Ways in");
+  });
+
+  it("names a folder's list in aria-controls only while it is open", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    const build = screen.getByRole("button", { name: /Build with us/ });
+    expect(build.getAttribute("aria-controls")).toBeNull();
+    fireEvent.click(build);
+    expect(document.getElementById(build.getAttribute("aria-controls")!)).toBeTruthy();
+  });
+});

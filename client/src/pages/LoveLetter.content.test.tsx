@@ -183,7 +183,7 @@ describe("the page with no words of its own", () => {
     expect(screen.getByText(starter("form", "visitorLede"))).toBeInTheDocument();
     expect(screen.getByRole("button", { name: starter("form", "submitLabel") })).toBeInTheDocument();
     expect(screen.getByText(/I have read the Love Letter above and commit to the values and agreements of the Fernhollow community as a member of Fernhollow Commons\./)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Good Neighbor Criteria" })).toHaveAttribute("href", "/good-neighbor");
+    expect(screen.getByRole("link", { name: "Good Neighbor Criteria" })).toHaveAttribute("href", "/rights#good-neighbor");
     // A price is one village's to set: no suggested line and no levels until
     // the village writes them, and the signer can still describe an amount.
     expect(starterList("contribution", "tiers")).toEqual([]);

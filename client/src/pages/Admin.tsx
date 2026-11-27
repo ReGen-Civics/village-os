@@ -78,6 +78,7 @@ import NoticeWordsPanel from "@/components/admin/NoticeWordsPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import FeedbackShot from "@/components/admin/FeedbackShot";
 import BrevoListNumber from "@/components/admin/BrevoListNumber";
 import { saveBlob } from "@/lib/notebookCopy";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
@@ -7685,8 +7686,8 @@ function ProductsAdminTab({ password }: { password: string }) { const { t } = us
 }
 
 /**
- * S66: the village's own feedback queue. Everything submitted through
- * /feedback lands here, whatever the relay is set to — the relay only
+ * S66: the village's own feedback queue. Everything submitted through the guide's panel (once
+ * /feedback) lands here, whatever the relay is set to — the relay only
  * controls whether the platform team ALSO sees a copy (content, never
  * names). Status is a five-state pipeline, same vocabulary as submissions.
  */
@@ -7743,7 +7744,7 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
       {loading && !data ? (
         <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading…</Trans></div>
       ) : (data?.items ?? []).length === 0 ? (
-        <p className="text-sm text-muted-foreground py-8"><Trans context="Admin, p">Nothing yet. The door is at /feedback (also linked in the footer).</Trans></p>
+        <p className="text-sm text-muted-foreground py-8"><Trans context="Admin, p">Nothing yet. Members send it from the guide's panel in the corner (Share feedback), or from the footer's Report a Bug link.</Trans></p>
       ) : (
         <div className="space-y-3 max-w-3xl">
           {(data?.items ?? []).map((f: any) => (
@@ -7756,7 +7757,7 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
                     </span>
                     {f.title}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{f.detail}</p>
+                  <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">{f.detail}</p>{f.screenshot_file ? <FeedbackShot id={String(f.id)} password={password} /> : null}
                   <p className="text-[11px] text-muted-foreground mt-1.5">
                     {new Date(f.created_at).toLocaleString()}
                     {f.submitter_name && ` · from ${f.submitter_name}`}

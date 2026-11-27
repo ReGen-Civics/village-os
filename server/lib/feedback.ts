@@ -20,9 +20,11 @@
  * without needing any identity to do it.
  */
 import { createHash, randomUUID } from "crypto";
+import path from "node:path";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import { guardedFetchJson } from "./toolcheck";
 import { boolVar } from "./variables";
+import type { FeedbackKind } from "../../shared/feedbackItems";
 
 /**
  * Where this village's feedback relay sends, if anywhere.
@@ -34,6 +36,21 @@ import { boolVar } from "./variables";
  */
 export function feedbackHubUrl(): string {
   return String(process.env.FEEDBACK_HUB_URL ?? "").trim();
+}
+
+/**
+ * Who receives the relayed copy, as the form names it: the host the relay sends to. Read from the
+ * deployment's own `FEEDBACK_HUB_URL`, so the platform's name is never typed into this code and a
+ * fork that points elsewhere names where it points. Null with no hub, or an address that does not parse.
+ */
+export function feedbackHubName(): string | null {
+  const url = feedbackHubUrl();
+  if (!url) return null;
+  try {
+    return new URL(url).hostname || null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -49,11 +66,38 @@ export function feedbackIsShared(): boolean {
 }
 
 export interface FeedbackInput {
-  kind: "bug" | "idea";
+  kind: FeedbackKind;
   title: string;
   detail: string;
   pageUrl?: string | null;
   submittedBy?: string | null;
+  /**
+   * The stamped name of the screenshot in the private folder (routes/feedback.ts), or null. Stored
+   * for the village's own queue only: `relayFeedback` never selects it, so a picture of a page,
+   * which can show other members' names, never leaves the village.
+   */
+  screenshotFile?: string | null;
+}
+
+/**
+ * THE SCREENSHOT'S FOLDER, beside the uploads volume and never inside it (the guide's panel,
+ * 26 Nov 2026). `/api/uploads/:filename` answers anybody holding a name, and a picture of a page
+ * can show a member's own dashboard or other people's names, so it lives where a form's
+ * attachment lives (server/lib/submissionAttachments.ts): written through the strip, served to an
+ * admin alone, `private, no-store`, and taken off when its sender is erased (server/lib/erasure.ts).
+ */
+export const FEEDBACK_SHOT_DIRNAME = "private-feedback-shots";
+/** The prefix every stored screenshot carries, so the admin door reads only names the route minted. */
+export const FEEDBACK_SHOT_PREFIX = "feedbackshot";
+
+export function feedbackShotsDir(uploadsDir: string): string {
+  return path.join(path.dirname(uploadsDir), FEEDBACK_SHOT_DIRNAME);
+}
+
+/** A stored name the route minted, basenamed, or null. Pure. */
+export function feedbackShotName(raw: unknown): string | null {
+  const name = path.basename(String(raw ?? "").trim());
+  return /^feedbackshot-\d+-[a-z0-9]{1,8}\.(jpg|png|webp|avif|gif)$/.test(name) ? name : null;
 }
 
 export function feedbackFingerprint(kind: string, title: string, detail: string): string {
@@ -81,7 +125,7 @@ export function feedbackStatusNotice(
   status: string,
   kind: string,
 ): { headline: string; line: string } | null {
-  const thing = kind === "idea" ? "idea" : "report";
+  const thing = kind === "idea" ? "idea" : kind === "feedback" ? "feedback" : "report";
   switch (status) {
     case "seen":
       return {
@@ -90,12 +134,12 @@ export function feedbackStatusNotice(
       };
     case "planned":
       return {
-        headline: kind === "idea" ? "Your idea is on the list to build" : "Your report is on the list to fix",
+        headline: kind === "idea" ? "Your idea is on the list to build" : kind === "feedback" ? "Your feedback is on the list to act on" : "Your report is on the list to fix",
         line: "It has a place in the work now. There is no date on it yet.",
       };
     case "done":
       return {
-        headline: kind === "idea" ? "Your idea has been built" : "What you reported has been fixed",
+        headline: kind === "idea" ? "Your idea has been built" : kind === "feedback" ? "The team acted on your feedback" : "What you reported has been fixed",
         line: "Have a look, and send it back in if it is still wrong.",
       };
     case "declined":
@@ -129,7 +173,7 @@ export async function recordFeedback(
 ): Promise<{ id: string }> {
   const id = `fb-${Date.now()}-${randomUUID().slice(0, 8)}`;
   await pool.query(
-    "INSERT INTO feedback_items (id, kind, title, detail, page_url, submitted_by, fingerprint, may_relay) VALUES (?,?,?,?,?,?,?,?)",
+    "INSERT INTO feedback_items (id, kind, title, detail, page_url, submitted_by, fingerprint, may_relay, screenshot_file) VALUES (?,?,?,?,?,?,?,?,?)",
     [
       id,
       input.kind,
@@ -139,6 +183,7 @@ export async function recordFeedback(
       input.submittedBy ?? null,
       feedbackFingerprint(input.kind, input.title, input.detail),
       mayRelay ? 1 : 0,
+      input.screenshotFile ?? null,
     ],
   );
   return { id };
@@ -163,6 +208,7 @@ export async function relayFeedback(
   identity: RelayIdentity,
 ): Promise<{ sent: number }> {
   const [rows] = await pool.query<RowDataPacket[]>(
+    // screenshot_file is NOT selected, on purpose: the hub gets the words, never the picture.
     // may_relay = 1 is the consent recorded when the item was CAPTURED.
     // Anything submitted while the relay was off stays home forever, even
     // if the relay is switched on later — the form promised that, and a

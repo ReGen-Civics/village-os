@@ -4,7 +4,7 @@
  * Rye asked for the role proposal process to be found from the profile. This
  * is that door, on your own profile only: the seats you hold, the two acts
  * that lead anywhere ("Apply for a seat" opens the wizard, "Plan your season"
- * opens /season-plans/mine), and every application of yours still open, each
+ * opens /season#plan), and every application of yours still open, each
  * a link to its own page with where it stands.
  *
  * TWO READS, BOTH ALREADY THERE. `GET /api/season-plans/mine` carries the seats
@@ -140,7 +140,7 @@ export default function YourRolesSection() {
                   <UserPlus className="h-4 w-4" aria-hidden="true" />
                   {YOUR_ROLES_WORDS.apply}
                 </Link>
-                <Link href="/season-plans/mine" className={SECOND}>
+                <Link href="/season#plan" className={SECOND}>
                   <CalendarDays className="h-4 w-4" aria-hidden="true" />
                   {YOUR_ROLES_WORDS.plan}
                 </Link>

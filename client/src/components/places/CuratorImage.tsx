@@ -69,10 +69,12 @@ export default function CuratorImage({
       ) : (
         <p
           role="img"
-          aria-label={failed ? t({ message: `${alt} (this photograph is no longer here)`, context: "CuratorImage, aria-label" }) : alt}
+          aria-label={failed ? t({ message: `${alt} (this photograph is no longer here)`, context: "CuratorImage" }) : alt}
           className="absolute inset-0 flex items-center justify-center p-3 text-xs text-center text-muted-foreground"
         >
-          {failed ? "This photograph is no longer here." : "Hidden. Opening it for review."}
+          {failed
+            ? t({ message: "This photo is no longer here.", context: "CuratorImage" })
+            : t({ message: "Hidden. Opening it for review.", context: "CuratorImage" })}
         </p>
       )}
     </div>

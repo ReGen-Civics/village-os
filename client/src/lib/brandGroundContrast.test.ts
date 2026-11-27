@@ -659,8 +659,8 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 48 since the prosperity path moved to the night world too (public launch QA, 24 Nov 2026).
     // 46 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
     // 38 fixed since /claim moved to the night world (whole-app QA, 25 Nov 2026).
-    // 36 since Your First Walk and its two hovers were removed (the lead, 27 Nov 2026).
-    // 31 since the game mechanics folded into How we work together, in the night world (26 Nov 2026).
+    // 33 since the game mechanics folded into How we work together, in the night world (26 Nov 2026), and 31
+    // since Your First Walk and its two hovers were removed (the lead, 27 Nov 2026).
     expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(31);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);

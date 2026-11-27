@@ -63,12 +63,19 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // to /role-applications/:id (members say role, 2026-10-21) and the /roles/draft redirect
     // to /roles/select (the board is "select" now, 2026-11-10), the /join and /apply redirects to /roles
     // and the /tokens redirect to /wallet (one page called Wallet, 2026-11-25), and the /review, /decisions and
-    // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), the /first-walk redirect
-    // home (the page was removed on 27 Nov 2026), the /budget redirect to /governance/treasury#cash-budget (the cash
-    // budget folded into Governance, the lead, 27 Nov 2026), the /role-measures redirect to /circles#role-measures
-    // (folded into Circles & Roles, 27 Nov 2026), and the /game-mechanics redirect to /governance/how#game-mechanics
-    // (Game Mechanics folded into How we work together, 26 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 15);
+    // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), the /budget redirect
+    // to /governance/treasury#cash-budget (the cash budget folded into Governance, the lead, 27 Nov 2026), the
+    // /role-measures redirect to /circles#role-measures (folded into Circles & Roles, 27 Nov 2026), the
+    // /game-mechanics redirect to /governance/how#game-mechanics (Game Mechanics folded into How we work together,
+    // 26 Nov 2026), and the /approvals, /changes, /changes/:id and /governance/decisions/changes redirects into Your
+    // work and Decisions (the lead, 27 Nov 2026: the folds), and the /feedback redirect into the guide's panel (the
+    // feedback fold, 27 Nov 2026), and the
+    // /photographs redirect to /places#photos (the places fold, 26 Nov 2026), and the four old
+    // addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights, redirects
+    // to /rights since the rights fold, 27 Nov 2026), and the four old season addresses (/season-plans,
+    // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026), and the /first-walk redirect home (the page was
+    // removed on 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 29);
     expect(routes.length).toBeGreaterThan(60);
   });
 

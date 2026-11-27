@@ -41,6 +41,13 @@ describe("feedbackStatusNotice", () => {
     expect(feedbackStatusNotice("done", "bug")!.headline).toContain("fixed");
   });
 
+  it("calls the third kind, how something felt, feedback (the guide's panel, 26 Nov 2026)", () => {
+    for (const status of SPEAKING) expect(feedbackStatusNotice(status, "feedback"), status).toBeTruthy();
+    expect(feedbackStatusNotice("seen", "feedback")!.headline).toBe("Someone read your feedback");
+    expect(feedbackStatusNotice("planned", "feedback")!.headline).not.toContain("fix");
+    expect(feedbackStatusNotice("done", "feedback")!.headline).toContain("acted on");
+  });
+
   it("treats an unknown kind as a report, which is the safer of the two", () => {
     expect(feedbackStatusNotice("seen", "")!.headline).toBe("Someone read your report");
     expect(feedbackStatusNotice("seen", "wishlist")!.headline).toBe("Someone read your report");

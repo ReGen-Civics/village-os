@@ -57,8 +57,9 @@ describe("when an area is in use", () => {
     expect(areaInUse({ href: "/feed", module: "feed" }, known(null))).toBe(false);
   });
 
-  it("places, photographs and festivals read their own answers", () => {
-    expect(areaInUse({ href: "/photographs", module: "map" }, { exampleModules: [], places: true, seasons: 0 })).toBe(true);
+  it("places and festivals read their own answers", () => {
+    // Photographs is a section of Places since fold 5 (#1856), so only /places reads the places answer.
+    expect(areaInUse({ href: "/places", module: "map" }, { exampleModules: [], places: true, seasons: 0 })).toBe(true);
     expect(areaInUse({ href: "/places", module: "map" }, { exampleModules: [], seasons: 0 })).toBe(false);
     expect(areaInUse({ href: "/seasonal-festivals" }, { exampleModules: null, seasons: 2 })).toBe(true);
     expect(areaInUse({ href: "/seasonal-festivals" }, { exampleModules: null, seasons: 0 })).toBe(false);

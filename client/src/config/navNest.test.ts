@@ -68,6 +68,14 @@ describe("the menu by membership", () => {
         expect(row.kind === "folder" ? row.links.at(-1)?.href : row.link.href).toBe("/modules");
       });
 
+      it("meets each page once on the phone's More sheet, Quests and the roles excepted (QA, 27 Nov 2026)", () => {
+        // The sheet draws the reader's account entries (tiles and the rest) and every group's links; nothing else
+        // (MoreSheet.tsx; its own test renders it with every folder open).
+        const sheet = [...(a.signedIn ? ACCOUNT_MENU.filter(visibleTo(a)) : []), ...barFor(a).flatMap((g) => g.links)].map((l) => l.href);
+        const twice = Array.from(new Set(sheet.filter((h, i) => sheet.indexOf(h) !== i))).sort();
+        for (const h of twice) expect(["/quests", "/roles"], h).toContain(h);
+      });
+
       it(a.newcomer ? "meets Join first" : "meets the village first, and Join before Govern", () => {
         const labels = barFor(a).map((g) => g.group.label);
         if (a.newcomer) expect(labels[0]).toBe("Join");
@@ -85,7 +93,7 @@ describe("what a stranger is shown (the lead, round 2)", () => {
   const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
 
   it("offers no member tool to a visitor", () => {
-    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/role-measures"]) {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/circles#role-measures", "/governance/how#game-mechanics"]) {
       expect(offered(), h).not.toContain(h);
     }
   });
@@ -101,7 +109,15 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     expect(at("/love-letter")).toEqual(["Community/Our story"]);
     expect(at("/housing")).toEqual(["Village/Places and homes"]);
     expect(at("/stay")).toEqual(["Village/Places and homes"]);
-    expect(at("/good-neighbor")).toEqual(["Village/Places and homes"]);
+    // A chapter of Rights and agreements since fold 3 (#1857), its switch and its name still under /good-neighbor.
+    expect(at("/rights#good-neighbor")).toEqual(["Village/Places and homes"]);
+    expect(NAV.filter(isGroup).flatMap((g) => g.items).find((l) => l.href === "/rights#good-neighbor")?.story).toBe("/good-neighbor");
+    // Guides holds Rights and agreements and a row for its Leaving Well chapter; the old addresses have no entry.
+    expect(at("/rights")).toEqual(["Govern/Guides"]);
+    expect(at("/rights#leaving-well")).toEqual(["Govern/Guides"]);
+    // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
+    expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
+    for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
     expect(at("/library")).toEqual(["Village/"]);
     expect(at("/village-health")).toEqual(["Village/"]);
     expect(at("/quests").sort()).toEqual(["Govern/This season", "Village/"]);
@@ -136,8 +152,11 @@ describe("the folders", () => {
 describe("every entry has a page, and Your First Walk is gone", () => {
   const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf8");
   const routes = new Set(Array.from(app.matchAll(/<Route\s+path="([^"]+)"/g), (m) => m[1]));
-  /** The Treasury tab is #1843's (the fold lane), stacked on the Governance lane's PRs; /budget redirects there until it lands. */
-  const PENDING = new Set(["/governance/treasury"]);
+  /**
+   * None pending: Rights and agreements (#1857) and the season (#1862) came with the 1.3.98 batch, merged in here, and
+   * the Treasury tab (#1843) with 1.3.94.
+   */
+  const PENDING = new Set<string>();
 
   it("points every menu entry at a route the app has", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href.split("#")[0]!);

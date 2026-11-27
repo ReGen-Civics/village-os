@@ -1,7 +1,7 @@
 /**
  * The few calls the rest of the app makes to change requests (Rye,
  * 2026-11-06): find the member's gathering change requests, start one, and
- * add a change to one. The change request pages (client/src/pages/ChangeRequests.tsx)
+ * add a change to one. The change request page (client/src/pages/ChangeRequest.tsx) and the Change requests section of Decisions
  * make the rest of their calls themselves; this file stays small because the
  * Suggest control imports it into other pages' chunks.
  */

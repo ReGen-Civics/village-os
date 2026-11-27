@@ -6,7 +6,7 @@
  * and Roles never appears: it is a tab.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import type { NavGroup, NavLink } from "@/config/nav";
@@ -100,13 +100,10 @@ describe("the More sheet", () => {
     expect(screen.queryByText("Roles")).toBeNull();
   });
 
-  it("keeps the hidden map a tap away while its module is on (the lotus's row, logging a place in the field)", async () => {
-    await draw();
-    expect(screen.queryByText("Hidden map")).toBeNull();
-    cleanup();
+  it("does not add the hidden map to Also yours: it sits in Village's Maps folder, so it shows once (QA, 27 Nov 2026)", async () => {
     session.modules = [{ id: "hidden-map", lifecycle: "members" }];
     await draw();
-    expect(within(screen.getByRole("list", { name: "Also yours" })).getByText("Hidden map").closest("a")).toHaveAttribute("href", "/hidden-map");
+    expect(within(screen.getByRole("list", { name: "Also yours" })).queryByText("Hidden map")).toBeNull();
   });
 
   it("is a modal named More that keeps the night in dark mode, with the foot's language and mode", async () => {
@@ -118,10 +115,13 @@ describe("the More sheet", () => {
     expect(within(sheet).getByText("mode")).toBeInTheDocument();
   });
 
-  it("offers a visitor sign in and Work with us", async () => {
+  it("offers a visitor sign in, and leaves Work With Us to Join's folder, so it shows once (QA, 27 Nov 2026)", async () => {
     session.user = null;
     const { container } = await draw();
-    expect(tiles(container)).toEqual(["/login", "/work-with-us"]);
+    expect(tiles(container)).toEqual(["/login"]);
+    // It wears the Profile tile's glyph once the page glyphs load, so its words are not left under an empty slot (the
+    // menu's QA, round 4).
+    await waitFor(() => expect(container.querySelector('[data-more-tile="/login"] [data-menu-icon]')).toBeTruthy());
   });
 
   it("draws nothing from md up, where the header's drawer answers", async () => {
@@ -181,5 +181,52 @@ describe("a top-level entry lit in More (the live check, 27 Nov 2026)", () => {
     expect(link.getAttribute("aria-current")).toBe("true");
     expect(link.className).toContain("border-l-2");
     expect(link.className).not.toContain("-ml-3");
+  });
+});
+
+describe("each page once in the sheet (the menu's QA, 27 Nov 2026)", () => {
+  it("draws every page once, Quests and the roles excepted, with every group and folder open", async () => {
+    const { NAV, ACCOUNT_MENU, isGroup } = await vi.importActual<typeof import("@/config/nav")>("@/config/nav");
+    session.user = { id: "u-1", name: "Wren Ash" };
+    session.modules = [{ id: "hidden-map", lifecycle: "members" }];
+    render(
+      <Router hook={memoryLocation({ path: "/", static: true }).hook}>
+        <MoreSheet entries={NAV} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT_MENU.filter((l) => !l.door)} onClose={() => {}} />
+      </Router>,
+    );
+    await act(async () => {});
+    const sheet = screen.getByRole("dialog", { name: "More" });
+    // Open each group in turn, then each folder in it, collecting each link with WHERE it sits (its section, group and
+    // folder), so a link drawn again when its folder reopens is the same place, and only a page in two places counts.
+    const seen = new Map<string, Set<string>>();
+    const placeOf = (a: Element) => {
+      const folder = a.closest("[data-nav-folder]")?.getAttribute("data-nav-folder") ?? "";
+      const group = a.closest('[data-wayfinding="menu"] > li')?.querySelector("button")?.textContent?.trim() ?? "";
+      const list = a.closest("ul[aria-label]")?.getAttribute("aria-label") ?? a.closest("section")?.getAttribute("aria-labelledby") ?? "";
+      return `${list}/${group}/${folder}`;
+    };
+    const collect = () =>
+      sheet.querySelectorAll("a[href]").forEach((a) => {
+        const h = a.getAttribute("href")!;
+        if (!seen.has(h)) seen.set(h, new Set());
+        seen.get(h)!.add(placeOf(a));
+      });
+    // One folder is open at a time: open each in turn and read its links.
+    const openFolders = () => {
+      for (const f of Array.from(sheet.querySelectorAll<HTMLButtonElement>("[data-nav-folder] > button"))) {
+        if (f.getAttribute("aria-expanded") === "false") act(() => f.click());
+        collect();
+      }
+    };
+    openFolders();
+    collect();
+    for (const label of NAV.filter(isGroup).map((g) => g.label)) {
+      const group = within(sheet).getAllByRole("button").find((b) => b.textContent?.trim() === label)!;
+      act(() => group.click());
+      openFolders();
+      collect();
+    }
+    const twice = Array.from(seen).filter(([, places]) => places.size > 1).map(([h]) => h);
+    expect(twice.sort()).toEqual(["/quests", "/roles"]);
   });
 });

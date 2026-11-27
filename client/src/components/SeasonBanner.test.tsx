@@ -46,7 +46,7 @@ describe("the season strap", () => {
     expect(text.split("Season of Foundations").length - 1).toBe(1);
     expect(text.split("31 December 2026").length - 1).toBe(1);
     expect(text.split("Plan your season").length - 1).toBe(1);
-    expect(container.querySelector('[data-season-plan] a')?.getAttribute("href")).toBe("/season-plans/mine");
+    expect(container.querySelector('[data-season-plan] a')?.getAttribute("href")).toBe("/season#plan");
   });
 
   it("draws the goals as a ring, one segment each, the met ones lit, and marks today on the time line", () => {
