@@ -109,7 +109,16 @@ describe.skipIf(!configured)("an erased member's public applications", () => {
       await q("INSERT INTO application_references (application_ref, position, name, contact, how_known, why_ally, owner_role_id, added_at) VALUES (?, 1, 'Shortlist Ref', 'shortlist.ref@example.test', 'Neighbour', '', '', NOW())", [id]);
     }
 
+    // A voice reflection on each conversation (0444): words about a person, a recording on disk.
+    for (const id of ["op-ee000000000000000001", "op-ee000000000000000003"]) {
+      await q("INSERT INTO application_conversation_notes (application_ref, interview_id, author_user_id, kind, body, file_name, original_name) VALUES (?, 1, 'u-steward', 'recording', NULL, NULL, 'reflection.ogg')", [id]);
+    }
+
     await anonymizeMember(pool, leaver, "u-steward", deps());
+
+    // The reflection goes in the erasure itself (QA pass 3: it waited for the next tidy); somebody else's stays.
+    expect(await q("SELECT application_ref FROM application_conversation_notes WHERE application_ref = 'op-ee000000000000000001'")).toEqual([]);
+    expect(await q("SELECT application_ref FROM application_conversation_notes WHERE application_ref = 'op-ee000000000000000003'")).toHaveLength(1);
 
     // Gone at once from both of theirs; somebody else's keeps its reference.
     expect(await q("SELECT application_ref FROM application_references WHERE application_ref IN ('op-ee000000000000000001', 'op-ee000000000000000002')")).toEqual([]);
