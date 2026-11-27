@@ -200,6 +200,12 @@ msgctxt "MapSlate, Link"
 msgid "Set up your agent"
 msgstr "Configure su agente"
 
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud when edit mode closes"
+msgid "Your cards are saved."
+msgstr "Sus tarjetas están guardadas."
+
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: raced"
@@ -911,6 +917,12 @@ msgstr "Pago por mes calendario"
 msgctxt "ModuleConfigPanels, save bar"
 msgid "the {moduleName} categories"
 msgstr "las categorías de {moduleName}"
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the move strip's hint in edit mode"
+msgid "Drag a card, or use its arrows."
+msgstr "Arrastre una tarjeta, o use sus flechas."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Quests.tsx
@@ -1845,6 +1857,12 @@ msgctxt "Home, a"
 msgid "Pick your path <0/>"
 msgstr "Elija su camino <0/>"
 
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+#: client/src/components/profileDash/ProfileTabs.tsx
+msgctxt "ProfileTabs: the member's own tab"
+msgid "Today"
+msgstr "Hoy"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Welcome.tsx
 msgctxt "rites"
@@ -2200,6 +2218,12 @@ msgctxt "circle card, role term ended"
 msgid "Term ended"
 msgstr "Periodo terminado"
 
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Gatherings"
+msgstr "Encuentros"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: WHY[r.suggestion!.why]
 #: client/src/components/review/CarryAcross.tsx
@@ -2250,6 +2274,12 @@ msgctxt "Quests, a"
 msgid "<0/>Sign the {0}"
 msgstr "<0/>Firmar el {0}"
 
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "The place"
+msgstr "El lugar"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journal/PulseTab.tsx
 msgctxt "PulseTab, span"
@@ -2267,6 +2297,12 @@ msgstr "Una persona nueva en {role}"
 msgctxt "the bell: why a notice of this kind matters, kind session_item_settled"
 msgid "A session that took up an agenda item you added has closed. The item says whether it was taken up or waits for next time."
 msgstr "Cerró una sesión que tomó un punto que usted agregó. El punto dice si se trató o si espera a la próxima."
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: close button, read aloud"
+msgid "Close"
+msgstr "Cerrar"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/NeedsPanel.tsx
@@ -3424,6 +3460,12 @@ msgctxt "guide data line: where a member's words go"
 msgid "What you type here goes to {guide}, only to answer you."
 msgstr "Lo que escriba aquí va a {guide}, solo para responderle."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: the door once drawn"
+msgid "Open your card"
+msgstr "Abra su carta"
+
 #: client/src/components/form/LimitSigns.tsx
 msgctxt "limit notice under a box"
 msgid "About a minute of talking left in this answer."
@@ -3455,6 +3497,12 @@ msgstr "Su compromiso de aporte fue retirado."
 msgctxt "player card, seasonal goals"
 msgid "{n, plural, one {My seasonal goal} other {My seasonal goals}}"
 msgstr "{n, plural, one {Mi meta de temporada} other {Mis metas de temporada}}"
+
+#. placeholder {0}: card.card.name
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the words a share sends"
+msgid "My card today: {0}. {focus}."
+msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: value.covers.length
@@ -3949,6 +3997,12 @@ msgctxt "role card tab: purpose and what it looks after"
 msgid "The role"
 msgstr "El rol"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: keeping it failed"
+msgid "The card did not save to your journal. Try again."
+msgstr "La carta no se guardó en su diario. Inténtelo de nuevo."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Photographs.tsx
 #~ msgctxt "Photographs, p"
@@ -4356,6 +4410,12 @@ msgstr "(archivado)"
 msgctxt "ReasonSheet, p"
 msgid "Your reason helps Organisational Memory learn what to send you. A note stays in the village until notes are released, and emails and phone numbers are taken out before it ever leaves."
 msgstr "Su motivo ayuda a la Memoria Organizacional a saber qué enviarle. Una nota se queda en la aldea hasta que las notas se liberen, y los correos y números de teléfono se quitan antes de que salga."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the draw button while it pulls"
+msgid "Reading the sky"
+msgstr "Leyendo el cielo"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -7253,6 +7313,12 @@ msgctxt "game variable governance.weight_cap_pct, description"
 msgid "While the cap above is on, the largest share of a ballot's vote that one member can carry. It only matters in token mode, and only with the cap switched on. At 20, a member holding 90 beside four members holding 2.5 each carries a fifth of the vote, the same as each of them, and members under the cap keep their balance in full. With fewer than 5 members holding weight at 20, everyone weighs the same, because five shares of 20 is the least that makes a whole vote. Lower spreads power wider and needs more holders before balances count at all. To have no cap, turn the switch off. This number never does that."
 msgstr "Mientras el tope de arriba esté encendido, la mayor parte del voto de una votación que puede llevar un miembro. Solo importa en modo ficha, y solo con el tope encendido. Con 20, un miembro que tiene 90 al lado de cuatro miembros que tienen 2.5 cada uno lleva una quinta parte del voto, igual que cada uno de ellos, y los miembros por debajo del tope conservan su saldo completo. Con menos de 5 miembros con peso a 20, todas las personas pesan lo mismo, porque cinco partes de 20 es lo mínimo que forma un voto completo. Más bajo reparte el poder más ampliamente y necesita más personas con tenencia antes de que los saldos cuenten. Para no tener tope, apague el interruptor. Este número nunca hace eso."
 
+# needs-native-review: the speed cards, the Edit button, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the Edit button, read aloud"
+msgid "Edit your cards"
+msgstr "Editar sus tarjetas"
+
 # needs-native-review: the proposal wizard, 26 Nov 2026
 #: client/src/components/governance/wizardWords.ts
 msgctxt "proposal wizard"
@@ -8103,6 +8169,12 @@ msgctxt "admin compare"
 msgid "Every role application and quest idea waiting for a decision. Pick a category, then tick up to {MAX_COMPARE} to read them side by side."
 msgstr "Cada solicitud de rol e idea de misión que espera una decisión. Elija una categoría y marque hasta {MAX_COMPARE} para leerlas lado a lado."
 
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Govern"
+msgstr "Gobernar"
+
 #: client/src/pages/RoleShare.tsx
 msgctxt "a role's own page"
 msgid "Loading the role…"
@@ -8175,6 +8247,12 @@ msgstr "Emitido a su cuenta"
 msgctxt "Admin, label"
 msgid "Rhythm"
 msgstr "Ritmo"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Choose your path"
+msgstr "Elija su camino"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/VillageAgreements.tsx
@@ -8256,6 +8334,12 @@ msgstr "De temporada"
 msgctxt "YourListCard, button"
 msgid "Done"
 msgstr "Listo"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Our story"
+msgstr "Nuestra historia"
 
 #: client/src/components/journey/StewardQuestionForm.tsx
 msgctxt "steward question form: sending failed"
@@ -8742,6 +8826,12 @@ msgstr "¿Guardar esto para después?"
 msgctxt "admin helper, the Anthropic provider's name"
 msgid "Claude"
 msgstr "Claude"
+
+# needs-native-review: the speed cards, the Edit button, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: open edit mode for the cards"
+msgid "Edit"
+msgstr "Editar"
 
 #: client/src/components/admin/PortalVisitorsTab.tsx
 msgctxt "admin portal visitors"
@@ -9272,6 +9362,12 @@ msgctxt "open proposal: the keeper reads their own agent's proposal"
 msgid "You keep this agent, so another holder of the power to place people in roles decides it."
 msgstr "Usted tiene a cargo este agente, así que lo decide otra persona con el poder de asignar personas a roles."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the fold with the day's sky"
+msgid "Today's sky"
+msgstr "El cielo de hoy"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, label"
@@ -9757,6 +9853,12 @@ msgctxt "WizardStepper, aria-label"
 msgid "Steps in this proposal"
 msgstr "Pasos de esta propuesta"
 
+# needs-native-review: round 2, the treasurer's desk, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: the treasurer's mint and pay queues"
+msgid "Treasury desk"
+msgstr "Mesa de tesorería"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application split line: the first part, Earned Equity"
@@ -9853,6 +9955,12 @@ msgstr "Unas palabras sobre el trabajo, si lo desea."
 msgctxt "NeedsPanel, p"
 msgid "No role is tagged to any of these needs, so there is no role count to give. The more needs a village takes on, the more roles its economy needs to meet them."
 msgstr "Ningún rol está etiquetado con estas necesidades, así que no hay un conteo de roles que dar. Entre más necesidades asume una aldea, más roles necesita su economía para atenderlas."
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "This season"
+msgstr "Esta temporada"
 
 # needs-native-review: proposal wizard checks, usted, 2026-11-26
 #: client/src/components/governance/wizardValidators.ts
@@ -11340,6 +11448,12 @@ msgctxt "SeatSomebody, placeholder"
 msgid "Meeting Memory"
 msgstr "Memoria de reuniones"
 
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Become a partner"
+msgstr "Hágase aliado"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Turn modules on in <0>the Module Library</0>."
@@ -11635,6 +11749,12 @@ msgstr "<0>{0}</0><1> · </1>pesa {1}"
 msgctxt "module network, benefit 1"
 msgid "Publish a need or an offer to the villages you choose"
 msgstr "Publique una necesidad o una oferta para las aldeas que usted elija"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: a card's remove badge in edit mode, read aloud"
+msgid "Remove {label}"
+msgstr "Quitar {label}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -12649,6 +12769,12 @@ msgctxt "PortraitStudio, p"
 msgid "Here is what the forge made. Keep it, or let it go."
 msgstr "Esto es lo que hizo la forja. Consérvelo, o déjelo ir."
 
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "How we work"
+msgstr "Cómo trabajamos"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/DecisionMatrix.tsx
 msgctxt "nobody is asked or told, by design"
@@ -13073,6 +13199,12 @@ msgctxt "moon recap: MOON_WORDS: newRole"
 msgid "A role that should exist"
 msgstr "Un rol que debería existir"
 
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Running the village"
+msgstr "Llevar la aldea"
+
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: stagesLabel"
@@ -13174,9 +13306,9 @@ msgstr "Le asignaron {n} personas recién llegadas."
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Your Journey"
-msgstr "Su camino"
+#~ msgctxt "Layout, h2"
+#~ msgid "Your Journey"
+#~ msgstr "Su camino"
 
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -14463,6 +14595,12 @@ msgctxt "OrgChartTab, placeholder"
 msgid "Welcome Host"
 msgstr "Anfitrión de bienvenida"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today, empty"
+msgid "Nothing waits on you today. The day is yours to shape."
+msgstr "Hoy nada le espera. El día es suyo para darle forma."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/power/ResourcesPanel.tsx
 msgctxt "ResourcesPanel, aria-label"
@@ -14712,6 +14850,12 @@ msgstr "Eventos"
 msgctxt "setup guide step, sera"
 msgid "Sera, your org memory, is connected, and it counts for this step on its own."
 msgstr "Sera, la memoria de su organización, está conectada, y por sí sola cuenta para este paso."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the draw button"
+msgid "Draw today's card"
+msgstr "Saque la carta de hoy"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/ProposedChanges.tsx
@@ -15532,6 +15676,12 @@ msgctxt "live session room: usedOf"
 msgid "{used} of {of} min"
 msgstr "{used} de {of} min"
 
+# needs-native-review: round 2, an entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "How roles are going"
+msgstr "Cómo van los roles"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "Accepts: {acceptedWords}"
@@ -15646,9 +15796,9 @@ msgstr "Eso no llegó al servidor"
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Report a Bug / Share an Idea"
-msgstr "Reportar un error o compartir una idea"
+#~ msgctxt "Layout, Link"
+#~ msgid "Report a Bug / Share an Idea"
+#~ msgstr "Reportar un error o compartir una idea"
 
 #: client/src/pages/Entrance.tsx
 #: client/src/pages/VisitorProfile.tsx
@@ -15793,6 +15943,12 @@ msgstr "Momentos clave"
 msgctxt "moon recap: LINE_BASIS_WORDS: per_moon"
 msgid "Fixed per moon"
 msgstr "Fijo por luna"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud when edit mode opens"
+msgid "Editing your cards. Drag a card, or use its arrows, to move it."
+msgstr "Editando sus tarjetas. Arrastre una tarjeta, o use sus flechas, para moverla."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
@@ -16374,9 +16530,9 @@ msgstr "Editar el nombre o el porqué"
 
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
-msgctxt "today's card: the fold under the card"
-msgid "Today's sky"
-msgstr "El cielo de hoy"
+#~ msgctxt "today's card: the fold under the card"
+#~ msgid "Today's sky"
+#~ msgstr "El cielo de hoy"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -16607,9 +16763,9 @@ msgstr "Tratados recientemente"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, Link"
-msgid "Open Village Settings"
-msgstr "Abrir Ajustes de la aldea"
+#~ msgctxt "FirstWalk, Link"
+#~ msgid "Open Village Settings"
+#~ msgstr "Abrir Ajustes de la aldea"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -16715,9 +16871,9 @@ msgstr "Todavía no está conectado. Ponga la dirección en los ajustes de este 
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Resources"
-msgstr "Recursos"
+#~ msgctxt "Layout, h2"
+#~ msgid "Resources"
+#~ msgstr "Recursos"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -16974,9 +17130,9 @@ msgstr "tres borradores de metas para su primera luna"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "Looking at what your village is showing…"
-msgstr "Viendo lo que muestra su aldea…"
+#~ msgctxt "FirstWalk, p"
+#~ msgid "Looking at what your village is showing…"
+#~ msgstr "Viendo lo que muestra su aldea…"
 
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
@@ -17158,6 +17314,12 @@ msgstr "Solo las personas administradoras ven esta nota. La sección de Hypha de
 #: client/src/components/priorities/TeamWeek.tsx
 msgid "From the week of {0}"
 msgstr "Desde la semana del {0}"
+
+# needs-native-review: round 2, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Maps"
+msgstr "Mapas"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -18270,6 +18432,12 @@ msgctxt "Messages, aria-label"
 msgid "Muted"
 msgstr "Silenciada"
 
+# needs-native-review: the speed cards, an open slot, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: an open slot, read aloud"
+msgid "Add a card, place {place} of {total}"
+msgstr "Añadir una tarjeta, lugar {place} de {total}"
+
 # needs-native-review: the role card, 26 Nov 2026
 #: client/src/components/power/roleSheetMirror.ts
 msgctxt "role card"
@@ -18566,6 +18734,13 @@ msgctxt "ProfileSheet, p"
 msgid "{tokenName}: held, never spent. A record of what the village noticed."
 msgstr "{tokenName}: se guarda, nunca se gasta. Un registro de lo que la aldea notó."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#. placeholder {0}: r.count
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "{0} asks from other members"
+msgstr "{0} pedidos de otros miembros"
+
 # needs-native-review: visitor profile, 2026-11-25
 #: client/src/pages/VisitorProfile.tsx
 msgctxt "visitor profile: delete"
@@ -18797,6 +18972,12 @@ msgctxt "admin compare split rule"
 msgid "Each shared piece goes to whoever holds the fewest so far"
 msgstr "Cada parte compartida va a quien tiene menos hasta ahora"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the chip on the card, today's sky leaves it alone"
+msgid "Steady"
+msgstr "Serena"
+
 # needs-native-review: the live sessions pages and the meeting rhythm, 26 Nov 2026
 #: client/src/components/sessions/rhythmWords.ts
 msgctxt "live sessions: circleChoose"
@@ -18870,6 +19051,12 @@ msgstr "Funciona mejor en horizontal. Las fotos grandes se redimensionan y compr
 msgctxt "Library, span"
 msgid " to spend, {0} to your name"
 msgstr " para gastar, {0} a su nombre"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the page's heading"
+msgid "Today's card"
+msgstr "La carta de hoy"
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -19536,9 +19723,9 @@ msgstr "Seguimientos y conversaciones de intuición"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, aria-label"
-msgid "Hide the walk invitation"
-msgstr "Ocultar la invitación al recorrido"
+#~ msgctxt "FirstWalk, aria-label"
+#~ msgid "Hide the walk invitation"
+#~ msgstr "Ocultar la invitación al recorrido"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -20645,6 +20832,12 @@ msgctxt "module sessions, promise"
 msgid "A circle's working call, held together live, from the first breath to the last action claimed."
 msgstr "La llamada de trabajo de un círculo, sostenida en vivo, desde la primera respiración hasta la última acción asumida."
 
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's second row"
+msgid "Your design today"
+msgstr "Su diseño hoy"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: p.vouches
 #: client/src/pages/HiddenMap.tsx
@@ -21468,6 +21661,12 @@ msgctxt "founding application review: the prices of several roles added"
 msgid "{total} together"
 msgstr "{total} en conjunto"
 
+# needs-native-review: round 2, an entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Village Health"
+msgstr "Salud de la aldea"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, span"
@@ -21485,6 +21684,12 @@ msgstr "Una sesión en vivo cerró con una acción a cargo suyo o de un rol que 
 msgctxt "module gene-keys, benefit 3"
 msgid "A circle sees which of the six lines it holds, and a gap becomes an invitation to hold one"
 msgstr "Un círculo ve cuáles de las seis líneas tiene, y un vacío se vuelve una invitación a sostener una"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the chip on the card, today's sky completes a channel from it"
+msgid "Sky-linked"
+msgstr "Unida al cielo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraMember.tsx
@@ -23631,6 +23836,12 @@ msgctxt "governance now"
 msgid "Nothing yet. A change request or a raised hand you bring shows here, with where it stands."
 msgstr "Nada todavía. Una solicitud de cambio o una mano alzada que traigas aparece aquí, con su estado."
 
+# needs-native-review: round 2, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Conversations"
+msgstr "Conversaciones"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable roles.prerequisites, label"
@@ -23949,6 +24160,12 @@ msgstr "No pudimos escribir esta grabación ahora mismo. Su grabación sigue gua
 msgctxt "circle card, round of thanks"
 msgid "A meeting can close with a round of thanks to each person in it."
 msgstr "Una reunión puede cerrar con una ronda de agradecimiento a cada persona presente."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's eyebrow, woven by the village guide"
+msgid "Read by {guide}"
+msgstr "Leída por {guide}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AdminHelp.tsx
@@ -25457,15 +25674,21 @@ msgstr "El agente"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, h1"
-msgid "Your First Walk"
-msgstr "Su primera caminata"
+#~ msgctxt "FirstWalk, h1"
+#~ msgid "Your First Walk"
+#~ msgstr "Su primera caminata"
 
 # needs-native-review: the places fold, 26 Nov 2026
 #: client/src/components/places/PhotoReportsPanel.tsx
 msgctxt "photo reports queue"
 msgid "Closing a report tells the member who raised it that someone read it."
 msgstr "Cerrar un reporte le avisa a quien lo hizo que alguien lo leyó."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: under the draw button"
+msgid "One card a day, from your own lines and today's sky. The same card all day."
+msgstr "Una carta al día, de sus propias líneas y el cielo de hoy. La misma carta todo el día."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/Thumb.tsx
@@ -25866,6 +26089,13 @@ msgctxt "map members only: eyebrow"
 msgid "The living map"
 msgstr "El mapa vivo"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#. placeholder {0}: r.count
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "{0} tasks waiting"
+msgstr "{0} tareas esperando"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/OrgAccountsPanel.tsx
 msgctxt "admin venture accounts"
@@ -26110,6 +26340,12 @@ msgstr "Multiplicador del presupuesto de envío: Titular de rol"
 msgctxt "GeneKeys, p"
 msgid "Lines found"
 msgstr "Líneas encontradas"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the focus line's eyebrow"
+msgid "Today's focus"
+msgstr "El enfoque de hoy"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ReserveHome.tsx
@@ -27223,6 +27459,12 @@ msgstr "Salud de la aldea: el libro de la tierra"
 #~ msgid "Create an account"
 #~ msgstr "Crear una cuenta"
 
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: put the default cards back"
+msgid "Reset"
+msgstr "Restablecer"
+
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/components/orgDraft/FieldDiff.tsx
 msgctxt "draft page: a field"
@@ -27716,9 +27958,9 @@ msgstr "Agrega"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "Publish your first real post, event or item. That room's examples clear on their own, and this walk retires when the last one goes."
-msgstr "Publique su primera publicación, evento o artículo real. Los ejemplos de ese espacio se quitan solos, y esta caminata termina cuando se va el último."
+#~ msgctxt "FirstWalk, p"
+#~ msgid "Publish your first real post, event or item. That room's examples clear on their own, and this walk retires when the last one goes."
+#~ msgstr "Publique su primera publicación, evento o artículo real. Los ejemplos de ese espacio se quitan solos, y esta caminata termina cuando se va el último."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/WalletCard.tsx
@@ -28514,6 +28756,12 @@ msgctxt "proposal wizard"
 msgid "Title"
 msgstr "Título"
 
+# needs-native-review: the speed cards, a save that did not reach the server, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: a save of the cards did not reach the server"
+msgid "Saved on this device only. Your other devices keep your last cards."
+msgstr "Guardado solo en este dispositivo. Sus otros dispositivos conservan sus tarjetas anteriores."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/yourList/ReasonSheet.tsx
 msgctxt "ReasonSheet, span"
@@ -28537,6 +28785,12 @@ msgstr "Mostrando lo que hace."
 msgctxt "module comms, benefit 5"
 msgid "Letters to the people who agreed to get them, with a record of each one"
 msgstr "Cartas para las personas que aceptaron recibirlas, con un registro de cada una"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+#: client/src/components/profileDash/ProfileTabs.tsx
+msgctxt "ProfileTabs: the member's own tab, about them"
+msgid "Sheet"
+msgstr "Ficha"
 
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
@@ -29479,6 +29733,12 @@ msgctxt "review inbox: a row, what it is"
 msgid "A suggested edit to something you hold"
 msgstr "Una edición sugerida a algo que sostienes"
 
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+#: client/src/components/profileDash/ProfileTabs.tsx
+msgctxt "ProfileTabs: the member's own tab, their quests, tasks and asks"
+msgid "My work"
+msgstr "Mi trabajo"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, h3"
@@ -29881,6 +30141,12 @@ msgstr "Una vez"
 msgctxt "PublicProfile, h1"
 msgid "Nobody here by that name"
 msgstr "No hay nadie aquí con ese nombre"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Quest in hand"
+msgstr "Misión en curso"
 
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/profile/onboardingPathWords.ts
@@ -31154,6 +31420,12 @@ msgctxt "founding application refusal"
 msgid "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
 msgstr "Un rol que agregó aún no está abierto, así que no puede ser parte de esta postulación. Quítelo y únase a su lista de espera en la página de roles."
 
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: the search field's hint"
+msgid "Find a page"
+msgstr "Buscar una página"
+
 # needs-native-review: profile overhaul, the companions' corner, 25 Nov 2026
 #: client/src/components/profileDash/CompanionCorner.tsx
 #~ msgctxt "companion corner: the button, read aloud"
@@ -31162,9 +31434,9 @@ msgstr "Un rol que agregó aún no está abierto, así que no puede ser parte de
 
 # needs-native-review: governance rename, 2026-11-26
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Your work"
-msgstr "Tu trabajo"
+#~ msgctxt "Layout, Link"
+#~ msgid "Your work"
+#~ msgstr "Tu trabajo"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -31232,6 +31504,12 @@ msgstr "Paga {0} en efectivo, fijado antes de que esta aldea cambiara su moneda.
 msgctxt "game variable stage choice sage"
 msgid "Sage"
 msgstr "Sabio/a"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Session open now"
+msgstr "Sesión abierta ahora"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -32032,6 +32310,12 @@ msgctxt "admin notices: the search box"
 msgid "Find a notice"
 msgstr "Buscar un aviso"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: before the draw"
+msgid "Your eleven spheres are your deck. Each day one is drawn, weighed by today's sky, and read against your whole design and what waits on you in the village."
+msgstr "Sus once esferas son su baraja. Cada día se saca una, pesada por el cielo de hoy, y se lee frente a todo su diseño y lo que le espera en la aldea."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, toast"
@@ -32161,9 +32445,9 @@ msgstr "Sería mi primera inversión"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "They come with the modules that carry them, so a new village with its modules off has none to walk yet. <0>Switch a module on</0> and its examples join this walk. A village that published its own content has retired them, and everything here is its own."
-msgstr "Vienen con los módulos que las traen, así que una aldea nueva con sus módulos apagados todavía no tiene ninguno para recorrer. <0>Encienda un módulo</0> y sus ejemplos se suman a este recorrido. Una aldea que publicó su propio contenido ya los retiró, y todo lo que hay aquí es suyo."
+#~ msgctxt "FirstWalk, p"
+#~ msgid "They come with the modules that carry them, so a new village with its modules off has none to walk yet. <0>Switch a module on</0> and its examples join this walk. A village that published its own content has retired them, and everything here is its own."
+#~ msgstr "Vienen con los módulos que las traen, así que una aldea nueva con sus módulos apagados todavía no tiene ninguno para recorrer. <0>Encienda un módulo</0> y sus ejemplos se suman a este recorrido. Una aldea que publicó su propio contenido ya los retiró, y todo lo que hay aquí es suyo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/NeedsPanel.tsx
@@ -33323,6 +33607,12 @@ msgstr "Cuándo sueles poder reunirte (opcional)"
 #~ msgid "Everything waiting on you, from every queue, in one list. Proposed changes are decided here. Open the rest to decide them where they live."
 #~ msgstr "Todo lo que espera por ti, de cada cola, en una sola lista. Los cambios propuestos se deciden aquí. Abre lo demás para decidirlo donde vive."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today, tasks"
+msgid "From your sessions"
+msgstr "De sus sesiones"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
 msgid "This week"
@@ -33702,6 +33992,12 @@ msgstr "Clave: "
 #~ msgid "Also changed by “{other}”, proposed later. Accept one, then look again."
 #~ msgstr "También lo cambió “{other}”, propuesto después. Acepte uno y luego vuelva a revisar."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: after sharing"
+msgid "Shared"
+msgstr "Compartida"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: one earlier word"
 msgid "{was}% from {from}, {span}"
@@ -33910,6 +34206,12 @@ msgstr "Lo máximo que puede ser un pago: {0} {1}"
 msgctxt "proposal wizard"
 msgid "What the village has been doing that makes this the right moment."
 msgstr "Lo que la aldea ha venido haciendo que hace de este el momento indicado."
+
+# needs-native-review: the menu by membership, the admin's review page, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: the admin's review page"
+msgid "Review"
+msgstr "Revisión"
 
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
@@ -34528,11 +34830,11 @@ msgctxt "StructureReview, span"
 msgid "A name of its own. A second role with the same name stays blocked."
 msgstr "Un nombre propio. Un segundo rol con el mismo nombre queda bloqueado."
 
-# needs-native-review: profile overhaul, today's card, 25 Nov 2026
+# needs-native-review: an existing entry, now in usted, 27 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
 msgctxt "today's card: button"
 msgid "Pull today's card"
-msgstr "Saca la carta de hoy"
+msgstr "Saque la carta de hoy"
 
 #. placeholder {0}: problems.length
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -34869,6 +35171,12 @@ msgctxt "moon recap: ADMIN_WORDS: payers.key"
 msgid "Short key (lowercase, used in bill refs)"
 msgstr "Clave corta (minúsculas, usada en referencias de facturas)"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: a member with no lines yet, the door"
+msgid "Find your lines"
+msgstr "Encuentre sus líneas"
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/MoreRoles.tsx
@@ -35179,6 +35487,12 @@ msgstr "Usted tomó esta misión. Entregue su trabajo cuando esté listo, o devu
 msgctxt "hidden map page"
 msgid "Nothing is waiting."
 msgstr "No hay nada en espera."
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move left"
+msgstr "Mover a la izquierda"
 
 # needs-native-review: the constitution's laws, 26 Nov 2026
 #: client/src/pages/gameMechanicsConstitutionWords.ts
@@ -35876,6 +36190,12 @@ msgctxt "Decision, dt"
 msgid "Opened"
 msgstr "Abierta"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the guide's ask, the yes"
+msgid "Yes, read my card"
+msgstr "Sí, lea mi carta"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AdminGate.tsx
 msgctxt "AdminGate, p"
@@ -35946,9 +36266,9 @@ msgid "Notices"
 msgstr "Avisos"
 
 #: client/src/components/mobile/MoreSheet.tsx
-msgctxt "the phone's More sheet: a visitor's tile"
-msgid "Work with us"
-msgstr ""
+#~ msgctxt "the phone's More sheet: a visitor's tile"
+#~ msgid "Work with us"
+#~ msgstr ""
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -36385,6 +36705,12 @@ msgstr "Cancelar"
 msgctxt "circle card, created line"
 msgid "The circle was created"
 msgstr "Se creó el círculo"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: weave the reading now"
+msgid "Ask {guide} to read it"
+msgstr "Pida a {guide} que la lea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/EmailPages.tsx
@@ -37373,6 +37699,12 @@ msgctxt "live session room: roundStart"
 msgid "Start a speaking round"
 msgstr "Empezar una ronda de palabra"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's eyebrow, in plain words"
+msgid "Your chart today"
+msgstr "Su carta natal hoy"
+
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind comms_host_recap"
@@ -37855,6 +38187,12 @@ msgctxt "ProfileImportDoor, h3"
 msgid "Start from your ReGen Civics profile"
 msgstr "Empezar desde su perfil de ReGen Civics"
 
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the move strip with no card picked, read aloud"
+msgid "Move right"
+msgstr "Mover a la derecha"
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: QUEUE_WORDS: open"
@@ -38079,6 +38417,12 @@ msgstr "Nadie ocupa {role} ahora, así que nadie puede tener esa conversación. 
 msgctxt "game variable progression.unlock.forum.post, choice none, label"
 msgid "Never by stage (role or badge only)"
 msgstr "Nunca por etapa (solo por rol o insignia)"
+
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Open Roles"
+msgstr "Roles abiertos"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Training.tsx
@@ -39722,6 +40066,12 @@ msgctxt "ProfileImport, legend"
 msgid "What happens to them"
 msgstr "Qué pasa con ellos"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today, loading"
+msgid "Reading what waits on you"
+msgstr "Leyendo lo que le espera"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece heading"
@@ -39743,6 +40093,12 @@ msgstr ""
 msgctxt "role editor history"
 msgid "Put this change back"
 msgstr "Deshacer este cambio"
+
+# needs-native-review: the speed cards, an open slot, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: an open slot's word"
+msgid "Add"
+msgstr "Añadir"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -40387,9 +40743,9 @@ msgstr "Preguntándole a la guía…"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "Walk complete"
-msgstr "Caminata completa"
+#~ msgctxt "FirstWalk, p"
+#~ msgid "Walk complete"
+#~ msgstr "Caminata completa"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Review.tsx
@@ -40677,6 +41033,13 @@ msgctxt "game variable org.onboarding_role, label"
 msgid "The role that sends first replies to applicants"
 msgstr "El rol que envía las primeras respuestas a solicitantes"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#. placeholder {0}: card.design.authority
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the member's design under the reading"
+msgid "{0} authority"
+msgstr "Autoridad {0}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/power/ResourcesAdminPanel.tsx
 msgctxt "ResourcesAdminPanel, button"
@@ -40863,9 +41226,9 @@ msgstr "Quitado"
 
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
-msgctxt "today's card: button while it pulls"
-msgid "Turning the card"
-msgstr "Dando vuelta la carta"
+#~ msgctxt "today's card: button while it pulls"
+#~ msgid "Turning the card"
+#~ msgstr "Dando vuelta la carta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/setupGame/SpringPackets.tsx
@@ -41197,6 +41560,12 @@ msgctxt "Admin Today, needs you now"
 msgid "1 thing is waiting on you."
 msgstr "1 cosa le está esperando."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: loading"
+msgid "Opening today's card"
+msgstr "Abriendo la carta de hoy"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "A vote to change this agreement is open"
@@ -41324,6 +41693,12 @@ msgstr "Aprender sobre {name}"
 msgctxt "HyphaModulePanel, button"
 msgid "Say what this was"
 msgstr "Decir qué fue esto"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: the pages this device opens most"
+msgid "You open most"
+msgstr "Lo que más abre"
 
 # needs-native-review: the door from /admin/proposals to the one list, 25 Nov 2026
 #: client/src/pages/ProposedChanges.tsx
@@ -42087,9 +42462,9 @@ msgstr "Cambios constitucionales: piso de quórum"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "Now plant your own"
-msgstr "Ahora siembre la suya"
+#~ msgctxt "FirstWalk, p"
+#~ msgid "Now plant your own"
+#~ msgstr "Ahora siembre la suya"
 
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
@@ -42596,7 +42971,7 @@ msgctxt "player card, tagline count of roles"
 msgid "{n, plural, =0 {No} =1 {One} =2 {Two} =3 {Three} =4 {Four} =5 {Five} =6 {Six} =7 {Seven} =8 {Eight} =9 {Nine} =10 {Ten} =11 {Eleven} =12 {Twelve} other {#}}"
 msgstr "{n, plural, =0 {Ningún} =1 {Un} =2 {Dos} =3 {Tres} =4 {Cuatro} =5 {Cinco} =6 {Seis} =7 {Siete} =8 {Ocho} =9 {Nueve} =10 {Diez} =11 {Once} =12 {Doce} one {#} other {#}}"
 
-#: client/src/components/mobile/MoreSheet.tsx
+#: client/src/components/mobile/SpeedCards.tsx
 msgctxt "the phone's More sheet: tile"
 msgid "Profile"
 msgstr ""
@@ -42975,6 +43350,12 @@ msgctxt "game variable comms.click_tracking, label"
 msgid "Count which links are clicked"
 msgstr "Contar en qué enlaces se hace clic"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Gathering today · {at}"
+msgstr "Encuentro hoy · {at}"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Characters.tsx
 msgctxt "Characters, aria-label"
@@ -43129,6 +43510,12 @@ msgctxt "a button that opens a new matrix row"
 msgid "Add a row"
 msgstr "Agregar una fila"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the guide's ask, the no"
+msgid "Not now"
+msgstr "Ahora no"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: page.label
 #: client/src/components/admin/PowerGroupDialogs.tsx
@@ -43213,6 +43600,11 @@ msgstr "Enviado al círculo"
 msgctxt "Wallet, span"
 msgid "· out of stock"
 msgstr "· agotado"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#~ msgctxt "Layout, Link"
+#~ msgid "Places"
+#~ msgstr "Lugares"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/commandCentre/PlanEditor.tsx
@@ -43339,6 +43731,12 @@ msgstr "Guardar multiplicadores"
 msgctxt "open proposal side by side"
 msgid "Commitment: {asked}%"
 msgstr "Compromiso: {asked} %"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the draw button while the day's doors are read"
+msgid "Reading your day"
+msgstr "Leyendo su día"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords.ts
@@ -43855,6 +44253,12 @@ msgctxt "WordsEditor, aria-label"
 msgid "Versions"
 msgstr "Versiones"
 
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: save the cards and leave edit mode"
+msgid "Done"
+msgstr "Listo"
+
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module health, benefit 1"
@@ -44268,6 +44672,12 @@ msgctxt "ArrangeBar, button"
 msgid "Add move"
 msgstr "Agregar movimiento"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "A decision waits on you"
+msgstr "Una decisión le espera"
+
 #: client/src/pages/Quests.tsx
 #~ msgctxt "open work: the goal thread, none"
 #~ msgid "No open quests grow {goalName} yet"
@@ -44275,9 +44685,9 @@ msgstr "Agregar movimiento"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "No practice examples are showing."
-msgstr "No se muestran ejemplos de práctica."
+#~ msgctxt "FirstWalk, p"
+#~ msgid "No practice examples are showing."
+#~ msgstr "No se muestran ejemplos de práctica."
 
 # needs-native-review: the deciders' one list, /admin/review, 25 Nov 2026
 #: client/src/pages/AdminReview.tsx
@@ -45669,9 +46079,9 @@ msgid "A change waiting on your approval"
 msgstr "Un cambio que espera su aprobación"
 
 #: client/src/components/mobile/MoreSheet.tsx
-msgctxt "the phone's More sheet: the hidden map, for logging places out on the land"
-msgid "Hidden map"
-msgstr ""
+#~ msgctxt "the phone's More sheet: the hidden map, for logging places out on the land"
+#~ msgid "Hidden map"
+#~ msgstr ""
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
@@ -48098,9 +48508,9 @@ msgstr "Copiado"
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: progress.total - progress.done === 1 ? "one stop left" : `${progress.total - progress.done} stops, a minute each`
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "Your village still shows practice examples. <0>Take Your First Walk</0>: {0}."
-msgstr "Su aldea todavía muestra ejemplos de práctica. <0>Dé su primer recorrido</0>: {0}."
+#~ msgctxt "FirstWalk, p"
+#~ msgid "Your village still shows practice examples. <0>Take Your First Walk</0>: {0}."
+#~ msgstr "Su aldea todavía muestra ejemplos de práctica. <0>Dé su primer recorrido</0>: {0}."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: tiles.length
@@ -48497,6 +48907,12 @@ msgstr "Fondo colectivo"
 msgctxt "keep the document, do not delete"
 msgid "Keep it"
 msgstr "Conservarlo"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the chip on the card, the Moon passes its gate today"
+msgid "Moon-lit"
+msgstr "Iluminada por la Luna"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #. placeholder {0}: show(s.whoInRoom)
@@ -49048,6 +49464,12 @@ msgstr "Cargando..."
 msgid "Talk to someone outside the village"
 msgstr "Hablar con alguien fuera de la aldea"
 
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: a search with no match"
+msgid "Nothing matches. Try another word."
+msgstr "Nada coincide. Pruebe otra palabra."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/ChangeRequestsSection.tsx
 #: client/src/components/modules/SuggestDial.tsx
@@ -49161,10 +49583,12 @@ msgctxt "proposal wizard"
 msgid "Not tied to one domain"
 msgstr "Sin un dominio en particular"
 
-#: client/src/components/mobile/MoreSheet.tsx
+# needs-native-review: the speed cards' heading, untranslated in es.po until now and caught by the strict catalog check after the fold, 27 Nov 2026
+#: client/src/components/Layout.tsx
+#: client/src/components/mobile/SpeedCards.tsx
 msgctxt "the phone's More sheet: heading"
 msgid "Yours"
-msgstr ""
+msgstr "Lo suyo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
@@ -49908,6 +50332,12 @@ msgstr "Una cosa que más ayudaría la próxima luna"
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "That could not be discarded"
 msgstr "Eso no se pudo descartar"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's third row"
+msgid "What waits on you"
+msgstr "Lo que le espera"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/fireflyPath/applyBackup.ts
@@ -51919,6 +52349,12 @@ msgctxt "Admin, span"
 msgid "They already left the village and are a former member, so there is no departure to open. Admitting them again is the only way back."
 msgstr "Ya dejaron la aldea y son exmiembros, así que no hay salida que abrir. Admitirlos de nuevo es la única forma de volver."
 
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Village"
+msgstr "Aldea"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "full role card, under the one act"
@@ -52253,6 +52689,12 @@ msgctxt "role proposal: newRoleTag"
 msgid "New role"
 msgstr "Rol nuevo"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: save the day's card to the private journal"
+msgid "Keep in my journal"
+msgstr "Guardar en mi diario"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable org.reassignment_cadence, choice annual, label"
@@ -52538,6 +52980,12 @@ msgstr "Cada pago que su proyecto emite o recibe, como productos que usted defin
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "They have not agreed to the Love Letter and the NDA."
 #~ msgstr ""
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Build with us"
+msgstr "Construya con nosotros"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -53034,6 +53482,12 @@ msgctxt "SaberraBridgeBoard, p"
 msgid "{0}{1} read, {2} {3}, {4} already seen, {5} dropped by Sera for an email{6}.{7}"
 msgstr "{0}{1} leídos, {2} {3}, {4} ya vistos, {5} descartados por Sera por un correo{6}.{7}"
 
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Join"
+msgstr "Unirse"
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: ADMIN_WORDS: settings.seraInboxPending"
@@ -53254,6 +53708,12 @@ msgstr "¿Enviar la carta de no invitación? Le agradece, dice que encontramos a
 msgctxt "hidden map, one place's details"
 msgid "Withdraw my vouch"
 msgstr "Retirar mi aval"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Fund the village"
+msgstr "Financie la aldea"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/RolePowerGroupsEditor.tsx
@@ -54118,6 +54578,12 @@ msgstr "Deje esto vacío"
 msgctxt "task board: buttons.record"
 msgid "Open the record"
 msgstr "Abrir el registro"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+#: client/src/components/profileDash/ProfileTabs.tsx
+msgctxt "ProfileTabs: the member's own tab"
+msgid "My roles"
+msgstr "Mis roles"
 
 # needs-native-review: player card signs, 26 Nov 2026
 #: client/src/components/playerCard/roleSignMessages.ts
@@ -55642,6 +56108,12 @@ msgstr "Dijo que estará ahí."
 msgctxt "game variable category"
 msgid "Village"
 msgstr "Aldea"
+
+# needs-native-review: the footer, the hidden map, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Hidden map"
+msgstr "Mapa oculto"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
@@ -57583,6 +58055,13 @@ msgctxt "Layout, Link"
 msgid "Village Tools"
 msgstr "Herramientas de la aldea"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#. placeholder {0}: card.card.name
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the journal entry's heading"
+msgid "Today's card: {0}"
+msgstr "La carta de hoy: {0}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, toast"
@@ -57950,9 +58429,9 @@ msgstr "Cambie las palabras que quiera, compártalo para recibir comentarios y l
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, h2"
-msgid "Governance"
-msgstr "Gobernanza"
+#~ msgctxt "Layout, h2"
+#~ msgid "Governance"
+#~ msgstr "Gobernanza"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/ProposeQuest.tsx
@@ -58083,6 +58562,12 @@ msgstr "Cómo nos cuidamos"
 msgctxt "health metric carbon_sequestered_kg, label"
 msgid "Carbon sequestered"
 msgstr "Carbono capturado"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: move a card one place back, read aloud"
+msgid "Move {label} left"
+msgstr "Mover {label} a la izquierda"
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -58346,6 +58831,12 @@ msgctxt "open proposal decide: heading"
 msgid "{who} proposes to hold a role next season"
 msgstr "{who} propone ocupar un rol la próxima temporada"
 
+# needs-native-review: the season fold (#1862) in the menu, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Season"
+msgstr "Temporada"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: c.userName
 #. placeholder {1}: c.questTitle
@@ -58576,6 +59067,12 @@ msgstr "Voz"
 msgctxt "EventsAdminPanel, h3"
 msgid "Approve for the public calendar"
 msgstr "Aprobar para el calendario público"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: move a card one place on, read aloud"
+msgid "Move {label} right"
+msgstr "Mover {label} a la derecha"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #. placeholder {0}: seats === 1 ? "place" : "places"
@@ -60693,6 +61190,12 @@ msgstr "Como máximo un correo por fallo en esta cantidad de horas, que dice cu�
 msgctxt "Bootstrap, p"
 msgid "For the first founder of a new village, and for a founder who has lost their way back in."
 msgstr "Para la primera persona fundadora de una aldea nueva, y para una persona fundadora que perdió el camino de vuelta."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: after keeping it"
+msgid "Kept in your journal"
+msgstr "Guardada en su diario"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgentPathTree.tsx
@@ -62820,9 +63323,9 @@ msgid "Voice here counts only what members earned through work, read once when c
 msgstr "Aquí la voz cuenta solo lo que los miembros ganaron con su trabajo, leído una vez cuando se abrió la elección."
 
 #: client/src/components/mobile/MoreSheet.tsx
-msgctxt "the phone's More sheet: under the tile for the member's most visited page"
-msgid "you visit most"
-msgstr ""
+#~ msgctxt "the phone's More sheet: under the tile for the member's most visited page"
+#~ msgid "you visit most"
+#~ msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/SeatSettingsFields.tsx
@@ -65615,6 +66118,12 @@ msgctxt "note on a coming-soon role: the card, the application form and its conf
 msgid "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does."
 msgstr "Este rol aún no está abierto, y la tarjeta puede cambiar antes de que abra. Deje sus datos y le escribiremos cuando abra."
 
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Propose a quest"
+msgstr "Proponga una misión"
+
 #: client/src/pages/Events.tsx
 #~ msgctxt "calendar page lede"
 #~ msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
@@ -65992,6 +66501,12 @@ msgstr "Lo que he construido antes:"
 msgctxt "hidden map, the moment the map opens"
 msgid "Maps opened"
 msgstr "Mapas abiertos"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the guide's ask, heading; {guide} is the village guide's name"
+msgid "Let {guide} read your card"
+msgstr "Deje que {guide} lea su carta"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "For {roleName}, if the village takes your application forward:"
@@ -67017,6 +67532,12 @@ msgctxt "ProposalAcceptCash, label"
 msgid "Cash it pays{0}"
 msgstr "Efectivo que paga{0}"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today, a decision"
+msgid "Waiting on you"
+msgstr "Le espera"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal section"
 #~ msgid "About you"
@@ -67698,6 +68219,12 @@ msgctxt "the bell: why a notice of this kind matters, kind role_task_accepted"
 msgid "A role accepted a task you handed it. It sits on their list now."
 msgstr "Un rol aceptó una tarea que usted le pasó. Ya está en la lista de ese rol."
 
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "How we're run"
+msgstr "Cómo nos gobernamos"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -67738,6 +68265,12 @@ msgstr "Qué se incluyó"
 msgctxt "application backup file"
 msgid "Your aim in this role"
 msgstr "Su objetivo en este rol"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud after a card is removed"
+msgid "{card} removed."
+msgstr "Se quitó {card}."
 
 # needs-native-review: the bell, 26 Nov 2026
 #: client/src/lib/noticeKindWordsI18n.ts
@@ -68252,6 +68785,12 @@ msgctxt "admin header"
 msgid "Admin"
 msgstr "Admin"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the page's eyebrow"
+msgid "Pull a card"
+msgstr "Saque una carta"
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season: how far into the season today is"
 msgid "Day {day} of {of}"
@@ -68413,6 +68952,12 @@ msgstr "Si la aldea le pide a alguien que se vaya"
 msgid "{asks, plural, one {# ask waiting} other {# asks waiting}}"
 msgstr "{asks, plural, one {# solicitud en espera} other {# solicitudes en espera}}"
 
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Stay"
+msgstr "Hospedaje"
+
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: stayHere"
@@ -68546,6 +69091,12 @@ msgctxt "PowerGroupDialogs, p"
 msgid "Nobody else holds {0}, and the village has taken {1} on:"
 msgstr "Nadie más tiene {0}, y la aldea asumió {1}:"
 
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: this page is already one of the member's cards"
+msgid "On your cards"
+msgstr "Ya está en sus tarjetas"
+
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
 msgctxt "module badges, benefit 3"
@@ -68594,6 +69145,12 @@ msgstr "Apagado por defecto, y apagado significa que una votación que no alcanz
 msgctxt "add a photo form"
 msgid "A line about it"
 msgstr "Una línea sobre ella"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "One task waiting"
+msgstr "Una tarea esperando"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Library.tsx
@@ -69018,6 +69575,12 @@ msgstr "Quitar"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card."
 msgstr "Esta propuesta se envió antes de que las personas escribieran su propia ficha de rol, así que no hay nada que poner junto a la ficha abierta."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today, asks"
+msgid "Asked of you"
+msgstr "Le piden"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
@@ -69820,6 +70383,12 @@ msgstr ""
 msgid "An example, to read and not to copy"
 msgstr "Un ejemplo, para leer y no para copiar"
 
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Library"
+msgstr "Biblioteca"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable org.decline_next_steps_on, description"
@@ -70261,6 +70830,12 @@ msgstr "Se abre cuando empieza el encuentro."
 msgid "{count, plural, one {# change not saved yet} other {# changes not saved yet}}"
 msgstr "{count, plural, one {# cambio sin guardar todavía} other {# cambios sin guardar todavía}}"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: under the card"
+msgid "A lens, never a forecast. A new card at midnight."
+msgstr "Una lente, nunca un pronóstico. Una carta nueva a medianoche."
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/companion/CompanionPanel.tsx
 msgctxt "guide question field"
@@ -70500,6 +71075,12 @@ msgstr "Ideal para <0>{0}</0>"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Contacts outside the village"
 msgstr "Contactos fuera de la aldea"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+#: client/src/components/profileDash/ProfileTabs.tsx
+msgctxt "ProfileTabs: the member's own tab, what they hold"
+msgid "My treasury"
+msgstr "Mi tesorería"
 
 # needs-native-review: the live sessions pages and the meeting rhythm, 26 Nov 2026
 #: client/src/components/sessions/rhythmWords.ts
@@ -70956,6 +71537,12 @@ msgctxt "AdminFeel, p"
 msgid "All clear for today."
 msgstr "Todo en orden por hoy."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the face down card, read aloud"
+msgid "Draw today's card"
+msgstr "Saque la carta de hoy"
+
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: startItem"
@@ -71011,9 +71598,9 @@ msgstr "Cúbralos antes de publicar. Arrastre un recuadro sobre cada uno. Todo l
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "{tokenName} Wall"
-msgstr "Muro de {tokenName}"
+#~ msgctxt "Layout, Link"
+#~ msgid "{tokenName} Wall"
+#~ msgstr "Muro de {tokenName}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -71507,6 +72094,12 @@ msgstr "Su horizonte de tiempo"
 msgctxt "LibraryImportPanel, h4"
 msgid "Bring in tasks from Organisational Memory"
 msgstr "Traer tareas de la Memoria organizativa"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the chip on the card, today's Sun stands in its gate"
+msgid "Sun-lit"
+msgstr "Iluminada por el Sol"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/comms/HostRecapPanel.tsx
@@ -72172,6 +72765,12 @@ msgctxt "pay board"
 msgid "{units} {name}, changed from {shared}"
 msgstr "{units} {name}, cambiado desde {shared}"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/components/todayCard/TodayCard.tsx
+msgctxt "today's card: before the pull"
+msgid "Draw one card from your own lines, read against today's sky and what waits on you."
+msgstr "Saque una carta de sus propias líneas, leída frente al cielo de hoy y lo que le espera."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -72292,6 +72891,12 @@ msgstr "Flecha"
 msgctxt "game variable entrance.look_minutes, label"
 msgid "Portal entrance: minutes to look around before the code"
 msgstr "Entrada del portal: minutos para explorar antes del código"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's first row"
+msgid "The sky and your card"
+msgstr "El cielo y su carta"
 
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
@@ -72465,9 +73070,9 @@ msgstr "Lecturas abiertas"
 
 # needs-native-review: the site menu, 26 Nov 2026
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "Your First Walk"
-msgstr "Su primera caminata"
+#~ msgctxt "site menu"
+#~ msgid "Your First Walk"
+#~ msgstr "Su primera caminata"
 
 # needs-native-review: the rows of /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/sourceWords.ts
@@ -72736,7 +73341,13 @@ msgctxt "module builder journey"
 msgid "A personal practice: Gene Keys"
 msgstr "Una práctica personal: Gene Keys"
 
-#: client/src/components/mobile/MoreSheet.tsx
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the chip on the card, today's Earth stands in its gate"
+msgid "Earth-held"
+msgstr "Sostenida por la Tierra"
+
+#: client/src/lib/speedCards/registered.ts
 msgctxt "the phone's More sheet: tile, the credits page"
 msgid "Pay"
 msgstr ""
@@ -72868,6 +73479,12 @@ msgstr "Termina el (opcional)"
 msgctxt "DraftCards, h2"
 msgid "Pick up where you left off"
 msgstr "Siga donde lo dejó"
+
+# needs-native-review: fold 3 (#1857) in the menu, the same words as its page title, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Rights and agreements"
+msgstr "Derechos y acuerdos"
 
 #: client/src/components/quiet/OffTheTrail.tsx
 msgid "There is no page at this address. It may have moved, or it may never have existed. The land is still here, and the way home is short."
@@ -73045,6 +73662,12 @@ msgctxt "PoolStatement, h2"
 msgid "The builders’ pool this cycle <0/>"
 msgstr "El fondo de constructores en este ciclo <0/>"
 
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, h2"
+msgid "Community"
+msgstr "Comunidad"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -73177,6 +73800,12 @@ msgctxt "StructureDraft, a"
 msgid "Go to the list"
 msgstr "Ir a la lista"
 
+# needs-native-review: the menu by membership, round 2, the group for how the village is run, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: the group for how the village is run"
+msgid "Govern"
+msgstr "Gobernar"
+
 # needs-native-review: visitor profile, 2026-11-25
 #: client/src/components/admin/InvitationRequests.tsx
 msgctxt "admin invitation requests"
@@ -73241,6 +73870,12 @@ msgstr "Hace crecer: {goalText}"
 msgctxt "VillageMap, h1"
 msgid "How Power Is Held"
 msgstr "Cómo se sostiene el poder"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "One ask from another member"
+msgstr "Un pedido de otro miembro"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/ModuleConfigPanels.tsx
@@ -73863,6 +74498,12 @@ msgstr "Abra el módulo en la Biblioteca de módulos y sus ajustes están en la 
 msgctxt "decision: a consent reached"
 msgid "The village consented"
 msgstr "La aldea dio su consentimiento"
+
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: the search field's label"
+msgid "Find a page"
+msgstr "Buscar una página"
 
 #: client/src/components/sessions/HarvestPlant.tsx
 msgctxt "friday harvest, a priority not started, carried to monday"
@@ -74627,6 +75268,12 @@ msgctxt "SaberraBridgeBoard, title"
 msgid "Data agreement"
 msgstr "Acuerdo de datos"
 
+# needs-native-review: the menu's QA, the account menu, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: what waits on the member to decide"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: Admin save bar, 2026-11-25
 #: client/src/components/IdentityPackPanel.tsx
@@ -74716,6 +75363,11 @@ msgstr "Marcar como completo"
 msgctxt "CommunityCalendarCard, span"
 msgid "You are number {0}"
 msgstr "Usted es el número {0}"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#~ msgctxt "Layout, Link"
+#~ msgid "Waiting on you"
+#~ msgstr "Lo que espera su respuesta"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/proposals/ChangeCard.tsx
@@ -75666,6 +76318,12 @@ msgctxt "circle consent: youObjected"
 msgid "You objected."
 msgstr "Usted objetó."
 
+# needs-native-review: Pull a card, the speed card, 27 Nov 2026
+#: client/src/lib/speedCards/registered.ts
+msgctxt "the phone's More sheet: speed card, today's card drawn from the member's own lines"
+msgid "Pull a card"
+msgstr "Saque una carta"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #. placeholder {0}: s.pct
 #. placeholder {1}: label(s.label)
@@ -75940,6 +76598,12 @@ msgctxt "Visit, div"
 msgid "The ways to visit didn't load. Reload to try again, or use the form below."
 msgstr "Las formas de visitar no cargaron. Recargue para intentar de nuevo, o use el formulario de abajo."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Session today · {at}"
+msgstr "Sesión hoy · {at}"
+
 #: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
 msgctxt "companion welcome"
 msgid "{who} is {pct}% hatched · about 2 minutes left"
@@ -75962,6 +76626,12 @@ msgstr "Dejado de lado"
 msgctxt "Admin, p"
 msgid "What the call covered"
 msgstr "Lo que cubrió la llamada"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Share Feedback"
+msgstr "Compartir comentarios"
 
 #. placeholder {0}: signedPct(diff)
 #: client/src/components/governance/PriceAsk.tsx
@@ -76012,6 +76682,12 @@ msgstr "Quitado:"
 msgctxt "module journal, data"
 msgid "Each member's own entries, readable by nobody else in the village, admins included, and shared with organisational memory under code-names unless marked private; pulse numbers; and feedback between members who opted in."
 msgstr "Las propias entradas de cada miembro, que nadie más en la aldea puede leer, incluidas las personas administradoras, y que se comparten con la memoria organizacional bajo seudónimos salvo que se marquen privadas; los números del pulso; y la retroalimentación entre miembros que aceptaron."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: share only the card's name and focus"
+msgid "Share the card"
+msgstr "Compartir la carta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
@@ -77012,9 +77688,9 @@ msgstr "Unas palabras para nosotros"
 #. placeholder {0}: progress.done
 #. placeholder {1}: progress.total
 #: client/src/pages/FirstWalk.tsx
-msgctxt "FirstWalk, p"
-msgid "{0}/{1} stops"
-msgstr "{0}/{1} paradas"
+#~ msgctxt "FirstWalk, p"
+#~ msgid "{0}/{1} stops"
+#~ msgstr "{0}/{1} paradas"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: e.email
@@ -77377,7 +78053,7 @@ msgstr "Cerrando esto"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
-#: client/src/components/todayCard/TodayCard.tsx
+#: client/src/pages/TodayCard.tsx
 msgctxt "today's card: a pull that failed"
 msgid "The card did not turn. Try again."
 msgstr "La carta no se dio vuelta. Inténtelo de nuevo."
@@ -77888,9 +78564,9 @@ msgstr "Listo para entregar"
 
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
-msgctxt "today's card: the face of the card"
-msgid "The Sun's gate"
-msgstr "La puerta del Sol"
+#~ msgctxt "today's card: the face of the card"
+#~ msgid "The Sun's gate"
+#~ msgstr "La puerta del Sol"
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -78638,6 +79314,12 @@ msgctxt "consent queue empty"
 msgid "Nothing waiting."
 msgstr "Nada esperando."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Decisions wait on you"
+msgstr "Decisiones le esperan"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HyphaModulePanel.tsx
 msgctxt "HyphaModulePanel, li"
@@ -78950,6 +79632,12 @@ msgstr "Subir a {stageName} y nombrar"
 msgctxt "WalkEditorPanel, p"
 msgid "Leave it empty and the guide greets people plainly, with the village's name and how to move the map."
 msgstr "Si lo deja vacío, la guía saluda a la gente de forma sencilla, con el nombre de la aldea y cómo moverse por el mapa."
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: try a failed step again"
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/pages/OpenProposal.tsx
@@ -79731,6 +80419,12 @@ msgctxt "module hypha, benefit 1"
 msgid "Find your token contracts from your founder account, then confirm each one yourself"
 msgstr "Encuentre sus contratos de fichas desde su cuenta fundadora, y luego confirme cada uno usted mismo"
 
+# needs-native-review: round 2, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Decide"
+msgstr "Decidir"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: comms?.key.configured ? ` ····${comms.key.last4 ?? ""}` : ""
 #. placeholder {1}: comms?.key.configured ? `Planted${comms.key.source === "env" ? " on the hosting service" : ""}` : "Not planted yet"
@@ -80187,6 +80881,12 @@ msgctxt "admin identity: a noun field"
 msgid "Your word for {0}"
 msgstr "Su palabra para {0}"
 
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "The people and the story"
+msgstr "La gente y la historia"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Places.tsx
 #~ msgctxt "Places, label"
@@ -80638,6 +81338,12 @@ msgctxt "Admin, p"
 msgid "Nothing {status}. A quiet queue is the good outcome."
 msgstr "Nada {status}. Una cola tranquila es el buen resultado."
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the back of the card"
+msgid "Today's card"
+msgstr "La carta de hoy"
+
 #. placeholder {0}: data.pct
 #. placeholder {1}: priced(r.atCommitment, r.full.currency, r.full.per)
 #. placeholder {2}: money(r.full.amount, r.full.currency)
@@ -81088,6 +81794,12 @@ msgstr "Los roles llevan lo que el servicio sabe de ellos, así un miembro puede
 msgctxt "rites admin"
 msgid "That did not save"
 msgstr "Eso no se guardó"
+
+# needs-native-review: the speed cards, the picker's catch-all group, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the speed-card picker: a group for menu entries outside every group"
+msgid "More"
+msgstr "Más"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GameMechanics.tsx
@@ -81714,6 +82426,12 @@ msgstr "Fuera de la agenda"
 msgctxt "proposed changes: kind of change"
 msgid "Season priorities"
 msgstr "Prioridades de la temporada"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the guide's ask; {guide} is the village guide's name"
+msgid "This also lets {guide} use your lines, the same yes as in your Gene Keys controls, where you can take it back."
+msgstr "Esto también permite que {guide} use sus líneas, el mismo sí que en sus controles de Gene Keys, donde puede retirarlo."
 
 # needs-native-review: player card signs, 26 Nov 2026
 #: client/src/components/playerCard/roleSignMessages.ts
@@ -82438,6 +83156,18 @@ msgstr "Ese número no se guardó."
 msgctxt "game variable hiddenmap.basemap, choice none, hint"
 msgid "Nothing leaves the phone. No coastline, roads or names."
 msgstr "Nada sale del teléfono. Sin costas, caminos ni nombres."
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Your things"
+msgstr "Lo suyo"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Places and homes"
+msgstr "Lugares y hogares"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/HousingAdminPanel.tsx
@@ -83862,6 +84592,12 @@ msgctxt "game variable calendar.hemisphere, choice north, label"
 msgid "Northern"
 msgstr "Norte"
 
+# needs-native-review: the menu's QA, Govern's own page, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: Govern's own page, its Now view"
+msgid "What's happening now"
+msgstr "Lo que está pasando ahora"
+
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/components/governance/now/NowView.tsx
 msgctxt "governance now: door"
@@ -84142,9 +84878,9 @@ msgstr "Deducido de las palabras del propio rol. Nadie lo ha confirmado todavía
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Stay With Us"
-msgstr "Hospédese con nosotros"
+#~ msgctxt "Layout, Link"
+#~ msgid "Stay With Us"
+#~ msgstr "Hospédese con nosotros"
 
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/openProposal/onboardingWords.ts
@@ -84681,9 +85417,9 @@ msgstr "Historial"
 
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
-msgctxt "Layout, Link"
-msgid "Roles & Leadership"
-msgstr "Roles y liderazgo"
+#~ msgctxt "Layout, Link"
+#~ msgid "Roles & Leadership"
+#~ msgstr "Roles y liderazgo"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
@@ -85263,6 +85999,12 @@ msgctxt "game variable exit.vote_over, label"
 msgid "Value above which a departure needs the village to agree"
 msgstr "Valor por encima del cual una salida necesita el acuerdo de la aldea"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/GeneKeys.tsx
+msgctxt "GeneKeys, Link: today's card, drawn from the lines just found"
+msgid "Pull today's card"
+msgstr "Saque la carta de hoy"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/CloseBeat.tsx
 msgctxt "CloseBeat, p"
@@ -85340,6 +86082,12 @@ msgstr "{error}. Puede haber cambios esperando; esta no es una lista vacía."
 #~ msgctxt "InvestorJourney, label"
 #~ msgid "Preferred Time"
 #~ msgstr "Hora preferida"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: a folder"
+msgid "Welcoming"
+msgstr "Bienvenida"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/pages/Entrance.tsx
@@ -85542,6 +86290,11 @@ msgstr "¿Olvidó su contraseña?"
 msgctxt "role card: a commitment inside a sentence"
 msgid "how the next holder is chosen"
 msgstr "cómo se elige a la próxima persona"
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#~ msgctxt "today's card: the words a share sends"
+#~ msgid "My card today: {0}. {1}."
+#~ msgstr "Mi carta de hoy: {0}. {1}."
 
 #: client/src/components/roleCard/CardTips.tsx
 msgctxt "role card tooltip: the word"
@@ -86225,6 +86978,12 @@ msgctxt "Bootstrap, p"
 msgid "It expires in an hour and works once. If it expires, come back to this page and run it again."
 msgstr "Vence en una hora y funciona una sola vez. Si vence, vuelva a esta página y ejecútelo otra vez."
 
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "Ways in"
+msgstr "Formas de entrar"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -86317,6 +87076,12 @@ msgstr "falta registrar"
 msgctxt "proposed changes"
 msgid "Filed. It waits above like any other change, and nothing moves until someone accepts it."
 msgstr "Registrado. Espera arriba como cualquier otro cambio, y nada se mueve hasta que alguien lo acepte."
+
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: in the village today"
+msgid "Gathering today"
+msgstr "Encuentro hoy"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: OPEN_WORDS.linkMade
@@ -88147,6 +88912,13 @@ msgctxt "future venture pitch, part 5"
 msgid "A first financial picture"
 msgstr "Un primer panorama financiero"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#. placeholder {0}: card.line
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the line bars on the card, read aloud"
+msgid "Line {0} of 6"
+msgstr "Línea {0} de 6"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -88548,6 +89320,12 @@ msgctxt "draft page"
 msgid "Yes, open the vote"
 msgstr "Sí, abrir la votación"
 
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: its heading"
+msgid "Add a card"
+msgstr "Añadir una tarjeta"
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable governance.change_set_cap, label"
@@ -88577,6 +89355,12 @@ msgstr "Recorridos"
 msgctxt "CommunityCalendarCard, li"
 msgid "This gathering asks for nothing extra."
 msgstr "Este encuentro no pide nada adicional."
+
+# needs-native-review: the speed cards, the move strip, QA round 1, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the move strip, the picked card and its place"
+msgid "{label}, place {place} of {total}"
+msgstr "{label}, lugar {place} de {total}"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "lantern: after it arrived"
@@ -89329,6 +90113,12 @@ msgctxt "role card: a role's state"
 msgid "Open"
 msgstr "Abierto"
 
+# needs-native-review: the speed cards, the grid, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: the six cards, read aloud"
+msgid "Your cards"
+msgstr "Sus tarjetas"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgeBandCorrection.tsx
 msgctxt "admin age band"
@@ -89430,6 +90220,12 @@ msgstr "Hora en que salen los recordatorios, hora de la aldea (0 a 23)"
 msgctxt "role card: eyebrow, the village's word for a role"
 msgid "A {roleWord} with powers"
 msgstr "Un {roleWord} con poderes"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud after Reset"
+msgid "Your cards are back to the defaults. Press Done to keep them."
+msgstr "Sus tarjetas volvieron a las predeterminadas. Pulse Listo para conservarlas."
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -90516,6 +91312,12 @@ msgctxt "game variable redemption.fee_pct, label"
 msgid "Fee taken from the payment"
 msgstr "Comisión tomada del pago"
 
+# needs-native-review: Pull a card, today's card, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: what waits on the member, heading"
+msgid "Today in the village"
+msgstr "Hoy en la aldea"
+
 # needs-native-review: Mail settings, 2026-11-25
 #: client/src/components/admin/comms/MailNow.tsx
 msgctxt "Mail settings, state heading"
@@ -90843,6 +91645,12 @@ msgctxt "no-sign band"
 msgid "The band runs from {belowPct}% under the suggestion up to the suggestion itself."
 msgstr "La franja va desde un {belowPct}% por debajo de la sugerencia hasta la sugerencia misma."
 
+# needs-native-review: the speed cards, the picker, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud after a card is added"
+msgid "{card} added."
+msgstr "Se añadió {card}."
+
 # needs-native-review: the constitution's laws, 26 Nov 2026
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"Money flows in, never out\", title"
@@ -90857,9 +91665,9 @@ msgstr "Edición sugerida"
 
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
-msgctxt "today's card: button"
-msgid "Pull again"
-msgstr "Saca otra vez"
+#~ msgctxt "today's card: button"
+#~ msgid "Pull again"
+#~ msgstr "Saca otra vez"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/VocabularyPanel.tsx
@@ -91081,6 +91889,12 @@ msgstr "El sitio acaba de crecer"
 #~ msgctxt "steward front door"
 #~ msgid "See the quests"
 #~ msgstr "Ver las misiones"
+
+# needs-native-review: the speed cards, edit mode, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud after a card moves"
+msgid "{card} moved to place {place} of {total}."
+msgstr "{card} pasó al lugar {place} de {total}."
 
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/pages/OrgDraft.tsx
@@ -91405,9 +92219,9 @@ msgstr "Este recorrido terminó para esta persona, así que no se envía nada m�
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: profile overhaul, today's card, 25 Nov 2026
 #: client/src/components/todayCard/TodayCard.tsx
-msgctxt "today's card: before the pull"
-msgid "Pull a card and read today's sky against your own lines."
-msgstr "Saque una carta y lea el cielo de hoy frente a sus propias líneas."
+#~ msgctxt "today's card: before the pull"
+#~ msgid "Pull a card and read today's sky against your own lines."
+#~ msgstr "Saque una carta y lea el cielo de hoy frente a sus propias líneas."
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -92269,6 +93083,12 @@ msgctxt "pick which change a note is about"
 msgid "Which change?"
 msgstr "¿Cuál cambio?"
 
+# needs-native-review: round 2, an entry, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Village Tools"
+msgstr "Herramientas de la aldea"
+
 # needs-native-review: role application checks, usted, 2026-11-26
 #: client/src/components/governance/applicationChecks.ts
 msgctxt "role application: check"
@@ -92981,6 +93801,12 @@ msgctxt "the ink stamp across a quest that is an example of the work to come"
 msgid "Example"
 msgstr "Ejemplo"
 
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: the reading's heading"
+msgid "Your day, read"
+msgstr "Su día, leído"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/LivingMap.tsx
 msgctxt "LivingMap, h1"
@@ -93055,6 +93881,12 @@ msgstr "Quitar"
 msgctxt "VillageMap, p"
 msgid "Sign in to see the village map."
 msgstr "Inicie sesión para ver el mapa de la aldea."
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+#: client/src/pages/TodayCard.tsx
+msgctxt "today's card: a member with no lines yet"
+msgid "Find your lines to open your deck."
+msgstr "Encuentre sus líneas para abrir su baraja."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/SecretsKeyBanner.tsx
@@ -93384,6 +94216,12 @@ msgstr "De agentes"
 msgctxt "reviewer's terms panel for a proposal"
 msgid "They chose {0}%"
 msgstr "Eligió {0}%"
+
+# needs-native-review: the speed cards, the picker, QA round 1, 27 Nov 2026
+#: client/src/components/mobile/SpeedCardPicker.tsx
+msgctxt "the speed-card picker: the kicker over its heading"
+msgid "Your quick cards"
+msgstr "Sus tarjetas rápidas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/SaberraBridgeQuests.tsx
@@ -93819,6 +94657,12 @@ msgstr "Dibuje una flecha hacia el lugar, o enciérrelo con el lápiz."
 msgctxt "role term preset platform:pay-month-work-moon, label"
 msgid "Paid monthly, works by the moon"
 msgstr "Pago mensual, trabajo por luna"
+
+# needs-native-review: the footer matches the menu, 27 Nov 2026
+#: client/src/components/Layout.tsx
+msgctxt "Layout, Link"
+msgid "Roles"
+msgstr "Roles"
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
