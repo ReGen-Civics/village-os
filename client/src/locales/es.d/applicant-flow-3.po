@@ -164,3 +164,103 @@ msgstr "Empezar ya: en la próxima reunión general"
 msgctxt "open proposal: what start now does"
 msgid "Left off, they start on the all-hands day on or after the next season begins. Ops decides."
 msgstr "Sin marcar, empieza el día de la reunión general en o después del inicio de la próxima temporada. Lo decide Ops."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.role_short_labels, label"
+msgid "Short role names on an applicant's booking buttons"
+msgstr "Nombres cortos de roles en los botones de reserva de quien postula"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.role_short_labels, description"
+msgid "What an applicant's booking button calls each role, one role per line as role-id = Label (for example ops-role = Ops). The button then reads Book with Ops, and never names a person. A role with no line here reads its full name. Paste each role id from the org chart."
+msgstr "Cómo llama a cada rol el botón de reserva de quien postula, un rol por línea como id-del-rol = Nombre (por ejemplo ops-role = Ops). El botón dice entonces Reserve con Ops, y nunca nombra a una persona. Un rol sin línea aquí muestra su nombre completo. Pegue el id de cada rol desde el organigrama."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.application_close_days, label"
+msgid "Days before an undecided application closes"
+msgstr "Días antes de que se cierre una postulación sin decidir"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.application_close_days, description"
+msgid "An application nobody has decided this many days after it arrived is closed, and the applicant gets one letter saying so (the lead, 27 Nov 2026: yes close in 90 days). When a role it applies for sets the day applications close, the days count from when its review window opens, a week after that day. It is the only step in an application that happens without a person. An application that was adopted, declined or withdrawn is never touched."
+msgstr "Una postulación que nadie decidió tantos días después de llegar se cierra, y quien postula recibe una carta que lo dice (la persona líder, 27 nov 2026: sí, cerrar a los 90 días). Cuando un rol al que postula fija el día en que cierran las postulaciones, los días se cuentan desde que se abre su ventana de revisión, una semana después de ese día. Es el único paso de una postulación que ocurre sin una persona. Una postulación adoptada, rechazada o retirada nunca se toca."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_day, label"
+msgid "The all-hands meeting's day"
+msgstr "El día de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_day, description"
+msgid "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless the adoption chose to start now. The start letter invites them to the meeting that day."
+msgstr "El día de la semana de la reunión general de la aldea, en inglés (Monday, Tuesday, etc.). Una persona recién aceptada empieza ese día: el primero después de que se acepta su propuesta que caiga en o después del inicio de la próxima temporada, salvo que la adopción eligiera empezar ya. La carta de inicio la invita a la reunión de ese día."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_time, label"
+msgid "The all-hands meeting's time"
+msgstr "La hora de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_time, description"
+msgid "The meeting's start time, as 24-hour clock time in the zone below (for example 12:00). The start letter says it with the zone."
+msgstr "La hora de inicio de la reunión, en formato de 24 horas en la zona de abajo (por ejemplo 12:00). La carta de inicio la dice con la zona."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_timezone, label"
+msgid "The all-hands meeting's time zone"
+msgstr "La zona horaria de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_timezone, description"
+msgid "The time zone the meeting's time is in, as its standard name (for example America/Costa_Rica). The letter says it as Costa Rica time."
+msgstr "La zona horaria de la hora de la reunión, con su nombre estándar (por ejemplo America/Costa_Rica). La carta la dice como hora de Costa Rica."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_link, label"
+msgid "The all-hands meeting's video link"
+msgstr "El enlace de video de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_link, description"
+msgid "The video call a new member joins for the all-hands. Leave it empty and the start letter names the meeting without a link."
+msgstr "La videollamada a la que se une un miembro nuevo para la reunión general. Si se deja vacío, la carta de inicio nombra la reunión sin enlace."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_book_days, label"
+msgid "Days before an applicant is reminded to book a conversation"
+msgstr "Días antes de recordarle a quien postula que reserve una conversación"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_book_days, description"
+msgid "A conversation still open this many days after it opened sends the applicant one gentle reminder to book it, with its link. Once per conversation. A reminder never moves the application."
+msgstr "Una conversación que sigue abierta tantos días después de abrirse le envía a quien postula un recordatorio amable para reservarla, con su enlace. Una vez por conversación. Un recordatorio nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_step_days, label"
+msgid "Days before the team is reminded of a step that waits"
+msgstr "Días antes de recordarle al equipo un paso que espera"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_step_days, description"
+msgid "A conversation not yet written up, or a reference not yet followed up, this many days on gives the role up next one heads-up on the bell. Once per step. It never moves the application."
+msgstr "Una conversación aún sin escribir, o una referencia aún sin seguimiento, después de tantos días le da al rol que sigue un aviso en la campana. Una vez por paso. Nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.close_warning_days, label"
+msgid "Days after arrival when the team is warned an application will close"
+msgstr "Días tras la llegada en que se avisa al equipo que una postulación se cerrará"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.close_warning_days, description"
+msgid "An application nobody has decided this many days after it arrived warns the people who place roles, once, before it closes on its own at the days set below. With a role's application deadline, the days count from when its review window opens. It never moves the application."
+msgstr "Una postulación que nadie decidió tantos días después de llegar avisa una vez a quienes asignan roles, antes de cerrarse sola en los días fijados abajo. Con una fecha límite de postulación del rol, los días se cuentan desde que se abre su ventana de revisión. Nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.reference_questions, label"
+msgid "The standard questions for a reference's follow-up"
+msgstr "Las preguntas estándar para el seguimiento de una referencia"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.reference_questions, description"
+msgid "The questions that open in the notes box of whoever follows a reference up, the same for everyone, one per line. The notes stay with the team; the applicant only ever sees whether each reference was reached."
+msgstr "Las preguntas que se abren en la caja de notas de quien da seguimiento a una referencia, las mismas para todas las personas, una por línea. Las notas se quedan con el equipo; quien postula solo ve si se contactó a cada referencia."
