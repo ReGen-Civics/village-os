@@ -18,6 +18,8 @@ export interface BoardQuest {
   id: string;
   title: string;
   subtitle?: string | null;
+  /** Which steps need their own submission (0439), one per step; absent or all false, none do. */
+  stepNeeds?: boolean[];
   description?: string | null;
   impact?: string | null;
   story?: string | null;

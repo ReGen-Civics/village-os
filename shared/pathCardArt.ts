@@ -13,9 +13,11 @@
  * (`<imageKey>Focus`, "x% y%"), and without one it is a top-weighted centre,
  * because faces sit in the upper half of most photographs of people.
  *
- * A picture far from the frame's shape (a wide landscape in a portrait frame)
- * is shown whole on a soft ground instead of being cut: losing more than
- * CONTAIN_WHEN_CUT_OVER of either side is where faces start to go.
+ * Every picture fills its frame (the lead, 27 Nov 2026: "Fix the cropping in
+ * the resident picture"). A rule here used to show a picture far from the
+ * frame's shape whole instead, and on a phone the Resident portrait crossed
+ * that line and sat as a narrow column between two bands of the card's colour.
+ * The focal point is the one knob now.
  *
  * Pure: no DOM, no pool, no clock.
  */
@@ -33,9 +35,6 @@ export type PathArtFocusKey = `${PathArtKey}Focus`;
 
 /** Where the frame looks when the village has said nothing: the middle across, a little above the middle down. */
 export const DEFAULT_ART_FOCUS = "50% 40%";
-
-/** Above this share of a side lost to the crop, the picture is shown whole instead. */
-export const CONTAIN_WHEN_CUT_OVER = 0.4;
 
 const FOCUS = /^\s*(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%\s*$/;
 
@@ -71,18 +70,6 @@ export function pathArtFocus(images: Record<string, unknown> | null | undefined)
     if (focus) out[`${key}Focus`] = focus;
   }
   return out;
-}
-
-/**
- * True when cutting a picture to fill its frame would lose more than
- * CONTAIN_WHEN_CUT_OVER of its width or height. Unknown sizes keep the cover.
- */
-export function shouldShowWhole(naturalWidth: number, naturalHeight: number, frameWidth: number, frameHeight: number): boolean {
-  if (!(naturalWidth > 0 && naturalHeight > 0 && frameWidth > 0 && frameHeight > 0)) return false;
-  const photo = naturalWidth / naturalHeight;
-  const frame = frameWidth / frameHeight;
-  const lost = 1 - Math.min(photo, frame) / Math.max(photo, frame);
-  return lost > CONTAIN_WHEN_CUT_OVER;
 }
 
 /**

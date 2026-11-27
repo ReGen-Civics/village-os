@@ -10,7 +10,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { MushroomNetwork, Pines } from "@/components/sacred/living";
-import { Trans } from "@lingui/react/macro";
+import { investorHeaders } from "@/lib/investorAccess";
 
 interface SummaryDetail {
   id: string;
@@ -42,12 +42,14 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   users: MushroomNetwork,
 };
 
-export default function InvestorSummary() {
+/** `eyebrow`: the band's heading, sent with the investor page's words (server/lib/investorPageWords.ts). */
+export default function InvestorSummary({ eyebrow }: { eyebrow: string }) {
   const [data, setData] = useState<InvestorSummaryData | null>(null);
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/investor-summary")
+    // Kept for the readers the team let in (server/routes/investorAccess.ts): a member is known by the token.
+    fetch("/api/investor-summary", { credentials: "same-origin", headers: investorHeaders() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (alive) setData(d); })
       .catch(() => { /* ignore */ });
@@ -69,8 +71,7 @@ export default function InvestorSummary() {
         <div className={CARD}>
           <div className="mb-8 max-w-2xl">
             <p className={`${EYEBROW} mb-3`}>
-              <Trans context="InvestorSummary, p">Investment Summary
-            </Trans></p>
+              {eyebrow}</p>
             <h2 className="mb-3 font-display text-3xl leading-tight text-card-foreground sm:text-4xl break-words">
               {data.headline}
             </h2>

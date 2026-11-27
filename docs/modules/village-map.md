@@ -39,7 +39,7 @@ Estimated sessions: 7
 ## Design decisions, and why
 
 - Closed the loop the 2020 slide left open: the slide was a visualization; every node here has an action — occupied role -> view profile/contact relay, vacant role -> raise-your-hand application into the EXISTING admin submissions inbox (no new moderation surface), quest satellite -> claim via the shipped quest flow.
-- Concierge with deterministic-first matching: keyword/tag scoring over circles/roles/quests resolves unambiguous queries with ZERO LLM tokens (the plan's 'deterministic first' pattern); the LLM ('coordination' assistant kind, reusing Maia's guards, caps and injection framing) only disambiguates and drafts the intro message. Slide had no search at all.
+- Concierge with deterministic-first matching: keyword/tag scoring over circles/roles/quests resolves unambiguous queries with ZERO LLM tokens (the plan's 'deterministic first' pattern); the LLM ('coordination' assistant kind, reusing the village guide's guards, caps and injection framing) only disambiguates and drafts the intro message. Slide had no search at all.
 - The map is also a demand sensor: every concierge query is logged (F13 'instrument now, dashboard later'), so UNMATCHED queries — things members want to do that no role covers — become the founders' signal for which role to create next. The 2020 concept only displayed supply.
 - Deterministic hand-rolled radial orbit layout instead of amcharts force-directed physics: positions are a pure function of (circle sortOrder, node index), so the map is spatially stable between visits (spatial memory), jitter-free, snapshot-testable, SSR-safe, and zero new dependencies — animated with the framer-motion already in the repo.
 - A privacy layer the slide never considered: faces/names are member-gated via shared/capabilities.ts (map.viewPeople), contactability is per-user opt-out, emails never render anywhere, and contact goes through a Resend relay with Reply-To so reply-by-email works with no DM system and no address leak in the UI.
@@ -167,7 +167,7 @@ One new Admin tab, "Circles & Map" (existing tab pattern in Admin.tsx): (1) Circ
 - Roles-as-data + role_holders (SHIPPED — the map's spine)
 - shared/capabilities.ts one-gate (SHIPPED — extended with map.viewPeople, map.contact)
 - Game variables registry shared/gameVariables.ts + server/lib/variables.ts (SHIPPED)
-- Maia assistant infra: guard stack extracted from handleProposalAssistant, 'coordination' kind registered beside PROPOSAL_KINDS (SHIPPED, optional at runtime)
+- The village guide assistant infra: guard stack extracted from handleProposalAssistant, 'coordination' kind registered beside PROPOSAL_KINDS (SHIPPED, optional at runtime)
 - sendResendEmail() relay (SHIPPED, optional — contact hidden without email config)
 - Submissions inbox for role applications (SHIPPED)
 - ensureDataFiles() + server/seeds/ convention for the three new JSON files (data/ still authoritative until Phase 1b cutover)

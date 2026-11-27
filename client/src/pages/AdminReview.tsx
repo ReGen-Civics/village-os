@@ -77,7 +77,20 @@ export default function AdminReview() {
 
   const find = async (e: FormEvent) => {
     e.preventDefault();
-    const q = query.trim();
+    await findFor(query.trim());
+  };
+  // `?find=B-71.2` (or a draft id) lands with the search made: the door the old /admin/proposals links and the
+  // connector's "find it here" links come in through.
+  const findParam = new URLSearchParams(search).get("find")?.trim() ?? "";
+  // Made once the page has read what waits and the history it was sent, so a decided code is found too.
+  const readyToFind = load.phase === "ready" && (!mayDecide || desk.decided.length > 0 || desk.heldState !== "loading");
+  useEffect(() => {
+    if (!signedIn || !findParam || !readyToFind) return;
+    setQuery(findParam);
+    void findFor(findParam);
+  }, [signedIn, findParam, readyToFind, desk.decided.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function findFor(q: string) {
     if (!q) return setFound(null);
     try {
       const r = await fetch(`/api/admin/review/find?q=${encodeURIComponent(q)}`, { headers: headers() });
@@ -89,7 +102,7 @@ export default function AdminReview() {
     } catch {
       setFound({ q, items: null, code: null });
     }
-  };
+  }
 
   const day = (iso: string | null) => (iso ? i18n.date(new Date(iso), { day: "numeric", month: "short" }) : null);
 

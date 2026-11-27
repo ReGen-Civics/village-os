@@ -40,6 +40,7 @@ import { forgetReviser } from "../repos/orgDraftRevisions";
 import { raiseRevokeForEnded } from "./roleAccess";
 import { liveAssignmentIdsForHolder } from "../repos/roleAccess";
 import type { Pool, PoolConnection } from "mysql2/promise";
+import { newRolesInDraft, roleIdsTaken, roleRowActive } from "../repos/orgDrafts";
 import { draftChangesChosenBy, draftChangesNamingPeople, draftStatus, lockCirclesCounter, lockDraftRow, readCirclesForPreview, readDraftBodies, rewriteDraftChangePeople, withdrawDraftRow, type DraftBodyRows } from "../repos/orgDrafts";
 import { stageIndex } from "../../shared/gameConfig";
 import { numberVar } from "./variables";
@@ -719,15 +720,51 @@ export async function addChange(
     "SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM org_draft_changes WHERE draft_id = ?", [draftId],
   );
   const id = newId("dch");
+  const { orgRoleId, payload } = await withFreshRoleId(pool, draftId, body);
   // What the draft is written against (0436), read in this transaction so it is the card the change was added to.
   const base = BASE_OPS.has(body.op)
-    ? await captureBefore(pool, { id, draftId, op: body.op, orgRoleId: body.orgRoleId, payload: body.payload ?? {}, beforeJson: null, order: 0 })
+    ? await captureBefore(pool, { id, draftId, op: body.op, orgRoleId, payload, beforeJson: null, order: 0 })
     : null;
   await pool.query(
     "INSERT INTO org_draft_changes (id, draft_id, op, org_role_id, payload, sort_order, base_json) VALUES (?,?,?,?,?,?,?)",
-    [id, draftId, body.op, body.orgRoleId, JSON.stringify(body.payload ?? {}), Number(n?.next ?? 1), base ? JSON.stringify(withoutPeople(base)) : null],
+    [id, draftId, body.op, orgRoleId, JSON.stringify(payload), Number(n?.next ?? 1), base ? JSON.stringify(withoutPeople(base)) : null],
   );
   return { ok: true, id };
+}
+
+
+/**
+ * A NEW ROLE WHOSE ID A RETIRED ROLE HOLDS GETS ITS OWN (the coordinator, 26 Nov 2026).
+ *
+ * A proposal's role id is the outside tool's own id, slugified (`seatIdFor`), so a role Sera proposes again after
+ * the village retired it arrives with the retired role's id. The retired row stays, because past holdings, recaps,
+ * history and links point at it, and a second row cannot share its id; so the draft blocked whole on "a role with
+ * that id already exists" and four good roles waited on one. Now the new role takes the next free "-2", "-3" id, the
+ * change keeps the id it asked for (`idFrom`) so its line can say so, and a later change in the same draft that
+ * names the asked-for id (a seating, an edit) follows it to the new one. The retired row is never touched.
+ *
+ * A LIVE role with that id is a different thing (the proposal names a role that exists) and still blocks, as it did.
+ */
+async function withFreshRoleId(conn: PoolConnection, draftId: string, body: { op: DraftOp; orgRoleId: string; payload?: any }): Promise<{ orgRoleId: string; payload: any }> {
+  const payload = body.payload ?? {};
+  if (body.op === "create_seat") {
+    if ((await roleRowActive(conn, body.orgRoleId)) !== false) return { orgRoleId: body.orgRoleId, payload };
+    const fresh = await freshRoleId(conn, body.orgRoleId);
+    return fresh ? { orgRoleId: fresh, payload: { ...payload, idFrom: body.orgRoleId } } : { orgRoleId: body.orgRoleId, payload };
+  }
+  const given = (await newRolesInDraft(conn, draftId)).find((r) => {
+    const p = typeof r.payload === "string" ? (() => { try { return JSON.parse(r.payload as string); } catch { return null; } })() : r.payload;
+    return !!p && typeof p === "object" && (p as Record<string, unknown>).idFrom === body.orgRoleId;
+  });
+  return { orgRoleId: given ? given.id : body.orgRoleId, payload };
+}
+
+/** The first of "<id>-2" to "<id>-50" no role holds and no open draft is giving a new role; null if all are taken. */
+async function freshRoleId(conn: PoolConnection, wanted: string): Promise<string | null> {
+  const stem = wanted.slice(0, 60).replace(/-+$/, "");
+  const candidates = Array.from({ length: 49 }, (_, i) => `${stem}-${i + 2}`);
+  const taken = await roleIdsTaken(conn, candidates);
+  return candidates.find((c) => !taken.has(c)) ?? null;
 }
 
 /**
@@ -1198,6 +1235,8 @@ export function previewLoadedDraft(
 
     if (c.op === "create_seat") {
       reads = `Create the role "${primitiveText(c.payload?.name) ?? c.orgRoleId}"`;
+      // A retired role held the id it asked for, so it has its own (withFreshRoleId): said, so nobody wonders.
+      if (typeof c.payload?.idFrom === "string") reads += " (a retired role used this name; this one gets its own id)";
       /*
        * ── EVERY REASON, AND THE CIRCLE LAST ───────────────────────────────
        *

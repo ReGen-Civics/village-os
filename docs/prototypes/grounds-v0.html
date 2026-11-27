@@ -1655,6 +1655,13 @@
   #vitals,#layers,#dayBtn,#themeBtn,#mapSel,#wallBtn,#loomBtn,#buildBtn,#dock,#minimapWrap,#attention,#maia{transition:opacity .9s ease}
   body.intro :is(#vitals,#layers,#dayBtn,#themeBtn,#mapSel,#wallBtn,#loomBtn,#buildBtn,#dock,#minimapWrap,#attention,#maia,#toasts){opacity:0;pointer-events:none}
   ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#6b5430;border-radius:5px}::-webkit-scrollbar-track{background:transparent}
+  /* THE PEEK (`#peek`): the home page's small window onto the map (client/src/components/MapPeek.tsx). The lead,
+     27 Nov 2026: "just show a really nice clean view of the map as it currently stands". Nothing to press and
+     nothing to read: the land and its buildings only, every control, card, seal and name taken off. */
+  html.peek :is(#topNav,#vitals,#themeBtn,#themePanel,#dayBtn,#layers,#roleKey,#dock,#vdrop,#pbar,#pnav,#gresume,#ghint,#help,
+    #pdrawer,#walkCard,#minimapWrap,#attention,#maia,#toasts,#introCard,#badges,#banners,#hovercard,#skin,#wall,#loom,#panel,
+    #inspect,#orgmap,#pubWrap,#draftBar,#restoreBar,#buildBar,#curation,#resolver,#moduleCard,#module,#tabs,#drawPanel,#saveRetry,
+    #ghostPoi,#seatDrop){display:none!important}
 </style>
 </head>
 <body class="intro">
@@ -2000,6 +2007,13 @@
    button that cannot answer yet, while the rest of this file downloads. The
    boot's last lines remove it. Declares nothing global. */
 (function(){if(/skipIntro/i.test(location.hash)){var c=document.getElementById('introCard');if(c)c.style.display='none'}})()</script>
+<script>/* THE PEEK. `#peek` is the home page's small, inert window onto the map. Marked here, while the page is still
+   parsing, so no control ever flashes in the frame. PEEK_K shrinks every building to the frame: at full width
+   (1100 px and up) the village's own size stands, and a phone-sized window draws them at under half, so a
+   cluster of houses reads as a village and not a pile. setGScale multiplies by it. Declares PEEK and PEEK_K. */
+(function(){window.PEEK=/(?:^#|[#?&])peek(?:=1)?(?:&|$)/i.test(location.hash);window.PEEK_K=1;
+  if(window.PEEK){document.documentElement.classList.add('peek');
+    window.PEEK_K=Math.max(0.42,Math.min(1,(window.innerWidth||1100)/1100))}})()</script>
 
 <script>
 /* ================= SCENE DATA — authored from AMORA MASTER PLAN V7 ================= */
@@ -8824,7 +8838,7 @@ function siteHref(route){return (window.SITE_BASE||'')+route}
    qa/verify_door_routes.js re-derives it and fails when this list rots.
    NOT `SITE_ROUTES`: that name is taken at :4504 by the journey map, and a
    second const of the same name kills this whole script block in silence. */
-const SITE_PAGES=['/','/aboard','/aboard/welcome','/admin','/admin/mint','/admin/proposals','/admin/review','/aligned','/apply','/approvals','/badges','/budget','/campaigns','/canvas/workbook','/card','/cash-payouts','/changes','/circles','/claim','/co-creators-guide','/contribute','/decisions','/email/a','/email/preferences','/email/unsubscribe','/events','/exit-policy','/feed','/feedback','/first-walk','/fleet','/forgot-password','/forum','/funding-rounds','/game-mechanics','/good-neighbor','/governance','/governance/decisions','/governance/how','/governance/work','/gratitude','/hidden-map','/housing','/how-we-create','/introductions','/investor','/join','/journal','/journey-to-launch','/library','/login','/love-letter','/map','/map/circles','/master-plan','/messages','/modules','/network','/oauth/authorize','/opportunities','/partner','/path','/pay','/photographs','/places','/powers','/pricing','/profile','/profile/characters','/profile/gene-keys','/profile/settings','/profile/today-card','/project-history','/propose','/propose-a-role','/propose-a-role/confirm','/propose-quest','/prosperity','/protocols','/quests','/register','/request-membership','/reserve','/reset','/resident','/resident-rights','/review','/rites','/rites/packet','/role-measures','/role-proposals/new','/roles','/roles/draft','/roles/select','/season-places','/season-places/circles','/season-plans','/season-plans/mine','/seasonal-festivals','/sessions','/sessions/season','/set-password','/setup-game','/stay','/steward','/steward-rights','/team','/tokens','/tools','/training','/training/resident','/training/steward','/treasury','/verify-email','/village-email','/village-health','/visit','/visitor','/visitor/sign-in','/wallet','/welcome','/work-with-us'];
+const SITE_PAGES=['/','/aboard','/aboard/welcome','/admin','/admin/mint','/admin/proposals','/admin/review','/aligned','/apply','/approvals','/badges','/budget','/campaigns','/canvas/workbook','/card','/cash-payouts','/changes','/circles','/claim','/co-creators-guide','/contribute','/decisions','/email/a','/email/preferences','/email/unsubscribe','/events','/exit-policy','/feed','/feedback','/first-walk','/fleet','/forgot-password','/forum','/funding-rounds','/game-mechanics','/good-neighbor','/governance','/governance/decisions','/governance/how','/governance/treasury','/governance/work','/gratitude','/hidden-map','/housing','/how-we-create','/introductions','/investor','/join','/journal','/journey-to-launch','/library','/login','/love-letter','/map','/map/circles','/master-plan','/messages','/modules','/network','/oauth/authorize','/opportunities','/partner','/path','/pay','/photographs','/places','/powers','/pricing','/profile','/profile/characters','/profile/gene-keys','/profile/settings','/profile/today-card','/project-history','/propose','/propose-a-role','/propose-a-role/confirm','/propose-quest','/prosperity','/protocols','/quests','/register','/request-membership','/reserve','/reset','/resident','/resident-rights','/review','/rites','/rites/packet','/role-measures','/role-proposals/new','/roles','/roles/draft','/roles/select','/season-places','/season-places/circles','/season-plans','/season-plans/mine','/seasonal-festivals','/sessions','/sessions/season','/set-password','/setup-game','/stay','/steward','/steward-rights','/team','/tokens','/tools','/training','/training/resident','/training/steward','/treasury','/verify-email','/village-email','/village-health','/visit','/visitor','/visitor/sign-in','/wallet','/welcome','/work-with-us'];
 window.SITE_PAGES=SITE_PAGES;
 /* WHAT COMES BACK IS THE CANONICAL PATH, and that is a security property, not
    a convenience. The membership test strips ? and # FIRST, so `/gratitude`
@@ -9716,11 +9730,11 @@ $('skin').addEventListener('keydown',e=>{if(e.key==='Escape'){$('skin').classLis
    the visitor saw. Now is the plain land and writes nothing. */
 let HASHMUTE=false;
 /* The lens part of an address, and the rest of it. `routeOf` also drops the
-   shell's skipIntro token and a hud= layout hint, which name nothing open. */
+   shell's skipIntro token, a hud= layout hint and the home page's peek, which name nothing open. */
 function hashParts(h){const s=String(h||'');return s.charAt(0)==='#'?s.slice(1).split('&'):[]}
 function lensOf(h){const p=hashParts(h).find(x=>/^lens=/i.test(x));return p?p.slice(5).toLowerCase():''}
-function routeOf(h){const r=hashParts(h).filter(x=>!/^(?:lens|hud)=|^skipIntro$/i.test(x)).join('&')
-    .replace(/[?&]skipIntro\b/ig,'').replace(/[?&]$/,'');
+function routeOf(h){const r=hashParts(h).filter(x=>!/^(?:lens|hud)=|^(?:skipIntro|\??peek(?:=1)?)$/i.test(x)).join('&')
+    .replace(/[?&]skipIntro\b/ig,'').replace(/[?&]peek(?:=1)?\b/ig,'').replace(/[?&]$/,'');
   return r.length<1||r==='/'?'':'#'+r}
 function routeNow(){return routeOf(location.hash)}
 function lensNow(){const l=[];if(mode==='vision')l.push('vision');if(orgOn)l.push('org');if(flowsOn)l.push('flows');return l.join(',')}
@@ -10161,8 +10175,9 @@ window.PULSE={};
     t2.structures.forEach(k2=>PULSE[k2]=performance.now()+8500)},31000)})();
 window.pulseTick=k2=>{PULSE[k2||'kitchen']=performance.now()+8500};
 /* global scale — one dial, everything moves together */
-window.GSCALE=1;
-function setGScale(v,quiet){window.GSCALE=v/100;document.documentElement.style.setProperty('--gScale',v/100);
+/* The peek starts at its frame's scale: nothing calls setGScale on a village that never chose a size. */
+window.GSCALE=window.PEEK_K||1;if(window.PEEK)document.documentElement.style.setProperty('--gScale',window.PEEK_K);
+function setGScale(v,quiet){const k=window.PEEK_K||1;window.GSCALE=v/100*k;document.documentElement.style.setProperty('--gScale',v/100*k);
   ['gScale','skGS'].forEach(id=>{const el=$(id);if(el&&+el.value!==v)el.value=v});
   const gv=$('gScaleV');if(gv)gv.textContent=v+'%';const sv=$('skGSV');if(sv)sv.textContent=v+'%';
   /* THE MASK, NOT THE RECORD. Every drag of this used to write an entry in

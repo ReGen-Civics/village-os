@@ -10,10 +10,11 @@
  */
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
+import { Link } from "wouter";
 import { gameFetch } from "@/lib/gameApi";
 import { natureArtUrl } from "@shared/natureArt";
-import type { CompanionView, CompanionsPayload } from "@shared/companionItems";
+import type { CompanionLook, CompanionView, CompanionsPayload } from "@shared/companionItems";
 import CompanionPet from "./CompanionPet";
 import { BreathingLoader } from "@/components/natural";
 
@@ -22,21 +23,39 @@ const YourCompanions = lazy(() => import("./YourCompanions"));
 /** How many stand in the corner before the rest are counted. */
 export const STANDING = 4;
 
-/** One companion standing: its painting in an arched frame, or its pet or portrait when it wears one. */
-export function Standing({ c, lead, small }: { c: CompanionView; lead: boolean; small?: boolean }) {
-  const size = small ? "h-11 w-9" : lead ? "h-[4.25rem] w-[3.25rem]" : "h-14 w-11";
+/**
+ * A companion's face in a circle (the lead, 27 Nov 2026: "the animal images be circles"): its painting from the
+ * village's animals, cropped to the animal's head and shoulders, or its pet or portrait when it wears one.
+ */
+export function Face({ look, url, size, className = "" }: { look: CompanionLook; url: string | null; size: "sm" | "md" | "lg"; className?: string }) {
+  const box = size === "sm" ? "size-10" : size === "lg" ? "size-14" : "size-12";
   return (
     <span
-      className={`companion-arch relative -ml-3 inline-flex shrink-0 items-end justify-center overflow-hidden rounded-t-full rounded-b-xl border-2 border-card bg-muted shadow-sm ring-1 ring-notice first:ml-0 ${size}`}
+      className={`companion-arch relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-card bg-muted shadow-sm ring-1 ring-notice ${box} ${className}`}
       aria-hidden="true"
+      data-companion-face=""
     >
-      {c.look.source === "nature" && c.look.art ? (
-        <img src={natureArtUrl(c.look.art, "sm")} alt="" className="h-full w-full scale-150 object-cover object-[60%_20%]" loading="lazy" />
+      {look.source === "nature" && look.art ? (
+        <img src={natureArtUrl(look.art, "sm")} alt="" className="h-full w-full scale-[1.35] object-cover object-[55%_30%]" loading="lazy" />
       ) : (
-        <CompanionPet look={c.look} url={c.lookUrl} size={small ? 32 : lead ? 48 : 40} />
+        <CompanionPet look={look} url={url} size={size === "sm" ? 30 : size === "lg" ? 44 : 36} />
       )}
     </span>
   );
+}
+
+/** One companion standing beside the corner button: its face in a circle, the first a little larger. */
+export function Standing({ c, lead, small }: { c: CompanionView; lead: boolean; small?: boolean }) {
+  return <Face look={c.look} url={c.lookUrl} size={small ? "sm" : lead ? "lg" : "md"} className="-ml-3 first:ml-0" />;
+}
+
+/** A door the guide's panel opens on: the guide's own help, and Admin's helper for an admin. */
+export interface GuideDoor {
+  key: string;
+  label: string;
+  sub?: string;
+  href: string;
+  admin?: boolean;
 }
 
 /** Drafts waiting for a yes, across every companion. */
@@ -62,8 +81,14 @@ export function useCompanions(signedIn: boolean): { army: CompanionView[] | null
   return { army, reread };
 }
 
-/** The companions panel: the same YourCompanions as ever, beside the page, with Escape and a close button. */
-export function CompanionsDialog({ onClose }: { onClose: () => void }) {
+/**
+ * The companions panel: the same YourCompanions as ever, beside the page, with Escape and a close button.
+ *
+ * Opened from the guide's row it is the guide's panel (the lead, 27 Nov 2026: "Scarlet is Maia and Maia admin all
+ * 3 can be scarlet"): `title` names the guide, `doors` lead to the guide's help and, for an admin, to Admin's helper,
+ * and `companions` false leaves the chats out for a member who has none.
+ */
+export function CompanionsDialog({ onClose, title, doors = [], companions = true }: { onClose: () => void; title?: string; doors?: GuideDoor[]; companions?: boolean }) {
   const { t } = useLingui();
   const close = useRef<HTMLButtonElement>(null);
   const shut = useRef(onClose);
@@ -82,7 +107,7 @@ export function CompanionsDialog({ onClose }: { onClose: () => void }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t({ message: "Your companions", context: "companion corner: the panel, read aloud" })}
+        aria-label={title ?? t({ message: "Your companions", context: "companion corner: the panel, read aloud" })}
         className="sheet-night absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-sm sm:p-6 md:inset-y-0 md:left-auto md:max-h-none md:w-[34rem] md:rounded-none md:rounded-l-2xl"
       >
         <div className="mb-2 flex justify-end">
@@ -96,9 +121,38 @@ export function CompanionsDialog({ onClose }: { onClose: () => void }) {
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        <Suspense fallback={<BreathingLoader />}>
-          <YourCompanions />
-        </Suspense>
+        {doors.length ? (
+          <ul className="mb-4 grid list-none gap-2 p-0" data-guide-doors="">
+            {doors.map((d) => (
+              <li key={d.key}>
+                <Link
+                  href={d.href}
+                  onClick={onClose}
+                  data-guide-door={d.key}
+                  className="jw-btn flex min-h-12 items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-2.5 text-left text-card-foreground hover:bg-muted"
+                >
+                  <span className="grid min-w-0">
+                    <span className="flex items-center gap-2 text-sm font-semibold">
+                      {d.label}
+                      {d.admin ? (
+                        <span className="rounded border border-notice px-1 text-[10px] font-semibold uppercase tracking-wider text-notice">
+                          {t({ message: "Admin", context: "the corner: the tag on the Admin helper's row" })}
+                        </span>
+                      ) : null}
+                    </span>
+                    {d.sub ? <span className="text-xs text-muted-foreground">{d.sub}</span> : null}
+                  </span>
+                  <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {companions ? (
+          <Suspense fallback={<BreathingLoader />}>
+            <YourCompanions />
+          </Suspense>
+        ) : null}
       </div>
     </div>
   );

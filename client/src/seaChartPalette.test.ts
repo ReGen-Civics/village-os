@@ -99,3 +99,46 @@ describe("the Sea chart's palette", () => {
     }
   });
 });
+
+/*
+ * THE WEATHERED MAP (the lead, 27 Nov 2026): "I don't want the square lines just the feel that it's a
+ * weathered old map look and boxes and elements are weathered pages with random (not the same by each
+ * other always a different look when side-by side so we'd need multiple edges of the page looks for the
+ * whole site)".
+ */
+describe("the weathered map", () => {
+  const svgs = [...css.matchAll(/url\("data:image\/svg\+xml,([^"]+)"\)/g)].map((m) => decodeURIComponent(m[1]));
+
+  it("rules no lines on the paper: no grid tile anywhere", () => {
+    // The first build ruled a 64px chart grid (one horizontal and one vertical line on a small tile).
+    for (const svg of svgs) expect(svg).not.toMatch(/M0 0\.5H\d+M0\.5 0V\d+/);
+    expect(svgs.some((svg) => /width=['"]64['"]/.test(svg))).toBe(false);
+  });
+
+  it("tears its pages at least six different ways, dealt on cycles that share no factor", () => {
+    const tears = [...css.matchAll(/:nth-child\(7n\+(\d)\)\s*\{\s*--wm-tear:\s*(url\("[^"]*"\))/g)];
+    expect(tears.map((m) => Number(m[1])).sort()).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(new Set(tears.map((m) => m[2])).size).toBeGreaterThanOrEqual(6);
+    const cycles = [...new Set([...css.matchAll(/:nth-child\((\d)n\+\d\)/g)].map((m) => Number(m[1])))].sort();
+    expect(cycles).toEqual([3, 5, 7]);
+    const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a);
+    for (const a of cycles) for (const b of cycles) if (a !== b) expect(gcd(a, b)).toBe(1);
+    // A card takes the dealt edge as a mask and its burnt line as a border image.
+    expect(css).toMatch(/mask-border:\s*var\(--wm-tear\)/);
+    expect(css).toMatch(/border-image:\s*var\(--wm-burn\)/);
+  });
+
+  // The foxing on the paper is a brown at most 6% over the darkest mottle; the stain and the foxing spot
+  // on a card are at most 13% and 16% over the card's own wash.
+  it("keeps every text colour at 4.5:1 on the paper under the darkest mottle and a foxing spot", () => {
+    const bg = blend("#8c571f", darkestGround(), 0.06);
+    for (const role of ["ink", "ink-dim", "accent", "heading", "living", "warn", "brand"]) expect(contrastRatio(c(role), bg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(c("edge"), bg)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("keeps every text colour at 4.5:1 on a card under a stain and a foxing spot", () => {
+    const wash = blend("#eed6a8", c("panel"), 0.66);
+    const bg = blend("#965c22", blend("#a86e2c", wash, 0.13), 0.16);
+    for (const role of ["ink", "ink-dim", "accent", "heading", "living", "warn", "brand"]) expect(contrastRatio(c(role), bg)).toBeGreaterThanOrEqual(4.5);
+  });
+});

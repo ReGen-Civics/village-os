@@ -175,7 +175,7 @@ active → expired (lazy: expiresAt < now filters at read; status flip + 'expire
 
 # Matching score (v1, deterministic — no LLM)
 
-score = 2×|requested tags ∩ member tags| + 1×|corroborating earned badges| (badge relevant if its rule scope.circle or slug matches a requested tag); ties by recency of last consented claim. Deterministic-first per the plan; Maia enrichment is v2.
+score = 2×|requested tags ∩ member tags| + 1×|corroborating earned badges| (badge relevant if its rule scope.circle or slug matches a requested tag); ties by recency of last consented claim. Deterministic-first per the plan; the village guide enrichment is v2.
 
 # Pulse + health events
 
@@ -210,7 +210,7 @@ Admin.tsx "Badges" tab (AdminBadges.tsx), following the existing tab pattern, co
 - Village Pulse addActivity() — public award announcements
 - ensureDataFiles() + server/seeds/ — badges-seed.json and four data files (JSON authoritative until the repository cutover)
 - Admin.tsx tab pattern — new Badges tab
-- Optional/consumed-by: village map module (featured chips via /api/badges/of/:userId), forum bylines (Phase 4), notification spine (Phase 3, v2), Maia PROPOSAL_KINDS (v2 skill extraction)
+- Optional/consumed-by: village map module (featured chips via /api/badges/of/:userId), forum bylines (Phase 4), notification spine (Phase 3, v2), the village guide PROPOSAL_KINDS (v2 skill extraction)
 - Hypha DHO (app.hypha.earth, per-village URL) — mirror-and-deep-link only; the platform never issues or reads-as-authority multisig badges
 
 ## v1 (ship first, useful alone)
@@ -219,7 +219,7 @@ Ships alone and useful (4 sessions): Session 1 — shared/badges.ts (types, rule
 
 ## v2 (the rest of the design)
 
-The rest of the design (3 sessions): Session 5 — automated Hypha badge reads (poll the village's configured DHO for badge assignments, refresh mirrors read-only, stale-mirror indicator, deep links) replacing manual mirror entry; flag: needs confirmation of a usable Hypha read API. Session 6 — notification spine integration ('you earned X' in-app + email via Phase 3 dedupeKey infra), cycle_streak rules, warning-expiry notifications, Maia skill extraction (post-process existing proposal conversations to SUGGEST skill tags the member confirms — extends PROPOSAL_KINDS plumbing, never auto-writes). Session 7 — public /badges directory page (who holds what, public kinds only, opt-in), village map featured-chip integration hardened, forum byline chips (Phase 4), F13 health views over badge_events (warning rate, badge concentration, earned-vs-granted ratio) in the command centre.
+The rest of the design (3 sessions): Session 5 — automated Hypha badge reads (poll the village's configured DHO for badge assignments, refresh mirrors read-only, stale-mirror indicator, deep links) replacing manual mirror entry; flag: needs confirmation of a usable Hypha read API. Session 6 — notification spine integration ('you earned X' in-app + email via Phase 3 dedupeKey infra), cycle_streak rules, warning-expiry notifications, the village guide skill extraction (post-process existing proposal conversations to SUGGEST skill tags the member confirms — extends PROPOSAL_KINDS plumbing, never auto-writes). Session 7 — public /badges directory page (who holds what, public kinds only, opt-in), village map featured-chip integration hardened, forum byline chips (Phase 4), F13 health views over badge_events (warning rate, badge concentration, earned-vs-granted ratio) in the command centre.
 
 ## Risks
 
@@ -239,6 +239,6 @@ The rest of the design (3 sessions): Session 5 — automated Hypha badge reads (
 - Warning visibility: member + admin only, or also circle leads (who may be the ones affected by e.g. a borrowing timeout)? V1 ships admin+self only
 - Does 'circle-lead issued' granting need its own capability (badge.grant scoped per circle) in v1, or is admin-only granting enough until circles are first-class? V1 ships admin-only with the capability key reserved
 - Is there a usable Hypha API/chain read for badge assignments per DHO, and what auth does it need? Determines whether v2 session 5 is automated or stays manual
-- Should featured badges appear on the public Team page and in Maia's context when suggesting members? Both are cheap adds once /api/badges/of/:userId exists
+- Should featured badges appear on the public Team page and in the village guide's context when suggesting members? Both are cheap adds once /api/badges/of/:userId exists
 - Skill-tag vocabulary: free (normalized) vs curated-per-village list — affects match quality; could be a game variable choice
 - Does the village map concierge want match results ranked or raw (it may apply its own scoring)? Coordinate the /api/badges/match response shape with that module before session 4

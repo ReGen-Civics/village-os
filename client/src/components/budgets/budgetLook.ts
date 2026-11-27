@@ -1,5 +1,5 @@
 /**
- * The budget desk's two looks. On /budget it draws in the sheet's look
+ * The budget desk's two looks. On /governance/treasury it draws in the sheet's look
  * (docs/DESIGN_RULE.md, the class strings in components/journey/look.ts); in
  * Admin it draws like the other books a treasurer keeps there
  * (CashPayoutsTab), which is light-only by ruling. Plain strings, no import
