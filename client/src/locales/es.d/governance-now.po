@@ -1,0 +1,341 @@
+# The Governance page's Now view (Governance build step 3, 26 Nov 2026).
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Your vote counts what the village's weight table says."
+msgstr "Tu voto cuenta lo que dice la tabla de pesos de la aldea."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Nothing is waiting for your voice right now."
+msgstr "Ahora mismo nada espera tu voz."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance: a view"
+msgid "Your work"
+msgstr "Tu trabajo"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: kind"
+msgid "Change request"
+msgstr "Solicitud de cambio"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "Members decide together here."
+msgstr "Aquí los miembros deciden juntos."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Voting now"
+msgstr "Votándose ahora"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "(you can)"
+msgstr "(puedes)"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Your voice"
+msgstr "Tu voz"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "You are a guest"
+msgstr "Eres invitada o invitado"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: kind"
+msgid "Village vote"
+msgstr "Votación de la aldea"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "How we decide"
+msgstr "Cómo decidimos"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: lede"
+msgid "What the village is deciding, what your voice is here, and what waits on you."
+msgstr "Lo que la aldea está decidiendo, lo que es tu voz aquí y lo que te espera."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Make a proposal"
+msgstr "Haz una propuesta"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: heading"
+msgid "What you brought"
+msgstr "Lo que trajiste"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Accepted"
+msgstr "Aceptada"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance: a view"
+msgid "Decisions"
+msgstr "Decisiones"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Your vote counts your {token} balance when each vote opens."
+msgstr "Tu voto cuenta tu saldo de {token} cuando se abre cada votación."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: door"
+msgid "Vote"
+msgstr "Votar"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Nothing yet. A change request or a raised hand you bring shows here, with where it stands."
+msgstr "Nada todavía. Una solicitud de cambio o una mano alzada que traigas aparece aquí, con su estado."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Reading what waits for your voice."
+msgstr "Leyendo lo que espera tu voz."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "Members vote on village decisions, and each vote counts the same. Until you are a member, you can read how the village decides."
+msgstr "Los miembros votan las decisiones de la aldea, y cada voto cuenta igual. Hasta que seas miembro, puedes leer cómo decide la aldea."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: a read"
+msgid "change requests"
+msgstr "solicitudes de cambio"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: door"
+msgid "Answer"
+msgstr "Responder"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "In a vote"
+msgstr "En votación"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Not taken up"
+msgstr "No se adoptó"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: door"
+msgid "Accept it"
+msgstr "Aceptarlo"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: closes"
+msgid "Closes {day}"
+msgstr "Cierra el {day}"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: kind"
+msgid "Done work for your role to accept"
+msgstr "Trabajo hecho que tu rol debe aceptar"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "Signed out"
+msgstr "Sesión cerrada"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "Sign in"
+msgstr "Inicia sesión"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Withdrawn"
+msgstr "Retirada"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: newcomer"
+msgid "How to become a member"
+msgstr "Cómo hacerse miembro"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "Vote on village decisions"
+msgstr "Votar las decisiones de la aldea"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Your vote counts 1 on every village vote."
+msgstr "Tu voto cuenta 1 en cada votación de la aldea."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: a read"
+msgid "votes"
+msgstr "votaciones"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "Raise a tension with any role"
+msgstr "Plantear una tensión a cualquier rol"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: a read"
+msgid "what waits on your role"
+msgstr "lo que espera a tu rol"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: kind"
+msgid "Raised hand"
+msgstr "Mano alzada"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Each change to the table is written down with its reason, and each vote shows what yours counts."
+msgstr "Cada cambio en la tabla queda escrito con su razón, y cada votación muestra lo que cuenta el tuyo."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Some of this did not load: {failedNames}. Something may be waiting there."
+msgstr "Parte de esto no se cargó: {failedNames}. Puede que algo espere allí."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "It is fixed for that vote, and each vote shows what yours counts. Changing how votes are weighed takes a village vote where almost everyone takes part and agrees."
+msgstr "Queda fijo para esa votación, y cada votación muestra lo que cuenta el tuyo. Cambiar cómo se pesan los votos requiere una votación de la aldea en la que casi todos participan y están de acuerdo."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right not yet held"
+msgid "Opens at {0}."
+msgstr "Se abre en {0}."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "This did not load. Something may be waiting for your voice."
+msgstr "Esto no se cargó. Puede que algo espere tu voz."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "Open a village vote yourself"
+msgstr "Abrir tú misma o tú mismo una votación de la aldea"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right not yet held"
+msgid "Given by a role or a badge."
+msgstr "Lo da un rol o una insignia."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: door"
+msgid "Answer it"
+msgstr "Responderla"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "Your vote is yours. It is never bought, sold or traded."
+msgstr "Tu voto es tuyo. Nunca se compra, se vende ni se intercambia."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance: a view"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: h1"
+msgid "Governance"
+msgstr "Gobernanza"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "{s, plural, one {One closes within two days.} other {# close within two days.}}"
+msgstr "{s, plural, one {Una cierra en menos de dos días.} other {# cierran en menos de dos días.}}"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "Propose a change to the village's rules"
+msgstr "Proponer un cambio a las reglas de la aldea"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance: the views, read aloud"
+msgid "Governance views"
+msgstr "Vistas de gobernanza"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance: a view"
+msgid "How we decide"
+msgstr "Cómo decidimos"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: a read"
+msgid "raised hands"
+msgstr "manos alzadas"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "What you can do"
+msgstr "Lo que puedes hacer"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice"
+msgid "The village decides one person, one vote. Changing that takes a village vote where almost everyone takes part and agrees."
+msgstr "La aldea decide una persona, un voto. Cambiarlo requiere una votación de la aldea en la que casi todos participan y están de acuerdo."
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Open"
+msgstr "Abierta"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Sent"
+msgstr "Enviada"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: door"
+msgid "Take part"
+msgstr "Participar"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: eyebrow"
+msgid "How the village decides"
+msgstr "Cómo decide la aldea"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: kind"
+msgid "A tension for your role"
+msgstr "Una tensión para tu rol"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: stage"
+msgid "Being read"
+msgstr "En lectura"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: closes"
+msgid "{hours, plural, one {Closes within the hour} other {Closes in # hours}}"
+msgstr "{hours, plural, one {Cierra en menos de una hora} other {Cierra en # horas}}"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: heading"
+msgid "{n, plural, =0 {Waiting for your voice} one {Waiting for your voice · #} other {Waiting for your voice · #}}"
+msgstr "{n, plural, =0 {Esperando tu voz} one {Esperando tu voz · #} other {Esperando tu voz · #}}"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now: your voice, a right"
+msgid "Raise your hand to hold a power"
+msgstr "Alzar la mano para asumir un poder"
+
+# needs-native-review: Governance Now, 2026-11-26
+msgctxt "governance now"
+msgid "Try again"
+msgstr "Inténtalo de nuevo"
+
+# needs-native-review: Governance step 3, the lead's bullets rule, 26 Nov 2026
+msgctxt "governance now: newcomer"
+msgid "Members vote on village decisions, and each vote counts the same."
+msgstr "Los miembros votan las decisiones de la aldea, y cada voto cuenta lo mismo."
+
+# needs-native-review: Governance step 3, the lead's bullets rule, 26 Nov 2026
+msgctxt "governance now: newcomer"
+msgid "Until you are a member, you can read how the village decides."
+msgstr "Mientras no sea miembro, puede leer cómo decide la aldea."
