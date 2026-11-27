@@ -154,7 +154,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
         {toggle}
       </div>
       {fmShown && (
-        <p id={fmId} className="-mt-3 text-sm text-muted-foreground" data-formation-meaning="">
+        <p id={fmId} className="-mt-3 text-sm text-muted-foreground sm:max-w-md sm:self-end sm:text-right" data-formation-meaning="">
           {formationMeaning}
         </p>
       )}

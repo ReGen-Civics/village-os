@@ -123,7 +123,7 @@ export function DecideKey({
       {entries.map(([m, n]) => {
         const def = power.glossary.decidesBy.find((d) => d.id === m);
         return (
-          <span key={m} className="inline-flex items-center gap-1.5 text-xs text-foreground">
+          <span key={m} className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground">
             <span className="w-3 h-3 rounded-full inline-block border border-black/10" style={{ background: methodColour(m) }} />
             {/* The method's gloss on its own name, where a phone can open it (a title reached only a mouse). */}
             {def?.gloss ? <InfoTip tip={def.gloss}>{def.label ?? m}</InfoTip> : (def?.label ?? m)}

@@ -55,7 +55,9 @@ export default function ValueCallout() {
           aria-controls={panelId}
           aria-describedby={hintId}
           onClick={() => setOpen((o) => !o)}
-          className="info-word text-left"
+          // The whole line inside the box is the control, 44px tall with the words centred as before, so the target is no
+          // smaller than the round button it replaced and nothing around it moves (QA round 2, 27 Nov 2026).
+          className="info-word info-word-block flex w-full min-h-11 items-center text-left"
           data-testid="value-explainer-open"
         >
           {words.callout}

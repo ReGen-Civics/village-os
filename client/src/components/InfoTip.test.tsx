@@ -26,7 +26,7 @@ import { describe, expect, it, vi } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import InfoTip from "./InfoTip";
+import InfoTip, { nearestWord } from "./InfoTip";
 
 // The real sentence from client/src/pages/Crowdpool.tsx, so this test names
 // the copy that produced the reported defect rather than a stand-in.
@@ -156,7 +156,7 @@ describe("InfoTip, open", () => {
     expect(screen.getAllByRole("tooltip")).toHaveLength(1);
   });
 
-  it("opens inside the night sheet when there is one, so the plaque keeps its tokens", async () => {
+  it("draws the open plaque in the body, wearing the night sheet's class when the word sits in one", async () => {
     const user = userEvent.setup();
     render(
       <div className="sheet-night" data-testid="sheet">
@@ -167,7 +167,39 @@ describe("InfoTip, open", () => {
     );
     await user.click(screen.getByRole("button", { name: "crowdpool" }));
     const plaque = screen.getByRole("tooltip");
-    expect(plaque.parentElement).toBe(screen.getByTestId("sheet"));
+    expect(plaque.parentElement).toBe(document.body);
+    expect(plaque).toHaveClass("sheet-night");
+  });
+
+  it("opens on screen from inside a container-query box (QA round 2: the seat clock's plaque opened off screen)", async () => {
+    // `container-type` makes an ancestor the box position:fixed is measured from. The plaque leaves it for the body,
+    // and its place is worked out from the word's own rect in the viewport, so it lands where the word is.
+    const user = userEvent.setup();
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1440 });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 900 });
+    render(
+      <div style={{ containerType: "inline-size" }} data-testid="cq">
+        <dl>
+          <dt>
+            <InfoTip tip={TIP}>Season</InfoTip>
+          </dt>
+        </dl>
+      </div>,
+    );
+    const word = screen.getByRole("button", { name: "Season" });
+    const rect = { left: 1180, right: 1240, top: 400, bottom: 416, width: 60, height: 16, x: 1180, y: 400, toJSON() {} } as DOMRect;
+    word.getClientRects = () => [rect] as unknown as DOMRectList;
+    word.getBoundingClientRect = () => rect;
+    await user.click(word);
+    const plaque = screen.getByRole("tooltip");
+    expect(screen.getByTestId("cq").contains(plaque)).toBe(false);
+    expect(plaque.parentElement).toBe(document.body);
+    const left = parseFloat(plaque.style.left);
+    const width = parseFloat(plaque.style.width);
+    const top = parseFloat(plaque.style.top);
+    expect(left).toBeGreaterThanOrEqual(8);
+    expect(left + width).toBeLessThanOrEqual(1440 - 8);
+    expect(top).toBe(416 + 8);
   });
 
   it("closes on a second tap, and the description survives the round trip", async () => {
@@ -411,5 +443,121 @@ describe("QA round 1 on the word trigger (27 Nov 2026)", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+describe("the near tap (QA round 2, 27 Nov 2026)", () => {
+  /** Lays a word out at a box, since a test page has no layout of its own. */
+  const at = (el: HTMLElement, l: number, t: number, w: number, h: number) => {
+    const r = { left: l, right: l + w, top: t, bottom: t + h, width: w, height: h, x: l, y: t, toJSON() {} } as DOMRect;
+    el.getClientRects = () => [r] as unknown as DOMRectList;
+    el.getBoundingClientRect = () => r;
+  };
+  /** A touch: the press where the finger went down, then the click the browser makes, on `target` (which may be adjusted). */
+  const touchUp = (target: Element, x: number, y: number, clickOn: Element = target) => {
+    const down = new MouseEvent("pointerdown", { bubbles: true, clientX: x, clientY: y });
+    Object.defineProperty(down, "pointerType", { value: "touch" });
+    act(() => {
+      target.dispatchEvent(down);
+      clickOn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, clientX: x, clientY: y }));
+    });
+  };
+
+  function stacked() {
+    render(
+      <p data-testid="p">
+        Quests pay in <InfoTip tip="Credits tip.">Village Credits</InfoTip> and <InfoTip tip="Voice tip.">Village Voice</InfoTip>.
+      </p>,
+    );
+    const credits = screen.getByRole("button", { name: "Village Credits" });
+    const voice = screen.getByRole("button", { name: "Village Voice" });
+    // The 320 case: Credits ends line one, Voice starts line two, 20px lines.
+    at(credits, 150, 100, 100, 16);
+    at(voice, 0, 120, 90, 16);
+    return { credits, voice, p: screen.getByTestId("p") };
+  }
+
+  it("opens the word whose box a touch lands just off, the nearer of two", () => {
+    const { credits, voice, p } = stacked();
+    touchUp(p, 200, 119); // 3px under Credits, 1px above Voice but 110px to its right
+    expect(credits).toHaveAttribute("aria-expanded", "true");
+    expect(voice).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("gives every tap closer to Credits than to Voice to Credits", () => {
+    const { credits, voice } = stacked();
+    for (let y = 92; y <= 128; y += 2) {
+      for (const x of [146, 160, 200, 254]) {
+        const pick = nearestWord(x, y);
+        const dist = (el: HTMLElement) => {
+          const r = el.getClientRects()[0];
+          return Math.hypot(Math.max(r.left - x, 0, x - r.right), Math.max(r.top - y, 0, y - r.bottom));
+        };
+        if (pick) expect(pick).toBe(dist(credits) <= dist(voice) ? credits : voice);
+        if (pick === voice) expect(dist(voice)).toBeLessThan(dist(credits));
+      }
+    }
+  });
+
+  it("leaves a touch more than 12px above or below, or 8px beside, a word alone", () => {
+    const { credits, p } = stacked();
+    touchUp(p, 200, 100 - 13);
+    touchUp(p, 150 - 9, 108);
+    expect(credits).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("never takes a tap that lands on something interactive", () => {
+    render(
+      <div>
+        <InfoTip tip="Credits tip.">Village Credits</InfoTip>
+        <a href="#next" data-testid="link">next</a>
+      </div>,
+    );
+    const credits = screen.getByRole("button", { name: "Village Credits" });
+    at(credits, 0, 100, 100, 16);
+    touchUp(screen.getByTestId("link"), 50, 118);
+    expect(credits).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("hands a tap the browser gave to the farther word on to the nearer one (Chrome's touch adjustment, 320)", () => {
+    const { credits, voice, p } = stacked();
+    // The finger went down 3px under Credits; the browser's adjusted click landed on Voice.
+    touchUp(p, 200, 119, voice);
+    expect(credits).toHaveAttribute("aria-expanded", "true");
+    expect(voice).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("drops a tap the browser gave to a word when the finger was in reach of none (its own reach is wider)", () => {
+    const { credits, voice, p } = stacked();
+    // 14px under Credits and 27px from Voice: nearer Credits, but out of reach of both.
+    touchUp(p, 216 - 50, 116 + 14 + 10, voice);
+    expect(voice).toHaveAttribute("aria-expanded", "false");
+    expect(credits).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("opens nothing for a touch nearer a word that is out of reach than to one in reach", () => {
+    const { credits, voice } = stacked();
+    // 9px right of Voice's line, 10px under Credits: Voice is nearer and out of reach across, so neither opens.
+    expect(nearestWord(99, 126)).toBeNull();
+    expect(credits).toHaveAttribute("aria-expanded", "false");
+    expect(voice).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("keeps a tap on a word with that word", () => {
+    const { credits, voice } = stacked();
+    touchUp(voice, 40, 128);
+    expect(voice).toHaveAttribute("aria-expanded", "true");
+    expect(credits).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("is for touch only: a mouse click near a word does nothing", () => {
+    const { credits, p } = stacked();
+    const down = new MouseEvent("pointerdown", { bubbles: true, clientX: 200, clientY: 119 });
+    Object.defineProperty(down, "pointerType", { value: "mouse" });
+    act(() => {
+      p.dispatchEvent(down);
+      p.dispatchEvent(new MouseEvent("click", { bubbles: true, clientX: 200, clientY: 119 }));
+    });
+    expect(credits).toHaveAttribute("aria-expanded", "false");
   });
 });

@@ -33,11 +33,6 @@ export interface RootTagsProps {
   roots: string[];
   size?: "sm" | "md";
   className?: string;
-  /**
-   * Each root's blurb as a tip on its name (the default), which a phone opens with a tap. Inside a link (the quest
-   * card) a tap belongs to the link, so there it stays a hover title instead (QA round 1, 27 Nov 2026).
-   */
-  inLink?: boolean;
 }
 
 export function RootGlyph({ rootKey, className = "" }: { rootKey: string; className?: string }) {
@@ -55,7 +50,7 @@ export function RootGlyph({ rootKey, className = "" }: { rootKey: string; classN
   );
 }
 
-export default function RootTags({ roots, size = "sm", className = "", inLink = false }: RootTagsProps) {
+export default function RootTags({ roots, size = "sm", className = "" }: RootTagsProps) {
   const { t } = useLingui();
   const cast = useRootCast();
   const keys = useMemo(() => roots.filter((k, i) => typeof k === "string" && k.trim() && roots.indexOf(k) === i), [roots]);
@@ -71,9 +66,9 @@ export default function RootTags({ roots, size = "sm", className = "", inLink = 
         const root = cast.find((c) => c.key === k);
         const name = shortRootName(root?.name ?? k);
         return (
-          <li key={k} className="inline-flex min-w-0 items-center gap-1.5" title={inLink ? root?.blurb || undefined : undefined}>
+          <li key={k} className="inline-flex min-h-11 min-w-0 items-center gap-1.5">
             <RootGlyph rootKey={k} className={md ? "size-6" : "size-5"} />
-            <span className="font-medium text-foreground">{!inLink && root?.blurb ? <InfoTip tip={root.blurb}>{name}</InfoTip> : name}</span>
+            <span className="font-medium text-foreground">{root?.blurb ? <InfoTip tip={root.blurb}>{name}</InfoTip> : name}</span>
             {md && root?.subtitle ? <span className="hidden text-muted-foreground lg:inline">{root.subtitle}</span> : null}
           </li>
         );

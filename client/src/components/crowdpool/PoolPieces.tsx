@@ -15,6 +15,7 @@
  * capital-stack widget.
  */
 import InfoTip from "@/components/InfoTip";
+import { useGameConfig } from "@/lib/gameApi";
 import type { CSSProperties } from "react";
 import { BookOpen, Mountain, Package, Repeat, UserRound, type LucideIcon } from "lucide-react";
 import { SeedGlint, SeedPod, TendingHands } from "@/components/sacred/living";
@@ -420,7 +421,27 @@ export function MiniRing({ percent, size = 64, floor }: { percent: number; size?
  * build day comes near. Intensity eases from a quarter-glow sixty days out to
  * full at the close.
  */
+/**
+ * "20 Dec 2026": the day a pool closes, as the village says a day (roleSheet's formatDay words) and in the village's
+ * zone. A civil date reads as written; an instant reads as the day it falls on where the village is. Kept here and not
+ * imported, so the campaign page's chunk does not carry the role sheet for one date.
+ */
+export function closingDay(iso: string | null | undefined, timeZone: string | null): string | null {
+  const s = String(iso ?? "").trim();
+  if (!s) return null;
+  const civil = /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const t = new Date(civil ? `${s}T12:00:00Z` : s);
+  if (Number.isNaN(t.getTime())) return null;
+  const words = (zone: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: zone }).format(t);
+  try {
+    return words(civil ? "UTC" : timeZone || "UTC");
+  } catch {
+    return words("UTC");
+  }
+}
+
 export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number | null; endsAt: string | null }) {
+  const closes = closingDay(endsAt, useGameConfig()?.season?.timezone ?? null);
   const closed = daysRemaining === 0 && endsAt !== null && new Date(endsAt).getTime() < Date.now();
   const glow = daysRemaining === null ? 0.35 : Math.max(0.25, Math.min(1, 1 - daysRemaining / 60));
   const line =
@@ -446,8 +467,10 @@ export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number |
         />
         <path d="M16 46 L32 46 L30 52 L18 52 Z" fill="#3a2b1a" stroke="#c9a25e" strokeWidth="1" />
       </svg>
-      {/* The closing date on the line's own words, where a phone can open it (a title reached only a mouse). */}
-      <div className="cp-lantern-line">{endsAt ? <InfoTip tip={`Closes ${new Date(endsAt).toLocaleDateString()}`}>{line}</InfoTip> : line}</div>
+      {/* The closing date on the line's own words, where a phone can open it (a title reached only a mouse), said in the
+          village's day words and zone, "Closes 20 Dec 2026": the browser's own format read 12/19/2026 for a 20 Dec end
+          (QA round 2, 27 Nov 2026). */}
+      <div className="cp-lantern-line">{closes ? <InfoTip tip={`Closes ${closes}`}>{line}</InfoTip> : line}</div>
     </div>
   );
 }

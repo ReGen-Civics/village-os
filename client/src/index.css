@@ -3035,12 +3035,14 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * wraps exactly as it does with no tip. A thin dotted underline in a muted share of the text's own colour says it
  * opens, and firms up on hover, while open and on focus. The share is 70% of the ink in the light (3.31:1 on the
  * darkest Weathered paper, where 50% read 2.3:1) and 60% in the dark (QA round 1, 27 Nov 2026). The touch target is the
- * word's own inline padding, which an inline box takes from no line: 2px above and below the glyphs, inside the line the
- * word sits on, and the side padding is given straight back by an equal negative margin. It is per line, so a phrase
- * that wraps is a target exactly where its words are. An absolutely placed `::before` 44px tall was the first try, and
- * QA round 1 (27 Nov 2026) measured it reaching over the next line ("Village Credits" over "Quest" at 375); across a
- * wrap it spanned both whole lines and took the taps of the word beside it. The open plaque (`.info-plaque`, portalled out of the card it
- * opens from, since a torn card's mask cuts a fixed child) wears the page's tokens and the reading face, as the moon
+ * word's own box, as tall as its glyphs, with 4px each side given straight back by an equal negative margin, so boxes
+ * on stacked lines never overlap and a phrase that wraps is a target exactly where its words are. A thumb that lands
+ * just off a word still opens it: InfoTip.tsx listens once for a touch that ends on nothing interactive and opens the
+ * nearest tipped word within 12px up or down and 8px across (QA round 2, 27 Nov 2026). Two earlier tries are on
+ * record: an absolutely placed 44px `::before` reached over the next line and, across a wrap, spanned both lines and
+ * took the next word's taps; 2px of block padding still overlapped on a 20px line at 320. The open plaque
+ * (`.info-plaque`, portalled to the body, out of a torn card's mask and any container-query box) wears the page's
+ * tokens and the reading face, as the moon
  * word's tip does, so it follows the light page, the Weathered map's paper and the dark.
  */
 .info-word {
@@ -3052,17 +3054,37 @@ html:has(#sera-changes [data-sera-strip-on]) {
   --info-ink: 70%;
   text-decoration-color: color-mix(in oklab, currentColor var(--info-ink), transparent);
   text-underline-offset: 0.25em;
-  padding: 0.125rem 0.375rem;
-  margin: 0 -0.375rem;
+  padding: 0 0.25rem;
+  margin: 0 -0.25rem;
   -webkit-tap-highlight-color: transparent;
-}
-/* A button is an inline block, where block padding would move the line: it keeps the sides only. */
-button.info-word {
-  padding-block: 0;
 }
 :root[data-mode="dark"] .info-word,
 :root[data-mode="dark"] :is(.moon, .tip-word) > [tabindex] {
   --info-ink: 60%;
+}
+/* A word that is a whole line of its own (the value callout): the full width is the target, so no side give-back. */
+.info-word.info-word-block {
+  margin: 0;
+  padding: 0;
+}
+/* A whole tile as the trigger (the profile's "people thanked you"): the tile is the target, only its words are underlined. */
+.info-word.info-word-tile {
+  display: block;
+  margin: 0;
+  /* Here and not as utilities: this file's .info-word rules sit outside Tailwind's layers, so they beat py-4 and rounded-xl. */
+  padding: 1rem 0;
+  border-radius: 0.75rem;
+  text-decoration-line: none;
+}
+.info-word-tile .info-word-label {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, currentColor var(--info-ink), transparent);
+  text-underline-offset: 0.25em;
+}
+.info-word-tile:is(:hover, :focus-visible, [aria-expanded="true"]) .info-word-label {
+  text-decoration-color: currentColor;
 }
 .info-word:hover,
 .info-word:focus-visible,

@@ -17,8 +17,9 @@
  * INLINE span, so a phrase wraps exactly as the plain text would, line for
  * line; a <button> is always laid out as an inline-block, which cannot break
  * across lines and would move the paragraph. Its touch target is the word's
- * own inline padding, given back by an equal negative margin, so it adds no
- * layout and covers each line of a wrapped phrase exactly (`.info-word`).
+ * own box, widened 4px each side and given back by an equal negative margin,
+ * so it adds no layout (`.info-word`), and a touch that lands just off a word
+ * opens it too (THE NEAR TAP, below).
  *
  * Why not the shadcn/Radix tooltip two doors down: Radix tooltips never open
  * on touch, and mobile is most of this audience. This trigger is a real
@@ -83,8 +84,12 @@
  * Measured on /governance/decisions at 375 on the Weathered map: "Your weight"
  * opened a 264px plaque at x 8, and its left 14px, border and first letters,
  * were cut off by the card it opened from. So while open, the visible plaque
- * is drawn in the page's night sheet (`.sheet-night`, so it keeps that sheet's
- * tokens) or the body, the way the moon word's tip is (WordTip.tsx). While it
+ * is drawn in the body. Not in the nearest night sheet, which was the first
+ * try: the seat card's sheet sits inside a `container-type` box, and that box
+ * becomes what position:fixed is measured from, so the season clock's plaque
+ * opened off screen at 1440 and 1024 (QA round 2, 27 Nov 2026). A word inside a
+ * night sheet gives the plaque the `sheet-night` class, so it keeps the sheet's
+ * tokens wherever it is drawn. While it
  * shows, the word's aria-describedby names it (the ARIA tooltip pattern); the
  * in-place copy stays display:none, so the words are in the tree once. It
  * wears the body face, so a tip opened from a display heading reads in the
@@ -100,6 +105,84 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboard
 import { createPortal } from "react-dom";
 
 const PLAQUE_MAX_W = 264;
+
+/**
+ * THE NEAR TAP (QA round 2, 27 Nov 2026). A word's own box is as tall as its glyphs, so two tipped words on stacked
+ * lines never take each other's taps, and a thumb that lands just off a word still means it. One listener for the
+ * whole page, on the click a touch makes, reading where the finger went DOWN: a tap belongs to the tipped word whose
+ * box is nearest the finger, when that box is within 12px up or down and 8px across.
+ *
+ * Why the press point and not the click's: Chrome adjusts a touch's click onto a nearby button by its own measure
+ * ("touch adjustment"), and measured on /quests at 320 it handed taps nearer "Village Credits" to "Village Voice", the
+ * other word, since a word that wraps is a large target to it. So a tap the browser gave to a word that is not the
+ * nearest one is handed on to the nearest, and a tap on nothing interactive opens the nearest word. Links, buttons and
+ * fields keep their taps.
+ */
+export const NEAR_TAP = { y: 12, x: 8 } as const;
+const INTERACTIVE = "a[href], button, input, select, textarea, label, summary, [role='button'], [role='link'], [role='tab'], [role='switch'], [role='checkbox'], [contenteditable='true'], [tabindex]:not([tabindex='-1'])";
+
+/**
+ * The tipped word a touch at (x, y) means: the nearest word by distance from its box, and only when that nearest one is
+ * within NEAR_TAP of it. A touch nearer some other word than to any word in reach means none of them.
+ */
+export function nearestWord(x: number, y: number, root: ParentNode = document): HTMLElement | null {
+  let best: HTMLElement | null = null;
+  let far = Infinity;
+  let reach = false;
+  for (const el of Array.from(root.querySelectorAll<HTMLElement>(".info-word"))) {
+    for (const r of Array.from(el.getClientRects())) {
+      const dx = Math.max(r.left - x, 0, x - r.right);
+      const dy = Math.max(r.top - y, 0, y - r.bottom);
+      const d = Math.hypot(dx, dy);
+      if (d < far) {
+        far = d;
+        best = el;
+        reach = dx <= NEAR_TAP.x && dy <= NEAR_TAP.y;
+      }
+    }
+  }
+  return reach ? best : null;
+}
+
+let nearTapOn = false;
+/** Where the last touch went down, and when, so the click it makes can be judged by the finger and not the browser. */
+let lastTouch: { x: number; y: number; at: number } | null = null;
+function listenForNearTaps() {
+  if (nearTapOn || typeof document === "undefined") return;
+  nearTapOn = true;
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      lastTouch = e.pointerType === "touch" ? { x: e.clientX, y: e.clientY, at: e.timeStamp } : null;
+    },
+    true,
+  );
+  document.addEventListener(
+    "click",
+    (e) => {
+      const touch = lastTouch;
+      lastTouch = null;
+      if (!touch || e.timeStamp - touch.at > 1500) return;
+      const owner = nearestWord(touch.x, touch.y);
+      const hit = e.target instanceof Element ? e.target : null;
+      const word = hit?.closest<HTMLElement>(".info-word") ?? null;
+      if (word) {
+        // The browser gave the tap to a word. Keep it there when that word is the one nearest the finger; hand it on
+        // when another word is; drop it when the finger was in reach of none (the browser's own reach is wider).
+        // A word with no laid-out box (a page with no layout to ask) keeps its tap.
+        if (owner !== word && (owner || word.getClientRects().length > 0)) {
+          e.preventDefault();
+          e.stopPropagation();
+          owner?.click();
+        }
+        return;
+      }
+      if (hit?.closest(INTERACTIVE)) return;
+      owner?.click();
+    },
+    true,
+  );
+}
 
 interface InfoTipProps {
   /** The plain mechanics, one to three short sentences. Text only. */
@@ -125,14 +208,18 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
   const place = () => {
     const el = triggerRef.current;
     if (!el) return;
-    // The word's first line: a phrase that wraps opens beside where it starts.
-    const r = el.getClientRects?.()[0] ?? el.getBoundingClientRect();
+    // Centred on the word's first line, where a phrase that wraps starts; above its first line or under its last, so
+    // a plaque never covers the second line of the words it explains (the seat clock's two-line label, QA round 2).
+    const lines = el.getClientRects?.();
+    const box = el.getBoundingClientRect();
+    const r = lines?.[0] ?? box;
+    const last = lines && lines.length ? lines[lines.length - 1] : box;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const w = Math.min(PLAQUE_MAX_W, vw - 16);
     const left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), vw - w - 8);
-    const above = r.bottom + 150 > vh && r.top > 150;
-    setPos({ top: above ? r.top - 8 : r.bottom + 8, left, above });
+    const above = last.bottom + 150 > vh && r.top > 150;
+    setPos({ top: above ? r.top - 8 : last.bottom + 8, left, above });
   };
 
   const show = () => {
@@ -160,6 +247,8 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
       show();
     }
   };
+
+  useEffect(listenForNearTaps, []);
 
   // A tip inside a link or a button cannot work on a phone: the tap is the link's or the button's. Said in
   // development, where the next call site that does it is being written; production builds drop this.
@@ -193,9 +282,12 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
   }, [open]);
 
   const w = typeof window !== "undefined" ? Math.min(PLAQUE_MAX_W, window.innerWidth - 16) : PLAQUE_MAX_W;
-  // The open plaque's home: out of the card it opens from (a torn card's mask cuts a fixed child), into the night
-  // sheet so it keeps that sheet's tokens, or the body.
-  const into = open && pos && typeof document !== "undefined" ? (triggerRef.current?.closest(".sheet-night") ?? document.body) : null;
+  // The open plaque's home is always the body: out of the card it opens from (a torn card's mask cuts a fixed child)
+  // and out of any container-query box (`container-type` makes an ancestor the box position:fixed is measured from, so
+  // the seat card's clock plaque opened off screen at 1440, QA round 2). A word inside a night sheet hands the plaque
+  // that sheet's class, so it keeps the sheet's tokens.
+  const into = open && pos && typeof document !== "undefined" ? document.body : null;
+  const night = into ? triggerRef.current?.closest(".sheet-night") != null : false;
   const shown = into && pos ? { ...pos, into } : null;
   const plaqueId = `${id}-open`;
 
@@ -227,9 +319,13 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
           if (!pointerDown.current) show();
         }}
         onBlur={hide}
-        onMouseEnter={show}
-        onMouseLeave={() => {
-          if (!pinned.current) setOpen(false);
+        // A mouse's hover only: a touch also sends a made-up hover to whatever word the browser picks for the tap,
+        // which opened a second, farther word beside the one the tap meant (the 320 tap grid, QA round 2).
+        onPointerEnter={(e) => {
+          if (e.pointerType === "mouse") show();
+        }}
+        onPointerLeave={(e) => {
+          if (e.pointerType === "mouse" && !pinned.current) setOpen(false);
         }}
         className={className ? `info-word ${className}` : "info-word"}
       >
@@ -254,7 +350,7 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
               left: shown.left,
               width: w,
             }}
-            className="info-plaque"
+            className={night ? "info-plaque sheet-night" : "info-plaque"}
           >
             {tip}
           </span>,

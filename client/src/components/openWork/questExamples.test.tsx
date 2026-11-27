@@ -47,6 +47,18 @@ const quest = (over: Partial<BoardQuest> & { id: string }): BoardQuest => ({ tit
 
 afterEach(cleanup);
 
+describe("the quest card's link and its roots (QA round 2, 27 Nov 2026)", () => {
+  it("lays one link over the card and keeps the roots row out of it, so a root's tip can take a tap", () => {
+    render(<QuestCard quest={quest({ id: "q-well", title: "Dig the well", archetypes: ["catalyzing"] })} />);
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute("aria-label")).toBe("Dig the well");
+    const roots = screen.getByRole("list", { name: "Grows from" });
+    expect(links[0].contains(roots)).toBe(false);
+    expect(roots.className).toMatch(/z-10/);
+  });
+});
+
 describe("the example stamp on a quest card", () => {
   it("stamps an example and names it in the card's link", () => {
     const { container } = render(<QuestCard quest={quest({ id: "q-swale", title: "Tend the swale", isExample: true })} />);

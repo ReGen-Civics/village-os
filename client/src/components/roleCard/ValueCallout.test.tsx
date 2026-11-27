@@ -23,6 +23,9 @@ describe("the value callout on the Rewards piece", () => {
     expect(control).toHaveAccessibleDescription("How rewards are set");
     expect(control.querySelector("svg")).toBeNull();
     expect(screen.getAllByRole("button")).toHaveLength(1);
+    // The whole line is the control, 44px tall like the round button it replaced (QA round 2).
+    expect(control.className).toMatch(/min-h-11/);
+    expect(control.className).toMatch(/w-full/);
   });
 
   it("opens the explainer on activation, with the three parts, and Escape closes it and returns focus", () => {

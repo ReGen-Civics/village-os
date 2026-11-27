@@ -87,6 +87,17 @@ describe("RootTags", () => {
     expect(list.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
   });
 
+  it("puts each root's meaning on its name, a tap target a whole row tall (QA round 2, 27 Nov 2026)", async () => {
+    render(<RootTags roots={["catalyzing"]} />, { wrapper: wrap });
+    const word = await screen.findByRole("button", { name: "Connector + Catalyst" });
+    const tip = document.getElementById(word.getAttribute("aria-describedby") ?? "");
+    expect(tip?.textContent?.trim()).toBeTruthy();
+    expect(word).toHaveAccessibleDescription(tip?.textContent ?? "");
+    // No hover-only title anywhere in the row.
+    expect(screen.getByRole("list", { name: "Grows from" }).querySelector("[title]")).toBeNull();
+    expect(screen.getByRole("listitem").className).toMatch(/\bmin-h-11\b/);
+  });
+
   it("draws nothing for work with no roots", () => {
     const { container } = render(<RootTags roots={[]} />, { wrapper: wrap });
     expect(container.innerHTML).toBe("");

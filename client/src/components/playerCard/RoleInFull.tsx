@@ -44,6 +44,7 @@ import DecideDoors, { type DecideDoorWords } from "@/components/review/DecideDoo
 import { ROLE_PROPOSAL_WORDS } from "@shared/playerCardProposals";
 import { CardEditContext, ChangedContext, ChangedMark, EditInPlace, Eyebrow, GOLD_FRAME, isChanged, ListSlot, PendingNote, SlotView, useChanged } from "./cardParts";
 import { CardTerm } from "./CcosTerm";
+import InfoTip from "@/components/InfoTip";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import { useLingui } from "@lingui/react/macro";
 import { useCardWords, useProposalWords } from "./cardWords";
@@ -204,8 +205,9 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
           ))}
           {role.plays
             ? role.plays.chips.map((c) => (
-                <li key={c.key} className="pc-chip pc-arch" title={role.plays!.label}>
-                  {c.name}
+                <li key={c.key} className="pc-chip pc-arch">
+                  {/* What the chip means on its own word, where a phone can open it (a title reached only a mouse; QA round 2). */}
+                  <InfoTip tip={role.plays!.label}>{c.name}</InfoTip>
                 </li>
               ))
             : null}
