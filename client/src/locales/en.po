@@ -8480,7 +8480,7 @@ msgctxt "LetterComposer, legend"
 msgid "Who it is for"
 msgstr "Who it is for"
 
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
 msgstr "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
@@ -16372,7 +16372,7 @@ msgctxt "review inbox: a row, what it is"
 msgid "A suggestion from Sera or an outside service"
 msgstr "A suggestion from Sera or an outside service"
 
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Sign in to read the village's cash budget."
 msgstr "Sign in to read the village's cash budget."
@@ -23851,6 +23851,11 @@ msgstr "Filed. The village renews filed roles together."
 msgctxt "circle card, not found"
 msgid "There is no circle here."
 msgstr "There is no circle here."
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
+msgid "The village's books: mint, End of Moon pay and cash to send"
+msgstr "The village's books: mint, End of Moon pay and cash to send"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable assistant.synthesis_batch, label"
@@ -41199,6 +41204,11 @@ msgctxt "game variable map.photo_max_mb, label"
 msgid "Largest photograph a member may upload"
 msgstr "Largest photograph a member may upload"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: lede"
+msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
+msgstr "The village's cash, in the open: what it plans to pay this moon and what is left."
+
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MOON_WORDS: takeBackLine"
 msgid "Back to Draft. Any approval given is cleared."
@@ -54302,6 +54312,11 @@ msgstr "Waiting for {role}"
 #~ msgid "This role lists no outcomes yet."
 #~ msgstr "This role lists no outcomes yet."
 
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Treasury"
+msgstr "Treasury"
+
 #: client/src/components/admin/comms/DeliveryDangerZone.tsx
 msgctxt "Mail settings, danger zone heading"
 msgid "Danger zone"
@@ -57047,6 +57062,7 @@ msgid "{cash}% cash"
 msgstr "{cash}% cash"
 
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: h1"
 msgid "Governance"
 msgstr "Governance"
@@ -57190,7 +57206,7 @@ msgstr "How I can step back"
 msgid "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
 msgstr "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
 
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "What the village can pay in cash"
 msgstr "What the village can pay in cash"
@@ -63627,6 +63643,12 @@ msgctxt "Visit, div"
 msgid "Opening the ways to visit…"
 msgstr "Opening the ways to visit…"
 
+#. placeholder {0}: drafts.length
+#: client/src/components/roleEdit/EditRoleButton.tsx
+msgctxt "role card: open drafts of this role"
+msgid "{0, plural, one {A change to this role is waiting:} other {# changes to this role are waiting:}}"
+msgstr "{0, plural, one {A change to this role is waiting:} other {# changes to this role are waiting:}}"
+
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
 msgid "Your cards name more than one way. Pick the one this circle keeps."
@@ -69118,7 +69140,7 @@ msgctxt "MapChipsPanel, p"
 msgid "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone."
 msgstr "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone."
 
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Cash budget"
 msgstr "Cash budget"
@@ -71314,6 +71336,7 @@ msgid "Holding"
 msgstr "Holding"
 
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: eyebrow"
 msgid "How the village decides"
 msgstr "How the village decides"
@@ -72232,6 +72255,11 @@ msgstr "Accept and open swapping"
 msgctxt "game variable governance.steward_veto_tiers, label"
 msgid "Which sizes of decision a steward can stop"
 msgstr "Which sizes of decision a steward can stop"
+
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: item, an agent's proposal lapses undecided"
+msgid "Lapses on {lapses} if nobody decides it"
+msgstr "Lapses on {lapses} if nobody decides it"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, placeholder"

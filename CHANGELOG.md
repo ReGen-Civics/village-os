@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.94 (2026-11-27)
+
+### What changed for your village
+
+- **A Treasury in Govern.** The cash budget lives in Governance as its own Treasury tab, at /governance/treasury. Every member reads it; whoever holds the budget power changes it and uploads the sheet there. /budget opens the new place.
+- **A role card names the drafts waiting on it.** Whoever may edit a role sees "A change to this role is waiting:" with a link to each open draft, so nobody edits a card live while a draft of it waits.
+- **A new role gets its own id.** When a proposed role asks for an id a retired role still holds, it takes the next free one, and the rest of the draft follows it.
+- **The review page lists a draft once**, and a link carrying a code or draft id (`?find=`) opens the review page with the search made.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.93 still works.
+
+---
+
 ## 1.3.93 (2026-11-27)
 
 ### What changed for your village

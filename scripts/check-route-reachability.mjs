@@ -99,6 +99,9 @@ const ALLOWLIST = {
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
+  // The cash budget's old page (the lead, 27 Nov 2026: build it into Governance's treasury). It redirects to
+  // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
+  "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
   // The season fold (27 Nov 2026): three pages became /season. Each old address redirects to its tab, keeping the query; notifications already sent, old bookmarks and the term warning's ?renew= link are its doors.
   "/season-plans/mine": "a redirect to /season#plan, kept for notifications and term warnings already sent",

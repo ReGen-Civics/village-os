@@ -19,6 +19,7 @@ export default function InboxRow({ item }: { item: InboxItem }) {
   const { i18n } = useLingui();
   const words = sourceText(item.source, i18n);
   const sent = item.filedAt ? i18n.date(new Date(item.filedAt), { day: "numeric", month: "short" }) : null;
+  const lapses = item.lapsesAt ? i18n.date(new Date(item.lapsesAt), { day: "numeric", month: "short" }) : null;
   return (
     <li className={`${QUIET} flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between`} data-testid={`row-${item.key}`}>
       <div className="min-w-0 space-y-1">
@@ -31,6 +32,11 @@ export default function InboxRow({ item }: { item: InboxItem }) {
         {sent ? (
           <p className={HINT}>
             <Trans context="review inbox: item">Sent {sent}</Trans>
+          </p>
+        ) : null}
+        {lapses ? (
+          <p className="text-sm font-semibold text-notice" data-testid={`lapses-${item.key}`}>
+            <Trans context="review inbox: item, an agent's proposal lapses undecided">Lapses on {lapses} if nobody decides it</Trans>
           </p>
         ) : null}
       </div>

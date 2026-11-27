@@ -10034,7 +10034,7 @@ msgid "Who it is for"
 msgstr "Para quién es"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
 msgstr "El dinero que la aldea planea para el pago de roles y misiones en esta luna, línea por línea, y lo que queda después de restar el pago ya prometido. Todos los miembros pueden leerlo. Quienes tienen el poder del presupuesto lo cambian."
@@ -19364,7 +19364,7 @@ msgid "A suggestion from Sera or an outside service"
 msgstr "Una sugerencia de Sera o de un servicio externo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Sign in to read the village's cash budget."
 msgstr "Inicie sesión para leer el presupuesto en efectivo de la aldea."
@@ -28223,6 +28223,12 @@ msgstr "Presentado. La aldea renueva juntos los roles presentados."
 msgctxt "circle card, not found"
 msgid "There is no circle here."
 msgstr "Aquí no hay ningún círculo."
+
+# needs-native-review: Governance's Treasury view, the door to the books, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
+msgid "The village's books: mint, End of Moon pay and cash to send"
+msgstr "Las cuentas de la aldea: emitir, el pago de Fin de Luna y el efectivo por enviar"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords2.ts
@@ -48744,6 +48750,12 @@ msgctxt "game variable map.photo_max_mb, label"
 msgid "Largest photograph a member may upload"
 msgstr "La fotografía más grande que un miembro puede subir"
 
+# needs-native-review: Governance's Treasury view, the lede, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: lede"
+msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
+msgstr "El efectivo de la aldea, a la vista: lo que planea pagar esta luna y lo que queda."
+
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MOON_WORDS: takeBackLine"
@@ -64274,6 +64286,12 @@ msgstr "Esperando a {role}"
 #~ msgid "This role lists no outcomes yet."
 #~ msgstr ""
 
+# needs-native-review: Governance's Treasury view, a tab, 27 Nov 2026
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Treasury"
+msgstr "Tesorería"
+
 # needs-native-review: Mail settings, 2026-11-25
 #: client/src/components/admin/comms/DeliveryDangerZone.tsx
 msgctxt "Mail settings, danger zone heading"
@@ -67524,6 +67542,7 @@ msgstr "{cash}% en efectivo"
 
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: h1"
 msgid "Governance"
 msgstr "Gobernanza"
@@ -67693,7 +67712,7 @@ msgid "There is no signal, and this phone has not opened the map before. Open it
 msgstr "No hay señal, y este teléfono no ha abierto el mapa antes. Ábralo una vez con señal y después funciona sin conexión."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "What the village can pay in cash"
 msgstr "Lo que la aldea puede pagar en efectivo"
@@ -75319,6 +75338,13 @@ msgctxt "Visit, div"
 msgid "Opening the ways to visit…"
 msgstr "Abriendo las formas de visitar…"
 
+# needs-native-review: the role card's link to its open drafts, 26 Nov 2026
+#. placeholder {0}: drafts.length
+#: client/src/components/roleEdit/EditRoleButton.tsx
+msgctxt "role card: open drafts of this role"
+msgid "{0, plural, one {A change to this role is waiting:} other {# changes to this role are waiting:}}"
+msgstr "{0, plural, one {Hay un cambio a este rol en espera:} other {Hay # cambios a este rol en espera:}}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/ProfileImport.tsx
 msgctxt "ProfileImport, p"
@@ -81809,7 +81835,7 @@ msgid "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit
 msgstr "La barra tiene {MAX_MAP_CHIPS} fichas y la luna, que es lo que cabe a lo ancho de un teléfono."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
-#: client/src/pages/Budget.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget page"
 msgid "Cash budget"
 msgstr "Presupuesto de efectivo"
@@ -84395,6 +84421,7 @@ msgstr "En sus manos"
 
 # needs-native-review: Governance Now, 2026-11-26
 #: client/src/pages/GovernanceNow.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "governance now: eyebrow"
 msgid "How the village decides"
 msgstr "Cómo decide la aldea"
@@ -85480,6 +85507,12 @@ msgstr "Aceptar y abrir los intercambios"
 msgctxt "game variable governance.steward_veto_tiers, label"
 msgid "Which sizes of decision a steward can stop"
 msgstr "Qué tamaños de decisión puede detener una persona custodia"
+
+# needs-native-review: the review list, an agent's proposal lapses undecided, 26 Nov 2026
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: item, an agent's proposal lapses undecided"
+msgid "Lapses on {lapses} if nobody decides it"
+msgstr "Caduca el {lapses} si nadie la decide"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx

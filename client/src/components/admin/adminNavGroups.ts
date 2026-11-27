@@ -163,7 +163,7 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         { key: "cash-payouts", label: "Cash To Pay Out", icon: Coins },
         // The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
         { key: "pricing-desk", label: "Pricing Desk", icon: Scale },
-        // The cash budget (0360): the Treasurer uploads it, every member reads it at /budget.
+        // The cash budget (0360): the Treasurer uploads it, every member reads it at /governance/treasury.
         { key: "budgets", label: "Cash Budget", icon: BarChart3 },
         { key: "cycles", label: "Cycle Close", icon: Moon },
         { key: "products", label: "Payments", icon: Handshake },
