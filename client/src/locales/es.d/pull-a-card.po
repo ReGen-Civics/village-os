@@ -314,3 +314,8 @@ msgstr "Hoy en la aldea"
 msgctxt "today's card: button"
 msgid "Pull today's card"
 msgstr "Saque la carta de hoy"
+
+# needs-native-review: the More sheet heading this branch carries from the menu lane, untranslated in es.po and caught by the strict catalog check after the fold; the same words as the speed cards lane's fragment, 27 Nov 2026
+msgctxt "the phone's More sheet: heading"
+msgid "Yours"
+msgstr "Lo suyo"
