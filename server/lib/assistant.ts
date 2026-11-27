@@ -48,7 +48,8 @@ export type AssistantMode =
   | "card"
   | "adminHelper"
   | "fieldHelp"
-  | "translate";
+  | "translate"
+  | "find";
 
 export interface ModeSpec {
   audience: "public" | "member" | "admin";
@@ -105,6 +106,10 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // (CONTENT_MACHINE_DRAFTS=on); a holder of the power asks, a page at a time.
   // No tools: the English arrives in the message.
   translate: { audience: "admin", dailyBudget: 60, maxTokens: 4000, toolCalls: 0 },
+  // Find anything's guide (server/routes/search.ts): when a search finds little, the guide names one to three
+  // places from the reader's own list. Public, because a visitor is the one most often lost; strangers draw on the
+  // anonymous slices of this day. No tools: the list arrives in the prompt, and nothing else does.
+  find: { audience: "public", dailyBudget: 200, maxTokens: 500, toolCalls: 0 },
 };
 
 /** Conversation limits, shared so no mode can quietly widen them. */

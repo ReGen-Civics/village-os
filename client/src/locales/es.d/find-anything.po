@@ -1,0 +1,180 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnything.tsx
+msgctxt "site header: opens the site search"
+msgid "Find anything"
+msgstr "Buscar cualquier cosa"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnything.tsx
+msgctxt "site header: the site search button's tooltip"
+msgid "Find anything (Ctrl K)"
+msgstr "Buscar cualquier cosa (Ctrl K)"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "Pages"
+msgstr "Páginas"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "Village settings"
+msgstr "Ajustes de la aldea"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "Circles"
+msgstr "Círculos"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "Quests"
+msgstr "Misiones"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a group of results"
+msgid "People"
+msgstr "Personas"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the dialog's name"
+msgid "Find anything"
+msgstr "Buscar cualquier cosa"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: what it searches, for a member"
+msgid "Search pages, roles, circles, quests and people. Arrows move, Enter opens, Escape closes."
+msgstr "Busque páginas, roles, círculos, misiones y personas. Las flechas mueven, Intro abre, Escape cierra."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: what it searches"
+msgid "Search pages, roles, circles and quests. Arrows move, Enter opens, Escape closes."
+msgstr "Busque páginas, roles, círculos y misiones. Las flechas mueven, Intro abre, Escape cierra."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the search field's name"
+msgid "Find anything"
+msgstr "Buscar cualquier cosa"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the search field's hint"
+msgid "Find a page, a role, a quest..."
+msgstr "Busque una página, un rol, una misión..."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: close button"
+msgid "Close search"
+msgstr "Cerrar la búsqueda"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the count a screen reader hears"
+msgid "{resultCount} results"
+msgstr "{resultCount} resultados"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the index could not load"
+msgid "Search could not load just now. The menu still has every page."
+msgstr "La búsqueda no pudo cargarse ahora. El menú todavía tiene todas las páginas."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: before typing, for a member"
+msgid "Type a page, a role, a circle, a quest or a person."
+msgstr "Escriba una página, un rol, un círculo, una misión o una persona."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: before typing"
+msgid "Type a page, a role, a circle or a quest."
+msgstr "Escriba una página, un rol, un círculo o una misión."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the results list"
+msgid "Results"
+msgstr "Resultados"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide's answer, a group heading"
+msgid "{Guide} suggests"
+msgstr "{Guide} sugiere"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: ask the guide, the row's words"
+msgid "Ask {guideName} where to find it"
+msgstr "Pregunte a {guideName} dónde encontrarlo"
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: under the ask row, what is sent"
+msgid "Only the words you typed go to {guideName}."
+msgstr "Solo las palabras que escribió llegan a {guideName}."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: no results"
+msgid "Nothing here matches “{q}”. Try another word, or open the menu for every page."
+msgstr "Nada coincide con “{q}”. Pruebe otra palabra, o abra el menú para ver todas las páginas."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide is looking"
+msgid "{Guide} is looking..."
+msgstr "{Guide} está buscando..."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide found nothing either"
+msgid "{Guide} found no place for that either. Try other words."
+msgstr "{Guide} tampoco encontró un lugar para eso. Pruebe otras palabras."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide is not answering"
+msgid "{Guide} can't answer right now, so these are the search's own results."
+msgstr "{Guide} no puede responder ahora, así que estos son los resultados de la propia búsqueda."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the guide's hour is spent"
+msgid "That's a lot of asking for one hour. The search still works on its own."
+msgstr "Son muchas preguntas para una hora. La búsqueda sigue funcionando por sí sola."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: weak results, no guide"
+msgid "These are the closest matches. A shorter word often finds more."
+msgstr "Estas son las coincidencias más cercanas. Una palabra más corta suele encontrar más."
+
+# needs-native-review: Find anything, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: the footer's keys"
+msgid "↑ ↓ to move, Enter to open, Esc to close."
+msgstr "↑ ↓ para moverse, Intro para abrir, Esc para cerrar."
