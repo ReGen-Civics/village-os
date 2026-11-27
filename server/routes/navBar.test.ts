@@ -5,7 +5,7 @@
 import express from "express";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanPath, NAV_BAR_DOC, register, type NavBarDeps } from "./navBar";
+import { cleanPath, dayParam, NAV_BAR_DOC, register, type NavBarDeps } from "./navBar";
 
 const servers: Array<{ close: () => void }> = [];
 afterEach(() => {
@@ -22,8 +22,15 @@ function harness(over: Partial<NavBarDeps> & { vars?: Record<string, string | nu
     { path: "/roles", count: 40 },
     { path: "/events", count: 10 },
   ]);
+  const between = vi.fn(async (_pool: unknown, _from: string, _to: string) => [
+    { path: "/quests", count: 12 },
+    { path: "/events", count: 3 },
+  ]);
   const deps: NavBarDeps = {
     getPool: () => ({}) as never,
+    isAdmin: async (req) => req.headers.authorization === "Bearer admin",
+    visitTotalsBetween: between,
+    firstVisitDay: async () => "2026-11-24",
     authedUser: async (req) => (req.headers.authorization ? { id: "usr-1", email: "m@example.test" } : null),
     overLimit: async () => false,
     connectionKey: () => "1.2.3.4",
@@ -49,6 +56,7 @@ function harness(over: Partial<NavBarDeps> & { vars?: Record<string, string | nu
     docs,
     counted,
     totals,
+    between,
     vars,
     tick: (ms: number) => (clock = new Date(clock.getTime() + ms)),
     async start() {
@@ -147,5 +155,72 @@ describe("cleanPath", () => {
     expect(cleanPath("quests")).toBeNull();
     expect(cleanPath("/a b")).toBeNull();
     expect(cleanPath(7)).toBeNull();
+  });
+});
+
+describe("GET /api/admin/nav/usage", () => {
+  const usage = (base: string, query = "", who = "admin") =>
+    fetch(`${base}/api/admin/nav/usage${query}`, { headers: who ? { Authorization: `Bearer ${who}` } : {} }); // module-review-ok: the test client dialling its own in-process server on localhost
+
+  it("is an admin's: a member and a stranger are refused", async () => {
+    const h = harness();
+    const base = await h.start();
+    expect((await usage(base, "", "member")).status).toBe(401);
+    expect((await usage(base, "", "")).status).toBe(401);
+    expect(h.between).not.toHaveBeenCalled();
+  });
+
+  it("reads the window asked for, its first day in and its last out, and says what the counts cannot", async () => {
+    const h = harness();
+    const base = await h.start();
+    const res = await usage(base, "?from=2026-11-01&to=2027-02-01");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    const body = await res.json();
+    expect(h.between).toHaveBeenCalledWith({}, "2026-11-01", "2027-02-01");
+    expect(body).toEqual({
+      from: "2026-11-01",
+      to: "2027-02-01",
+      today: "2026-11-24",
+      recordedSince: "2026-11-24",
+      totals: [
+        { path: "/quests", count: 12 },
+        { path: "/events", count: 3 },
+      ],
+      counted: { signedInOnly: true, byAudience: false, perPage: true },
+    });
+    // Pages and counts: nothing in the answer could name a person.
+    expect(JSON.stringify(body)).not.toMatch(/usr-|@|userId|member_id/);
+  });
+
+  it("asks for the last ninety days to tomorrow when no window is named", async () => {
+    const h = harness();
+    const base = await h.start();
+    await usage(base);
+    expect(h.between).toHaveBeenCalledWith({}, "2026-08-27", "2026-11-25");
+  });
+
+  it("refuses a window that is not days, runs backwards, or is too wide", async () => {
+    const h = harness();
+    const base = await h.start();
+    for (const q of ["?from=2026-13-01&to=2027-01-01", "?from=yesterday&to=2027-01-01", "?from=2026-12-01&to=2026-11-01", "?from=2026-11-01&to=2026-11-01", "?from=2024-01-01&to=2026-01-01", "?to=nope"]) {
+      expect((await usage(base, q)).status, q).toBe(400);
+    }
+    expect(h.between).not.toHaveBeenCalled();
+  });
+
+  it("says so in words when the counts cannot be read", async () => {
+    const h = harness({ firstVisitDay: async () => Promise.reject(new Error("down")) });
+    const base = await h.start();
+    const res = await usage(base, "?from=2026-11-01&to=2026-12-01");
+    expect(res.status).toBe(503);
+    expect((await res.json()).message).toMatch(/could not be read/);
+  });
+
+  it("reads a real day only", () => {
+    expect(dayParam("2026-11-27")).toBe("2026-11-27");
+    expect(dayParam("2026-02-30")).toBeNull();
+    expect(dayParam("26-11-27")).toBeNull();
+    expect(dayParam(["2026-11-27"])).toBeNull();
   });
 });

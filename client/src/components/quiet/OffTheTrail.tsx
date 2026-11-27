@@ -1,7 +1,8 @@
 /**
  * THE 404's SCENE (Phase B, lane B3): a root that wandered off the trail and
  * frays at its end, a short path of stepping stones from there, and a lit
- * door home. One door, gold, with fireflies on it: the one act on the page.
+ * door home. One door, gold, with fireflies on it: the one main act on the page. Since the helpful not-found page
+ * (27 Nov 2026) the nearest real pages by name sit above it, and a quiet search link beside it (NearestPages.tsx).
  *
  * Lazy on purpose. NotFound.tsx is imported by the app shell (every unknown
  * route lands on it), and the nature kit must never reach the first page
@@ -24,6 +25,7 @@ import { BTN_PRIMARY, EYEBROW, H1, LEDE } from "@/components/journey/look";
 import Fireflies from "@/components/journey/nature/Fireflies";
 import { fx } from "@/components/journey/nature/geometry";
 import { offTrailScene } from "./quietGeometry";
+import { NearestPageList, SearchLink } from "./NearestPages";
 
 export function TrailDrawing({ className = "" }: { className?: string }) {
   const s = offTrailScene();
@@ -85,12 +87,17 @@ export default function OffTheTrail() {
         <p className={`${LEDE} mt-4`}>
           {t`There is no page at this address. It may have moved, or it may never have existed. The land is still here, and the way home is short.`}
         </p>
-        <div className="mt-8">
+        {/* The nearest real pages by name (the helpful not-found page, 27 Nov 2026), then the door home and search. */}
+        <div className="mt-6 flex w-full justify-center lg:justify-start">
+          <NearestPageList />
+        </div>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
           <Fireflies count={7}>
             <Link href="/" className={BTN_PRIMARY}>
               {t`Back to the village`}
             </Link>
           </Fireflies>
+          <SearchLink />
         </div>
       </div>
     </section>
