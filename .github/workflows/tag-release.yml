@@ -15,7 +15,8 @@
 # THE GUARDS (scripts/tag-release-check.mjs, held by server/tagRelease.test.ts),
 # all checked before anything is written, every refusal named:
 #   - the version is a plain X.Y.Z;
-#   - the commit is on main (main's tip when no sha is given);
+#   - the commit is on main (when no sha is given, main's newest commit that is
+#     not the docs bot's, which gets no ci run);
 #   - at that commit, package.json, PLATFORM_VERSION, a `## X.Y.Z` section in
 #     CHANGELOG.md and docker-compose.yml's default image all name the version;
 #   - no tag vX.Y.Z exists yet;
@@ -110,6 +111,15 @@ jobs:
           if ! sha=$(git rev-parse --verify --quiet "${want}^{commit}"); then
             echo "::error::\"${want}\" is not a commit in this repository."
             exit 1
+          fi
+          # No sha given: main's tip is usually the docs bot's commit, which
+          # gets no ci run (ci.yml, paths-ignore). Tag the merge commit under
+          # it, whose own push run judged the landing. A GIVEN sha is taken as
+          # given, and the guards refuse it if it is the bot's.
+          if [ -z "${INPUT_SHA}" ]; then
+            tip="$sha"
+            sha=$(node scripts/tag-release-check.mjs --untold-target "$tip")
+            [ "$sha" = "$tip" ] || echo "main's tip ${tip} is the docs bot's commit; the commit to tag is ${sha}."
           fi
           echo "SHA=${sha}" >> "$GITHUB_ENV"
           # The same question release.yml asks before it builds, narrowed to

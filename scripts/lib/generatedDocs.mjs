@@ -65,6 +65,32 @@ export const GENERATED_FILES = [
   },
 ];
 
+/**
+ * THE DOCS BOT'S OWN COMMIT, which gets no ci run (the lead, 26 Nov 2026).
+ *
+ * .github/workflows/generated-docs.yml writes it with this subject, and since its gate
+ * runs before the push, every guard that reads these files has already passed on the
+ * exact tree it pushes. ci.yml skips it with `paths-ignore`, which lists BOT_COMMIT_PATHS
+ * and nothing else: GitHub starts no run when every changed path matches, so a commit
+ * touching one other file still runs in full. The fragments are on the list because the
+ * fold DELETES them (15 of the last 40 bot commits did); no merge commit on main since
+ * 1 Oct touched only these paths (0 of 542).
+ *
+ * Held to ci.yml and generated-docs.yml by scripts/check-generated-docs-untouched.test.mjs.
+ */
+export const BOT_COMMIT_SUBJECT = "Regenerate the generated docs and catalogs";
+export const BOT_COMMIT_PATHS = [...GENERATED_FILES.map((f) => f.path), "client/src/locales/es.d/**"];
+
+/** Does this path match BOT_COMMIT_PATHS the way paths-ignore matches it? */
+export function isBotCommitPath(p) {
+  return BOT_COMMIT_PATHS.some((g) => (g.endsWith("/**") ? p.startsWith(g.slice(0, -2)) : p === g));
+}
+
+/** The docs bot's commit: its subject, one parent, and nothing changed outside BOT_COMMIT_PATHS. */
+export function isBotCommit({ subject, parents, paths }) {
+  return subject === BOT_COMMIT_SUBJECT && parents === 1 && paths.length > 0 && paths.every(isBotCommitPath);
+}
+
 /** Region markers of a half-generated file, as generate-economics-doc.mjs writes them. */
 export const REGION_RE = /<!-- generated:([\w-]+) start -->[\s\S]*?<!-- generated:\1 end -->/g;
 

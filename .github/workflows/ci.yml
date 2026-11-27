@@ -14,6 +14,31 @@ name: ci
 on:
   push:
     branches: ["main", "wt/*-integration*"]
+    # THE DOCS BOT'S COMMIT GETS NO RUN (the lead, 26 Nov 2026). GitHub starts
+    # no run when EVERY changed path matches this list, so a commit touching
+    # anything else still runs in full. The list is BOT_COMMIT_PATHS in
+    # scripts/lib/generatedDocs.mjs, held equal to it by
+    # scripts/check-generated-docs-untouched.test.mjs. The bot's commit is
+    # judged before it is pushed instead: generated-docs.yml runs the strict
+    # doc guards and scripts/check-post-fold.mjs on the exact tree, and holds
+    # it back on a red. What used to run here was a full cycle (about 48
+    # runner-minutes) on a tree whose code its parent's run had already
+    # tested, queued beside the merge commit's run on the same runners.
+    #
+    # So the run that judges a landing is the MERGE COMMIT's: main-red.yml and
+    # release.yml's :edge build follow it, and tag-release.yml tags it (an
+    # untold sha means main's newest commit that is not the bot's).
+    paths-ignore:
+      - docs/GOVERNANCE.md
+      - docs/knowledge/governance-lineage.md
+      - docs/ECONOMICS.md
+      - docs/TOKENS.md
+      - docs/VARIABLES.md
+      - docs/MODULES.md
+      - docs/CAPABILITIES.md
+      - client/src/locales/en.po
+      - client/src/locales/es.po
+      - client/src/locales/es.d/**
   pull_request:
     # ready_for_review is the run a draft gets when it is marked ready. The
     # other three are the default set, named again because naming any type
@@ -88,8 +113,9 @@ on:
 # tag-release.yml found no green push run on the merge commit and a release
 # waited a whole second run on the bot commit, about 35 minutes each time
 # (712becf, 1.3.66). So on main each commit gets a group of its own (keyed on
-# the sha) and nothing is cancelled: the merge commit's run and the bot
-# commit's run both finish, side by side, neither queued behind the other.
+# the sha) and nothing is cancelled. Since 26 Nov the bot's commit has no run
+# at all (paths-ignore above); the per-sha group still keeps two quick
+# landings from cancelling each other.
 #
 #   event          ref                     group key        cancelled by a newer push?
 #   pull_request   refs/pull/N/merge       PR number        yes, same PR
