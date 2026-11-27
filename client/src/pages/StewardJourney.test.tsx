@@ -245,7 +245,7 @@ describe("/steward", () => {
   it("keeps the rights link without claiming ownership, and links the exit policy", async () => {
     show();
     expect(await screen.findByRole("link", { name: /Read rights and responsibilities/ })).toHaveAttribute("href", "/steward-rights");
-    expect(screen.getByRole("link", { name: /How leaving a role works/ })).toHaveAttribute("href", "/exit-policy");
+    expect(screen.getByRole("link", { name: /How leaving a role works/ })).toHaveAttribute("href", "/rights#leaving-well");
     expect(document.body.textContent).not.toMatch(/co-owner|real ownership/i);
   });
 

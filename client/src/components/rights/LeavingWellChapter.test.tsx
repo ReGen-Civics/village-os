@@ -52,7 +52,7 @@ vi.mock("@/components/auth/ConfirmWithGoogle", () => ({
   identityReady: () => false,
 }));
 
-import ExitPolicy from "./ExitPolicy";
+import ExitPolicy from "./LeavingWellChapter";
 
 const CONTACT = { name: "Jo Bell", organisation: "Cohort Care", howToReach: "ombuds@example.test" };
 

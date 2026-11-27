@@ -108,7 +108,7 @@ import Quests from "./Quests";
 import ProsperityJourney from "./ProsperityJourney";
 import CoCreatorsGuide from "./CoCreatorsGuide";
 import HowWeCreate from "./HowWeCreate";
-import StewardRights from "./StewardRights";
+import StewardRights from "@/components/rights/StewardRightsChapter";
 import { PROSPERITY_JOURNEY } from "@shared/pageContent/journeys";
 import { CO_CREATORS_GUIDE_PAGE } from "@shared/pageContent/coCreatorsGuide";
 import type { PageSpec } from "@shared/pageContent/types";

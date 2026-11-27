@@ -100,6 +100,12 @@ const ALLOWLIST = {
   "/feedback": "a redirect to the page the member came from with the guide's panel open on Share feedback (lib/guideFeedback.ts); the footer and the corner open the panel in place",
   // The old all-photos page (the places fold, 26 Nov 2026). It redirects to /places#photos; old bookmarks and links already sent are its doors.
   "/photographs": "a redirect to /places#photos, the all-photos page's old address, kept for old links",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages became /rights, one chapter each. Each old
+  // address redirects to its chapter's anchor with its query; old links, notifications and saved page buttons are its doors.
+  "/exit-policy": "a redirect to /rights#leaving-well with its query, kept for links and notifications already sent",
+  "/good-neighbor": "a redirect to /rights#good-neighbor, kept for links already sent and the buttons villages saved",
+  "/resident-rights": "a redirect to /rights#resident-rights, kept for links already sent and the buttons villages saved",
+  "/steward-rights": "a redirect to /rights#steward-rights, kept for links already sent and the buttons villages saved",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.
@@ -120,6 +126,11 @@ const ALLOWLIST = {
   // work's change request rows, the Suggest control's "added to" link, and the review notices. A literal-string scan
   // cannot see a built address, so it counts none of them.
   "/governance/decisions/changes/:id": "one change request's page, linked by changeRequestHref from Decisions, Now, Your work, Suggest and its notices",
+  // The season fold (27 Nov 2026): three pages became /season. Each old address redirects to its tab, keeping the query; notifications already sent, old bookmarks and the term warning's ?renew= link are its doors.
+  "/season-plans/mine": "a redirect to /season#plan, kept for notifications and term warnings already sent",
+  "/season-plans": "a redirect to /season#everyone, kept for links already sent",
+  "/season-places": "a redirect to /season#join, kept for crew notices already sent (?season= is kept)",
+  "/aligned": "a redirect to /season#aligned, kept for alignment links already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

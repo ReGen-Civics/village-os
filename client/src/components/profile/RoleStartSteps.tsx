@@ -56,7 +56,7 @@ export default function RoleStartSteps({ className = "", onShown, embedded = fal
       setExtra(
         waitingOnYou(r.data?.alignments)
           .filter((a) => (a.kind ?? "seat_terms") === "seat_terms" && !hasTermsStep)
-          .map((a) => ({ key: `${a.textId ?? a.title}-${a.version}`, title: a.title, href: a.href ?? "/aligned" })),
+          .map((a) => ({ key: `${a.textId ?? a.title}-${a.version}`, title: a.title, href: a.href ?? "/season#aligned" })),
       );
     });
     return () => {
