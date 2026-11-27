@@ -97,6 +97,12 @@ const ALLOWLIST = {
   "/apply": "a redirect to /roles for the address people guess at; nothing links to it on purpose",
   // The Exchange's old address (the lead, 25 Nov 2026: one page called Wallet). It redirects to /wallet with its query and hash; old bookmarks and links already sent are its doors.
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages became /rights, one chapter each. Each old
+  // address redirects to its chapter's anchor with its query; old links, notifications and saved page buttons are its doors.
+  "/exit-policy": "a redirect to /rights#leaving-well with its query, kept for links and notifications already sent",
+  "/good-neighbor": "a redirect to /rights#good-neighbor, kept for links already sent and the buttons villages saved",
+  "/resident-rights": "a redirect to /rights#resident-rights, kept for links already sent and the buttons villages saved",
+  "/steward-rights": "a redirect to /rights#steward-rights, kept for links already sent and the buttons villages saved",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",

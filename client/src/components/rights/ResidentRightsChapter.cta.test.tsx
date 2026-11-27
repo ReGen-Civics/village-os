@@ -25,7 +25,7 @@ vi.mock("@/hooks/useVillageContent", () => ({
 }));
 vi.mock("@/lib/gameApi", () => ({ useGameConfig: () => ({ project: { name: "Testville" } }) }));
 
-import ResidentRights from "./ResidentRights";
+import ResidentRights from "./ResidentRightsChapter";
 import { RIGHTS_RESIDENT_PAGE } from "@shared/pageContent/rights";
 
 const cta = RIGHTS_RESIDENT_PAGE.sections.find((s) => s.id === "cta")!.fields;
@@ -38,7 +38,8 @@ describe("ResidentRights doors", () => {
     await screen.findByRole("link", { name: label("primaryLabel") });
     for (const [name, href] of [
       [label("primaryLabel"), "/resident"],
-      [label("secondaryLabel"), "/good-neighbor"],
+      // The Good Neighbor criteria are a chapter of the same page now (the rights fold, 27 Nov 2026).
+      [label("secondaryLabel"), "/rights#good-neighbor"],
     ] as const) {
       const link = screen.getByRole("link", { name });
       expect(link.getAttribute("href")).toBe(href);

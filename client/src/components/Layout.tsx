@@ -710,7 +710,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                 )}
                 {storyShown("/good-neighbor") && (
                   <li>
-                    <Link href="/good-neighbor" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                    <Link href="/rights#good-neighbor" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       {footerName("/good-neighbor", "Good Neighbor Criteria")}
                     </Link>
                   </li>
@@ -733,7 +733,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   </Link>
                 </li>
                 <li>
-                  <Link href="/exit-policy" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/rights#leaving-well" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">Leaving Well</Trans>
                   </Link>
                 </li>

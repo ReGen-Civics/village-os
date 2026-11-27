@@ -162,15 +162,12 @@ const SHOPFRONT = [
   "client/src/pages/Visit.tsx",
   "client/src/pages/WorkWithUs.tsx",
   "client/src/pages/LoveLetter.tsx",
-  "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/CoCreatorsGuide.tsx",
   "client/src/pages/HowWeCreate.tsx",
   "client/src/pages/InvestorJourney.tsx",
   "client/src/pages/StewardJourney.tsx",
   "client/src/pages/ResidentJourney.tsx",
   "client/src/pages/ProsperityJourney.tsx",
-  "client/src/pages/ResidentRights.tsx",
-  "client/src/pages/StewardRights.tsx",
   "client/src/components/WhyCostaRica.tsx",
 ];
 

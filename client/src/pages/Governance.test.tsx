@@ -469,7 +469,7 @@ describe("the Governance page's conflict section", () => {
     expect(list).not.toBeNull();
     expect(Array.from(list!.querySelectorAll("li")).map((li) => li.textContent)).toEqual(VILLAGE_STEPS);
     expect(screen.getByText("When tension between people needs repair, these are the steps we follow:")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Read the village's exit policy/ }).getAttribute("href")).toBe("/exit-policy");
+    expect(screen.getByRole("link", { name: /Read the village's exit policy/ }).getAttribute("href")).toBe("/rights#leaving-well");
     expect(fetchMock).toHaveBeenCalledWith("/api/exit-policy");
     // Adopted terms carry no draft note.
     expect(screen.queryByText(/still a draft/)).toBeNull();

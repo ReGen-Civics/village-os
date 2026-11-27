@@ -83,6 +83,9 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/game-mechanics": "Game Mechanics",
   // Change requests: the list and, by longest prefix, each one.
   "/changes": "Change requests",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages in one. Their old addresses redirect here and keep a
+  // line each below, so a tab never reads blank for the moment a redirect takes.
+  "/rights": "Rights and agreements",
   "/exit-policy": "Leaving well",
   "/tools": "Tools",
   // One line covers the shelf and every detail page: keys match by longest

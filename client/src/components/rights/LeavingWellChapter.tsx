@@ -2,13 +2,18 @@
  * The exit policy, published (S52, F12): how leaving works — before anyone
  * needs it. Voluntary departures, the involuntary process, and the
  * restorative path whose content only ever reaches its recipients.
+ *
+ * LEAVING WELL, a chapter of /rights (the rights fold, 27 Nov 2026). It was its
+ * own page at /exit-policy, which now redirects here with its query, so the
+ * delete screen's `?focus=begin-departure` and the Google confirmation's return
+ * still land on the departure card. Every sentence is the one the page printed,
+ * in the same order; only the frame changed.
  */
-import Layout from "@/components/Layout";
 import LoadFailed from "@/components/LoadFailed";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
-import { DoorOpen, HeartHandshake, ShieldQuestion } from "lucide-react";
+import { ArrowDown, DoorOpen, HeartHandshake, ShieldQuestion } from "lucide-react";
 import { IdentityConfirmField, identityBody, identityReady, useIdentityConfirm } from "@/components/auth/ConfirmWithGoogle";
 import LeavingEnds, { useTermsLeavingEnds } from "@/components/alignment/LeavingEnds";
 import { CashOwedNotice, VotesCastNotice, useUnpaidCash } from "@/components/LeavingKeeps";
@@ -18,14 +23,17 @@ import ClosingPolicyCard from "@/components/ClosingPolicyCard";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { plural } from "@lingui/core/macro";
 import { failureWords } from "@/lib/failureWords";
-import { BTN_PRIMARY, CARD, EYEBROW, FIELD, H1, LEDE, WORLD } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_PRIMARY, CARD, FIELD } from "@/components/journey/look";
+import { ChapterHead } from "./chapterParts";
+
+export const LEAVING_CHAPTER = "leaving-well";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
   return t ? { Authorization: `Bearer ${t}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
 };
 
-export default function ExitPolicy() {
+export default function LeavingWellChapter() {
   const { user } = useAuth();
   const { t } = useLingui();
   const [data, setData] = useState<any>(null);
@@ -122,28 +130,29 @@ export default function ExitPolicy() {
   };
 
   return (
-    <Layout>
-      {/* The night world (public launch, 24 Nov 2026): the sheet's ground and tokens, the same words. */}
-      <div className={WORLD}>
-      <section className="pt-12 pb-4 sm:pt-16">
-        <div className="container max-w-2xl">
-          <p className={EYEBROW}>
-            <Trans context="exit policy page eyebrow">How departure works</Trans>
-          </p>
-          <h1 className={`${H1} mt-2`}>
-            <Trans context="exit policy page title">Leaving Well</Trans>
-          </h1>
-          <p className={`${LEDE} mt-4`}>
+    <div className="space-y-6">
+      <ChapterHead
+        chapter={LEAVING_CHAPTER}
+        Icon={DoorOpen}
+        eyebrow={<Trans context="exit policy page eyebrow">How departure works</Trans>}
+        title={<Trans context="exit policy page title">Leaving Well</Trans>}
+        intro={
+          <p>
             <Trans>
               A village that designs its exits before it needs them can afford to
               welcome people wholeheartedly. This is how departure works here.
             </Trans>
           </p>
-        </div>
-      </section>
-
-      <section className="pt-6 pb-16">
-        <div className="container max-w-2xl space-y-6">
+        }
+      >
+        {/* Somebody who has decided to go reaches their own card in one tap. */}
+        {user && (
+          <a href="#begin-departure" className={`${BTN_NOTICE} mt-5`}>
+            <ArrowDown className="size-4" aria-hidden="true" />
+            <Trans context="Leaving Well: a jump to the member's own departure card">Start your own departure</Trans>
+          </a>
+        )}
+      </ChapterHead>
           {policy?.placeholder && (
             <p className="text-sm text-foreground bg-notice/10 border border-notice/50 rounded-lg px-4 py-2.5">
               <Trans>
@@ -160,7 +169,7 @@ export default function ExitPolicy() {
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
               <DoorOpen className="w-5 h-5 text-notice" aria-hidden="true" />
-              <p className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Choosing to leave</Trans></p>
+              <h3 className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Choosing to leave</Trans></h3>
             </div>
             <p className="text-sm text-muted-foreground mb-3">
               <Trans>
@@ -180,7 +189,7 @@ export default function ExitPolicy() {
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
               <ShieldQuestion className="w-5 h-5 text-notice" aria-hidden="true" />
-              <p className="font-display text-xl font-bold text-card-foreground"><Trans>If the village asks someone to leave</Trans></p>
+              <h3 className="font-display text-xl font-bold text-card-foreground"><Trans>If the village asks someone to leave</Trans></h3>
             </div>
             <p className="text-sm text-muted-foreground">{policy?.involuntary?.process}</p>
             {(policy?.involuntary?.decidingCircle || policy?.involuntary?.appealCircle) && (
@@ -204,7 +213,7 @@ export default function ExitPolicy() {
           <div className={CARD}>
             <div className="flex items-center gap-2 mb-2">
               <HeartHandshake className="w-5 h-5 text-notice" aria-hidden="true" />
-              <p className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Repair before departure</Trans></p>
+              <h3 className="font-display text-xl font-bold text-card-foreground"><Trans context="exit policy section heading">Repair before departure</Trans></h3>
             </div>
             <p className="text-sm text-muted-foreground mb-2">
               <Trans>
@@ -286,7 +295,7 @@ export default function ExitPolicy() {
           {user && (
             // The delete screen's "Leave the village instead" lands here (`?focus=begin-departure`).
             <div id="begin-departure" className={`${CARD} scroll-mt-24`}>
-              <p className="font-display text-xl font-bold text-card-foreground mb-2"><Trans>Begin your own departure</Trans></p>
+              <h3 className="font-display text-xl font-bold text-card-foreground mb-2"><Trans>Begin your own departure</Trans></h3>
               <p className="text-xs text-muted-foreground mb-3">
                 <Trans>
                   This opens the process above. It does not close your account.
@@ -314,9 +323,6 @@ export default function ExitPolicy() {
               </div>
             </div>
           )}
-        </div>
-      </section>
-      </div>
-    </Layout>
+    </div>
   );
 }

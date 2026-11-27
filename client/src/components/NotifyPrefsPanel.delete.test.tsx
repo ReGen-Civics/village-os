@@ -72,7 +72,7 @@ describe("the delete screen names what deleting leaves behind", () => {
     expect(list.textContent).toContain("none of it can be recovered");
 
     const leave = within(list).getByRole("link", { name: "Leave the village instead" });
-    expect(leave.getAttribute("href")).toBe("/exit-policy?focus=begin-departure");
+    expect(leave.getAttribute("href")).toBe("/rights?focus=begin-departure#leaving-well");
     expect(list.textContent).toContain("Leaving keeps your account, your tokens and any cash owed to you");
     // Read once the panel opened, never before: the list is the one standing while they decide.
     expect(fetchMock.mock.calls.filter(([u]) => u === "/api/me/holdings")).toHaveLength(1);
