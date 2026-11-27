@@ -458,7 +458,7 @@ describe.skipIf(!configured)("applying, adopting and seating, on a real schema",
     // A retried save is refused and rings nobody again.
     expect((await h.call("POST", url, body)).status).toBe(409);
     expect(h.notices.filter((n: any) => n.type === "applicant_update").map((n: any) => n.dedupeKey)).toEqual([`sa:${a.body.id}:update:terms:1:u-ana`]);
-    expect(h.mails.map((m: any) => [m.idempotencyKey, m.to.email, m.subject])).toEqual([[`role-application:${a.body.id}:update:terms:1`, "ana@example.test", "The terms for your proposal changed"]]);
+    expect(h.mails.map((m: any) => [m.idempotencyKey, m.to.email, m.subject])).toEqual([[`role-application:${a.body.id}:update:terms:1`, "ana@example.test", "We've suggested some changes"]]);
     expect((await readApplication(pool, a.body.id))!.answers!.counterOffer!.revisions).toHaveLength(1);
     const page = await h.call("GET", `/api/governance/role-applications/${a.body.id}`);
     expect(page.body.application.offer.history).toHaveLength(1);
