@@ -42,7 +42,7 @@ describe.skipIf(!configured)("the word before an agent's proposal lapses", () =>
       "approval-lapse:p-soon:admin-1",
       "approval-lapse:p-soon:steward-1",
     ]);
-    expect(sent.every((n) => n.type === "approval_lapsing" && n.link === "/approvals")).toBe(true);
+    expect(sent.every((n) => n.type === "approval_lapsing" && n.link === "/governance/work#approvals")).toBe(true);
     expect(sent.find((n) => n.dedupeKey.includes("p-soon"))?.title).toBe('"Turn the reply window to ten days" lapses tomorrow if nobody decides it');
     // A seating's own words may name a person; its notice does not.
     expect(sent.filter((n) => n.dedupeKey.includes("p-seat")).every((n) => !n.title.includes("Zephyrine"))).toBe(true);

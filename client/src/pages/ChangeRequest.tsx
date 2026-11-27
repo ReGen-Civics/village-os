@@ -1,27 +1,38 @@
 /**
- * CHANGE REQUESTS: the list and one change request (Rye, 2026-11-06; spec
- * village-os-ops/internal/spec/change-requests/, US1, US3, R35 to R41).
+ * ONE CHANGE REQUEST, a kind of decision under Decisions (Rye, 2026-11-06; spec
+ * village-os-ops/internal/spec/change-requests/, US1, US3, R35 to R41; folded
+ * under Decisions by the lead, 27 Nov 2026).
  *
- *   /changes      the member's own change requests, and everyone's in review
- *   /changes/:id  one change request: its changes before and after, its review,
- *                 and what is still needed before it can go to the vote
+ *   /governance/decisions/changes/:id  its changes before and after, its review,
+ *                                      and what is still needed before the vote
  *
- * One lazy page for both routes, so the feature costs one chunk (VII.2).
+ * The list of change requests and the form that starts one are the Change
+ * requests section of Decisions (components/governance/ChangeRequestsSection),
+ * and the old addresses (/changes, /changes/:id) redirect there and here. The
+ * page draws inside the site's shell now, in the night world, with the
+ * Governance views above it, so a change request reads as one of the village's
+ * decisions and not as a separate tool.
+ *
  * Everything a member reads here that the SERVER decides comes from the server
  * in plain words: the checklist lines, the names ("Role (FirstName)", III.2),
- * the refusals. The page's own words go through Lingui (spec i18n US6.1), with
- * a context on every short one so a translator can tell them apart.
+ * the refusals. Every rule stays the server's: who may edit (the author), who is
+ * asked to review (the holders of the powers the changes touch), and when it
+ * may go to the vote. The page's own words go through Lingui (spec i18n US6.1),
+ * with a context on every short one so a translator can tell them apart.
  */
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Link, useRoute } from "wouter";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
-import { ArrowLeft, Check, Clock, GitPullRequest, MessageSquare } from "lucide-react";
-import { headers, refusal, type ChangeRequestSummary } from "@/components/governance/changeRequestClient";
+import { ArrowLeft, Check, Clock, MessageSquare } from "lucide-react";
+import Layout from "@/components/Layout";
+import { headers, refusal } from "@/components/governance/changeRequestClient";
+import GovernanceTabs from "@/components/governance/now/GovernanceTabs";
 import { authToken } from "@/lib/gameApi";
-import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, CHIP_SOFT, EYEBROW, FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
+import { CHANGE_REQUESTS_HREF } from "@shared/changeRequestAddress";
 
 type State = "gathering" | "in_review" | "voting" | "closed";
 
@@ -73,6 +84,7 @@ interface ChangeRequest {
 
 type I18n = ReturnType<typeof useLingui>["i18n"];
 
+const STEPS: readonly State[] = ["gathering", "in_review", "voting", "closed"];
 const STEP_NUMBER: Record<State, number> = { gathering: 1, in_review: 2, voting: 3, closed: 4 };
 
 // Words chosen outside a component are `msg` descriptors, rendered with
@@ -110,17 +122,17 @@ const noteWords = (i18n: I18n, kind: Note["kind"]) => i18n._(NOTE_WORDS[kind]);
 const outcomeWords = (i18n: I18n, outcome: Note["outcome"]) => (OUTCOME_WORDS[outcome] ? i18n._(OUTCOME_WORDS[outcome]!) : "");
 const checklistLabel = (i18n: I18n, key: string) => i18n._(CHECKLIST_LABEL[key] ?? CHECKLIST_LABEL.objections);
 
-const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-const moment = (iso: string) =>
-  new Date(iso).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+// The reader's own language for dates (the review plan: never a hard-coded en-GB).
+const day = (i18n: I18n, iso: string) => i18n.date(new Date(iso), { day: "numeric", month: "short" });
+const moment = (i18n: I18n, iso: string) => i18n.date(new Date(iso), { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-const card = "rounded-xl border border-stone-200 bg-white p-4";
-const primary =
-  "inline-flex min-h-[44px] items-center justify-center rounded-lg bg-teal-deep px-4 text-sm font-semibold text-white hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep focus-visible:ring-offset-2 disabled:opacity-50";
-const quiet =
-  "inline-flex min-h-[44px] items-center justify-center rounded-lg border border-stone-300 bg-white px-4 text-sm font-medium text-stone-800 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep";
-const field = "mt-1 block w-full min-h-[44px] rounded-lg border border-stone-300 bg-white px-3 text-base text-stone-900";
-const link = "min-h-[44px] text-sm font-medium text-teal-deep underline";
+/** The sheet's look, named for this page's acts (components/journey/look.ts). */
+const panel = `${CARD} space-y-3`;
+const primary = BTN_PRIMARY;
+const quiet = BTN_SECONDARY;
+const field = `${FIELD} mt-1 block min-h-11 text-base`;
+const link = "inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground";
+const heading = "flex items-center gap-2 font-display text-xl font-bold text-card-foreground";
 
 /** One message line that a screen reader hears: refusals as alerts, the rest as status. */
 function Say({ text, alert }: { text: string | null; alert?: boolean }) {
@@ -130,19 +142,63 @@ function Say({ text, alert }: { text: string | null; alert?: boolean }) {
   }, [text, alert]);
   if (!text) return null;
   return (
-    <p ref={ref} tabIndex={-1} role={alert ? "alert" : "status"} className={`mt-2 text-sm ${alert ? "text-red-800" : "text-teal-deep"}`}>
+    <p
+      ref={ref}
+      tabIndex={-1}
+      role={alert ? "alert" : "status"}
+      className={`rounded-lg px-4 py-3 text-sm font-medium ${alert ? "border border-destructive bg-destructive/10 text-destructive" : "border border-border bg-muted text-foreground"}`}
+    >
       {text}
     </p>
   );
 }
 
-/** Before and after, stacked, so long words fit at 390 px; named "<setting>, from X to Y" (R38). */
+/**
+ * The four steps a change request walks, as stepping stones (the journey kit's
+ * look, `.jw-stone`): a passed step is a gold ring, the step it stands on is
+ * filled gold. A picture of where it is, never a control.
+ */
+function StepStones({ state }: { state: State }) {
+  const { t, i18n } = useLingui();
+  const here = STEPS.indexOf(state);
+  const n = STEPS.length;
+  return (
+    <div className="jw-trail" data-testid="cr-steps">
+      <div
+        role="progressbar"
+        aria-label={t({ message: "Where this change request is", context: "change request steps, read aloud" })}
+        aria-valuemin={1}
+        aria-valuemax={n}
+        aria-valuenow={here + 1}
+        aria-valuetext={stepWords(i18n, state)}
+        className="jw-trail-path"
+      >
+        <span className="jw-trail-fill" style={{ transform: `scaleX(${here / (n - 1)})` }} />
+      </div>
+      <ol className="relative grid grid-cols-4">
+        {STEPS.map((s, i) => {
+          const at = i === here ? "here" : i < here ? "done" : "ahead";
+          return (
+            <li key={s} className="jw-stone flex flex-col items-center gap-1.5 text-center" data-state={at} aria-current={at === "here" ? "step" : undefined}>
+              <span className="jw-stone-face" aria-hidden="true">
+                {at === "done" ? <Check className="size-4" /> : i + 1}
+              </span>
+              <span className={`text-xs leading-tight sm:text-sm ${at === "ahead" ? "font-semibold text-muted-foreground" : "font-bold text-foreground"}`}>{stepWords(i18n, s)}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+/** Before and after, stacked, so long words fit at 375 px; named "<setting>, from X to Y" (R38). */
 function BeforeAfter({ c }: { c: Change }) {
   const { t } = useLingui();
   const shown = (v: string | null) => (v === null || v === "" ? t({ message: "not set", context: "a setting with no value" }) : v);
   if (c.withheld)
     return (
-      <p className="mt-1 text-sm text-stone-600">
+      <p className={`${HINT} mt-1`}>
         <Trans context="a setting whose value is hidden">Kept private</Trans>
       </p>
     );
@@ -150,15 +206,15 @@ function BeforeAfter({ c }: { c: Change }) {
   const after = shown(c.after);
   const label = c.label;
   return (
-    <div className="mt-1 text-sm" aria-label={t({ message: `${label}, from ${before} to ${after}`, context: "screen reader name of one change" })} role="group">
-      <p className="break-words text-stone-600">
-        <span aria-hidden="true" className="mr-1 text-xs uppercase tracking-wide text-stone-500">
+    <div className="mt-2 grid gap-2 text-sm sm:grid-cols-2" aria-label={t({ message: `${label}, from ${before} to ${after}`, context: "screen reader name of one change" })} role="group">
+      <p className={`${TILE} break-words py-2 text-muted-foreground`}>
+        <span aria-hidden="true" className="mr-1 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           <Trans context="the value of a setting today">Now</Trans>
         </span>
-        <del className="text-stone-600">{before}</del>
+        <del>{before}</del>
       </p>
-      <p className="break-words font-semibold text-teal-deep">
-        <span aria-hidden="true" className="mr-1 text-xs font-normal uppercase tracking-wide text-stone-500">
+      <p className={`${TILE} break-words border-notice/60 py-2 font-semibold text-foreground`}>
+        <span aria-hidden="true" className="mr-1 block text-xs font-semibold uppercase tracking-widest text-notice">
           <Trans context="the value of a setting once changed">After</Trans>
         </span>
         <ins className="no-underline">{after}</ins>
@@ -169,139 +225,13 @@ function BeforeAfter({ c }: { c: Change }) {
 
 function SignInLine() {
   return (
-    <p className="text-stone-700">
-      <Trans>Sign in to see what your village is weighing.</Trans>
-    </p>
-  );
-}
-
-function ListPage() {
-  const { t, i18n } = useLingui();
-  const [mine, setMine] = useState<ChangeRequestSummary[] | null>(null);
-  const [open, setOpen] = useState<ChangeRequestSummary[]>([]);
-  const [failed, setFailed] = useState(false);
-  const [title, setTitle] = useState("");
-  const [why, setWhy] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const signedIn = !!authToken();
-
-  const load = useCallback(() => {
-    setFailed(false);
-    fetch("/api/change-requests", { headers: headers() })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((b) => {
-        setMine(Array.isArray(b.mine) ? b.mine : []);
-        setOpen(Array.isArray(b.open) ? b.open : []);
-      })
-      .catch(() => setFailed(true));
-  }, []);
-  useEffect(() => {
-    if (signedIn) load();
-  }, [signedIn, load]);
-
-  const start = async () => {
-    setBusy(true);
-    setError(null);
-    const res = await fetch("/api/change-requests", { method: "POST", headers: headers(), body: JSON.stringify({ title, why }) }).catch(() => null);
-    setBusy(false);
-    if (!res) return setError(t`That did not go through. Try again in a moment.`);
-    if (!res.ok) return setError(await refusal(res, t`That change request could not be started.`));
-    const { id } = await res.json();
-    window.location.assign(`/changes/${id}`);
-  };
-
-  if (!signedIn) return <SignInLine />;
-
-  const row = (c: ChangeRequestSummary) => {
-    const step = stepWords(i18n, c.state);
-    const author = c.author;
-    const who = c.yours ? t({ message: "Yours", context: "a change request you started" }) : t({ message: `Started by ${author}`, context: "who started a change request" });
-    const when = day(c.updatedAt);
-    return (
-      <li key={c.id}>
-        <Link
-          href={`/changes/${c.id}`}
-          className="flex min-h-[44px] flex-col gap-0.5 rounded-lg px-3 py-2 hover:bg-stone-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep"
-        >
-          <span className="font-medium text-stone-900">{c.title}</span>
-          <span className="text-xs text-stone-600">
-            {step} · <Plural value={c.changes} one="# change" other="# changes" /> · {who} · {when}
-          </span>
-        </Link>
-      </li>
-    );
-  };
-
-  return (
-    <div className="space-y-6">
-      <section className={card} aria-labelledby="cr-mine">
-        <h2 id="cr-mine" className="font-display text-xl font-bold text-teal-deep">
-          <Trans context="heading on the change requests page">Your change requests</Trans>
-        </h2>
-        {failed ? (
-          <p className="mt-2 text-sm text-stone-700" role="alert">
-            <Trans>That did not load.</Trans>{" "}
-            <button type="button" onClick={load} className="min-h-[44px] font-semibold text-teal-deep underline">
-              <Trans context="retry a failed read">Try again</Trans>
-            </button>
-          </p>
-        ) : mine === null ? (
-          <p className="mt-2 text-sm text-stone-500" role="status">
-            <Trans context="a page loading">Loading…</Trans>
-          </p>
-        ) : mine.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-700">
-            <Trans>You have none yet. Gather several changes here and the village votes on them together.</Trans>
-          </p>
-        ) : (
-          <ul className="mt-2 divide-y divide-stone-100">{mine.map(row)}</ul>
-        )}
-      </section>
-
-      <section className={card} aria-labelledby="cr-start">
-        <h2 id="cr-start" className="font-display text-xl font-bold text-teal-deep">
-          <Trans context="heading on the change requests page">Start a change request</Trans>
-        </h2>
-        <p className="mt-1 text-sm text-stone-700">
-          <Trans>Give it a name and say why. Then add the changes, from here or from any setting with a Suggest button.</Trans>
-        </p>
-        <form
-          className="mt-3 space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void start();
-          }}
-        >
-          <label className="block text-sm font-medium text-stone-900">
-            <Trans context="the name of a change request">Name</Trans>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} className={field} />
-          </label>
-          <label className="block text-sm font-medium text-stone-900">
-            <Trans context="the reason for a change request">Why</Trans>
-            <VoiceArea value={why} onValue={setWhy}>
-            <textarea value={why} onChange={(e) => setWhy(e.target.value)} maxLength={4000} rows={3} className={`${field} py-2`} />
-            </VoiceArea>
-          </label>
-          <button type="submit" className={primary} disabled={busy || !title.trim() || !why.trim()}>
-            {busy ? t({ message: "Starting…", context: "starting a change request" }) : t({ message: "Start it", context: "start a change request" })}
-          </button>
-          <Say text={error} alert />
-        </form>
-      </section>
-
-      <section className={card} aria-labelledby="cr-open">
-        <h2 id="cr-open" className="font-display text-xl font-bold text-teal-deep">
-          <Trans context="heading on the change requests page">In review across the village</Trans>
-        </h2>
-        {open.length === 0 ? (
-          <p className="mt-2 text-sm text-stone-700">
-            <Trans>Nothing is being weighed right now.</Trans>
-          </p>
-        ) : (
-          <ul className="mt-2 divide-y divide-stone-100">{open.map(row)}</ul>
-        )}
-      </section>
+    <div className={panel}>
+      <p className="text-base text-foreground">
+        <Trans>Sign in to see what your village is weighing.</Trans>
+      </p>
+      <Link href="/login" className={primary}>
+        <Trans context="change request: sign in">Sign in</Trans>
+      </Link>
     </div>
   );
 }
@@ -314,7 +244,7 @@ function ChangeRow({ c, cr, act }: { c: Change; cr: ChangeRequest; act: Act }) {
   const canEdit = cr.yours && (cr.state === "gathering" || cr.state === "in_review") && !c.withheld && c.change;
   return (
     <li className="py-3">
-      <p className="font-medium text-stone-900">{c.label}</p>
+      <p className="font-semibold text-foreground">{c.label}</p>
       <BeforeAfter c={c} />
       {canEdit && !editing && (
         <div className="mt-1 flex flex-wrap gap-x-4">
@@ -339,7 +269,7 @@ function ChangeRow({ c, cr, act }: { c: Change; cr: ChangeRequest; act: Act }) {
             if (await act(`/changes/${c.position}`, "PUT", { change: { ...c.change, to }, revision: cr.revision })) setEditing(false);
           }}
         >
-          <label className="block grow text-sm font-medium text-stone-900">
+          <label className={`${LABEL} block grow`}>
             <Trans context="the new value of a setting">New value</Trans>
             <input value={to} onChange={(e) => setTo(e.target.value)} className={field} />
           </label>
@@ -363,20 +293,20 @@ function NoteItem({ n, cr, notes, act }: { n: Note; cr: ChangeRequest; notes: No
   const waiting = n.outcome === "open" && cr.state === "in_review" && cr.yours;
   const about = n.position !== null ? cr.changes[n.position]?.label : null;
   const outcome = outcomeWords(i18n, n.outcome);
-  const when = day(n.at);
+  const when = day(i18n, n.at);
   const proposedTo = String((n.proposed?.change as any)?.to ?? "");
   return (
     <li className="py-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-stone-600">
-        {noteWords(i18n, n.kind)}
-        {about ? ` · ${about}` : ""}
-        {outcome ? ` · ${outcome}` : ""}
+      <p className="flex flex-wrap items-center gap-2">
+        <span className={CHIP_SOFT}>{noteWords(i18n, n.kind)}</span>
+        {about ? <span className="text-xs font-semibold text-muted-foreground">{about}</span> : null}
+        {outcome ? <span className={`${CHIP_SOFT} border-notice/60 text-notice`}>{outcome}</span> : null}
       </p>
-      <p className="text-sm text-stone-600">
+      <p className={`${HINT} mt-1`}>
         {n.by} · {when}
       </p>
       {n.kind === "edit" && n.proposed && (
-        <p className="mt-1 text-sm text-stone-800">
+        <p className="mt-1 text-sm text-foreground">
           {n.proposed.op === "remove" ? (
             <Trans>Take this change out.</Trans>
           ) : n.proposed.op === "add" ? (
@@ -386,20 +316,20 @@ function NoteItem({ n, cr, notes, act }: { n: Note; cr: ChangeRequest; notes: No
           )}
         </p>
       )}
-      {n.body && <p className="mt-1 whitespace-pre-line break-words text-stone-900">{n.body}</p>}
+      {n.body && <p className="mt-1 whitespace-pre-line break-words text-foreground">{n.body}</p>}
       {replies.map((r) => {
         const by = r.by;
         return (
-          <div key={r.id} className="mt-2 border-l-2 border-teal-deep/40 pl-3">
-            <p className="text-sm text-stone-600">
+          <div key={r.id} className="mt-2 border-l-2 border-notice/50 pl-3">
+            <p className={HINT}>
               <Trans context="who answered a note">{by} answered</Trans>
             </p>
-            <p className="whitespace-pre-line break-words text-stone-900">{r.body}</p>
+            <p className="whitespace-pre-line break-words text-foreground">{r.body}</p>
           </div>
         );
       })}
       {waiting && n.kind === "edit" && !answering && (
-        <div className="mt-1 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           <button type="button" className={primary} onClick={() => void act(`/suggestions/${n.id}/take-in`, "POST", { revision: cr.revision })}>
             <Trans context="accept a suggested edit">Take it in</Trans>
           </button>
@@ -425,13 +355,13 @@ function NoteItem({ n, cr, notes, act }: { n: Note; cr: ChangeRequest; notes: No
             if (ok) setAnswering(false);
           }}
         >
-          <label className="block text-sm font-medium text-stone-900">
+          <label className={`${LABEL} block`}>
             {n.kind === "edit" ? t`Why not, in one line` : t({ message: "Your answer", context: "label of an answer box" })}
             {n.kind === "edit" ? (
               <input value={text} onChange={(e) => setText(e.target.value)} maxLength={280} className={field} />
             ) : (
               <VoiceArea value={text} onValue={setText}>
-              <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} rows={3} className={`${field} py-2`} />
+                <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} rows={3} className={`${field} py-2`} />
               </VoiceArea>
             )}
           </label>
@@ -484,11 +414,11 @@ function ReviewForm({ cr, act }: { cr: ChangeRequest; act: Act }) {
   };
 
   return (
-    <div className="mt-3">
-      <p className="text-sm text-stone-700">
+    <div className="space-y-3 border-t border-border pt-4">
+      <p className={HINT}>
         <Trans>Everyone in the village can read what you write here.</Trans>
       </p>
-      <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t`Respond to this change request`}>
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t`Respond to this change request`}>
         {posts.map((p) => (
           <button
             key={p.kind}
@@ -503,17 +433,17 @@ function ReviewForm({ cr, act }: { cr: ChangeRequest; act: Act }) {
       </div>
       {chosen && kind !== "consent" && (
         <form
-          className="mt-3 space-y-3"
+          className={`${TILE} space-y-3`}
           aria-describedby={helpId}
           onSubmit={(e) => {
             e.preventDefault();
             void send();
           }}
         >
-          <p id={helpId} className="text-sm text-stone-700">
+          <p id={helpId} className={HINT}>
             {chosen.help}
           </p>
-          <label className="block text-sm font-medium text-stone-900">
+          <label className={`${LABEL} block`}>
             <Trans context="pick which change a note is about">Which change?</Trans>
             <select value={position} onChange={(e) => setPosition(e.target.value)} className={field} required={kind === "edit"}>
               {kind !== "edit" && <option value="">{t({ message: "The whole request", context: "a note about every change" })}</option>}
@@ -526,19 +456,19 @@ function ReviewForm({ cr, act }: { cr: ChangeRequest; act: Act }) {
             </select>
           </label>
           {kind === "edit" && (
-            <label className="block text-sm font-medium text-stone-900">
+            <label className={`${LABEL} block`}>
               <Trans context="the value a member suggests">Your value</Trans>
               <input value={to} onChange={(e) => setTo(e.target.value)} className={field} />
             </label>
           )}
-          <label className="block text-sm font-medium text-stone-900">
+          <label className={`${LABEL} block`}>
             {kind === "objection"
               ? t({ message: "The harm you see", context: "label of an objection box" })
               : kind === "edit"
                 ? t({ message: "Why (optional)", context: "label of a suggested edit's reason" })
                 : t({ message: "Your words", context: "label of a note box" })}
             <VoiceArea value={body} onValue={setBody}>
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} maxLength={2000} rows={3} className={`${field} py-2`} />
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} maxLength={2000} rows={3} className={`${field} py-2`} />
             </VoiceArea>
           </label>
           <div className="flex flex-wrap gap-2">
@@ -601,7 +531,7 @@ function DetailPage({ id }: { id: string }) {
       return true;
     }
     if (next?.deleted) {
-      window.location.assign("/changes");
+      window.location.assign(CHANGE_REQUESTS_HREF);
       return true;
     }
     setCr(next as ChangeRequest);
@@ -612,23 +542,23 @@ function DetailPage({ id }: { id: string }) {
   if (!authToken()) return <SignInLine />;
   if (failed !== null)
     return (
-      <p className="text-stone-700" role="alert">
-        {failed || t`That did not load.`}{" "}
-        <button type="button" onClick={load} className="min-h-[44px] font-semibold text-teal-deep underline">
+      <div className={panel} role="alert">
+        <p className="text-base text-foreground">{failed || t`That did not load.`}</p>
+        <button type="button" onClick={load} className={quiet}>
           <Trans context="retry a failed read">Try again</Trans>
         </button>
-      </p>
+      </div>
     );
   if (!cr)
     return (
-      <p className="text-stone-500" role="status">
+      <p className={HINT} role="status">
         <Trans context="a page loading">Loading…</Trans>
       </p>
     );
 
   const n = STEP_NUMBER[cr.state];
   const words = stepWords(i18n, cr.state);
-  const ends = cr.review ? day(cr.review.endsAt) : "";
+  const ends = cr.review ? day(i18n, cr.review.endsAt) : "";
   const author = cr.author;
   const notes = cr.review?.notes ?? [];
   const top = notes.filter((x) => x.kind !== "answer");
@@ -636,9 +566,9 @@ function DetailPage({ id }: { id: string }) {
   const cap = cr.cap;
 
   return (
-    <div className="space-y-4">
-      <header>
-        <p className="text-sm font-medium text-stone-700">
+    <div className="space-y-6">
+      <header className="space-y-3">
+        <p className={EYEBROW}>
           {cr.state === "in_review" && cr.review ? (
             <Trans>
               Step {n} of 4: {words}. Review ends {ends}
@@ -649,108 +579,31 @@ function DetailPage({ id }: { id: string }) {
             </Trans>
           )}
         </p>
-        <h1 className="mt-1 break-words font-display text-2xl font-bold text-teal-deep sm:text-3xl">{cr.title}</h1>
-        <p className="mt-1 text-sm text-stone-600">{cr.yours ? <Trans context="the reader started this change request">You started this</Trans> : <Trans context="who started a change request">Started by {author}</Trans>}</p>
+        <h1 className="break-words font-display text-3xl leading-tight text-foreground sm:text-4xl">{cr.title}</h1>
+        <p className={HINT}>{cr.yours ? <Trans context="the reader started this change request">You started this</Trans> : <Trans context="who started a change request">Started by {author}</Trans>}</p>
+        <StepStones state={cr.state} />
       </header>
 
-      <section className={card} aria-labelledby="cr-why">
-        <h2 id="cr-why" className="font-semibold text-stone-900">
-          <Trans context="the reason for a change request">Why</Trans>
-        </h2>
-        {editingWords ? (
-          <form
-            className="mt-2 space-y-3"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (await act("", "PATCH", { title, why, revision: cr.revision })) {
-                setEditingWords(false);
-                load();
-              }
-            }}
-          >
-            <label className="block text-sm font-medium text-stone-900">
-              <Trans context="the name of a change request">Name</Trans>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} className={field} />
-            </label>
-            <label className="block text-sm font-medium text-stone-900">
-              <Trans context="the reason for a change request">Why</Trans>
-              <VoiceArea value={why} onValue={setWhy}>
-              <textarea value={why} onChange={(e) => setWhy(e.target.value)} maxLength={4000} rows={4} className={`${field} py-2`} />
-              </VoiceArea>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" className={primary}>
-                <Trans context="save a change">Save</Trans>
-              </button>
-              <button type="button" className={quiet} onClick={() => setEditingWords(false)}>
-                <Trans context="close a form without saving">Not now</Trans>
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <p className="mt-1 whitespace-pre-line break-words text-stone-900">{cr.why}</p>
-            {cr.yours && (cr.state === "gathering" || cr.state === "in_review") && (
-              <button
-                type="button"
-                className={`mt-1 ${link}`}
-                onClick={() => {
-                  setTitle(cr.title);
-                  setWhy(cr.why);
-                  setEditingWords(true);
-                }}
-              >
-                <Trans>Edit the name or the why</Trans>
-              </button>
-            )}
-          </>
-        )}
-      </section>
-
-      <section className={card} aria-labelledby="cr-changes">
-        <h2 id="cr-changes" className="font-semibold text-stone-900">
-          <Trans context="heading of the list of changes">The changes</Trans>{" "}
-          <span className="font-normal text-stone-600">
-            <Trans>
-              ({count} of at most {cap})
-            </Trans>
-          </span>
-        </h2>
-        {count === 0 ? (
-          <p className="mt-1 text-sm text-stone-700">
-            <Trans>
-              No changes yet. Open any setting with a Suggest button, such as those in{" "}
-              <Link href="/game-mechanics" className="font-medium text-teal-deep underline">
-                Game Mechanics
-              </Link>
-              , and add it here.
-            </Trans>
-          </p>
-        ) : (
-          <ul className="divide-y divide-stone-100">
-            {cr.changes.map((c) => (
-              <ChangeRow key={`${c.position}:${c.key}`} c={c} cr={cr} act={act} />
-            ))}
-          </ul>
-        )}
-        {cr.yours && cr.state === "in_review" && (
-          <p className="mt-2 text-sm text-stone-700">
-            <Trans>Editing a change starts the review again.</Trans>
-          </p>
-        )}
-      </section>
+      <Say text={error} alert />
+      <Say text={status} />
 
       {cr.yours && cr.state === "gathering" && (
-        <section className={card} aria-labelledby="cr-next">
-          <h2 id="cr-next" className="font-semibold text-stone-900">
+        <section className={`${CARD_FEATURED} space-y-3`} aria-labelledby="cr-next">
+          <p className={EYEBROW}>
+            <Trans context="change request: the author's next step, eyebrow">Your next step</Trans>
+          </p>
+          <h2 id="cr-next" className={heading}>
             <Trans>Ready for the village to review?</Trans>
           </h2>
-          <p className="mt-1 text-sm text-stone-700">
-            <Trans>
-              The village can ask, raise concerns and objections, and suggest edits. The people whose roles look after these settings are asked to look.
-            </Trans>
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <ul className={`${HINT} list-disc space-y-1 pl-5`}>
+            <li>
+              <Trans context="change request: what review means">The village can ask, raise concerns and objections, and suggest edits.</Trans>
+            </li>
+            <li>
+              <Trans context="change request: what review means">The people whose roles look after these settings are asked to look.</Trans>
+            </li>
+          </ul>
+          <div className="flex flex-wrap gap-2">
             <button type="button" className={primary} disabled={count === 0} onClick={() => void act("/open-review", "POST", { revision: cr.revision })}>
               <Trans context="open a change request for review">Open for review</Trans>
             </button>
@@ -767,47 +620,145 @@ function DetailPage({ id }: { id: string }) {
         </section>
       )}
 
+      <section className={panel} aria-labelledby="cr-why">
+        <p className={EYEBROW}>
+          <Trans context="change request: the reason, eyebrow">The reason</Trans>
+        </p>
+        <h2 id="cr-why" className={heading}>
+          <Trans context="the reason for a change request">Why</Trans>
+        </h2>
+        {editingWords ? (
+          <form
+            className="space-y-3"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (await act("", "PATCH", { title, why, revision: cr.revision })) {
+                setEditingWords(false);
+                load();
+              }
+            }}
+          >
+            <label className={`${LABEL} block`}>
+              <Trans context="the name of a change request">Name</Trans>
+              <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} className={field} />
+            </label>
+            <label className={`${LABEL} block`}>
+              <Trans context="the reason for a change request">Why</Trans>
+              <VoiceArea value={why} onValue={setWhy}>
+                <textarea value={why} onChange={(e) => setWhy(e.target.value)} maxLength={4000} rows={4} className={`${field} py-2`} />
+              </VoiceArea>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className={primary}>
+                <Trans context="save a change">Save</Trans>
+              </button>
+              <button type="button" className={quiet} onClick={() => setEditingWords(false)}>
+                <Trans context="close a form without saving">Not now</Trans>
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <p className="whitespace-pre-line break-words text-base leading-relaxed text-foreground">{cr.why}</p>
+            {cr.yours && (cr.state === "gathering" || cr.state === "in_review") && (
+              <button
+                type="button"
+                className={link}
+                onClick={() => {
+                  setTitle(cr.title);
+                  setWhy(cr.why);
+                  setEditingWords(true);
+                }}
+              >
+                <Trans>Edit the name or the why</Trans>
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
+      <section className={panel} aria-labelledby="cr-changes">
+        <p className={EYEBROW}>
+          <Trans context="change request: the changes, eyebrow">What changes</Trans>
+        </p>
+        <h2 id="cr-changes" className={heading}>
+          <Trans context="heading of the list of changes">The changes</Trans>{" "}
+          <span className="text-sm font-semibold text-muted-foreground">
+            <Trans>
+              ({count} of at most {cap})
+            </Trans>
+          </span>
+        </h2>
+        {count === 0 ? (
+          <p className={HINT}>
+            <Trans>
+              No changes yet. Open any setting with a Suggest button, such as those in{" "}
+              <Link href="/game-mechanics" className="font-medium text-notice underline underline-offset-2">
+                Game Mechanics
+              </Link>
+              , and add it here.
+            </Trans>
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {cr.changes.map((c) => (
+              <ChangeRow key={`${c.position}:${c.key}`} c={c} cr={cr} act={act} />
+            ))}
+          </ul>
+        )}
+        {cr.yours && cr.state === "in_review" && (
+          <p className={HINT}>
+            <Trans>Editing a change starts the review again.</Trans>
+          </p>
+        )}
+      </section>
+
       {cr.review && (
-        <section className={card} aria-labelledby="cr-ready">
-          <h2 id="cr-ready" className="font-semibold text-stone-900">
+        <section className={panel} aria-labelledby="cr-ready">
+          <p className={EYEBROW}>
+            <Trans context="change request: the checklist, eyebrow">What is still needed</Trans>
+          </p>
+          <h2 id="cr-ready" className={heading}>
             <Trans context="heading of the checklist">Before the vote</Trans>
           </h2>
-          <ul className="mt-2 space-y-1">
+          <ul className="space-y-2">
             {cr.review.checklist.map((l) => {
-              const until = moment(cr.review!.endsAt);
+              const until = moment(i18n, cr.review!.endsAt);
               return (
-                <li key={l.key} className="flex items-start gap-2 text-sm">
+                <li key={l.key} className={`${TILE} flex items-start gap-3 py-3 text-sm`}>
                   {l.done ? (
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-open" aria-hidden="true" />
                   ) : (
-                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" aria-hidden="true" />
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-notice" aria-hidden="true" />
                   )}
                   <span>
-                    <span className="font-medium text-stone-900">{checklistLabel(i18n, l.key)}:</span>{" "}
-                    <span className="text-stone-700">{l.key === "review_time" && !l.done ? t({ message: `Waits until ${until}`, context: "when the review time ends" }) : l.words}</span>
+                    <span className="font-semibold text-foreground">{checklistLabel(i18n, l.key)}:</span>{" "}
+                    <span className="text-muted-foreground">{l.key === "review_time" && !l.done ? t({ message: `Waits until ${until}`, context: "when the review time ends" }) : l.words}</span>
                   </span>
                 </li>
               );
             })}
           </ul>
-          <p className="mt-2 text-sm text-stone-700">
+          <p className={HINT}>
             <Plural value={cr.review.consents} one="# person can live with this version." other="# people can live with this version." />
           </p>
         </section>
       )}
 
       {cr.review && (
-        <section className={card} aria-labelledby="cr-review">
-          <h2 id="cr-review" className="flex items-center gap-2 font-semibold text-stone-900">
-            <MessageSquare className="h-4 w-4 text-stone-500" aria-hidden="true" />{" "}
-            <Trans context="heading of the review feed">The review</Trans>
+        <section className={panel} aria-labelledby="cr-review">
+          <p className={EYEBROW}>
+            <Trans context="change request: the review, eyebrow">What the village said</Trans>
+          </p>
+          <h2 id="cr-review" className={heading}>
+            <MessageSquare className="h-5 w-5 text-notice" aria-hidden="true" /> <Trans context="heading of the review feed">The review</Trans>
           </h2>
           {top.length === 0 ? (
-            <p className="mt-1 text-sm text-stone-700">
+            <p className={HINT}>
               <Trans>Nobody has written yet.</Trans>
             </p>
           ) : (
-            <ul className="divide-y divide-stone-100">
+            <ul className="divide-y divide-border">
               {top.map((x) => (
                 <NoteItem key={x.id} n={x} cr={cr} notes={notes} act={act} />
               ))}
@@ -816,37 +767,24 @@ function DetailPage({ id }: { id: string }) {
           {cr.state === "in_review" && <ReviewForm cr={cr} act={act} />}
         </section>
       )}
-
-      <Say text={error} alert />
-      <Say text={status} />
     </div>
   );
 }
 
-export default function ChangeRequests() {
-  const [, params] = useRoute("/changes/:id");
-  const id = params?.id ?? null;
+export default function ChangeRequestPage() {
+  const [, params] = useRoute("/governance/decisions/changes/:id");
+  const id = params?.id ?? "";
   return (
-    <main className="min-h-screen bg-stone-50 px-4 pb-28 pt-3 sm:px-6">
-      <div className="mx-auto max-w-3xl">
-        {/* The language selector (spec i18n US2): this page renders without the shell. */}
-        <PageLanguageBar className="mb-3" />
-        {id ? (
-          <Link href="/changes" className="mb-3 inline-flex min-h-[44px] items-center gap-1 text-sm font-medium text-teal-deep hover:underline">
+    <Layout>
+      <div className={WORLD}>
+        <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 pb-28 sm:py-12">
+          <GovernanceTabs signedIn={!!authToken()} />
+          <Link href={CHANGE_REQUESTS_HREF} className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-notice hover:underline">
             <ArrowLeft className="h-4 w-4" aria-hidden="true" /> <Trans context="link back to the list">All change requests</Trans>
           </Link>
-        ) : (
-          <div className="mb-4">
-            <h1 className="flex items-center gap-2 font-display text-3xl font-bold text-teal-deep">
-              <GitPullRequest className="h-7 w-7" aria-hidden="true" /> <Trans context="page heading">Change requests</Trans>
-            </h1>
-            <p className="mt-1 text-stone-700">
-              <Trans>Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote.</Trans>
-            </p>
-          </div>
-        )}
-        {id ? <DetailPage id={id} /> : <ListPage />}
+          <DetailPage id={id} />
+        </div>
       </div>
-    </main>
+    </Layout>
   );
 }

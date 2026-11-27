@@ -36,7 +36,7 @@ describe("the wait while a page arrives", () => {
     });
   }
 
-  for (const path of ["/admin", "/admin/anything", "/oauth/authorize", "/changes/12", "/reset"]) {
+  for (const path of ["/admin", "/admin/anything", "/oauth/authorize", "/reset"]) {
     it(`draws no shell on ${path}, a page that has none of its own`, () => {
       at(path);
       expect(screen.queryByTestId("shell")).toBeNull();

@@ -141,12 +141,19 @@ function seraHeadCount(read: SeraRead): number {
 }
 
 /** R37: the summary line at the top of /review, with a jump link to each section that waits. */
-export function SeraSummaryLine({ read, witness }: { read: SeraRead; witness: number }) {
+export function SeraSummaryLine({ read, witness, approvals = 0 }: { read: SeraRead; witness: number; approvals?: number }) {
   const sera = seraHeadCount(read);
-  if (sera === 0 && witness === 0) return null;
+  if (sera === 0 && witness === 0 && approvals === 0) return null;
   const agent = read.phase === "listed" ? read.list.agent : "";
   const parts: ReactNode[] = [];
   const link = "text-notice underline hover:text-foreground";
+  // The one-tap approvals lead: each lapses seven days after it was filed (Your work's Approvals section).
+  if (approvals > 0)
+    parts.push(
+      <a key="approvals" href="#approvals" className={link}>
+        {approvals === 1 ? <Trans context="your work: summary line">{approvals} approval</Trans> : <Trans context="your work: summary line">{approvals} approvals</Trans>}
+      </a>,
+    );
   if (sera > 0)
     parts.push(
       <a key="sera" href="#sera-changes" className={link}>

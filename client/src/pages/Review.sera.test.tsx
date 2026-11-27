@@ -101,7 +101,10 @@ function serve(r: { queue: Answer; claims?: Answer; count?: Answer; list?: Answe
                   ? (r.powers ?? [404, {}])
                   : path === "/api/review/queue"
                     ? r.queue
-                    : [404, {}];
+                    : // The approval inbox (Your work's Approvals section) refuses a member who holds none of its keys, as the route does.
+                      path === "/api/approval-inbox"
+                      ? [401, { error: "auth_required" }]
+                      : [404, {}];
       return { ok: status >= 200 && status < 300, status, json: async () => body };
     }),
   );

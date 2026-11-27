@@ -31,7 +31,7 @@ import { recordEvent } from "../lib/events";
 import { listDrafts } from "../lib/orgDrafts";
 import { fileListing, fileMapPublish, filePageCopy, fileSetting, runApproval, runRevert, type Filing, type FilingDeps, type RouteRunner } from "../lib/approvalInbox";
 import { addProposal, decideProposal, expireOld, listInboxDecided, listInboxWaiting, proposalById, type StoredProposal } from "../repos/agentProposals";
-import { EXPIRES_AFTER_MS, INBOX_WORDS, expiresAt, isExpired, type InboxBody, type InboxCall } from "../../shared/approvalInbox";
+import { APPROVAL_INBOX_READERS, EXPIRES_AFTER_MS, INBOX_WORDS, expiresAt, isExpired, type InboxBody, type InboxCall } from "../../shared/approvalInbox";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -46,7 +46,7 @@ type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "
 
 /** The powers whose holders see the inbox besides an admin. The routes behind each card still decide who may approve. */
 /** The powers that open the inbox, beside an admin. Exported for the lapse notice, which tells exactly these people. */
-export const READERS = ["org.decide", "org.seat", "story.tell", "map.publish", "intake.moderate"] as const;
+export const READERS = APPROVAL_INBOX_READERS;
 
 const firstName = (name: unknown) => String(name ?? "").trim().split(/\s+/)[0] || "Someone";
 const DRAFT_PREFIX = "draft:";

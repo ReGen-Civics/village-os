@@ -100,6 +100,18 @@ const ALLOWLIST = {
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
+  // The folds into Governance (the lead, 27 Nov 2026): the approval inbox is a section of Your work, and change
+  // requests are a kind of decision under Decisions. Each old address redirects to its new place with an anchor, for
+  // notices and links already sent; nothing in the app links to them any more, on purpose.
+  "/approvals": "a redirect to /governance/work#approvals, the approval inbox's old address, kept for notices already sent",
+  "/changes": "a redirect to /governance/decisions#changes, the change requests list's old address, kept for links already sent",
+  "/changes/:id": "a redirect to one change request under Decisions, kept for notices already sent",
+  "/governance/decisions/changes": "a redirect to /governance/decisions#changes, for the address people guess at",
+  // One change request's page. Every door to it is built by `changeRequestHref(id)` in shared/changeRequestAddress.ts,
+  // because the address carries the id: each row of the Change requests section of Decisions, the Now view's and Your
+  // work's change request rows, the Suggest control's "added to" link, and the review notices. A literal-string scan
+  // cannot see a built address, so it counts none of them.
+  "/governance/decisions/changes/:id": "one change request's page, linked by changeRequestHref from Decisions, Now, Your work, Suggest and its notices",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

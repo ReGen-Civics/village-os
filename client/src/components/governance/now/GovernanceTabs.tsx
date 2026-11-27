@@ -10,7 +10,8 @@ export default function GovernanceTabs({ signedIn }: { signedIn: boolean }) {
   const [here] = useLocation();
   const { t } = useLingui();
   const tab = (href: string, label: React.ReactNode) => {
-    const on = here === href;
+    // A view's own pages keep its tab lit (a change request or a draft under Decisions); Now is /governance alone.
+    const on = here === href || (href !== "/governance" && here.startsWith(`${href}/`));
     return (
       <Link
         href={href}

@@ -227,7 +227,7 @@ export const CONTROL_ENTRIES: readonly AdminSearchEntry[] = [
 export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
   { id: "page.modules", kind: "outside", path: "/modules", title: "Module library", help: "The parts of the village, and which are on.", synonyms: ["modules", "features", "turn on"] },
   { id: "page.review", kind: "outside", path: "/review", title: "Review queue", help: "Changes waiting for a steward to look at them.", synonyms: ["review", "queue", "structure review"] },
-  { id: "page.approvals", kind: "outside", path: "/approvals", title: "Approvals", help: "Things waiting for your yes.", synonyms: ["approve", "approval inbox"] },
+  { id: "page.approvals", kind: "outside", path: "/governance/work#approvals", title: "Approvals", help: "Things waiting for your yes, in Your work.", synonyms: ["approve", "approval inbox"] },
   { id: "page.proposals", kind: "outside", path: "/admin/proposals", title: "What your agent proposed", help: "Changes an agent proposed, waiting for a person to accept.", synonyms: ["agent proposals", "proposed changes", "accept"] },
   { id: "page.mint", kind: "outside", path: "/admin/mint", title: "Mint desk", help: "Issue tokens, with every guard the mint has.", synonyms: ["mint", "issue tokens"], capability: "token.mint" },
   { id: "page.treasury", kind: "outside", path: "/treasury", title: "Treasury", help: "The treasurer's desk: End of Moon review and payouts.", synonyms: ["treasurer", "end of moon", "moon review", "invoices"] },
@@ -236,7 +236,7 @@ export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
   { id: "page.powers", kind: "outside", path: "/powers", title: "Powers", help: "Every power, and who holds it.", synonyms: ["powers", "capabilities", "who can"] },
   { id: "page.role-measures", kind: "outside", path: "/role-measures", title: "Role measures", help: "How each role's work is measured.", synonyms: ["measures", "role measures"] },
   { id: "page.decisions", kind: "outside", path: "/decisions", title: "Decisions", help: "Votes and decisions, open and closed.", synonyms: ["votes", "ballots", "decide"] },
-  { id: "page.changes", kind: "outside", path: "/changes", title: "Change requests", help: "Requests to change how the village works.", synonyms: ["change request"] },
+  { id: "page.changes", kind: "outside", path: "/governance/decisions#changes", title: "Change requests", help: "Requests to change how the village works, in Decisions.", synonyms: ["change request"] },
   { id: "page.launch", kind: "outside", path: "/journey-to-launch", title: "Launch plan", help: "Everything still to do before the village launches.", synonyms: ["launch", "go live", "checklist", "journey to launch"] },
   { id: "page.setup-game", kind: "outside", path: "/setup-game", title: "Setup game", help: "The same setup, as a garden to plant.", synonyms: ["setup game", "garden"] },
   { id: "page.network", kind: "outside", path: "/network", title: "Network", help: "Other villages this one is connected to.", synonyms: ["network", "other villages"] },
