@@ -149,6 +149,11 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     const link = screen.getByRole("link", { name: /Events/ });
     expect(link.getAttribute("aria-current")).toBe("true");
     expect(link.className).toContain("border-notice");
+    // The hooks the Sea chart's look draws on (client/src/seaChart.css).
+    expect(button.hasAttribute("data-lit")).toBe(true);
+    expect(button.querySelector("[data-lit-dot]")).toBeTruthy();
+    expect(link.hasAttribute("data-lit")).toBe(true);
+    expect(button.closest('[data-wayfinding="menu"]')).toBeTruthy();
   });
 
   it("opens with every group closed and nothing marked on a page in no entry", async () => {
@@ -156,5 +161,25 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     const button = screen.getByRole("button", { name: "Community" });
     expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(document.querySelector("[aria-current]")).toBeNull();
+  });
+});
+
+describe("a top-level entry lit in More (the live check, 27 Nov 2026)", () => {
+  it("stands its edge on the text column, with no pull to the left", async () => {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    const LIBRARY: NavLink = { href: "/modules", label: "Module Library" };
+    const { hook } = memoryLocation({ path: "/modules/feed" });
+    render(
+      <Router hook={hook}>
+        <MoreSheet entries={[LIBRARY, COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} lit={{ group: null, href: "/modules", exact: false, item: LIBRARY }} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    const link = screen.getByRole("link", { name: /Module Library/ });
+    expect(link.getAttribute("aria-current")).toBe("true");
+    expect(link.className).toContain("border-l-2");
+    expect(link.className).not.toContain("-ml-3");
   });
 });

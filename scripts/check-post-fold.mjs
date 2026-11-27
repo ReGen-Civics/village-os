@@ -95,6 +95,12 @@ export function plan({ fold, tests }) {
   }
   steps.push(["catalogs", process.execPath, ["scripts/check-i18n-catalogs.mjs"], { GENERATED_DOCS_MODE: "strict" }]);
   if (tests.length) {
+    // ALLOW_STALE_DIST: vitest's global setup refuses a run whose dist is older than the
+    // source (server/db/distFreshness.ts), and in ci.yml's verify the fold rewrites
+    // client/src/locales AFTER the build, so every folded tree reads as stale (the
+    // coordinator hit it composing 1.3.85). None of these tests reads dist: they read the
+    // catalogs in client/src/locales, which is the folded tree under test. Held by
+    // check-post-fold.test.mjs, which also holds that no discovered test names dist.
     // CI: "" because these files read catalogs and need no database, and the docs bot's job
     // (generated-docs.yml) has none. vitest's teardown (server/db/provisioningReport.ts) holds
     // any run with CI set and no TEST_DATABASE_URL to be a hollow run and fails it, filtered
@@ -102,7 +108,7 @@ export function plan({ fold, tests }) {
     // 1.3.85 (run 45909752640, 26 Nov 2026). Clearing CI here takes the demand off this one
     // step: REQUIRE_TEST_DB is left alone, every ci.yml shard keeps CI, and ci.yml's verify
     // runs this step with its database anyway. Held by check-post-fold.test.mjs.
-    steps.push(["locale-tests", process.execPath, [path.join("node_modules", "vitest", "vitest.mjs"), "run", ...tests], { CI: "" }]);
+    steps.push(["locale-tests", process.execPath, [path.join("node_modules", "vitest", "vitest.mjs"), "run", ...tests], { ALLOW_STALE_DIST: "1", CI: "" }]);
   }
   return steps;
 }
@@ -112,6 +118,23 @@ export function plan({ fold, tests }) {
  * failed fold or extract stops the rest: checks on a half-folded tree say
  * nothing about main.
  */
+/**
+ * Fragments still waiting in es.d mean this tree has not been folded: the fold deletes
+ * every one. Checking such a tree without --fold reports every new string as "en.po is
+ * stale" (175 errors on the 1.3.85 composition), which reads like a real failure.
+ */
+export function unfoldedFragments(root = ROOT) {
+  const dir = path.join(root, LOCALES, "es.d");
+  try {
+    return fs.readdirSync(dir).filter((f) => f.endsWith(".po"));
+  } catch {
+    return [];
+  }
+}
+
+export const UNFOLDED_HINT =
+  "This tree has not been through the docs bot's fold (no pull request's tree has). Run with --fold, which folds and extracts in place first: node scripts/check-post-fold.mjs --fold";
+
 export function runSteps(steps, run) {
   const failed = [];
   for (const [name, cmd, args, env] of steps) {
@@ -155,6 +178,13 @@ export function main(argv) {
     }
     return 0;
   }
+  if (!fold) {
+    const waiting = unfoldedFragments();
+    if (waiting.length) {
+      console.error(`::error::${waiting.length} fragment(s) still wait in ${LOCALES}/es.d (${waiting.slice(0, 3).join(", ")}${waiting.length > 3 ? ", ..." : ""}). ${UNFOLDED_HINT}`);
+      return 2;
+    }
+  }
   if (fold && !localesClean()) {
     console.error(`::error::${LOCALES} has uncommitted changes, and --fold edits it in place. Commit or stash them, or run without --fold.`);
     return 2;
@@ -171,6 +201,8 @@ export function main(argv) {
     }
   }
   if (failed.length) console.error(`::error::${summary}`);
+  // A stale en.po with no fragment waiting is still what an unfolded tree looks like.
+  if (!fold && failed.includes("catalogs")) console.error(`If you have not folded this tree: ${UNFOLDED_HINT}`);
   else console.log(summary);
   if (fold) console.log(`(${LOCALES} was folded in place. Undo: git checkout -- ${LOCALES} && git clean -fd ${LOCALES})`);
   return failed.length ? 1 : 0;

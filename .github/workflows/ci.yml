@@ -13,7 +13,32 @@ name: ci
 
 on:
   push:
-    branches: ["main", "wt/*-integration*"]
+    branches: ["main"]
+    # THE DOCS BOT'S COMMIT GETS NO RUN (the lead, 26 Nov 2026). GitHub starts
+    # no run when EVERY changed path matches this list, so a commit touching
+    # anything else still runs in full. The list is BOT_COMMIT_PATHS in
+    # scripts/lib/generatedDocs.mjs, held equal to it by
+    # scripts/check-generated-docs-untouched.test.mjs. The bot's commit is
+    # judged before it is pushed instead: generated-docs.yml runs the strict
+    # doc guards and scripts/check-post-fold.mjs on the exact tree, and holds
+    # it back on a red. What used to run here was a full cycle (about 48
+    # runner-minutes) on a tree whose code its parent's run had already
+    # tested, queued beside the merge commit's run on the same runners.
+    #
+    # So the run that judges a landing is the MERGE COMMIT's: main-red.yml and
+    # release.yml's :edge build follow it, and tag-release.yml tags it (an
+    # untold sha means main's newest commit that is not the bot's).
+    paths-ignore:
+      - docs/GOVERNANCE.md
+      - docs/knowledge/governance-lineage.md
+      - docs/ECONOMICS.md
+      - docs/TOKENS.md
+      - docs/VARIABLES.md
+      - docs/MODULES.md
+      - docs/CAPABILITIES.md
+      - client/src/locales/en.po
+      - client/src/locales/es.po
+      - client/src/locales/es.d/**
   pull_request:
     # ready_for_review is the run a draft gets when it is marked ready. The
     # other three are the default set, named again because naming any type
@@ -27,7 +52,7 @@ on:
 # draft's run creates every job and skips all of them: no runner starts, and
 # a run of skipped jobs is not a green (a draft cannot be merged either).
 # Marking it ready fires `ready_for_review`, and THAT run is the one to read.
-# A push run (main, integration branches) is never a draft. tests-ran-once
+# A push run (main, the only branch that gets one) is never a draft. tests-ran-once
 # carries the condition itself rather than inheriting a skip from `test`, so a
 # shard job skipped for any OTHER reason still meets it and fails it.
 
@@ -41,11 +66,19 @@ on:
 # running, with each run taking 16 to 60 minutes. Half of that queue was testing
 # a tree nobody lands.
 #
-# So `push` is now limited to `main` and integration branches
-# (`wt/*-integration*`, which may have no pull request to run on). A lane PR
-# branch, and a batch branch, gets the pull_request run alone, which is the
-# more informative of the two anyway because it tests the branch ALREADY
-# MERGED with main, which is nearer to what lands.
+# So `push` is now limited to `main`. A lane PR branch, a batch branch and an
+# integration branch get the pull_request run alone, which is the more
+# informative of the two anyway because it tests the branch ALREADY MERGED
+# with main, which is nearer to what lands.
+#
+# INTEGRATION BRANCHES TOO, since 26 Nov 2026 (the lead, item 1b). They kept
+# a push run (`wt/*-integration*`) because one might have no pull request to
+# run on, and because tag-release accepted a merge commit whose tree equalled
+# a green integration head (the "tested twin"). Since 25 Nov a merge commit's
+# own run on main is never cancelled, so the twin had nothing left to rescue,
+# and the push run was a second full cycle on a tree the pull_request run was
+# already testing. An integration branch is judged through its pull request:
+# open it when you push the branch, because until then it has no run.
 #
 # BATCHES TOO, since 2026-11-01. A batch is composed on current main, so
 # main is usually already inside it, and then GitHub's merge ref has exactly
@@ -88,12 +121,12 @@ on:
 # tag-release.yml found no green push run on the merge commit and a release
 # waited a whole second run on the bot commit, about 35 minutes each time
 # (712becf, 1.3.66). So on main each commit gets a group of its own (keyed on
-# the sha) and nothing is cancelled: the merge commit's run and the bot
-# commit's run both finish, side by side, neither queued behind the other.
+# the sha) and nothing is cancelled. Since 26 Nov the bot's commit has no run
+# at all (paths-ignore above); the per-sha group still keeps two quick
+# landings from cancelling each other.
 #
 #   event          ref                     group key        cancelled by a newer push?
 #   pull_request   refs/pull/N/merge       PR number        yes, same PR
-#   push           wt/*-integration*       the ref          yes, same branch
 #   push           main                    the commit sha   never
 #
 # The cost is that :edge (release.yml, our image, not villages') is published
@@ -1177,6 +1210,55 @@ jobs:
           done < <(find dist/public -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' -o -iname '*.avif' \))
 
           exit $fail
+
+      - name: Keep the budget numbers for the pull request comment
+        # The three budget numbers as JSON, with du's total (the gate), so
+        # budget-comment.yml can tell the pull request what it costs against
+        # main before a ceiling fails it. Main's push runs keep theirs too:
+        # they are the baseline. Measures only; the gate is the step above.
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dist-budget"
+          GITHUB_STEP_SUMMARY= node scripts/check-dist-budget.mjs --json --report > "$RUNNER_TEMP/dist-budget/measured.json"
+          du_kb=$(du -sk dist/public | awk '{print $1}')
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const out = { sha: process.env.GITHUB_SHA, pr: Number(process.env.PR_NUMBER) || null, baseSha: process.env.BASE_SHA || null,
+              duKb: Number(process.argv[2]), blockChargedKb: m.blockChargedKb, maxTotalDistKb: m.maxTotalDistKb,
+              mainJsKb: m.mainJsKb, maxMainJsKb: m.maxMainJsKb, bootJsKb: m.bootJsKb, maxBootJsKb: m.maxBootJsKb };
+            fs.writeFileSync(process.argv[3], JSON.stringify(out, null, 2));
+          ' "$RUNNER_TEMP/dist-budget/measured.json" "$du_kb" "$RUNNER_TEMP/dist-budget/budget.json"
+          cat "$RUNNER_TEMP/dist-budget/budget.json"
+
+      - name: Upload the budget numbers
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-budget
+          path: ${{ runner.temp }}/dist-budget/budget.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Main stays green after the docs bot folds this tree
+        # After the merge, generated-docs.yml folds the es.d fragments into
+        # es.po and re-extracts en.po, then pushes that as a bot commit. On
+        # 26 Nov 2026 that commit turned main red twice while the release
+        # before it was green: a test reading es.po (7366a88) and a folded
+        # plural with no `one` case in strict mode (a187ce0). This folds the
+        # tree the same way, here, and runs the strict catalog check and every
+        # test that reads a catalog (scripts/check-post-fold.mjs), so the red
+        # lands on the pull request or the batch, where it can be fixed.
+        # generated-docs.yml runs the same script before it pushes, as the
+        # second line.
+        #
+        # It folds IN PLACE, so it runs after the build and the budget: they
+        # measured the tree as committed, and nothing after this step reads
+        # the catalogs. About 30 seconds.
+        run: node scripts/check-post-fold.mjs --fold
 
       - name: Dependency audit
         # BLOCKING on FINDINGS, and deliberately not blocking on a registry that

@@ -22,8 +22,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { discoverLocaleTests, plan, runSteps } from "./check-post-fold.mjs";
+import { UNFOLDED_HINT, discoverLocaleTests, plan, runSteps, unfoldedFragments } from "./check-post-fold.mjs";
 
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SCRIPT = path.join(path.dirname(fileURLToPath(import.meta.url)), "check-post-fold.mjs");
 let passed = 0;
 function check(name, fn) {
@@ -101,6 +102,35 @@ check("generated-docs.yml runs this BEFORE it pushes to main, and pushes only wh
   assert.ok(gate < push, "the post-fold check runs after the push to main again");
   const commitStep = wf.slice(wf.indexOf("- name: Commit"), push);
   assert.match(commitStep, /if: steps\.gate\.outcome == 'success'/, "the push to main no longer waits for the gate");
+});
+
+check("ci.yml folds and checks every pull request, after the build and the budget", () => {
+  const ci = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", ".github", "workflows", "ci.yml"), "utf8");
+  const step = ci.indexOf("node scripts/check-post-fold.mjs --fold");
+  assert.ok(step > 0, "ci.yml no longer simulates the fold");
+  assert.ok(step > ci.indexOf("scripts/check-dist-budget"), "the in-place fold now runs before the budget, which would measure a folded tree");
+});
+
+check("the locale tests run with ALLOW_STALE_DIST, because the fold rewrites the locales after the build, and none of them reads dist", () => {
+  const steps = plan({ fold: true, tests: ["a.test.ts"] });
+  assert.strictEqual(steps[3][3].ALLOW_STALE_DIST, "1", "a folded tree is always newer than verify's build");
+  assert.strictEqual(steps[2][3].ALLOW_STALE_DIST, undefined, "only the test step is told");
+  // The flag is only honest while no test in that step reads the built bundle.
+  for (const f of discoverLocaleTests()) {
+    const code = fs.readFileSync(path.join(ROOT_DIR, f), "utf8").replace(/\/\/.*$/gm, "");
+    assert.doesNotMatch(code, /["'`]dist\/|distFreshness|dist\/index\.js/, `${f} reads dist, so ALLOW_STALE_DIST would hide a stale bundle from it`);
+  }
+});
+
+check("an unfolded tree without --fold is refused with the hint, not 175 stale-catalog errors", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "post-fold-"));
+  assert.deepStrictEqual(unfoldedFragments(dir), [], "no es.d folder: nothing waits");
+  fs.mkdirSync(path.join(dir, "client/src/locales/es.d"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "client/src/locales/es.d/menu.po"), "");
+  fs.writeFileSync(path.join(dir, "client/src/locales/es.d/README.md"), "");
+  assert.deepStrictEqual(unfoldedFragments(dir), ["menu.po"]);
+  assert.match(UNFOLDED_HINT, /--fold/);
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 check("the locale tests run with CI cleared: they need no database, and the docs bot's job has none", () => {

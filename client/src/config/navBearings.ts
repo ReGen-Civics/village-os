@@ -80,6 +80,12 @@ export interface Lit {
   exact: boolean;
   /** The entry itself, before the shell puts the village's word on it. */
   item: NavLink;
+  /**
+   * True when the page's own entry is not in the reader's menu because another took its place (Roles folds into
+   * "Circles & Roles" while the map runs, NavLink.unlessModule), and `href` names that other entry instead. The menu
+   * marks it as the way to the page, never as the page itself; the breadcrumb keeps the page's own entry (`item`).
+   */
+  replaced?: boolean;
 }
 
 /**
@@ -88,7 +94,7 @@ export interface Lit {
  */
 export function currentFor(lit: Lit | null, href: string): "page" | "true" | undefined {
   if (!lit || lit.href !== href) return undefined;
-  return lit.exact ? "page" : "true";
+  return lit.exact && !lit.replaced ? "page" : "true";
 }
 
 /**
@@ -107,11 +113,17 @@ export function litFor(
   const b = bearingsFor(location, seen, menu.hidden, defined);
   if (!b) return null;
   const own = b.group ? defined.find((e): e is NavGroup => isGroup(e) && e.label === b.group)?.href : undefined;
+  // The page's entry gave way to another (the live check, 27 Nov 2026: a role lit Village and marked nothing inside it).
+  // The one that took its place is the entry in the same group gated on the module that hid this one.
+  const swappedFor = b.item.unlessModule && !visible(b.item)
+    ? seen.flatMap((e) => (isGroup(e) ? (e.label === b.group ? e.items : []) : b.group ? [] : [e])).find((l) => l.module === b.item.unlessModule && !menu.hidden.includes(l.href))
+    : undefined;
   return {
     group: b.group ? menu.groups[b.group] || word(b.group) : null,
     groupHref: own && !menu.hidden.includes(own) ? own : undefined,
-    href: b.item.href,
+    href: swappedFor ? swappedFor.href : b.item.href,
     exact: b.exact,
     item: b.item,
+    ...(swappedFor ? { replaced: true } : {}),
   };
 }
