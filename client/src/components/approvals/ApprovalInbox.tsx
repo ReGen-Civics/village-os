@@ -176,8 +176,9 @@ export default function ApprovalInbox({
           <Trans context="approval inbox">Nothing is waiting.</Trans>
         </p>
       )}
-      {waiting.length > 1 && (
-        <button type="button" className={BTN_PRIMARY} disabled={count === 0 || busy !== null} onClick={() => void approvePicked()}>
+      {/* Approving several together appears once one is ticked, so an untouched list carries no gold act it cannot use. */}
+      {waiting.length > 1 && count > 0 && (
+        <button type="button" className={BTN_PRIMARY} disabled={busy !== null} onClick={() => void approvePicked()}>
           <Trans context="approval inbox">Approve {count} selected</Trans>
         </button>
       )}
