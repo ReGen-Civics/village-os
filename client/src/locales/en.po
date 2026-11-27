@@ -1555,6 +1555,11 @@ msgstr "Write or choose something first, then save."
 msgid "These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then."
 msgstr "These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then."
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "What the village plans to pay this moon, and what is left."
+msgstr "What the village plans to pay this moon, and what is left."
+
 #: client/src/pages/Home.tsx
 msgctxt "Home, a"
 msgid "Pick your path <0/>"
@@ -1717,6 +1722,11 @@ msgstr "{n, plural, =0 {No open tensions on this circle's roles} one {# open ten
 msgctxt "CommsSetupWords, label"
 msgid "Business Inquiries (Prosperity / Contact)"
 msgstr "Business Inquiries (Prosperity / Contact)"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: signed out"
+msgid "The treasury"
+msgstr "The treasury"
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: mail.confirm"
@@ -2398,7 +2408,7 @@ msgctxt "the agenda library"
 msgid "Agenda items"
 msgstr "Agenda items"
 
-#: client/src/pages/Treasury.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "link to the powers page"
 msgid "What We Look After"
 msgstr "What We Look After"
@@ -4885,6 +4895,11 @@ msgctxt "agent paths, search hint"
 msgid "A word, a path or GET"
 msgstr "A word, a path or GET"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: budget"
+msgid "Every member reads it. Whoever holds the budget power changes it."
+msgstr "Every member reads it. Whoever holds the budget power changes it."
+
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: buttons.reopened"
 msgid "Open it again"
@@ -5411,9 +5426,9 @@ msgid "{0} on the roll, {1} weight between them<0/>"
 msgstr "{0} on the roll, {1} weight between them<0/>"
 
 #: client/src/pages/Treasury.tsx
-msgctxt "link to the cash budget page"
-msgid "The cash budget for this moon"
-msgstr "The cash budget for this moon"
+#~ msgctxt "link to the cash budget page"
+#~ msgid "The cash budget for this moon"
+#~ msgstr "The cash budget for this moon"
 
 #: client/src/components/playerCard/playerCardHealthMessages.ts
 msgctxt "player card health, handover check runbook written"
@@ -6970,6 +6985,11 @@ msgstr "Skin tone"
 #~ msgid "Saved. The next sync calls this address"
 #~ msgstr "Saved. The next sync calls this address"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the second signer"
+msgid "Any amount goes through on your signature alone"
+msgstr "Any amount goes through on your signature alone"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board status"
 msgid "Issued to their account"
@@ -7504,6 +7524,11 @@ msgstr "Use {nameToken} where the guide's name should appear."
 msgctxt "the bell: why a notice of this kind matters, kind wallet"
 msgid "Somebody sent you credits, and they are in your balance now."
 msgstr "Somebody sent you credits, and they are in your balance now."
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion error"
+msgid "The suggestion was not sent. Try again in a moment."
+msgstr "The suggestion was not sent. Try again in a moment."
 
 #: client/src/components/circleCard/circleWords.ts
 msgctxt "circle card, status forming"
@@ -8746,9 +8771,9 @@ msgid "Who it is for"
 msgstr "Who it is for"
 
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
-msgstr "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
+#~ msgctxt "budget page"
+#~ msgid "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
+#~ msgstr "The cash the village plans for role pay and quest pay this moon, line by line, and what is left once the pay already promised is taken off. Every member can read it. The people who hold the budget power change it."
 
 #: client/src/components/sessions/sessionWords.ts
 msgctxt "live sessions: agendaAimLabel"
@@ -8820,6 +8845,11 @@ msgstr "the token's new name"
 msgctxt "budget line button"
 msgid "Edit {0}"
 msgstr "Edit {0}"
+
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
+msgstr "A period is a moon, a month like 2026-11, a season, or two dates. You read what changes before anything is saved."
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: copy"
@@ -10067,6 +10097,11 @@ msgctxt "Admin, aria-label"
 msgid "Question"
 msgstr "Question"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "treasury: mint"
+msgid "The mint form did not load. Try again in a moment."
+msgstr "The mint form did not load. Try again in a moment."
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Answers for 1 thing"
 #~ msgstr "Answers for 1 thing"
@@ -10596,9 +10631,9 @@ msgid "Nothing is held. When a suggestion is held back, it waits here until a pe
 msgstr "Nothing is held. When a suggestion is held back, it waits here until a person clears it."
 
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "🌳 Launch Plan"
-msgstr "🌳 Launch Plan"
+#~ msgctxt "site menu"
+#~ msgid "🌳 Launch Plan"
+#~ msgstr "🌳 Launch Plan"
 
 #: client/src/pages/Review.tsx
 #~ msgctxt "Review, p"
@@ -10783,6 +10818,7 @@ msgstr "The deposit locked while an item is out, as a share of its appraised val
 #. placeholder {0}: notCounted.length
 #. placeholder {1}: reasons.join("; ")
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk lines not counted"
 msgid "{0} lines touch this moon and do not count yet: {1}."
 msgstr "{0} lines touch this moon and do not count yet: {1}."
@@ -11477,6 +11513,11 @@ msgstr "example"
 msgid "Hide how this was worked out"
 msgstr "Hide how this was worked out"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: lede"
+msgid "The village's money in one place: what it can pay this moon, and the desks that pay it."
+msgstr "The village's money in one place: what it can pay this moon, and the desks that pay it."
+
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: forSeason, no season named"
 msgid "For next season."
@@ -11581,6 +11622,11 @@ msgstr "Last moon's work signed off and its bonus set"
 msgctxt "MapVocabularyPanel, h3"
 msgid "The map's words"
 msgstr "The map's words"
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Amount"
+msgstr "Amount"
 
 #: client/src/components/season/AlignedPanel.tsx
 msgctxt "season page"
@@ -11690,6 +11736,11 @@ msgstr "A collective reading that names everyone present, and a line for each pe
 msgctxt "GameMechanics, proposal path"
 msgid "Support gathers here. {supportThreshold} supporters send a proposal to the vote."
 msgstr "Support gathers here. {supportThreshold} supporters send a proposal to the vote."
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Quest prices"
+msgstr "Quest prices"
 
 #: client/src/components/power/ShapePicker.tsx
 msgctxt "ShapePicker, placeholder"
@@ -13978,6 +14029,11 @@ msgstr "Carry"
 msgid "Edit the name or the why"
 msgstr "Edit the name or the why"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desk board, read aloud"
+msgid "Your desks"
+msgstr "Your desks"
+
 #: client/src/pages/Places.tsx
 #~ msgctxt "Places, Link"
 #~ msgid "See every photograph on one page, newest first"
@@ -14586,6 +14642,11 @@ msgctxt "open proposal: an agent's proposal"
 msgid "Proposed by the member who keeps it. The circle decides by consent, as for a person."
 msgstr "Proposed by the member who keeps it. The circle decides by consent, as for a person."
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: who keeps the books, for a reader without these powers"
+msgid "Each opens for whoever holds its power, which the village gives by its vote."
+msgstr "Each opens for whoever holds its power, which the village gives by its vote."
+
 #. placeholder {0}: twice.map(pieceText).join("; ")
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -15036,6 +15097,11 @@ msgstr "Sera did not answer in time. Whatever arrived is below; add the rest by 
 msgctxt "admin compare"
 msgid "Saved splits"
 msgstr "Saved splits"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The treasurer's desks"
+msgstr "The treasurer's desks"
 
 #: client/src/components/prosperity/PacketRequestForm.tsx
 msgctxt "prosperity packet form: the build field's hint"
@@ -16876,9 +16942,9 @@ msgid "A suggestion from Sera or an outside service"
 msgstr "A suggestion from Sera or an outside service"
 
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "Sign in to read the village's cash budget."
-msgstr "Sign in to read the village's cash budget."
+#~ msgctxt "budget page"
+#~ msgid "Sign in to read the village's cash budget."
+#~ msgstr "Sign in to read the village's cash budget."
 
 #: client/src/components/sessions/WaitingForCircle.tsx
 msgctxt "agenda item, the meeting it waits for"
@@ -17093,6 +17159,11 @@ msgstr "An agent"
 msgctxt "live session room: editKeysOneLine"
 msgid "Enter saves. Escape cancels."
 msgstr "Enter saves. Escape cancels."
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Send what is owed by bank transfer, then record it here."
+msgstr "Send what is owed by bank transfer, then record it here."
 
 #: client/src/components/roleCard/FoundingTeam.tsx
 #: client/src/pages/Circles.tsx
@@ -20143,6 +20214,11 @@ msgctxt "PowerHand, label"
 msgid "Why this power calls to you (optional)"
 msgstr "Why this power calls to you (optional)"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member's one act"
+msgid "Suggest a change to the budget"
+msgstr "Suggest a change to the budget"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind quest_idea_declined"
 msgid "{n} of your quest ideas were left off the board."
@@ -22502,9 +22578,9 @@ msgstr "% of the day"
 #~ msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves these goals."
 
 #: client/src/config/navWords.ts
-msgctxt "site menu"
-msgid "🛠 Command Centre"
-msgstr "🛠 Command Centre"
+#~ msgctxt "site menu"
+#~ msgid "🛠 Command Centre"
+#~ msgstr "🛠 Command Centre"
 
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: sessionBegun"
@@ -24597,9 +24673,9 @@ msgid "There is no circle here."
 msgstr "There is no circle here."
 
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
-msgid "The village's books: mint, End of Moon pay and cash to send"
-msgstr "The village's books: mint, End of Moon pay and cash to send"
+#~ msgctxt "governance treasury: the door to the village's books, for a holder of a treasury power"
+#~ msgid "The village's books: mint, End of Moon pay and cash to send"
+#~ msgstr "The village's books: mint, End of Moon pay and cash to send"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable assistant.synthesis_batch, label"
@@ -24625,6 +24701,12 @@ msgstr "Add five minutes"
 msgctxt "founding application review"
 msgid "{n} recordings, sent with your application"
 msgstr "{n} recordings, sent with your application"
+
+#. placeholder {0}: read.villageCurrency
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Amount, in {0}"
+msgstr "Amount, in {0}"
 
 #. placeholder {0}: plural(done, "check")
 #. placeholder {1}: checks.length
@@ -24788,6 +24870,11 @@ msgstr "{agent} still didn't answer at {askedAt}."
 msgctxt "ProfileJourney, p"
 msgid "Your signing"
 msgstr "Your signing"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Reason"
+msgstr "Reason"
 
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup nudge, one"
@@ -25951,6 +26038,7 @@ msgid "Settings"
 msgstr "Settings"
 
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk no figure"
 msgid "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
 msgstr "No line for role pay or quest pay counts in this moon yet, so the budget sets no limit on pay."
@@ -26550,6 +26638,11 @@ msgstr "Structure key from the map, e.g. ridgeA"
 msgctxt "connector setup panel, the switch"
 msgid "Our agent may make the changes we approve in the chat"
 msgstr "Our agent may make the changes we approve in the chat"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Cash budget"
+msgstr "Cash budget"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -27891,6 +27984,11 @@ msgstr "I'll use the reading you already made: <0>{0}</0>, {1}."
 msgctxt "sera answers"
 msgid "Changed since it was taken"
 msgstr "Changed since it was taken"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: prices refused"
+msgid "The pricing desk is for whoever holds the pay-setting power, such as the Treasurer."
+msgstr "The pricing desk is for whoever holds the pay-setting power, such as the Treasurer."
 
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor: related roles, the list is full"
@@ -29652,6 +29750,11 @@ msgstr "You follow up with a reference for an applicant. Read how to reach them 
 msgctxt "founding card fact"
 msgid "Track"
 msgstr "Track"
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Name one line and what it should pay this moon."
+msgstr "Name one line and what it should pay this moon."
 
 #: client/src/components/openProposal/decideWords.ts
 msgctxt "open proposal decide: pending"
@@ -31806,6 +31909,11 @@ msgstr "Cellar door"
 msgctxt "CrowdpoolCampaign, h2"
 msgid "From blueprint to walls"
 msgstr "From blueprint to walls"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder of a treasury power"
+msgid "Your treasury desks"
+msgstr "Your treasury desks"
 
 #: client/src/pages/Events.tsx
 msgctxt "Events, label"
@@ -34017,6 +34125,11 @@ msgctxt "review inbox: a row, the door"
 msgid "Answer"
 msgstr "Answer"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Token"
+msgstr "Token"
+
 #: client/src/components/EventsAdminPanel.tsx
 msgctxt "EventsAdminPanel, label"
 msgid "Evening"
@@ -34026,6 +34139,11 @@ msgstr "Evening"
 msgctxt "module profiles, benefit 4"
 msgid "Members choose what their profile shows"
 msgstr "Members choose what their profile shows"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Amount"
+msgstr "Amount"
 
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, h1"
@@ -34041,6 +34159,11 @@ msgstr "Every email the village sends, and when. Open any of them to read its wo
 msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} waiting"
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion sent"
+msgid "Sent. It goes to whoever holds the budget power, or to a village vote when nobody does."
+msgstr "Sent. It goes to whoever holds the budget power, or to a village vote when nobody does."
 
 #: client/src/pages/Entrance.tsx
 msgctxt "portal entrance: the privacy list, never sold"
@@ -34512,6 +34635,11 @@ msgstr "Holds no tokens yet"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "The agreements are not given"
 #~ msgstr "The agreements are not given"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Pay a request or give a bonus in the village's tokens."
+msgstr "Pay a request or give a bonus in the village's tokens."
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 msgctxt "role draft discover"
@@ -36921,6 +37049,11 @@ msgctxt "agent proposal: sent"
 msgid "Sent to the circle"
 msgstr "Sent to the circle"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Price each open quest beside the suggested figure."
+msgstr "Price each open quest beside the suggested figure."
+
 #: client/src/pages/Wallet.tsx
 msgctxt "Wallet, span"
 msgid "· out of stock"
@@ -37631,6 +37764,7 @@ msgid "Its place in the ring"
 msgstr "Its place in the ring"
 
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Planned"
 msgstr "Planned"
@@ -38077,6 +38211,11 @@ msgstr "{0}{1}. Retiring rests them, keeps their history, and never unseats anyb
 msgctxt "review response"
 msgid "Suggest an edit"
 msgstr "Suggest an edit"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the purses, read aloud"
+msgid "This moon's cash"
+msgstr "This moon's cash"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -39278,6 +39417,11 @@ msgctxt "moon recap: GOAL_STATUS_WORDS: let_go"
 msgid "Let go"
 msgstr "Let go"
 
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion button"
+msgid "Close"
+msgstr "Close"
+
 #: client/src/components/admin/StageFloorPicker.tsx
 msgctxt "StageFloorPicker, label"
 msgid "Pick a stage floor"
@@ -39437,6 +39581,11 @@ msgstr "Who sees your lines?"
 msgctxt "moon recap: QUEUE_WORDS: empty"
 msgid "Nothing is waiting on you this moon."
 msgstr "Nothing is waiting on you this moon."
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the second signer"
+msgid "Over {cosignWords} waits for a second signer"
+msgstr "Over {cosignWords} waits for a second signer"
 
 #: client/src/pages/ReserveHome.tsx
 msgctxt "ReserveHome, p"
@@ -39936,6 +40085,11 @@ msgctxt "circle consent: state heading"
 msgid "Waiting for a holder of the power"
 msgstr "Waiting for a holder of the power"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: signed out"
+msgid "Sign in to read the village's cash budget, and any treasury desk the village has given you."
+msgstr "Sign in to read the village's cash budget, and any treasury desk the village has given you."
+
 #. placeholder {0}: v.value === v.default ? `It starts as "${v.default}", which is where the platform starts and not something anybody here said.` : ""
 #: client/src/components/admin/ModuleSettingsSection.tsx
 msgctxt "ModuleSettingsSection, p"
@@ -40187,6 +40341,11 @@ msgstr "Showing all {total} {noun}."
 msgctxt "your work: approvals, how many wait"
 msgid "{0} waiting"
 msgstr "{0} waiting"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a picker's placeholder"
+msgid "Choose…"
+msgstr "Choose…"
 
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable comms.notice_expiry_minutes, label"
@@ -40819,6 +40978,11 @@ msgstr "Tick all shown"
 msgctxt "Admin, placeholder"
 msgid "Value (large text)"
 msgstr "Value (large text)"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Confirm what was agreed against what was delivered."
+msgstr "Confirm what was agreed against what was delivered."
 
 #: client/src/components/ExamplesBanner.tsx
 msgctxt "examples banner, one example"
@@ -41941,6 +42105,11 @@ msgctxt "module quests, benefit 3"
 msgid "Crews form around the bigger quests"
 msgstr "Crews form around the bigger quests"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member"
+msgid "The village's cash, in the open"
+msgstr "The village's cash, in the open"
+
 #: client/src/pages/StructureReview.tsx
 msgid "Another role with this name already updates {liveName}"
 msgstr "Another role with this name already updates {liveName}"
@@ -42498,9 +42667,9 @@ msgid "Largest photograph a member may upload"
 msgstr "Largest photograph a member may upload"
 
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "governance treasury: lede"
-msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
-msgstr "The village's cash, in the open: what it plans to pay this moon and what is left."
+#~ msgctxt "governance treasury: lede"
+#~ msgid "The village's cash, in the open: what it plans to pay this moon and what is left."
+#~ msgstr "The village's cash, in the open: what it plans to pay this moon and what is left."
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MOON_WORDS: takeBackLine"
@@ -42590,6 +42759,11 @@ msgstr "Mail settings"
 msgctxt "game variable governance.sensing_days, label"
 msgid "How long a topic stays open for sensing"
 msgstr "How long a topic stays open for sensing"
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "What the line is for"
+msgstr "What the line is for"
 
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgid "The governing purpose statement"
@@ -43050,6 +43224,11 @@ msgctxt "funding round stage"
 msgid "Grow"
 msgstr "Grow"
 
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion button"
+msgid "Send the suggestion"
+msgstr "Send the suggestion"
+
 #: client/src/components/governance/wizardValidators.ts
 msgctxt "proposal wizard: check"
 msgid "Pick at least one dial to change, and say what it becomes"
@@ -43408,6 +43587,11 @@ msgstr "<0/>Your weight<1/>"
 msgctxt "sera answers"
 msgid "Added to the draft. It goes live when the draft is published."
 msgstr "Added to the draft. It goes live when the draft is published."
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Suggest a change to the budget"
+msgstr "Suggest a change to the budget"
 
 #: client/src/components/investor/InvestorInterest.tsx
 msgctxt "investor interest: time horizon"
@@ -43820,6 +44004,11 @@ msgctxt "proposed changes"
 msgid "Working"
 msgstr "Working"
 
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like."
+msgstr "The first row names the columns: period, label, category and planned, then circle, role, currency and note if you like."
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind gratitude"
 msgid "{n} people sent you appreciation."
@@ -44174,6 +44363,7 @@ msgid "$100,000 to $500,000"
 msgstr "$100,000 to $500,000"
 
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk no figure"
 msgid "The village has no currency set yet, so there is no figure to work out. An admin sets it in the setup wizard."
 msgstr "The village has no currency set yet, so there is no figure to work out. An admin sets it in the setup wizard."
@@ -45407,9 +45597,9 @@ msgstr "Platform"
 #~ msgstr "Save roots"
 
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, member picker placeholder"
-msgid "Member…"
-msgstr "Member…"
+#~ msgctxt "hand-mint form, member picker placeholder"
+#~ msgid "Member…"
+#~ msgstr "Member…"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: whyHere"
@@ -46112,6 +46302,11 @@ msgctxt "guide feedback: a screenshot that does not decode"
 msgid "That picture could not be opened. Try another one."
 msgstr "That picture could not be opened. Try another one."
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Cash to pay out"
+msgstr "Cash to pay out"
+
 #: client/src/components/admin/comms/MailNow.tsx
 msgctxt "Mail settings, pause refused"
 msgid "That was not saved."
@@ -46798,6 +46993,11 @@ msgstr "Report this message"
 msgctxt "game variable hiddenmap.default_precision, choice km, hint"
 msgid "Close enough to find the area, too coarse to find the spot."
 msgstr "Close enough to find the area, too coarse to find the spot."
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion error"
+msgid "The server could not be reached, so nothing was sent. Check the connection and try again."
+msgstr "The server could not be reached, so nothing was sent. Check the connection and try again."
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, button"
@@ -48748,6 +48948,11 @@ msgctxt "game variable stay.credit_expiry_days, label"
 msgid "Credit expiry (0 = never)"
 msgstr "Credit expiry (0 = never)"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a member's link to the lines"
+msgid "Read the budget, line by line"
+msgstr "Read the budget, line by line"
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "{name}, an agent"
@@ -49002,6 +49207,11 @@ msgctxt "live session room: facilitationSent"
 msgid "Thanks. The facilitator reads it unsigned."
 msgstr "Thanks. The facilitator reads it unsigned."
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, self"
+msgid "You can't mint to yourself"
+msgstr "You can't mint to yourself"
+
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: why a notice of this kind matters, kind session_item_taken"
 msgid "An agenda item you added is on a session's agenda now."
@@ -49088,6 +49298,11 @@ msgstr "Hours before a gathering in which its time no longer follows the vote. A
 msgctxt "PlanEditor, aria-label"
 msgid "Remove the option {opt}"
 msgstr "Remove the option {opt}"
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Kind"
+msgstr "Kind"
 
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: the stock portraits heading"
@@ -50403,6 +50618,7 @@ msgid "Their data is gone from here. {0} has not confirmed deleting its own copy
 msgstr "Their data is gone from here. {0} has not confirmed deleting its own copy{1}. Nothing asks again on its own, because the people this concerns have already left."
 
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Already promised"
 msgstr "Already promised"
@@ -51654,9 +51870,9 @@ msgid "Append-only. Nothing here can be edited or removed, by anyone, and every 
 msgstr "Append-only. Nothing here can be edited or removed, by anyone, and every signed-in member reads the same list on the decisions page."
 
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, token picker placeholder"
-msgid "Token…"
-msgstr "Token…"
+#~ msgctxt "hand-mint form, token picker placeholder"
+#~ msgid "Token…"
+#~ msgstr "Token…"
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: heldBy"
@@ -51789,9 +52005,12 @@ msgstr "{name}, an agent, proposed by its keeper for {roles}"
 #~ msgid "This browser won't keep your draft (private mode or site data blocked). It stays until you leave the page."
 #~ msgstr "This browser won't keep your draft (private mode or site data blocked). It stays until you leave the page."
 
+#. placeholder {0}: dayOf(budget.moon.startsOn)
 #. placeholder {0}: dayOf(moon.startsOn)
+#. placeholder {1}: dayOf(budget.moon.endsOn)
 #. placeholder {1}: dayOf(moon.endsOn)
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget desk moon dates"
 msgid "{0} to {1}"
 msgstr "{0} to {1}"
@@ -54933,9 +55152,9 @@ msgstr "A short note on why (shown in the draft's history)"
 #~ msgstr "Six steps, and no account needed."
 
 #: client/src/components/admin/PricingDeskTab.tsx
-msgctxt "pricing desk"
-msgid "Open the desk as its own page, for a Treasurer who is not an admin"
-msgstr "Open the desk as its own page, for a Treasurer who is not an admin"
+#~ msgctxt "pricing desk"
+#~ msgid "Open the desk as its own page, for a Treasurer who is not an admin"
+#~ msgstr "Open the desk as its own page, for a Treasurer who is not an admin"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind circle_place_waiting"
@@ -55124,6 +55343,11 @@ msgstr "Write your own"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "Which of {roleName}'s outcomes will you move? Pick up to {0}, each with a target."
 #~ msgstr "Which of {roleName}'s outcomes will you move? Pick up to {0}, each with a target."
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the quiet link to the budget, under a holder's desks"
+msgid "The cash budget, line by line"
+msgstr "The cash budget, line by line"
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
@@ -55669,6 +55893,11 @@ msgstr "Stop voice input"
 msgctxt "database export"
 msgid "Downloading..."
 msgstr "Downloading..."
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, a field's label"
+msgid "Member"
+msgstr "Member"
 
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable hiddenmap.basemap, choice esri-imagery, label"
@@ -56702,6 +56931,11 @@ msgstr "Commitment"
 #: client/src/components/LookPanel.tsx
 msgid "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
 msgstr "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
+
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion field"
+msgid "Why"
+msgstr "Why"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -58268,6 +58502,11 @@ msgctxt "Housing, h2"
 msgid "Housing Options"
 msgstr "Housing Options"
 
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Command Centre"
+msgstr "Command Centre"
+
 #: client/src/components/orgDraft/FieldDiff.tsx
 msgctxt "draft page: a field"
 msgid "Purpose"
@@ -59793,6 +60032,7 @@ msgid "Your answer"
 msgstr "Your answer"
 
 #: client/src/components/budgets/BudgetDesk.tsx
+#: client/src/pages/GovernanceTreasury.tsx
 msgctxt "budget figure"
 msgid "Left this moon"
 msgstr "Left this moon"
@@ -59813,9 +60053,9 @@ msgid "Override: proposals link"
 msgstr "Override: proposals link"
 
 #: client/src/components/valuation/PricingDesk.tsx
-msgctxt "pricing desk"
-msgid "Earned Equity meaning"
-msgstr "Earned Equity meaning"
+#~ msgctxt "pricing desk"
+#~ msgid "Earned Equity meaning"
+#~ msgstr "Earned Equity meaning"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tabs"
@@ -62184,9 +62424,9 @@ msgid "The test was not sent."
 msgstr "The test was not sent."
 
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, token picker"
-msgid "Token to mint"
-msgstr "Token to mint"
+#~ msgctxt "hand-mint form, token picker"
+#~ msgid "Token to mint"
+#~ msgstr "Token to mint"
 
 #: client/src/components/asks/AsksPanel.tsx
 msgctxt "AsksPanel, label"
@@ -62811,6 +63051,11 @@ msgstr "Try again"
 msgctxt "change request: where it stands, in review"
 msgid "In review · review ends {ends}"
 msgstr "In review · review ends {ends}"
+
+#: client/src/components/valuation/PricingDesk.tsx
+msgctxt "pricing desk, the first step on the Treasurer's path"
+msgid "What {equity} means"
+msgstr "What {equity} means"
 
 #: client/src/components/fireflyPath/applyWords.ts
 msgctxt "founding application intro"
@@ -64199,6 +64444,11 @@ msgctxt "module comms, for whom"
 msgid "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
 msgstr "Villages that want to stay in touch with everybody they meet, by email, from inside the village's own platform."
 
+#: client/src/components/budgets/BudgetSuggest.tsx
+msgctxt "budget suggestion"
+msgid "Whoever holds the budget power decides, or the village votes."
+msgstr "Whoever holds the budget power decides, or the village votes."
+
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: PACK_REFUSAL_WORDS: too_many_goals"
 msgid "A pack sets five next-moon goals at most."
@@ -64807,6 +65057,12 @@ msgstr "In the backlog so far"
 msgid "{0, plural, one {# photo ready.} other {# photos ready.}}"
 msgstr "{0, plural, one {# photo ready.} other {# photos ready.}}"
 
+#. placeholder {0}: held.length
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the powers behind these {0} desks by its vote."
+msgstr "The village gave you the powers behind these {0} desks by its vote."
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page goals"
 msgid "Show fewer goals"
@@ -65127,6 +65383,11 @@ msgctxt "economics view heading"
 msgid "Milestones going quiet"
 msgstr "Milestones going quiet"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the End of Moon review's settings, folded"
+msgid "End of Moon review settings"
+msgstr "End of Moon review settings"
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "Keep each recording under 7 minutes."
@@ -65201,6 +65462,11 @@ msgstr "Add a time"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopt this new version"
 msgstr "Adopt this new version"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint rules, the cap"
+msgid "At most {capWords} a moon"
+msgstr "At most {capWords} a moon"
 
 #: client/src/components/reviewInbox/sourceWords.ts
 msgctxt "review inbox: a row, the door"
@@ -67051,9 +67317,9 @@ msgid "Approved, issues at launch"
 msgstr "Approved, issues at launch"
 
 #: client/src/components/admin/MintDesk.tsx
-msgctxt "hand-mint form, member picker"
-msgid "Member to mint to"
-msgstr "Member to mint to"
+#~ msgctxt "hand-mint form, member picker"
+#~ msgid "Member to mint to"
+#~ msgstr "Member to mint to"
 
 #: client/src/components/map/MapMembersDoor.tsx
 msgctxt "map members only: sign in"
@@ -69848,6 +70114,11 @@ msgctxt "JourneyDetail, button"
 msgid "Walk through"
 msgstr "Walk through"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: the desks this reader does not hold"
+msgid "The other desks"
+msgstr "The other desks"
+
 #. placeholder {0}: filled.unoffered.map(tokenName).join(", ")
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
@@ -70141,6 +70412,11 @@ msgstr "default {0}"
 msgctxt "GuidePanel, p"
 msgid "Ask anything about what you have written, or let the guide reflect it back to you. It asks; it never answers for you."
 msgstr "Ask anything about what you have written, or let the guide reflect it back to you. It asks; it never answers for you."
+
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Launch Plan"
+msgstr "Launch Plan"
 
 #: client/src/components/admin/NeedsPanel.tsx
 msgctxt "NeedsPanel, p"
@@ -70776,6 +71052,11 @@ msgstr "What the map shows"
 msgctxt "work with us: help under a question"
 msgid "What materials, supplies, or inputs are required, and what do they cost? Note anything the village may already have."
 msgstr "What materials, supplies, or inputs are required, and what do they cost? Note anything the village may already have."
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "End of Moon pay"
+msgstr "End of Moon pay"
 
 #: client/src/components/asks/AsksPanel.tsx
 msgctxt "AsksPanel, h3"
@@ -71440,9 +71721,9 @@ msgid "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit
 msgstr "The bar holds {MAX_MAP_CHIPS} chips and the moon, which is as many as fit across a phone."
 
 #: client/src/pages/GovernanceTreasury.tsx
-msgctxt "budget page"
-msgid "Cash budget"
-msgstr "Cash budget"
+#~ msgctxt "budget page"
+#~ msgid "Cash budget"
+#~ msgstr "Cash budget"
 
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page, no open role"
@@ -72206,6 +72487,11 @@ msgstr "Your ladder this season"
 msgctxt "moon recap: QUEUE_WORDS: approveWork"
 msgid "Approve the work"
 msgstr "Approve the work"
+
+#: client/src/components/admin/PricingDeskTab.tsx
+msgctxt "pricing desk"
+msgid "A Treasurer who is not an admin opens this desk under Governance, Treasury"
+msgstr "A Treasurer who is not an admin opens this desk under Governance, Treasury"
 
 #: client/src/components/admin/QuestRootsEditor.tsx
 msgctxt "admin quest roots"
@@ -74720,6 +75006,11 @@ msgctxt "rites"
 msgid "Your own code opens once you may vouch for somebody."
 msgstr "Your own code opens once you may vouch for somebody."
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: a desk"
+msgid "Mint tokens"
+msgstr "Mint tokens"
+
 #: client/src/components/admin/AppointToRole.tsx
 msgctxt "AppointToRole, button"
 msgid "Appoint"
@@ -75915,6 +76206,11 @@ msgstr "This saved application is no longer kept. Save again to start a new link
 msgctxt "an ask raised with a role, the day it was raised"
 msgid "Raised {0}"
 msgstr "Raised {0}"
+
+#: client/src/components/budgets/BudgetEditor.tsx
+msgctxt "budget upload"
+msgid "Save the sheet as CSV, or paste its cells below."
+msgstr "Save the sheet as CSV, or paste its cells below."
 
 #: client/src/components/admin/GlossaryPanel.tsx
 msgctxt "admin identity: save the explanations"
@@ -78450,6 +78746,11 @@ msgctxt "settings: page title"
 msgid "Profile settings"
 msgstr "Profile settings"
 
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero, a holder"
+msgid "The village gave you the power behind this desk by its vote."
+msgstr "The village gave you the power behind this desk by its vote."
+
 #: client/src/components/playerCard/cardHeadings.ts
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, purpose"
@@ -78520,6 +78821,11 @@ msgstr "Which decisions a steward can stop"
 msgctxt "player card, full time"
 msgid "Full-time"
 msgstr "Full-time"
+
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "treasury: hero eyebrow"
+msgid "The treasury, this moon"
+msgstr "The treasury, this moon"
 
 #: client/src/lib/noticeKindWordsI18n.ts
 msgctxt "the bell: several notices of one kind batched into a line, kind thread_activity"
