@@ -88,8 +88,8 @@ const ALLOWLIST = {
   // Copy link on the role card's footer and on a directory row, and the link people share outside the app.
   "/roles/:slug": "a role's own page; its links are built from each role and shared outside the app",
 
-  // A members-only report of the role journey (counts and medians, no names). Its one door is the signed-in link on /roles; a second link would only add a header entry nobody needs.
-  "/role-measures": "a members-only report reached from the roles page",
+  // How roles are going folded into Circles & Roles (27 Nov 2026). It redirects to /circles#role-measures; old bookmarks and links already sent are its doors.
+  "/role-measures": "a redirect to /circles#role-measures, kept for old links",
 
   // The old address of the role selection board. It redirects to /roles/select and nothing links to it on purpose; old bookmarks and shared links are its doors.
   "/roles/draft": "a redirect to /roles/select kept for old links",
@@ -99,6 +99,8 @@ const ALLOWLIST = {
   "/tokens": "a redirect to /wallet, the Exchange's old address, kept for old links",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
+  // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.
+  "/game-mechanics": "a redirect to /governance/how#game-mechanics keeping ?dial= and ?focus=, kept for links already sent",
   // The cash budget's old page (the lead, 27 Nov 2026: build it into Governance's treasury). It redirects to
   // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
   "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",

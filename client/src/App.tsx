@@ -228,7 +228,6 @@ const EmailPreferences = lazyPage(() => import("./pages/EmailPages").then((m) =>
 const EmailUnsubscribe = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailUnsubscribe })));
 const EmailAction = lazyPage(() => import("./pages/EmailPages").then((m) => ({ default: m.EmailAction })));
 const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword"));
-const GameMechanics = lazyPage(() => import("./pages/GameMechanics"));
 // One change request, a kind of decision under Decisions since 27 Nov 2026 (the lead). The list is a section of Decisions.
 const ChangeRequest = lazyPage(() => import("./pages/ChangeRequest"));
 const VillageEmail = lazyPage(() => import("./pages/VillageEmail"));
@@ -278,7 +277,6 @@ const RequestMembership = lazyPage(() => import("./pages/RequestMembership"));
 const ProposeARole = lazyPage(() => import("./pages/ProposeARole"));
 const ConfirmProposal = lazyPage(() => import("./pages/ProposeARole").then((m) => ({ default: m.ConfirmProposal })));
 const OpenProposal = lazyPage(() => import("./pages/OpenProposal"));
-const RoleMeasures = lazyPage(() => import("./pages/RoleMeasures"));
 const ApplicationStatus = lazyPage(() => import("./pages/ApplicationStatus"));
 const YourPath = lazyPage(() => import("./pages/YourPath")); // the whole path, unrolled (the Root)
 const Feed = lazyPage(() => import("./pages/Feed"));
@@ -518,7 +516,8 @@ function Router() {
       <Route path="/email/unsubscribe" component={EmailUnsubscribe} />
       <Route path="/email/a" component={EmailAction} />
       <Route path="/forgot-password" component={ForgotPassword} />
-      <Route path="/game-mechanics" component={GameMechanics} />
+      {/* Game Mechanics folded into How we work together (26 Nov 2026). Old links keep their query (?dial=, ?focus=) and anchor; with none, they land on the mechanics. */}
+      <Route path="/game-mechanics">{() => <Redirect to={`/governance/how${window.location.search}${window.location.hash || "#game-mechanics"}`} replace />}</Route>
       {/* Change requests are a kind of decision (the lead, 27 Nov 2026): the list is the Change requests section of
           Decisions, and one change request is under it. The old addresses, in notices already sent, keep working. */}
       <Route path="/changes">{() => <Redirect to={`/governance/decisions${window.location.search}#changes`} replace />}</Route>
@@ -531,7 +530,7 @@ function Router() {
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>
       <Route path="/training" component={Training} />
-      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we decide at /governance/how. */}
+      {/* The Governance page (the brief, approved 26 Nov 2026): Now at /governance, How we work together at /governance/how. */}
       <Route path="/governance" component={GovernanceNow} />
       <Route path="/governance/how" component={Governance} />
       <Route path="/governance/treasury" component={GovernanceTreasury} />
@@ -554,7 +553,8 @@ function Router() {
       {/* One application to hold roles, on terms. Members only, behind terms.read. */}
       <Route path="/role-applications/:id" component={SeatApplication} />
       <Route path="/open-proposals/:id" component={OpenProposal} />
-      <Route path="/role-measures" component={RoleMeasures} />
+      {/* How roles are going folded into Circles & Roles (27 Nov 2026): each circle's page carries its own, the circles page all of them. */}
+      <Route path="/role-measures">{() => <Redirect to={`/circles#role-measures`} replace />}</Route>
       <Route path="/application-status/:ref" component={ApplicationStatus} />
       <Route path="/path" component={YourPath} />
       <Route path="/seat-applications/:id" component={SeatApplicationsAlias} />

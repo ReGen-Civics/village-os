@@ -77,7 +77,6 @@ const PAGES = [
   "client/src/pages/ExitPolicy.tsx",
   "client/src/pages/Quests.tsx",
   "client/src/pages/MySeason.tsx",
-  "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",
   "client/src/pages/SeasonalFestivals.tsx",
@@ -121,6 +120,8 @@ const PAGES = [
   "client/src/pages/ProsperityJourney.tsx",
   // The Governance page's Now view (the Governance brief, 26 Nov 2026): born inside the rule.
   "client/src/pages/GovernanceNow.tsx",
+  // How we work together with the game mechanics folded in (26 Nov 2026): into the night world beside its sibling views.
+  "client/src/pages/Governance.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
@@ -129,7 +130,18 @@ const JOURNEY = [
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",
+  // The game mechanics' four folds and what How we work together draws (26 Nov 2026).
+  "client/src/pages/GameMechanics.tsx",
+  "client/src/pages/gameMechanicsAskVillage.tsx",
+  "client/src/components/governance/VoiceSpreadBand.tsx",
+  "client/src/components/governance/VillageAgreements.tsx",
+  "client/src/components/governance/SettingHistory.tsx",
+  "client/src/components/canvas/CanvasPublicLines.tsx",
+  "client/src/components/canvas/DecisionMatrix.tsx",
+  "client/src/components/canvas/ConflictAgreementPublic.tsx",
   "client/src/components/journey/look.ts",
+  // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
+  "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.
   "client/src/components/roleCard/ComingSoonRoles.tsx",
   // The /quests example stamp and "Quests coming soon" (24 Nov 2026): born inside the rule.

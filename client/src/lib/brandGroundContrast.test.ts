@@ -615,7 +615,8 @@ const FIXED: Record<string, number> = {
   "client/src/pages/CoCreatorsGuide.tsx": 1,
   "client/src/pages/FirstWalk.tsx": 2,
   "client/src/pages/Forum.tsx": 1,
-  "client/src/pages/GameMechanics.tsx": 5,
+  // GameMechanics.tsx's five left on 2026-11-26 (the fold into How we work together): the mechanics stand in the
+  // sheet's world, their acts the sheet's gold, no longer white on the brand. 33.
   // GoodNeighbor.tsx's one left this list on 2026-11-24 (public launch QA): the page stands in the sheet's
   // world (docs/DESIGN_RULE.md), its main act the sheet's gold, no longer white on the brand.
   // Home.tsx's one left this list on 2026-11-12: the landing stands in the sheet's world
@@ -659,11 +660,12 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 48 since the prosperity path moved to the night world too (public launch QA, 24 Nov 2026).
     // 46 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
     // 38 fixed since /claim moved to the night world (whole-app QA, 25 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(38);
+    // 33 since the game mechanics folded into How we work together, in the night world (26 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(33);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(38 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(33 + 25);
   });
 
   for (const list of POINTER_LISTS) {
@@ -809,7 +811,7 @@ const BAND_HELD: Record<string, number> = {};
 
 /* The paragraphs this change made full white, one per file, plus the Housing hero. Training left the band on 11 Nov 2026 and Decisions on 12 Nov 2026 for the night world (docs/DESIGN_RULE.md, decider calm), so neither has a band ink to hold. */
 const BAND_FIXED = [
-  "client/src/pages/Governance.tsx",
+  // Governance.tsx (How we work together) left the band on 26 Nov 2026 for the night world, with the game mechanics folded in.
   "client/src/pages/Housing.tsx",
   "client/src/pages/Visit.tsx",
   // WorkWithUs.tsx left the band on 24 Nov 2026 for the night world (public launch QA).

@@ -2,7 +2,7 @@
  * /governance: THE VILLAGE'S GOVERNANCE PAGE, its Now view (the Governance brief, approved by the lead on 26 Nov 2026,
  * build step 3). What waits for a member's voice, what closes soon, Your voice and what they brought, read from
  * `GET /api/governance/now`. Somebody who is not a member yet sees how the village decides and the one door forward,
- * and nothing that is for members. How we decide (the explainer) is /governance/how.
+ * and nothing that is for members. How we work together (the explainer, with the game mechanics) is /governance/how.
  */
 import Layout from "@/components/Layout";
 import { usePageContent } from "@/hooks/usePageContent";
@@ -51,7 +51,7 @@ function Newcomer({ signedOut }: { signedOut: boolean }) {
             </Link>
           )}
           <Link href="/governance/how" className={BTN_SECONDARY}>
-            <Trans context="governance now: newcomer">How we decide</Trans>
+            <Trans context="governance now: newcomer">How we work together</Trans>
           </Link>
         </div>
       </section>

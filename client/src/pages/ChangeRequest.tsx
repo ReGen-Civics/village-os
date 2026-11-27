@@ -688,7 +688,7 @@ function DetailPage({ id }: { id: string }) {
           <p className={HINT}>
             <Trans>
               No changes yet. Open any setting with a Suggest button, such as those in{" "}
-              <Link href="/game-mechanics" className="font-medium text-notice underline underline-offset-2">
+              <Link href="/governance/how#mechanics-dials" className="font-medium text-notice underline underline-offset-2">
                 Game Mechanics
               </Link>
               , and add it here.

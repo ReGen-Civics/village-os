@@ -68,7 +68,9 @@ export const GOVERNANCE_PAGE: PageSpec = {
       shows: "The coloured band at the top of the page, above the village's open votes.",
       fields: [
         { key: "eyebrow", label: "Small label above the headline", kind: "text", max: 32, default: "How We Govern" },
-        { key: "headline", label: "Headline", kind: "text", max: 48, default: "How {village} Decides" },
+        // The lead's name for the page, the same as its menu entry, Governance tab and title (26 Nov 2026). A village
+        // that saved its own headline keeps it.
+        { key: "headline", label: "Headline", kind: "text", max: 48, default: "How we work together" },
         {
           key: "intro",
           label: "Paragraph under the headline",
