@@ -9,6 +9,7 @@ import {
   byStageThenDate,
   memberTrackOf,
   mayAssignOwners,
+  mayClaimReference,
   mayReadReference,
   ONBOARDING_REFERENCES_MAX,
   parseReferenceList,
@@ -71,23 +72,26 @@ describe("the shortlist answer", () => {
   });
 });
 
-describe("who reads a reference", () => {
-  const nobody = { isApplicant: false, recused: false, isReviewer: false, isFinalCall: false, isOwner: false };
-  it("the reviewers, the final-call role and the reference's owner", () => {
-    expect(mayReadReference({ ...nobody, isReviewer: true })).toBe(true);
-    expect(mayReadReference({ ...nobody, isFinalCall: true })).toBe(true);
+describe("who reads a reference: 'Interviewers + placers' (the lead, 27 Nov 2026)", () => {
+  const nobody = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false, isOwner: false };
+  it("the conversation roles' holders, the placers and the reference's own owner", () => {
+    expect(mayReadReference({ ...nobody, isInterviewer: true })).toBe(true);
+    expect(mayReadReference({ ...nobody, isPlacer: true })).toBe(true);
     expect(mayReadReference({ ...nobody, isOwner: true })).toBe(true);
-    // CONTROL: another member reads nothing.
+    // CONTROL: another member, a consent peer among them, reads nothing.
     expect(mayReadReference(nobody)).toBe(false);
   });
   it("never the applicant, never somebody who stepped out, whatever else they hold", () => {
-    expect(mayReadReference({ ...nobody, isReviewer: true, isApplicant: true })).toBe(false);
+    expect(mayReadReference({ ...nobody, isPlacer: true, isApplicant: true })).toBe(false);
     expect(mayReadReference({ ...nobody, isOwner: true, recused: true })).toBe(false);
   });
-  it("owners are picked by the reviewers and the final-call role, never by an owner alone", () => {
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: true, isFinalCall: false })).toBe(true);
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: false, isFinalCall: true })).toBe(true);
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: false, isFinalCall: false })).toBe(false);
+  it("only interviewers and placers claim and pick owners, never an owner alone", () => {
+    const f = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
+    expect(mayClaimReference({ ...f, isInterviewer: true })).toBe(true);
+    expect(mayClaimReference({ ...f, isPlacer: true })).toBe(true);
+    expect(mayClaimReference(f)).toBe(false);
+    expect(mayAssignOwners({ ...f, isPlacer: true })).toBe(true);
+    expect(mayAssignOwners(f)).toBe(false);
   });
 });
 

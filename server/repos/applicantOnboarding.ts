@@ -120,6 +120,18 @@ export async function setOwner(db: Db, ref: string, id: number, owner: { roleId:
   return Number(r.changedRows ?? r.affectedRows ?? 0) > 0;
 }
 
+/**
+ * "I'll follow up": the viewer becomes the reference's owner, only while nobody else is. One statement, so of two
+ * claims at once exactly one wins (QA pass 3: both won).
+ */
+export async function claimOwner(db: Db, ref: string, id: number, userId: string): Promise<boolean> {
+  const [r] = await db.query<ResultSetHeader>(
+    "UPDATE application_references SET owner_user_id = ? WHERE application_ref = ? AND id = ? AND (owner_user_id IS NULL OR owner_user_id = ?)",
+    [userId, ref, id, userId],
+  );
+  return Number(r.affectedRows ?? 0) > 0;
+}
+
 /** The owner's notes, and whether the follow-up is done. */
 export async function saveNotes(db: Db, ref: string, id: number, p: { notes: string; by: string; followedUp: boolean; at: Date }): Promise<boolean> {
   const [r] = await db.query<ResultSetHeader>(

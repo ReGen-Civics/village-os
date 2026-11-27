@@ -22,6 +22,7 @@ import {
   FOLLOWUP_NOTE_MAX,
   FOLLOWUP_ROLE_VARIABLE,
   mayAssignOwners,
+  mayClaimReference,
   mayReadReference,
   memberTrackOf,
   ONBOARDING_NOTICES,
@@ -92,6 +93,8 @@ export interface Standing {
   holdsPower: boolean;
   /** Holds the role the village names for the final call. */
   isFinalCall: boolean;
+  /** Holds a conversation role of this application (its list, or the final-call role): "Interviewers + placers". */
+  isInterviewer: boolean;
   /** The roles the viewer holds now, to tell which references they own. */
   roles: Set<string>;
 }
@@ -103,8 +106,13 @@ export async function standingOf(deps: ReviewDeps, ref: string, viewerId: string
   const holdsPower = !own && (await deps.liveHoldersOf(ADOPTING_POWER)).includes(viewerId);
   const asked = kindOfRef(ref) === "open" ? ((await asksFor(pool, [ref])).get(ref) ?? []).some((a) => a.userId === viewerId) : false;
   const isFinalCall = !own && (await finalCallHolders(pool)).includes(viewerId);
-  return { isApplicant: own, recused, isReviewer: !own && (holdsPower || asked), holdsPower, isFinalCall, roles: new Set(await review.rolesHeldBy(pool, viewerId)) };
+  const roles = new Set(await review.rolesHeldBy(pool, viewerId));
+  const isInterviewer = !own && (isFinalCall || (await review.interviewsOf(pool, ref)).some((i) => roles.has(i.roleId)));
+  return { isApplicant: own, recused, isReviewer: !own && (holdsPower || asked), holdsPower, isFinalCall, isInterviewer, roles };
 }
+
+/** The reference rule's reader, from a standing ("Interviewers + placers"). */
+const referenceReader = (s: Standing) => ({ isApplicant: s.isApplicant, recused: s.recused, isPlacer: s.holdsPower, isInterviewer: s.isInterviewer });
 
 const ownsReference = (s: Standing, r: repo.StoredReference, viewerId: string): boolean => (r.ownerUserId ? r.ownerUserId === viewerId : !!r.ownerRoleId && s.roles.has(r.ownerRoleId));
 
@@ -301,7 +309,7 @@ export async function assignOwner(deps: ReviewDeps, ref: string, viewerId: strin
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
-  if (!mayAssignOwners(s)) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
+  if (!mayAssignOwners(referenceReader(s))) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
   const r = await repo.referenceById(pool, ref, referenceId);
   if (!r) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   const o = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
@@ -333,13 +341,12 @@ export async function claimReference(deps: ReviewDeps, ref: string, viewerId: st
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
-  const interviewer = (await review.interviewsOf(pool, ref)).some((i) => s.roles.has(i.roleId));
-  const reads = mayReadReference({ isApplicant: s.isApplicant, recused: s.recused, isReviewer: s.isReviewer, isFinalCall: s.isFinalCall, isOwner: false }) || interviewer;
-  if (s.isApplicant || s.recused || !reads) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  if (!mayClaimReference(referenceReader(s))) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   const r = await repo.referenceById(pool, ref, referenceId);
   if (!r) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   if (r.ownerUserId && r.ownerUserId !== viewerId) return refuse(409, "taken", ONBOARDING_WORDS.claimTaken);
-  await repo.setOwner(pool, ref, referenceId, { roleId: r.ownerRoleId, userId: viewerId });
+  // One statement decides it, so two people claiming at once never both win: the second finds it taken.
+  if (!(await repo.claimOwner(pool, ref, referenceId, viewerId))) return refuse(409, "taken", ONBOARDING_WORDS.claimTaken);
   return { ok: true };
 }
 
@@ -553,7 +560,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
   );
 
-  const readsAll = mayReadReference({ isApplicant: false, recused: s.recused, isReviewer: s.isReviewer, isFinalCall: s.isFinalCall, isOwner: false });
+  const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false, isOwner: false });
   const visible = s.recused ? [] : readsAll ? stored : owned;
   const ownerIds = visible.map((r) => r.ownerUserId).filter((u): u is string => !!u);
   const ownerNames = new Map<string, string>();
@@ -562,7 +569,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     ownerNames.set(u, String(m?.name ?? "").trim().split(/\s+/)[0] || "A member");
   }
   const open = member ? member.open : !decidedStep;
-  const mayAssign = mayAssignOwners(s) && open;
+  const mayAssign = mayAssignOwners(referenceReader(s)) && open;
   const list: ServedReference[] = visible.map((r) => ({
     id: r.id,
     position: r.position,
@@ -586,7 +593,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       total: stored.length,
       mayAssign,
       questions: stringVar(REFERENCE_QUESTIONS_VARIABLE).trim(),
-      mayClaim: open && !s.recused && (readsAll || interviewer),
+      mayClaim: open && mayClaimReference(referenceReader(s)),
     },
     roles: mayAssign ? await review.activeRoles(pool) : [],
     members: mayAssign ? await review.membersHoldingRoles(pool) : [],

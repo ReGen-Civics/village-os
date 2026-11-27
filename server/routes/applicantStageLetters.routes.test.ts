@@ -383,6 +383,54 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect((await call("POST", `${app(id)}/references/${second.id}/claim`, {}, null)).status).toBe(401);
   });
 
+  it("REFERENCE CONTACTS: 'Interviewers + placers' (the lead, 27 Nov 2026). Ops, Community, Visionary and a placer read and claim; a consent peer, a plain member and an outsider do not; two claims at once, one wins", async () => {
+    const users = usersRepo(pool);
+    const PEER = person("u-sl-peer", "Kai Peer");
+    const PLAIN = person("u-sl-plain", "Pia Plain");
+    for (const u of [PEER, PLAIN]) if (!(await users.byId(u.id))) await users.add({ id: u.id, name: u.name, email: u.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    const id = await confirmed("interviewers-placers@example.test");
+    expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    const given = await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, {
+      references: [
+        { name: "Cora Example", email: "cora@example.test", whatsapp: "+506 8888 4321", how: "We ran a market.", ally: "" },
+        { name: "Dov Example", email: "dov@example.test", usPhone: "+1 415 555 0100", how: "He taught me bookkeeping.", ally: "" },
+      ],
+    });
+    expect(given.status, given.text).toBe(200);
+    // A member of the consent circle: asked to consent, holding none of the conversation roles.
+    await q("INSERT INTO role_proposal_asks (proposal_id, user_id, circle_id, closes_at) VALUES (?, ?, 'c-sl', ?)", [id, PEER.id, new Date(Date.now() + 7 * 86_400_000)]);
+    // Ops, Community, the Visionary (the final-call role) and the placer: every reference, with its contact.
+    for (const who of [IA, IB, FINAL, FOUNDER]) {
+      const w = await call("GET", `${app(id)}/walkthrough`, undefined, who.id);
+      expect(w.status, `${who.name}: ${w.text}`).toBe(200);
+      expect(w.body.walkthrough.references.list.map((r: any) => r.contact), who.name).toEqual(["Email: cora@example.test\nWhatsApp: +506 8888 4321", expect.stringContaining("dov@example.test")]);
+      expect(w.body.walkthrough.references.mayClaim, who.name).toBe(true);
+    }
+    // The consent peer reads the application, never a reference, and cannot claim.
+    const peer = await call("GET", `${app(id)}/walkthrough`, undefined, PEER.id);
+    if (peer.status === 200) expect(peer.body.walkthrough.references.list).toEqual([]);
+    expect(peer.text).not.toContain("cora@example.test");
+    const [first, second] = (await call("GET", `${app(id)}/walkthrough`, undefined, IA.id)).body.walkthrough.references.list;
+    expect((await call("POST", `${app(id)}/references/${first.id}/claim`, {}, PEER.id)).status).toBe(404);
+    // A plain member and an outsider: nothing.
+    const plain = await call("GET", `${app(id)}/walkthrough`, undefined, PLAIN.id);
+    expect(plain.status).toBe(404);
+    expect((await call("POST", `${app(id)}/references/${first.id}/claim`, {}, PLAIN.id)).status).toBe(404);
+    expect((await call("GET", `${app(id)}/walkthrough`)).status).toBe(401);
+    // Two claims at once (QA pass 3: both won). The fixture's viewer is one shared slot, so the race is run where it is
+    // decided: two claims in flight together on two connections, and exactly one wins.
+    const { claimOwner } = await import("../repos/applicantOnboarding");
+    const both = await Promise.all([claimOwner(pool, id, Number(second.id), IA.id), claimOwner(pool, id, Number(second.id), IB.id)]);
+    expect(both.filter(Boolean)).toHaveLength(1);
+    // The loser, through the route, is told it is taken.
+    const loser = both[0] ? IB : IA;
+    expect((await call("POST", `${app(id)}/references/${second.id}/claim`, {}, loser.id)).status).toBe(409);
+    // Everyone who reads sees who claimed it (QA pass 2: Community read "No references yet").
+    const seen = (await call("GET", `${app(id)}/walkthrough`, undefined, IB.id)).body.walkthrough.references.list.find((r: any) => r.id === second.id);
+    expect(seen.owner.userName).toMatch(/^(Iva|Ivo)$/);
+  });
+
   it("NUDGES (the lead: 'yes' to nudges): once each, and never a move", async () => {
     const { nudgeTick } = await import("../lib/applicantNudges");
     const { makeApplicantTeller } = await import("../lib/applicantUpdates");

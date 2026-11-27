@@ -186,29 +186,38 @@ export interface ReferenceReader {
   isApplicant: boolean;
   /** The reader stepped out of this application. */
   recused: boolean;
-  /** The reader decides this application: a live holder of the power to place people in roles, or a circle holder asked to consent. */
-  isReviewer: boolean;
-  /** The reader holds the role that makes the final call. */
-  isFinalCall: boolean;
+  /** The reader holds the power to place people in roles. */
+  isPlacer: boolean;
+  /** The reader holds a conversation role of this application: one in its conversations list, or the final-call role. */
+  isInterviewer: boolean;
   /** The reader is this reference's follow-up owner: the member named, or a holder of the role named when no member is. */
   isOwner: boolean;
 }
 
 /**
  * A REFERENCE'S CONTACT DETAILS are personal data of somebody who never signed
- * up. Read by the people who review the application, the role that makes the
- * final call, and the reference's own follow-up owner. Never the applicant,
- * never anyone who stepped out, never another member, never an AI.
+ * up. "Interviewers + placers" (the lead, 27 Nov 2026): read, with their notes
+ * and claims, by the holders of this application's conversation roles (its
+ * conversations list and the final-call role: Ops, Community, Visionary) and
+ * the holders of the power to place people in roles. Also by a member a placer
+ * named as one reference's follow-up owner, for that one. A member of the
+ * consent circle reads none of it unless they hold one of those. Never the
+ * applicant, never anyone who stepped out, never another member, never an AI.
  */
 export function mayReadReference(f: ReferenceReader): boolean {
   if (f.isApplicant || f.recused) return false;
-  return f.isReviewer || f.isFinalCall || f.isOwner;
+  return f.isPlacer || f.isInterviewer || f.isOwner;
 }
 
-/** Who may pick the follow-up owners: the reviewers and the role that makes the final call. */
-export function mayAssignOwners(f: Pick<ReferenceReader, "isApplicant" | "recused" | "isReviewer" | "isFinalCall">): boolean {
+/** Who may claim a reference ("I'll follow up"): the interviewers and the placers, never an owner alone. */
+export function mayClaimReference(f: Omit<ReferenceReader, "isOwner">): boolean {
   if (f.isApplicant || f.recused) return false;
-  return f.isReviewer || f.isFinalCall;
+  return f.isPlacer || f.isInterviewer;
+}
+
+/** Who may pick the follow-up owners: the placers and the interviewers. */
+export function mayAssignOwners(f: Omit<ReferenceReader, "isOwner">): boolean {
+  return mayClaimReference(f);
 }
 
 // ── The stage track ─────────────────────────────────────────────────────────
