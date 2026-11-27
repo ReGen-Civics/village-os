@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.90 (2026-11-27)
+
+### What changed for your village
+
+- **Paths and Menu at the top of a phone.** The phone's top bar reads logo, Paths, bell, Menu. Paths opens the village's paths, each with its picture and one line; Menu opens the same sheet as More, and works for a visitor too. Wide screens are unchanged.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.89 still works.
+
+---
+
 ## 1.3.89 (2026-11-27)
 
 ### What changed for your village
