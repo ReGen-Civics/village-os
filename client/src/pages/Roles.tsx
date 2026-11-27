@@ -811,7 +811,7 @@ export default function Roles() {
             </div>
             {canTagNeeds && (
               <p className="mt-3 text-sm">
-                <Link href="/role-measures" className={LINK}>
+                <Link href="/circles#role-measures" className={LINK}>
                   {t({ message: "How roles are going", context: "roles page measures door" })}
                 </Link>
               </p>
