@@ -85,6 +85,27 @@ describe("the walkthrough", () => {
     const track = document.querySelector("[data-walk-track]")!;
     expect(next.compareDocumentPosition(track) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(next.querySelector("[data-walk-shortlist]")).toBeTruthy();
+    // QA round 3: who acts, then the act, then what happens next; the intro waits below sm.
+    const who = next.querySelector("[data-walk-who]")!;
+    const act = next.querySelector("[data-walk-act]")!;
+    const what = next.querySelector("[data-walk-what]")!;
+    expect(who.compareDocumentPosition(act) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(act.compareDocumentPosition(what) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText(ONBOARDING_WORDS.intro).className.split(" ")).toEqual(expect.arrayContaining(["hidden", "sm:block"]));
+    // The track is trail stones, the one you stand on gold, with every stage's name kept for a screen reader.
+    expect(document.querySelector('[data-walk-stage="review"] .jw-stone')?.getAttribute("data-state")).toBe("here");
+    expect(document.querySelector('[data-walk-stage="received"] .jw-stone')?.getAttribute("data-state")).toBe("done");
+    for (const key of TRACK) expect(document.querySelector(`[data-walk-stage="${key}"]`)?.textContent).toContain(TRACK_WORDS[key]);
+  });
+
+  it("QA round 3: 'Go to the decision' is gold-edged when the decide panel and its gold act are on the page", async () => {
+    served = { status: 200, body: walk({ track: { stages: stages("agreement"), now: "agreement", who: "the circle", next: "Decide.", primary: "decide" } }) };
+    render(<Walkthrough applicationRef="op-0123456789abcdef0123" decideOnPage />);
+    expect((await screen.findByRole("link", { name: ONBOARDING_WORDS.primary.decide })).getAttribute("data-walk-decide")).toBe("edged");
+    cleanup();
+    // CONTROL: with no decide panel on the page, the link is the page's gold act.
+    render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
+    expect((await screen.findByRole("link", { name: ONBOARDING_WORDS.primary.decide })).getAttribute("data-walk-decide")).toBe("gold");
   });
 
   it("QA round 2: a bell's link to a part of the card lands there once the card has loaded", async () => {

@@ -454,6 +454,7 @@ export const ONBOARDING_WORDS = {
   finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
   finalExists: "The final conversation is already open.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
+  finalAtReferences: "The final conversation comes after References and proposal. Shortlist the application and write up its first conversation, then move it on.",
   finalNoRole: "No role is named for the final call. A founder names it in the village's settings.",
   notAllowed: "This is for the people who review this application.",
   notFound: "That application is not here.",

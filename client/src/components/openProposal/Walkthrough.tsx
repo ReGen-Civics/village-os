@@ -16,8 +16,9 @@
  * scorecards are shown as written, untotalled.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
 import { gameFetch } from "@/lib/gameApi";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import { FOLLOWUP_NOTE_MAX, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
 import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
@@ -67,11 +68,23 @@ interface ServedWalkthrough {
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
-const STATE_CLASS: Record<TrackState, string> = {
-  done: "border-open/60 text-open",
-  now: "border-notice bg-notice/10 font-bold text-foreground",
-  later: "border-border text-muted-foreground",
-  skipped: "border-border/60 text-muted-foreground line-through",
+/**
+ * The track as the applicant page's trail stones (QA round 3: bordered numbered squares read like pagination): the
+ * stone you stand on gold, a passed one green, the rest plain. The stage's name beside it from sm up, and always for
+ * a screen reader.
+ */
+const STONE_STATE: Record<TrackState, "done" | "here" | "ahead"> = { done: "done", now: "here", later: "ahead", skipped: "ahead" };
+const STONE_FACE: Record<TrackState, string> = {
+  done: "!border-open !text-open",
+  now: "",
+  later: "",
+  skipped: "opacity-60",
+};
+const STONE_LABEL: Record<TrackState, string> = {
+  done: "font-medium text-foreground",
+  now: "font-bold text-foreground",
+  later: "text-muted-foreground",
+  skipped: "text-muted-foreground line-through",
 };
 
 async function call(path: string, method: "GET" | "POST", body?: unknown): Promise<{ ok: boolean; status: number; data: any }> {
@@ -91,9 +104,14 @@ export interface WalkthroughProps {
   decideHref?: string;
   /** Tells the page the stage it stands at, so the phone's adopt row floats only at Agreement (QA round 1). */
   onStage?: (stage: TrackStage) => void;
+  /**
+   * The decide panel with its own gold act (Adopt, or the invitation) is on this page: "Go to the decision" is then
+   * gold-edged, so the page keeps one gold act (QA round 3).
+   */
+  decideOnPage?: boolean;
 }
 
-export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false }: WalkthroughProps) {
   const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
@@ -164,7 +182,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         return <a className={BTN_PRIMARY} href="#scorecards">{label}</a>;
       case "review":
       case "decide":
-        return <a className={BTN_PRIMARY} href={decideHref}>{label}</a>;
+        return <a className={decideOnPage ? BTN_NOTICE : BTN_PRIMARY} href={decideHref} data-walk-decide={decideOnPage ? "edged" : "gold"}>{label}</a>;
     }
   })();
 
@@ -174,25 +192,28 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
     <section id="walkthrough" aria-labelledby="walk-heading" className={`scroll-mt-24 ${CARD}`} data-walkthrough={t.now}>
       <p className={EYEBROW}>{trackStageWords()[t.now]}</p>
       <h2 id="walk-heading" className={H2}>{OW.heading}</h2>
-      <p className={`mt-1 ${HINT}`}>{OW.intro}</p>
+      {/* Below sm the intro waits: the act comes first on a phone's first screen (QA round 3). */}
+      <p className={`mt-1 hidden sm:block ${HINT}`}>{OW.intro}</p>
 
-      {/* Who acts next and the act come first, so the act is on a phone's first screen (QA round 2). */}
+      {/* Who acts next, then the act, then what happens next (QA round 3): the act on a phone's first screen. */}
       <div className={`mt-4 ${TILE}`} data-walk-next="">
         <p className={LABEL}>{OW.whoActs}</p>
         <p className="text-foreground" data-walk-who="">{t.who}</p>
-        <p className={`mt-2 ${LABEL}`}>{OW.whatNext}</p>
-        <p className="text-foreground">{t.next}</p>
-        {primary && <div className="mt-3">{primary}</div>}
+        {primary && <div className="mt-3" data-walk-act="">{primary}</div>}
         {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
+        <p className={`mt-3 ${LABEL}`}>{OW.whatNext}</p>
+        <p className="text-foreground" data-walk-what="">{t.next}</p>
       </div>
 
-      {/* The stage track: on a phone one row of six small stones (the stage's name is the eyebrow above); from sm up,
-          each stone carries its name and the row wraps. */}
-      <ol className="mt-4 flex gap-1.5 sm:flex-wrap sm:gap-2" data-walk-track="">
+      {/* The stage track as trail stones: one row of six on a phone (the stage's name is the eyebrow above); from sm
+          up, each stone carries its name and the row wraps. */}
+      <ol className="mt-4 flex items-center gap-2 sm:flex-wrap sm:gap-x-4 sm:gap-y-2" data-walk-track="">
         {t.stages.map((s, i) => (
-          <li key={s.key} className={`flex size-8 items-center justify-center gap-2 rounded-lg border text-sm sm:size-auto sm:min-h-11 sm:justify-start sm:px-3 sm:py-2 ${STATE_CLASS[s.state]}`} data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
-            <span aria-hidden="true" className="tabular-nums">{i + 1}</span>
-            <span className="sr-only sm:not-sr-only">{s.label}</span>
+          <li key={s.key} className="flex items-center gap-2 text-sm" data-walk-stage={s.key} data-walk-state={s.state} aria-current={s.state === "now" ? "step" : undefined}>
+            <span className="jw-stone flex shrink-0" data-state={STONE_STATE[s.state]} aria-hidden="true">
+              <span className={`jw-stone-face !size-8 !text-xs ${STONE_FACE[s.state]}`}>{s.state === "done" ? <Check className="size-3.5" /> : s.state === "now" ? i + 1 : ""}</span>
+            </span>
+            <span className={`sr-only sm:not-sr-only ${STONE_LABEL[s.state]}`}>{s.label}</span>
             <span className="sr-only">{OW.stateWords[s.state]}</span>
           </li>
         ))}

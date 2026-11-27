@@ -340,6 +340,10 @@ export async function addFinalConversation(deps: ReviewDeps, ref: string, viewer
   // (the review path before the shortlist existed, where nothing else opens it now).
   const roleFinalWaits = (await review.interviewsOf(pool, ref)).some((i) => i.final && i.state === "waiting");
   if (shortlistOf(steps) !== "yes" && !roleFinalWaits) return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
+  // Only from References and proposal (QA round 3): the older path's waiting final was movable from any stage, so a
+  // move with no shortlist and no references went through. The page offers it only there, and now so does the door.
+  const facts = await trackFactsOf(deps, ref);
+  if (facts && trackStates(facts.facts).now !== "references") return refuse(409, "not_references", ONBOARDING_WORDS.finalAtReferences);
   const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
   const at = deps.now();
   let opened: { position: number; roleId: string; minutes: number } | null = null;
@@ -548,6 +552,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
         (s.holdsPower || s.isFinalCall) &&
         !s.recused &&
         !interviews.some((i) => i.final && i.state !== "waiting") &&
+        // Only from References and proposal, the same stage the door itself requires (QA round 3).
+        track.now === "references" &&
         (interviews.some((i) => i.final && i.state === "waiting") || (shortlist === "yes" && !!finalRole)),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,

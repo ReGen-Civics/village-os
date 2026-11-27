@@ -25,6 +25,7 @@ import { useModuleOn } from "@/modules/ModuleProvider";
 import { sayPath, tokenFacts, yourPath } from "@shared/yourPath";
 import { BreathingLoader, useReducedMotion } from "@/components/natural";
 import { gameFetch } from "@/lib/gameApi";
+import { useRoleArt } from "@/lib/natureArt";
 import { DECLINED_PAGE_WORDS } from "@shared/openProposalDecide";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
 import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
@@ -40,6 +41,8 @@ interface Served {
   actsNext: string;
   by: string | null;
   roles: string[];
+  /** The roles' ids, for each role's own painting beside its name (QA round 3). Absent on an older server. */
+  roleIds?: string[];
   path: Array<{ label: string; state: "done" | "now" | "later" }>;
   booking: string | null;
   mode: "block" | "split";
@@ -379,7 +382,12 @@ export default function ApplicationStatus() {
           <article className="space-y-6" data-application-step={s.step}>
             <header>
               <h1 className={H1}>{view.heading}</h1>
-              {s.roles.length > 0 && <p className="mt-1 text-muted-foreground">{s.roles.join(", ")}</p>}
+              {s.roles.length > 0 && (
+                <div className="mt-2 flex items-center gap-3" data-status-role="">
+                  <RoleArtBeside roleId={s.roleIds?.[0] ?? null} />
+                  <p className="min-w-0 text-muted-foreground">{s.roles.join(", ")}</p>
+                </div>
+              )}
             </header>
             {/* Phone: the seed across the top, then one thing at a time. Desktop: the seed and whose move it is
                 stand on the left while the steps and the doors are read on the right. */}
@@ -585,5 +593,27 @@ export default function ApplicationStatus() {
       </div>
       </div>
     </Layout>
+  );
+}
+
+/**
+ * THE ROLE'S OWN PAINTING beside its name under the heading (QA round 3: the page needed the village's art), framed
+ * the way /roles frames it (components/roleCard/RoleRowArt.tsx). The painting the village already holds for that role;
+ * until it answers, and for a role with none, the seed glyph in the same frame. Decorative: the name beside it says it.
+ */
+function RoleArtBeside({ roleId }: { roleId: string | null }) {
+  const src = useRoleArt("sm")(roleId);
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <span className="relative block aspect-[3/4] w-12 shrink-0 overflow-hidden rounded-xl border border-notice/40 shadow-sm" data-role-art="" aria-hidden="true">
+        <img src={src} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} className="absolute inset-0 size-full object-cover" />
+      </span>
+    );
+  }
+  return (
+    <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-notice/40 bg-card shadow-sm" data-role-art-seed="" aria-hidden="true">
+      <SeedOfLife size="sm" total={6} walked={0} label="" />
+    </span>
   );
 }

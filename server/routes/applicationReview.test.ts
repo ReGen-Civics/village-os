@@ -249,6 +249,10 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       // The final conversation never opens by itself (the lead, 27 Nov 2026; QA round 1): a holder of the power to
       // place people in roles moves the application there once the others are written up.
       if (Number(ivs[i].is_final) === 1 && ivs[i].state === "waiting") {
+        // The move is offered only from References and proposal (QA round 3), so the page's own path comes first: a
+        // holder of the power shortlists it, and with the conversations before it written up it stands there.
+        const listed = await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, state.powerHolders[0]);
+        expect([200, 409], JSON.stringify(listed.body)).toContain(listed.status);
         const moved = await call("POST", `/api/governance/applications/${id}/final-conversation`, {}, FOUNDER.id);
         expect(moved.status, JSON.stringify(moved.body)).toBe(200);
         ivs = await interviews(id);

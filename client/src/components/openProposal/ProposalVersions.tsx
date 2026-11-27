@@ -14,13 +14,26 @@ export default function ProposalVersions({ versions, current }: { versions: Prop
   const { t, i18n } = useLingui();
   const day = useDayWords();
   if (!versions.length) return null;
-  const days = versions.map((v) => v.at.slice(0, 10));
-  const shared = new Set(days.filter((d, i) => days.indexOf(d) !== i));
-  /** The day, and the time as well when another version shares that day. */
+  // ONE CLOCK (QA round 3): the notes beside these are dated in UTC (useDayWords), so the versions are grouped and
+  // said in UTC too. A stored time is an ISO instant, so its first 10 and 16 characters are its UTC day and minute.
+  const twice = (keys: string[]) => new Set(keys.filter((k, i) => keys.indexOf(k) !== i));
+  const sharedDay = twice(versions.map((v) => v.at.slice(0, 10)));
+  const sharedMinute = twice(versions.map((v) => v.at.slice(0, 16)));
+  /** The day; the time as well when another version shares that day, with seconds when it shares the minute. */
   const when = (at: string): string => {
-    if (!shared.has(at.slice(0, 10))) return day(at);
+    if (!sharedDay.has(at.slice(0, 10))) return day(at);
     const d = new Date(at);
-    return Number.isNaN(d.getTime()) ? day(at) : i18n.date(d, { day: "numeric", month: "long", year: "numeric", hour: "numeric", minute: "2-digit" });
+    if (Number.isNaN(d.getTime())) return day(at);
+    return i18n.date(d, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      ...(sharedMinute.has(at.slice(0, 16)) ? { second: "2-digit" as const } : {}),
+      timeZone: "UTC",
+      timeZoneName: "short",
+    });
   };
   return (
     <section className="mt-6 min-w-0" aria-labelledby="proposal-versions-heading" data-walk-proposal-versions="">

@@ -75,6 +75,7 @@ export const ONBOARDING_MIRROR: WordMirror<typeof ONBOARDING_WORDS> = {
   finalAdded: msg({ message: "The final conversation is open. The applicant books it now, and their proposal is fixed.", context: "applicant onboarding: finalAdded" }),
   finalExists: msg({ message: "The final conversation is already open.", context: "applicant onboarding: finalExists" }),
   finalTalksFirst: msg({ message: "Write up the conversations before it first. Then move the application to the final conversation.", context: "applicant onboarding: finalTalksFirst" }),
+  finalAtReferences: msg({ message: "The final conversation comes after References and proposal. Shortlist the application and write up its first conversation, then move it on.", context: "applicant onboarding: finalAtReferences" }),
   finalNoRole: msg({ message: "No role is named for the final call. A founder names it in the village's settings.", context: "applicant onboarding: finalNoRole" }),
   notAllowed: msg({ message: "This is for the people who review this application.", context: "applicant onboarding: notAllowed" }),
   notFound: msg({ message: "That application is not here.", context: "applicant onboarding: notFound" }),

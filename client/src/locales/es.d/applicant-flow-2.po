@@ -102,3 +102,8 @@ msgstr "La conversación final ya está abierta."
 msgctxt "applicant onboarding: finalTalksFirst"
 msgid "Write up the conversations before it first. Then move the application to the final conversation."
 msgstr "Primero escriba las conversaciones anteriores. Después pase la postulación a la conversación final."
+
+# needs-native-review: the move to the final conversation only from References and proposal, QA round 3
+msgctxt "applicant onboarding: finalAtReferences"
+msgid "The final conversation comes after References and proposal. Shortlist the application and write up its first conversation, then move it on."
+msgstr "La conversación final viene después de Referencias y propuesta. Preseleccione la postulación y escriba su primera conversación; después pásela a la siguiente etapa."

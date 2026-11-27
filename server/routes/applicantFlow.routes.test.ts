@@ -297,6 +297,11 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     await variable("org.final_call_role", "");
     try {
       const id = await confirmed("flow-final-first@example.test");
+      // QA ROUND 3: the older path's waiting final is not movable before References and proposal (no shortlist, no
+      // first conversation written up): the door refuses, and the page offers nothing.
+      const early = await call("POST", `${app(id)}/final-conversation`, {}, FOUNDER.id);
+      expect([early.status, early.body?.error ?? early.body?.code]).toEqual([409, "not_references"]);
+      expect((await call("GET", `${app(id)}/walkthrough`, undefined, FOUNDER.id)).body.walkthrough.you.mayAddFinal).toBe(false);
       const rows = async () => (await q("SELECT position, is_final, state FROM application_interviews WHERE application_ref = ? ORDER BY position", [id])).map((r: any) => [Number(r.position), Number(r.is_final), r.state]);
       // The final went last, and nothing about it is open.
       const after = await rows();

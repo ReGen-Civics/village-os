@@ -358,7 +358,8 @@ export default function OpenProposal() {
                     ? DW.applies(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone))
                     : DW.heading(p.proposer, p.roles.map((r) => r.name ?? DW.roleGone), !!p.term)}
               </h1>
-              <p className="mt-2 leading-relaxed text-muted-foreground">
+              {/* Below sm the lede waits, so the walkthrough's act reaches a phone's first screen (QA round 3). */}
+              <p className="mt-2 hidden leading-relaxed text-muted-foreground sm:block" data-open-proposal-lede="">
                 {p.agent ? (
                   t({ message: "An agent, proposed by the member who keeps it. Adopted, it is seated on these roles at once, marked as an agent, with its keeper beside it.", context: "open proposal: an agent's proposal" })
                 ) : founding ? (
@@ -376,7 +377,12 @@ export default function OpenProposal() {
 
             {/* The walkthrough (shared/applicantOnboarding.ts): where this application stands, who acts next and the one act that moves it.
                 The door answers 404 to anybody who is not part of this application, and then nothing renders. */}
-            <Walkthrough applicationRef={p.id} onChanged={() => void load()} onStage={setStage} />
+            <Walkthrough
+              applicationRef={p.id}
+              onChanged={() => void load()}
+              onStage={setStage}
+              decideOnPage={!!side && p.status === "confirmed" && (p.you.mayAdopt || p.you.mayDecline || (!!p.you.mayReview && !!p.review))}
+            />
 
             {p.agent && <AgentView agent={p.agent} />}
 
