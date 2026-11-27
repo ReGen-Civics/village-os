@@ -766,7 +766,7 @@ function DetailPage({ id }: { id: string }) {
       {/* THE ONE ACT, IN REACH ON A PHONE (as /roles keeps its apply act): while the author gathers, "Open for review"
           sticks above the tab bar from the first screen to the last. From sm up it sits in its panel above. */}
       {cr.yours && cr.state === "gathering" && (
-        <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-10 sm:hidden" data-testid="cr-phone-act">
+        <div data-hides-fab-phone="" className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-10 sm:hidden" data-testid="cr-phone-act">
           <button type="button" className={`${primary} w-full shadow-sm`} disabled={count === 0} onClick={() => void act("/open-review", "POST", { revision: cr.revision })}>
             <Trans context="open a change request for review">Open for review</Trans>
           </button>

@@ -86,6 +86,8 @@ describe("one change request, under Decisions", () => {
     const bar = await screen.findByTestId("cr-phone-act");
     expect(bar.className).toContain("sticky");
     expect(bar.className).toContain("sm:hidden");
+    // The companion button steps aside for it on a phone, as on the joining thresholds.
+    expect(bar.hasAttribute("data-hides-fab-phone")).toBe(true);
     expect(bar.textContent).toBe("Open for review");
   });
 });

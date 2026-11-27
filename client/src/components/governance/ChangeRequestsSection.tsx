@@ -171,7 +171,7 @@ export default function ChangeRequestsSection() {
       ) : (
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="space-y-2">
-            <h3 className={EYEBROW}>
+            <h3 className={`${EYEBROW} font-sans`} /* design-ok: a column label set as the eyebrow, which .sheet-night would put in the display face as an h3 */>
               <Trans context="heading on the change requests page">In review across the village</Trans>
             </h3>
             {open.length === 0 ? (
@@ -183,7 +183,7 @@ export default function ChangeRequestsSection() {
             )}
           </div>
           <div className="space-y-2">
-            <h3 className={EYEBROW}>
+            <h3 className={`${EYEBROW} font-sans`} /* design-ok: a column label set as the eyebrow, which .sheet-night would put in the display face as an h3 */>
               <Trans context="heading on the change requests page">Your change requests</Trans>
             </h3>
             {mine.length === 0 ? (

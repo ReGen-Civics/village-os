@@ -106,7 +106,7 @@ describe("the approval inbox", () => {
 
   it("closes a seating already made by hand through its own route, and names it Done by hand", async () => {
     const seat = { ...A, id: "prop_s", kind: "seating", title: "Seat Ana in Kitchen from 2026-12-01", canRevert: false };
-    const done = { ...seat, id: "prop_t", title: "Seat Bo in Water", state: "taken", decision: null };
+    const done = { ...seat, id: "prop_t", title: "Seat Bo in Water", state: "taken", decision: null, resolvedAt: "2026-12-03T10:00:00.000Z" };
     const calls: Array<{ url: string; method: string; body: any }> = [];
     vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
@@ -124,6 +124,8 @@ describe("the approval inbox", () => {
     // Nothing was approved or declined on the way.
     expect(calls.some((c) => c.url.includes("/api/approval-inbox/prop_s/"))).toBe(false);
     expect(within(screen.getByTestId("decided-prop_t")).getByText("Done by hand")).toBeTruthy();
+    // A close that writes no decision still says when it left the list.
+    expect(screen.getByTestId("decided-prop_t").textContent).toContain(new Date("2026-12-03T10:00:00.000Z").toLocaleDateString("en", { day: "numeric", month: "short" }));
   });
 
   it("shows a connector role change's count and its draft, and offers no Approve for an empty draft", async () => {
@@ -138,6 +140,9 @@ describe("the approval inbox", () => {
     expect(within(one).getByRole("button", { name: "Approve" })).toBeTruthy();
     const two = screen.getByTestId("inbox-draft:d2");
     expect(within(two).queryByRole("button", { name: "Approve" })).toBeNull();
+    // Nothing to approve, so nothing to tick; the full draft keeps its box.
+    expect(within(two).queryByRole("checkbox")).toBeNull();
+    expect(within(one).getByRole("checkbox")).toBeTruthy();
     expect(within(two).getByRole("button", { name: "Decline" })).toBeTruthy();
   });
 

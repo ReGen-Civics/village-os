@@ -39,6 +39,8 @@ interface Card {
   state: string;
   /** A connector's role change (`draft:<id>`): how many changes its draft holds. */
   changes?: number;
+  /** When a decided one left the list, for a close that writes no decision (done by hand, lapsed). */
+  resolvedAt?: string | null;
 }
 
 const DRAFT_PREFIX = "draft:";
@@ -221,7 +223,8 @@ export default function ApprovalInbox({
           return (
             <li key={c.id} className={`${TILE} sm:p-5 ${soon ? "border-notice/60" : ""}`} data-testid={`inbox-${c.id}`}>
               <label className="flex min-h-11 items-start gap-3">
-                {waiting.length > 1 && (
+                {/* A draft with no change has nothing to approve, so nothing to tick either. */}
+                {waiting.length > 1 && !(isDraft && changes === 0) && (
                   <input type="checkbox" className={`${TICK} mt-1`} checked={!!picked[c.id]} onChange={(e) => setPicked((p) => ({ ...p, [c.id]: e.target.checked }))} aria-label={c.title} />
                 )}
                 <span className="font-display text-lg font-bold text-card-foreground">{c.title}</span>
@@ -290,7 +293,7 @@ export default function ApprovalInbox({
                 <p className="text-foreground">{c.title}</p>
                 <p className={`${HINT} flex flex-wrap items-center gap-2`}>
                   {DECIDED_WORDS[c.state] ? <span className={CHIP_SOFT}>{i18n._(DECIDED_WORDS[c.state])}</span> : null}
-                  {c.decision ? <span>{day(c.decision.at)}</span> : null}
+                  {c.decision ? <span>{day(c.decision.at)}</span> : c.resolvedAt ? <span>{day(c.resolvedAt)}</span> : null}
                 </p>
                 {c.state === "approved" && c.canRevert && (
                   <button type="button" className={`${BTN_SECONDARY} mt-2`} disabled={busy !== null} onClick={() => void post(c.id, "revert")}>

@@ -145,6 +145,8 @@ export function register(app: Express, deps: Deps): void {
       words: body?.words ?? { what: p.title, before: "", after: p.body ?? "" },
       canRevert: !!body?.revert,
       decision: body?.decision ?? null,
+      // When it left the list, for a close that writes no decision (a seating done by hand, a lapse).
+      resolvedAt: p.resolvedAt,
       state: p.status,
     };
   };
