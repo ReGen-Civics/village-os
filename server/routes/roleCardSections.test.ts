@@ -21,6 +21,8 @@ import { capabilityDecision, type Capability, type CapabilityCtx } from "../../s
 import type { SubjectCloser } from "../lib/applyDue";
 import { addChange, createDraft, publishDraft } from "../lib/orgDrafts";
 import { seatHolder } from "../lib/orgChart";
+import * as portraitsRepo from "../repos/characterPortraits";
+import { villageId } from "../lib/economy";
 import { insertApplication } from "../repos/seatApplications";
 import { register } from "./orgDraftDecide";
 import { loadVariables } from "../lib/variables";
@@ -346,6 +348,51 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: [] }]);
     // CONTROL: with no names shown, one holder's share is nobody's in particular, and stays exact.
     expect((await call("GET", "/api/org/founding-team", null)).json.fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
+    for (const k of ["org.public_people", "org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
+  });
+
+  // FACES (the lead, 26 Nov 2026: "I like humans"): a holder's PUBLISHED portrait travels beside their first name, a
+  // private one never leaves the database, and with names hidden no face travels at all.
+  it("sends each holder's published portrait beside their name, never a private one, and none while names are hidden", async () => {
+    const lead = await seedRole();
+    const made = await createDraft(pool, { title: "Faces", createdBy: "admin-1", sourceKind: "human", openCap: null });
+    if (!made.ok) throw new Error(made.error);
+    const keep = `${lead.id}-keep`;
+    const r = await addChange(pool, made.id, { op: "create_seat", orgRoleId: keep, payload: { name: "Land Keeper", circleId: lead.circle, aim: "a", domain: "d" } });
+    if (!r.ok) throw new Error(r.error);
+    const pub = await publishDraft(pool, made.id, "admin-1", null);
+    if (!pub.ok) throw new Error(pub.error);
+    const people = [
+      [`${lead.id}-ana`, "Ana Faces", "ana-shown.webp", true],
+      [`${lead.id}-bo`, "Bo Faces", "bo-private.webp", false],
+      [`${lead.id}-cy`, "Cy Faces", null, false],
+    ] as const;
+    for (const [id, name, file, shown] of people) {
+      await pool.query("INSERT INTO `users` (`id`, `name`, `email`, `password_hash`) VALUES (?,?,?,'x')", [id, name, `${id}@examples.invalid`]); // module-review-ok: a scratch member in the schema this suite provisioned
+      await seatHolder(pool, keep, { userId: id });
+      if (!file) continue;
+      await portraitsRepo.upsertPortrait(pool, { id: `cp-${id}`, villageId: villageId(), userId: id, archetypeKey: "building", fileName: file, source: "uploaded", width: 600, height: 800, bytes: 1234 });
+      if (shown) await portraitsRepo.setPublished(pool, villageId(), id, "building", true);
+    }
+    await setVar("org.founding_team_roles", lead.id);
+    await setVar("org.founding_team", "true");
+    await setVar("org.public_people", "true");
+    const open = await call("GET", "/api/org/founding-team", null);
+    const row = open.json.team.find((t: any) => t.id === keep);
+    expect(row.holders).toEqual(["Ana", "Bo", "Cy"]);
+    expect(row.faces).toEqual(["/api/uploads/ana-shown.webp", null, null]);
+    // The private picture's name is nowhere in the answer, not only absent from the face list.
+    expect(JSON.stringify(open.json)).not.toContain("bo-private");
+    // CONTROL: names hidden, so no face travels either.
+    await setVar("org.public_people", "false");
+    const hidden = (await call("GET", "/api/org/founding-team", null)).json.team.find((t: any) => t.id === keep);
+    expect(hidden).toEqual({ id: keep, name: "Land Keeper", holders: [] });
+    expect(JSON.stringify(hidden)).not.toContain("ana-shown");
+    // Withdrawn: the owner keeps it to themself, and the next read shows the initial again.
+    await setVar("org.public_people", "true");
+    await portraitsRepo.setPublished(pool, villageId(), people[0][0], "building", false);
+    const after = (await call("GET", "/api/org/founding-team", null)).json.team.find((t: any) => t.id === keep);
+    expect(after).toEqual({ id: keep, name: "Land Keeper", holders: ["Ana", "Bo", "Cy"] });
     for (const k of ["org.public_people", "org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
   });
 

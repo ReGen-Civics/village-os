@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the review page's pay note, 26 Nov 2026
+msgctxt "proposed changes: a role card's pay, for a reader who may not read terms"
+msgid "The pay on offer changes too. Only people who may read a role's terms see how."
+msgstr "El pago que se ofrece también cambia. Solo quienes pueden leer los términos de un rol ven cómo."

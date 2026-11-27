@@ -1928,7 +1928,7 @@ html:has(#sera-changes [data-sera-strip-on]) {
 :root[data-mode] [data-mobile-tabbar] :is(a, button) {
   color: var(--band-ink);
 }
-:root[data-mode] [data-mobile-tabbar] [aria-current="page"] {
+:root[data-mode] [data-mobile-tabbar] :is([aria-current="page"], [aria-current="true"]) {
   color: var(--band-active);
 }
 :root[data-mode] [data-mobile-tabbar] .bg-amber {

@@ -519,4 +519,18 @@ export const DIAL_WORDS_2: Readonly<Record<string, DialWords>> = {
       },
     },
   },
+  "look.default_mode": {
+    label: msg({ message: "Light or dark on a first visit", context: "game variable look.default_mode, label" }),
+    description: msg({ message: "Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.", context: "game variable look.default_mode, description" }),
+    choices: {
+      "light": {
+        label: msg({ message: "Light", context: "game variable look.default_mode, choice light, label" }),
+        hint: msg({ message: "The day page, and Sea chart where the village chose it.", context: "game variable look.default_mode, choice light, hint" }),
+      },
+      "dark": {
+        label: msg({ message: "Dark", context: "game variable look.default_mode, choice dark, label" }),
+        hint: msg({ message: "The night page.", context: "game variable look.default_mode, choice dark, hint" }),
+      },
+    },
+  },
 };

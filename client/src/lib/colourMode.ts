@@ -15,7 +15,10 @@
  *   1. the visitor's own choice, remembered in this browser;
  *   2. the device's preference (prefers-color-scheme), once MODES_LIVE, and
  *      only while FOLLOW_DEVICE is on;
- *   3. DEFAULT_MODE, once MODES_LIVE.
+ *   3. the village's own default, the dial look.default_mode, which the server
+ *      writes onto <html> as data-village-mode in every page it sends
+ *      (server/routes/brandTheme.ts), once MODES_LIVE;
+ *   4. DEFAULT_MODE, once MODES_LIVE.
  */
 
 export type Mode = "light" | "dark";
@@ -26,8 +29,15 @@ export const MODE_KEY = "village-mode";
 /** The window event applyMode sends, so every control showing the mode stays in step. */
 export const MODE_CHANGED = "village-mode-changed";
 
-/** The platform default when nobody has chosen and the device says nothing (the lead, 24 Nov 2026: light; 26 Nov 2026: dark). */
-export const DEFAULT_MODE: Mode = "dark";
+/**
+ * The platform default when nobody has chosen, the device says nothing and the
+ * village has set no default of its own (the lead, 26 Nov 2026: light for the
+ * platform, and a village picks its own with look.default_mode).
+ */
+export const DEFAULT_MODE: Mode = "light";
+
+/** The attribute the server puts on <html> carrying the village's default mode. The first-paint script reads the same name. */
+export const VILLAGE_MODE_ATTR = "data-village-mode";
 
 /**
  * Whether modes are switched on for everybody: the header shows the switch,
@@ -39,10 +49,9 @@ export const DEFAULT_MODE: Mode = "dark";
 export const MODES_LIVE = true;
 
 /**
- * Whether a first visit follows the device's light or dark setting. Off: the
- * lead asked for one default (light on 24 Nov 2026, dark since 26 Nov 2026),
- * so a first visit opens in DEFAULT_MODE whatever the device says, and the
- * visitor's own choice is the only thing that changes it. One line to turn on; the
+ * Whether a first visit follows the device's light or dark setting. Off: a
+ * first visit opens in the village's default (or DEFAULT_MODE) whatever the
+ * device says, and the visitor's own choice is the only thing that changes it. One line to turn on; the
  * first-paint script carries the same flag as `device`.
  */
 export const FOLLOW_DEVICE = false;
@@ -70,12 +79,22 @@ function deviceMode(): Mode | null {
   return null;
 }
 
+/** The village's own default, as the server wrote it onto <html>, or null when it wrote none. */
+export function villageMode(): Mode | null {
+  try {
+    const v = document.documentElement.getAttribute(VILLAGE_MODE_ATTR);
+    return isMode(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The mode this visitor should see, or null for the look from before modes. */
 export function resolveMode(live: boolean = MODES_LIVE, followDevice: boolean = FOLLOW_DEVICE): Mode | null {
   const stored = storedMode();
   if (stored) return stored;
   if (!live) return null;
-  return (followDevice ? deviceMode() : null) ?? DEFAULT_MODE;
+  return (followDevice ? deviceMode() : null) ?? villageMode() ?? DEFAULT_MODE;
 }
 
 /** The mode on the page now, as the switch should show it. */
