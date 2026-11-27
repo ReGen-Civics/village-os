@@ -35,6 +35,7 @@ function server(door: "power" | "admin" | null, calls: Array<{ url: string; meth
       calls.push({ url, method, body: init.body ? JSON.parse(String(init.body)) : null });
       const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status });
       if (url.endsWith("/access")) return json({ door });
+      if (url.endsWith("/drafts")) return json({ drafts: door ? [{ id: "draft-9", title: "Sharpen the aim" }] : [] });
       if (url.endsWith("/api/archetypes")) return json([]);
       if (url.endsWith("/sera")) return json({ differences: [], pay: { kind: "range", currency: "USD", minMinor: 100000, maxMinor: 100000, per: "month" }, payFrom: null, readAt: null });
       if (method === "POST") return json({ success: true, changed: ["Purpose"], state: { ...STATE, words: { ...STATE.words, aim: "New aim" } } });
@@ -51,6 +52,14 @@ afterEach(() => {
 });
 
 describe("Edit this role", () => {
+  it("a change waiting on this role is named beside the button, a link to its draft page", async () => {
+    server("power");
+    render(<EditRoleButton roleId="r1" />);
+    const box = await screen.findByTestId("role-drafts-r1");
+    expect(box.textContent).toContain("A change to this role is waiting:");
+    expect(box.querySelector("a")?.getAttribute("href")).toBe("/governance/decisions/drafts/draft-9");
+  });
+
   it("draws nothing for a reader without the power, and asks nothing when signed out", async () => {
     server(null);
     const { container } = render(<EditRoleButton roleId="r1" />);
