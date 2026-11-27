@@ -5,6 +5,7 @@ import YourQuests from "@/components/profileDash/YourQuests";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
 import ProfileSheet from "@/components/ProfileSheet";
+import HowWeWorkReadCard from "@/components/profile/HowWeWorkReadCard";
 import ProfileHero from "@/components/ProfileHero";
 import OnchainCard from "@/components/OnchainCard";
 import WalletCard from "@/components/WalletCard";
@@ -899,6 +900,7 @@ export default function Profile() {
                 )}
               </m.section>
 
+              <HowWeWorkReadCard />{/* What you have read: How we work together, with the way back in (27 Nov 2026). */}
               {/* Standing, gratitude and this moon, from /api/me/profile. */}
               <ProfileSheet />
 
