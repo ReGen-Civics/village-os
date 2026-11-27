@@ -94,17 +94,30 @@ export function parseFailLines(log) {
   return [...out];
 }
 
-/** Count per culprit: events, distinct code keys, an example run. Worst first. */
+/**
+ * Count per culprit: events, distinct code keys, when it was LAST seen and that
+ * newest run as the example. Worst first.
+ *
+ * WHY LAST SEEN (26 Nov 2026). The first live report ranked five tests as the
+ * top real flakes, and four of the five had been fixed at their cause inside
+ * the window (03007a6, b7f1bdf, 600b48b): their events were all from before
+ * the fix, and nothing on the row said so. A row whose last event predates the
+ * newest change to its test is history, not work.
+ */
 export function rank(attributed) {
   const by = new Map();
-  for (const { culprit, key, url } of attributed) {
-    const e = by.get(culprit) ?? { culprit, events: 0, keys: new Set(), example: url };
+  for (const { culprit, key, url, at = "" } of attributed) {
+    const e = by.get(culprit) ?? { culprit, events: 0, keys: new Set(), example: url, lastSeen: at };
     e.events += 1;
     e.keys.add(key);
+    if (at > e.lastSeen) {
+      e.lastSeen = at;
+      e.example = url;
+    }
     by.set(culprit, e);
   }
   return [...by.values()]
-    .map((e) => ({ culprit: e.culprit, events: e.events, codes: e.keys.size, example: e.example }))
+    .map((e) => ({ culprit: e.culprit, events: e.events, codes: e.keys.size, lastSeen: e.lastSeen, example: e.example }))
     .sort((a, b) => b.events - a.events || b.codes - a.codes || (a.culprit < b.culprit ? -1 : 1));
 }
 
@@ -116,6 +129,11 @@ export function rank(attributed) {
  */
 export function tableCell(text) {
   return String(text).replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/`/g, "'").replace(/[\r\n]+/g, " ");
+}
+
+/** An ISO time as "YYYY-MM-DD HH:MM", or "?" when the API gave none. */
+export function whenCell(iso) {
+  return /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(String(iso)) ? String(iso).slice(0, 16).replace("T", " ") : "?";
 }
 
 export function markdown(ranked, { days, runs, attempts, events, unkeyed, unread = 0 }) {
@@ -131,9 +149,13 @@ export function markdown(ranked, { days, runs, attempts, events, unkeyed, unread
     lines.push("No flakes found in this window.");
     return lines.join("\n");
   }
-  lines.push("| # | Fails, then passes on the same code | Events | Distinct code | Example |", "|---|---|---|---|---|");
-  ranked.forEach((r, i) => lines.push(`| ${i + 1} | \`${tableCell(r.culprit)}\` | ${r.events} | ${r.codes} | [run](${r.example}) |`));
-  lines.push("", "Fix the cause. A retry, a skip or a looser assertion is not a fix.");
+  lines.push("| # | Fails, then passes on the same code | Events | Distinct code | Last seen (UTC) | Newest |", "|---|---|---|---|---|---|");
+  ranked.forEach((r, i) => lines.push(`| ${i + 1} | \`${tableCell(r.culprit)}\` | ${r.events} | ${r.codes} | ${whenCell(r.lastSeen)} | [run](${r.example}) |`));
+  lines.push(
+    "",
+    "Fix the cause. A retry, a skip or a looser assertion is not a fix.",
+    "Before you start on a row, compare its last-seen time with the newest commit to its test: a row whose every event came before a fix is already done.",
+  );
   return lines.join("\n");
 }
 
@@ -174,6 +196,12 @@ function client(token) {
   };
 }
 
+/** When an attempt ran: its earliest job start, else the run's own creation time. */
+export function attemptAt(jobs, run) {
+  const starts = jobs.map((j) => j.started_at).filter((t) => typeof t === "string" && t).sort();
+  return starts[0] ?? run.created_at ?? "";
+}
+
 export async function gather(api, repo, days) {
   const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
   const runs = [];
@@ -196,7 +224,7 @@ export async function gather(api, repo, days) {
         unread += 1;
         continue;
       }
-      attempts.push({ key: keyOf(run), runId: run.id, attempt: n, url: `${run.html_url}/attempts/${n}`, outcome: outcomeOf(body.jobs ?? []) });
+      attempts.push({ key: keyOf(run), runId: run.id, attempt: n, url: `${run.html_url}/attempts/${n}`, at: attemptAt(body.jobs ?? [], run), outcome: outcomeOf(body.jobs ?? []) });
     }
   }
   return { runs, attempts, unread, unkeyed: runs.filter((r) => keyOf(r).endsWith("@?")).length };
@@ -208,10 +236,10 @@ export async function attribute(api, repo, events) {
     for (const job of ev.outcome.failedJobs) {
       if (SHARD_JOB.test(job.name)) {
         const tests = parseFailLines(await api.text(`/repos/${repo}/actions/jobs/${job.id}/logs`));
-        if (tests.length) for (const t of tests) out.push({ culprit: t, key: ev.key, url: ev.url });
-        else out.push({ culprit: `${job.name} / ${job.step} (log gone or no FAIL line)`, key: ev.key, url: ev.url });
+        if (tests.length) for (const t of tests) out.push({ culprit: t, key: ev.key, url: ev.url, at: ev.at });
+        else out.push({ culprit: `${job.name} / ${job.step} (log gone or no FAIL line)`, key: ev.key, url: ev.url, at: ev.at });
       } else {
-        out.push({ culprit: `${job.name} / ${job.step}`, key: ev.key, url: ev.url });
+        out.push({ culprit: `${job.name} / ${job.step}`, key: ev.key, url: ev.url, at: ev.at });
       }
     }
   }
