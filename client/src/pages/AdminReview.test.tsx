@@ -179,6 +179,15 @@ describe("deciding on /admin/review", () => {
     expect(within(said).getByRole("link").getAttribute("href")).toBe("/admin/review?view=decided");
   });
 
+  it("a link with ?find= lands with the search made, the door the old proposals page sends people through", async () => {
+    stub({ find: { status: 404, body: { error: "not_found", code: "B-5" } } });
+    window.history.replaceState(null, "", "/admin/review?find=b5");
+    render(<AdminReview />);
+    expect((await screen.findByTestId("found-decided")).textContent).toContain("B-5 was decided");
+    expect((screen.getByLabelText("Find by code") as HTMLInputElement).value).toBe("b5");
+    window.history.replaceState(null, "", "/admin/review");
+  });
+
   it("Decided lists the history newest first, with putting it back", async () => {
     stub();
     window.history.replaceState(null, "", "/admin/review?view=decided");
