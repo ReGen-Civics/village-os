@@ -1,56 +1,56 @@
 // @vitest-environment jsdom
 /**
- * Today's card for yourself (Direction D): absent without lines, face down until pulled, then the day and the
- * member's own line, with the sky in a fold; a refusal says the server's own sentence.
+ * Today's card on the profile (Direction D): absent without lines; face down with a door to the draw before the
+ * day's card is drawn; its name and focus once it is, with the door reading "Open your card". The draw itself is
+ * the page's (/profile/today-card), so the profile never draws a second card.
  */
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 
+vi.mock("wouter", () => ({
+  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 const gameFetch = vi.fn();
 vi.mock("@/lib/gameApi", () => ({ gameFetch: (...args: unknown[]) => gameFetch(...args) }));
-vi.mock("@shared/geneKeysSky", () => ({ skyAt: () => ({ at: "2026-11-25T12:00:00.000Z" }) }));
 
 import TodayCard from "./TodayCard";
 
 const answer = (body: unknown, status = 200) => Promise.resolve({ ok: status < 300, status, json: async () => body });
-const CARD = {
-  sky: { gates: { Sun: { gate: 26, line: 3 } } },
-  day: "The day leans outward.",
-  line: "Today's Sun stands in your gate 26.",
-  skyLines: { "human-design": "The Sun in gate 26.", western: "The Sun in Sagittarius." },
-};
 
 beforeEach(() => gameFetch.mockReset());
 afterEach(() => cleanup());
 
 describe("TodayCard", () => {
   it("is absent for a member with no lines", async () => {
-    gameFetch.mockImplementation(() => answer({ geneKeys: null }));
+    gameFetch.mockImplementation(() => answer({ error: "Find your lines first, and the card reads them." }, 404));
     const { container } = render(<TodayCard />);
-    await waitFor(() => expect(gameFetch).toHaveBeenCalledWith("/api/gene-keys/me"));
+    await waitFor(() => expect(gameFetch).toHaveBeenCalled());
+    expect(String(gameFetch.mock.calls[0][0])).toMatch(/^\/api\/me\/today-card\?date=\d{4}-\d{2}-\d{2}$/);
     expect(container.innerHTML).toBe("");
   });
 
-  it("lies face down, then a pull sends the browser's sky and turns it to the member's own line", async () => {
-    gameFetch.mockImplementation((url: string) => (url === "/api/me/today-card" ? answer(CARD) : answer({ geneKeys: { type: "Generator" } })));
+  it("lies face down with a door to the draw before the day's card is drawn", async () => {
+    gameFetch.mockImplementation(() => answer({ card: null, consent: { state: "none" } }));
     render(<TodayCard />);
-    const button = await screen.findByRole("button", { name: "Pull today's card" });
+    const door = await screen.findByRole("link", { name: "Pull today's card" });
+    expect(door.getAttribute("href")).toBe("/profile/today-card");
     expect(document.querySelector("[data-today-card]")?.getAttribute("data-today-card")).toBe("down");
-    fireEvent.click(button);
-    expect(await screen.findByText("Today's Sun stands in your gate 26.")).toBeTruthy();
-    expect(gameFetch).toHaveBeenCalledWith("/api/me/today-card", expect.objectContaining({ method: "POST", body: JSON.stringify({ sky: { at: "2026-11-25T12:00:00.000Z" } }) }));
-    expect(document.querySelector("[data-today-card]")?.getAttribute("data-today-card")).toBe("up");
-    expect(screen.getByText("The day leans outward.")).toBeTruthy();
-    expect(screen.getByText("The Sun in Sagittarius.")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Pull again" })).toBeTruthy();
+    expect(gameFetch.mock.calls.every(([, init]) => !init || (init as RequestInit).method !== "POST")).toBe(true);
   });
 
-  it("says the server's own sentence when the pull is refused", async () => {
-    gameFetch.mockImplementation((url: string) =>
-      url === "/api/me/today-card" ? answer({ error: "Find your lines first, and the card reads them." }, 404) : answer({ geneKeys: { type: "Projector" } }),
+  it("shows the day's card by name and focus once it is drawn", async () => {
+    gameFetch.mockImplementation(() =>
+      answer({ card: { card: { name: "Radiance", gate: 12 }, reading: { focus: "What keeps you well" } }, consent: { state: "given" } }),
     );
     render(<TodayCard />);
-    fireEvent.click(await screen.findByRole("button", { name: "Pull today's card" }));
-    expect((await screen.findByRole("alert")).textContent).toBe("Find your lines first, and the card reads them.");
+    expect(await screen.findByText("Radiance")).toBeTruthy();
+    expect(screen.getByText("What keeps you well")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open your card" }).getAttribute("href")).toBe("/profile/today-card");
+    expect(document.querySelector("[data-today-card]")?.getAttribute("data-today-card")).toBe("up");
   });
 });

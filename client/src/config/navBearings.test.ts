@@ -37,9 +37,18 @@ describe("bearingsFor", () => {
     expect(bearingsFor("/steward", SEEN)?.item.label).toBe("Hold a role");
   });
 
-  it("finds a page whose entry a gate swapped out in the whole menu (Roles, on a village with a map)", () => {
+  it("finds a page whose entry this reader is not offered in the whole menu (Open Roles, under Join since 27 Nov 2026)", () => {
     const b = bearingsFor("/roles/gardener", SEEN);
-    expect(b).toMatchObject({ group: "Village", item: { href: "/roles" }, exact: false });
+    expect(b).toMatchObject({ group: "Join", item: { href: "/roles" }, exact: false });
+  });
+
+  it("takes the page's own entry in the whole menu over a shorter one the reader sees (Governance's hub is a prefix)", () => {
+    const HUB: NavEntry[] = [{ label: "Governance", items: [{ href: "/governance", label: "Now" }] }];
+    expect(bearingsFor("/governance/decisions/42", HUB)).toMatchObject({ group: "Govern", item: { href: "/governance/decisions" }, exact: false });
+    // CONTROL: the hub's own page still lights the hub.
+    expect(bearingsFor("/governance", HUB)).toMatchObject({ item: { href: "/governance" }, exact: true });
+    // A page whose own entry the village hid lights nothing, and never falls back to the hub.
+    expect(bearingsFor("/governance/decisions/42", HUB, ["/governance/decisions"])).toBeNull();
   });
 
   it("lights nothing for a page the village hid from its menu, even through the whole menu", () => {
@@ -50,6 +59,12 @@ describe("bearingsFor", () => {
   it("lights nothing for a page in no entry, and nothing for home", () => {
     expect(bearingsFor("/admin", SEEN)).toBeNull();
     expect(bearingsFor("/", SEEN)).toBeNull();
+  });
+
+  it("lights Rights and agreements on its page, over the two doors to its chapters (fold 3, #1857)", () => {
+    expect(bearingsFor("/rights", [], [], NAV)?.item.label).toBe("Rights and agreements");
+    expect(bearingsFor("/rights", [], [], NAV)?.exact).toBe(true);
+    expect(bearingsFor("/rights#leaving-well", [], [], NAV)?.item.label).toBe("Leaving Well");
   });
 
   it("knows every page the platform's menu lists, each in its own group", () => {
@@ -92,8 +107,8 @@ describe("litFor", () => {
     expect(litFor("/steward/x", all, { hidden: ["/ways-in"], groups: {} }, word, MENU)?.groupHref).toBeUndefined();
   });
 
-  it("carries no group page on the platform's own menu today (/join only redirects)", () => {
-    expect(NAV.filter(isGroup).filter((g) => g.href)).toEqual([]);
+  it("carries one group page on the platform's own menu: Govern's hub (27 Nov 2026; /join only redirects)", () => {
+    expect(NAV.filter(isGroup).filter((g) => g.href).map((g) => [g.label, g.href])).toEqual([["Govern", "/governance"]]);
   });
 });
 

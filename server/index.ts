@@ -318,6 +318,7 @@ import { register as registerPayRoutes } from "./routes/pay";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
 import { register as registerMyCardRoutes } from "./routes/myCard"; // today's card for yourself (profile overhaul)
+import { publicPrefs } from "./lib/publicPrefs";
 import { register as registerBudgetRoutes } from "./routes/budgets";
 import { register as registerValuationRoutes } from "./routes/valuation";
 import { earnedEquityMeaningWritten } from "./lib/valuationStore";
@@ -3915,12 +3916,12 @@ const seatCalendar = (): SeatCalendar => { const s = seasonState(); return { sea
 // where a page expects an array or number (see Profile.tsx contributions crash).
 function publicUser(u: any) {
   if (!u) return null;
-  // tokenVersion is session-revocation plumbing and prefs.googleLink is
-  // sign-in plumbing naming this person at Google. Neither is profile data.
+  // tokenVersion is session-revocation plumbing. Prefs travel by NAMED key only (server/lib/publicPrefs.ts): the
+  // role route answers an admin with this object, and prefs hold the member's daily cards and their consents.
   const { passwordHash, tokenVersion, ...rest } = u;
   return {
     ...rest,
-    prefs: rest.prefs ? { ...rest.prefs, googleLink: undefined } : rest.prefs,
+    prefs: publicPrefs(rest.prefs),
     paths: Array.isArray(u.paths) ? u.paths.filter((p: unknown) => typeof p === "string") : [],
     contributions: u.contributions ?? [],
     quests: u.quests ?? [],
@@ -17952,7 +17953,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       return call.ok ? readTranslationReply(call.text, items) : null;
     },
   });
-  registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
+  registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify, members });
   registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg", quests: { stageOf, roleIdsFor, claimsRepo, questsRepo, questConsentRecipients, notify } });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   // notifyRoll is declared further down, so it is reached through an arrow at request time.
@@ -17991,7 +17992,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     return out.ok ? { ok: true } : { ok: false, error: out.error };
   };
   registerMemberTimeZoneRoutes(app, { authedUser, getPool, overLimit });
-  registerMyCardRoutes(app, { authedUser, getPool, overLimit });
+  registerMyCardRoutes(app, { authedUser, getPool, overLimit, members, villageName: () => mergedConfig().project.name, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
   registerCashOwedRoutes(app, { authedUser, getPool, guardCapability, members, notify, overLimit, cashKeyHolders: () => liveHoldersOf("cash.pay"), rolesCarrying, roleHolders: loadRoleHolders });
   registerBudgetRoutes(app, { authedUser, capabilityCtx, getPool, overLimit, seasonState, guardCapability, liveHoldersOf, projectCurrency: () => String(mergedConfig().project.fiatCurrency ?? ""), rolesCarrying, roleHolders: loadRoleHolders, revisionSecret: AUTH_TOKEN_SECRET }); // the cash budget (0360): every write through one door, role.pay (server/routes/budgets.ts)
   registerValuationRoutes(app, { authedUser, getPool, guardCapability, capabilityCtx, overLimit, liveHoldersOf, projectCurrency: () => mergedConfig().project.fiatCurrency, eeMeaningWritten: earnedEquityMeaningWritten, tokenName: (s: string) => tokenDef(s)?.name ?? s, quests: questsRepo, claims: claimsRepo }); // 0336, 0342

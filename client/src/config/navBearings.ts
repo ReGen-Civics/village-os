@@ -36,19 +36,34 @@ function under(path: string, href: string): boolean {
   return path === h || path.startsWith(h + "/");
 }
 
-function find(path: string, entries: readonly NavEntry[], skip: readonly string[]): Bearings | null {
+/**
+ * How well an entry of the longest matching length fits: its own address with the anchor the location carries (2),
+ * the page itself (1), or a chapter of it, an anchor the location does not carry (0). Fold 3 (#1857) put three entries
+ * on /rights: Rights and agreements, and two doors to its chapters. The page lights Rights and agreements.
+ */
+function fit(location: string, href: string): number {
+  const at = location.indexOf("#");
+  if (at !== -1 && href === bearingsPath(location) + location.slice(at)) return 2;
+  return href.includes("#") ? 0 : 1;
+}
+
+function find(path: string, entries: readonly NavEntry[], skip: readonly string[], location = path): Bearings | null {
   const all = entries.flatMap((e): { item: NavLink; group: string | null }[] =>
     isGroup(e) ? e.items.map((item) => ({ item, group: e.label })) : [{ item: e, group: null }],
   );
   let best: Bearings | null = null;
   let bestLen = -1;
-  // The first of two equally long matches wins, so an entry listed twice lights where the menu lists it first.
+  let bestFit = -1;
+  // The first of two equally long, equally fitting matches wins, so an entry listed twice lights where the menu
+  // lists it first.
   for (const { item, group } of all) {
     if (skip.includes(item.href) || !under(path, item.href)) continue;
     const len = bearingsPath(item.href).length;
-    if (len <= bestLen) continue;
+    const f = fit(location, item.href);
+    if (len < bestLen || (len === bestLen && f <= bestFit)) continue;
     best = { item, group, exact: path === bearingsPath(item.href) };
     bestLen = len;
+    bestFit = f;
   }
   return best;
 }
@@ -67,7 +82,16 @@ export function bearingsFor(
   defined: readonly NavEntry[] = NAV,
 ): Bearings | null {
   const path = bearingsPath(location);
-  return find(path, seen, hidden) ?? find(path, defined, hidden);
+  // The most specific entry in the whole menu decides (27 Nov 2026). Governance's hub, /governance, is an entry and
+  // a prefix of every Governance page, so a decision page must not fall back to it when its own entry is hidden from
+  // this reader or from the village's menu: a page whose own entry the village hid lights nothing, and a page whose
+  // own entry this reader is not offered lights its group and no entry, as before the hub had an entry.
+  const own = find(path, defined, [], location);
+  if (own && hidden.includes(own.item.href)) return null;
+  const mine = find(path, seen, hidden, location);
+  const whole = find(path, defined, hidden, location);
+  if (whole && (!mine || bearingsPath(whole.item.href).length > bearingsPath(mine.item.href).length)) return whole;
+  return mine ?? whole;
 }
 
 /** What the bar, the drawer and the More sheet light: the group by its DRAWN name, and the entry by its address. */
@@ -115,9 +139,13 @@ export function litFor(
   const own = b.group ? defined.find((e): e is NavGroup => isGroup(e) && e.label === b.group)?.href : undefined;
   // The page's entry gave way to another (the live check, 27 Nov 2026: a role lit Village and marked nothing inside it).
   // The one that took its place is the entry in the same group gated on the module that hid this one.
-  const swappedFor = b.item.unlessModule && !visible(b.item)
-    ? seen.flatMap((e) => (isGroup(e) ? (e.label === b.group ? e.items : []) : b.group ? [] : [e])).find((l) => l.module === b.item.unlessModule && !menu.hidden.includes(l.href))
-    : undefined;
+  // The entry that took this one's place: one of the module's entries in the same group, the one whose address ends
+  // with this one's when there is one (/map/circles for /circles; since 27 Nov 2026 the map's own entry is in Village
+  // too, so the first of the module's entries is no longer the right one).
+  const swapCandidates = b.item.unlessModule && !visible(b.item)
+    ? seen.flatMap((e) => (isGroup(e) ? (e.label === b.group ? e.items : []) : b.group ? [] : [e])).filter((l) => l.module === b.item.unlessModule && !menu.hidden.includes(l.href))
+    : [];
+  const swappedFor = swapCandidates.find((l) => l.href.endsWith(b.item.href)) ?? swapCandidates[0];
   return {
     group: b.group ? menu.groups[b.group] || word(b.group) : null,
     groupHref: own && !menu.hidden.includes(own) ? own : undefined,

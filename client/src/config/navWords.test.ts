@@ -15,6 +15,7 @@ function menuWords(): string[] {
   for (const e of NAV) {
     if (isGroup(e)) {
       out.add(e.label);
+      if (e.holds) out.add(e.holds);
       e.items.forEach(link);
     } else link(e);
   }

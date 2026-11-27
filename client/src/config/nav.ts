@@ -13,6 +13,7 @@
  *    shared/modules.ts, which is why they do not always match the label or the
  *    route (stays -> /stay, health -> /village-health, exchange -> /wallet).
  *  - `roles` hides a link unless the signed-in member holds one of them.
+ *  - `sub` puts a link in a folder inside its group (config/navNest.ts).
  */
 import {
   type LucideIcon,
@@ -38,6 +39,14 @@ export type NavLink = {
    */
   brochure?: true;
   /**
+   * The story page an entry stands for when its href is a chapter of another
+   * page (fold 3, #1857: the Good Neighbor criteria are a chapter of /rights).
+   * Its switch and the village's own name for it stay under this address, so
+   * the menu reads both here. `STORY_CHAPTERS` in shared/brochure.ts (#1857)
+   * gives the switch the same answer through the anchor.
+   */
+  story?: string;
+  /**
    * Amber treatment, for the two entries that lead into the village's own
    * working surfaces. It reads as "this is the machine room", not as "this is
    * the team's": the Launch Plan is open to every signed-in member and the
@@ -57,9 +66,9 @@ export type NavLink = {
   token?: "recognition";
   /**
    * Shown only while this module is OFF. For a plain page that a module's
-   * richer surface replaces in the menu: the separate Circles and Roles pages
-   * fold into the map's "Circles & Roles" view, and come back as their own
-   * entries on a village that runs no map, so neither page loses its door.
+   * richer surface replaces in the menu: the separate Circles page folds into
+   * the map's "Circles & Roles" view, and comes back as its own entry on a
+   * village that runs no map, so the page never loses its door.
    */
   unlessModule?: string;
   /**
@@ -71,9 +80,7 @@ export type NavLink = {
   count?: "tasks" | "messages";
   /**
    * true: shown only to someone signed in. false: shown only to a visitor.
-   * Absent: both. For an entry that earns the bar for a member and sits in a
-   * group for a visitor (design pass D-27: the bar carried nine stops for a
-   * visitor), so the page keeps its door either way.
+   * Absent: both.
    */
   signedIn?: boolean;
   /**
@@ -96,6 +103,13 @@ export type NavLink = {
    * one of them, and an empty page says "Coming soon" (ComingSoonPanel).
    */
   newcomers?: "never" | "in-use";
+  /**
+   * A folder inside the group (the lead, 27 Nov 2026: "make use of nesting to not overwhelm so we're never
+   * showing more than ~5 options"). Links with the same `sub` draw as one row that opens to show them
+   * (config/navNest.ts). A folder left with one visible link draws as that link, so nobody opens a folder to
+   * find a single page. The name is a platform word, translated in navWords.ts.
+   */
+  sub?: string;
 };
 
 export type NavGroup = {
@@ -103,10 +117,21 @@ export type NavGroup = {
   items: readonly NavLink[];
   /**
    * The group's own page, when it has one. The breadcrumb links the group's name there; without one the name is
-   * plain words (the coordinator for the lead, 26 Nov 2026: "Keep it honest"). No group has a page today: /join
-   * only redirects to /roles.
+   * plain words (the coordinator for the lead, 26 Nov 2026: "Keep it honest").
    */
   href?: string;
+  /**
+   * "newcomers": the group comes first for a visitor or someone the village has not admitted yet, and keeps its
+   * place in the order below for a member (the lead, 27 Nov 2026: "having join be first").
+   */
+  leads?: "newcomers";
+  /** A folder (by its platform name) open when a newcomer opens the group (the menu's QA, 27 Nov 2026). */
+  opens?: string;
+  /**
+   * What the group holds, in a few words, drawn as the eyebrow over its dropdown (the menu's QA, round 2). A platform
+   * word, translated in navWords.ts.
+   */
+  holds?: string;
 };
 
 export type NavEntry = NavLink | NavGroup;
@@ -114,273 +139,216 @@ export type NavEntry = NavLink | NavGroup;
 export const isGroup = (entry: NavEntry): entry is NavGroup => "items" in entry;
 
 /**
- * The bar, left to right. Seven entries plus the account menu (Rye,
- * 2026-10-09: the menu restructure).
+ * THE MENU BY MEMBERSHIP (the lead, 27 Nov 2026: "Let's rethink this menu from the different levels of
+ * membership (visitor, member, role holder, admin, investor, etc) and what we prioritize (like having join be
+ * first, and module library at the bottom)" and "never showing more than ~5 options while still being able to
+ * nest all pages into the menu"). docs/MENU_MAP.md maps every page and says why each sits where it does.
  *
- * The width rule that produced this shape still governs it: at seventeen
- * TOP-LEVEL links the bar measured ~1250px and could only render from `xl`,
- * which left every viewport between 768px and ~1310px with no desktop
- * navigation at all. What costs bar width is an entry, not an item, because the
- * items live in a dropdown. So a page the menu never linked costs nothing to
- * add as an item, and the bar stays short.
+ * ROUND 2 (the lead, 27 Nov 2026, on #1847): the place in Village, the people and the story in Community, how the
+ * village is run and how we work in Govern, the ways in in Join, and nothing a stranger does not need shown to a
+ * signed-out visitor. "So with the feedback that I gave you here, take that same logic and apply it to the rest."
  *
- * Each group answers one question, and runs 5-12 items so it stays readable:
- *   Community  who is here and what are they saying
- *   Village    the place, and what you can do in it (Quests live here now)
- *   Decide     how the village decides, and where to put something to it
- *   Join       ways in, and ways to put something in
- *   Guides     how to take part well
- *   About      what the village is
+ * Four groups, and no group shows more than five rows to anyone: a row is a link or a folder (`sub`), and a folder
+ * opens to five links at most. navNest.test.ts holds both counts for every audience.
  *
- * A `module` gate is for a page that renders NotFound or a gate with its module
- * off, so an ungated link to it would be a dead end on a fresh fork.
- * Gratitude and Quests need none: both are `core` in shared/modules.ts.
+ *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health.
+ *   Community   the people and the story: Our story, conversations, Gratitude, gatherings, welcoming.
+ *   Join        ways in. First for a visitor or a newcomer (`leads`), third for a member.
+ *   Govern      how the village is run and how we work: deciding, circles and roles, the season (Quests again,
+ *               the one page in two groups on purpose), the guides, how we work, and the Module Library last.
+ *
+ * A `module` gate is for a page that renders NotFound or a gate with its module off, so an ungated link to it
+ * would be a dead end on a fresh fork. Gratitude and Quests need none: both are `core` in shared/modules.ts.
  */
 export const NAV: readonly NavEntry[] = [
   /*
-   * No "Home" entry (Rye, 2026-10-09). The village name or logo at the left of
-   * the bar is already the home link, and on a phone the bottom tab bar
-   * carries Home. Its width paid for the Module Library below: with both, the
-   * bar crowded the village name out of the header at 1024px.
+   * No "Home" entry (Rye, 2026-10-09). The village name or logo at the left of the bar is already the home link,
+   * and on a phone the bottom tab bar carries Home.
    */
-  /**
-   * Top level, and worth the bar width.
-   *
-   * The map is the village's primary surface, and it spent a release buried
-   * as the first item of a nine-item Village dropdown where nobody arriving
-   * for the first time would find it. What costs bar width is an ENTRY, and
-   * this is the one entry that earns it.
-   */
-  { href: "/map", label: "Living Map", module: "map" },
-  /**
-   * Top level, and the second entry to earn the bar width (Rye, 2026-10-09).
-   * It took the slot of Home, which duplicated the village-name link.
-   *
-   * The library is the village's "what is possible here" window, and it sat
-   * as the last item of Guides, under the rules-of-play pages, where nobody
-   * looking for what the village could switch on would think to open. It is
-   * ungated for the reason it always was (L1): public and read-only, the
-   * platform's own page, so a visitor sees it too.
-   */
-  // A member's bar only (design pass D-27): a visitor finds it under About. An applicant signed in but not
-  // yet admitted is a newcomer (lib/newcomer.ts), and "what the platform can switch on" is not their next step.
-  { href: "/modules", label: "Module Library", signedIn: true, newcomers: "never" },
-  {
-    label: "Community",
-    items: [
-      { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use" },
-      { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use" },
-      { href: "/messages", label: "Messages", module: "messaging", newcomers: "never" },
-      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
-      { href: "/rites", label: "Rites", module: "rites", newcomers: "never" },
-      { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never" },
-      { href: "/events", label: "Events", module: "events", newcomers: "in-use" },
-      // The circle calls a member takes part in. It sat in the account menu,
-      // where only a member already looking for it would find it. The
-      // shortcuts button carries the other door (config/mobileNav.ts).
-      { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never" },
-      // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only), so the menu
-      // and the footer offer it to a newcomer. Their phone tab bar still gives its slot to the roles
-      // (NEWCOMER_SWAPPED_TABS, config/mobileNav.ts).
-      { href: "/gratitude", label: "Gratitude", token: "recognition" },
-      { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use" },
-      { href: "/feedback", label: "Share Feedback" },
-    ],
-  },
   {
     label: "Village",
+    holds: "The place",
     items: [
-      // Quests left the bar for here (Rye, 2026-10-09): they are something
-      // you do in the village. Phones keep them in the bottom tab bar.
-      { href: "/quests", label: "Quests" },
-      // The org view. The plain Circles and Roles pages fold into it, and
-      // return as their own entries only on a village with no map.
-      { href: "/map/circles", label: "Circles & Roles", module: "map" },
-      { href: "/circles", label: "Circles", unlessModule: "map" },
-      { href: "/roles", label: "Roles", unlessModule: "map" },
-      { href: "/places", label: "Places", module: "map", newcomers: "in-use" },
-      { href: "/photographs", label: "Photographs", module: "map", newcomers: "in-use" },
+      // The map is the village's primary surface: the first row, with the hidden map beside it for a member.
+      { href: "/map", label: "Living Map", module: "map", sub: "Maps" },
       // Members only; the module can never stand at public.
-      { href: "/hidden-map", label: "Hidden map", module: "hidden-map", newcomers: "never" },
-      { href: "/stay", label: "Stay", module: "stays" },
-      { href: "/housing", brochure: true, label: "Housing" },
-      { href: "/library", label: "Library", module: "library" },
-      { href: "/tools", label: "Tools", module: "tools", newcomers: "in-use" },
-      { href: "/wallet", label: "Wallet", module: "exchange" },
-      { href: "/village-health", label: "Health", module: "health" },
+      { href: "/hidden-map", label: "Hidden map", module: "hidden-map", newcomers: "never", sub: "Maps" },
+      // Quests are something you do in the village, and something the season is made of: in Govern too, on purpose.
+      { href: "/quests", label: "Quests" },
+      // The lead (round 2): "housing and stay and good neighbor criteria all under that", with the places beside
+      // them. Photographs is a section of Places since fold 5 (#1856): /photographs redirects to /places#photos.
+      { href: "/housing", brochure: true, label: "Housing", sub: "Places and homes" },
+      { href: "/stay", label: "Stay", module: "stays", sub: "Places and homes" },
+      // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
+      { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
+      { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
+      // Its own entry (the lead, round 2: "Library could just be its own tab under village, and so could village
+      // health"). Neither is a stranger's: a visitor is not offered them.
+      { href: "/library", label: "Library", module: "library", newcomers: "never" },
+      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
     ],
   },
   {
-    /**
-     * How the village decides (Rye, 2026-10-09). Make a Proposal had no link
-     * anywhere in the menu, and the review queue and the powers page sat in
-     * the account menu, where they read as personal settings.
-     */
-    // "Governance" (the lead, 26 Nov 2026): this group is how the village governs itself, not a review.
-    label: "Governance",
+    label: "Community",
+    holds: "The people and the story",
     items: [
-      // The live surface, module-gated: /governance (under About) explains
-      // how the village decides and is always there; /decisions shows what it
-      // is deciding and exists only where the engine is switched on.
-      { href: "/governance/decisions", label: "Decisions", module: "governance", newcomers: "never" },
-      // Funding rounds (0338): the village chooses which quests the season funds,
-      // within a pot. Signed-in roles only: every door asks for a member.
-      { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"], newcomers: "never" },
-      // Season plans (RC1): everyone's plan for the season, by name. Members
-      // read it (terms.read), so it is listed for the signed-in roles only.
-      { href: "/season-plans", label: "Season Plans", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never" },
-      // Season places (0408): apply for the season, and who takes part. Members read it, so signed-in roles only.
-      { href: "/season-places", label: "Join the Season", module: "season-places", roles: ["member", "admin", "founder"], newcomers: "never" },
-      // The aligned register (seat settings PR6): every set of terms members
-      // have aligned with. Members read it (terms.read), so signed-in roles only.
-      { href: "/aligned", label: "Aligned", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never" },
-      // Signed out, the page itself asks the visitor to sign in to write one.
-      { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never" },
-      // Change requests (Rye, 2026-11-06): several connected changes to the
-      // village's settings gathered, reviewed and sent to one vote. The routes
-      // mount outside requireModule(), and the page meets a stranger with a
-      // sign-in line, so it is listed for the signed-in roles and no module.
-      { href: "/changes", label: "Change Requests", roles: ["member", "admin", "founder"], newcomers: "never" },
-      /**
-       * 0140. What an outside service has proposed, waiting for somebody to
-       * read it. Capability-gated in the page so that a steward who is not an
-       * admin can keep this queue: a menu entry only admins could see would put
-       * the capability straight back behind the panel it was written to
-       * escape. Signed in only, because a stranger cannot hold the capability.
-       */
-      { href: "/governance/work", label: "Your work", roles: ["member", "admin", "founder"], newcomers: "never" },
-      // 0098. What the village looks after, and who holds each one: who do I
-      // ask. Open to visitors, and the page says what signing in adds.
-      // Public since #1529 (the lead, 24 Nov 2026: holders by first name), so a newcomer is offered it too.
-      { href: "/powers", label: "What We Look After" },
-      /**
-       * R12 opened this page to every member. `POST /api/dry-run` answers any
-       * signed-in member, so a member could run the village test run and had
-       * no way to find it short of being told the URL.
-       *
-       * SIGNED IN, NOT EVERYONE: `visible()` in Layout.tsx passes a link with
-       * no `roles` to a stranger too, and this page meets a stranger with a
-       * sign-in wall. `PUT /api/admin/users/:id/role` refuses any value outside
-       * `["member", "admin", "founder"]`, so listing all three is the whole
-       * signed-in population. A fourth role would have to be added here too.
-       *
-       * NO `module`. The dry-run route mounts outside `requireModule()`, so a
-       * module gate here would hide a working page on every fresh fork.
-       */
-      {
-        href: "/journey-to-launch",
-        label: "🌳 Launch Plan",
-        roles: ["member", "admin", "founder"],
-        accent: true,
-        newcomers: "never",
-      },
-      /**
-       * /project-history is the Command Centre, not a public history page. Its
-       * own gate auto-unlocks for admin and founder and shows everyone else a
-       * sign-in wall, so an ungated entry would put a locked door in the public
-       * menu. Same amber as the Launch Plan, because it is the same kind of
-       * entry.
-       */
-      {
-        href: "/project-history",
-        brochure: true,
-        label: "🛠 Command Centre",
-        roles: ["admin", "founder"],
-        accent: true,
-      },
+      // The people and the story (the lead, round 2: "Our story could be under community. Our team could be under
+      // community", and the Love Letter "would be under community").
+      { href: "/team", brochure: true, label: "Our Team", sub: "Our story" },
+      { href: "/master-plan", brochure: true, label: "Master Plan", sub: "Our story" },
+      { href: "/love-letter", brochure: true, label: "Sign the Love Letter", sub: "Our story" },
+      // The other villages this one is linked with.
+      { href: "/network", label: "Village Network", module: "network", newcomers: "in-use", sub: "Our story" },
+      { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use", sub: "Conversations" },
+      { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use", sub: "Conversations" },
+      // The village's tools grid: where it talks and meets outside this app. A member's.
+      { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Conversations" },
+      { href: "/feedback", label: "Share Feedback", sub: "Conversations" },
+      // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only).
+      { href: "/gratitude", label: "Gratitude", token: "recognition" },
+      { href: "/events", label: "Events", module: "events", newcomers: "in-use", sub: "Gatherings" },
+      // The circle calls a member takes part in.
+      { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never", sub: "Gatherings" },
+      { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use", sub: "Gatherings" },
+      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
+      { href: "/rites", label: "Rites", module: "rites", newcomers: "never", sub: "Welcoming" },
+      { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never", sub: "Welcoming" },
     ],
   },
   {
     label: "Join",
+    holds: "Ways in",
+    leads: "newcomers",
+    // A newcomer opens Join to the paths, the first thing a stranger chooses.
+    opens: "Choose your path",
     items: [
       // One glyph per path everywhere: the same four the bottom bar draws for a member's path (the lead, 25 Nov 2026).
-      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand },
-      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown },
-      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome },
-      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf },
-      { href: "/opportunities", brochure: true, label: "Business Opportunities" },
+      { href: "/investor", brochure: true, label: "Investor", subtitle: "Capital Contributor", icon: SeedHand, sub: "Choose your path" },
+      { href: "/steward", brochure: true, label: "Village Steward", subtitle: "Co-Creator", icon: TreeCrown, sub: "Choose your path" },
+      { href: "/resident", brochure: true, label: "Resident", subtitle: "Co-Creator", icon: SeedPodHome, sub: "Choose your path" },
+      { href: "/prosperity", brochure: true, label: "Prosperity Creator", subtitle: "Business Builder", icon: SunLeaf, sub: "Choose your path" },
+      // The founding team and the open ventures. Also in Govern's Circles & Roles, on purpose: here it is the way in.
+      { href: "/roles", label: "Open Roles" },
+      // Come and see (the Love Letter moved to Community, round 2).
       { href: "/visit", brochure: true, label: "Plan a Visit" },
-      { href: "/love-letter", brochure: true, label: "Sign the Love Letter" },
-      { href: "/work-with-us", brochure: true, label: "Work With Us" },
-      // The two ways to put something in, beside the ways to come in.
-      { href: "/contribute", label: "Contribute", module: "commerce" },
+      // The other three of the four ways to build (components/ContributorRoutes.tsx).
+      { href: "/partner", label: "Become a partner", sub: "Build with us" },
+      { href: "/propose-quest", label: "Propose a quest", sub: "Build with us" },
+      { href: "/opportunities", brochure: true, label: "Business Opportunities", sub: "Build with us" },
+      { href: "/work-with-us", brochure: true, label: "Work With Us", sub: "Build with us" },
+      // The two ways to put money in.
+      { href: "/contribute", label: "Contribute", module: "commerce", sub: "Fund the village" },
       /**
-       * The crowdpool bridge. It shipped with no entry anywhere, so the only
-       * link to /campaigns in the whole client sat on the campaign page,
-       * reachable only from /campaigns: a closed loop with no door in.
+       * The crowdpool bridge. It shipped with no entry anywhere, so the only link to /campaigns in the whole
+       * client sat on the campaign page, reachable only from /campaigns: a closed loop with no door in.
        */
-      { href: "/campaigns", label: "Crowd pooling", module: "crowdpool", newcomers: "in-use" },
+      { href: "/campaigns", label: "Crowd pooling", module: "crowdpool", newcomers: "in-use", sub: "Fund the village" },
     ],
   },
   {
     /**
-     * The reference shelf: what a member reads to take part well. Ordered as a
-     * newcomer meets them: the guide, then the walk, then the rules of play,
-     * then the two rights pages, then the one about leaving.
+     * GOVERN (the lead, round 2: "which we could just call govern"): how the village is run and how we work. The
+     * routes stay where they were (/governance and the rest); only the menu's word changed, and a village that
+     * renamed the old group keeps its name (shared/menuDoc.ts MOVED_GROUPS). Built on where the Governance lane is
+     * going: the hub's views (Now, Decisions, Treasury) lead its first folder. The group is last for every reader,
+     * so the Module Library, its last entry, is the bottom of the whole menu.
      */
-    label: "Guides",
+    label: "Govern",
+    holds: "How we're run",
+    href: "/governance",
     items: [
-      { href: "/co-creators-guide", brochure: true, label: "Co-Creators Guide" },
-      // Founders and admins only (R47): every stop stands on a practice
-      // example and the page ends at the settings, so it is the team tour.
-      { href: "/first-walk", label: "Your First Walk", roles: ["admin", "founder"] },
-      { href: "/game-mechanics", label: "Game Mechanics" },
-      // Every email the village sends and when, read-only, with a door to propose a change (comms build spec 5.13).
-      { href: "/village-email", label: "Village Email", module: "comms" },
-      { href: "/good-neighbor", brochure: true, label: "Good Neighbor" },
-      { href: "/training", label: "Training" },
-      { href: "/resident-rights", brochure: true, label: "Resident Rights" },
-      { href: "/steward-rights", brochure: true, label: "Steward Rights" },
-      { href: "/exit-policy", label: "Leaving Well" },
-    ],
-  },
-  {
-    label: "About",
-    items: [
-      { href: "/how-we-create", brochure: true, label: "How We Create" },
-      // Renamed on 2026-09-28 with the page it opens; the route stays put.
-      { href: "/governance/how", label: "How we work together" },
-      { href: "/master-plan", brochure: true, label: "Master Plan" },
-      { href: "/team", brochure: true, label: "Our Team" },
-      // The other villages this one is linked with: part of what it is.
-      { href: "/network", label: "Village Network", module: "network", newcomers: "in-use" },
-      // A visitor's door to the library, which a member has on the bar (design pass D-27).
-      { href: "/modules", label: "Module Library", signedIn: false },
+      // The Now view (26 Nov 2026): what the village is deciding and what waits on you. Open to a guest too. "What's
+      // happening now" in the menu (the menu's QA, 27 Nov 2026: "Now" alone said nothing).
+      { href: "/governance", label: "What's happening now", sub: "Decide" },
+      { href: "/governance/decisions", label: "Decisions", module: "governance", newcomers: "never", sub: "Decide" },
+      /**
+       * The Treasury tab (#1843): the cash budget every member reads (budgets spec R23), folded in from /budget,
+       * which redirects here. The budget read refuses anyone not admitted, so a newcomer is not offered it.
+       */
+      { href: "/governance/treasury", label: "Treasury", newcomers: "never", sub: "Decide" },
+      // Signed out, the page itself asks the visitor to sign in to write one.
+      { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never", sub: "Decide" },
+      // No Change Requests entry: folds 6 and 7 (#1861) put change requests inside Decisions
+      // (/governance/decisions#changes), and the approvals inside Your work (/governance/work#approvals).
+      /**
+       * Circles & Roles (the lead, round 2: "circles and roles will also open up to have roles and the circle pages
+       * to learn more about that"). The org view where the map runs, the plain Circles page where it does not, the
+       * roles, who looks after what, and how the roles are going.
+       */
+      { href: "/map/circles", label: "Circles", module: "map", sub: "Circles & Roles" },
+      { href: "/circles", label: "Circles", unlessModule: "map", sub: "Circles & Roles" },
+      { href: "/roles", label: "Roles", sub: "Circles & Roles" },
+      // 0098. What the village looks after, and who holds each one. Public since #1529.
+      { href: "/powers", label: "What We Look After", sub: "Circles & Roles" },
+      // A members-only report on how the roles are going. It had no menu door.
+      // A section of Circles since 1.3.95 (/role-measures redirects to /circles#role-measures).
+      { href: "/circles#role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
+      // The season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms are its
+      // tabs, and their old addresses redirect there. Members read it, so it is listed for the signed-in roles only.
+      { href: "/season", label: "Season", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
+      { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
+      // The season's work (the lead, round 2: "Quests could be in both village and in governance").
+      { href: "/quests", label: "Quests", sub: "This season" },
+      // The reference shelf: the guide, the training, Rights and agreements, then the one about leaving. Fold 3 (#1857)
+      // made the two rights pages, the Good Neighbor criteria and Leaving Well one page, /rights, with four chapters;
+      // Leaving Well keeps a row of its own, a door to its chapter.
+      { href: "/co-creators-guide", brochure: true, label: "Co-Creators Guide", sub: "Guides" },
+      { href: "/training", label: "Training", sub: "Guides" },
+      { href: "/rights", label: "Rights and agreements", sub: "Guides" },
+      { href: "/rights#leaving-well", label: "Leaving Well", sub: "Guides" },
+      // How we work (the lead, round 2: "the how we work and the game mechanics and all of that would also be under
+      // the governance"). Renamed on 2026-09-28 with the page it opens; the route stays put.
+      { href: "/governance/how", label: "How we work together", sub: "How we work" },
+      // A section of How we work together since fold 4 (#1854, 1.3.96); /game-mechanics redirects there. The lead's rule
+      // names it in Govern, so it keeps a row of its own, as Leaving Well does. The rules are a member's.
+      { href: "/governance/how#game-mechanics", label: "Game Mechanics", newcomers: "never", sub: "How we work" },
+      { href: "/how-we-create", brochure: true, label: "How We Create", sub: "How we work" },
+      // Every email the village sends and when, read-only, with a door to propose a change. A member's.
+      { href: "/village-email", label: "Village Email", module: "comms", newcomers: "never", sub: "How we work" },
+      // Last of all, for every reader (the lead, 27 Nov 2026: "module library at the bottom").
+      { href: "/modules", label: "Module Library", sub: "How we work" },
     ],
   },
 ];
 
 /**
- * The signed-in avatar menu. Sign out is NOT here: it is rendered separately at
- * the foot of the dropdown, below a divider, because it is the one entry that
- * ends the session on every device and it used to sit twelve pixels from the
- * profile link in the open bar.
+ * The signed-in avatar menu: the member's own things (round 2: Wallet is the member's, "never under shared").
+ * Sign out is NOT here: it is rendered separately at the foot of the dropdown, below a divider, because it is the one
+ * entry that ends the session on every device and it used to sit twelve pixels from the profile link in the open bar.
  *
- * Wallet points into the profile page, which is where a member's own balances
- * live. The village exchange keeps its own page under Village.
+ * Five rows at most, like the groups: the profile, messages and tasks (each with its own count, so none hides in a
+ * folder), your things, and running the village.
  */
 export const ACCOUNT_MENU: readonly NavLink[] = [
   { href: "/profile", label: "My Profile" },
-  // A member's own pages, so it lives beside their profile. The shortcuts
-  // button carries the other door (config/mobileNav.ts); both hide while the
-  // journal module is off for this viewer.
-  { href: "/journal", label: "Journal", module: "journal" },
-  // The village's checklists. Hidden while the module is off for this viewer.
-  { href: "/protocols", label: "Protocols", module: "protocols" },
-  // Direct messages and the shared work chats, with the member's own unread
-  // count. The shortcuts button carries the other door (config/mobileNav.ts).
+  // Direct messages and the shared work chats, with the member's own unread count. Its one menu door.
   { href: "/messages", label: "Messages", module: "messaging", count: "messages", newcomers: "never" },
-  { href: "/wallet", label: "Wallet", module: "exchange" },
-  // The live-session task board on the profile, with the member's own count
-  // of what waits on them beside it. The shortcuts button carries the other
-  // door (config/mobileNav.ts).
+  // The live-session task board on the profile, with the member's own count of what waits on them beside it.
   { href: TASK_BOARD_PATH, label: TASK_MENU.label, module: "sessions", count: "tasks" },
+  /**
+   * The member's own things. Your work (0140: what waits on the reader to decide, capability-gated in the page, so a
+   * steward who is not an admin keeps it) left Govern in round 2: it is the member's own work. Wallet is here, its one
+   * door (round 2: "wallet shouldn't be under shared things"). Settings has no entry: the profile's own Settings
+   * button is its door, and the folder keeps five.
+   */
+  { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", sub: "Your things" },
+  { href: "/wallet", label: "Wallet", module: "exchange", newcomers: "never", sub: "Your things" },
+  { href: "/journal", label: "Journal", module: "journal", sub: "Your things" },
+  { href: "/protocols", label: "Protocols", module: "protocols", sub: "Your things" },
   // Examples only until the village's first real badge (UNFINISHED-AREAS 20), so a newcomer meets it once it is in use.
-  { href: "/badges", label: "Badges", module: "badges", newcomers: "in-use" },
-  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page. A member's
-  // surface: the budget read refuses anyone not admitted, so a newcomer was offered a page that answers 403.
-  { href: "/budget", label: "Cash Budget", newcomers: "never" },
-  { href: "/admin", label: "Village Settings", roles: ["admin", "founder"] },
-  // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15).
-  { href: "/treasury", label: "Treasury", door: "treasury" },
+  { href: "/badges", label: "Badges", module: "badges", newcomers: "in-use", sub: "Your things" },
+  /**
+   * Running the village: the village's working surfaces for whoever may open them. The Launch Plan is any signed-in
+   * member's (the village test run; a stranger meets a sign-in wall), the Command Centre an admin's or a founder's,
+   * the Treasury desk whoever holds a treasury power. They keep the amber that marks the machine room.
+   */
+  { href: "/journey-to-launch", label: "🌳 Launch Plan", roles: ["member", "admin", "founder"], accent: true, newcomers: "never", sub: "Running the village" },
+  // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15). "Treasury desk"
+  // in the menu since round 2, so it does not read as Govern's Treasury tab, the budget every member reads.
+  { href: "/treasury", label: "Treasury desk", door: "treasury", sub: "Running the village" },
+  // Its own gate unlocks for admin and founder and walls everyone else.
+  { href: "/project-history", brochure: true, label: "🛠 Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
+  // The admin's one review page (the Governance lane folds /admin/proposals into it).
+  { href: "/admin/review", label: "Review", roles: ["admin", "founder"], sub: "Running the village" },
+  { href: "/admin", label: "Village Settings", roles: ["admin", "founder"], sub: "Running the village" },
 ];

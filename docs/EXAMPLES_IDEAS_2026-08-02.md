@@ -69,10 +69,12 @@ the walk ends by pointing at publishing the first real thing.
 
 ## Shipped 2026-08-03 (the six Rye picked)
 
-1. **The guided first walk** — `/first-walk`, steps as data in
-   `client/src/lib/firstWalk.ts`, filtered to what the village is actually
+1. **The guided first walk** — `/first-walk`, steps as data in a
+   `firstWalk` library, filtered to what the village is actually
    showing, ticks in localStorage, invitation on the map page. It retires
    itself: every stop depends on a module still showing examples.
+   (Removed on 27 Nov 2026, the lead: "Let's get rid of this"; `/first-walk`
+   redirects home. See `docs/MENU_MAP.md`.)
 2. **A pinned announcement in Projects and Work** — fills the empty category,
    demonstrates the fourth thread kind, the pin affordance and pinned-first
    ordering.

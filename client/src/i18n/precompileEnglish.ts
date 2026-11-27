@@ -22,6 +22,8 @@ import type { Plugin } from "vite";
  */
 const ID = /\bid:\s*"[A-Za-z0-9_-]{6}",\s*/g;
 const MESSAGE = /^message:\s*("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')/;
+/** The macro's `context` field, which it writes straight after `message`, with the comma before it. */
+const CONTEXT_AFTER = /^\s*,\s*context:\s*("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')/;
 const VALUES = /^(?:values|components):\s*\{/;
 
 /**
@@ -95,11 +97,21 @@ export const LONG_MESSAGE_CHARS = 40;
  * OUT of its descriptor instead, leaving `{ id }`, and handed to `onLong` with
  * its compiled form as JSON. The runtime then finds it by id in the English
  * the chunk loads before it runs.
+ *
+ * With `dropContext` (the production build only, headroom pass 5, 27 Nov 2026)
+ * each descriptor's `context` goes too. Lingui hashes message and context into
+ * the id when the macro runs, and from then on everything finds a message by
+ * that id: `I18n._` in @lingui/core reads no context once a descriptor has an
+ * id (only its runtime macro does, to make an id when none was given), and
+ * neither @lingui/react nor client/src/i18n reads one at all. Extraction reads
+ * the source, so en.po and es.po keep every context. On af52730e the field was
+ * about 14,000 descriptors and 240 KB of shipped JS.
  */
 export function precompileMessages(
   code: string,
   onLong?: (id: string, compiledJson: string) => void,
   dropAt?: (index: number) => boolean,
+  dropContext = false,
 ): string {
   let out = "";
   let last = 0;
@@ -121,6 +133,9 @@ export function precompileMessages(
     if (!msg) continue;
     const literalStart = at + msg[0].length - msg[1].length;
     const literalEnd = literalStart + msg[1].length;
+    // Where the message's own fields end: after `, context: <literal>` when that goes too (see dropContext).
+    const context = dropContext ? CONTEXT_AFTER.exec(code.slice(literalEnd)) : null;
+    const fieldsEnd = literalEnd + (context ? context[0].length : 0);
     // Compiled even when dropped, so a message that does not compile still fails the build.
     const compiled = compiledLiteral(msg[1], head);
     const drop = dropAt?.(m.index) ?? false;
@@ -131,19 +146,19 @@ export function precompileMessages(
       if (!drop) onLong!(/"([A-Za-z0-9_-]{6})"/.exec(head)![1], compiled);
       // Drop `message: <literal>` and one comma beside it: the one after when
       // another field follows, else the one before it.
-      const after = /^\s*,\s*/.exec(code.slice(literalEnd));
+      const after = /^\s*,\s*/.exec(code.slice(fieldsEnd));
       if (after) {
         out += code.slice(last, at);
-        last = literalEnd + after[0].length;
+        last = fieldsEnd + after[0].length;
       } else {
         out += code.slice(last, at).replace(/,\s*$/, "");
-        last = literalEnd;
+        last = fieldsEnd;
       }
       ID.lastIndex = last;
       continue;
     }
     out += code.slice(last, literalStart) + compiled;
-    last = literalEnd;
+    last = fieldsEnd;
     ID.lastIndex = last;
   }
   return last === 0 ? code : out + code.slice(last);
@@ -174,10 +189,10 @@ export function mirrorSpans(code: string): Array<[number, number]> {
 }
 
 /** Drop every macro message inside a `mirrorOf(...)` or `englishKeyed(...)` call, compile the rest (see mirrorSpans). */
-export function stripMirrorMessages(code: string, onLong?: (id: string, compiledJson: string) => void): string {
+export function stripMirrorMessages(code: string, onLong?: (id: string, compiledJson: string) => void, dropContext = false): string {
   const spans = mirrorSpans(code);
-  if (spans.length === 0) return precompileMessages(code, onLong);
-  return precompileMessages(code, onLong, (at) => spans.some(([a, b]) => at > a && at < b));
+  if (spans.length === 0) return precompileMessages(code, onLong, undefined, dropContext);
+  return precompileMessages(code, onLong, (at) => spans.some(([a, b]) => at > a && at < b), dropContext);
 }
 
 /** Where the build's split English is collected, per module (copySplit.ts). */
@@ -209,8 +224,8 @@ export function precompileEnglish(split?: LongCopySink): Plugin {
       const sink = building ? split : undefined;
       sink?.forget(id);
       const onLong = sink ? (msgId: string, compiled: string) => sink.record(id, msgId, compiled) : undefined;
-      // A production build drops a mirror's English (mirrorSpans); dev and vitest keep it.
-      const out = building ? stripMirrorMessages(code, onLong) : precompileMessages(code, onLong);
+      // A production build drops a mirror's English (mirrorSpans) and every context (precompileMessages); dev and vitest keep both.
+      const out = building ? stripMirrorMessages(code, onLong, true) : precompileMessages(code, onLong);
       return out === code ? null : { code: out, map: null };
     },
   };

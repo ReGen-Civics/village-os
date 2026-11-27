@@ -73,6 +73,45 @@ describe("precompileMessages: English compiled at build, so no compiler ships (s
   });
 });
 
+describe("precompileMessages with dropContext: the production build ships no context (headroom pass 5)", () => {
+  it("drops a compiled descriptor's context and keeps its id, values and message", () => {
+    const code = `e.jsx(t,{id:"224D8v",values:{paidOn:o},message:"Paid {paidOn}",context:"treasury sync"})`;
+    expect(precompileMessages(code, undefined, undefined, true)).toBe(`e.jsx(t,{id:"224D8v",values:{paidOn:o},message:${JSON.stringify(compileMessage("Paid {paidOn}"))}})`);
+  });
+
+  it("drops it across lines in a pretty-printed JSX descriptor", () => {
+    const code = `<Trans_ {.../*i18n*/ {\n        id: "Loql8J",\n        message: "Share now",\n        context: "funding rounds"\n    }}/>`;
+    const out = precompileMessages(code, undefined, undefined, true);
+    expect(out).not.toContain("context");
+    expect(out).toContain(`message: ${JSON.stringify(compileMessage("Share now"))}\n    }}`);
+  });
+
+  it("drops it with a long message the split takes out, leaving the id alone", () => {
+    const msg = "A sentence long enough that the split moves it out of the chunk.";
+    const moved: string[] = [];
+    const out = precompileMessages(`t({ id: "Long0a", message: "${msg}", context: "x" }); u({ id: "Long0b", message: "${msg}", context: "y", values: { a } })`, (id) => moved.push(id), undefined, true);
+    expect(out).toBe(`t({ id: "Long0a" }); u({ id: "Long0b", values: { a } })`);
+    expect(moved).toEqual(["Long0a", "Long0b"]);
+  });
+
+  it("drops it inside a mirror too, where the message goes", () => {
+    const out = stripMirrorMessages(`mirrorOf(() => S, { h: { id: "In00aa", message: "Your task board", context: "board" } })`, undefined, true);
+    expect(out).toContain(`h: { id: "In00aa" }`);
+    expect(out).not.toContain("board\"");
+  });
+
+  it("leaves a value named context inside values, and any object that is not a macro descriptor", () => {
+    const code = `x({ id: "Ab12Cd", values: { context: c }, message: "{context}" }); const advice = { context: "why we ask", id: "circle" };`;
+    const out = precompileMessages(code, undefined, undefined, true);
+    expect(out).toContain(`values: { context: c }`);
+    expect(out).toContain(`const advice = { context: "why we ask", id: "circle" };`);
+  });
+
+  it("keeps context unless asked: dev and vitest see the macro's own descriptors", () => {
+    expect(precompileMessages(`t({ id: "L2CVk3", message: "Skip", context: "nav" })`)).toContain(`context: "nav"`);
+  });
+});
+
 describe("stripMirrorMessages: a word-table mirror ships its ids, the shared table ships the English", () => {
   // The macro's output for a mirror file (client/src/i18n/wordTable.ts), with a descriptor outside the mirror too.
   const code = [

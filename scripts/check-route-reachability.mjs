@@ -106,6 +106,8 @@ const ALLOWLIST = {
   "/good-neighbor": "a redirect to /rights#good-neighbor, kept for links already sent and the buttons villages saved",
   "/resident-rights": "a redirect to /rights#resident-rights, kept for links already sent and the buttons villages saved",
   "/steward-rights": "a redirect to /rights#steward-rights, kept for links already sent and the buttons villages saved",
+  // Your First Walk was removed (the lead, 27 Nov 2026: "Let's get rid of this"); its address redirects home, for links already sent.
+  "/first-walk": "a redirect to the home page, the removed first walk's old address, kept for old links",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.

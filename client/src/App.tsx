@@ -206,6 +206,7 @@ const Profile = lazyPage(() => import("./pages/Profile"));
 const ProfileSettings = lazyPage(() => import("./pages/ProfileSettings"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
+const TodayCardPage = lazyPage(() => import("./pages/TodayCard"));
 // Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
 const RitesWelcome = lazyPage(() => import("./pages/rites/Welcome"));
 const RitesComeAboard = lazyPage(() => import("./pages/rites/ComeAboard"));
@@ -264,7 +265,6 @@ const ToolsHub = lazyPage(() => import("./pages/ToolsHub"));
 const VillageMap = lazyPage(() => import("./pages/VillageMapForMembers"));
 const LivingMap = lazyPage(() => import("./pages/LivingMapForMembers"));
 const Events = lazyPage(() => import("./pages/Events"));
-const FirstWalk = lazyPage(() => import("./pages/FirstWalk"));
 const Forum = lazyPage(() => import("./pages/Forum"));
 const Messages = lazyPage(() => import("./pages/Messages"));
 const Introductions = lazyPage(() => import("./pages/Introductions"));
@@ -412,7 +412,8 @@ function Router() {
       <Route path="/photographs">{() => <Redirect to="/places#photos" replace />}</Route>
       <Route path="/map/circles" component={VillageMap} />
       <Route path="/events" component={Events} />
-      <Route path="/first-walk" component={FirstWalk} />
+      {/* Your First Walk is gone (the lead, 27 Nov 2026: "Let's get rid of this"); an old link lands on the home page, which every village has. */}
+      <Route path="/first-walk">{() => <Redirect to="/" replace />}</Route>
       <Route path="/feed" component={Feed} />
       <Route path="/stay" component={Stay} />
       {/* The Exchange's old address: one page called Wallet now (the lead, 25 Nov 2026). The query and hash ride along. */}
@@ -481,6 +482,8 @@ function Router() {
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      {/* Pull a card: today's card, drawn from the member's own lines (shared/myCard.ts). Before /profile/:handle. */}
+      <Route path="/profile/today-card" component={TodayCardPage} />
       {/* Profile settings (Direction D). Before /profile/:handle, which would otherwise take "settings" as a handle. */}
       <Route path="/profile/settings" component={ProfileSettings} />
       <Route path="/welcome" component={RitesWelcome} />
