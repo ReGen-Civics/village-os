@@ -61,6 +61,8 @@ interface Served {
   note?: string | null;
   /** The terms we changed for this proposal, beside what the applicant answered (joining lane PR 4). Never the log. */
   offer?: ServedOffer | null;
+  /** What the circle raised in its consent round, naming nobody: for the applicant and the circle only. */
+  objections?: string[];
   /** Our review comes before the conversations on this application (Phase A). */
   reviewFirst?: boolean;
   /** Our review ended it with the not-invited letter. */
@@ -575,6 +577,17 @@ export default function ApplicationStatus() {
                   </ul>
                 )}
               </div>
+            )}
+            {s.objections && s.objections.length > 0 && (
+              <section aria-labelledby="circle-objections" className={CARD} data-circle-objections="">
+                <h2 id="circle-objections" className={H2}>{w.status.objections.heading}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">{w.status.objections.line}</p>
+                <ul className="mt-2 grid gap-2">
+                  {s.objections.map((reason, i) => (
+                    <li key={i} className="whitespace-pre-line rounded-xl border border-border bg-background/40 p-3 text-foreground">{reason}</li>
+                  ))}
+                </ul>
+              </section>
             )}
             {s.offer && s.offer.rows.length > 0 && (
               <ChangedTerms

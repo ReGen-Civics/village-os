@@ -357,6 +357,8 @@ export interface ApplicantMessages {
     private: string;
     /** The quiet "withdraw my application" button, with its confirm step (the lead, 27 Nov 2026). */
     withdraw: { button: string; ask: string; yes: string; keep: string; failed: string };
+    /** What the circle raised in its consent round, naming nobody (the lead, 27 Nov 2026). */
+    objections: { heading: string; line: string };
     wait: { heading: string; line: string; quests: string; map: string; events: string };
   };
 }
@@ -704,6 +706,10 @@ const en: ApplicantMessages = {
       },
     },
     private: "This page shows steps only. What the people who talk with you write down stays with them.",
+    objections: {
+      heading: "What the circle raised",
+      line: "Their reasons, in their words. Nobody is named.",
+    },
     withdraw: {
       button: "Withdraw my application",
       ask: "Withdraw it? This closes your application, and you can apply again any time.",
@@ -1048,6 +1054,10 @@ const es: ApplicantMessages = {
     },
     private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan con usted se queda con ellas.",
     // needs-native-review: the withdraw button, 27 Nov 2026
+    objections: {
+      heading: "Lo que planteó el círculo", // needs-native-review: the objections' reasons, 27 Nov 2026
+      line: "Sus razones, en sus palabras. No se nombra a nadie.", // needs-native-review: the objections' reasons, 27 Nov 2026
+    },
     withdraw: {
       button: "Retirar mi postulación",
       ask: "¿La retira? Esto cierra su postulación, y puede postularse de nuevo cuando quiera.",

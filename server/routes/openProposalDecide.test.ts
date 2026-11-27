@@ -401,8 +401,40 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect((await call("POST", url, { answer: "object", reason: "Changed my mind." }, ANA.id)).status).toBe(409);
       const objected = await call("POST", url, { answer: "object", reason: "We have a gate keeper already." }, BEN.id);
       expect(objected.status).toBe(200);
-      const read = (await page(id, MO.id)).body.proposal.consent;
-      expect(read).toMatchObject({ state: "objected", consented: 1, objected: 1, objections: ["We have a gate keeper already."] });
+      // THE REASONS, FOR THE CIRCLE AND THE APPLICANT ONLY (the lead, 27 Nov 2026: "no the anchor circle members and
+      // the applicant can see this but not anyone else"). A member of the circle asked reads them.
+      expect((await page(id, ANA.id)).body.proposal.consent).toMatchObject({ state: "objected", objected: 1, objections: ["We have a gate keeper already."] });
+      // A plain member reads the proposal and the count, never the reason.
+      const plain = await page(id, MO.id);
+      expect(plain.status).toBe(200);
+      expect(plain.body.proposal.consent).toMatchObject({ state: "objected", consented: 1, objected: 1, objections: [] });
+      expect(JSON.stringify(plain.body)).not.toContain("gate keeper already");
+      // A visitor reads nothing.
+      const visitor = await page(id, null);
+      expect(visitor.status).not.toBe(200);
+      expect(JSON.stringify(visitor.body ?? null)).not.toContain("gate keeper already");
+    });
+
+    it("the applicant reads the circle's reasons, by their status link and by their own account; nobody is named", async () => {
+      const REASON = "Two gate keepers is one too many.";
+      // By the status link: somebody with no account here.
+      const p = await send("objections-link@example.test", [gate]);
+      const ok = await call("POST", "/api/open-proposals/confirm", { token: p.token }, null);
+      expect(ok.status).toBe(200);
+      expect((await call("POST", `/api/governance/open-proposals/${p.id}/consent`, { answer: "object", reason: REASON }, BEN.id)).status).toBe(200);
+      const u = new URL(String(ok.body.statusPath), ORIGIN);
+      const mine = await call("GET", `/api/application-status/${p.id}?token=${u.searchParams.get("token")}`, undefined, null);
+      expect(mine.status).toBe(200);
+      expect(mine.body.status.objections).toEqual([REASON]);
+      // Who objected is never said.
+      for (const who of [BEN.name, BEN.id, BEN.email]) expect(JSON.stringify(mine.body)).not.toContain(who);
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE id = ?", [p.id]);
+
+      // By their own account: Mo applies from the address of Mo's account, and reads them on the proposal's page.
+      const own = await confirmed(MO.email, [gate]);
+      expect((await call("POST", `/api/governance/open-proposals/${own.id}/consent`, { answer: "object", reason: REASON }, BEN.id)).status).toBe(200);
+      expect((await page(own.id, MO.id)).body.proposal.consent.objections).toEqual([REASON]);
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE id = ?", [own.id]);
     });
   });
 

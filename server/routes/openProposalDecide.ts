@@ -98,7 +98,7 @@ import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../li
 import { anyAddressAccount } from "../lib/applicantAccount";
 import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
-import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
+import { answerAsk, askRolesFor, consentView, decisionFor, mayReadObjectionReasons, withoutObjectionReasons, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
 import { effectiveLifecycle } from "../lib/modules";
 import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
@@ -250,6 +250,13 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
    * Whether this member may adopt or decline this proposal at the door, and
    * the proposer's own account here, if any. Refused, with the sentence.
    */
+  /** The applicant themself: their own account, or the person behind the address (the same test `deciding` makes). */
+  async function isTheApplicant(p: store.StoredOpenProposal, viewerId: string, own: string | null | undefined): Promise<boolean> {
+    if (own && own === viewerId) return true;
+    const viewer: any = await members.byId(viewerId);
+    return !!viewer?.email && !!p.email && identityKey(String(viewer.email)) === identityKey(p.email);
+  }
+
   async function deciding(p: store.StoredOpenProposal, actorId: string) {
     const rule = await decideRule(work);
     // An agent's keeper is its own (0374): they proposed it, so they never decide it.
@@ -434,8 +441,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const roles = await rolesOf(pool, p);
     const asks = (await asksFor(pool, [p.id])).get(p.id) ?? [];
     const open = p.status === "confirmed";
-    const view = consentView(asks, at, tz(), viewerId, await askRolesFor(pool, asks));
+    const askRoles = await askRolesFor(pool, asks);
     const may = await deciding(p, viewerId);
+    // The reasons for the circle asked and the applicant only (the lead, 27 Nov 2026); the count for everybody.
+    const whole = consentView(asks, at, tz(), viewerId, askRoles);
+    const view = mayReadObjectionReasons(asks, viewerId, askRoles, await isTheApplicant(p, viewerId, may.own)) ? whole : withoutObjectionReasons(whole);
     const holdsThePower = may.rule.who === "live-holders" && may.rule.holders.includes(viewerId);
     // The invitation's standing, for the holders of the power, on an adoption that made one.
     let invitation: { state: "open" | "used" | "closed"; sentAt: string | null; emailed: boolean | null; askedAt: string | null } | null = null;
@@ -722,7 +732,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const out = await answerAsk({ pool, notify: deps.notify, timeZone: tz(), sessionsOn, now: now() }, p.id, standing, userId, namesOf(await rolesOf(pool, p)), req.body);
     if (!out.ok) return res.status(out.status).json({ error: out.error, ...(out.field ? { field: out.field } : {}) });
     const asks = (await asksFor(pool, [p.id])).get(p.id) ?? [];
-    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: consentView(asks, now(), tz(), userId, await askRolesFor(pool, asks)) });
+    const askRoles = await askRolesFor(pool, asks);
+    const answered = consentView(asks, now(), tz(), userId, askRoles);
+    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: mayReadObjectionReasons(asks, userId, askRoles, false) ? answered : withoutObjectionReasons(answered) });
   });
 
   // ── Adopt ─────────────────────────────────────────────────────────────────
