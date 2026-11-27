@@ -148,10 +148,30 @@ msgctxt "site menu: Govern's own page, its Now view"
 msgid "What's happening now"
 msgstr "Lo que está pasando ahora"
 
-# needs-native-review: the menu's QA, a real name for Aligned, 27 Nov 2026
-msgctxt "site menu: the register of terms members aligned with"
-msgid "Agreed terms"
-msgstr "Términos acordados"
+# needs-native-review: the season fold (#1862) in the menu, 27 Nov 2026
+msgctxt "site menu"
+msgid "Season"
+msgstr "Temporada"
+
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "The place"
+msgstr "El lugar"
+
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "The people and the story"
+msgstr "La gente y la historia"
+
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "Ways in"
+msgstr "Formas de entrar"
+
+# needs-native-review: what each group holds, over its dropdown, 27 Nov 2026
+msgctxt "site menu: what a group holds, over its dropdown"
+msgid "How we're run"
+msgstr "Cómo nos gobernamos"
 
 # needs-native-review: the menu's QA, the account menu, 27 Nov 2026
 msgctxt "site menu: what waits on the member to decide"
@@ -202,3 +222,18 @@ msgstr "Mapa oculto"
 msgctxt "site menu"
 msgid "Rights and agreements"
 msgstr "Derechos y acuerdos"
+
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+msgctxt "Layout, h2"
+msgid "Village"
+msgstr "Aldea"
+
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+msgctxt "Layout, h2"
+msgid "Community"
+msgstr "Comunidad"
+
+# needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
+msgctxt "Layout, h2"
+msgid "Join"
+msgstr "Unirse"

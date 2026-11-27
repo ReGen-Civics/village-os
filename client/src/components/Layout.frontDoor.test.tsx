@@ -111,7 +111,7 @@ describe("a signed-in account the village has not admitted", () => {
   it("sees the same front door as a visitor, and none of the members' working pages", async () => {
     user = { id: "u2", name: "Ana Applicant", role: "member", stageGranted: "guest" };
     const hrefs = await menuHrefs();
-    for (const h of [...UNFINISHED, "/season-plans", "/aligned", "/changes", "/governance/work", "/journey-to-launch"]) expect(hrefs, h).not.toContain(h);
+    for (const h of [...UNFINISHED, "/season", "/season-plans", "/aligned", "/changes", "/governance/work", "/journey-to-launch"]) expect(hrefs, h).not.toContain(h);
     expect(hrefs).toContain("/quests");
   });
 });

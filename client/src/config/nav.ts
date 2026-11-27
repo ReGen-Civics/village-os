@@ -127,6 +127,11 @@ export type NavGroup = {
   leads?: "newcomers";
   /** A folder (by its platform name) open when a newcomer opens the group (the menu's QA, 27 Nov 2026). */
   opens?: string;
+  /**
+   * What the group holds, in a few words, drawn as the eyebrow over its dropdown (the menu's QA, round 2). A platform
+   * word, translated in navWords.ts.
+   */
+  holds?: string;
 };
 
 export type NavEntry = NavLink | NavGroup;
@@ -162,6 +167,7 @@ export const NAV: readonly NavEntry[] = [
    */
   {
     label: "Village",
+    holds: "The place",
     items: [
       // The map is the village's primary surface: the first row, with the hidden map beside it for a member.
       { href: "/map", label: "Living Map", module: "map", sub: "Maps" },
@@ -184,6 +190,7 @@ export const NAV: readonly NavEntry[] = [
   },
   {
     label: "Community",
+    holds: "The people and the story",
     items: [
       // The people and the story (the lead, round 2: "Our story could be under community. Our team could be under
       // community", and the Love Letter "would be under community").
@@ -210,6 +217,7 @@ export const NAV: readonly NavEntry[] = [
   },
   {
     label: "Join",
+    holds: "Ways in",
     leads: "newcomers",
     // A newcomer opens Join to the paths, the first thing a stranger chooses.
     opens: "Choose your path",
@@ -246,6 +254,7 @@ export const NAV: readonly NavEntry[] = [
      * so the Module Library, its last entry, is the bottom of the whole menu.
      */
     label: "Govern",
+    holds: "How we're run",
     href: "/governance",
     items: [
       // The Now view (26 Nov 2026): what the village is deciding and what waits on you. Open to a guest too. "What's
@@ -273,12 +282,10 @@ export const NAV: readonly NavEntry[] = [
       { href: "/powers", label: "What We Look After", sub: "Circles & Roles" },
       // A members-only report on how the roles are going. It had no menu door.
       { href: "/role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
-      // The season's own pages. Members read them (terms.read), so they are listed for the signed-in roles only.
-      { href: "/season-plans", label: "Season Plans", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
-      { href: "/season-places", label: "Join the Season", module: "season-places", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
+      // The season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms are its
+      // tabs, and their old addresses redirect there. Members read it, so it is listed for the signed-in roles only.
+      { href: "/season", label: "Season", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
       { href: "/funding-rounds", label: "Funding Rounds", module: "funding-rounds", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
-      // The register of every set of terms members have aligned with (seat settings PR6), named for what it holds.
-      { href: "/aligned", label: "Agreed terms", module: "governance", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },
       // The season's work (the lead, round 2: "Quests could be in both village and in governance").
       { href: "/quests", label: "Quests", sub: "This season" },
       // The reference shelf: the guide, the training, Rights and agreements, then the one about leaving. Fold 3 (#1857)

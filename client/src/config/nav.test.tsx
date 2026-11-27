@@ -333,4 +333,68 @@ describe("the dropdowns' folders", () => {
     expect(document.getElementById("nav-menu-join")).toBeNull();
     expect(document.activeElement).toBe(join);
   });
+
+  /*
+   * The menu's QA, round 2: a visitor opened Join, then "Build with us", and the menu vanished. The paths folder shut
+   * above the pointer, the panel shrank out from under it, and mouse-leave closed the dropdown.
+   */
+  it("stays open when the pointer leaves after a folder was clicked, and a press outside closes it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    const wrapper = join.parentElement!;
+    fireEvent.mouseEnter(wrapper);
+    fireEvent.click(screen.getByRole("button", { name: /Build with us/ }));
+    fireEvent.mouseLeave(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Build with us/ }).getAttribute("aria-expanded")).toBe("true");
+    fireEvent.mouseDown(document.body);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("still closes on mouse-leave when it was only hovered open, the control for the case above", () => {
+    shell(null);
+    const wrapper = screen.getAllByRole("button", { name: /^Join/i })[0]!.parentElement!;
+    fireEvent.mouseEnter(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.mouseLeave(wrapper);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("stays open past mouse-leave when a click opened it", () => {
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.click(join);
+    fireEvent.mouseLeave(join.parentElement!);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+  });
+
+  it("holds it open when its button is clicked after the pointer hovered it open, and a second click shuts it", () => {
+    // A mouse reaches the button before it clicks, so the hover has opened it already: the click must hold, not shut.
+    // This states the behaviour; it does not catch the defect that shipped once in round 2 (a capture-phase hold that a
+    // real browser re-rendered before the button's own click read it). jsdom passed that code. A real browser did not.
+    shell(null);
+    const join = screen.getAllByRole("button", { name: /^Join/i })[0]!;
+    fireEvent.mouseEnter(join.parentElement!);
+    fireEvent.click(join);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.mouseLeave(join.parentElement!);
+    expect(document.getElementById("nav-menu-join")).toBeTruthy();
+    fireEvent.click(join);
+    expect(document.getElementById("nav-menu-join")).toBeNull();
+  });
+
+  it("heads each dropdown with what its group holds, in words", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    expect(document.getElementById("nav-menu-join")!.querySelector("p")?.textContent).toBe("Ways in");
+  });
+
+  it("names a folder's list in aria-controls only while it is open", () => {
+    shell(null);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    const build = screen.getByRole("button", { name: /Build with us/ });
+    expect(build.getAttribute("aria-controls")).toBeNull();
+    fireEvent.click(build);
+    expect(document.getElementById(build.getAttribute("aria-controls")!)).toBeTruthy();
+  });
 });

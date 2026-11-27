@@ -1,11 +1,11 @@
 // Moved out of components/Layout.tsx whole (26 Nov 2026), when lighting the page's branch took the shell past the
 // 1000-line ratchet (scripts/check-file-lines.mjs).
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { Trans } from "@lingui/react/macro";
-import { navMenuId, type NavGroup, type NavLink } from "@/config/nav";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { navMenuId, navWord, type NavGroup, type NavLink } from "@/config/nav";
 import MenuRows from "@/components/nav/MenuRows";
 import { currentFor, type Lit } from "@/config/navBearings";
 import MenuIcon from "@/components/nav/MenuIcon";
@@ -21,6 +21,13 @@ import LitRule from "@/components/nav/LitRule";
  * desktop width. Escape is the second way out that a click-toggle needs, since
  * a mouse user whose pointer is still inside the wrapper fires no fresh
  * mouseenter and could not otherwise reopen it.
+ *
+ * HELD ONCE CLICKED (the menu's QA, round 2, 27 Nov 2026). A dropdown opened
+ * by a click, or one the reader clicked inside, no longer closes when the
+ * pointer leaves it: a folder shutting above the pointer shrank the panel out
+ * from under it, and the whole menu vanished mid-choice. Held, it closes on a
+ * click outside, Escape, or choosing a link. A dropdown only hovered open still
+ * closes when the pointer leaves.
  */
 export default function NavDropdown({
   group,
@@ -40,13 +47,30 @@ export default function NavDropdown({
   /** The folder this reader meets open (Join's paths, for a newcomer). */
   opens?: string | null;
 }) {
+  const { i18n } = useLingui();
   const trigger = useRef<HTMLButtonElement>(null);
+  const box = useRef<HTMLDivElement>(null);
+  const [held, setHeld] = useState(false);
+  // Shut is shut: the next opening starts unheld.
+  useEffect(() => {
+    if (!open) setHeld(false);
+  }, [open]);
+  // Held, a press anywhere outside the dropdown closes it.
+  useEffect(() => {
+    if (!open || !held) return;
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open, held, setOpen]);
   const here = lit?.group === group.label;
   // The join paths carry a second line; the rest are one word. A single width
   // for both leaves either the paths cramped or the short menus floating. The
-  // short one is w-56 since 27 Nov 2026 (it was w-48), so a folder's name such
-  // as "More in Governance", and "Seasonal Festivals" and "How we work
-  // together", each sit on one line.
+  // short one is w-64 since the menu's QA round 2 (27 Nov 2026; it was w-48,
+  // then w-56), so "Places and homes", "What's happening now", "How we work
+  // together", "Sign the Love Letter" and "What We Look After" each sit on one
+  // line inside their indented folders.
   const wide = items.some((i) => i.subtitle);
   const menuId = navMenuId(group.label);
   // One link of the dropdown, at the top level or inside a folder (config/navNest.ts).
@@ -74,16 +98,26 @@ export default function NavDropdown({
 
   return (
     <div
+      ref={box}
       className="relative"
       onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseLeave={() => { if (!held) setOpen(false); }}
       // Escape closes the menu and gives focus back to its group's button (the menu's QA, 27 Nov 2026).
       onKeyDown={(e) => { if (e.key === "Escape") { setOpen(false); trigger.current?.focus(); } }}
     >
       <button
         ref={trigger}
         type="button"
-        onClick={() => setOpen(!open)}
+        // A click opens it held; a click on one the pointer only hovered open holds it there; a click on a held one
+        // shuts it. Decided here, in the button's own handler: a capture-phase handler re-renders before this one runs
+        // (React flushes a discrete event's updates between the two phases), so it would read the hold it just set.
+        onClick={() => {
+          if (open && !held) setHeld(true);
+          else {
+            setOpen(!open);
+            setHeld(!open);
+          }
+        }}
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls={menuId}
@@ -99,12 +133,18 @@ export default function NavDropdown({
           <m.div
             id={menuId}
             data-nav-dropdown=""
+            // A click inside (a folder, a link) holds it open; a link's own click has already closed it.
+            onClick={() => setHeld(true)}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-56"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-72" : "w-64"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
           >
+            {/* What the group holds, as the More sheet heads its sections (the menu's QA, round 2). Words only. */}
+            {group.holds ? (
+              <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
+            ) : null}
             <MenuRows
               links={items}
               opens={opens}
@@ -112,7 +152,8 @@ export default function NavDropdown({
               renderLink={drawLink}
               gutter={<span aria-hidden="true" className="w-8 shrink-0" />}
               rowClassName="flex w-full items-center gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-              listClassName="border-l-2 border-border bg-muted/40"
+              // Indented, with the rule at the icon gutter, as the drawer and the phone sheet nest (the menu's QA, round 2).
+              listClassName="ml-4 border-l-2 border-border [&_a]:pl-3 [&_a]:pr-3"
             />
           </m.div>
         )}

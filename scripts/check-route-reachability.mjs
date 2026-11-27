@@ -114,6 +114,11 @@ const ALLOWLIST = {
   // /governance/treasury#cash-budget; links and notices already sent are its doors once the menu drops it.
   "/budget": "a redirect to /governance/treasury#cash-budget, the cash budget's old address, kept for links already sent",
   "/decisions/:id": "a redirect to /governance/decisions/:id, kept for links in notifications and emails already sent",
+  // The season fold (27 Nov 2026): three pages became /season. Each old address redirects to its tab, keeping the query; notifications already sent, old bookmarks and the term warning's ?renew= link are its doors.
+  "/season-plans/mine": "a redirect to /season#plan, kept for notifications and term warnings already sent",
+  "/season-plans": "a redirect to /season#everyone, kept for links already sent",
+  "/season-places": "a redirect to /season#join, kept for crew notices already sent (?season= is kept)",
+  "/aligned": "a redirect to /season#aligned, kept for alignment links already sent",
 
   // One funding round (0338). Its doors are the round cards on /funding-rounds and
   // the link every idea's forum thread carries, which the server writes into the

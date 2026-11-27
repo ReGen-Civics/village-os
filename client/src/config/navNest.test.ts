@@ -151,10 +151,11 @@ describe("every entry has a page, and Your First Walk is gone", () => {
   const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf8");
   const routes = new Set(Array.from(app.matchAll(/<Route\s+path="([^"]+)"/g), (m) => m[1]));
   /**
-   * Rights and agreements, /rights, arrives with fold 3 (#1857), which this branch composes after; once both are in,
-   * the route is in App.tsx and this entry is spare. The Treasury tab (#1843) came with the 1.3.94 batch.
+   * Rights and agreements, /rights, arrives with fold 3 (#1857), and the season, /season, with the season fold
+   * (#1862). This branch assumes both and is composed in their batch or after it; once they are in, the routes are in
+   * App.tsx and these entries are spare. The Treasury tab (#1843) came with the 1.3.94 batch.
    */
-  const PENDING = new Set<string>(["/rights"]);
+  const PENDING = new Set<string>(["/rights", "/season"]);
 
   it("points every menu entry at a route the app has", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href.split("#")[0]!);

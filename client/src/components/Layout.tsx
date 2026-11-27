@@ -374,9 +374,9 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -6 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
+                        className="absolute top-full right-0 mt-2 w-60 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="border-l-2 border-border bg-muted/40" renderLink={(item) => (
+                        <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="ml-4 border-l-2 border-border [&_a]:pl-3" renderLink={(item) => (
                           <Link
                             href={item.href}
                             className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
@@ -390,7 +390,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         <button
                           type="button"
                           onClick={() => { setAccountOpen(false); logout(); }}
-                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-muted transition-colors text-left border-t border-gray-100"
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-coral hover:bg-muted transition-colors text-left border-t border-border"
                           // "Everywhere" is honest, not decorative: tokenVersion
                           // is the only revocation lever, so this ends the
                           // session on every device the member is signed in on.
@@ -489,7 +489,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         onClick={() => setOpenMobileGroup(openMobileGroup === entry.label ? null : entry.label)}
                         aria-expanded={openMobileGroup === entry.label}
                         aria-current={lit?.group === entry.label ? "true" : undefined}
-                        className={`flex items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2 ${lit?.group === entry.label ? "font-semibold" : ""}`}
+                        className={`flex min-h-11 items-center justify-between w-full text-white hover:underline transition-colors text-sm py-2 ${lit?.group === entry.label ? "font-semibold" : ""}`}
                       >
                         <span className="relative">{entry.label}{lit?.group === entry.label ? <LitRule /> : null}</span>
                         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${openMobileGroup === entry.label ? "rotate-180" : ""}`} />
@@ -552,7 +552,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                       )} />
                       <button
                         onClick={() => { setMobileMenuOpen(false); logout(); }}
-                        className="block text-white hover:opacity-80 transition-opacity text-sm py-2 text-left"
+                        className="flex min-h-11 items-center text-white hover:opacity-80 transition-opacity text-sm py-2 text-left"
                       >
                         <Trans context="site header">Sign out everywhere</Trans>
                       </button>
@@ -602,7 +602,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
       {/* Footer */}
       <footer className="bg-teal-deep text-white py-16">
         <div className="container">
-          <div className="grid md:grid-cols-5 gap-12 mb-12">
+          <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-12 mb-12">
             {/* Brand */}
             <div className="md:col-span-1">
               {/* The box is reserved WHILE THE CONFIG LOADS and only then, which
@@ -628,9 +628,126 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
               <FooterBlurb text={cfg?.project?.footerBlurb} />
             </div>
 
-            {/* Your Journey */}
+            {/* Village: the place and its life. The footer's columns are the menu's groups, each page under its own (the menu's QA, round 2, 27 Nov 2026). */}
             <div>
-              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Your Journey</Trans></h2>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Village</Trans></h2>
+              <ul className="space-y-0">
+                <li>
+                  <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                    <Trans context="Layout, Link">Quests</Trans>
+                  </Link>
+                </li>
+                {mapModule && showsHref("/places") && (
+                  <li>
+                    <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Places</Trans>
+                    </Link>
+                  </li>
+                )}
+                {storyShown("/housing") && (
+                  <li>
+                    <Link href="/housing" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/housing", "Housing")}
+                    </Link>
+                  </li>
+                )}
+                {storyShown("/good-neighbor") && (
+                  <li>
+                    <Link href="/rights#good-neighbor" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/good-neighbor", "Good Neighbor Criteria")}
+                    </Link>
+                  </li>
+                )}
+                {staysModule && (
+                  <li>
+                    <Link href="/stay" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Stay</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* The library's second way in, beside the tools (its other was Your First Walk, removed 27 Nov 2026). */}
+                {libraryModule && showsHref("/library") && (
+                  <li>
+                    <Link href="/library" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Library</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* The hidden map's second way in, a member's (it left the phone sheet's Also yours, QA 27 Nov 2026). */}
+                {hiddenMapModule && showsHref("/hidden-map") && (
+                  <li>
+                    <Link href="/hidden-map" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Hidden map</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* The health dashboard had one door in the whole client, the
+                    Village menu, and a menu reshuffle would have taken it. */}
+                {healthModule && showsHref("/village-health") && (
+                  <li>
+                    <Link href="/village-health" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Village Health</Trans>
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* Community: the people and the story */}
+            <div>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Community</Trans></h2>
+              <ul className="space-y-0">
+                {storyShown("/team") && (
+                  <li>
+                    <Link href="/team" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/team", "Our Team")}
+                    </Link>
+                  </li>
+                )}
+                {storyShown("/master-plan") && (
+                  <li>
+                    <Link href="/master-plan" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/master-plan", "Master Plan")}
+                    </Link>
+                  </li>
+                )}
+                {storyShown("/love-letter") && (
+                  <li>
+                    <Link href="/love-letter" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {storyName("/love-letter")}
+                    </Link>
+                  </li>
+                )}
+                {networkModule && showsHref("/network") && (
+                  <li>
+                    <Link href="/network" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Village Network</Trans>
+                    </Link>
+                  </li>
+                )}
+                <li hidden={!showsHref("/gratitude")}>
+                  <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                    {tokenName}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/feedback" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                    <Trans context="Layout, Link">Share Feedback</Trans>
+                  </Link>
+                </li>
+                {toolsModule && showsHref("/tools") && (
+                  <li>
+                    <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Village Tools</Trans>
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* Join: the ways in */}
+            <div>
+              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Join</Trans></h2>
               <ul className="space-y-0">
                 {storyShown("/investor") && (
                   <li>
@@ -660,13 +777,6 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     </Link>
                   </li>
                 )}
-                {storyShown("/love-letter") && (
-                  <li>
-                    <Link href="/love-letter" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {storyName("/love-letter")}
-                    </Link>
-                  </li>
-                )}
                 {storyShown("/visit") && (
                   <li>
                     <Link href="/visit" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
@@ -674,18 +784,38 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     </Link>
                   </li>
                 )}
-                <li hidden={!showsHref("/gratitude")}>
-                  <Link href="/gratitude" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    {tokenName}
-                  </Link>
-                </li>
                 {/* Work with us: the four ways to build, top of /roles, and the partner form (the lead, 23 Nov 2026). */}
                 <li><Link href="/roles#four-ways" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center" data-footer-four-ways="">{footerName("/work-with-us", "Work With Us")}</Link></li>
                 <li><Link href="/partner" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">{t({ message: "Become a partner", context: "four ways to build: a partnership" })}</Link></li>
+                {storyShown("/opportunities") && (
+                  <li>
+                    <Link href="/opportunities" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/opportunities", "Business Opportunities")}
+                    </Link>
+                  </li>
+                )}
+                {commerceModule && (
+                  <li>
+                    <Link href="/contribute" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Contribute</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* Three module pages that lived behind exactly one menu entry
+                    each. The footer is the second door: it is on every page, it
+                    survives a nav reshuffle, and it costs a fork nothing when
+                    the module is off. */}
+                {crowdpoolModule && showsHref("/campaigns") && (
+                  <li>
+                    <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Crowd pooling</Trans>
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
 
-            {/* Govern: the footer's words match the menu's (the menu's QA, 27 Nov 2026). */}
+            {/* Govern: how the village is run; the footer's words match the menu's (the menu's QA, 27 Nov 2026) */}
             <div>
               <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Govern</Trans></h2>
               <ul className="space-y-0">
@@ -711,17 +841,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     </Link>
                   </li>
                 )}
-                {storyShown("/good-neighbor") && (
+                {storyShown("/co-creators-guide") && (
                   <li>
-                    <Link href="/good-neighbor" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/good-neighbor", "Good Neighbor Criteria")}
-                    </Link>
-                  </li>
-                )}
-                {storyShown("/team") && (
-                  <li>
-                    <Link href="/team" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/team", "Our Team")}
+                    <Link href="/co-creators-guide" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      {footerName("/co-creators-guide", "Co-Creators Guide")}
                     </Link>
                   </li>
                 )}
@@ -736,26 +859,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   </Link>
                 </li>
                 <li>
-                  <Link href="/exit-policy" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                  <Link href="/rights#leaving-well" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                     <Trans context="Layout, Link">Leaving Well</Trans>
                   </Link>
                 </li>
-                {networkModule && showsHref("/network") && (
-                  <li>
-                    <Link href="/network" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Village Network</Trans>
-                    </Link>
-                  </li>
-                )}
-                {/* The health dashboard had one door in the whole client, the
-                    Village menu, and a menu reshuffle would have taken it. */}
-                {healthModule && showsHref("/village-health") && (
-                  <li>
-                    <Link href="/village-health" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Village Health</Trans>
-                    </Link>
-                  </li>
-                )}
                 {/* The review queue. Signed-in only, because a visitor has no
                     use for it, and NOT gated on admin here: the whole point of
                     that page is that a steward who is not an admin can open
@@ -768,106 +875,6 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   <li>
                     <Link href="/governance/work" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       <Trans context="Layout, Link">Waiting on you</Trans>
-                    </Link>
-                  </li>
-                )}
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h2 className="font-display text-lg font-semibold mb-4"><Trans context="Layout, h2">Resources</Trans></h2>
-              <ul className="space-y-0">
-                {storyShown("/co-creators-guide") && (
-                  <li>
-                    <Link href="/co-creators-guide" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/co-creators-guide", "Co-Creators Guide")}
-                    </Link>
-                  </li>
-                )}
-                <li>
-                  <Link href="/feedback" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Share Feedback</Trans>
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/quests" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                    <Trans context="Layout, Link">Quests</Trans>
-                  </Link>
-                </li>
-                {commerceModule && (
-                  <li>
-                    <Link href="/contribute" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Contribute</Trans>
-                    </Link>
-                  </li>
-                )}
-                {/* Three module pages that lived behind exactly one menu entry
-                    each. The footer is the second door: it is on every page, it
-                    survives a nav reshuffle, and it costs a fork nothing when
-                    the module is off. */}
-                {crowdpoolModule && showsHref("/campaigns") && (
-                  <li>
-                    <Link href="/campaigns" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Crowd pooling</Trans>
-                    </Link>
-                  </li>
-                )}
-                {staysModule && (
-                  <li>
-                    <Link href="/stay" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Stay</Trans>
-                    </Link>
-                  </li>
-                )}
-                {toolsModule && showsHref("/tools") && (
-                  <li>
-                    <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Village Tools</Trans>
-                    </Link>
-                  </li>
-                )}
-                {/* The library's second way in, beside the tools (its other was Your First Walk, removed 27 Nov 2026). */}
-                {libraryModule && showsHref("/library") && (
-                  <li>
-                    <Link href="/library" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Library</Trans>
-                    </Link>
-                  </li>
-                )}
-                {/* The hidden map's second way in, a member's (it left the phone sheet's Also yours, QA 27 Nov 2026). */}
-                {hiddenMapModule && showsHref("/hidden-map") && (
-                  <li>
-                    <Link href="/hidden-map" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Hidden map</Trans>
-                    </Link>
-                  </li>
-                )}
-                {mapModule && showsHref("/places") && (
-                  <li>
-                    <Link href="/places" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      <Trans context="Layout, Link">Places</Trans>
-                    </Link>
-                  </li>
-                )}
-                {storyShown("/housing") && (
-                  <li>
-                    <Link href="/housing" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/housing", "Housing")}
-                    </Link>
-                  </li>
-                )}
-                {storyShown("/opportunities") && (
-                  <li>
-                    <Link href="/opportunities" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/opportunities", "Business Opportunities")}
-                    </Link>
-                  </li>
-                )}
-                {storyShown("/master-plan") && (
-                  <li>
-                    <Link href="/master-plan" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
-                      {footerName("/master-plan", "Master Plan")}
                     </Link>
                   </li>
                 )}

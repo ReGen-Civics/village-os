@@ -83,8 +83,10 @@ describe("a story page switched off on its own", () => {
   });
 
   it("takes a chapter's entry with it: Good Neighbor's switch still governs /rights#good-neighbor (fold 3, #1857)", () => {
+    // The menu's entry and the footer's link, both to the chapter since the footer follows the menu (QA round 2).
     openVillage();
-    expect(linksTo("/rights#good-neighbor")).toHaveLength(1);
+    expect(linksTo("/rights#good-neighbor")).toHaveLength(2);
+    expect(footerLinksTo("/rights#good-neighbor")).toHaveLength(1);
     cleanup();
     switches.brochureHidden = ["/good-neighbor"];
     openVillage();

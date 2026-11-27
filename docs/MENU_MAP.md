@@ -137,10 +137,8 @@ Govern
     What We Look After  `/powers`
     How roles are going  `/role-measures`
   This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
+    Season  `/season`
     Funding Rounds  `/funding-rounds`
-    Agreed terms  `/aligned`
     Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
@@ -227,10 +225,8 @@ Govern
     What We Look After  `/powers`
     How roles are going  `/role-measures`
   This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
+    Season  `/season`
     Funding Rounds  `/funding-rounds`
-    Agreed terms  `/aligned`
     Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
@@ -319,10 +315,8 @@ Govern
     What We Look After  `/powers`
     How roles are going  `/role-measures`
   This season ▸
-    Season Plans  `/season-plans`
-    Join the Season  `/season-places`
+    Season  `/season`
     Funding Rounds  `/funding-rounds`
-    Agreed terms  `/aligned`
     Quests  `/quests`
   Guides ▸
     Co-Creators Guide  `/co-creators-guide`
@@ -369,7 +363,7 @@ The tab ids are unchanged, so every `/profile#anchor` the app links to still ope
 
 ## Every page
 
-Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/rights`), which fold 3 (#1857) adds. "Menu on main" is where `nav.ts` had it before this change, and "Menu now" is where it is after. A page with no menu entry is reached from the page in the last column. Decisions: **STAY**; **FOLD?** a candidate to fold into another page (listed below, not done here); **FOLDED** or **FOLDING** done or under way in another lane; **REMOVED**.
+Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/rights`) and the season page (`/season`), which fold 3 (#1857) and the season fold (#1862) add. "Menu on main" is where `nav.ts` had it before this change, and "Menu now" is where it is after. A page with no menu entry is reached from the page in the last column. Decisions: **STAY**; **FOLD?** a candidate to fold into another page (listed below, not done here); **FOLDED** or **FOLDING** done or under way in another lane; **REMOVED**.
 
 | Route | Page | Who | Menu on main | Menu now | Decision | Note |
 |---|---|---|---|---|---|---|
@@ -503,12 +497,12 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/role-proposals/new` |  | M R A | - | - | STAY | reached from Open Roles and Make a Proposal |
 | `/role-proposals/shared/:token` |  | V N M | - | - | STAY | a shared draft link |
 | `/role-proposals/:id` |  | M R A | - | - | STAY | reached from Your work |
-| `/season-plans/mine` | Your season | M R | - | - | STAY | reached from Season Plans and the profile |
-| `/season-plans` | The village's season | M R A | Governance / Season Plans | Govern / This season / Season Plans | FOLD? | Season Plans, Join the Season and Aligned are three views of one season: one page with tabs |
-| `/season-places/circles` | The season's circles | M R A | - | - | STAY | reached from Join the Season |
-| `/season-places` | Join the season | M R A | Governance / Join the Season | Govern / This season / Join the Season | FOLD? | see Season Plans |
+| `/season-plans/mine` | Your season | - | - | - | FOLDED | into the season page (/season#plan) by the season fold, #1862 |
+| `/season-plans` | The village's season | - | Governance / Season Plans | - | FOLDED | into the season page (/season#everyone) by the season fold, #1862 |
+| `/season-places/circles` | The season's circles | M R A | - | - | STAY | reached from the season page's Join tab |
+| `/season-places` | Join the season | - | Governance / Join the Season | - | FOLDED | into the season page (/season#join) by the season fold, #1862 |
 | `/role-path/:roleId` |  | M R | - | - | STAY | a role's path, reached from the role |
-| `/aligned` | Aligned | M R A | Governance / Aligned | Govern / This season / Agreed terms | FOLD? | "Agreed terms" in the menu (QA, 27 Nov 2026), the register of terms members aligned with; see Season Plans |
+| `/aligned` | Aligned | - | Governance / Aligned | - | FOLDED | into the season page (/season#aligned) by the season fold, #1862 |
 | `/visit` | Visit | V N M R I A | Join / Plan a Visit | Join / Plan a Visit | STAY |  |
 | `/gratitude` | Gratitude | V N M R I A | Community / Gratitude | Community / Gratitude | STAY |  |
 | `/journal` | Journal | M R A | Account menu / Journal | Account menu / Your things / Journal | STAY |  |
@@ -525,6 +519,7 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 | `/reset` | A fresh start | V N M | - | - | STAY | a fresh start for a phone stuck on an old version, handed over as a link |
 | `/404` | Page not found | V N M R I A | - | - | STAY | the not-found page |
 | `/rights` | Rights and agreements | V N M R I A | - | Govern / Guides / Rights and agreements | STAY | Rights and agreements (fold 3, #1857): Good Neighbor criteria, Resident Rights, Steward Rights and Leaving Well as four chapters |
+| `/season` | Season | M R A | - | Govern / This season / Season | STAY | the season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms as tabs; Govern, This season |
 
 ## What changed, in short
 
@@ -532,18 +527,18 @@ Every route in `client/src/App.tsx`, 151 of them, plus Rights and agreements (`/
 - **Village:** the maps (the hidden map beside the Living Map for a member), Quests, Places and homes (Housing, Stay, Good Neighbor Criteria, a chapter of Rights and agreements since #1857, Places, which holds the photographs since #1856), the Library and Village Health as their own entries.
 - **Community:** Our story (Our Team, Master Plan, the Love Letter, Village Network), Conversations (Feed, Forum, Village Tools, Share Feedback), Gratitude, Gatherings, Welcoming.
 - **Join:** the paths, Open Roles, Plan a Visit, Build with us (Become a partner, Propose a quest, Business Opportunities, Work With Us), Fund the village.
-- **Govern:** Decide (What's happening now, Decisions, which holds change requests since #1861, Treasury, Make a Proposal), Circles & Roles (Circles, Roles, What We Look After, How roles are going), This season (Season Plans, Join the Season, Funding Rounds, Agreed terms, Quests), Guides (Co-Creators Guide, Training, Rights and agreements since #1857, Leaving Well), How we work (How we work together, which holds Game Mechanics since #1854, How We Create, Village Email, Module Library).
+- **Govern:** Decide (What's happening now, Decisions, which holds change requests since #1861, Treasury, Make a Proposal), Circles & Roles (Circles, Roles, What We Look After, How roles are going), This season (Season, the one page the season fold #1862 makes of Season Plans, Join the Season and the aligned terms; Funding Rounds; Quests), Guides (Co-Creators Guide, Training, Rights and agreements since #1857, Leaving Well), How we work (How we work together, which holds Game Mechanics since #1854, How We Create, Village Email, Module Library).
 - **The account menu, the member's own:** My Profile, Messages, My tasks (each with its count), Your things (Waiting on you, Wallet, Journal, Protocols, Badges), Running the village (Launch Plan, Treasury desk, Command Centre, Review, Village Settings).
 - **New doors:** Become a partner, Propose a quest, How roles are going, the admin's Review page, and the footer's Library and hidden map.
 - **The QA round (27 Nov 2026):** one folder open at a time; "Choose your path" open for a newcomer; folder rows and icon-less links keep the icon gutter; Escape returns focus; the footer says Govern, matches the menu's words and hides Village Health from a visitor; the phone sheet shows each page once.
+- **The QA round 2 (27 Nov 2026):** a dropdown clicked open, or clicked inside, stays open when the pointer leaves, and closes on a click outside, Escape or a link; folders are indented with their rule at the icon gutter; the dropdowns are w-64 so no label wraps; each dropdown is headed with what its group holds (The place, The people and the story, Ways in, How we're run); the footer's columns are the menu's groups (Village, Community, Join, Govern) beside Connect.
 - **Gated as before:** no gate was added. A newcomer meets none of a member's working areas.
 
 ## Folds to consider next (not done here)
 
 1. **The two treasuries.** The Treasury desk (`/treasury`: mint and pay queues), `/cash-payouts` and `/pricing` could be sections of Govern's Treasury tab, shown to whoever holds the power.
-2. **The season.** Season Plans, Join the Season and Agreed terms are three views of one season: one page with tabs.
-3. **The village at a glance** (`/fleet`) overlaps the map and Govern's What's happening now.
-4. **Pay** (`/pay`) has no menu entry, because its gate is the credits read (`shared/payGate.ts`): it is a phone tile and the treasury's Send. A `credits` gate in `nav.ts` would give it one.
+2. **The village at a glance** (`/fleet`) overlaps the map and Govern's What's happening now.
+3. **Pay** (`/pay`) has no menu entry, because its gate is the credits read (`shared/payGate.ts`): it is a phone tile and the treasury's Send. A `credits` gate in `nav.ts` would give it one.
 
 ## Not done here
 
