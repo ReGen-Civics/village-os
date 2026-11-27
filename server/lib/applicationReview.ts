@@ -216,9 +216,13 @@ export async function stepBookingOf(db: Db, ref: string, roleId: string): Promis
   const people = await repo.bookingLinksOfMembers(db, holders);
   const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
   const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;
+  const label = roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE));
+  // RULING 17 (the lead, 27 Nov 2026): with a role's application deadline, nothing is booked before its review window
+  // opens (QA pass 2: an Ops link stood open beside "we review 1 to 2 weeks after"). The step is named, with no link.
+  if (!repo.reviewWindowOpen(await repo.applicationDeadline(db, ref).catch(() => null), new Date())) return roleBookingFor(label, [], null);
   // By the role only (the lead, 27 Nov 2026: "Just the Role - Ops, Community, Visionary"): its short label, and the
   // role's own link before any holder's (shared/interviewBooking.ts `roleBookingFor`).
-  return roleBookingFor(roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE)), people, roleUrl);
+  return roleBookingFor(label, people, roleUrl);
 }
 
 export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
@@ -552,6 +556,17 @@ export type ReviewAnswer =
   | { ok: true; conversations: ConversationListed[] }
   | { ok: false; status: number; error: string; code: "none" | "done" | "gone" };
 
+/** The first season that begins after now, by name and first day: when a declined applicant may apply again. */
+function nextSeasonOf(deps: Pick<ReviewDeps, "calendar">, now: Date): { name: string | null; startsOn: string } | null {
+  const cal = deps.calendar();
+  const today = civilDateKey(now, cal.timezone || "UTC");
+  const next = cal.seasons
+    .map((x: any) => ({ name: typeof x?.name === "string" && x.name.trim() ? x.name.trim() : null, startsOn: String(x?.startsOn ?? "").slice(0, 10) }))
+    .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.startsOn) && x.startsOn > today)
+    .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
+  return next ?? null;
+}
+
 /** The application's conversations in order, by role name and minutes, each with how it is booked (`stepBookingOf`): what the invitation lists. */
 export async function conversationsOf(db: Db, ref: string): Promise<ConversationListed[]> {
   const list = await repo.interviewsOf(db, ref);
@@ -696,7 +711,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; objections: string[]; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { nextSeason: { name: string | null; startsOn: string } | null; roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; objections: string[]; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -771,6 +786,8 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     locale: own ? languageOf(own) : "en",
     note: own?.body.note ?? null,
     offer: outcome ? null : await applicantOffer(pool, ref),
+    // Ruling 12: a decline at our review shows when the roles open again, the next season's first day.
+    nextSeason: outcome === "declined" ? nextSeasonOf(deps, deps.now()) : null,
     // What the circle raised in its consent round, naming nobody: the applicant may read it (the lead, 27 Nov 2026:
     // "the anchor circle members and the applicant can see this but not anyone else").
     objections: kindOfRef(ref) === "open" ? ((await asksFor(pool, [ref])).get(ref) ?? []).filter((a) => a.answer === "object" && a.reason).map((a) => a.reason as string) : [],

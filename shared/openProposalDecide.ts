@@ -597,6 +597,8 @@ export function notInvitedLetter(i: {
   note?: string | null;
   /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
   doorsInBlock?: boolean;
+  /** Ruling 12: the next season, so they can apply again then. */
+  nextSeason?: { name: string | null; startsOn: string } | null;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const doors = i.doorsInBlock ? [] : [
@@ -613,6 +615,7 @@ export function notInvitedLetter(i: {
       "",
       w.notInvited.matched,
       ...noteLines(i.lang, i.note),
+      ...(i.nextSeason ? ["", w.notInvited.nextSeason(i.nextSeason.name, w.day(i.nextSeason.startsOn), letterHref(i.site, "/roles"))] : []),
       ...(doors.length ? ["", w.notInvited.stayClose, ...doors] : []),
       "",
       w.notInvited.closing,

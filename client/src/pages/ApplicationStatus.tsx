@@ -64,6 +64,8 @@ interface Served {
   offer?: ServedOffer | null;
   /** What the circle raised in its consent round, naming nobody: for the applicant and the circle only. */
   objections?: string[];
+  /** Declined at our review: when the roles open again (ruling 12). */
+  nextSeason?: { name: string | null; startsOn: string } | null;
   /** Our review comes before the conversations on this application (Phase A). */
   reviewFirst?: boolean;
   /** Our review ended it with the not-invited letter. */
@@ -277,6 +279,8 @@ export default function ApplicationStatus() {
   const lang = chooseApplicantLanguage({ chosenOnSite: i18n.locale, profile: s?.locale ?? null }).language;
   const w = wordsIn(lang);
   const view = s ? statusView(lang, s) : null;
+  // The review window, 1 to 2 weeks after the role's deadline (a week after it, as the server counts): not yet open.
+  const windowAhead = !!s?.reviewAfter && Date.now() < Date.parse(`${s.reviewAfter}T00:00:00Z`) + 7 * 86_400_000;
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -425,7 +429,9 @@ export default function ApplicationStatus() {
                   {view.average && <p className="mt-1 text-sm text-muted-foreground" data-stage-average="">{view.average}</p>}
                   {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
                   {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
-                  {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{s.reviewAfter ? w.reviewWindow(w.day(s.reviewAfter)) : w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
+                  {s.outcome == null && !view.applicantActs && !windowAhead && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{s.reviewAfter ? w.reviewWindow(w.day(s.reviewAfter)) : w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
+                  {/* Ruling 17: until the review window opens, the line stays, whatever else the card offers (QA pass 1 saw it hide). */}
+                  {s.outcome == null && windowAhead && s.reviewAfter && <p className="mt-1 text-foreground" data-review-window="">{w.reviewWindow(w.day(s.reviewAfter))}</p>}
                   {/* The stage's own gold act (QA round 2): "Add your references" while they wait, the booking gold-edged beside it. */}
                   {view.six && (view.primary || (view.booking?.book && "links" in view.booking.book)) && (
                     <div className="mt-4 flex flex-wrap gap-2" data-stage-book="">
@@ -527,10 +533,13 @@ export default function ApplicationStatus() {
               <section aria-label={w.status.notInvited.heading} className={CARD} data-not-invited="">
                 <h2 className={H2}>{w.status.notInvited.heading}</h2>
                 <p className="mt-1 text-foreground">{w.status.notInvited.line}</p>
+                {s.nextSeason && <p className="mt-2 text-foreground" data-next-season="">{w.status.notInvited.nextSeason(s.nextSeason.name, w.day(s.nextSeason.startsOn))}</p>}
                 <div className="mt-3 grid gap-2">
                   {s.stayClose && (
                     <a className={DOOR} href={s.stayClose.href} data-stay-close="">{w.status.notInvited.program(s.stayClose.name)}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
                   )}
+                  {/* Ruling 12: the roles and the next season, beside the quest. */}
+                  <a className={DOOR} href="/roles" data-not-invited-roles="">{w.status.notInvited.roles}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
                   <a className={DOOR} href="/quests">{w.status.notInvited.quests}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
                   {eventsOn && <a className={DOOR} href="/events">{w.status.notInvited.events}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>}
                 </div>

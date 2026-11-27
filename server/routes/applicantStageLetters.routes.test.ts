@@ -614,7 +614,12 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
       const first = state.posted.find((m) => m.idempotencyKey === `open-proposal:${id}:status`)!;
       expect(first.text).toContain("We review applications 1 to 2 weeks after");
       expect(first.text).not.toContain("within one moon cycle");
-      expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.reviewAfter).toBe(deadline);
+      const before = (await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status;
+      expect(before.reviewAfter).toBe(deadline);
+      // Ruling 17: nothing to book before the window opens, on the page or in the letter.
+      expect(before.bookNow?.url ?? null).toBeNull();
+      expect(JSON.stringify(before)).not.toContain(LINK.ops);
+      expect(first.text).not.toContain(LINK.ops);
       // A conversation open four days, before the window: not stalled, no heads-up to the team.
       const [iv] = await ivs(id);
       await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 4 * 86_400_000), iv.id]);

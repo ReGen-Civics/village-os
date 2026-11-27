@@ -137,6 +137,8 @@ export interface ApplicantMessages {
     program(name: string, url: string): string;
     quest(url: string): string;
     events(url: string): string;
+    /** Ruling 12: the roles open again each season; the next one's start, and the roles page. */
+    nextSeason(name: string | null, day: string, url: string): string;
     closing: string;
   };
 
@@ -243,7 +245,7 @@ export interface ApplicantMessages {
       /** The application was closed because nobody answered it in time. */
       closed: string;
     };
-    notInvited: { heading: string; line: string; program(name: string): string; quests: string; events: string };
+    notInvited: { heading: string; line: string; program(name: string): string; quests: string; events: string; roles: string; nextSeason(name: string | null, day: string): string };
     /** The eyebrow and the card for an application closed because nobody answered it in time. */
     closed: { step: string; heading: string; line: string; quests: string; roles: string };
     /** The applicant's own door when their invitation expired: it asks the team, and never makes a new one by itself. */
@@ -486,11 +488,12 @@ const en: ApplicantMessages = {
   notInvited: {
     subject: (v) => `Thank you for applying to ${v}`,
     thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}, and for the care you put into it.`,
-    matched: "We have found someone more closely matched to this role. Thank you for your time and interest.",
+    matched: "We can't say yes this time. Thank you for your time and the care you put into it.",
     stayClose: "We would love to stay in touch, and there are open ways to be part of the village:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Take a quest: ${url}`,
     events: (url) => `Come to an event: ${url}`,
+    nextSeason: (name, day, url) => `Our roles open again each season. ${name ? `${name} begins` : "The next season begins"} ${day}, and you're welcome to apply again: ${url}`,
     closing: "We hope to meet you soon.",
   },
 
@@ -608,10 +611,12 @@ const en: ApplicantMessages = {
     },
     notInvited: {
       heading: "Thank you for applying",
-      line: "We have found someone more closely matched to this role. Thank you for your time and interest. We'd love you to stay close:",
+      line: "We can't say yes this time. Thank you for your time and the care you put into it. We'd love you to stay close:",
       program: (name) => name,
       quests: "Take a quest",
       events: "Come to an event",
+      roles: "See the roles",
+      nextSeason: (name, day) => `Our roles open again each season. ${name ? `${name} begins` : "The next season begins"} ${day}, and you're welcome to apply again.`,
     },
     booking: {
       label: "How the conversations are booked",
@@ -836,11 +841,12 @@ const es: ApplicantMessages = {
   notInvited: {
     subject: (v) => `Gracias por postularse a ${v}`,
     thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}, y por el cuidado que puso en ello.`,
-    matched: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés.", // needs-native-review: new words, 12 Nov 2026
+    matched: "Esta vez no podemos decir que sí. Gracias por su tiempo y por el cuidado que puso.", // needs-native-review: ruling 12, 27 Nov 2026
     stayClose: "Nos encantaría seguir en contacto, y hay caminos abiertos para ser parte de la aldea:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Tome una misión: ${url}`,
     events: (url) => `Venga a un evento: ${url}`,
+    nextSeason: (name, day, url) => `Nuestros roles se abren de nuevo cada temporada. ${name ? `${name} empieza` : "La próxima temporada empieza"} el ${day}, y puede postularse de nuevo: ${url}`, // needs-native-review: ruling 12, 27 Nov 2026
     closing: "Esperamos conocerle pronto.",
   },
 
@@ -961,10 +967,12 @@ const es: ApplicantMessages = {
     },
     notInvited: {
       heading: "Gracias por postularse",
-      line: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés. Nos encantaría que siga cerca:", // needs-native-review: new words, 16 Nov 2026
+      line: "Esta vez no podemos decir que sí. Gracias por su tiempo y por el cuidado que puso. Nos encantaría que siga cerca:", // needs-native-review: ruling 12, 27 Nov 2026
       program: (name) => name,
       quests: "Tome una misión",
       events: "Venga a un evento",
+      roles: "Ver los roles", // needs-native-review: ruling 12, 27 Nov 2026
+      nextSeason: (name, day) => `Nuestros roles se abren de nuevo cada temporada. ${name ? `${name} empieza` : "La próxima temporada empieza"} el ${day}, y puede postularse de nuevo.`, // needs-native-review: ruling 12, 27 Nov 2026
     },
     booking: {
       label: "Cómo se agendan las conversaciones",

@@ -319,6 +319,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     };
   }
 
+  /** The first season that begins after a day, by name and first day (ruling 12: they may apply again then). */
+  const nextSeasonAfter = (dayIso: string): { name: string | null; startsOn: string } | null => {
+    const next = (deps.seasonState().seasons ?? [])
+      .map((x: any) => ({ name: typeof x?.name === "string" && x.name.trim() ? x.name.trim() : null, startsOn: String(x?.startsOn ?? "").slice(0, 10) }))
+      .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.startsOn) && x.startsOn > dayIso)
+      .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
+    return next ?? null;
+  };
+
   /** Send, and say why not when it did not go. */
   async function sent(email: OutgoingEmail | null): Promise<NotSentWhy | null> {
     if (!email) return "no_address";
@@ -1149,6 +1158,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             lang: languageOf(p),
             note,
             doorsInBlock: true,
+            nextSeason: nextSeasonAfter(civilDateKey(at, tz())),
           }), { lang: languageOf(p), comeAndPlay: true })
         : null,
     );

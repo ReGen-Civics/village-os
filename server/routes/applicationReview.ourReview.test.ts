@@ -310,8 +310,10 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     expect(out.status, JSON.stringify(out.body)).toBe(200);
     const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:not-invited`)!;
     expect(letter.subject).toBe("Thank you for applying to Test Village");
-    expect(letter.text).toContain("more closely matched to this role");
-    expect(letter.text).toContain("Thank you for your time and interest.");
+    // Ruling 12: "we can't say yes this time", and the roles open again with the next season.
+    expect(letter.text).toContain("We can't say yes this time.");
+    expect(letter.text).not.toContain("more closely matched");
+    expect(letter.text).toContain(`Our roles open again each season. Season of Roots begins 1 January 2037, and you're welcome to apply again: ${ORIGIN}/roles`);
     expect(letter.text, "the lead cut the paragraph explaining it is not personal (12 Nov 2026)").not.toContain("it is not personal");
     expect(letter.text).toContain(`Friends of the Village: ${ORIGIN}/resident`);
     expect(letter.text).toContain(`Take a quest: ${ORIGIN}/quests`);
@@ -323,6 +325,7 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     const st = await statusOf(id);
     expect(st.body.status.notInvited).toBe(true);
     expect(st.body.status.stayClose).toEqual({ name: "Friends of the Village", href: "/resident" });
+    expect(st.body.status.nextSeason).toEqual({ name: "Season of Roots", startsOn: "2037-01-01" });
     expect(st.body.status.path.map((p: any) => p.label)).toEqual(["Received", "Our review"]);
     // CONTROL: an invitation after it is refused.
     expect((await call("POST", `/api/governance/open-proposals/${id}/invite`, {}, FOUNDER.id)).status).toBe(409);
