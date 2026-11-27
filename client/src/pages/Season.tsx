@@ -54,14 +54,7 @@ import { landOn } from "@/components/season/land";
 
 /** Anchors on the Season tab that still land, because they name a place lower on it. */
 const LANDS = new Set(["#everyone"]);
-import {
-  CARD,
-  EYEBROW,
-  H1,
-  HINT,
-  LEDE,
-  WORLD,
-} from "@/components/journey/look";
+import { CARD, EYEBROW, H1, HINT, WORLD } from "@/components/journey/look";
 import { seasonView, type SeasonGoalView } from "@shared/seasonGoalsView";
 import { civilDayWords } from "@shared/seasonPlans";
 
@@ -121,12 +114,10 @@ export default function Season() {
       // A tab lands on its own panel (scroll-mt-40 keeps it clear of the header and the sticky tab bar).
       if (scroll)
         requestAnimationFrame(() =>
-          document
-            .getElementById(`${tabsId}-panel-${next}`)
-            ?.scrollIntoView?.({
-              block: "start",
-              behavior: "instant" as ScrollBehavior,
-            })
+          document.getElementById(`${tabsId}-panel-${next}`)?.scrollIntoView?.({
+            block: "start",
+            behavior: "instant" as ScrollBehavior,
+          })
         );
     },
     [tabsId]
@@ -218,7 +209,7 @@ export default function Season() {
   };
   const failed = t({
     message: "This part of the season could not be drawn.",
-    context: "season page, a tab that failed",
+    context: "season page",
   });
 
   const active = live?.current ?? null;
@@ -247,74 +238,74 @@ export default function Season() {
     ? seasonSteps(
         { join: places ? join : null, plan: governance ? plan : null, aligned },
         {
-          join: t({ message: "Join the season", context: "season page, step" }),
+          join: t({ message: "Join the season", context: "season page" }),
           plan: t({
             message: "Plan your season",
-            context: "season page, step",
+            context: "season page",
           }),
-          align: t({ message: "Read and align", context: "season page, step" }),
+          align: t({ message: "Read and align", context: "season page" }),
           acts: {
             join: t({
               message: "Open your application",
-              context: "season page, next act",
+              context: "season page",
             }),
             plan: t({
               message: "Open your plan",
-              context: "season page, next act",
+              context: "season page",
             }),
             aligned: t({
               message: "Open what waits on you",
-              context: "season page, next act",
+              context: "season page",
             }),
           },
           joinLine: {
             none: t({
               message: "Not applied yet",
-              context: "season page, join step",
+              context: "season page",
             }),
             applied: t({
               message: "Applied. The picker picks next.",
-              context: "season page, join step",
+              context: "season page",
             }),
             picked: t({
               message: "You're in",
-              context: "season page, join step",
+              context: "season page",
             }),
           },
           planLine: {
-            filed: t({ message: "Filed", context: "season page, plan step" }),
+            filed: t({ message: "Filed", context: "season page" }),
             changed: t({
               message: "Changes not filed yet",
-              context: "season page, plan step",
+              context: "season page",
             }),
             notFiled: t({
               message: "Not filed yet",
-              context: "season page, plan step",
+              context: "season page",
             }),
             before: (on: string) =>
               t({
                 message: `Opens on ${civilDayWords(on)}`,
-                context: "season page, plan step",
+                context: "season page",
               }),
           },
           alignLine: {
             clear: t({
               message: "Nothing waits on you",
-              context: "season page, align step",
+              context: "season page",
             }),
             agreement: t({
               message: "The agreement waits on you",
-              context: "season page, align step",
+              context: "season page",
             }),
             waiting: (n: number) =>
               n === 1
                 ? t({
                     message: "One waits on you",
-                    context: "season page, align step",
+                    context: "season page",
                   })
                 : t({
                     message: `${n} wait on you`,
-                    context: "season page, align step",
+                    context: "season page",
                   }),
           },
         },
@@ -323,10 +314,10 @@ export default function Season() {
     : [];
 
   const tabLabel: Record<SeasonTab, string> = {
-    season: t({ message: "Season", context: "season page, tab" }),
-    join: t({ message: "Join", context: "season page, tab" }),
-    plan: t({ message: "Your plan", context: "season page, tab" }),
-    aligned: t({ message: "Aligned", context: "season page, tab" }),
+    season: t({ message: "Season", context: "season page" }),
+    join: t({ message: "Join", context: "season page" }),
+    plan: t({ message: "Your plan", context: "season page" }),
+    aligned: t({ message: "Aligned", context: "season page" }),
   };
 
   return (
@@ -352,7 +343,7 @@ export default function Season() {
                     className="text-sm text-muted-foreground"
                     data-season-goals-met=""
                   >
-                    <Trans context="season page, goals met beside the ring">
+                    <Trans context="season page">
                       {met} of {goals.length} goals met
                     </Trans>
                   </span>
@@ -362,14 +353,14 @@ export default function Season() {
                 <p className={`${EYEBROW} inline-flex items-center gap-2`}>
                   <DaySun className="size-4" aria-hidden="true" />
                   {seasonName || (
-                    <Trans context="season page, eyebrow with no season named">
+                    <Trans context="season page">
                       This season
                     </Trans>
                   )}
                 </p>
                 <h1 className={H1}>
                   {focus || (
-                    <Trans context="season page, title with no focus set">
+                    <Trans context="season page">
                       The season
                     </Trans>
                   )}
@@ -381,13 +372,6 @@ export default function Season() {
                     day={view?.day ?? null}
                     of={view?.of ?? null}
                   />
-                ) : null}
-                {!active && live?.upcoming?.startsOn ? (
-                  <p className={LEDE}>
-                    <Trans context="season page, the next season's first day">
-                      Begins on {civilDayWords(live.upcoming.startsOn)}.
-                    </Trans>
-                  </p>
                 ) : null}
               </div>
             </div>
@@ -402,7 +386,7 @@ export default function Season() {
                 id="season-signin-h"
                 className="font-display text-2xl text-foreground"
               >
-                <Trans context="season page, signed out">
+                <Trans context="season page">
                   Sign in to take part in the season.
                 </Trans>
               </h2>
@@ -421,7 +405,7 @@ export default function Season() {
                 onKeyDown={onTabKey}
                 aria-label={t({
                   message: "The season's parts",
-                  context: "season page, tabs",
+                  context: "season page",
                 })}
                 className={`sticky top-24 z-30 grid scroll-mt-24 rounded-2xl border border-border bg-card/95 p-1 shadow-sm backdrop-blur`}
                 style={{
@@ -470,7 +454,7 @@ export default function Season() {
                               {MY_SEASON_WORDS.commonsHeading}
                             </h2>
                             <p className={`mt-2 ${HINT}`}>
-                              <Trans context="season page, the commons line">
+                              <Trans context="season page">
                                 The village's goals for this season. Moss
                                 spreads into a goal when the whole village
                                 reaches it.

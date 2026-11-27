@@ -523,7 +523,7 @@ export default function YourPlan({
       <header className={CARD}>
         {/* The season this plan is for, said once here: a window often plans the NEXT season, not the one in the hero. */}
         <p className={EYEBROW}>
-          <Trans context="season page, your plan eyebrow">Your plan</Trans>
+          <Trans context="season page">Your plan</Trans>
         </p>
         <h2 className={`${H2} mt-1`}>{season.name}</h2>
         {w && (
@@ -550,7 +550,7 @@ export default function YourPlan({
 
       <section aria-labelledby="ms-seats" className={CARD}>
         <p className={EYEBROW}>
-          <Trans context="season page, your roles eyebrow">
+          <Trans context="season page">
             Held this season
           </Trans>
         </p>
@@ -601,7 +601,7 @@ export default function YourPlan({
                       role="group"
                       aria-label={t({
                         message: `What happens to ${seat.name}`,
-                        context: "season page, the choices for a role you hold",
+                        context: "season page",
                       })}
                     >
                       <Link

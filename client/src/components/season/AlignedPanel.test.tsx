@@ -425,7 +425,7 @@ describe("where the reader stands", () => {
     render(<Aligned />);
     expect(
       await screen.findByText(
-        "Nothing waits on you. You are aligned with everything asked of you."
+        "No terms wait on you."
       )
     ).toBeTruthy();
   });

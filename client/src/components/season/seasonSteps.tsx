@@ -191,7 +191,7 @@ export function StepsCard({
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className={EYEBROW}>
-                <Trans context="season page, the member's steps eyebrow">
+                <Trans context="season page">
                   Your season
                 </Trans>
               </p>
@@ -200,11 +200,11 @@ export function StepsCard({
                 className="mt-1 font-display text-2xl leading-snug text-card-foreground sm:text-3xl"
               >
                 {allDone ? (
-                  <Trans context="season page, every step done">
+                  <Trans context="season page">
                     Your season is set.
                   </Trans>
                 ) : (
-                  <Trans context="season page, the steps heading">
+                  <Trans context="season page">
                     Where you stand
                   </Trans>
                 )}

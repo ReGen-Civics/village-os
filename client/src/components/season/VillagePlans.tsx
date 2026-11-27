@@ -18,7 +18,7 @@
  * No terms and no money reach this panel. An application's terms are read on
  * its own page, which every chip links.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { CalendarDays } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
@@ -91,32 +91,33 @@ export default function VillagePlans() {
     </>
   );
 
-  if (state === "loading") {
-    return (
-      <section aria-labelledby="everyone-h" className={CARD}>
-        {head}
-        <div className="flex justify-center py-10">
-          <BreathingLoader
-            label={t({
-              message: "Reading the village's plans",
-              context: "SeasonPlans, label",
-            })}
-          />
-        </div>
-      </section>
+  // Loading, a guest (401) and no season to plan all draw the panel's head and one line under it.
+  const quiet = (line: ReactNode) => (
+    <section aria-labelledby="everyone-h" className={CARD}>
+      {head}
+      {line}
+    </section>
+  );
+  if (state === "loading")
+    return quiet(
+      <div className="flex justify-center py-10">
+        <BreathingLoader
+          label={t({
+            message: "Reading the village's plans",
+            context: "SeasonPlans, label",
+          })}
+        />
+      </div>
     );
-  }
-  if (state === "members") {
-    return (
-      <section aria-labelledby="everyone-h" className={CARD}>
-        {head}
-        <p className="mt-2 font-semibold text-foreground">
-          {SEASON_PLANS_WORDS.membersOnly}
-        </p>
-        <p className={`${HINT} mt-1`}>{SEASON_PLANS_WORDS.membersOnlyLine}</p>
-      </section>
+  if (state === "members")
+    return quiet(
+      <p className="mt-2 font-semibold text-foreground">
+        {SEASON_PLANS_WORDS.membersOnly}{" "}
+        <span className="font-normal text-muted-foreground">
+          {SEASON_PLANS_WORDS.membersOnlyLine}
+        </span>
+      </p>
     );
-  }
   if (state === "error" || !data) {
     return (
       <ReadFailed
@@ -128,17 +129,15 @@ export default function VillagePlans() {
       />
     );
   }
-  if (!data.season) {
-    return (
-      <section aria-labelledby="everyone-h" className={CARD}>
-        {head}
-        <p className="mt-2 font-semibold text-foreground">
-          {SEASON_PLANS_WORDS.noSeason}
-        </p>
-        <p className={`${HINT} mt-1`}>{SEASON_PLANS_WORDS.noSeasonLine}</p>
-      </section>
+  if (!data.season)
+    return quiet(
+      <p className="mt-2 font-semibold text-foreground">
+        {SEASON_PLANS_WORDS.noSeason}{" "}
+        <span className="font-normal text-muted-foreground">
+          {SEASON_PLANS_WORDS.noSeasonLine}
+        </span>
+      </p>
     );
-  }
 
   const people = data.people ?? [];
   return (

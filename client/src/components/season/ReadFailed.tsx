@@ -20,7 +20,7 @@ export default function ReadFailed({
         {message}
       </p>
       <button type="button" className={BTN_SECONDARY} onClick={onRetry}>
-        <Trans context="season page, a read that failed">Try again</Trans>
+        <Trans context="season page">Try again</Trans>
       </button>
     </div>
   );

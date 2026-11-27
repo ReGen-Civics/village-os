@@ -144,7 +144,7 @@ function Register() {
       <div>
         <p className={EYEBROW}>{ALIGNED_WORDS.eyebrow}</p>
         <h2 id="aligned-register-h" className={`${H2} mt-1`}>
-          <Trans context="season page, the aligned register heading">
+          <Trans context="season page">
             The register
           </Trans>
         </h2>
@@ -322,12 +322,6 @@ export default function AlignedPanel({
     onStatus?.({ waiting: waitingCount, agreement });
   }, [onStatus, waitingCount, agreement]);
 
-  const allClear =
-    waiting !== null &&
-    waiting.length === 0 &&
-    agreement !== "asked" &&
-    agreement !== null;
-
   return (
     <div className="space-y-5">
       <section
@@ -336,15 +330,15 @@ export default function AlignedPanel({
         data-aligned-standing=""
       >
         <p className={EYEBROW}>
-          <Trans context="season page, aligned tab eyebrow">Asked of you</Trans>
+          <Trans context="season page">Asked of you</Trans>
         </p>
         <h2 id="aligned-standing-h" className={`${H2} mt-1`}>
           {waiting && waiting.length > 0 ? (
-            <Trans context="season page, aligned tab heading while texts wait">
+            <Trans context="season page">
               Waiting on you
             </Trans>
           ) : (
-            <Trans context="season page, aligned tab heading">
+            <Trans context="season page">
               What you align with
             </Trans>
           )}
@@ -352,7 +346,7 @@ export default function AlignedPanel({
         {mine === null ? null : waiting && waiting.length > 0 ? (
           <>
             <p className={`${HINT} mt-2`}>
-              <Trans context="season page, aligned tab, why these wait">
+              <Trans context="season page">
                 Each of these starts once every party aligns. Read the words,
                 then align.
               </Trans>
@@ -371,20 +365,10 @@ export default function AlignedPanel({
             </ul>
           </>
         ) : (
-          <p
-            className={`mt-2 font-semibold ${allClear ? "text-open" : "text-muted-foreground"}`}
-            role="status"
-          >
-            {allClear ? (
-              <Trans context="season page, aligned tab, nothing waits">
-                Nothing waits on you. You are aligned with everything asked of
-                you.
-              </Trans>
-            ) : (
-              <Trans context="season page, aligned tab, no texts wait">
-                No terms wait on you.
-              </Trans>
-            )}
+          <p className="mt-2 font-semibold text-open" role="status">
+            <Trans context="season page">
+              No terms wait on you.
+            </Trans>
           </p>
         )}
       </section>
