@@ -20,7 +20,7 @@
  * re-reads every page the reader has open, because a takedown shifts what sits
  * above it too.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import LoadFailed from "@/components/LoadFailed";
 import PhotoGrid from "@/components/places/PhotoGrid";
@@ -42,6 +42,9 @@ export default function PhotoIndex({ onLocked }: { onLocked: () => void }) {
   const [pages, setPages] = useState<IndexPage[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [say, setSay] = useState("");
+  const line = useRef<HTMLParagraphElement | null>(null);
+  const focusLine = useCallback(() => line.current?.focus(), []);
 
   /** One page of the index, or null when the read did not land. */
   const fetchPage = useCallback(
@@ -120,6 +123,8 @@ export default function PhotoIndex({ onLocked }: { onLocked: () => void }) {
         </ul>
       </div>
 
+      <p ref={line} tabIndex={-1} role="status" aria-live="polite" className="min-h-5 rounded-lg text-sm font-medium text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">{say}</p>
+
       {photos.length === 0 ? (
         <p className={HINT}><Trans context="all photos view">No photos yet.</Trans></p>
       ) : (
@@ -130,6 +135,9 @@ export default function PhotoIndex({ onLocked }: { onLocked: () => void }) {
             signedIn={head.signedIn}
             viewerId={head.viewerId}
             showPlace
+            say={say}
+            onSay={setSay}
+            focusLine={focusLine}
             onChanged={() => void loadRun(pages.length)}
           />
           {tail.nextBefore ? (

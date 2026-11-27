@@ -22,8 +22,9 @@ import { Check, X } from "lucide-react";
 import { Image } from "@/components/Image";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import CuratorImage from "@/components/places/CuratorImage";
-import { ACT, jsonHeaders, placeName, segment } from "@/components/places/placesApi";
-import { HINT, LINK, NOTE, TILE } from "@/components/journey/look";
+import { jsonHeaders, placeName } from "@/components/places/placesApi";
+import ViewTabs, { panelId, tabId } from "@/components/places/ViewTabs";
+import { BTN_SECONDARY, HINT, LINK, NOTE, TILE } from "@/components/journey/look";
 import { canAct, emptyQueueLine, reportHeadline, type PlacePhotoReport, type ReportStatus } from "@shared/placePhotos";
 import { Trans, useLingui } from "@lingui/react/macro";
 
@@ -84,14 +85,15 @@ export default function PhotoReportsPanel() {
         <li><Trans context="photo reports queue">Closing a report tells the member who raised it that someone read it.</Trans></li>
         <li><Trans context="photo reports queue">Taking a photo down closes every open report on it.</Trans></li>
       </ul>
-      <div role="tablist" aria-label={t({ message: "Report status", context: "photo reports queue" })} className="flex gap-1 rounded-xl border border-border bg-card p-1 sm:inline-flex">
-        {tabs.map((tab) => (
-          <button key={tab.key} type="button" role="tab" aria-selected={status === tab.key} onClick={() => setStatus(tab.key)} className={segment(status === tab.key)}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <ViewTabs
+        tabs={tabs}
+        value={status}
+        onChange={setStatus}
+        label={t({ message: "Report status", context: "photo reports queue" })}
+        idPrefix="photo-reports"
+      />
       <p role="status" aria-live="polite" className="min-h-5 text-sm font-medium text-foreground">{say}</p>
+      <div role="tabpanel" id={panelId("photo-reports", status)} aria-labelledby={tabId("photo-reports", status)}>
       {reports === null ? (
         <BreathingLoader label={t({ message: "Reading the queue", context: "photo reports queue" })} />
       ) : reports.length === 0 ? (
@@ -137,11 +139,11 @@ export default function PhotoReportsPanel() {
                   )}
                   {canAct(r) && (
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <button type="button" onClick={() => close(r.id, "resolved", t({ message: "Marked handled.", context: "photo reports queue" }))} className={ACT}>
+                      <button type="button" onClick={() => close(r.id, "resolved", t({ message: "Marked handled.", context: "photo reports queue" }))} className={BTN_SECONDARY}>
                         <Check className="size-4" aria-hidden="true" />
                         <Trans context="photo reports queue, mark a report">Handled</Trans>
                       </button>
-                      <button type="button" onClick={() => close(r.id, "dismissed", t({ message: "Dismissed.", context: "photo reports queue" }))} className={ACT}>
+                      <button type="button" onClick={() => close(r.id, "dismissed", t({ message: "Dismissed.", context: "photo reports queue" }))} className={BTN_SECONDARY}>
                         <X className="size-4" aria-hidden="true" />
                         <Trans context="photo reports queue">Dismiss</Trans>
                       </button>
@@ -153,6 +155,7 @@ export default function PhotoReportsPanel() {
           })}
         </ul>
       )}
+      </div>
     </section>
   );
 }

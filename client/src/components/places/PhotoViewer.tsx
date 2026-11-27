@@ -1,24 +1,27 @@
 /**
  * One photograph, large, with every control a person can act on it with.
  *
- * The place page and the all-photos tab both open this same viewer, so
+ * The place page and the all-photos view both open this same viewer, so
  * SunLeaf and "This is me" mean one thing everywhere. It replaced the old
  * card, which carried five buttons under every thumbnail: the grid is for
  * looking, and the acts live here, one press away.
  *
- * Arrows (and the two buttons) walk the list the reader opened it from.
- * Taking a photograph down for good asks twice, because the file and its
- * description are gone the moment it lands.
+ * The grid owns which photo is open (by id, so a reload that reorders the
+ * list keeps the viewer on its picture) and the page owns the line that says
+ * what an act did, so the line outlives the viewer when the picture leaves
+ * the list. Taking a photo down for good is a real second question, asked in
+ * its own row, and a confirm that lands inside half a second of the first
+ * press is ignored, so a double click cannot delete.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, EyeOff, Pin, Trash2, Undo2, UserRound } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight, EyeOff, Pin, Trash2, Undo2, UserRound, X } from "lucide-react";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { SunLeaf } from "@/components/sacred/living";
 import { Image } from "@/components/Image";
 import CuratorImage from "@/components/places/CuratorImage";
-import { ACT, ACT_DANGER, jsonHeaders, placeName } from "@/components/places/placesApi";
-import { CHIP_SOFT, EYEBROW, HINT, LINK } from "@/components/journey/look";
+import { jsonHeaders, placeName } from "@/components/places/placesApi";
+import { BTN_DANGER, BTN_SECONDARY, CHIP_SOFT, EYEBROW, HINT, LINK, TILE } from "@/components/journey/look";
 import {
   CONCERN_ALREADY,
   CONCERN_FILED,
@@ -30,48 +33,74 @@ import {
 } from "@shared/placePhotos";
 import { Trans, useLingui } from "@lingui/react/macro";
 
-/** The round step buttons over the picture; each adds its side. */
-const STEP =
-  "absolute top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+/** The round buttons over the picture (back, next, close); each adds its place. */
+const ROUND =
+  "absolute inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+/** A confirm pressed sooner than this after the first press is a double click, not an answer. */
+const CONFIRM_AFTER_MS = 500;
 
 export interface PhotoViewerProps {
-  photos: PlacePhoto[];
-  /** The open photograph's position in `photos`, or null when the viewer is shut. */
-  index: number | null;
-  onIndex: (i: number | null) => void;
+  /** The open photo, or null when the viewer is shut. */
+  photo: PlacePhoto | null;
+  position: number;
+  total: number;
+  onStep: (delta: number) => void;
+  onClose: () => void;
+  /** Where focus goes once the viewer has shut (the grid sends it to the tile or the page's line). */
+  onClosedFocus: () => void;
+  /** A photo taken down for good: the grid shuts the viewer and the page's line takes the word. */
+  onDropped: () => void;
   canCurate: boolean;
   signedIn: boolean;
   viewerId: string | null;
-  /** The all-photos tab sets this, so each picture says which place it is filed under. */
+  /** The all-photos view sets this, so each picture says which place it is filed under. */
   showPlace?: boolean;
+  /** The page's line: what the last act did. */
+  say: string;
+  onSay: (line: string) => void;
   /** Read the list again after an act. */
   onChanged: () => void;
 }
 
-export default function PhotoViewer({ photos, index, onIndex, canCurate, signedIn, viewerId, showPlace = false, onChanged }: PhotoViewerProps) {
+export default function PhotoViewer({
+  photo,
+  position,
+  total,
+  onStep,
+  onClose,
+  onClosedFocus,
+  onDropped,
+  canCurate,
+  signedIn,
+  viewerId,
+  showPlace = false,
+  say,
+  onSay,
+  onChanged,
+}: PhotoViewerProps) {
   const { t } = useLingui();
-  const open = index !== null && index >= 0 && index < photos.length;
-  const photo = open ? photos[index] : null;
   const [busy, setBusy] = useState(false);
-  const [say, setSay] = useState("");
-  const [confirmDrop, setConfirmDrop] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const askedAt = useRef(0);
+  const keep = useRef<HTMLButtonElement | null>(null);
 
-  // A new picture starts with a clean line and no half-asked takedown.
+  // A new picture starts with no half-asked takedown.
   useEffect(() => {
-    setSay("");
-    setConfirmDrop(false);
+    setAsking(false);
   }, [photo?.id]);
 
-  // The list changed under the viewer (a takedown): shut it if the picture is gone.
+  // The second question takes focus on its safe answer.
   useEffect(() => {
-    if (index !== null && index >= photos.length) onIndex(photos.length ? photos.length - 1 : null);
-  }, [index, photos.length, onIndex]);
+    if (asking) keep.current?.focus();
+  }, [asking]);
 
-  if (!photo || index === null) return null;
+  if (!photo) return null;
   const mine = !!viewerId && viewerId === photo.contributorId;
-  const step = (d: number) => onIndex((index + d + photos.length) % photos.length);
-  const many = photos.length > 1;
+  const mayDrop = canCurate || mine;
+  const many = total > 1;
   const id = encodeURIComponent(photo.id);
+  const failedDrop = t({ message: "That did not come down. Try again in a moment.", context: "place photo viewer" });
 
   /**
    * One press, one sentence back. `already` is a SUCCESS and not an error: a
@@ -85,56 +114,70 @@ export default function PhotoViewer({ photos, index, onIndex, canCurate, signedI
       const res = await fetch(path, { method, headers: jsonHeaders(), body: body === undefined ? undefined : JSON.stringify(body) });
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setSay(payload?.error || REPORT_FAILED);
+        onSay(payload?.error || REPORT_FAILED);
         return;
       }
-      setSay(payload?.fresh === false ? already : ok);
+      onSay(payload?.fresh === false ? already : ok);
       onChanged();
     } catch {
-      setSay(REPORT_FAILED);
+      onSay(REPORT_FAILED);
     } finally {
       setBusy(false);
     }
   };
 
+  const ask = () => {
+    if (busy || asking) return;
+    askedAt.current = Date.now();
+    setAsking(true);
+    onSay(
+      canCurate
+        ? t({ message: "Take it down for good? The file and its description go, and it cannot be undone.", context: "place photo viewer" })
+        : t({ message: "Remove it for good? The file and its description go, and it cannot be undone.", context: "place photo viewer" }),
+    );
+  };
+
   const drop = async () => {
-    if (busy) return;
-    if (!confirmDrop) {
-      setConfirmDrop(true);
-      return;
-    }
+    if (busy || Date.now() - askedAt.current < CONFIRM_AFTER_MS) return;
     setBusy(true);
     try {
       const res = await fetch(`/api/places/photo/${id}`, { method: "DELETE", headers: jsonHeaders() });
       if (!res.ok) {
-        setSay(t({ message: "That did not come down. Try again in a moment.", context: "place photo viewer" }));
+        onSay(failedDrop);
         return;
       }
-      onIndex(null);
+      setAsking(false);
+      onSay(t({ message: "Taken down. The file and its description are gone.", context: "place photo viewer" }));
+      onDropped();
       onChanged();
     } catch {
-      setSay(t({ message: "That did not come down. Try again in a moment.", context: "place photo viewer" }));
+      onSay(failedDrop);
     } finally {
       setBusy(false);
     }
   };
 
   const onKey = (e: React.KeyboardEvent) => {
-    if (!many) return;
-    if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
-    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+    if (!many || asking) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    if (e.key === "ArrowRight") { e.preventDefault(); onStep(1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); onStep(-1); }
   };
 
   const where = placeName(photo.structureKey);
-  const position = index + 1;
-  const total = photos.length;
   const why = photo.hiddenReason ?? "";
+  const here = typeof window === "undefined" ? "/places" : `${window.location.pathname}${window.location.hash}`;
 
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onIndex(null); }}>
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      {/* A photo of the land is a place, not a box of words: data-scene keeps it in the night (index.css, "Dialogue is sand"). */}
       <DialogContent
+        data-scene=""
+        showCloseButton={false}
         onKeyDown={onKey}
-        className="max-h-[90vh] gap-0 overflow-y-auto rounded-2xl p-0 sm:max-w-3xl"
+        onCloseAutoFocus={(e) => { e.preventDefault(); onClosedFocus(); }}
+        className="sheet-night max-h-[90vh] gap-0 overflow-y-auto rounded-lg bg-card p-0 text-foreground sm:max-w-3xl"
       >
         <div className="relative bg-muted">
           {photo.hiddenAt ? (
@@ -142,22 +185,15 @@ export default function PhotoViewer({ photos, index, onIndex, canCurate, signedI
           ) : (
             <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority />
           )}
+          <DialogClose className={`${ROUND} right-2 top-2`} aria-label={t({ message: "Close the photo", context: "place photo viewer" })}>
+            <X className="size-5" aria-hidden="true" />
+          </DialogClose>
           {many && (
             <>
-              <button
-                type="button"
-                onClick={() => step(-1)}
-                className={`${STEP} left-2`}
-                aria-label={t({ message: "The photo before", context: "place photo viewer" })}
-              >
+              <button type="button" onClick={() => onStep(-1)} className={`${ROUND} left-2 top-1/2 -translate-y-1/2`} aria-label={t({ message: "The photo before", context: "place photo viewer" })}>
                 <ChevronLeft className="size-5" aria-hidden="true" />
               </button>
-              <button
-                type="button"
-                onClick={() => step(1)}
-                className={`${STEP} right-2`}
-                aria-label={t({ message: "The next photo", context: "place photo viewer" })}
-              >
+              <button type="button" onClick={() => onStep(1)} className={`${ROUND} right-2 top-1/2 -translate-y-1/2`} aria-label={t({ message: "The next photo", context: "place photo viewer" })}>
                 <ChevronRight className="size-5" aria-hidden="true" />
               </button>
             </>
@@ -167,7 +203,7 @@ export default function PhotoViewer({ photos, index, onIndex, canCurate, signedI
         <div className="space-y-4 p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-2">
             {showPlace ? (
-              <Link href={`/places/${encodeURIComponent(photo.structureKey)}`} className={`${EYEBROW} inline-flex min-h-11 items-center underline-offset-2 hover:underline`} onClick={() => onIndex(null)}>
+              <Link href={`/places/${encodeURIComponent(photo.structureKey)}`} className={`${EYEBROW} inline-flex min-h-11 items-center underline-offset-2 hover:underline`} onClick={onClose}>
                 {where}
               </Link>
             ) : (
@@ -204,99 +240,120 @@ export default function PhotoViewer({ photos, index, onIndex, canCurate, signedI
 
           <p role="status" aria-live="polite" className="min-h-5 text-sm font-medium text-foreground">{say}</p>
 
-          {signedIn ? (
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled={busy}
-                className={ACT}
-                onClick={() => post(`/api/places/photo/${id}/subject-request`, SUBJECT_FILED, SUBJECT_ALREADY, { reason: "" })}
-              >
-                <UserRound className="size-4" aria-hidden="true" />
-                <Trans context="place photo viewer">This is me, take it down</Trans>
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                className={ACT}
-                onClick={() => post(`/api/places/photo/${id}/report`, CONCERN_FILED, CONCERN_ALREADY, { reason: "" })}
-              >
-                <SunLeaf className="size-4" aria-hidden="true" />
-                <Trans context="place photo viewer">SunLeaf this</Trans>
-              </button>
-              {mine && !canCurate && (
-                <button type="button" disabled={busy} className={ACT_DANGER} onClick={drop}>
+          {asking ? (
+            <div className={`${TILE} space-y-3`}>
+              <p className="text-sm font-semibold text-foreground">
+                {canCurate ? (
+                  <Trans context="place photo viewer">Take it down for good?</Trans>
+                ) : (
+                  <Trans context="place photo viewer">Remove it for good?</Trans>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" disabled={busy} className={BTN_DANGER} onClick={drop}>
                   <Trash2 className="size-4" aria-hidden="true" />
-                  {confirmDrop ? (
-                    <Trans context="place photo viewer">Press again to remove it for good</Trans>
+                  {canCurate ? (
+                    <Trans context="place photo viewer">Yes, take it down</Trans>
                   ) : (
-                    <Trans context="place photo viewer">Remove my photo</Trans>
+                    <Trans context="place photo viewer">Yes, remove it</Trans>
                   )}
                 </button>
-              )}
-            </div>
-          ) : (
-            <p className={HINT}>
-              <Trans context="place photo viewer">
-                <Link href={`/login?next=${encodeURIComponent("/places#photos")}`} className={LINK}>Sign in</Link> to ask for a photo of you to come down.
-              </Trans>
-            </p>
-          )}
-
-          {canCurate && (
-            <div className="space-y-2 border-t border-border pt-4">
-              <p className={EYEBROW}><Trans context="place photo viewer">Curator</Trans></p>
-              <div className="flex flex-wrap gap-2">
-                {photo.hiddenAt ? (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className={ACT}
-                    onClick={() => post(`/api/places/photo/${id}/restore`, t({ message: "Back on the place.", context: "place photo viewer" }), t({ message: "Already showing.", context: "place photo viewer" }), {})}
-                  >
-                    <Undo2 className="size-4" aria-hidden="true" />
-                    <Trans context="place photo viewer">Put back</Trans>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className={ACT}
-                    onClick={() => post(`/api/places/photo/${id}/hide`, t({ message: "Hidden. The file stopped answering too.", context: "place photo viewer" }), t({ message: "Already hidden.", context: "place photo viewer" }), { reason: "" })}
-                  >
-                    <EyeOff className="size-4" aria-hidden="true" />
-                    <Trans context="place photo viewer">Hide</Trans>
-                  </button>
-                )}
-                {!photo.hiddenAt && !photo.heroAt && (
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className={ACT}
-                    onClick={() =>
-                      post(
-                        `/api/places/${encodeURIComponent(photo.structureKey)}/hero`,
-                        t({ message: "This place opens with that one now.", context: "place photo viewer" }),
-                        t({ message: "This place opens with that one now.", context: "place photo viewer" }),
-                        { photoId: photo.id },
-                        "PUT",
-                      )
-                    }
-                  >
-                    <Pin className="size-4" aria-hidden="true" />
-                    <Trans context="place photo viewer">Make it the cover</Trans>
-                  </button>
-                )}
-                <button type="button" disabled={busy} className={ACT_DANGER} onClick={drop}>
-                  <Trash2 className="size-4" aria-hidden="true" />
-                  {confirmDrop ? (
-                    <Trans context="place photo viewer">Press again to take it down for good</Trans>
-                  ) : (
-                    <Trans context="place photo viewer">Take down</Trans>
-                  )}
+                <button ref={keep} type="button" className={BTN_SECONDARY} onClick={() => { setAsking(false); onSay(""); }}>
+                  <Trans context="place photo viewer">Keep it</Trans>
                 </button>
               </div>
             </div>
+          ) : (
+            <>
+              {signedIn ? (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className={BTN_SECONDARY}
+                    onClick={() => post(`/api/places/photo/${id}/subject-request`, SUBJECT_FILED, SUBJECT_ALREADY, { reason: "" })}
+                  >
+                    <UserRound className="size-4" aria-hidden="true" />
+                    <Trans context="place photo viewer">This is me, take it down</Trans>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className={BTN_SECONDARY}
+                    onClick={() => post(`/api/places/photo/${id}/report`, CONCERN_FILED, CONCERN_ALREADY, { reason: "" })}
+                  >
+                    <SunLeaf className="size-4" aria-hidden="true" />
+                    <Trans context="place photo viewer">SunLeaf this</Trans>
+                  </button>
+                  {mine && !canCurate && (
+                    <button type="button" disabled={busy} className={BTN_DANGER} onClick={ask}>
+                      <Trash2 className="size-4" aria-hidden="true" />
+                      <Trans context="place photo viewer">Remove my photo</Trans>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm">
+                  <Link href={`/login?next=${encodeURIComponent(here)}`} className={`${LINK} inline-flex min-h-11 items-center`}>
+                    <Trans context="place photo viewer">Sign in to ask for a photo of you to come down</Trans>
+                  </Link>
+                </p>
+              )}
+
+              {canCurate && (
+                <div className="space-y-2 border-t border-border pt-4">
+                  <p className={EYEBROW}><Trans context="place photo viewer">Curator</Trans></p>
+                  <div className="flex flex-wrap gap-2">
+                    {photo.hiddenAt ? (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        className={BTN_SECONDARY}
+                        onClick={() => post(`/api/places/photo/${id}/restore`, t({ message: "Back on the place.", context: "place photo viewer" }), t({ message: "Already showing.", context: "place photo viewer" }), {})}
+                      >
+                        <Undo2 className="size-4" aria-hidden="true" />
+                        <Trans context="place photo viewer">Put back</Trans>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        className={BTN_SECONDARY}
+                        onClick={() => post(`/api/places/photo/${id}/hide`, t({ message: "Hidden. The file stopped answering too.", context: "place photo viewer" }), t({ message: "Already hidden.", context: "place photo viewer" }), { reason: "" })}
+                      >
+                        <EyeOff className="size-4" aria-hidden="true" />
+                        <Trans context="place photo viewer">Hide</Trans>
+                      </button>
+                    )}
+                    {!photo.hiddenAt && !photo.heroAt && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        className={BTN_SECONDARY}
+                        onClick={() =>
+                          post(
+                            `/api/places/${encodeURIComponent(photo.structureKey)}/hero`,
+                            t({ message: "This place opens with that one now.", context: "place photo viewer" }),
+                            t({ message: "This place opens with that one now.", context: "place photo viewer" }),
+                            { photoId: photo.id },
+                            "PUT",
+                          )
+                        }
+                      >
+                        <Pin className="size-4" aria-hidden="true" />
+                        <Trans context="place photo viewer">Make it the cover</Trans>
+                      </button>
+                    )}
+                    {mayDrop && (
+                      <button type="button" disabled={busy} className={BTN_DANGER} onClick={ask}>
+                        <Trash2 className="size-4" aria-hidden="true" />
+                        <Trans context="place photo viewer">Take down</Trans>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

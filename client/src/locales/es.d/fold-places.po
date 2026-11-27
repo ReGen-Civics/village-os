@@ -335,11 +335,6 @@ msgstr "Abrir la foto: {described}"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
-msgid "<0>Sign in</0> to ask for a photo of you to come down."
-msgstr "<0>Inicie sesión</0> para pedir que se retire una foto suya."
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
 msgid "Already hidden."
 msgstr "Ya está oculta."
 
@@ -352,6 +347,11 @@ msgstr "Ya se muestra."
 msgctxt "place photo viewer"
 msgid "Back on the place."
 msgstr "De vuelta en el lugar."
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Close the photo"
+msgstr "Cerrar la foto"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
@@ -385,18 +385,13 @@ msgstr "Ocultar"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
+msgid "Keep it"
+msgstr "Conservarla"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
 msgid "Make it the cover"
 msgstr "Hacerla la portada"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
-msgid "Press again to remove it for good"
-msgstr "Pulse otra vez para quitarla para siempre"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
-msgid "Press again to take it down for good"
-msgstr "Pulse otra vez para retirarla para siempre"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
@@ -405,8 +400,23 @@ msgstr "Devolver"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
+msgid "Remove it for good?"
+msgstr "¿Quitarla para siempre?"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Remove it for good? The file and its description go, and it cannot be undone."
+msgstr "¿Quitarla para siempre? El archivo y su descripción se van, y no se puede deshacer."
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
 msgid "Remove my photo"
 msgstr "Quitar mi foto"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Sign in to ask for a photo of you to come down"
+msgstr "Inicie sesión para pedir que se retire una foto suya"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
@@ -417,6 +427,21 @@ msgstr "Marcar con SunLeaf"
 msgctxt "place photo viewer"
 msgid "Take down"
 msgstr "Retirar"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Take it down for good?"
+msgstr "¿Retirarla para siempre?"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Take it down for good? The file and its description go, and it cannot be undone."
+msgstr "¿Retirarla para siempre? El archivo y su descripción se van, y no se puede deshacer."
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Taken down. The file and its description are gone."
+msgstr "Retirada. El archivo y su descripción ya no están."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
@@ -442,6 +467,16 @@ msgstr "Soy yo, quítenla"
 msgctxt "place photo viewer"
 msgid "This place opens with that one now."
 msgstr "Este lugar ahora abre con esa."
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Yes, remove it"
+msgstr "Sí, quitarla"
+
+# needs-native-review: the places fold, 26 Nov 2026
+msgctxt "place photo viewer"
+msgid "Yes, take it down"
+msgstr "Sí, retirarla"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"

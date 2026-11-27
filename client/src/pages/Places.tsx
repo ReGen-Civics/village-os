@@ -13,13 +13,14 @@
  *  - All photos (`#photos`): every photo, newest first, whatever its place.
  *    It is how a person finds a picture of themselves to ask it down.
  *  - Reports (`#reports`): the curator's queue, drawn only for a holder of
- *    `map.curatePhotos`. The curators' notifications point here.
+ *    `map.curatePhotos`. The curators' notifications point here, and a
+ *    curator reaches it even while the shelf is empty.
  *
  * The map draws places; this page never adds one or guesses where one is. A
  * place is here once somebody has photographed it, and its name is the map's
  * own key, respaced (`placeName`).
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Link, useRoute } from "wouter";
 import { Map as MapIcon } from "lucide-react";
 import LoadFailed from "@/components/LoadFailed";
@@ -32,7 +33,8 @@ import PlaceCard, { type PlaceCardData } from "@/components/places/PlaceCard";
 import PlaceGallery from "@/components/places/PlaceGallery";
 import PhotoIndex from "@/components/places/PhotoIndex";
 import PhotoReportsPanel from "@/components/places/PhotoReportsPanel";
-import { jsonHeaders, segment } from "@/components/places/placesApi";
+import { jsonHeaders } from "@/components/places/placesApi";
+import ViewTabs, { panelId, tabId, type ViewTab } from "@/components/places/ViewTabs";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { BTN_PRIMARY, CARD, EYEBROW, H1, HINT, LEDE, LINK, NOTE, RING, WORLD } from "@/components/journey/look";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -53,6 +55,21 @@ export function viewOf(hash: string): View {
   const h = hash.replace(/^#/, "");
   return h === "photos" || h === "reports" ? h : "places";
 }
+
+/**
+ * The view follows every move of the address: a typed hash, Back and Forward,
+ * and a link from the bell to #reports while the page is already open. wouter
+ * moves with pushState and replaceState and announces each as an event of
+ * that name on window, so the store listens to those beside hashchange.
+ */
+const ADDRESS_EVENTS = ["hashchange", "popstate", "pushState", "replaceState"];
+function onAddress(changed: () => void) {
+  for (const e of ADDRESS_EVENTS) window.addEventListener(e, changed);
+  return () => {
+    for (const e of ADDRESS_EVENTS) window.removeEventListener(e, changed);
+  };
+}
+const readHash = () => window.location.hash;
 
 export default function Places() {
   const modules = useModules();
@@ -86,14 +103,7 @@ function PlacesHome() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [locked, setLocked] = useState(false);
-  const [view, setView] = useState<View>(() => (typeof window === "undefined" ? "places" : viewOf(window.location.hash)));
-
-  // Back and forward, and a link from the bell, move between views too.
-  useEffect(() => {
-    const onHash = () => setView(viewOf(window.location.hash));
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
-  }, []);
+  const view = viewOf(useSyncExternalStore(onAddress, readHash, () => ""));
 
   useEffect(() => {
     let live = true;
@@ -116,10 +126,13 @@ function PlacesHome() {
     };
   }, [attempt]);
 
+  // Each view is a step in the history, so Back walks between them.
   const pick = (next: View) => {
-    setView(next);
+    if (next === view) return;
     const url = `${window.location.pathname}${window.location.search}${next === "places" ? "" : `#${next}`}`;
-    window.history.replaceState(window.history.state, "", url);
+    window.history.pushState(window.history.state, "", url);
+    // wouter's patched pushState announces this itself; said again here so the view moves even where it is not loaded.
+    window.dispatchEvent(new Event("pushState"));
   };
   const onLocked = useCallback(() => setLocked(true), []);
 
@@ -129,6 +142,25 @@ function PlacesHome() {
   const placeCount = data?.places.length ?? 0;
   const photoCount = (data?.places ?? []).reduce((n, p) => n + p.photoCount, 0);
   const open = data?.openReports ?? 0;
+
+  const tabs: ViewTab<View>[] = [
+    { key: "places", label: <Trans context="places page">By place</Trans> },
+    { key: "photos", label: <Trans context="places page">All photos</Trans> },
+  ];
+  if (canCurate) {
+    tabs.push({
+      key: "reports",
+      label: open > 0 ? <Trans context="places page">Reports ({open})</Trans> : <Trans context="places page">Reports</Trans>,
+    });
+  }
+
+  const comingSoon = (
+    <ComingSoonPanel
+      title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })}
+      body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })}
+      door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }}
+    />
+  );
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -174,51 +206,37 @@ function PlacesHome() {
         <LoadFailed onRetry={() => { setLoadFailed(false); setAttempt((n) => n + 1); }} />
       ) : !data ? (
         <BreathingLoader label={t({ message: "Opening the places", context: "places page" })} />
-      ) : data.places.length === 0 ? (
-        <ComingSoonPanel
-          title={t({ message: "Photographs of the land", context: "coming soon: the places and photographs pages" })}
-          body={t({ message: "Photographs of the places on the land will gather here as members add them, each with the name of whoever took it.", context: "coming soon: the places and photographs pages" })}
-          door={{ href: "/map", label: t({ message: "Open the map", context: "coming soon: the places and photographs pages, the door meanwhile" }) }}
-        />
+      ) : data.places.length === 0 && !canCurate ? (
+        comingSoon
       ) : (
         <>
-          <div
-            role="tablist"
-            aria-label={t({ message: "Ways to browse", context: "places page" })}
-            className="flex gap-1 rounded-xl border border-border bg-card p-1 shadow-sm sm:inline-flex"
-          >
-            <button type="button" role="tab" id="tab-places" aria-controls="view-places" aria-selected={shown === "places"} onClick={() => pick("places")} className={segment(shown === "places")}>
-              <Trans context="places page">By place</Trans>
-            </button>
-            <button type="button" role="tab" id="tab-photos" aria-controls="view-photos" aria-selected={shown === "photos"} onClick={() => pick("photos")} className={segment(shown === "photos")}>
-              <Trans context="places page">All photos</Trans>
-            </button>
-            {canCurate && (
-              <button type="button" role="tab" id="tab-reports" aria-controls="view-reports" aria-selected={shown === "reports"} onClick={() => pick("reports")} className={segment(shown === "reports")}>
-                {open > 0 ? <Trans context="places page">Reports ({open})</Trans> : <Trans context="places page">Reports</Trans>}
-              </button>
-            )}
-          </div>
+          <ViewTabs tabs={tabs} value={shown} onChange={pick} label={t({ message: "Ways to browse", context: "places page" })} idPrefix="places" />
 
           {shown === "places" && (
-            <div role="tabpanel" id="view-places" aria-labelledby="tab-places" className="space-y-4">
-              <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-                {data.places.map((p) => (
-                  <PlaceCard key={p.structureKey} place={p} />
-                ))}
-              </ul>
-              {data.canContribute && (
-                <p className={HINT}><Trans context="places page">To add a photo, open its place.</Trans></p>
+            <div role="tabpanel" id={panelId("places", "places")} aria-labelledby={tabId("places", "places")} className="space-y-4">
+              {data.places.length === 0 ? (
+                comingSoon
+              ) : (
+                <>
+                  <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+                    {data.places.map((p) => (
+                      <PlaceCard key={p.structureKey} place={p} />
+                    ))}
+                  </ul>
+                  {data.canContribute && (
+                    <p className={HINT}><Trans context="places page">To add a photo, open its place.</Trans></p>
+                  )}
+                </>
               )}
             </div>
           )}
           {shown === "photos" && (
-            <div role="tabpanel" id="view-photos" aria-labelledby="tab-photos">
+            <div role="tabpanel" id={panelId("places", "photos")} aria-labelledby={tabId("places", "photos")}>
               <PhotoIndex onLocked={onLocked} />
             </div>
           )}
           {shown === "reports" && canCurate && (
-            <div role="tabpanel" id="view-reports" aria-labelledby="tab-reports">
+            <div role="tabpanel" id={panelId("places", "reports")} aria-labelledby={tabId("places", "reports")}>
               <PhotoReportsPanel />
             </div>
           )}

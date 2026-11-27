@@ -1,7 +1,7 @@
 /**
  * The small pieces every surface of the Places page shares: the request
- * headers, how a place key reads as a name, and the class strings the photo
- * controls draw with.
+ * headers and how a place key reads as a name. The class strings are the
+ * look's own (components/journey/look.ts).
  *
  * One file so the place page, the all-photos tab, the viewer and the
  * curator's queue cannot drift apart on any of them.
@@ -32,17 +32,3 @@ export function placeName(key: string): string {
   const spaced = key.replace(/[-_]+/g, " ").trim();
   return spaced ? spaced.charAt(0).toUpperCase() + spaced.slice(1) : key;
 }
-
-/** A small edged control inside the viewer and the queue: 44px tall, the sheet's edge, a gold focus ring. */
-export const ACT =
-  "jw-btn inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
-
-/** The same control for an act that cannot be undone. */
-export const ACT_DANGER =
-  "jw-btn inline-flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-destructive/60 px-3 text-sm font-medium text-destructive hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50";
-
-/** A segment of a switch (the page's views, the queue's states). `on` is the chosen one. */
-export const segment = (on: boolean) =>
-  `jw-btn inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:flex-none sm:px-5 ${
-    on ? "bg-notice text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-  }`;

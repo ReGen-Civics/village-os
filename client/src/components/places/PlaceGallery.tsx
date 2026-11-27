@@ -58,6 +58,9 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
   const [failed, setFailed] = useState(false);
   const [adding, setAdding] = useState(false);
   const [say, setSay] = useState("");
+  const line = useRef<HTMLParagraphElement | null>(null);
+  const focusLine = useCallback(() => line.current?.focus(), []);
+  const addBtn = useRef<HTMLButtonElement | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -119,7 +122,7 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
         </div>
         {mayAdd && !adding && (
           <Fireflies className="self-start sm:self-auto">
-            <button type="button" className={BTN_PRIMARY} onClick={() => { setSay(""); setAdding(true); }}>
+            <button ref={addBtn} type="button" className={BTN_PRIMARY} onClick={() => { setSay(""); setAdding(true); }}>
               <Camera className="size-5" aria-hidden="true" />
               <Trans context="place page">Add a photo</Trans>
             </button>
@@ -137,11 +140,15 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
             <AddPhoto
               structureKey={structureKey}
               maxMb={data.maxMb}
-              onClose={() => setAdding(false)}
+              onClose={() => {
+                setAdding(false);
+                requestAnimationFrame(() => addBtn.current?.focus());
+              }}
               onAdded={() => {
                 setAdding(false);
                 setSay(t({ message: "Added. It is on this place now.", context: "place page" }));
                 void load();
+                requestAnimationFrame(focusLine);
               }}
             />
           )}
@@ -151,7 +158,7 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
             </p>
           )}
 
-          <p role="status" aria-live="polite" className="min-h-5 text-sm font-medium text-foreground">{say}</p>
+          <p ref={line} tabIndex={-1} role="status" aria-live="polite" className="min-h-5 rounded-lg text-sm font-medium text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">{say}</p>
 
           {data.photos.length === 0 ? (
             <section className={`${CARD} space-y-2 text-center`}>
@@ -171,6 +178,9 @@ export default function PlaceGallery({ structureKey }: { structureKey: string })
               signedIn={data.signedIn}
               viewerId={data.viewerId}
               lead
+              say={say}
+              onSay={setSay}
+              focusLine={focusLine}
               onChanged={() => void load()}
             />
           )}
@@ -200,8 +210,9 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
   const form = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    form.current?.scrollIntoView?.({ block: "nearest", behavior: scrollBehavior() });
-    input.current?.focus();
+    // On a phone the form starts under the thumb: bring its top into view first, then the picker.
+    form.current?.scrollIntoView?.({ block: "start", behavior: scrollBehavior() });
+    input.current?.focus({ preventScroll: true });
   }, []);
 
   // A local preview of the chosen file; its object URL is let go when it changes.
@@ -250,7 +261,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
   };
 
   return (
-    <form ref={form} onSubmit={submit} className={`${CARD_FEATURED} space-y-5`} aria-labelledby="add-photo-h">
+    <form ref={form} onSubmit={submit} className={`${CARD_FEATURED} scroll-mt-28 space-y-5`} aria-labelledby="add-photo-h">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <p className={EYEBROW}><Trans context="add a photo form">Add to the record</Trans></p>
