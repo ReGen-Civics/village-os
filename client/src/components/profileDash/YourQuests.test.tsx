@@ -24,7 +24,7 @@ afterEach(() => {
   gameFetch.mockReset();
 });
 
-const claim = (id: string, status: "claimed" | "submitted" | "consented", extra: Record<string, unknown> = {}) => ({
+const claim = (id: string, status: "claimed" | "submitted" | "consented" | "declined", extra: Record<string, unknown> = {}) => ({
   id: `c-${id}`, questId: id, questTitle: `Quest ${id}`, status, claimedAt: "2026-11-20T10:00:00.000Z", artifactUrl: "", note: "", ...extra,
 });
 
