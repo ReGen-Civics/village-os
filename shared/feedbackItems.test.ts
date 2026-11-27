@@ -22,6 +22,17 @@ describe("suggestTitle", () => {
     expect(long.startsWith(title.slice(0, -1))).toBe(true);
   });
 
+  it("stays quick on a stranger's worst case: a long run of stops and no space (CodeQL js/polynomial-redos)", () => {
+    const hostile = `a${"!".repeat(8000)}b`;
+    const started = performance.now();
+    const title = suggestTitle(hostile);
+    expect(performance.now() - started).toBeLessThan(50);
+    // Only a bounded head is read, so the run of stops is the end of the first sentence: "a!!!…" says "A".
+    expect(title).toBe("A");
+    const noStops = suggestTitle(`a${"b".repeat(8000)}`);
+    expect(noStops.endsWith("…")).toBe(true);
+  });
+
   it("is empty for nothing", () => {
     expect(suggestTitle("")).toBe("");
     expect(suggestTitle("   \n ")).toBe("");

@@ -38,17 +38,35 @@ export const FEEDBACK_SHOT_EDGE = 1600;
  * cut at a word boundary, with its first letter raised. Pure. Empty in, empty out.
  */
 export function suggestTitle(detail: string): string {
-  const text = String(detail ?? "").replace(/\s+/g, " ").trim();
+  // The server runs this on whatever a stranger sends, so it reads a bounded head of the text and walks it with
+  // plain loops: no backtracking pattern over member input (CodeQL js/polynomial-redos on the first version).
+  const head = String(detail ?? "").slice(0, 600);
+  const text = head.replace(/\s+/g, " ").trim();
   if (!text) return "";
-  const first = String(detail ?? "").trim().split(/\n/)[0].replace(/\s+/g, " ").trim();
-  const sentence = (first.match(/^(.+?[.!?])(\s|$)/)?.[1] ?? first).replace(/[.!?]+$/, "").trim();
-  let line = sentence || text;
+  const first = head.trim().split("\n")[0].replace(/\s+/g, " ").trim();
+  let end = first.length;
+  for (let i = 0; i < first.length; i++) {
+    if (STOPS.includes(first[i]) && (i + 1 === first.length || first[i + 1] === " ")) {
+      end = i;
+      break;
+    }
+  }
+  let line = trimEnd(first.slice(0, end), STOPS).trim() || text;
   if (line.length > SUGGESTED_TITLE_MAX) {
     const cut = line.slice(0, SUGGESTED_TITLE_MAX + 1);
     const space = cut.lastIndexOf(" ");
-    line = `${(space > 20 ? cut.slice(0, space) : cut.slice(0, SUGGESTED_TITLE_MAX)).replace(/[,;:]+$/, "")}…`;
+    line = `${trimEnd(space > 20 ? cut.slice(0, space) : cut.slice(0, SUGGESTED_TITLE_MAX), ",;:")}…`;
   }
   return line.charAt(0).toUpperCase() + line.slice(1);
+}
+
+const STOPS = ".!?";
+
+/** `s` without any of `chars` at its end. */
+function trimEnd(s: string, chars: string): string {
+  let n = s.length;
+  while (n > 0 && chars.includes(s[n - 1])) n--;
+  return s.slice(0, n);
 }
 
 /** The page a report came from, as the guide repeats it back: the path alone, "/" read as the home page. Pure. */
