@@ -33,7 +33,7 @@ export default function HowWeWorkReadCard() {
               <Trans context="Profile, what you have read">Read on {readOnDay(readAt, i18n.locale)}</Trans>
             </p>
           </div>
-          <Link href={HOW_WE_WORK_HREF} className="inline-flex min-h-11 items-center gap-1 px-1 text-sm font-medium text-notice underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring">
+          <Link href={HOW_WE_WORK_HREF} className="inline-flex min-h-11 basis-full items-center gap-1 pl-9 pr-1 text-sm sm:basis-auto sm:pl-1 font-medium text-notice underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-ring">
             <Trans context="Profile, what you have read">Read it again</Trans>
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>

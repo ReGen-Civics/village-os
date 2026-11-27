@@ -50,7 +50,7 @@ function asksForMechanics(): boolean {
 
 /** The first chapter and every section in it: a link to any of them opens the chapter again once it is folded. */
 const CHAPTER_IDS: ReadonlySet<string> = new Set([
-  "how-we-work", "voice", "agreements", "canvas", "who-decides", "principles", "decisions", "circles", "conflict", "stewards", "rules", "canvas-on-paper", "hypha", "join-in",
+  "how-we-work", "voice", "agreements", "canvas", "who-decides", "principles", "decisions", "circles", "conflict", "conflict-agreement", "conflict-agreement-slot", "stewards", "rules", "canvas-on-paper", "hypha", "join-in",
 ]);
 
 /** Two headings that say the same thing, whatever their case and spacing. */
@@ -153,7 +153,11 @@ export default function Governance() {
   const reading = useHowWeWorkRead(member);
   const [reopened, setReopened] = useState(() => typeof window !== "undefined" && CHAPTER_IDS.has(window.location.hash.slice(1)));
   const chapterRef = useRef<HTMLDivElement | null>(null);
+  const foldRef = useRef<HTMLElement | null>(null);
   const folded = member && !!reading.readAt && !reopened;
+  // A member whose read is not known yet: hold the chapter's place, so it never draws and then collapses (QA round 1:
+  // a layout shift of 0.48). A failed read counts as known and unread (lib/howWeWorkRead.ts), so the chapter opens.
+  const readPending = member && reading.readAt === undefined;
   useEffect(() => {
     const opened = () => {
       const id = window.location.hash.slice(1);
@@ -169,15 +173,25 @@ export default function Governance() {
     };
   }, []);
   const tick = async (read: boolean) => {
+    // A press while the last one is saving is ignored, never disabled: a disabled box drops the keyboard's focus.
+    if (reading.saving) return;
     const saved = await reading.save(read);
     if (!saved || !read) return;
-    // Folded: the reader lands on the line that says so, with the mechanics right under it.
+    // Folded: focus moves to the line that says so (a screen reader hears it), with the mechanics right under it.
+    // Unticking leaves the chapter open and the focus on the box.
     setReopened(false);
-    window.setTimeout(() => document.getElementById(HOW_WE_WORK_ANCHOR)?.scrollIntoView?.({ block: "start" }), 0);
+    window.setTimeout(() => foldRef.current?.focus(), 0);
   };
   const readAgain = () => {
     setReopened(true);
-    window.setTimeout(() => chapterRef.current?.focus({ preventScroll: true }), 0);
+    // Into the chapter at its first heading, a named place to start reading from.
+    window.setTimeout(() => {
+      const heading = chapterRef.current?.querySelector<HTMLElement>("h2, h3");
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus({ preventScroll: false });
+      } else chapterRef.current?.focus();
+    }, 0);
   };
 
   /*
@@ -292,7 +306,7 @@ export default function Governance() {
               contents beside the page carry it too. */}
           {member ? (
             // Once the chapter is folded the mechanics sit right under it, so the jump has nothing left to skip.
-            folded ? null : (
+            folded || readPending ? null : (
             <div className={`${QUIET} mt-6 flex flex-wrap items-center justify-between gap-3 bg-card`} data-testid="mechanics-jump">
               <p className={`${NOTE} min-w-0`}>
                 <Trans context="how we work together: the jump">Read how we work together before?</Trans>
@@ -340,11 +354,14 @@ export default function Governance() {
 
           <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start lg:gap-8">
             <div className="min-w-0 space-y-6">
-              {folded && reading.readAt ? (
-                <section id={HOW_WE_WORK_ANCHOR} aria-label={chapterName} className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3 bg-card`} data-testid="how-we-work-read">
+              {readPending ? (
+                // The chapter's place, held while the member's read is asked for.
+                <div id={HOW_WE_WORK_ANCHOR} aria-busy="true" className="min-h-[60vh] scroll-mt-24" data-testid="how-we-work-waiting" />
+              ) : folded && reading.readAt ? (
+                <section ref={foldRef} id={HOW_WE_WORK_ANCHOR} tabIndex={-1} aria-labelledby="how-we-work-read-line" className={`${QUIET} flex scroll-mt-24 flex-wrap items-center justify-between gap-3 bg-card focus:outline-none focus-visible:ring-2 focus-visible:ring-ring`} data-testid="how-we-work-read">
                   <p className={`${NOTE} flex min-w-0 items-center gap-2`}>
                     <CheckCircle2 className="size-5 shrink-0 text-open" aria-hidden="true" />
-                    <span>
+                    <span id="how-we-work-read-line">
                       <Trans context="how we work together: read">How we work together, read on {readOnDay(reading.readAt, i18n.locale)}</Trans>
                     </span>
                   </p>
@@ -597,12 +614,19 @@ export default function Governance() {
                 {member && reading.readAt !== undefined && (
                   <div className={`${TILE} space-y-1`} data-testid="how-we-work-tick">
                     <label className="flex min-h-11 cursor-pointer items-center gap-3">
-                      <input type="checkbox" className={TICK} checked={!!reading.readAt} disabled={reading.saving} onChange={(e) => void tick(e.target.checked)} />
+                      <input
+                        type="checkbox"
+                        className={TICK}
+                        checked={!!reading.readAt}
+                        aria-disabled={reading.saving || undefined}
+                        aria-describedby="how-we-work-read-hint"
+                        onChange={(e) => void tick(e.target.checked)}
+                      />
                       <span className="font-semibold text-foreground">
                         <Trans context="how we work together: read">I&apos;ve read this</Trans>
                       </span>
                     </label>
-                    <p className={HINT}>
+                    <p id="how-we-work-read-hint" className={HINT}>
                       <Trans context="how we work together: read">It folds away for you, and your profile keeps it as read. Untick it to clear that.</Trans>
                     </p>
                     {reading.failed && (

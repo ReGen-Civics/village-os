@@ -6,6 +6,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
+import { TOKEN_KEY } from "@/lib/gameApi";
 import HowWeWorkReadCard from "./HowWeWorkReadCard";
 
 let readAt: string | null;
@@ -13,7 +14,7 @@ let auths: Array<string | null>;
 beforeEach(() => {
   readAt = null;
   auths = [];
-  window.localStorage.setItem("village-auth-token", "t");
+  window.localStorage.setItem(TOKEN_KEY, "t");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
@@ -26,7 +27,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
-  window.localStorage.removeItem("village-auth-token");
+  window.localStorage.removeItem(TOKEN_KEY);
 });
 
 const draw = () =>

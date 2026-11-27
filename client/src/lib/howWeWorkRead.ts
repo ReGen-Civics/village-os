@@ -14,7 +14,7 @@ const auth = (): Record<string, string> => {
 };
 
 export interface HowWeWorkRead {
-  /** When they ticked it; null when they have not; undefined while it is being asked (or could not be). */
+  /** When they ticked it; null when they have not, or when the ask failed (the chapter then opens); undefined while asking. */
   readAt: string | null | undefined;
   /** Tick (true) or untick (false). Resolves to whether the server took it; the box follows the server's answer. */
   save: (read: boolean) => Promise<boolean>;
@@ -29,17 +29,24 @@ export function useHowWeWorkRead(on: boolean): HowWeWorkRead {
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!on || !authToken()) {
+    if (!on) {
       setReadAt(undefined);
       return;
     }
+    if (!authToken()) {
+      setReadAt(null);
+      return;
+    }
     let live = true;
+    // A failed ask is an answer too: the read is treated as not there, so the page never waits on it.
     fetch(PATH, { headers: auth() })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (live && d && "readAt" in d) setReadAt(typeof d.readAt === "string" ? d.readAt : null);
+        if (live) setReadAt(d && typeof d.readAt === "string" ? d.readAt : null);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (live) setReadAt(null);
+      });
     return () => {
       live = false;
     };

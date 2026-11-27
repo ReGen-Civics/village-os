@@ -97,6 +97,7 @@ vi.mock("@/contexts/AuthContext", async () => {
 });
 
 import Governance from "./Governance";
+import { TOKEN_KEY } from "@/lib/gameApi";
 import { readConflictSteps, WRITE_STEPS_HREF } from "@/components/governance/VillageConflictSteps";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY, conflictIntroOf } from "@shared/conflictIntro";
 import { VARIABLES_BY_KEY } from "@shared/gameVariables";
@@ -1033,10 +1034,13 @@ describe("the first chapter's heading", () => {
 describe("I've read this, under How we work together", () => {
   let readAt: string | null;
   let puts: unknown[];
+  /** How the GET answers: as the server would, never (still asking), or with a failure. */
+  let getAnswers: "ok" | "hang" | "fail";
   beforeEach(() => {
     readAt = null;
     puts = [];
-    window.localStorage.setItem("village-auth-token", "t");
+    getAnswers = "ok";
+    window.localStorage.setItem(TOKEN_KEY, "t");
     const base = fetch as unknown as (url: string, init?: RequestInit) => Promise<Response>;
     vi.stubGlobal(
       "fetch",
@@ -1046,13 +1050,14 @@ describe("I've read this, under How we work together", () => {
           const read = JSON.parse(String(init.body)).read;
           puts.push(read);
           readAt = read ? "2026-11-27T10:00:00.000Z" : null;
-        }
+        } else if (getAnswers === "hang") return new Promise<Response>(() => {});
+        else if (getAnswers === "fail") return new Response("{}", { status: 500 });
         return new Response(JSON.stringify({ readAt }), { status: 200 });
       }),
     );
   });
   afterEach(() => {
-    window.localStorage.removeItem("village-auth-token");
+    window.localStorage.removeItem(TOKEN_KEY);
     window.history.replaceState(null, "", "/");
   });
   const asMember = () => {
@@ -1118,8 +1123,58 @@ describe("I've read this, under How we work together", () => {
     expect(screen.queryByTestId("how-we-work-read")).toBeNull();
   });
 
+  it("moves focus to the folded line on a tick, and the line names itself by its sentence", async () => {
+    asMember();
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    tick.focus();
+    fireEvent.click(tick);
+    const line = await screen.findByTestId("how-we-work-read");
+    await waitFor(() => expect(document.activeElement).toBe(line));
+    expect(line).toHaveAccessibleName(/How we work together, read on .*2026/);
+  });
+
+  it("keeps focus on the box when it is unticked, and never disables it while saving", async () => {
+    readAt = "2026-11-20T10:00:00.000Z";
+    asMember();
+    window.history.replaceState(null, "", "/governance/how#how-we-work");
+    renderPage();
+    await headline();
+    const tick = await waitFor(() => box());
+    expect(tick).toBeChecked();
+    expect(tick).toHaveAccessibleDescription(/It folds away for you/);
+    tick.focus();
+    fireEvent.click(tick);
+    expect(tick).not.toBeDisabled();
+    await waitFor(() => expect(puts).toEqual([false]));
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(document.activeElement).toBe(box());
+  });
+
+  it("holds the chapter's place, with no jump, while the read is being asked for (no draw-then-collapse)", async () => {
+    getAnswers = "hang";
+    asMember();
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("how-we-work-waiting")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: said("principles") })).toBeNull();
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+    expect(screen.queryByTestId("how-we-work-read")).toBeNull();
+  });
+
+  it("opens the chapter, with the box, when the read cannot be fetched", async () => {
+    getAnswers = "fail";
+    asMember();
+    renderPage();
+    await headline();
+    await waitFor(() => expect(box()).not.toBeChecked());
+    expect(screen.getByRole("heading", { name: said("principles") })).toBeInTheDocument();
+    expect(screen.queryByTestId("how-we-work-waiting")).toBeNull();
+  });
+
   it("gives a signed-out visitor the chapter as before, with no box and no read asked for", async () => {
-    window.localStorage.removeItem("village-auth-token");
+    window.localStorage.removeItem(TOKEN_KEY);
     renderPage();
     await headline();
     await stewardsHeading();
