@@ -38,7 +38,10 @@ export default function NavDropdown({
 }) {
   const here = lit?.group === group.label;
   // The join paths carry a second line; the rest are one word. A single width
-  // for both leaves either the paths cramped or the short menus floating.
+  // for both leaves either the paths cramped or the short menus floating. The
+  // short one is w-56 since 27 Nov 2026 (it was w-48), so a folder's name such
+  // as "More in Governance", and "Seasonal Festivals" and "How we work
+  // together", each sit on one line.
   const wide = items.some((i) => i.subtitle);
   const menuId = navMenuId(group.label);
   // One link of the dropdown, at the top level or inside a folder (config/navNest.ts).
@@ -93,7 +96,7 @@ export default function NavDropdown({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
+            className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-56"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
           >
             <MenuRows
               links={items}
