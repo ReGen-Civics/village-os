@@ -18,6 +18,11 @@ msgctxt "the phone's Paths sheet: close button"
 msgid "Close paths"
 msgstr "Cerrar caminos"
 
+# needs-native-review: the phone's Paths sheet, while the paths load, 27 Nov 2026
+msgctxt "the phone's Paths sheet: while the paths load"
+msgid "Loading the paths"
+msgstr "Cargando los caminos"
+
 # needs-native-review: the phone's Paths sheet, when the village shows no path, 27 Nov 2026
 msgctxt "the phone's Paths sheet: when the village shows none"
 msgid "No paths are open yet."

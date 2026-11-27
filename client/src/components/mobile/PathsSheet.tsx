@@ -72,6 +72,14 @@ export default function PathsSheet({ onClose }: { onClose: () => void }) {
         </div>
         {eyebrow ? <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-notice">{eyebrow}</p> : null}
         <h2 id="paths-sheet-h" className="mt-1 font-display text-2xl leading-tight text-foreground">{heading}</h2>
+        {/* The village's words are read when the sheet opens; until they arrive the sheet says so and keeps its room. */}
+        {!page ? (
+          <ul aria-busy="true" aria-label={t({ message: "Loading the paths", context: "the phone's Paths sheet: while the paths load" })} className="mt-3 grid gap-2" data-paths-loading="">
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i} aria-hidden="true" className="h-16 animate-pulse rounded-xl border border-border bg-muted" />
+            ))}
+          </ul>
+        ) : null}
         {page && cards.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">{t({ message: "No paths are open yet.", context: "the phone's Paths sheet: when the village shows none" })}</p>
         ) : null}
