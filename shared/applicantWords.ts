@@ -107,18 +107,21 @@ export interface ApplicantMessages {
    * confirmation, invitation, adoption and closed letters, beside the stage letters (shared/applicantStageLetters.ts).
    */
   shape: {
+    /** The letter's button to the status page, in place of a raw link (QA: links overflowed 375 px). */
+    seePage: string;
     next: string;
     who: string;
     /** At Received with no conversation open yet: our review comes next. */
     receivedReview: string;
     /** Refining is open from the first day (the lead, 27 Nov 2026: "they can refine proposal in each stage"). */
-    refineAnyTime: string;
+    /** Names the anchor circle (QA: the invitation said "the circle" where the later letters named it). */
+    refineAnyTime(anchor: string | null): string;
     receivedBook(role: string, link: string): string;
     receivedWrite(role: string): string;
     receivedWho(role: string | null): string;
     youBook(role: string): string;
     /** The invitation's last line: the path after the conversations, in the six stages. */
-    inviteAfter: string;
+    inviteAfter(anchor: string | null): string;
     adoptWho: string;
     closedNext: string;
     closedAgain: string;
@@ -169,7 +172,7 @@ export interface ApplicantMessages {
     button: string;
     signFirst(): string;
     /** A reviewed application's yes: the circle consented, said as a welcome. */
-    headlineReviewed(village: string, roles: string): string;
+    headlineReviewed(village: string, roles: string, anchor?: string | null): string;
     firstCycle: string;
     /** The day they start, and the all-hands they join that day (the lead, 27 Nov 2026). */
     startDay(day: string): string;
@@ -464,15 +467,16 @@ const en: ApplicantMessages = {
   },
 
   shape: {
+    seePage: "See your page",
     next: "Next step:",
     who: "Who acts next:",
     receivedReview: "We read your proposal. If we invite you to the conversations, the invitation brings your first one to book.",
-    refineAnyTime: "You can refine your proposal on your page at any step, until it goes to the circle for review.",
+    refineAnyTime: (anchor) => `You can refine your proposal on your page at any step, until it goes to ${theCircle(anchor)} for review.`,
     receivedBook: (role, link) => `Book your first conversation, with ${role}: ${link}`,
     receivedWrite: (role) => `We'll write to you with times for your first conversation, with ${role}.`,
     receivedWho: (role) => (role ? `${role}. They read your proposal and write to you.` : "The team. They read your proposal and write to you."),
     youBook: (role) => `You book the time. Then ${role} meets with you.`,
-    inviteAfter: "Along the way you add your references and keep refining your proposal. Then the circle reviews it.",
+    inviteAfter: (anchor) => `Along the way you add your references and keep refining your proposal. Then ${theCircle(anchor)} reviews it.`,
     adoptWho: "You. Make your profile, and it shows what to align with before you start.",
     closedNext: "Nothing more to do. If you'd like to stay close:",
     closedAgain: "- Apply again whenever a role calls to you.",
@@ -521,7 +525,7 @@ const en: ApplicantMessages = {
     buddy: (name, role) => `Your buddy is ${name}${role ? ` (${role})` : ""}. They'll help you through your first week.`,
     allHandsTitle: "All-hands meeting",
     signFirst: () => "Before you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:",
-    headlineReviewed: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
+    headlineReviewed: (v, roles, anchor) => `${cap(theCircle(anchor ?? null))} accepted your proposal: we'd love you to hold ${roles} in ${v}. Welcome.`,
     firstCycle: "We begin with a first cycle together, and at its end either side may choose to end it there.",
   },
 
@@ -813,15 +817,16 @@ const es: ApplicantMessages = {
 
   // needs-native-review: every letter in one shape, the voice pass, 27 Nov 2026
   shape: {
+    seePage: "Ver su página", // needs-native-review: the letter frame's button, 27 Nov 2026
     next: "Siguiente paso:",
     who: "Quién actúa ahora:",
     receivedReview: "Leemos su propuesta. Si le invitamos a las conversaciones, la invitación trae la primera para reservar.",
-    refineAnyTime: "Puede mejorar su propuesta en su página en cualquier paso, hasta que pase al círculo para su revisión.",
+    refineAnyTime: (anchor) => `Puede mejorar su propuesta en su página en cualquier paso, hasta que pase ${anchor ? `al ${anchor}` : "al círculo"} para su revisión.`, // needs-native-review: names the anchor circle, 27 Nov 2026
     receivedBook: (role, link) => `Reserve su primera conversación, con ${role}: ${link}`,
     receivedWrite: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`,
     receivedWho: (role) => (role ? `${role}. Lee su propuesta y le escribe.` : "El equipo. Lee su propuesta y le escribe."),
     youBook: (role) => `Usted reserva el horario. Luego ${role} se reúne con usted.`,
-    inviteAfter: "En el camino agrega sus referencias y sigue mejorando su propuesta. Luego el círculo la revisa.",
+    inviteAfter: (anchor) => `En el camino agrega sus referencias y sigue mejorando su propuesta. Luego ${anchor ? `el ${anchor}` : "el círculo"} la revisa.`, // needs-native-review: names the anchor circle, 27 Nov 2026
     adoptWho: "Usted. Cree su perfil, y le muestra con qué alinearse antes de empezar.",
     closedNext: "No necesita hacer nada más. Si quiere seguir cerca:",
     closedAgain: "- Postúlese de nuevo cuando un rol le llame.",
@@ -871,7 +876,7 @@ const es: ApplicantMessages = {
     buddy: (name, role) => `Su acompañante de inicio es ${name}${role ? ` (${role})` : ""}. Le ayudará en su primera semana.`,
     allHandsTitle: "Reunión general",
     signFirst: () => "Antes de ocupar su rol, alinéese con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearse con ella le hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearse", "membresía"; needs-native-review: new words, 16 Nov 2026
-    headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
+    headlineReviewed: (v, roles, anchor) => `${anchor ? `El ${anchor}` : "El círculo"} aceptó su propuesta: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // needs-native-review: the voice pass, 27 Nov 2026
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
   },
 

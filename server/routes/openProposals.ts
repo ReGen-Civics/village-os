@@ -119,6 +119,7 @@ import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
 import { receivedNextLines } from "../lib/applicantStageLetters";
+import { framedLetter, statusLinkFor } from "../lib/applicantUpdates";
 import * as reviewRepo from "../repos/applicationReview";
 import { recordEvent } from "../lib/events";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
@@ -954,8 +955,11 @@ export function register(app: Express, deps: Deps): void {
     let statusPath: string | null = null;
     // The village's days, or null while every role applied for opens after the founding team.
     const replyMoons = await replyMoonsFor(getPool(), confirmed.proposal.body.roles.map((r) => r.roleId));
-    if (confirmed.review?.statusToken) {
-      statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
+    if (confirmed.review?.statusToken) statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
+    // An account holder gets the Received email too (QA pass 1: none went), with a signed status link and their profile.
+    const accountHolder = !!confirmed.review && !confirmed.review.statusToken;
+    const mailedLink = statusPath ? `${site()}${statusPath}` : accountHolder ? await statusLinkFor({ siteUrl: site, getPool }, confirmed.proposal.id) : null;
+    if (mailedLink) {
       if (confirmed.proposal.email) {
         const lang = languageOf(confirmed.proposal);
         const apply = APPLY_EMAIL_WORDS[lang];
@@ -966,7 +970,7 @@ export function register(app: Express, deps: Deps): void {
         // With a role's application deadline (0445), when review happens; else the one-moon promise, unchanged.
         const deadline = await reviewRepo.applicationDeadline(getPool(), confirmed.proposal.id).catch(() => null);
         const promise = deadline ? wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline)) : wordsIn(lang).replyPromise(replyMoons);
-        const text = `${apply.statusText(`${site()}${statusPath}`, promise)}\n\n${next.join("\n")}`;
+        const text = [apply.statusText(mailedLink, promise), ...(accountHolder ? ["", apply.profileLine(`${site()}/profile`)] : []), "", next.join("\n")].join("\n");
         try {
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,
@@ -974,9 +978,8 @@ export function register(app: Express, deps: Deps): void {
             origin: "open_proposal.status",
             to: { email: confirmed.proposal.email },
             subject: apply.statusSubject,
-            // The status link as a button too, and every address a link (server/lib/letterHtml.ts).
-            html: plainLetterHtml(text, { action: { href: `${site()}${statusPath}`, label: apply.statusButton } }),
-            text,
+            // In the invitation's frame, with the status link as its button (QA: letters overflowed 375 px).
+            ...(await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink)),
           });
         } catch (e) {
           console.error("[open-proposals] the status link could not be mailed", e);

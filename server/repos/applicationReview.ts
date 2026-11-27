@@ -80,7 +80,8 @@ export async function stepsOf(db: Db, ref: string): Promise<StoredStep[]> {
 export async function openReviews(db: Db): Promise<Array<{ ref: string; confirmedAt: Date; lastAt: Date; firstReplyAt: Date | null }>> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT c.application_ref, UNIX_TIMESTAMP(c.stamped_at) AS confirmed_s, " +
-      "(SELECT UNIX_TIMESTAMP(MAX(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref) AS last_s, " +
+      // A letter's attempt (stage_mail) is no act: it never makes a stalled application look moved.
+      "(SELECT UNIX_TIMESTAMP(MAX(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind <> 'stage_mail') AS last_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'first_reply') AS reply_s " +
       "FROM application_steps c LEFT JOIN open_role_proposals p ON p.id = c.application_ref WHERE c.kind = 'confirmed' " +
       "AND (p.id IS NULL OR p.status = 'confirmed') " +

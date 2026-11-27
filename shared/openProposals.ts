@@ -518,6 +518,8 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
   confirmButton: string;
   /** The button in the status email's HTML part. */
   statusButton: string;
+  /** For an applicant with an account here: their profile shows it too (QA pass 1). */
+  profileLine(url: string): string;
 }> = {
   en: {
     subject: (v) => `Confirm your application to ${v}`,
@@ -529,6 +531,7 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     statusText: (link, promise) => `Your application is in. Thank you! Follow it here any time, and see who acts next:\n\n${link}\n\n${promise} Keep this link to yourself. It's how we know it's you.`,
     confirmButton: "Confirm it's me",
     statusButton: "Follow your application",
+    profileLine: (url) => `Signed in, your profile shows it too: ${url}`,
   },
   es: {
     subject: (v) => `Confirme su solicitud a ${v}`,
@@ -540,6 +543,7 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     statusText: (link, promise) => `Su solicitud llegó. ¡Gracias! Sígala aquí cuando quiera, y vea quién actúa ahora:\n\n${link}\n\n${promise} Guarde este enlace para usted. Así sabemos que es usted.`, // needs-native-review: the voice pass, 27 Nov 2026
     confirmButton: "Confirmar que soy yo", // needs-native-review
     statusButton: "Seguir su solicitud", // needs-native-review
+    profileLine: (url) => `Con su sesión iniciada, su perfil también la muestra: ${url}`, // needs-native-review: account holders, 27 Nov 2026
   },
 };
 

@@ -133,7 +133,8 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     village,
     roleNames: roleIds.map((id) => names.get(id) ?? "").filter(Boolean),
     site,
-    team: (teamRole && names.get(teamRole)) || village,
+    // Signed by the village's team, never a role's (QA: "The Human Operations & Onboarding Lead Steward team").
+    team: village,
     // The page closes with the application (its details go now), so the letter points nowhere it cannot keep.
     statusLink: null,
     lang: languageOf(p),

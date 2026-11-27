@@ -104,6 +104,7 @@ import { effectiveLifecycle } from "../lib/modules";
 import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
 import { currentMoonTerm, moonEnded, REVIEW_WORDS, reviewStageOf } from "../../shared/applicationReview";
 import { statusLinkFor } from "../lib/applicantUpdates";
+import { anchorCircleName } from "../repos/applicationReview";
 import { stepsOf } from "../repos/applicationReview";
 import { activeClock } from "../lib/gratitude-cycles";
 import { createInviteOn, inviteById, reissueInviteOn, revokeInvite } from "../repos/memberInvites";
@@ -392,7 +393,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   };
 
   /** Everything the start letter adds: the day, the all-hands, the buddy. */
-  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p) });
+  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()) });
 
   /** The all-hands as a calendar invite, attached to the start letter (the lead, 27 Nov 2026). */
   const allHandsAttachment = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<OutgoingEmail["attachments"]> => {
@@ -1108,6 +1109,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       p.email
         ? await letter(`open-proposal:${p.id}:invited`, "open_proposal.invited", { email: p.email, name: firstName }, invitedLetter({
             firstName,
+            anchorCircle: await anchorCircleName(pool),
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
             // All three calls, the final one too (the lead, 27 Nov 2026), with only the first one's link.

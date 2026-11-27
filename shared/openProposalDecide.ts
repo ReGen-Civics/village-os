@@ -295,6 +295,8 @@ export function whyNotSent(r: { reason?: string | null }): NotSentWhy {
 
 export interface AdoptLetterIn {
   firstName: string | null;
+  /** The anchor circle that accepted it, by its own name ("Anchor Circle accepted your proposal"). */
+  anchorCircle?: string | null;
   village: string;
   roleNames: readonly string[];
   /** "Season of Roots", or null when the season has no name. */
@@ -337,7 +339,7 @@ const startLines = (i: AdoptLetterIn): string[] => {
 /** The headline, and the first cycle's line for a reviewed application. */
 const yesLines = (i: AdoptLetterIn, w: ReturnType<typeof wordsIn>): string[] =>
   i.reviewed && !i.waitsForSeat
-    ? [w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole), "", w.adopt.firstCycle]
+    ? [w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole, i.anchorCircle ?? null), "", w.adopt.firstCycle]
     : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i))];
 
 /**
@@ -509,6 +511,8 @@ export interface InvitedConversation {
  */
 export function invitedLetter(i: {
   firstName: string | null;
+  /** The anchor circle, by name, as the later letters say it. */
+  anchorCircle?: string | null;
   village: string;
   roleNames: readonly string[];
   conversations: readonly InvitedConversation[];
@@ -535,7 +539,7 @@ export function invitedLetter(i: {
         w.shape.next,
         `- ${firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role)}`,
         ...(i.conversations.length > 1 ? [`- ${w.invite.laterOpen}`] : []),
-        `- ${w.shape.refineAnyTime}`,
+        `- ${w.shape.refineAnyTime(i.anchorCircle ?? null)}`,
         "",
         w.shape.who,
         w.shape.youBook(first.label || first.role),
@@ -551,7 +555,7 @@ export function invitedLetter(i: {
       ...talks,
       "",
       // The path after the conversations, in the six stages (no longer "the circle decides by consent").
-      w.shape.inviteAfter,
+      w.shape.inviteAfter(i.anchorCircle ?? null),
       "",
       i.statusLink ? w.statusLinkLine(i.statusLink) : w.keepStatusLink,
       "",

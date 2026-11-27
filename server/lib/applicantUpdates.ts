@@ -31,7 +31,8 @@ import { numberVar } from "./variables";
 import { escapeHtml } from "./comms/mailer";
 import { plainLetterHtml } from "./letterHtml";
 import { languageOf } from "./applicantLanguage";
-import { STATUS_LINK_STARTS } from "../../shared/applicantWords";
+import { STATUS_LINK_STARTS, wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
+import { dressLetter } from "./comms/villageLetter";
 import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import { signLink } from "./comms/links";
 import { replyMoonsFor, replyMoonsNow } from "./foundingFirst";
@@ -62,6 +63,33 @@ export function statusLinkDays(clockStartsAt: Date | null = null, now: Date = ne
   return Math.max(120, ahead + (Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || 90) + STATUS_LINK_MARGIN_DAYS);
 }
 
+/**
+ * AN APPLICANT LETTER IN THE INVITATION'S FRAME (QA: 15 of 39 letters overflowed 375 px, and the stage letters had no
+ * frame): the village's band, "With love, The <village> team", the footer, and the status link as a "See your page"
+ * button in place of a raw link. Falls back to the plain letter when the deployment cannot say its address.
+ */
+export async function framedLetter(
+  deps: Pick<TellDeps, "getPool" | "projectName" | "siteUrl">,
+  lang: ApplicantLanguage,
+  words: { subject: string; text: string },
+  statusLink: string | null,
+): Promise<{ html: string; text: string; preheader?: string }> {
+  const origin = deps.siteUrl?.().replace(/\/+$/, "") ?? "";
+  if (!origin) return { html: plainLetterHtml(words.text), text: words.text };
+  try {
+    const dressed = await dressLetter(
+      deps.getPool(),
+      origin,
+      { subject: words.subject, text: statusLink ? withoutStatusLink(words.text) : words.text, button: statusLink ? { label: wordsIn(lang).shape.seePage, url: statusLink } : null },
+      { lang, comeAndPlay: false, villageName: deps.projectName?.() },
+    );
+    return { html: dressed.html, text: dressed.text, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
+  } catch (e) {
+    console.error("[open-proposals] a letter could not be framed, so it goes plain", e);
+    return { html: plainLetterHtml(words.text), text: words.text };
+  }
+}
+
 /** What one update may add: which part of a kind (the position of a conversation), and facts the words use. */
 export interface UpdateFacts {
   part?: string;
@@ -83,6 +111,8 @@ export type TellApplicant = ((ref: string, kind: ApplicantUpdateKind, facts?: Up
   refined?: (ref: string) => Promise<boolean>;
   /** The one reminder to book a conversation still open (server/lib/applicantNudges.ts). */
   nudge?: (ref: string, interviewId: number) => Promise<boolean>;
+  /** Stage letters a provider fault stopped, tried again (server/lib/applicantStageLetters.ts `retryStageLetters`). */
+  retry?: (refs: readonly string[]) => Promise<number>;
 };
 
 
@@ -127,14 +157,14 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
       if (!p || !p.email || p.status === "unconfirmed") return;
       const words = await wordsFor(deps, p, kind, facts);
       if (UPDATE_EMAILS[kind]) {
+        const framed = await framedLetter(deps, languageOf(p), { subject: words.title, text: words.text }, statusLinkIn(words.text));
         const sent = await deps.postEmail({
           idempotencyKey: `open-proposal:${keyOf(ref, kind, facts.part)}`,
           kind: "essential",
           origin: "open_proposal.update",
           to: { email: p.email, ...(greetingName(p.name) ? { name: greetingName(p.name) as string } : {}) },
           subject: words.title,
-          html: plainLetterHtml(words.text), // every address a link (server/lib/letterHtml.ts)
-          text: words.text,
+          ...framed,
         });
         if (!WENT.has(sent.status)) console.warn(`[open-proposals] the ${kind} update for ${ref} did not go by email: ${sent.status}`);
       }
@@ -149,10 +179,21 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
   tell.stage = async (ref) => (await import("./applicantStageLetters")).tellStageLetter(deps, ref);
   tell.refined = async (ref) => (await import("./applicantStageLetters")).tellRefinedLetter(deps, ref);
   tell.nudge = async (ref, interviewId) => (await import("./applicantStageLetters")).tellBookingNudge(deps, ref, interviewId);
+  tell.retry = async (refs) => (await import("./applicantStageLetters")).retryStageLetters(deps, refs);
   return tell;
 }
 
 /** Drops the "Your status page link" line (the notice carries its own link) and the blank lines around it. Split, not a regex, so a long run of newlines costs one pass. */
+/** The status page link a letter's text carries on its status-link line, or null. */
+export function statusLinkIn(text: string): string | null {
+  for (const line of text.split("\n")) {
+    if (!STATUS_LINK_STARTS.some((start) => line.startsWith(start))) continue;
+    const m = /https?:\/\/\S+/.exec(line);
+    if (m) return m[0];
+  }
+  return null;
+}
+
 export function withoutStatusLink(text: string): string {
   const kept: string[] = [];
   for (const line of text.split("\n")) {

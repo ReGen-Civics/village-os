@@ -28,8 +28,7 @@ import { trustedAccountFor } from "./applicantAccount";
 import { languageOf } from "./applicantLanguage";
 import { applicantTrackFactsOf } from "./applicantOnboarding";
 import { stepBookingOf } from "./applicationReview";
-import { plainLetterHtml } from "./letterHtml";
-import { statusLinkFor, withoutStatusLink, type TellDeps } from "./applicantUpdates";
+import { framedLetter, statusLinkFor, statusLinkIn, withoutStatusLink, type TellDeps } from "./applicantUpdates";
 import { stringVar } from "./variables";
 import { referencesEditable } from "../repos/applicantOnboarding";
 import { wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
@@ -49,19 +48,36 @@ async function roleWord(deps: Pick<TellDeps, "getPool">, roleId: string): Promis
   return name ? roleShortLabel(id, name, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null;
 }
 
-/** Send one letter (and ring the bell). True when the letter went now. */
-async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: StageLetterKind, words: { subject: string; text: string }): Promise<boolean> {
+/** How many times a stage letter is tried again after a provider fault, each under its own key. */
+export const STAGE_LETTER_RETRIES = 3;
+
+/** The attempts at one stage's letter, oldest first: whether each went. */
+async function attemptsOf(deps: Pick<TellDeps, "getPool">, ref: string, kind: StageLetterKind): Promise<boolean[]> {
+  const steps = (await review.stepsOf(deps.getPool(), ref)).filter((s) => s.kind === "stage_mail" && s.subject.startsWith(`${kind}:`));
+  return steps.sort((a, b) => Number(a.subject.split(":")[1]) - Number(b.subject.split(":")[1])).map((s) => s.detail?.went === true);
+}
+
+/** Send one letter (and ring the bell). True when the letter went now. `attempt` 0 is the first; a retry keys its own. */
+async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: StageLetterKind, words: { subject: string; text: string }, attempt = 0): Promise<boolean> {
   if (!p.email) return false;
   const name = greetingName(p.name);
+  const lang = languageOf(p);
+  const framed = await framedLetter(deps, lang, words, statusLinkIn(words.text));
   const sent = await deps.postEmail({
-    idempotencyKey: stageLetterKey(p.id, kind),
+    idempotencyKey: attempt ? `${stageLetterKey(p.id, kind)}:r${attempt}` : stageLetterKey(p.id, kind),
     kind: "essential",
     origin: "open_proposal.stage",
     to: { email: p.email, ...(name ? { name } : {}) },
     subject: words.subject,
-    html: plainLetterHtml(words.text),
-    text: words.text,
+    ...framed,
   });
+  // Each attempt is written down, so a provider fault is tried again by the retry pass, and a letter that went is
+  // never sent a second time (`retryStageLetters`).
+  const went = WENT_NOW.has(sent.status) || sent.status === "queued" || sent.status === "rehearsed";
+  if (STAGE_LETTER_STAGES.includes(kind as StageLetterStage)) {
+    await review.stampStep(deps.getPool(), { ref: p.id, kind: "stage_mail", subject: `${kind}:${attempt}`, at: new Date(), detail: { went, status: sent.status } });
+  }
+  if (attempt > 0) return went;
   const account = await trustedAccountFor(deps.members, p, deps.getPool());
   if (account) {
     await deps.notify({
@@ -87,7 +103,7 @@ async function roleNamesOf(deps: Pick<TellDeps, "getPool">, p: proposals.StoredO
  * The stage's letter, when the application stands at a stage that has one and its letter has not gone. True when a
  * letter went now. Never throws: a letter that did not go is logged, and the act it follows has already happened.
  */
-export async function tellStageLetter(deps: TellDeps, ref: string): Promise<boolean> {
+export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0): Promise<boolean> {
   try {
     const pool = deps.getPool();
     const p = await proposals.readOpenProposal(pool, ref);
@@ -96,6 +112,11 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
     if (!read || read.facts.decided) return false;
     const { now } = trackStates(read.facts);
     if (!isLetterStage(now)) return false;
+    // Once per stage: a letter already tried is the retry pass's to try again, never a second first attempt.
+    if (attempt === 0 && (await attemptsOf(deps, ref, now)).length > 0) return false;
+    // ONE EMAIL PER STAGE (QA passes 1 and 3: two and three in a minute): References and proposal's letter waits for
+    // the references to be asked for, and carries the ask; the separate references letter then never goes.
+    if (now === "references" && !read.facts.refsAsked && !read.facts.refsGiven) return false;
     // The conversation open NOW at this stage: the final's only at Final conversation, a community one only before.
     const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && (now === "final_interview" ? i.final : !i.final));
     const step = open && now !== "agreement" ? await stepBookingOf(pool, ref, open.roleId) : null;
@@ -118,11 +139,35 @@ export async function tellStageLetter(deps: TellDeps, ref: string): Promise<bool
       profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
     });
-    return await send(deps, p, now, words);
+    return await send(deps, p, now, words, attempt);
   } catch (e) {
     console.error(`[open-proposals] the stage letter for ${ref} was not sent`, e);
     return false;
   }
+}
+
+/**
+ * STAGE LETTERS SURVIVE A PROVIDER FAULT (QA pass 3): essential mail keeps no body for the post office to try again,
+ * so each attempt is recorded here, and this pass (run with the review clock) sends the letter of the stage an
+ * application stands at again, under a new key, only while every attempt so far failed, at most
+ * `STAGE_LETTER_RETRIES` times. Still exactly once: a letter that went is never sent again.
+ */
+export async function retryStageLetters(deps: TellDeps, refs: readonly string[]): Promise<number> {
+  let resent = 0;
+  for (const ref of refs) {
+    try {
+      const read = await applicantTrackFactsOf(deps, ref);
+      if (!read || read.facts.decided) continue;
+      const { now } = trackStates(read.facts);
+      if (!isLetterStage(now)) continue;
+      const tries = await attemptsOf(deps, ref, now);
+      if (!tries.length || tries.some(Boolean) || tries.length > STAGE_LETTER_RETRIES) continue;
+      if (await tellStageLetter(deps, ref, tries.length)) resent++;
+    } catch (e) {
+      console.error(`[open-proposals] the stage letter for ${ref} could not be tried again`, e);
+    }
+  }
+  return resent;
 }
 
 /**
@@ -136,10 +181,10 @@ export async function receivedNextLines(pool: Pool, ref: string, lang: Applicant
   if (open) {
     const step = await stepBookingOf(pool, ref, open.roleId);
     const links = bookingLinksText(step.links);
-    return [w.shape.next, `- ${links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label)}`, `- ${w.shape.refineAnyTime}`, "", w.shape.who, w.shape.youBook(step.label)];
+    return [w.shape.next, `- ${links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label)}`, `- ${w.shape.refineAnyTime(await review.anchorCircleName(pool))}`, "", w.shape.who, w.shape.youBook(step.label)];
   }
   const welcome = await roleWord({ getPool: () => pool }, stringVar("org.onboarding_role"));
-  return [w.shape.next, `- ${w.shape.receivedReview}`, `- ${w.shape.refineAnyTime}`, "", w.shape.who, w.shape.receivedWho(welcome)];
+  return [w.shape.next, `- ${w.shape.receivedReview}`, `- ${w.shape.refineAnyTime(await review.anchorCircleName(pool))}`, "", w.shape.who, w.shape.receivedWho(welcome)];
 }
 
 /**
@@ -156,14 +201,14 @@ export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId:
     const step = await stepBookingOf(pool, ref, iv.roleId);
     const words = bookingNudgeLetter({ firstName: greetingName(p.name), role: step.label, links: step.links.map((l) => l.url), statusLink: await statusLinkFor(deps, ref), lang: languageOf(p) });
     const name = greetingName(p.name);
+    const framed = await framedLetter(deps, languageOf(p), words, statusLinkIn(words.text));
     const sent = await deps.postEmail({
       idempotencyKey: bookingNudgeKey(ref, interviewId),
       kind: "essential",
       origin: "open_proposal.nudge",
       to: { email: p.email, ...(name ? { name } : {}) },
       subject: words.subject,
-      html: plainLetterHtml(words.text),
-      text: words.text,
+      ...framed,
     });
     return WENT_NOW.has(sent.status);
   } catch (e) {

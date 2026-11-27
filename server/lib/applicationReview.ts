@@ -868,5 +868,12 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
   } catch (e) {
     console.error("[application-review] the nudges did not run", e);
   }
+  // A stage letter a provider fault stopped goes again, still once (QA pass 3).
+  try {
+    const open = (await repo.openReviews(pool)).map((r) => r.ref).filter((ref) => kindOfRef(ref) === "open");
+    if (open.length) await deps.tellApplicant?.retry?.(open);
+  } catch (e) {
+    console.error("[application-review] the stage letters could not be tried again", e);
+  }
   return out;
 }
