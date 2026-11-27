@@ -50,15 +50,15 @@ let stored: Record<string, unknown>;
 let hyphaConfigured: boolean;
 let isAdmin: boolean;
 /** The signed-in account the canvas sections read, or nobody. */
-let viewer: { id: string; name: string; role: string } | null = null;
+let viewer: { id: string; name: string; role: string; membershipGranted?: boolean } | null = null;
 /** What /api/game/mechanics answers: a veto window in hours, or a failure. */
 let mechanics: { vetoHours: number } | "down";
 
 vi.mock("@/components/Layout", () => ({
   default: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
-// The live ballots are the village's real votes, not page words.
-vi.mock("@/components/governance/LiveDecisionsBand", () => ({ default: () => null }));
+// The game mechanics are their own suite (GameMechanics.folds.test.tsx); here only where they sit and who gets them.
+vi.mock("./GameMechanics", () => ({ default: () => <div data-testid="mechanics-folds" /> }));
 // The spread band's figures are the village's real ones; its two words are page fields, drawn as given.
 vi.mock("@/components/governance/VoiceSpreadBand", () => ({
   default: ({ heading, intro }: { heading: string; intro: string }) => (
@@ -190,8 +190,8 @@ describe("every field in the How We Govern spec reaches the page", () => {
     for (const hidden of ["principles", "circles", "conflict", "hypha", "cta"]) {
       expect(screen.queryByText(said(hidden)), hidden).toBeNull();
     }
-    expect(screen.getByText(said("decision"))).toBeInTheDocument();
-    expect(screen.getByText(said("rules"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("decision") })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("rules") })).toBeInTheDocument();
   });
 
   it("draws the circle cards a village writes, and none until it does", async () => {
@@ -211,7 +211,8 @@ describe("the page with nothing saved", () => {
   it("says the starter words, filled with the village's own name and commitment", async () => {
     renderPage();
 
-    expect(await headline()).toHaveTextContent("How Willowbrook Decides");
+    // The lead's name for the page is the starter headline (26 Nov 2026); the intro still names the village.
+    expect(await headline()).toHaveTextContent("How we work together");
     expect(screen.getByText(/^Here is how a proposal becomes a decision in Willowbrook/)).toBeInTheDocument();
     expect(screen.getByText("Anyone can propose")).toBeInTheDocument();
     expect(screen.getByText("The village decides, in the way it agreed for that kind of decision.")).toBeInTheDocument();
@@ -235,7 +236,7 @@ describe("the page with nothing saved", () => {
     await headline();
 
     expect(screen.queryByText(said("cta"))).toBeNull();
-    expect(screen.getByText(said("circles"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: said("circles") })).toBeInTheDocument();
   });
 });
 
@@ -321,7 +322,8 @@ describe("a village that hides every section it may", () => {
     // What is left is the canvas: its three headings and its own links, nothing the page words carry.
     expect(Array.from(document.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(CANVAS_SECTION_HEADINGS);
     expect(document.querySelectorAll("h3")).toHaveLength(0);
-    for (const a of Array.from(document.querySelectorAll("a"))) {
+    // The page words' part only: the Governance views and the contents beside it are the page's own frame.
+    for (const a of Array.from(document.getElementById("how-we-work")!.querySelectorAll("a"))) {
       expect([CANVAS_CREDIT.url, "/canvas/workbook"], a.getAttribute("href") ?? "").toContain(a.getAttribute("href"));
     }
     for (const s of GOVERNANCE_PAGE.sections.filter((x) => x.hideable)) {
@@ -469,7 +471,7 @@ describe("the Governance page's conflict section", () => {
     expect(list).not.toBeNull();
     expect(Array.from(list!.querySelectorAll("li")).map((li) => li.textContent)).toEqual(VILLAGE_STEPS);
     expect(screen.getByText("When tension between people needs repair, these are the steps we follow:")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /Read the village's exit policy/ }).getAttribute("href")).toBe("/exit-policy");
+    expect(screen.getByRole("link", { name: /Read the village's exit policy/ }).getAttribute("href")).toBe("/rights#leaving-well");
     expect(fetchMock).toHaveBeenCalledWith("/api/exit-policy");
     // Adopted terms carry no draft note.
     expect(screen.queryByText(/still a draft/)).toBeNull();
@@ -607,7 +609,7 @@ function memberCanvas(mayRecord: boolean) {
 describe("How we work together", () => {
   it("draws the canvas's public lines under the village's own heading, on the same route", async () => {
     renderPage();
-    expect(await screen.findByRole("heading", { level: 1, name: "How Willowbrook Decides" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "How we work together" })).toBeTruthy();
     // The old heading is gone.
     expect(screen.queryByText("Power Belongs to the Circle, Not the Person")).toBeNull();
     await screen.findByTestId("public-line-purpose");
@@ -884,4 +886,140 @@ describe("the Governance page with the canvas modules off", () => {
     expect(fetched("GET /api/exit-policy")).toBe(true);
   });
 });
+});
+
+/*
+ * THE GAME MECHANICS, FOLDED IN (26 Nov 2026). The lead: first how we work
+ * together, then the mechanics, each folded, with a way to skip straight to
+ * them; and "Signed out visitor doesn't need to see game mechanics".
+ */
+describe("the game mechanics under How we work together", () => {
+  it("draws no mechanics, no jump and no fold for a signed-out visitor, and still the whole first part", async () => {
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(document.getElementById("how-we-work")).not.toBeNull();
+    expect(document.getElementById("game-mechanics")).toBeNull();
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Game mechanics" })).toBeNull();
+  });
+
+  it("draws none for a signed-in account the village has not admitted yet (CONTROL for the member case)", async () => {
+    viewer = { id: "u2", name: "Nell", role: "member" };
+    renderPage();
+    await headline();
+    await stewardsHeading();
+    expect(document.getElementById("game-mechanics")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+  });
+
+  it("puts them after How we work together for a member, with the jump at the top and a door to each fold", async () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+    renderPage();
+    await headline();
+    expect(await screen.findByTestId("mechanics-folds")).toBeInTheDocument();
+    const jump = within(screen.getByTestId("mechanics-jump")).getByRole("link", { name: /Skip to the game mechanics/ });
+    expect(jump).toHaveAttribute("href", "#game-mechanics");
+    const first = document.getElementById("how-we-work")!;
+    const mechanics = document.getElementById("game-mechanics")!;
+    // The order the lead set: the first part, then the mechanics.
+    expect(first.compareDocumentPosition(mechanics) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(mechanics).getByRole("heading", { level: 2, name: "Game mechanics" })).toBeInTheDocument();
+    // The contents beside the page name the chapter and a door to each fold (the folds are their own anchors).
+    const doors = within(screen.getByRole("navigation", { name: "On this page" }))
+      .getAllByRole("link")
+      .map((a) => a.getAttribute("href"));
+    expect(doors.filter((h) => h === "#game-mechanics" || h?.startsWith("#mechanics-"))).toEqual(["#game-mechanics", "#mechanics-constitution", "#mechanics-dials", "#mechanics-proposals", "#mechanics-history"]);
+  });
+});
+
+/*
+ * SOMEBODY WHO IS NOT A MEMBER, ARRIVING FOR THE MECHANICS (QA round 1). The
+ * old address, a notification or a dial link all ask for them; the page says
+ * in one quiet row that they are for members and what opens them, and draws
+ * none of them. Every newcomer also gets the village's way in on the first
+ * screen, where a member's jump sits.
+ */
+describe("a newcomer and the game mechanics", () => {
+  afterEach(() => {
+    window.history.replaceState(null, "", "/");
+  });
+  const asks = ["/governance/how#game-mechanics", "/governance/how#mechanics-dials", "/governance/how#proposal-p1", "/governance/how?dial=comms.daily_cap", "/governance/how?focus=proposal-p1"];
+
+  for (const url of asks) {
+    it(`tells a visitor arriving at ${url} that they are for members, with the way to sign in, and draws none of them`, async () => {
+      window.history.replaceState(null, "", url);
+      renderPage();
+      await headline();
+      const row = screen.getByTestId("mechanics-locked");
+      expect(row).toHaveTextContent("The game mechanics are for members.");
+      expect(within(row).getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe(`/login?next=${encodeURIComponent("/governance/how#game-mechanics")}`);
+      expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+      expect(screen.queryByTestId("mechanics-jump")).toBeNull();
+      cleanup();
+    });
+  }
+
+  it("tells a signed-in account the village has not admitted that they open on admission, with no sign-in", async () => {
+    viewer = { id: "u2", name: "Nell", role: "member" };
+    window.history.replaceState(null, "", "/governance/how#game-mechanics");
+    renderPage();
+    await headline();
+    const row = screen.getByTestId("mechanics-locked");
+    expect(row).toHaveTextContent("The game mechanics are for members. They open when the village admits you.");
+    expect(within(row).queryByRole("link")).toBeNull();
+    expect(screen.queryByTestId("mechanics-folds")).toBeNull();
+  });
+
+  it("draws no locked row for a visitor who did not ask for the mechanics (CONTROL), and still the way in", async () => {
+    renderPage();
+    await headline();
+    expect(screen.queryByTestId("mechanics-locked")).toBeNull();
+    expect(within(screen.getByTestId("join-act")).getByRole("link").getAttribute("href")).toBe("/steward");
+  });
+
+  it("offers a member the jump, never the way in or the locked row", async () => {
+    viewer = { id: "u1", name: "Ora", role: "member", membershipGranted: true };
+    window.history.replaceState(null, "", "/governance/how#game-mechanics");
+    renderPage();
+    await headline();
+    expect(screen.getByTestId("mechanics-jump")).toBeInTheDocument();
+    expect(screen.queryByTestId("join-act")).toBeNull();
+    expect(screen.queryByTestId("mechanics-locked")).toBeNull();
+  });
+
+  it("brings a visitor whose link asked by query alone (?dial=) to the locked row, the way in just under it", async () => {
+    const landed: string[] = [];
+    const before = window.HTMLElement.prototype.scrollIntoView;
+    window.HTMLElement.prototype.scrollIntoView = function (this: HTMLElement) {
+      landed.push(this.id);
+    };
+    window.history.replaceState(null, "", "/governance/how?dial=comms.daily_cap");
+    try {
+      renderPage();
+      await headline();
+      await waitFor(() => expect(landed).toContain("game-mechanics"));
+      const locked = screen.getByTestId("mechanics-locked");
+      expect(locked.compareDocumentPosition(screen.getByTestId("join-act")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = before;
+    }
+  });
+});
+
+/* One name on the first screen (round 2): the chapter heading is left out while it would repeat the headline. */
+describe("the first chapter's heading", () => {
+  it("is left out under the starter headline, which already says How we work together", async () => {
+    renderPage();
+    expect(await headline()).toHaveTextContent("How we work together");
+    expect(screen.queryByRole("heading", { level: 2, name: "How we work together" })).toBeNull();
+  });
+
+  it("names the chapter under a headline the village wrote itself (CONTROL)", async () => {
+    stored["page-governance"] = { hero: { headline: "How Willowbrook Decides" } };
+    renderPage();
+    expect(await headline()).toHaveTextContent("How Willowbrook Decides");
+    expect(screen.getByRole("heading", { level: 2, name: "How we work together" })).toBeInTheDocument();
+  });
 });

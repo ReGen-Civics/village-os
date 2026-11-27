@@ -1,7 +1,7 @@
 /**
  * Your season's goals (player role card PR 6): the village goals a member
  * serves, each with a "How it helps" line, and one to three seasonal goals of
- * their own. Drawn inside Your part on `/season-plans/mine`; the page holds the
+ * their own. Drawn inside Your part on `/season#plan`; the page holds the
  * state and saves it with the rest of the plan.
  *
  * One tick per village goal. A goal ticked shows its "How it helps" line right

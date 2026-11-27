@@ -209,7 +209,7 @@ screen rather than a warning-and-proceed.
   anchor, so the browser closes the outer one early and leaves an unnamed
   empty link as the FIRST tab stop on every page in the app. Fixed in
   `Layout.tsx` (logo, profile, sign-in). **Nine more remain** in
-  `Circles.tsx`, `CoCreatorsGuide.tsx` (×2), `GoodNeighbor.tsx`,
+  `Circles.tsx`, `CoCreatorsGuide.tsx` (×2), `GoodNeighborChapter.tsx` (then the page GoodNeighbor),
   `HowWeCreate.tsx`, `ProposeQuest.tsx` (×2) and `Quests.tsx` (×2). Left for
   a deliberate pass rather than swept in alongside everything else.
 

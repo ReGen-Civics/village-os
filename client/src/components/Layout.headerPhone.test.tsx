@@ -39,12 +39,13 @@ const header = (headerScrollsOnPhone?: boolean) => {
 
 describe("the header on a phone", () => {
   it("sticks to the top on every page by default", () => {
-    expect(header().className).toBe("sticky top-0 z-50");
+    // print:hidden keeps the site header off paper (calendar/print.css hides only a sheet page's headers, fold QA 27 Nov 2026).
+    expect(header().className).toBe("sticky top-0 z-50 print:hidden");
   });
 
   it("is marked to scroll away on a phone where the page asks (the entrance); index.css does the rest", () => {
     const h = header(true);
-    expect(h.className).toBe("sticky top-0 z-50");
+    expect(h.className).toBe("sticky top-0 z-50 print:hidden");
     expect(h.hasAttribute("data-header-scrolls-on-phone")).toBe(true);
     const css = readFileSync(path.join(__dirname, "../index.css"), "utf8");
     expect(css).toMatch(/@media \(max-width: 639px\) \{\s*header\[data-header-scrolls-on-phone\] \{\s*position: relative;/);

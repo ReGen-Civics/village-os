@@ -19,7 +19,7 @@ describe("the player card, live", () => {
     render(<PlayerRoleCardView data={fixturePayload(0)} />);
     expect(screen.getAllByText("Holds no roles yet").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Apply for a role" }).getAttribute("href")).toBe("/roles");
-    expect(screen.getByRole("link", { name: "Plan my season" }).getAttribute("href")).toBe("/season-plans/mine");
+    expect(screen.getByRole("link", { name: "Plan my season" }).getAttribute("href")).toBe("/season#plan");
     expect(document.querySelectorAll("article")).toHaveLength(0);
   });
 

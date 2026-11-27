@@ -48,7 +48,7 @@ export default function YourMoveCard({ embedded = false }: { embedded?: boolean 
           return (
             <li key={`${a.textId ?? a.title}-${a.version}`}>
               <Link
-                href={a.href ?? "/aligned"}
+                href={a.href ?? "/season#aligned"}
                 className={
                   embedded
                     ? "inline-flex min-h-11 items-center gap-2 rounded-lg border border-border px-4 text-sm font-semibold text-foreground hover:bg-card focus-visible:outline-2 focus-visible:outline-ring"

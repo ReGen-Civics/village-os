@@ -158,7 +158,7 @@ export function register(app: Express, deps: Deps): void {
         facts: { roleId: ask.roleId, memberId: ask.memberId, from: ask.from, why: ask.why },
       }),
     });
-    res.json({ success: true, id, seated: false, message: "Nothing was seated. A holder of the power to fill roles reads this in Review and records the seating in Admin." });
+    res.json({ success: true, id, seated: false, message: "Nothing was seated. A holder of the power to fill roles approves it in Your work, under Approvals." });
   });
 
   // ── Letters: drafted into a queue, a person sends ──────────────────────────

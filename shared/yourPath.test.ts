@@ -101,9 +101,9 @@ const CASES: Array<{ state: PathState; facts: PathFacts; step: string; after?: s
   { state: "adopted-sign-in", facts: tokenFacts(NOW, TZ, proposal({ status: "adopted", step: null, ownAccountAtAdoption: true })), step: "Sign in to see your role", href: "/login?next=/profile" },
   { state: "recap-returned", facts: account({ seatings: [seating()], moon: { ...moon, recap: "returned" } }), step: "Your moon recap came back with a note", href: "/profile#my-moon" },
   { state: "recap-due", facts: account({ seatings: [seating()], moon: { ...moon, today: "2026-12-05" } }), step: "Send your moon recap", after: "Send it by Monday 7 December.", href: "/profile#my-moon" },
-  { state: "term-ending", facts: account({ seatings: [seating({ warningOpen: true })] }), step: "Say whether you carry on as Land Steward", after: "Your term ends on 8 December.", href: "/season-plans/mine?renew=r1" },
-  { state: "lapsed", facts: account({ seatings: [seating({ lapsed: true })] }), step: "Your term as Land Steward has ended. Say whether you carry on", href: "/season-plans/mine?renew=r1" },
-  { state: "agent-term-ending", facts: account({ agentsKept: [seating({ warningOpen: true, agent: "Fern" })] }), step: "Say whether Fern carries on as Land Steward", after: "Your term ends on 8 December.", href: "/season-plans/mine?renew=r1" },
+  { state: "term-ending", facts: account({ seatings: [seating({ warningOpen: true })] }), step: "Say whether you carry on as Land Steward", after: "Your term ends on 8 December.", href: "/season?renew=r1#plan" },
+  { state: "lapsed", facts: account({ seatings: [seating({ lapsed: true })] }), step: "Your term as Land Steward has ended. Say whether you carry on", href: "/season?renew=r1#plan" },
+  { state: "agent-term-ending", facts: account({ agentsKept: [seating({ warningOpen: true, agent: "Fern" })] }), step: "Say whether Fern carries on as Land Steward", after: "Your term ends on 8 December.", href: "/season?renew=r1#plan" },
   {
     state: "first-days",
     facts: account({ onboarding: { title: "Our first 14 days", dueOn: "2026-11-25", next: { title: "Meet your buddy", dueOn: "2026-11-12" } } }),
@@ -304,7 +304,7 @@ describe("yourPath: hrefs", () => {
 
   it("the strip stays quiet on the step's own page", () => {
     expect(yourPath(account()).quietOn).toEqual(["/quests"]);
-    expect(yourPath(CASES.find((c) => c.state === "term-ending")!.facts).quietOn).toEqual(["/season-plans/mine"]);
+    expect(yourPath(CASES.find((c) => c.state === "term-ending")!.facts).quietOn).toEqual(["/season"]);
     expect(yourPath(CASES.find((c) => c.state === "invitation")!.facts).quietOn).toEqual([]);
   });
 });

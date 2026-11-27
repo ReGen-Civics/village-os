@@ -146,7 +146,7 @@ export default function SeasonCircles() {
               <section className={`${PANEL} space-y-3`}>
                 <p className={EYEBROW}>{W.nextSeason}</p>
                 <p className="text-sm text-foreground">{W.nextSeasonLine}</p>
-                <Link href="/season-places" className={`${BTN_PRIMARY} w-full`}>{W.applyCta}</Link>
+                <Link href="/season#join" className={`${BTN_PRIMARY} w-full`}>{W.applyCta}</Link>
               </section>
 
               {paths.map((r) => (
@@ -155,7 +155,7 @@ export default function SeasonCircles() {
                   <p className={HINT}>{W.pathLine}</p>
                 </Link>
               ))}
-              <Link href="/season-places" className={LINK}>{W.yourApplication}</Link>
+              <Link href="/season#join" className={LINK}>{W.yourApplication}</Link>
             </>
           )}
         </div>

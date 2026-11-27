@@ -93,7 +93,7 @@ describe("what a stranger is shown (the lead, round 2)", () => {
   const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
 
   it("offers no member tool to a visitor", () => {
-    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/role-measures"]) {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/circles#role-measures", "/governance/how#game-mechanics"]) {
       expect(offered(), h).not.toContain(h);
     }
   });
@@ -115,6 +115,8 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     // Guides holds Rights and agreements and a row for its Leaving Well chapter; the old addresses have no entry.
     expect(at("/rights")).toEqual(["Govern/Guides"]);
     expect(at("/rights#leaving-well")).toEqual(["Govern/Guides"]);
+    // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
+    expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
     for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
     expect(at("/library")).toEqual(["Village/"]);
     expect(at("/village-health")).toEqual(["Village/"]);
@@ -151,10 +153,10 @@ describe("every entry has a page, and Your First Walk is gone", () => {
   const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf8");
   const routes = new Set(Array.from(app.matchAll(/<Route\s+path="([^"]+)"/g), (m) => m[1]));
   /**
-   * Rights and agreements, /rights, arrives with fold 3 (#1857), which this branch composes after; once both are in,
-   * the route is in App.tsx and this entry is spare. The Treasury tab (#1843) came with the 1.3.94 batch.
+   * None pending: Rights and agreements (#1857) and the season (#1862) came with the 1.3.98 batch, merged in here, and
+   * the Treasury tab (#1843) with 1.3.94.
    */
-  const PENDING = new Set<string>(["/rights"]);
+  const PENDING = new Set<string>();
 
   it("points every menu entry at a route the app has", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href.split("#")[0]!);

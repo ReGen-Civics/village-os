@@ -15,6 +15,7 @@
  * What IS shown of an open matter is its public title (a vote's question, a change request's title), which is what a
  * member takes part in, on the page they act on.
  */
+import { changeRequestHref } from "./changeRequestAddress";
 
 export const COMMUNITY_KINDS = ["vote", "change", "hand", "tension", "task"] as const;
 export type CommunityKind = (typeof COMMUNITY_KINDS)[number];
@@ -82,7 +83,7 @@ export function communityChanges(body: unknown): { open: CommunityItem[]; yours:
   const one = (x: unknown) => {
     const c = obj(x);
     const id = safeId(c?.id);
-    return c && id ? item(id, "change", line(c.title, "A change request"), word(c.state), null, `/changes/${id}`) : null;
+    return c && id ? item(id, "change", line(c.title, "A change request"), word(c.state), null, changeRequestHref(id)) : null;
   };
   return {
     open: list(b?.open).map(one).filter((c): c is CommunityItem => !!c),

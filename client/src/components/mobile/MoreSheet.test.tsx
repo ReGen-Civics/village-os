@@ -7,7 +7,7 @@
  * card, and Roles never appears: it is a tab.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import type { NavGroup, NavLink } from "@/config/nav";
@@ -162,6 +162,9 @@ describe("the More sheet", () => {
     session.user = null;
     const { container } = await draw();
     expect(tiles(container)).toEqual(["/login"]);
+    // It wears the Profile tile's glyph once the page glyphs load, so its words are not left under an empty slot (the
+    // menu's QA, round 4).
+    await waitFor(() => expect(container.querySelector('[data-more-tile="/login"] [data-menu-icon]')).toBeTruthy());
   });
 
   it("draws nothing from md up, where the header's drawer answers", async () => {

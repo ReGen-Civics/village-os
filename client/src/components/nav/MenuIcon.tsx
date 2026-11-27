@@ -21,7 +21,7 @@ export default function MenuIcon({ href, fallback, chip, bare, className = "size
     // The header's white sheet: the glyph in its soft tinted square, as the join paths had it.
     // A page with no glyph keeps the chip's width, so every entry's words start at one edge (the menu's QA, 27 Nov 2026).
     return drawn ? (
-      <span data-menu-icon="" className="mt-0.5 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+      <span data-menu-icon="" className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
         <Icon className="w-5 h-5 text-primary" />
       </span>
     ) : (

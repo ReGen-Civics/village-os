@@ -3,8 +3,10 @@
  * with it.
  *
  *   GET  /api/feedback/config        what the form must disclose before anyone types
- *   POST /api/feedback               a bug or an idea, from a member or a stranger
+ *   POST /api/feedback               a bug, an idea or feedback, from a member or a stranger,
+ *                                    with a screenshot when one is attached (the guide's panel)
  *   GET  /api/admin/feedback         the local queue, and whether the relay is real
+ *   GET  /api/admin/feedback/:id/screenshot   the picture sent with an item, to an admin
  *   PUT  /api/admin/feedback/:id     triage, and the sentence the reporter gets back
  *
  * MOVED OUT OF server/index.ts UNCHANGED. Every line of the four handlers
@@ -21,19 +23,53 @@
  * module would have been a second answer to "is anything actually leaving",
  * which is the one question this domain must never answer two ways.
  */
-import type { Express } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import type { Express, Request, Response } from "express";
+import multer from "multer";
 import type { AppDeps } from "../lib/appDeps";
 import { boolVar } from "../lib/variables";
 import { recordEvent } from "../lib/events";
-import { feedbackHubUrl, feedbackIsShared, feedbackStatusNotice, recordFeedback } from "../lib/feedback";
+import {
+  FEEDBACK_SHOT_PREFIX,
+  feedbackHubName,
+  feedbackHubUrl,
+  feedbackIsShared,
+  feedbackShotName,
+  feedbackShotsDir,
+  feedbackStatusNotice,
+  recordFeedback,
+} from "../lib/feedback";
+import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume, stampedName, writeToVolume } from "../lib/uploads";
+import { attachmentHeaders } from "../lib/submissionAttachments";
+import { clearFeedbackShot } from "../repos/feedbackScreenshots";
+import { FEEDBACK_DETAIL_MIN, FEEDBACK_SHOT_MAX_BYTES, FEEDBACK_TITLE_MIN, isFeedbackKind, suggestTitle } from "../../shared/feedbackItems";
+
+// The screenshot's folder and its names live beside the rest of the feedback spine (server/lib/feedback.ts),
+// because erasure takes the files off too.
+export { FEEDBACK_SHOT_DIRNAME, feedbackShotName, feedbackShotsDir } from "../lib/feedback";
 
 type Deps = Pick<
   AppDeps,
-  "isAdmin" | "authedUser" | "getPool" | "notify" | "overLimit" | "clientIp" | "projectName"
+  "isAdmin" | "authedUser" | "getPool" | "notify" | "overLimit" | "clientIp" | "projectName" | "uploadsDir"
 >;
 
+/** multipart/form-data with one `screenshot`; JSON goes on through as it always did. */
+const takeShot = multer({ storage: multer.memoryStorage(), limits: { fileSize: FEEDBACK_SHOT_MAX_BYTES, files: 1 } }).single("screenshot");
+
+function parseShot(req: Request, res: Response): Promise<string | null> {
+  if (!String(req.headers["content-type"] ?? "").startsWith("multipart/form-data")) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    takeShot(req as any, res as any, (err: any) => {
+      if (!err) return resolve(null);
+      resolve(String(err?.code ?? "") === "LIMIT_FILE_SIZE" ? "That screenshot is too large. Try a smaller one." : "That screenshot did not arrive. Try again, or send it without one.");
+    });
+  });
+}
+
 export function register(app: Express, deps: Deps): void {
-  const { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName } = deps;
+  const { isAdmin, authedUser, getPool, notify, overLimit, clientIp, projectName, uploadsDir } = deps;
+  const shotsDir = feedbackShotsDir(uploadsDir);
 
   /**
    * What the submission form needs to disclose, honestly, before anyone types.
@@ -45,23 +81,50 @@ export function register(app: Express, deps: Deps): void {
    * their words are travelling somewhere while they stay home.
    */
   app.get("/api/feedback/config", async (_req, res) => {
+    const relayOn = feedbackIsShared();
     res.json({
-      relayOn: feedbackIsShared(),
+      relayOn,
       villageName: projectName(),
+      // Who receives the copy, named by where the relay sends (the hub's host), so the form can say it.
+      hubName: relayOn ? feedbackHubName() : null,
     });
   });
 
   app.post("/api/feedback", async (req, res) => {
-    // Same anti-abuse posture as every public form: honeypot + IP limit.
-    if (typeof req.body?.hp === "string" && req.body.hp.length > 0) return res.json({ success: true });
+    // Same anti-abuse posture as every public form: an IP limit and a honeypot. The limit is read BEFORE the
+    // body is parsed, so an address over it never gets a screenshot buffered into memory (fold QA round 1).
     if (await overLimit(`feedback:${clientIp(req)}`, 5, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "That's a lot of feedback for one hour. Thank you, and give it a rest" });
     }
-    const kind = req.body?.kind === "bug" ? "bug" : req.body?.kind === "idea" ? "idea" : null;
-    const title = String(req.body?.title ?? "").trim();
+    // The guide's panel sends a screenshot as multipart, with the words as fields beside it.
+    const refused = await parseShot(req, res);
+    if (refused) return res.status(400).json({ error: refused });
+    if (typeof req.body?.hp === "string" && req.body.hp.length > 0) return res.json({ success: true });
+    const kind = isFeedbackKind(req.body?.kind) ? req.body.kind : null;
     const detail = String(req.body?.detail ?? "").trim();
-    if (!kind || title.length < 4 || detail.length < 10) {
-      return res.status(400).json({ error: "Say what kind it is, a short title, and enough detail to act on" });
+    // The member's title, or the guide's suggestion from their own first line when they left it empty.
+    const typed = String(req.body?.title ?? "").trim();
+    const suggested = suggestTitle(detail);
+    const title = typed.length >= FEEDBACK_TITLE_MIN ? typed : suggested.length >= FEEDBACK_TITLE_MIN ? suggested : detail.slice(0, 72);
+    if (!kind || title.length < FEEDBACK_TITLE_MIN || detail.length < FEEDBACK_DETAIL_MIN) {
+      return res.status(400).json({ error: "Say what kind it is, and enough detail to act on" });
+    }
+    // The screenshot goes through the strip (no metadata, no location) before a byte is kept.
+    let screenshotFile: string | null = null;
+    let shotBytes: Buffer | null = null;
+    const file = (req as any).file as { buffer?: Buffer; originalname?: string } | undefined;
+    if (file?.buffer?.length) {
+      try {
+        const clean = await sanitiseForVolume(file.buffer, String(file.originalname ?? ""));
+        if (clean.kind !== "image") return res.status(400).json({ error: "That screenshot is not a picture. Try a PNG, JPEG or WebP." });
+        screenshotFile = stampedName(FEEDBACK_SHOT_PREFIX, clean.ext || ".png");
+        shotBytes = clean.bytes;
+      } catch (e) {
+        if (e instanceof CarriesLocationData || e instanceof LocationDataSurvived) {
+          return res.status(400).json({ error: "That screenshot kept hidden data through the strip, so it was not stored. Try another." });
+        }
+        return res.status(400).json({ error: "That screenshot could not be read. Try a PNG, JPEG or WebP." });
+      }
     }
     const user = await authedUser(req);
     // The disclosure the form showed IS the consent, so it is recorded with
@@ -71,7 +134,21 @@ export function register(app: Express, deps: Deps): void {
       kind, title, detail,
       pageUrl: typeof req.body?.pageUrl === "string" ? req.body.pageUrl : null,
       submittedBy: user?.id ?? null,
+      screenshotFile,
     }, mayRelay);
+    /*
+     * The file is written only once the row that names it exists (fold QA round 1), so a refused INSERT leaves
+     * no picture nobody can find or erase. A write that fails after it takes the name off the row: the report
+     * still lands, without a screenshot the admin view would then fail to open.
+     */
+    if (screenshotFile && shotBytes) {
+      try {
+        writeToVolume(shotsDir, screenshotFile, shotBytes);
+      } catch (e) {
+        console.error(`[feedback] ${r.id}: the screenshot was not stored: ${String((e as Error)?.message ?? e).slice(0, 120)}`);
+        await clearFeedbackShot(getPool(), r.id);
+      }
+    }
     void recordEvent(getPool(), {
       kind: "audit", text: `feedback:${kind}:${title.slice(0, 60)}`,
       actorUserId: user?.id ?? null, entityType: "feedback", entityRef: r.id, audience: "admin",
@@ -103,6 +180,21 @@ export function register(app: Express, deps: Deps): void {
       relayDialOn: boolVar("platform.feedback_relay"),
       hubConfigured: feedbackHubUrl().length > 0,
     });
+  });
+
+  /**
+   * The screenshot a member sent with an item, to an admin alone, with the attachment door's
+   * headers: `private, no-store`, nosniff and a sandboxing CSP, so no shared cache keeps it.
+   */
+  app.get("/api/admin/feedback/:id/screenshot", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const [[row]] = await getPool().query<any[]>("SELECT screenshot_file FROM feedback_items WHERE id = ? LIMIT 1", [req.params.id]);
+    const name = feedbackShotName(row?.screenshot_file);
+    if (!name) return res.status(404).json({ error: "Not found" });
+    const file = path.join(shotsDir, name);
+    if (!fs.existsSync(file)) return res.status(404).json({ error: "Not found" });
+    res.set(attachmentHeaders(name));
+    res.sendFile(file);
   });
 
   app.put("/api/admin/feedback/:id", async (req, res) => {

@@ -21,6 +21,7 @@ import AgentFullAccessPanel from "./AgentFullAccessPanel";
 import { PathTree } from "./AgentPathTree";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { mergePastedAgentPaths, type PastedPathsPlan } from "@shared/agentAdmin";
+import { APPROVALS_HREF } from "@shared/approvalInbox";
 
 /** The inbox is its own chunk: the tab's first page carries none of it. */
 const ApprovalInbox = lazy(() => import("@/components/approvals/ApprovalInbox"));
@@ -279,7 +280,7 @@ export default function AgentsPanel({ password, players }: { password: string; p
       </a>
       <div className="space-y-3 rounded-xl border border-border bg-white p-4">
         <p className="text-sm font-semibold text-foreground"><Trans context="approval inbox">Approval inbox</Trans></p>
-        <a href="/approvals" className="inline-flex min-h-9 items-center text-sm text-teal-deep underline"><Trans>Open it on its own page</Trans></a>
+        <a href={APPROVALS_HREF} className="inline-flex min-h-9 items-center text-sm text-teal-deep underline"><Trans context="approval inbox, admin">Open it in Your work</Trans></a>
         <Suspense fallback={null}>
           <ApprovalInbox headers={() => authHeaders(password, { "Content-Type": "application/json" })} />
         </Suspense>
