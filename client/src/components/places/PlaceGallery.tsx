@@ -14,7 +14,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, Camera, X } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import LoadFailed from "@/components/LoadFailed";
 import Fireflies from "@/components/journey/nature/Fireflies";
@@ -262,24 +262,13 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
 
   return (
     <form ref={form} onSubmit={submit} className={`${CARD_FEATURED} scroll-mt-28 space-y-5`} aria-labelledby="add-photo-h">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className={EYEBROW}><Trans context="add a photo form">Add to the record</Trans></p>
-          <h2 id="add-photo-h" className={H2}><Trans context="add a photo form">Add a photo</Trans></h2>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="jw-btn inline-flex size-11 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={t({ message: "Close the form", context: "add a photo form" })}
-        >
-          <X className="size-5" aria-hidden="true" />
-        </button>
+      <div className="space-y-1">
+        <p className={EYEBROW}><Trans context="add a photo form">Add to the record</Trans></p>
+        <h2 id="add-photo-h" className={H2}><Trans context="add a photo form">Add a photo</Trans></h2>
       </div>
 
       <ul className={`${NOTE} m-0 list-disc space-y-1 pl-5`}>
         <li><Trans context="add a photo form">Location data is removed before it is stored.</Trans></li>
-        <li><Trans context="add a photo form">Your name and the month ride with it.</Trans></li>
         <li><Trans context="add a photo form">Up to {maxMb} MB.</Trans></li>
       </ul>
 
@@ -304,7 +293,6 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
               </span>
             )}
           </span>
-          {file && <span className={`block truncate ${HINT}`}>{file.name}</span>}
         </label>
 
         <div className="space-y-4">

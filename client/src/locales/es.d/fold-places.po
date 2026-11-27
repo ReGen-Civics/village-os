@@ -55,11 +55,6 @@ msgstr "Elija una imagen"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "add a photo form"
-msgid "Close the form"
-msgstr "Cerrar el formulario"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "add a photo form"
 msgid "For someone who cannot see it. Required."
 msgstr "Para quien no puede verla. Obligatorio."
 
@@ -109,19 +104,14 @@ msgid "When was it taken?"
 msgstr "¿Cuándo se tomó?"
 
 # needs-native-review: the places fold, 26 Nov 2026
-msgctxt "add a photo form"
-msgid "Your name and the month ride with it."
-msgstr "Su nombre y el mes van con ella."
-
-# needs-native-review: the places fold, 26 Nov 2026
 msgctxt "all photos view"
 msgid "Is one of these of you?"
 msgstr "¿Alguna de estas es de usted?"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "all photos view"
-msgid "It hides at once and the file stops loading."
-msgstr "Se oculta de inmediato y el archivo deja de cargarse."
+msgid "It hides at once, and the curators get your request."
+msgstr "Se oculta de inmediato y los curadores reciben su solicitud."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "all photos view"
@@ -152,11 +142,6 @@ msgstr "Mostrar fotos más antiguas"
 msgctxt "all photos view"
 msgid "That is every photo, back to the first."
 msgstr "Esas son todas las fotos, hasta la primera."
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "all photos view"
-msgid "The curators get your request."
-msgstr "Los curadores reciben su solicitud."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "photo reports queue"
@@ -557,11 +542,6 @@ msgstr "Formas de explorar"
 msgctxt "places shelf"
 msgid "A photo of {name}"
 msgstr "Una foto de {name}"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "places shelf"
-msgid "New"
-msgstr "Nuevo"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "places shelf"

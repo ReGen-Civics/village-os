@@ -118,8 +118,7 @@ export default function PhotoIndex({ onLocked }: { onLocked: () => void }) {
         </p>
         <ul className={`${HINT} m-0 list-disc space-y-1 pl-5`}>
           <li><Trans context="all photos view">Open it and press "This is me, take it down".</Trans></li>
-          <li><Trans context="all photos view">It hides at once and the file stops loading.</Trans></li>
-          <li><Trans context="all photos view">The curators get your request.</Trans></li>
+          <li><Trans context="all photos view">It hides at once, and the curators get your request.</Trans></li>
         </ul>
       </div>
 

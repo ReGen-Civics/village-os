@@ -100,6 +100,7 @@ export default function PhotoViewer({
   const mayDrop = canCurate || mine;
   const many = total > 1;
   const id = encodeURIComponent(photo.id);
+  const coverSet = t({ message: "This place opens with that one now.", context: "place photo viewer" });
   const failedDrop = t({ message: "That did not come down. Try again in a moment.", context: "place photo viewer" });
 
   /**
@@ -159,8 +160,6 @@ export default function PhotoViewer({
 
   const onKey = (e: React.KeyboardEvent) => {
     if (!many || asking) return;
-    const tag = (e.target as HTMLElement).tagName;
-    if (tag === "INPUT" || tag === "TEXTAREA") return;
     if (e.key === "ArrowRight") { e.preventDefault(); onStep(1); }
     if (e.key === "ArrowLeft") { e.preventDefault(); onStep(-1); }
   };
@@ -333,8 +332,8 @@ export default function PhotoViewer({
                         onClick={() =>
                           post(
                             `/api/places/${encodeURIComponent(photo.structureKey)}/hero`,
-                            t({ message: "This place opens with that one now.", context: "place photo viewer" }),
-                            t({ message: "This place opens with that one now.", context: "place photo viewer" }),
+                            coverSet,
+                            coverSet,
                             { photoId: photo.id },
                             "PUT",
                           )

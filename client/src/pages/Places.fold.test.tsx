@@ -24,7 +24,6 @@ vi.mock("@/components/journey/nature/Fireflies", () => ({ default: ({ children }
 
 import Places, { viewOf } from "@/pages/Places";
 import { placeName } from "@/components/places/placesApi";
-import { isFresh } from "@/components/places/PlaceCard";
 import { SUBJECT_FILED } from "@shared/placePhotos";
 
 const photo = (i: number, key = "community-kitchen", over: Record<string, unknown> = {}) => ({
@@ -134,13 +133,6 @@ describe("the pieces", () => {
     expect(placeName("community-kitchen")).toBe("Community kitchen");
     expect(placeName("ridge_a")).toBe("Ridge a");
     expect(placeName("ridgeA")).toBe("RidgeA");
-  });
-
-  it("marks a place New only for a photo added in the last two weeks", () => {
-    const now = Date.parse("2026-11-10T00:00:00Z");
-    expect(isFresh("2026-11-01T00:00:00Z", now)).toBe(true);
-    expect(isFresh("2026-10-01T00:00:00Z", now)).toBe(false);
-    expect(isFresh("not a date", now)).toBe(false);
   });
 });
 

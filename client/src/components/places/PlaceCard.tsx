@@ -10,7 +10,7 @@
 import { Link } from "wouter";
 import { Image, uploadSrcSet } from "@/components/Image";
 import { placeName } from "@/components/places/placesApi";
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
+import { Plural, useLingui } from "@lingui/react/macro";
 
 export interface PlaceCardData {
   structureKey: string;
@@ -19,14 +19,6 @@ export interface PlaceCardData {
   coverThumbUrl: string | null;
   coverAltText: string | null;
   latestAt: string;
-}
-
-/** A place whose newest photo landed inside this many days carries a "New" mark. */
-const NEW_DAYS = 14;
-
-export function isFresh(latestAt: string, now: number = Date.now()): boolean {
-  const at = Date.parse(latestAt);
-  return Number.isFinite(at) && now - at < NEW_DAYS * 24 * 60 * 60 * 1000 && at <= now + 60000;
 }
 
 export default function PlaceCard({ place }: { place: PlaceCardData }) {
@@ -50,11 +42,6 @@ export default function PlaceCard({ place }: { place: PlaceCardData }) {
           />
         ) : (
           <span className="block aspect-[3/4] bg-muted" aria-hidden="true" />
-        )}
-        {isFresh(place.latestAt) && (
-          <span className="absolute right-2 top-2 rounded-full bg-notice px-2.5 py-0.5 text-xs font-semibold text-background shadow-sm">
-            <Trans context="places shelf">New</Trans>
-          </span>
         )}
         <span className="absolute inset-x-0 bottom-0 block bg-gradient-to-t from-card via-card/90 to-transparent px-3 pb-3 pt-10 sm:px-4 sm:pb-4">
           <span className="block font-display text-lg leading-tight text-foreground sm:text-2xl">{name}</span>

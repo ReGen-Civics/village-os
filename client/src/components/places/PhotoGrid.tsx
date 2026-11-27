@@ -114,7 +114,7 @@ export default function PhotoGrid({
                       src={photo.url}
                       alt={photo.altText}
                       srcSet={uploadSrcSet(photo.url, photo.thumbUrl)}
-                      sizes={big ? "(min-width: 1024px) 560px, (min-width: 640px) 66vw, 100vw" : "(min-width: 1024px) 280px, (min-width: 640px) 33vw, 50vw"}
+                      sizes={big ? "(min-width: 640px) 50vw, 100vw" : "(min-width: 640px) 25vw, 50vw"}
                       ratio={1}
                       imgClassName="transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
                     />
