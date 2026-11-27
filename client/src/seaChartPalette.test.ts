@@ -142,3 +142,27 @@ describe("the weathered map", () => {
     for (const role of ["ink", "ink-dim", "accent", "heading", "living", "warn", "brand"]) expect(contrastRatio(c(role), bg)).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+/*
+ * THE BANDS AND SHEETS (the coordinator's live probe of 1.3.93: the "Set up your village" strip under the header drew as a
+ * plain cream band). Every full-width band and every overlay is weathered paper, and reads at the same floors.
+ */
+describe("the weathered map's bands, sheets and overlays", () => {
+  it("draws the path strip, the sheets, the footer, dialogs, toasts and the examples note as torn paper", () => {
+    for (const hook of ["[data-root-line] .nk", "[data-root-slot] > div", "[data-more-sheet]", "[data-paths-sheet]", "footer.bg-teal-deep", '[data-slot="dialog-content"]', "[data-sonner-toast]", "aside[aria-labelledby^=\"standing-examples-\"]"]) {
+      expect(css).toContain(hook);
+    }
+    // Each band takes the dealt tear and its burnt line on its open side.
+    expect(css).toMatch(/mask-border:\s*var\(--wm-tear\) 18 fill \/ 0 0 14px 0 round/);
+    expect(css).toMatch(/mask-border:\s*var\(--wm-tear\) 18 fill \/ 14px 0 0 0 round/);
+  });
+
+  it("keeps every text colour at 4.5:1 on a band, a sheet and an overlay under its stain and foxing", () => {
+    const band = blend("#a86e2c", blend("#f0dcb4", c("ground"), 0.7), 0.1);
+    const sheet = blend("#a86e2c", "#eed8ac", 0.12);
+    const overlay = blend("#965c22", blend("#a86e2c", "#f0dcb4", 0.13), 0.16);
+    for (const bg of [band, sheet, overlay]) {
+      for (const role of ["ink", "ink-dim", "accent", "heading", "living", "warn", "brand"]) expect(contrastRatio(c(role), bg)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
