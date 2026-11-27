@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { readVillageSection } from "@/hooks/useVillageContent";
-import { useGameConfig } from "@/lib/gameApi";
+import { authToken, useGameConfig } from "@/lib/gameApi";
+import { INVESTOR_PAGE_ID } from "@shared/investorInterest";
 import { storyPageOffAlone } from "@/lib/brochure";
 import { pageSectionKey, type PageSpec, type PageVars, type ResolvedItem, type ResolvedPage } from "@shared/pageContent/types";
 import { fillPage, resolvePageRaw } from "@shared/pageContent/resolve";
@@ -69,9 +70,21 @@ export function withoutLinksToHiddenPages(spec: PageSpec, page: ResolvedPage, sh
  */
 const NO_TRANSLATION: PageTranslationWire = { fields: {}, machine: [], locale: "en" };
 
+/**
+ * The reader's token, for the one page whose words the server keeps for some readers: the investor page, for the
+ * readers the team let in (server/routes/investorAccess.ts), where a member is known by the token alone. Every other
+ * page's words are asked for exactly as before, with no token.
+ */
+const KEPT_SECTION = pageSectionKey({ id: INVESTOR_PAGE_ID });
+function readerHeaders(section: string): Record<string, string> | undefined {
+  if (section !== KEPT_SECTION) return undefined;
+  const token = authToken();
+  return token ? { Authorization: `Bearer ${token}` } : undefined;
+}
+
 export function readPageTranslationFor(section: string, locale: string): Promise<PageTranslationWire> {
   if (locale === "en") return Promise.resolve(NO_TRANSLATION);
-  return fetch(`/api/content/${encodeURIComponent(section)}/translation`, { headers: { "X-Village-Locale": locale } })
+  return fetch(`/api/content/${encodeURIComponent(section)}/translation`, { headers: { ...(readerHeaders(section) ?? {}), "X-Village-Locale": locale } })
     .then((r) => (r.ok ? r.json() : null))
     .then((d) => {
       const t = readPageTranslation(d?.translation);
@@ -173,7 +186,7 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
   const [translated, setTranslated] = useState<{ locale: string; t: PageTranslationWire } | null>(null);
   useEffect(() => {
     let alive = true;
-    readVillageSection(pageSectionKey(spec)).then((doc) => {
+    readVillageSection(pageSectionKey(spec), readerHeaders(pageSectionKey(spec))).then((doc) => {
       if (alive) setStored({ doc });
     });
     return () => {

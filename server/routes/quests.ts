@@ -20,6 +20,8 @@
  *   the walk  POST /api/game/quests/:id/claim
  *             POST /api/game/quests/:id/submit
  *             POST /api/game/quests/:id/withdraw   (put a quest back, 2026-11-27)
+ *   part 2    the take-back, the steps, the step needs and the suited list:
+ *             server/routes/questSteps.ts, registered from the end of this file
  *
  * ORDER INSIDE THIS FILE IS LOAD-BEARING, and one pair especially:
  * `/api/quests/field` is registered BEFORE `/api/quests/:id`, so the literal
@@ -83,6 +85,10 @@ import { listArchetypeRows } from "../repos/archetypes";
 import { villageId } from "../lib/economy";
 import { rootsForWork } from "../../shared/archetypeRoots";
 import { bellQuestClaimed, type ResolvedNextStep } from "../lib/questNextStep";
+import type { LapseContext } from "../lib/orgChart";
+import { forgetStepFile, register as registerQuestSteps } from "./questSteps";
+import { removeStepSubmissionsForClaim, stepSubmissionsForClaim } from "../repos/questStepSubmissions";
+import { anyStepNeeds, missingSteps, readStepNeeds } from "../../shared/questStepNeeds";
 import { claimRefusalFor, isPhysicalQuest, minimumAgesOnByDefault } from "../lib/questClaimGate";
 import type { ClaimRefusal } from "../../shared/questClaimGate";
 import { effectiveMinAge, isAgeBand, isMinimumAgeChoice } from "../../shared/ageBands";
@@ -146,6 +152,9 @@ type Deps = Pick<
   minimumAgesOn?: () => boolean;
   /** The village's season calendar, for the goals a quest can grow (decision 5). Absent, no goal threads. */
   seasonState?: AppDeps["seasonState"];
+  /** The circles and the seat calendar, for the quests suited to a member's seats (routes/questSteps.ts). Absent, role gates alone. */
+  circles?: () => Array<{ id: string; name?: string; aliases?: string[] }>;
+  lapseContext?: () => LapseContext;
 };
 
 export function register(app: Express, deps: Deps): void {
@@ -1273,10 +1282,33 @@ export function register(app: Express, deps: Deps): void {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required" });
     const { artifactUrl, note } = req.body ?? {};
-    if (!artifactUrl && !note) return res.status(400).json({ error: "Share a link or a few words as evidence of your work" });
     const mine = await claimsRepo.forUser(user.id);
     const active = mine.find((c) => c.questId === req.params.id && (c.status === "claimed" || c.status === "submitted"));
+    /*
+     * EVERY STEP THAT NEEDS A SUBMISSION HAS ONE (0439; the lead, 27 Nov 2026).
+     * A quest whose steps need none reads nothing more and asks for a link or
+     * words, as it always did. A quest whose steps carry the evidence can be
+     * turned in on the steps alone.
+     */
+    const stepQuest = active ? await questsRepo.byId(req.params.id) : null;
+    const needs = readStepNeeds(stepQuest?.stepNeeds, (stepQuest?.steps ?? []).length);
+    const stepRows = active && anyStepNeeds(needs) ? await stepSubmissionsForClaim(getPool(), active.id) : [];
+    if (!artifactUrl && !note && !(anyStepNeeds(needs) && stepRows.length > 0)) {
+      return res.status(400).json({ error: "Share a link or a few words as evidence of your work" });
+    }
     if (!active) return res.status(404).json({ error: "No active claim for this quest" });
+    const owed = missingSteps(needs, stepRows);
+    if (owed.length) {
+      return res.status(409).json({
+        error: owed.length === 1 ? `Step ${owed[0] + 1} needs something from you before you turn this in.` : `Steps ${owed.map((i) => i + 1).join(", ")} need something from you before you turn this in.`,
+        missingSteps: owed,
+      });
+    }
+    // Turned in again after being taken back: the claim is `claimed` with a
+    // turn-in already on it. That is a new turn-in, so the stewards are rung
+    // again under a key of its own; a correction to work still waiting keeps
+    // the one key and rings nobody twice (the sweep's comment below).
+    const afterTakeBack = active.status === "claimed" && !!active.submittedAt;
     // Also guarded here, not only on claim: a claim made before this shipped
     // must not be walkable through to consent.
     if (await isExampleRow(getPool(), "quests", req.params.id)) {
@@ -1351,7 +1383,9 @@ export function register(app: Express, deps: Deps): void {
             title: `${firstName(user.name)} submitted work on ${questTitle}`,
             body: "Read what they did and consent when you are ready. Value moves when a steward says so.",
             link: "/review",
-            dedupeKey: `quest-submission:${active.id}:${recipientId}`,
+            dedupeKey: afterTakeBack
+              ? `quest-submission:${active.id}:${String(updated.submittedAt ?? "")}:${recipientId}`
+              : `quest-submission:${active.id}:${recipientId}`,
             actorUserId: user.id,
           });
         } catch (bell) {
@@ -1393,6 +1427,15 @@ export function register(app: Express, deps: Deps): void {
     if (active.status === "submitted") return res.status(409).json(turnedIn);
     const removed = await claimsRepo.remove(active.id);
     if (!removed) return res.status(409).json(turnedIn);
+    // What the member gave for its steps (0439) goes with the claim, files and all:
+    // nothing was turned in, and a row naming a claim that no longer exists is nobody's.
+    for (const row of await removeStepSubmissionsForClaim(getPool(), active.id)) forgetStepFile(UPLOADS_DIR, row.fileName);
     res.json({ ok: true, questId: active.questId, claimId: active.id });
+  });
+
+  // Part 2 of the quest card: taking back, the steps, the step needs and the suited list.
+  registerQuestSteps(app, {
+    authedUser, isAdmin, adminActor, getPool, uploadsDir: UPLOADS_DIR, questsRepo, claimsRepo, overLimit, notify,
+    questConsentRecipients, firstName, roleIdsFor, circles: deps.circles, lapseContext: deps.lapseContext,
   });
 }

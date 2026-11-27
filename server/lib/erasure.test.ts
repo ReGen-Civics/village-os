@@ -548,6 +548,7 @@ describe.skipIf(!configured)("an erasure that stops part way", () => {
       "member-tasks-after-tombstone",
       "quest-crews-after-tombstone",
       "quest-claims-after-tombstone",
+      "quest-step-submissions-after-tombstone",
       "photo-report-reasons-after-tombstone",
       "session-cards-after-tombstone",
       "member-asks-after-tombstone",

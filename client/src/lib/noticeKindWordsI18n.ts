@@ -287,6 +287,10 @@ export const KIND_WORDS_MSG: Readonly<Record<string, Pair>> = {
     blurb: msg({ message: "Somebody finished work and it is waiting to be read. Value moves when a steward says so.", context: "the bell: why a notice of this kind matters, kind quest_submitted" }),
     many: msg({ message: "{n} pieces of finished work are waiting to be read.", context: "the bell: several notices of one kind batched into a line, kind quest_submitted" }),
   },
+  "quest_pulled_back": {
+    blurb: msg({ message: "Somebody took back work they had turned in. It left the review queue until they turn it in again.", context: "the bell: why a notice of this kind matters, kind quest_pulled_back" }),
+    many: msg({ message: "{n} pieces of work were taken back.", context: "the bell: several notices of one kind batched into a line, kind quest_pulled_back" }),
+  },
   "quest_consented": {
     blurb: msg({ message: "A steward read your work and released what it was worth.", context: "the bell: why a notice of this kind matters, kind quest_consented" }),
     many: msg({ message: "{n} of your quests were consented.", context: "the bell: several notices of one kind batched into a line, kind quest_consented" }),

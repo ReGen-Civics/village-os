@@ -48,7 +48,6 @@ import { useLocation } from "wouter";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { rememberMapAvailable } from "@/lib/landing";
 import { MAP_SKIN_SAVED_EVENT, MAP_SKIN_SAVED_KEY } from "@shared/mapSkin";
-import { walkPush } from "@shared/mapAddress";
 import { isPromiseKind } from "@shared/mapPromise";
 import { isSceneVerb } from "@shared/mapScene";
 import { gameFetch } from "@/lib/gameApi";
@@ -57,11 +56,10 @@ import VillageSettingsDoor, { settingsAsked, takeSettingsDoor, useMayStyleLand }
 import EnterTheLandGate, { useMapEnterGate, withSkipIntro } from "@/components/map/EnterTheLandGate";
 import { useMapHistory } from "@/components/map/mapHistory";
 import { relaySceneMessage, type SceneReply } from "@/components/map/sceneRelay";
-import { landGroundOf } from "@/components/map/landGround";
 import { pushChips, useChipsCadence } from "@/components/map/statChips";
 import { useOrgFollow } from "@/components/map/orgFollow";
 import BlankSlate, { useMapSlate } from "@/components/map/MapSlate";
-import { configScene, readLand, seedGroundOf, type LandAnswer } from "@/components/map/configPush";
+import { pushVillageConfig, readLand, type LandAnswer } from "@/components/map/configPush";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 /** Where the staged artifact is served from, and its presence probe. */
@@ -309,74 +307,8 @@ export default function LivingMap() {
   const pushConfig = useCallback(async (land?: Promise<LandAnswer>) => {
     const win = frame.current?.contentWindow;
     if (!win) return;
-    /*
-     * A message goes on EVERY path, a bare `{type:'config'}` when the fetch
-     * fails. The artifact keeps its land covered and its desk arrival waiting
-     * until the shell has said what it will say about the land, and a bare
-     * message changes nothing on the map while it ends the wait.
-     */
-    const payload: Record<string, unknown> = { type: "config" };
-    // The village's own ground rides in the same message, so the map can hold
-    // its cover until that ground has drawn (N19). It is also sent on its own
-    // the moment it is known, so the picture downloads while the config is
-    // still on its way; the map loads it once either way.
-    // The boot hands in its land read, which also carries the seed verdict
-    // below; a later push (a saved skin) reads the land again for the ground.
-    const ground = (land ?? readLand()).then((body) => {
-      const g = landGroundOf(body);
-      if (g) {
-        try {
-          win.postMessage({ type: "ground", ...g }, window.location.origin);
-        } catch {
-          /* The frame went away: nobody is waiting. */
-        }
-      }
-      return g;
-    });
-    try {
-      // Where the village stands rides the boot push only (configPush.ts).
-      const [res, landBody] = await Promise.all([fetch("/api/map/config"), land ?? Promise.resolve(null)]);
-      const seedGround = seedGroundOf(landBody);
-      if (seedGround !== null) payload.seedGround = seedGround;
-      if (!res.ok) return;
-      const body = await res.json();
-      /*
-       * One push carries skin, walk and vocabulary. The artifact applies each
-       * part only when present, so a village that has customised none of them
-       * gets its own seed and nothing is overwritten with blanks.
-       *
-       * The walk and the welcome are always sent once the fetch answered: null
-       * is the village saying it wrote none, so no walk is offered and the
-       * guide greets plainly, never the seed (Rye, 2026-10-02; walkPush).
-       */
-      if (body?.skin) payload.skin = body.skin;
-      Object.assign(payload, walkPush(body));
-      if (body?.vocabulary) payload.vocabulary = body.vocabulary;
-      // The village's own name and its guide's, for the map's top bar and dock.
-      if (body?.village) payload.village = body.village;
-      /*
-       * The published land (0063), or the blank one when nothing is published:
-       * the map's own seed is another village's land. The scene crosses the
-       * wire as JSON TEXT so the server stores the bytes the map wrote; the
-       * rule for each case is in configPush.ts.
-       */
-      const told = configScene(body, blankSent.current);
-      if (told) {
-        payload.scene = told.scene;
-        payload.sceneVersion = told.sceneVersion;
-        if (told.blank) blankSent.current = true;
-      }
-    } catch {
-      /* The map keeps whatever it is already wearing. */
-    } finally {
-      const g = await ground;
-      if (g) payload.ground = g;
-      try {
-        win.postMessage(payload, window.location.origin);
-      } catch {
-        /* The frame went away under the fetch: nobody is waiting. */
-      }
-    }
+    // The one push every frame gets, the home page's peek included (configPush.ts).
+    await pushVillageConfig(win, { blankSent, land });
   }, []);
 
   /**

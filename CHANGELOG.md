@@ -40,6 +40,77 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.94 (2026-11-27)
+
+### What changed for your village
+
+- **A Treasury in Govern.** The cash budget lives in Governance as its own Treasury tab, at /governance/treasury. Every member reads it; whoever holds the budget power changes it and uploads the sheet there. /budget opens the new place.
+- **A role card names the drafts waiting on it.** Whoever may edit a role sees "A change to this role is waiting:" with a link to each open draft, so nobody edits a card live while a draft of it waits.
+- **A new role gets its own id.** When a proposed role asks for an id a retired role still holds, it takes the next free one, and the rest of the draft follows it.
+- **The review page lists a draft once**, and a link carrying a code or draft id (`?find=`) opens the review page with the search made.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.93 still works.
+
+---
+
+## 1.3.93 (2026-11-27)
+
+### What changed for your village
+
+- **A weathered map for light mode.** The light mode paper setting's old-map choice, now called "Weathered map" in Admin, draws aged, mottled paper with no grid. Cards are worn pages with seven different torn edges, five stain places and three foxing spots, so neighbours never look alike, and a page looks the same on every visit. A small compass mark sits under each page's main heading. Dark mode and Admin are unchanged, and high contrast and print get the plain page.
+- **A lighter build.** The member pages ship in eight shared files instead of many small ones, so the whole build takes 100 KB less room and a first visit loads a little less.
+
+### What you must do
+
+Nothing. To use the weathered map, choose it under Admin, Game Mechanics, "Light mode's paper".
+
+### Does it touch your data
+
+No. No migration in this release, and going back to 1.3.92 still works.
+
+---
+
+## 1.3.92 (2026-11-27)
+
+### What changed for your village
+
+- **An investor gate, off until you turn it on.** With the village variable `investors.gate` on, the investor page shows only a welcome line and an interest form to anyone the village has not let in. The form asks for a name and an email (filled in from the entrance when the visitor already gave them) and offers optional questions: investor type, country, accreditation (self-reported), check size, structure, time horizon, thesis, interests, experience and how they heard. Answers land on the Form Submissions desk. Accepting a request only opens the investor page to that person: no account, no invite, no email. The server holds back every investor word, the summary, the packet, the investor FAQ and the page's own default text from anyone not let in.
+
+### What you must do
+
+Nothing. To gate your investor page, turn on `investors.gate` in Admin, Game Mechanics.
+
+### Does it touch your data
+
+One new table, `investor_access`, added on the way up (migration 0440). Nothing is removed or changed, so going back to 1.3.91 still works.
+
+---
+
+## 1.3.91 (2026-11-27)
+
+### What changed for your village
+
+- **Quests, end to end.** A member can take back work they turned in until it is approved, and the stewards are told. The profile lists every quest a member is doing and the open quests suited to their roles. A quest's steps can each ask for words, photos or documents, and a ticked step must be filled before the quest is turned in; reordering the steps clears the ticks. "Work to check" shows in Today, and in the admin inbox, only while something waits.
+- **The home page.** Every path picture fills its card. The season reads as one card: its name once, a ring of goals met, a time line to its close, and one Plan your season button. "Who comes here" is the last section.
+- **One guide in the corner.** The corner menu shows a member's own companions and one row for the village guide, in the guide's own name and picture, with Admin help inside it for an admin. Every animal picture is round. The guide's knowledge files no longer name a guide.
+- **A clean peek at the map.** The home page's map window shows the village's own map, with buildings sized to the window and no controls in it.
+
+### What you must do
+
+Nothing. An admin can tick which quest steps need a submission in the quest editor.
+
+### Does it touch your data
+
+One new column on quests and one new table for what members give per step (migration 0439), added on the way up. Nothing is removed or changed, so going back to 1.3.90 still works.
+
+---
+
 ## 1.3.90 (2026-11-27)
 
 ### What changed for your village

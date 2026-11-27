@@ -47,6 +47,8 @@ import {
   type BoardQuest, type FieldSigns,
 } from "@/lib/questBoard";
 import { useCrumbLeaf } from "@/components/nav/crumbLeaf";
+import QuestSteps, { useStepSubmissions } from "@/components/QuestSteps";
+import { anyStepNeeds, missingSteps } from "@shared/questStepNeeds";
 
 export default function QuestDetail() {
   const [, params] = useRoute("/quests/:id");
@@ -159,6 +161,10 @@ export default function QuestDetail() {
   const now = new Date();
   const Icon = iconFor(quest?.icon);
   const steps = quest?.steps ?? [];
+  const stepNeeds = steps.map((_, i) => quest?.stepNeeds?.[i] === true);
+  // What the member gave for each step (0439), read once here so the steps and the turn-in agree.
+  const stepRows = useStepSubmissions(quest?.id ?? questId, claim);
+  const owedSteps = missingSteps(stepNeeds, stepRows.rows);
   const tips = quest?.tips ?? [];
   /*
    * WHAT IT ASKS FOR, THEN WHY IT MATTERS (2026-10-23).
@@ -442,16 +448,15 @@ export default function QuestDetail() {
                   <Trans context="QuestDetail, h2"><ListChecks className="w-5 h-5 text-teal-deep" />
                   How to do this quest
                 </Trans></h2>
-                <ol className="space-y-3">
-                  {steps.map((step, i) => (
-                    <li key={i} className="flex gap-3 bg-card border border-border rounded-xl p-4">
-                      <span className="shrink-0 w-7 h-7 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-foreground/90 leading-relaxed pt-0.5">{step}</p>
-                    </li>
-                  ))}
-                </ol>
+                {/* Each step, what it needs, and what the member gave for it (0439). */}
+                <QuestSteps
+                  questId={quest.id}
+                  steps={steps}
+                  stepNeeds={stepNeeds}
+                  claim={claim}
+                  rows={stepRows.rows}
+                  reload={stepRows.reload}
+                />
               </div>
             )}
 
@@ -520,6 +525,8 @@ export default function QuestDetail() {
                 decimals={payoutDecimals}
                 pay={quest.pay}
                 isExample={!!quest.isExample}
+                owedSteps={owedSteps}
+                stepsCarryEvidence={anyStepNeeds(stepNeeds) && stepRows.rows.length > 0}
                 onChanged={refreshClaims}
               />
               <TakeCurrentPrice claim={claim} quest={quest} onTaken={refreshClaims} />

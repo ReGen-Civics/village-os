@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 296 open and 78 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 296 open and 79 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 347 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 348 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-374 dials in 41 categories. 186 carry a minimum and a maximum. By type: 147 integer, 21 decimal, 19 percentage, 55 boolean, 39 choice, 80 text, 13 longtext.
+375 dials in 41 categories. 186 carry a minimum and a maximum. By type: 147 integer, 21 decimal, 19 percentage, 56 boolean, 39 choice, 80 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 347 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 35 | 24 | 11 |
+| The village's people | 36 | 24 | 12 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 30 | 30 | 0 |
 | Events | 3 | 3 | 0 |
@@ -307,6 +307,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Keep the record of a removed photograph for | `map.photo_tombstone_days` | Village map | integer | `180` | the founder or an admin |
 | Show who holds each role to visitors | `org.public_people` | The village's people | boolean | `true` | the founder or an admin |
 | Ask visitors for their name and email before the portal | `entrance.required` | The village's people | boolean | `false` | the founder or an admin |
+| Keep the investor page for the investors you accept | `investors.gate` | The village's people | boolean | `false` | the founder or an admin |
 | Portal entrance: Turnstile site key | `entrance.turnstile_site_key` | The village's people | text | blank | the founder or an admin |
 | Portal entrance: Brevo list | `entrance.brevo_list_id` | The village's people | integer | `0` | the founder or an admin |
 | Portal entrance: who to write to about what is kept | `entrance.privacy_contact` | The village's people | text | blank | the founder or an admin |
@@ -1464,7 +1465,7 @@ Every cash budget line belongs to a circle. A line for the whole village, like a
 
 ### Light mode's paper
 
-How light mode draws the member pages. Plain is the clean Golden Hour page. Sea chart turns it into an old sea chart: aged, crumpled paper with a burnt edge, role cards on torn and scorched sheets, and Garamond headings. Dark mode and Admin stay as they are.
+How light mode draws the member pages. Plain is the clean Golden Hour page. Weathered map turns it into an old map: aged, crumpled and foxed paper with a burnt edge, cards on weathered pages each torn its own way, and Garamond headings. Dark mode and Admin stay as they are.
 
 | Fact | Value |
 | --- | --- |
@@ -1479,11 +1480,11 @@ How light mode draws the member pages. Plain is the clean Golden Hour page. Sea 
 What it may be set to:
 
 - `plain` Plain. The clean Golden Hour page.
-- `sea-chart` Sea chart. Aged paper, torn cards and Garamond headings.
+- `sea-chart` Weathered map. Weathered paper, pages torn each their own way, and Garamond headings.
 
 ### Light or dark on a first visit
 
-Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Sea chart shows only in light mode.
+Which mode a person sees the first time they arrive, before they have chosen one. Anyone can switch in the header, and their own choice is kept from then on. Weathered map shows only in light mode.
 
 | Fact | Value |
 | --- | --- |
@@ -1497,7 +1498,7 @@ Which mode a person sees the first time they arrive, before they have chosen one
 
 What it may be set to:
 
-- `light` Light. The day page, and Sea chart where the village chose it.
+- `light` Light. The day page, and Weathered map where the village chose it.
 - `dark` Dark. The night page.
 
 ### Fill the phone's bottom bar from where members go
@@ -4031,7 +4032,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-35 dials. 24 for the whole village, 11 for the founder or an admin.
+36 dials. 24 for the whole village, 12 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -4054,6 +4055,20 @@ On, a visitor who is not signed in meets one calm screen before the roles, the g
 | Fact | Value |
 | --- | --- |
 | Key | `entrance.required` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Keep the investor page for the investors you accept
+
+On, the investor page shows a reader only a short welcome and an interest form: a name and an email, and optional questions about how they invest. Its summary, terms, questions and packet stay hidden, and the server refuses them too. Each form arrives in Admin, Form Submissions, as Investor Interest. Accepting one opens the whole page for that person, by their account or by the address they confirmed at the entrance. Declining keeps it closed. Off, the investor page is open to everyone.
+
+| Fact | Value |
+| --- | --- |
+| Key | `investors.gate` |
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
