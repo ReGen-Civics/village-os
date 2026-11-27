@@ -1,0 +1,274 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role measures, how to read"
+msgid "No data means nothing has been recorded yet. 0 means none."
+msgstr "Sin datos significa que todavía no hay nada registrado. 0 significa ninguno."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role measures, nothing recorded"
+msgid "no data"
+msgstr "sin datos"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role measures, a median shorter than an hour"
+msgid "under an hour"
+msgstr "menos de una hora"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role measures, filter to one circle"
+msgid "Show only this circle"
+msgstr "Mostrar solo este círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "circle page, door to the role progress page"
+msgid "How this circle's roles are going"
+msgstr "Cómo van los roles de este círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "HomeBase, door to the role progress page"
+msgid "See how roles are going"
+msgstr "Ver cómo van los roles"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, when it last read"
+msgid "Updated {updated}. It reads again every minute while open."
+msgstr "Actualizado {updated}. Se vuelve a leer cada minuto mientras esté abierto."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, signed out"
+msgid "Sign in to see how roles are going."
+msgstr "Inicie sesión para ver cómo van los roles."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, refused"
+msgid "This page is for administrators and circle leads."
+msgstr "Esta página es para las personas administradoras y quienes lideran círculos."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, filters"
+msgid "Season and circle"
+msgstr "Temporada y círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, circle filter"
+msgid "Circle"
+msgstr "Círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, circle filter"
+msgid "Every circle"
+msgstr "Todos los círculos"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, circle filter"
+msgid "Every circle you lead"
+msgstr "Todos los círculos que usted lidera"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, clear the circle filter"
+msgid "Show every circle"
+msgstr "Mostrar todos los círculos"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, clear the circle filter"
+msgid "Show every circle you lead"
+msgstr "Mostrar todos los círculos que usted lidera"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, eyebrow"
+msgid "Circle by circle"
+msgstr "Círculo por círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the circles section"
+msgid "Each circle"
+msgstr "Cada círculo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a stage"
+msgid "Our review"
+msgstr "Nuestra revisión"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a stage"
+msgid "References and proposal"
+msgstr "Referencias y propuesta"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a stage"
+msgid "Final conversation"
+msgstr "Conversación final"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a stage"
+msgid "Agreement"
+msgstr "Acuerdo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, eyebrow"
+msgid "Today"
+msgstr "Hoy"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, applications at each stage today"
+msgid "Right now"
+msgstr "Ahora mismo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, how long the oldest at a stage has waited"
+msgid "The oldest has waited {waited}"
+msgstr "La más antigua ha esperado {waited}"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, door to the review queue"
+msgid "See them in Review"
+msgstr "Verlas en Revisión"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, an empty stage"
+msgid "Nobody waiting here"
+msgstr "Nadie espera aquí"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the measures section"
+msgid "Key measures"
+msgstr "Medidas clave"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a group of measures"
+msgid "Moving through"
+msgstr "Avanzando"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Applications"
+msgstr "Postulaciones"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Conversations booked"
+msgstr "Conversaciones reservadas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "References followed up"
+msgstr "Referencias contactadas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Final conversations adopted"
+msgstr "Conversaciones finales adoptadas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Agreements countered first"
+msgstr "Acuerdos con contraoferta previa"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a group of measures"
+msgid "How applications end"
+msgstr "Cómo terminan las postulaciones"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Withdrawn"
+msgstr "Retiradas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Declined"
+msgstr "Rechazadas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Closed after 90 quiet days"
+msgstr "Cerradas tras 90 días sin actividad"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a group of measures"
+msgid "After adoption"
+msgstr "Después de la adopción"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Adoption to start"
+msgstr "De la adopción al inicio"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Still in the role at day 30"
+msgstr "Sigue en el rol al día 30"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, eyebrow"
+msgid "Median time at each stage"
+msgstr "Tiempo mediano en cada etapa"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the stage timing section"
+msgid "Time at each stage"
+msgstr "Tiempo en cada etapa"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the stage chain"
+msgid "From review to agreement"
+msgstr "De la revisión al acuerdo"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, where you are: roles and the season"
+msgid "Roles · {here}"
+msgstr "Roles · {here}"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, where you are"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, who sees it"
+msgid "Administrators see every circle; each lead sees their own."
+msgstr "Las personas administradoras ven cada círculo; cada líder ve el suyo."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, signed out"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, refused: a door to the roles"
+msgid "See the roles"
+msgstr "Ver los roles"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a circle the reader does not lead was asked for"
+msgid "You can see the circles you lead, so these are yours."
+msgstr "Usted puede ver los círculos que lidera, así que estos son los suyos."
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, clear a circle the reader does not lead"
+msgid "Show the circles you lead"
+msgstr "Mostrar los círculos que usted lidera"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the stage holding the longest wait"
+msgid "Longest wait"
+msgstr "Espera más larga"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, a measure"
+msgid "Held and written up"
+msgstr "Hechas y escritas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, the phone tabs"
+msgid "Which measures"
+msgstr "Qué medidas"
+
+# needs-native-review: how roles are going, its own page, 27 Nov 2026
+msgctxt "role progress, an unknown circle was asked for"
+msgid "No circle by that name."
+msgstr "No hay ningún círculo con ese nombre."

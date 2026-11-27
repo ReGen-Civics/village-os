@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.3 (2026-11-27)
+
+### What changed for your village
+
+- **How roles are going, its own page.** Admins and circle leads open `/admin/role-progress` from a new button on admin Today, from each circle's page, or from the menu. It tracks role applications live: how many sit at each stage right now and how long the oldest has waited, the median time at each stage, conversations booked, and the measures from before. Admins see every circle and a circle lead sees their own. Counts only, no names. It no longer sits at the end of Circles, and the old addresses take you to the new page.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. The page reads stamps the village already keeps, so going back to 1.4.2 is safe.
+
+---
+
 ## 1.4.2 (2026-11-27)
 
 ### What changed for your village

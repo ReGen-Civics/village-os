@@ -13,7 +13,7 @@ The rule exists as three things that agree with each other:
 The joining journey is on the list today: `/steward`, `/roles`, `/roles/select`, `/propose-a-role`,
 the member door of `/propose`, `/love-letter`, `/application-status` and `/role-applications/:id`, and the onboarding pages: the season page `/season`, which took in `/aligned` (and the
 confidentiality and membership align cards), `/register`, `/set-password`, `/verify-email`, the onboarding path on the
-profile, one change request (`/governance/decisions/changes/:id`), how roles are going (the panel on `/circles` and a circle's page) and `/quests`, the membership align step inside the proposal form
+profile, one change request (`/governance/decisions/changes/:id`), how roles are going (`/admin/role-progress`, and its door on a circle's page) and `/quests`, the membership align step inside the proposal form
 (`MembershipAtApplication`), `RoleCardBridge`, the signed-out card (`SignInDoors` in `ModuleGate`, whose two doors now
 take `BTN_PRIMARY` and `BTN_SECONDARY` on every page that shows them), Admin's onboarding path editor,
 `/request-membership`, the village calendar at `/events` with its moon spiral, strip of days and turnings,
