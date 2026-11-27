@@ -146,15 +146,15 @@ describe("the Launch Plan entry in the header", () => {
 /*
  * /governance was renamed "How we work together" on 2026-09-28 and kept its
  * route (now /governance/how), so every link to it, header and footer, must carry
- * the new name and still point at the old address. Since 27 Nov 2026 it sits with
- * Governance's other views, in the "More in Governance" folder.
+ * the new name and still point at the old address. Since round 2 (27 Nov 2026) it
+ * sits in Govern's "How we work" folder.
  */
 describe("the How we work together entry", () => {
   beforeEach(() => {
     authMock.mockReset();
   });
 
-  /** Render the shell as `who`, then open Governance and its "More in Governance" folder. `null` is a visitor. */
+  /** Render the shell as `who`, then open Govern and its "How we work" folder. `null` is a visitor. */
   function openAbout(who: { id: string; name: string; role?: string } | null) {
     authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
     render(
@@ -164,8 +164,8 @@ describe("the How we work together entry", () => {
         </Layout>
       </Router>,
     );
-    fireEvent.click(screen.getAllByRole("button", { name: /^Governance/i })[0]!);
-    fireEvent.click(screen.getAllByRole("button", { name: /More in Governance/i })[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Govern/i })[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: /^How we work$/i })[0]!);
   }
 
   for (const [who, user] of [
@@ -175,7 +175,7 @@ describe("the How we work together entry", () => {
     it(`reads "How we work together" for ${who}, in the menu and the footer, and opens /governance/how`, () => {
       openAbout(user);
       const links = linksTo("/governance/how");
-      // One in the Governance menu, one in the footer.
+      // One in the Govern menu, one in the footer.
       expect(links.length).toBeGreaterThanOrEqual(2);
       for (const a of links) expect(a.textContent?.trim()).toBe("How we work together");
       // Nothing is still called Governance and pointing there.
@@ -215,15 +215,17 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     expect(addedByOpening(/Village/i, ["/quests"])["/quests"]).toBe(1);
   });
 
+  // Circles & Roles is a folder of Govern since round 2 (the lead: "circles and roles will also open up to have roles
+  // and the circle pages").
   it("gives the plain Circles page back its own entry on a village with no map", () => {
     // The mocked village runs no modules, so the map view is hidden and the plain page must still have a door.
-    const added = addedByOpening(/^Village/i, ["/circles", "/map/circles"]);
-    expect(added).toEqual({ "/circles": 1, "/map/circles": 0 });
+    const added = addedByOpening(/^Govern/i, ["/circles", "/map/circles", "/roles"], /Circles & Roles/);
+    expect(added).toEqual({ "/circles": 1, "/map/circles": 0, "/roles": 1 });
   });
 
   it("folds Circles into the map view where the map runs", () => {
     running.modules = [{ id: "map", lifecycle: "public" }];
-    const added = addedByOpening(/^Village/i, ["/circles", "/map/circles"]);
+    const added = addedByOpening(/^Govern/i, ["/circles", "/map/circles"], /Circles & Roles/);
     expect(added).toEqual({ "/circles": 0, "/map/circles": 1 });
   });
 
@@ -234,16 +236,18 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     expect(addedByOpening(/^Join/i, ["/roles"])["/roles"]).toBe(1);
   });
 
-  it("offers Your work and the powers page in Governance's More folder, and the Treasury on its first level", () => {
-    expect(addedByOpening(/^Governance/i, ["/governance/work", "/powers", "/governance/treasury"])).toEqual({ "/governance/work": 0, "/powers": 0, "/governance/treasury": 1 });
+  it("offers the Treasury in Govern's Decide folder, and the powers page under Circles & Roles", () => {
+    expect(addedByOpening(/^Govern/i, ["/powers", "/governance/treasury"])).toEqual({ "/powers": 0, "/governance/treasury": 0 });
     cleanup();
-    expect(addedByOpening(/^Governance/i, ["/governance/work", "/powers"], /More in Governance/i)).toEqual({ "/governance/work": 1, "/powers": 1 });
+    expect(addedByOpening(/^Govern/i, ["/governance/treasury"], /^Decide$/)).toEqual({ "/governance/treasury": 1 });
+    cleanup();
+    expect(addedByOpening(/^Govern/i, ["/powers"], /Circles & Roles/)).toEqual({ "/powers": 1 });
   });
 });
 
 /*
- * The Module Library: last of all, under About, for every reader (the lead, 27 Nov 2026: "module library at the
- * bottom"). It left the member's bar so the bar keeps five entries.
+ * The Module Library: last of all, for every reader (the lead, 27 Nov 2026: "module library at the bottom"). Since
+ * round 2 it is the last link of Govern's last folder, How we work, and Govern is the last group for everyone.
  */
 describe("the Module Library at the bottom", () => {
   beforeEach(() => {
@@ -268,12 +272,15 @@ describe("the Module Library at the bottom", () => {
     ["a signed-in applicant", { id: "u-ana", name: "Ana Applicant", role: "member" }],
     ["a member", { id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true }],
   ] as const) {
-    it(`keeps it off the bar for ${who}, and offers it as About's last entry`, () => {
+    it(`keeps it off the bar for ${who}, and offers it as the last link of the last group`, () => {
       shell(user);
       expect(linksTo("/modules").length).toBe(0);
-      fireEvent.click(screen.getAllByRole("button", { name: /^About/i })[0]!);
-      const about = document.querySelector("[data-nav-dropdown]") as HTMLElement;
-      const links = Array.from(about.querySelectorAll(":scope > a, :scope > div > a, :scope > [data-nav-folder] > button"));
+      const groups = Array.from(document.querySelectorAll('[data-wayfinding="menu"] > div > button[aria-controls^="nav-menu-"]'));
+      expect(groups.at(-1)?.textContent?.trim()).toBe("Govern");
+      fireEvent.click(groups.at(-1)!);
+      fireEvent.click(screen.getAllByRole("button", { name: /^How we work$/i })[0]!);
+      const govern = document.querySelector("[data-nav-dropdown]") as HTMLElement;
+      const links = Array.from(govern.querySelectorAll("a[href]"));
       expect(links.at(-1)?.getAttribute("href")).toBe("/modules");
     });
   }

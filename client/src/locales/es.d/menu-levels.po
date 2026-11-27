@@ -23,11 +23,6 @@ msgctxt "site menu"
 msgid "Propose a quest"
 msgstr "Proponga una misión"
 
-# needs-native-review: the menu by membership, a member's own settings, 27 Nov 2026
-msgctxt "site menu: a member's own settings"
-msgid "Settings"
-msgstr "Configuración"
-
 # needs-native-review: the menu by membership, the admin's review page, 27 Nov 2026
 msgctxt "site menu: the admin's review page"
 msgid "Review"
@@ -37,11 +32,6 @@ msgstr "Revisión"
 msgctxt "site menu: a folder"
 msgid "Choose your path"
 msgstr "Elija su camino"
-
-# needs-native-review: the menu by membership, a folder, 27 Nov 2026
-msgctxt "site menu: a folder"
-msgid "Come and see"
-msgstr "Venga a conocernos"
 
 # needs-native-review: the menu by membership, a folder, 27 Nov 2026
 msgctxt "site menu: a folder"
@@ -60,11 +50,6 @@ msgstr "Lugares y hogares"
 
 # needs-native-review: the menu by membership, a folder, 27 Nov 2026
 msgctxt "site menu: a folder"
-msgid "Shared things"
-msgstr "Lo que compartimos"
-
-# needs-native-review: the menu by membership, a folder, 27 Nov 2026
-msgctxt "site menu: a folder"
 msgid "Gatherings"
 msgstr "Encuentros"
 
@@ -77,11 +62,6 @@ msgstr "Bienvenida"
 msgctxt "site menu: a folder"
 msgid "This season"
 msgstr "Esta temporada"
-
-# needs-native-review: the menu by membership, a folder, 27 Nov 2026
-msgctxt "site menu: a folder"
-msgid "More in Governance"
-msgstr "Más en Gobernanza"
 
 # needs-native-review: the menu by membership, a folder, 27 Nov 2026
 msgctxt "site menu: a folder"
@@ -107,3 +87,68 @@ msgstr "Llevar la aldea"
 msgctxt "Layout, Link"
 msgid "Village Library"
 msgstr "Biblioteca de la aldea"
+
+# needs-native-review: the menu by membership, round 2, the group for how the village is run, 27 Nov 2026
+msgctxt "site menu: the group for how the village is run"
+msgid "Govern"
+msgstr "Gobernar"
+
+# needs-native-review: round 2, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Maps"
+msgstr "Mapas"
+
+# needs-native-review: round 2, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Decide"
+msgstr "Decidir"
+
+# needs-native-review: round 2, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Conversations"
+msgstr "Conversaciones"
+
+# needs-native-review: round 2, an entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "Village Health"
+msgstr "Salud de la aldea"
+
+# needs-native-review: round 2, an entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "Village Tools"
+msgstr "Herramientas de la aldea"
+
+# needs-native-review: round 2, an entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "How roles are going"
+msgstr "Cómo van los roles"
+
+# needs-native-review: round 2, the treasurer's desk, 27 Nov 2026
+msgctxt "site menu: the treasurer's mint and pay queues"
+msgid "Treasury desk"
+msgstr "Mesa de tesorería"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+msgctxt "ProfileTabs: the member's own tab"
+msgid "Today"
+msgstr "Hoy"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+msgctxt "ProfileTabs: the member's own tab, their quests, tasks and asks"
+msgid "My work"
+msgstr "Mi trabajo"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+msgctxt "ProfileTabs: the member's own tab"
+msgid "My roles"
+msgstr "Mis roles"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+msgctxt "ProfileTabs: the member's own tab, what they hold"
+msgid "My treasury"
+msgstr "Mi tesorería"
+
+# needs-native-review: the member portal's tabs, round 2, 27 Nov 2026
+msgctxt "ProfileTabs: the member's own tab, about them"
+msgid "Sheet"
+msgstr "Ficha"

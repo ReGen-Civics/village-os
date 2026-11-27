@@ -61,18 +61,54 @@ describe("the menu by membership", () => {
       it("finds the Module Library as the very last entry of the last group", () => {
         const bar = barFor(a);
         const last = bar[bar.length - 1]!;
-        expect(last.group.label).toBe("About");
+        expect(last.group.label).toBe("Govern");
         expect(last.links.at(-1)?.href).toBe("/modules");
-        expect(navRows(last.links).at(-1)).toMatchObject({ kind: "link", link: { href: "/modules" } });
+        // The last row is the last folder (How we work), and the library is its last link.
+        const row = navRows(last.links).at(-1)!;
+        expect(row.kind === "folder" ? row.links.at(-1)?.href : row.link.href).toBe("/modules");
       });
 
-      it(a.newcomer ? "meets Join first" : "meets the village first, and Join after Governance", () => {
+      it(a.newcomer ? "meets Join first" : "meets the village first, and Join before Govern", () => {
         const labels = barFor(a).map((g) => g.group.label);
         if (a.newcomer) expect(labels[0]).toBe("Join");
-        else expect(labels).toEqual(["Village", "Community", "Governance", "Join", "About"]);
+        else expect(labels).toEqual(["Village", "Community", "Join", "Govern"]);
+        if (a.newcomer) expect(labels).toEqual(["Join", "Village", "Community", "Govern"]);
       });
     });
   }
+});
+
+describe("what a stranger is shown (the lead, round 2)", () => {
+  // "we don't need to show a visitor the wallet, the health of the village, or the library", and "Signed out visitor
+  // doesn't need to see game mechanics. Only a member needs to see that." The same for the other member tools.
+  const visitor = AUDIENCES[0]!;
+  const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
+
+  it("offers no member tool to a visitor", () => {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/role-measures"]) {
+      expect(offered(), h).not.toContain(h);
+    }
+  });
+
+  it("offers a visitor what the village is, how to come and see, how to join, its story and team, and the Love Letter", () => {
+    for (const h of ["/map", "/quests", "/housing", "/visit", "/roles", "/investor", "/team", "/love-letter", "/governance", "/powers", "/modules"]) {
+      expect(offered(), h).toContain(h);
+    }
+  });
+
+  it("puts the Love Letter in Community, and Housing, Stay and Good Neighbor in Village's Places and homes", () => {
+    const at = (href: string) => NAV.filter(isGroup).flatMap((g) => g.items.filter((l) => l.href === href).map((l) => `${g.label}/${l.sub ?? ""}`));
+    expect(at("/love-letter")).toEqual(["Community/Our story"]);
+    expect(at("/housing")).toEqual(["Village/Places and homes"]);
+    expect(at("/stay")).toEqual(["Village/Places and homes"]);
+    expect(at("/good-neighbor")).toEqual(["Village/Places and homes"]);
+    expect(at("/library")).toEqual(["Village/"]);
+    expect(at("/village-health")).toEqual(["Village/"]);
+    expect(at("/quests").sort()).toEqual(["Govern/This season", "Village/"]);
+    // No catch-all folder, and the Wallet is the member's own (the account menu).
+    expect(NAV.filter(isGroup).flatMap((g) => g.items).some((l) => l.sub === "Shared things")).toBe(false);
+    expect(ACCOUNT_MENU.find((l) => l.href === "/wallet")?.sub).toBe("Your things");
+  });
 });
 
 describe("the folders", () => {
@@ -115,8 +151,21 @@ describe("every entry has a page, and Your First Walk is gone", () => {
     expect(app).toMatch(/<Route path="\/first-walk">\{\(\) => <Redirect to="\/" replace \/>\}<\/Route>/);
   });
 
-  it("lists each page once, so nobody meets the same page in two places", () => {
+  /**
+   * The named exceptions (the lead, round 2): Quests is something you do in the village and the work the season is
+   * made of ("Quests could be in both village and in governance"), and the roles are both the way in (Join, Open
+   * Roles) and how the village is organised (Govern, Circles & Roles).
+   */
+  const IN_TWO_PLACES = ["/quests", "/roles"];
+
+  it("lists each page once, so nobody meets the same page in two places, but for the named exceptions", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href);
-    expect(hrefs.filter((h, i) => hrefs.indexOf(h) !== i)).toEqual([]);
+    const twice = hrefs.filter((h, i) => hrefs.indexOf(h) !== i);
+    expect(twice.sort()).toEqual([...IN_TWO_PLACES].sort());
+    // Each exception sits in two different groups, never twice in one.
+    for (const h of IN_TWO_PLACES) {
+      const groups = NAV.filter(isGroup).filter((g) => g.items.some((l) => l.href === h)).map((g) => g.label);
+      expect(new Set(groups).size, h).toBe(2);
+    }
   });
 });
