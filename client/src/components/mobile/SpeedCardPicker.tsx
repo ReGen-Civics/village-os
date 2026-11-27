@@ -2,8 +2,9 @@
  * ADD A CARD: the picker a "+" slot opens (SpeedCards.tsx), drawn as an inventory. A search field over every page
  * the menu offers this member (it forgives a typo a word), the pages this device opens most as three tiles at the
  * top, then every page grouped the way the menu groups them (Village, Community, Govern, Join, About, then Yours).
- * Every row has a glyph: the page's own, or its group's where the page has none. Tap one and it fills the slot. A
- * page already on the cards says so and cannot be added twice.
+ * Every row has a glyph, the same one its card wears (lib/speedCards/glyphs.ts): the page's own, or a neutral one for
+ * its group, never another page's. Tap one and it fills the slot. A page already on the cards says so and cannot be
+ * added twice.
  *
  * Loaded only when a "+" is tapped, so the sheet itself stays small.
  */
@@ -12,7 +13,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { Search, X } from "lucide-react";
 import MenuIcon from "@/components/nav/MenuIcon";
 import { EYEBROW } from "@/components/journey/look";
-import { ROUTE_ICONS, useRouteIcons, type RouteIcon } from "@/config/routeIcons";
+import { useRouteIcons } from "@/config/routeIcons";
+import { fallbackGlyph } from "@/lib/speedCards/glyphs";
 import { searchCards, type Registry, type SpeedCard } from "@/lib/speedCards/registry";
 
 /** How many of the pages this device opens most the picker offers first. */
@@ -26,8 +28,11 @@ export interface SpeedCardPickerProps {
   onClose: () => void;
 }
 
-/** A card's own glyph: its page's icon (config/routeIcons.ts), else the one its menu entry carries. */
-const ownGlyph = (c: SpeedCard): RouteIcon | undefined => (c.href ? ROUTE_ICONS[c.href] : undefined) ?? c.icon;
+/**
+ * A tile on paper. The light sea-chart skin dresses `.bg-muted.border.rounded-xl` and skips buttons (seaChart.css), so
+ * the tile is a skinned box with a transparent button filling it, as the edit cards are (QA round 2).
+ */
+const PAPER = "relative rounded-xl border border-border bg-muted";
 
 export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCardPickerProps) {
   const { t } = useLingui();
@@ -50,9 +55,6 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Each group's glyph: the first of its pages that has one. A page with none of its own wears it.
-  const groupGlyph = new Map<string, RouteIcon | undefined>(reg.groups.map((g) => [g.label, g.cards.map(ownGlyph).find(Boolean)]));
-  const glyphOf = (c: SpeedCard): RouteIcon | undefined => ownGlyph(c) ?? groupGlyph.get(c.group);
 
   const found = query.trim() ? searchCards(reg, query) : null;
   const groups = found ? reg.groups.map((g) => ({ label: g.label, cards: found.filter((c) => c.group === g.label) })).filter((g) => g.cards.length) : reg.groups;
@@ -79,7 +81,7 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
       >
         <div className="flex items-start justify-between gap-2 px-4 pt-3">
           <div>
-            <p className={EYEBROW}><Trans context="the speed-card picker: the kicker over its heading">Your quick cards</Trans></p>
+            <p className={`${EYEBROW} font-display`}><Trans context="the speed-card picker: the kicker over its heading">Your quick cards</Trans></p>
             <h2 id="speed-pick-title" className="font-display text-xl font-bold text-card-foreground">
               <Trans context="the speed-card picker: its heading">Add a card</Trans>
             </h2>
@@ -108,15 +110,15 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
                 {tiles.map((c) => {
                   const on = has.has(c.id);
                   return (
-                    <li key={c.id}>
+                    <li key={c.id} data-speed-paper="" className={`${PAPER} ${on ? "opacity-60" : ""}`}>
                       <button
                         type="button"
                         disabled={on}
                         onClick={() => onPick(c.id)}
                         data-speed-pick={c.id}
-                        className="flex min-h-[4.5rem] w-full flex-col items-center justify-center gap-1 rounded-xl border border-border bg-muted px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:border-notice focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:opacity-60 disabled:hover:border-border"
+                        className="flex min-h-[4.5rem] w-full flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:text-notice focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:hover:text-foreground"
                       >
-                        {c.href ? <MenuIcon href={c.href} fallback={glyphOf(c)} className="size-6 shrink-0" /> : <Glyph icon={glyphOf(c)} className="size-6 shrink-0" />}
+                        <Glyph card={c} className="size-6 shrink-0" />
                         <span className="leading-tight">{c.label}</span>
                         {on ? <span className="text-xs font-normal text-muted-foreground">{onCards}</span> : null}
                       </button>
@@ -147,7 +149,7 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
                           className="flex min-h-11 w-full items-center gap-3 py-2 text-left text-sm text-foreground hover:text-notice focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:text-muted-foreground disabled:hover:text-muted-foreground"
                         >
                           <span aria-hidden="true" className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
-                            {c.href ? <MenuIcon href={c.href} fallback={glyphOf(c)} /> : <Glyph icon={glyphOf(c)} className="size-5 shrink-0" />}
+                            <Glyph card={c} className="size-5 shrink-0" />
                           </span>
                           <span className="flex min-w-0 flex-1 flex-col">
                             <span className="font-medium">{c.label}</span>
@@ -168,6 +170,8 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
   );
 }
 
-function Glyph({ icon: Icon, className }: { icon?: RouteIcon; className: string }) {
-  return Icon ? <Icon className={className} /> : <span aria-hidden="true" className={className} />;
+/** The glyph the card wears on the sheet: the page's own icon once the set has loaded, else its fallback. */
+function Glyph({ card, className }: { card: SpeedCard; className: string }) {
+  const Icon = fallbackGlyph(card);
+  return card.href ? <MenuIcon href={card.href} fallback={Icon} className={className} /> : <Icon aria-hidden="true" className={className} />;
 }

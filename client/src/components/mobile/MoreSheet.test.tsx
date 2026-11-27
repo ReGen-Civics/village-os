@@ -94,8 +94,8 @@ describe("the More sheet", () => {
     session.pay = { tokens: [{ balance: 0 }] };
     session.most = "/events";
     await draw();
-    expect(screen.getAllByRole("button", { name: "Add a card" })).toHaveLength(2);
-    fireEvent.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    expect(screen.getAllByRole("button", { name: /^Add a card, place / })).toHaveLength(2);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[0]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     await act(async () => {
       await new Promise((done) => setTimeout(done, 0));

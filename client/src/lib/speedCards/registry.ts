@@ -14,7 +14,7 @@
  */
 import type { ComponentType } from "react";
 import type { NavEntry, NavGroup, NavLink } from "@/config/nav";
-import { isGroup } from "@/config/nav";
+import { isGroup, NAV } from "@/config/nav";
 import { SPEED_CARD_SLOTS, type SpeedCardSlots } from "@shared/speedCards";
 import { TASK_BOARD_PATH } from "@shared/taskMenu";
 
@@ -33,8 +33,10 @@ export interface SpeedCard {
   action?: (close: () => void) => void;
   /** A count beside the label, read for this member alone and hidden at zero (config/nav.ts, `count`). */
   count?: "tasks" | "messages";
-  /** The picker's group: the menu's own group name, or "Yours". */
+  /** The picker's group: the menu's own group name as the reader sees it, or "Yours". */
   group: string;
+  /** The same group by the menu's own untranslated name ("Village", "Govern", "Yours"), for its glyph (glyphs.ts). */
+  groupKey: string;
   /** The folder it sits in inside its group, for the picker's second line (config/navNest.ts). */
   sub?: string;
 }
@@ -45,7 +47,7 @@ export interface SpeedCard {
  * Absent means always. Answer null while it is not known yet: the sheet holds the card's default slot quietly
  * until the answer comes, so a card never flashes "+" and then fills.
  */
-export interface SpeedCardDef extends Omit<SpeedCard, "group"> {
+export interface SpeedCardDef extends Omit<SpeedCard, "group" | "groupKey"> {
   /** The picker group it sits in. Absent: "Yours". */
   group?: string;
   useShown?: () => boolean | null;
@@ -83,14 +85,24 @@ export interface RegistryInput {
   short?: Readonly<Record<string, string>>;
 }
 
+/**
+ * A group's own name in config/nav.ts, whatever the reader sees it called: Layout hands the sheet each group with its
+ * label translated or renamed by the village and its `items` untouched, so the items find the group in NAV.
+ */
+export function groupKeyOf(group: NavGroup): string {
+  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label));
+  return own && isGroup(own) ? own.label : group.label;
+}
+
 export function buildRegistry({ entries, itemsOf, account, registered, words, short }: RegistryInput): Registry {
-  const fromLink = (l: NavLink, group: string): SpeedCard => ({
+  const fromLink = (l: NavLink, group: string, groupKey: string): SpeedCard => ({
     id: l.href,
     label: l.label,
     href: l.href,
     icon: l.icon,
     count: l.count,
     group,
+    groupKey,
     sub: l.sub ? (words.sub ? words.sub(l.sub) : l.sub) : undefined,
   });
   const byId = new Map<string, SpeedCard>();
@@ -104,13 +116,15 @@ export function buildRegistry({ entries, itemsOf, account, registered, words, sh
     groups.set(card.group, list);
   };
   for (const e of entries) {
-    if (isGroup(e)) for (const l of itemsOf(e)) put(fromLink(l, e.label));
-    else put(fromLink(e, words.more));
+    if (isGroup(e)) {
+      const key = groupKeyOf(e);
+      for (const l of itemsOf(e)) put(fromLink(l, e.label, key));
+    } else put(fromLink(e, words.more, "More"));
   }
-  for (const a of account) put({ ...fromLink(a, words.yours), label: short?.[a.href] ?? a.label });
+  for (const a of account) put({ ...fromLink(a, words.yours, "Yours"), label: short?.[a.href] ?? a.label });
   for (const d of registered) {
     const { useShown: _shown, defaultAfter: _after, ...card } = d;
-    put({ ...card, group: d.group ?? words.yours });
+    put({ ...card, group: d.group ?? words.yours, groupKey: "Yours" });
   }
   // Yours last, whatever order the registered cards arrived in.
   const order = Array.from(groups.keys()).filter((g) => g !== words.yours);
@@ -180,13 +194,17 @@ export function firstOpen(slots: SpeedCardSlots, reg: Registry): number {
   return resolveSlots(slots, reg).findIndex((c) => c === null);
 }
 
-/** True when `a` becomes `b` by one letter added, dropped or changed (a typo), or they are equal. */
+/** True when `a` becomes `b` by one letter added, dropped or changed, or two neighbours swapped (a typo), or they are equal. */
 function withinOne(a: string, b: string): boolean {
   if (a === b) return true;
   if (Math.abs(a.length - b.length) > 1) return false;
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
-  if (a.length === b.length) return a.slice(i + 1) === b.slice(i + 1);
+  if (a.length === b.length) {
+    // One letter changed, or two neighbours swapped ("qeusts" for "quests"): both count as one typo.
+    if (a.slice(i + 1) === b.slice(i + 1)) return true;
+    return a[i] === b[i + 1] && a[i + 1] === b[i] && a.slice(i + 2) === b.slice(i + 2);
+  }
   return a.length > b.length ? a.slice(i + 1) === b.slice(i) : a.slice(i) === b.slice(i + 1);
 }
 

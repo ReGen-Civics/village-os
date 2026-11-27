@@ -65,8 +65,8 @@ msgstr "Sus tarjetas"
 
 # needs-native-review: the speed cards, an open slot, 27 Nov 2026
 msgctxt "the phone's More sheet: an open slot, read aloud"
-msgid "Add a card"
-msgstr "Añadir una tarjeta"
+msgid "Add a card, place {place} of {total}"
+msgstr "Añadir una tarjeta, lugar {place} de {total}"
 
 # needs-native-review: the speed cards, an open slot, 27 Nov 2026
 msgctxt "the phone's More sheet: an open slot's word"
