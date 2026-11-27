@@ -353,32 +353,39 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
   });
 
   describe("the final conversation and the gathered view", () => {
-    it("is one more conversation, held by the final-call role, opening in order; the final-call role reads every scorecard", async () => {
+    it("is one more conversation, held by the final-call role, opened only by the team's move; the final-call role reads every scorecard", async () => {
       const { id } = await withReferences("final@example.test");
       expect((await call("POST", `${app(id)}/final-conversation`, {}, OUTSIDER.id)).status).toBe(403);
-      const added = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
-      expect(added.status, JSON.stringify(added.body)).toBe(200);
-      expect(added.body.opened).toBe(false);
-      expect((await interviews(id)).map((i: any) => [i.interviewer_role_id, Number(i.is_final), i.state])).toEqual([
-        [roleA, 0, "open"],
-        [roleFinal, 1, "waiting"],
-      ]);
-      expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(409);
+      // One conversation open at a time: the Channel Role's is still open, so the move waits (QA round 1).
+      const early = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
+      expect([early.status, early.body.error]).toEqual([409, "talks_first"]);
+      expect((await interviews(id)).map((i: any) => Number(i.is_final))).toEqual([0]);
 
-      // The Channel Role writes up its conversation; the final one opens and its holder is asked.
+      // The Channel Role writes up its conversation; nothing opens by itself.
       const ivs = await interviews(id);
       const card = await call("GET", `${app(id)}/scorecards`, undefined, IA.id);
       const criteria = card.body.scorecards.criteria as Array<{ id: string }>;
       const scored = await call("POST", `${app(id)}/interviews/${ivs[0].id}/score`, { entries: criteria.map((c) => ({ criterionId: c.id, level: "solid", evidence: "Heard it." })), gut: { answer: "yes", note: "" } }, IA.id);
       expect(scored.status, JSON.stringify(scored.body)).toBe(200);
-      expect((await interviews(id))[1].state).toBe("open");
+      expect((await interviews(id)).map((i: any) => Number(i.is_final))).toEqual([0]);
+
+      // The team moves it to the final conversation: it opens at once and its holder is asked.
+      const added = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
+      expect(added.status, JSON.stringify(added.body)).toBe(200);
+      expect(added.body.opened).toBe(true);
+      expect((await interviews(id)).map((i: any) => [i.interviewer_role_id, Number(i.is_final), i.state])).toEqual([
+        [roleA, 0, "scored"],
+        [roleFinal, 1, "open"],
+      ]);
+      expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(409);
       expect(state.notices.some((n) => n.type === "application_interview_turn" && n.userId === FINAL.id)).toBe(true);
+      const ivsAfter = await interviews(id);
 
       // Gathered: the final-call role reads the scorecard without holding the power to place people in roles, and has not interviewed yet.
       const w = await walk(id, FINAL.id);
       expect(w.body.walkthrough.scorecards.mayRead).toBe(false);
       // CONTROL for the line above: the anchoring rule. The final-call role IS an interviewer now, so it reads after its own card.
-      const finalCard = await call("POST", `${app(id)}/interviews/${ivs[1].id}/score`, { entries: criteria.map((c) => ({ criterionId: c.id, level: "strong", evidence: "Clear." })), gut: { answer: "yes", note: "" } }, FINAL.id);
+      const finalCard = await call("POST", `${app(id)}/interviews/${ivsAfter[1].id}/score`, { entries: criteria.map((c) => ({ criterionId: c.id, level: "strong", evidence: "Clear." })), gut: { answer: "yes", note: "" } }, FINAL.id);
       expect(finalCard.status, JSON.stringify(finalCard.body)).toBe(200);
       const gathered = await walk(id, FINAL.id);
       expect(gathered.body.walkthrough.scorecards.mayRead).toBe(true);

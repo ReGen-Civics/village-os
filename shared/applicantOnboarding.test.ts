@@ -135,9 +135,14 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
     expect(trackOf(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "open", final: false }] }), roles).now).toBe("references");
   });
 
-  it("moves to the final conversation, held by the final-call role, then to the agreement", () => {
+  it("waits for the team to move it to the final conversation, held by the final-call role, then the agreement", () => {
     const gathered = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: false }] });
-    expect(trackOf(gathered, roles)).toMatchObject({ now: "final_interview", primary: "add_final", who: "Lead Steward" });
+    // Everything in: still References and proposal, with the team's move as the act. Nothing moves by itself (QA round 1).
+    expect(trackOf(gathered, roles)).toMatchObject({ now: "references", primary: "add_final", who: "Lead Steward" });
+    // A final conversation the role's own list named, still waiting, does not move it either.
+    expect(trackOf({ ...gathered, interviews: [...gathered.interviews, { state: "waiting", final: true }] }, roles).now).toBe("references");
+    // Opened by the team even with a reference still open: the person moved it, so it is the Final conversation.
+    expect(trackStates(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "open", final: true }] })).now).toBe("final_interview");
     const withFinal = { ...gathered, interviews: [...gathered.interviews, { state: "open", final: true }] };
     expect(trackOf(withFinal, roles).primary).toBe("final_conversation");
     const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }] };

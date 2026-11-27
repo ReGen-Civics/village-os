@@ -227,6 +227,8 @@ export default function OpenProposal() {
   const governance = useModule("governance");
   const [p, setP] = useState<ServedOpenProposal | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "members" | "missing" | "error">("loading");
+  /** The walkthrough's stage, when this reader has one: the phone's adopt row floats only at Agreement (QA round 1). */
+  const [stage, setStage] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<Said | null>(null);
@@ -374,7 +376,7 @@ export default function OpenProposal() {
 
             {/* The walkthrough (shared/applicantOnboarding.ts): where this application stands, who acts next and the one act that moves it.
                 The door answers 404 to anybody who is not part of this application, and then nothing renders. */}
-            <Walkthrough applicationRef={p.id} onChanged={() => void load()} />
+            <Walkthrough applicationRef={p.id} onChanged={() => void load()} onStage={setStage} />
 
             {p.agent && <AgentView agent={p.agent} />}
 
@@ -550,6 +552,7 @@ export default function OpenProposal() {
                       // On a wide screen the row stays at the foot of the side panel while its note and checks scroll above it.
                       <div className="mt-4 lg:sticky lg:bottom-0 lg:-mx-5 lg:-mb-5 lg:rounded-b-xl lg:bg-card lg:px-5 lg:py-4">
                       <DecideDock
+                        float={stage === null || stage === "agreement"}
                         label={DW.deciderHeading}
                         note={adoptWaits ? t({ message: "Something waits before you can adopt. It is in the card further down.", context: "open proposal: the floating decision row on a phone" }) : undefined}
                       >

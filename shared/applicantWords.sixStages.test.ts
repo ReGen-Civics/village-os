@@ -68,4 +68,33 @@ describe("the applicant's six stages", () => {
     expect(v.path.map((p) => p.label)).toContain("Received");
     expect(v.refine).toBeNull();
   });
+
+  it("QA round 1: a final conversation's button never shows before the Final conversation stage, and nothing says 'refine below' once the form is closed", () => {
+    const finalBook = { role: "Final Call Role", label: "Final Call Role (Flor)", url: "https://cal.example.test/final", links: [{ who: null, url: "https://cal.example.test/final" }], final: true };
+    const early = statusView("en", served({ sixStages: six("references", { open: false, frozen: false, why: "", aim: "", versions: 0 }), bookNow: finalBook }));
+    expect(early.booking).toBeNull();
+    expect(early.move).not.toMatch(/Final Call Role/);
+    expect(early.move).not.toMatch(/refine/i);
+    const atFinal = statusView("en", served({ sixStages: six("final_interview", { open: false, frozen: true, why: "", aim: "", versions: 1 }), bookNow: finalBook }));
+    expect(atFinal.move).toMatch(/final conversation with Final Call Role \(Flor\)/);
+    expect(atFinal.bookGold).toBe(true);
+    // CONTROL: the community conversation's button is not the final's, and shows at References and proposal.
+    const community = { ...finalBook, role: "Community Role", label: "Community Role", final: false };
+    expect(statusView("en", served({ sixStages: six("references"), bookNow: community })).booking).not.toBeNull();
+  });
+
+  it("QA round 1: we say we will reply only while the move is ours, and 'answer each line' only when a counter-offer exists", () => {
+    const refs = statusView("en", served({ sixStages: six("references", { open: true, frozen: false, why: "a", aim: "b", versions: 0 }), referencesAsked: { given: null, mayAdd: true } }));
+    expect(refs.applicantActs).toBe(true);
+    expect(refs.tasks?.map((t) => [t.key, t.state])).toEqual([["references", "To do"], ["proposal", "Open to refine"], ["conversation", "Opens when it is ready"]]);
+    expect(refs.bookGold).toBe(false);
+    const waiting = statusView("en", served({ sixStages: six("agreement") }));
+    expect(waiting.applicantActs).toBe(false);
+    expect(waiting.move).not.toMatch(/Answer each line/);
+    const countered = statusView("en", served({ sixStages: six("agreement", { open: false, frozen: true, why: "", aim: "", versions: 1 }), offer: { mayAnswer: true, rows: [{}] } }));
+    expect(countered.move).toMatch(/Answer each line below/);
+    expect(countered.applicantActs).toBe(true);
+    // The fixed line never shows at Agreement.
+    expect(countered.refine).toBeNull();
+  });
 });

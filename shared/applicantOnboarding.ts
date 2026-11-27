@@ -259,15 +259,18 @@ export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackSta
   const yes = f.shortlist === "yes";
   // Our review ends when the first conversation is written up, or sooner when the team has already asked for references.
   const reviewDone = yes && (firstTalkDone || f.refsAsked);
-  // References and proposal is done once the references are given and followed up and every conversation before the
-  // final one is written up, as the final conversation always waited for before.
-  const referencesDone = reviewDone && talksDone && followedUp;
+  // THE FINAL CONVERSATION OPENS ONLY BY A PERSON'S ACT (the lead, 27 Nov 2026: "once they have their proposal solid
+  // and they passed this step they move to their final conversation"). References and proposal ends when somebody
+  // moves the application on, which opens the final conversation; nothing opens it by itself.
+  const movedToFinal = finals.some((i) => i.state !== "waiting");
+  /** Everything References and proposal asks is in: the moment to move on, never a move by itself. */
+  const readyForFinal = reviewDone && talksDone && followedUp;
 
   const state: Record<TrackStage, TrackState> = {
     received: "done",
-    review: reviewDone ? "done" : "now",
-    references: no ? "skipped" : referencesDone ? "done" : reviewDone ? "now" : "later",
-    final_interview: no ? "skipped" : finalDone ? "done" : referencesDone || finals.some((i) => i.state === "open") ? "now" : "later",
+    review: reviewDone || movedToFinal ? "done" : "now",
+    references: no ? "skipped" : movedToFinal ? "done" : reviewDone ? "now" : "later",
+    final_interview: no ? "skipped" : finalDone ? "done" : movedToFinal ? "now" : "later",
     agreement: no ? "skipped" : f.decided === "adopted" ? "done" : finalDone ? "now" : "later",
     start: f.decided === "adopted" ? "done" : "later",
   };
@@ -285,6 +288,13 @@ export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackSta
     return { state, now: endedAt };
   }
   return { state, now: TRACK.find((k) => state[k] === "now") ?? "agreement" };
+}
+
+/** Everything References and proposal asks is in, and the final conversation has not opened. */
+function readyForFinalOf(f: TrackFacts): boolean {
+  const talks = f.interviews.filter((i) => !i.final);
+  const followedUp = f.refsGiven && f.references.every((r) => r.followedUp);
+  return f.shortlist === "yes" && talks.every((i) => done(i.state)) && followedUp && !f.interviews.some((i) => i.final && i.state !== "waiting");
 }
 
 /**
@@ -316,6 +326,8 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         primary: "conversation",
       };
     case "references":
+      if (readyForFinalOf(f))
+        return { stages, now, who: deciders, next: "The references are followed up and the conversations written up. When the proposal is solid, move the application to the final conversation. That fixes the proposal.", primary: "add_final" };
       if (!f.refsAsked) return { stages, now, who: PLACING_POWER_WORDS, next: "Ask the applicant for references. The letter goes in their language. They refine their proposal and book the next conversation meanwhile.", primary: "ask_references" };
       if (!f.refsGiven) return { stages, now, who: "The applicant", next: "The applicant adds their references, refines their proposal and books the next conversation, from their status page.", primary: "wait_applicant" };
       return {
@@ -326,9 +338,7 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         primary: "follow_up",
       };
     case "final_interview":
-      return finals.length
-        ? { stages, now, who: deciders, next: "Hold the final conversation, where the applicant delivers their proposal, then write the notes and the scorecard.", primary: "final_conversation" }
-        : { stages, now, who: deciders, next: "Add the final conversation, then hold it.", primary: "add_final" };
+      return { stages, now, who: deciders, next: "Hold the final conversation, where the applicant delivers their proposal, then write the notes and the scorecard.", primary: "final_conversation" };
     case "agreement":
     default:
       return {
@@ -402,7 +412,7 @@ export const ONBOARDING_WORDS = {
     ask_references: "Ask for references",
     wait_applicant: "Waiting on the applicant",
     follow_up: "Go to the follow-ups",
-    add_final: "Add the final conversation",
+    add_final: "Move to the final conversation",
     final_conversation: "Go to the final conversation",
     decide: "Go to the decision",
     none: "Nothing to do",
@@ -441,8 +451,9 @@ export const ONBOARDING_WORDS = {
   gatheredIntro: (role: string) => `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`,
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
-  finalAdded: "The final conversation is added. It opens once the conversations before it are written up.",
-  finalExists: "This application already has a final conversation.",
+  finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
+  finalExists: "The final conversation is already open.",
+  finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
   finalNoRole: "No role is named for the final call. A founder names it in the village's settings.",
   notAllowed: "This is for the people who review this application.",
   notFound: "That application is not here.",

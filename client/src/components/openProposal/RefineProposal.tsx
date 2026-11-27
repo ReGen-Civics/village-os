@@ -5,7 +5,7 @@
  */
 import { useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
-import { BTN_PRIMARY, CARD, FIELD, H2, HINT, LABEL } from "@/components/journey/look";
+import { BTN_NOTICE, CARD, EYEBROW, FIELD, H2, HINT, LABEL } from "@/components/journey/look";
 import { OPEN_AIM_MAX, OPEN_WHY_MAX } from "@shared/openProposals";
 import type { ApplicantMessages } from "@shared/applicantWords";
 
@@ -48,8 +48,9 @@ export default function RefineProposal({
   };
 
   return (
-    <section aria-labelledby="refine-heading" className={CARD} data-refine="">
-      <h2 id="refine-heading" className={H2}>
+    <section aria-labelledby="refine-heading" className={`scroll-mt-24 ${CARD}`} data-refine="">
+      <p className={EYEBROW}>{words.eyebrow}</p>
+      <h2 id="refine-heading" className={`mt-1 ${H2}`}>
         {words.heading}
       </h2>
       <p className={`mt-1 ${HINT}`}>{words.line}</p>
@@ -62,7 +63,8 @@ export default function RefineProposal({
       </label>
       <textarea id="refine-aim" className={`mt-1 min-h-16 w-full ${FIELD}`} maxLength={OPEN_AIM_MAX} value={aim} onChange={(e) => setAim(e.target.value)} />
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <button type="button" className={BTN_PRIMARY} disabled={busy || !why.trim() || !aim.trim()} onClick={() => void save()} data-refine-save="">
+        {/* Gold-edged: at this stage the references form holds the one gold act (QA round 1). */}
+        <button type="button" className={BTN_NOTICE} disabled={busy || !why.trim() || !aim.trim()} onClick={() => void save()} data-refine-save="">
           {words.save}
         </button>
         {refine.versions > 0 ? <span className="text-sm text-muted-foreground">{words.versions(refine.versions)}</span> : null}

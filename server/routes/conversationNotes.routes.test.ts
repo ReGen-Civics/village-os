@@ -42,6 +42,8 @@ const IA = person("u-cn-ia", "Iva Alder");
 const IB = person("u-cn-ib", "Ivo Birch");
 const FINAL = person("u-cn-final", "Flor Lima");
 const OUTSIDER = person("u-cn-out", "Olly Out");
+/** An applicant with a signed-in account who also holds the operations role: the conversation's own role. */
+const APPLICANT_HOLDER = { id: "u-cn-applicant", name: "Ada Apply", email: "notes-holder@example.test" };
 const SECRET = "Spoke warmly about the seed library; check the budget story with the community role.";
 
 describe.skipIf(!configured)("conversation notes, on a real schema", () => {
@@ -73,14 +75,14 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const have = new Set((await q("SELECT COLUMN_NAME AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'org_roles'")).map((r: any) => String(r.c)));
     for (const col of ["conversations", "selection_criteria", "conversation_mode"]) if (!have.has(col)) await q(`ALTER TABLE org_roles ADD COLUMN ${col} text NULL`);
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, IA, IB, FINAL, OUTSIDER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    for (const p of [FOUNDER, IA, IB, FINAL, OUTSIDER, APPLICANT_HOLDER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-cn', 'Core Circle', '[]', 0), ('c-cn-people', 'People Circle', '[]', 0)");
     gate = await createOrgRole(pool, { id: "cn-role-lead", name: "Lead Steward", seats: 1, circleId: "c-cn", aim: "Hold the money." });
-    roleA = await createOrgRole(pool, { id: "cn-role-ops", name: "Operations Role", seats: 1, circleId: "c-cn", aim: "Hold operations." });
+    roleA = await createOrgRole(pool, { id: "cn-role-ops", name: "Operations Role", seats: 2, circleId: "c-cn", aim: "Hold operations." });
     const roleB = await createOrgRole(pool, { id: "cn-role-data", name: "Data Role", seats: 1, circleId: "c-cn-people", aim: "Hold data." });
     roleFinal = await createOrgRole(pool, { id: "cn-role-final", name: "Final Call Role", seats: 1, circleId: "c-cn-people", aim: "Make the final call." });
     const until = new Date("2036-12-01T00:00:00Z");
-    for (const [r, u] of [[roleA, IA], [roleB, IB], [roleFinal, FINAL]] as const) await seatHolder(pool, r, { userId: u.id, seasonId: "s-now", termEndsAt: until });
+    for (const [r, u] of [[roleA, IA], [roleA, APPLICANT_HOLDER], [roleB, IB], [roleFinal, FINAL]] as const) await seatHolder(pool, r, { userId: u.id, seasonId: "s-now", termEndsAt: until });
     // One conversation, held by the operations role.
     await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
     await variable("org.final_call_role", roleFinal);
@@ -203,8 +205,9 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const id = await confirmed("notes-who@example.test");
     const iv = await interviewOf(id);
     // CONTROL: a member outside the application, and one holding an unrelated role, may not write.
-    expect((await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, OUTSIDER.id)).status).toBe(403);
-    expect((await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, IB.id)).status).toBe(403);
+    // Anybody who is not a reader gets the same 404 as a stranger (QA round 1), never a 403 that says the conversation exists.
+    expect((await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, OUTSIDER.id)).status).toBe(404);
+    expect((await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, IB.id)).status).toBe(404);
     expect(await notesOf(id)).toEqual([]);
     const ok = await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, IA.id);
     expect(ok.status, ok.text).toBe(200);
@@ -240,8 +243,9 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const iv = await interviewOf(id);
     await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, IA.id);
     const told = state.notices.filter((n) => n.type === "application_conversation_notes");
-    expect(told.map((n) => n.userId).sort()).toEqual([FINAL.id, FOUNDER.id].sort());
-    expect(told.every((n) => String(n.link).includes(id) && String(n.link).endsWith("#walkthrough"))).toBe(true);
+    // The other holder of the operations role hears too: they interview other applicants (the fixture's applicant).
+    expect(told.map((n) => n.userId).sort()).toEqual([FINAL.id, FOUNDER.id, APPLICANT_HOLDER.id].sort());
+    expect(told.every((n) => String(n.link).includes(id) && String(n.link).endsWith("#conversation-notes"))).toBe(true);
     expect(JSON.stringify(told)).not.toContain("seed library");
     // CONTROL: no email goes to the applicant for a note.
     expect(state.sent.filter((m) => m.to.email === "notes-bell@example.test" && m.idempotencyKey.includes("note"))).toEqual([]);
@@ -252,7 +256,7 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const iv = await interviewOf(id);
     // CONTROL: a file type that does not fit its kind is refused and nothing is stored.
     expect((await sendFile(`${app(id)}/interviews/${iv}/notes`, "recording", "notes.txt", "x", IA.id)).status).toBe(400);
-    expect((await sendFile(`${app(id)}/interviews/${iv}/notes`, "transcript", "call.txt", "x", OUTSIDER.id)).status).toBe(403);
+    expect((await sendFile(`${app(id)}/interviews/${iv}/notes`, "transcript", "call.txt", "x", OUTSIDER.id)).status).toBe(404);
     const sent = await sendFile(`${app(id)}/interviews/${iv}/notes`, "transcript", "call.txt", "Every word we said.", IA.id);
     expect(sent.status, JSON.stringify(sent.body)).toBe(200);
     const [row] = await notesOf(id);
@@ -280,7 +284,10 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     expect(sent.status).toBe(200);
     const row = (await notesOf(id)).find((r: any) => r.original_name === "talk.txt");
     const where = path.join(notesDir, row.file_name);
+    // A reader who did not write it is told why; anybody else learns nothing.
     expect((await call("DELETE", `${app(id)}/conversation-notes/${row.id}`, undefined, FOUNDER.id)).status).toBe(403);
+    expect((await call("DELETE", `${app(id)}/conversation-notes/${row.id}`, undefined, OUTSIDER.id)).status).toBe(404);
+    expect((await call("DELETE", `${app(id)}/conversation-notes/${row.id}`, undefined, IB.id)).status).toBe(404);
     expect(fs.existsSync(where)).toBe(true);
     expect((await call("DELETE", `${app(id)}/conversation-notes/${row.id}`, undefined, IA.id)).status).toBe(200);
     expect(fs.existsSync(where)).toBe(false);
@@ -298,5 +305,27 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     expect(fs.existsSync(path.join(notesDir, file))).toBe(false);
     await clearReviewOf(pool, [id], new Date());
     expect(await notesOf(id)).toEqual([]);
+  });
+
+  it("a signed-in applicant who holds the conversation's own role still reads and writes nothing, on any route", async () => {
+    const id = await confirmed(APPLICANT_HOLDER.email);
+    const iv = await interviewOf(id);
+    await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: SECRET }, IA.id);
+    expect((await sendFile(`${app(id)}/interviews/${iv}/notes`, "transcript", "secret-call.txt", "Every word.", IA.id)).status).toBe(200);
+    const file = (await notesOf(id)).find((r: any) => r.file_name)!;
+    // CONTROL: the role alone would read them; being the applicant wins.
+    const holderView = await call("GET", `${app(id)}/walkthrough`, undefined, IA.id);
+    expect(holderView.status).toBe(200);
+    expect((await call("GET", `${app(id)}/walkthrough`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+    expect((await call("POST", `${app(id)}/interviews/${iv}/notes`, { body: "mine" }, APPLICANT_HOLDER.id)).status).toBe(404);
+    expect((await call("GET", `${app(id)}/conversation-notes/${file.id}/file`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+    expect((await call("DELETE", `${app(id)}/conversation-notes/${file.id}`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+    // Holding the role does not bring them the bell on their own application.
+    expect(state.notices.filter((n) => n.type === "application_conversation_notes" && n.userId === APPLICANT_HOLDER.id)).toEqual([]);
+    // The applicant's own signed-in status door carries none of it.
+    const own = await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id);
+    expect(own.status, own.text).toBe(200);
+    for (const leak of [SECRET, "secret-call.txt", "conversation-notes", "Every word."]) expect(own.text).not.toContain(leak);
+    expect(await notesOf(id)).toHaveLength(2);
   });
 });

@@ -236,8 +236,11 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
   it("freezes once the final conversation opens: refused, and the page says so", async () => {
     const id = await atReferences("flow-freeze@example.test");
     expect((await refine(id, { why: "Second why.", aim: "Second aim." })).status).toBe(200);
-    expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
-    await q("UPDATE application_interviews SET state = 'open' WHERE application_ref = ? AND is_final = 1", [id]);
+    // Moving to the final conversation is the team's act, and it is what opens it (QA round 1).
+    const moved = await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id);
+    expect(moved.status, moved.text).toBe(200);
+    expect((await q("SELECT state FROM application_interviews WHERE application_ref = ? AND is_final = 1", [id]))[0].state).toBe("open");
+    expect(await nowOf(id)).toBe("final_interview");
     const frozen = await refine(id, { why: "Third why.", aim: "Third aim." });
     expect([frozen.status, frozen.body.error]).toEqual([409, "closed"]);
     expect((await status(id)).sixStages.refine).toMatchObject({ open: false, frozen: true });
@@ -254,5 +257,35 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     await status(id);
     expect(await steps()).toEqual(was);
     expect(await nowOf(id)).toBe("references");
+  });
+
+  it("THE CASE QA ROUND 1 HIT: writing up the last conversation never opens the final one; only the team's move does", async () => {
+    // A role whose own list names a final conversation: before this change it opened by itself once the others scored.
+    await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }, { roleId: roleFinal, minutes: 30, final: true }]), gate]);
+    try {
+      const id = await confirmed("flow-final-waits@example.test");
+      expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+      const [first] = await q("SELECT id FROM application_interviews WHERE application_ref = ? AND is_final = 0", [id]);
+      await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ?", [first.id]);
+      const card = await call("GET", `${app(id)}/scorecards`, undefined, IA.id);
+      const criteria = card.body?.scorecards?.criteria ?? [{ id: "c1" }];
+      const scored = await call("POST", `${app(id)}/interviews/${first.id}/score`, { entries: criteria.map((c: any) => ({ criterionId: c.id, level: "solid", evidence: "Heard it." })), gut: { answer: "yes", note: "" } }, IA.id);
+      expect(scored.status, scored.text).toBe(200);
+      // The final conversation still waits, the applicant is still at References and proposal, and no final button shows.
+      expect((await q("SELECT state FROM application_interviews WHERE application_ref = ? AND is_final = 1", [id]))[0].state).toBe("waiting");
+      await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
+      const s1 = await status(id);
+      expect(s1.sixStages.now).toBe("references");
+      expect(s1.bookNow).toBeNull();
+      expect(s1.sixStages.refine.open).toBe(true);
+      // The team moves it on: that opens the final conversation and fixes the proposal.
+      expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
+      const s2 = await status(id);
+      expect(s2.sixStages.now).toBe("final_interview");
+      expect(s2.sixStages.refine).toMatchObject({ open: false, frozen: true });
+      expect(s2.bookNow?.final).toBe(true);
+    } finally {
+      await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
+    }
   });
 });

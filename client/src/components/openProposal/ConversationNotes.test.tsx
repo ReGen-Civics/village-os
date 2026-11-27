@@ -56,9 +56,29 @@ describe("the conversation notes panel", () => {
     expect(screen.getAllByRole("button", { name: "Take it off" })).toHaveLength(1);
   });
 
+  it("asks once before taking a note off, and keeps it on 'Keep it'", async () => {
+    draw([conv([{ id: 1, kind: "text", body: "Warm.", fileName: null, fileHref: null, author: "Iva", on: "2026-11-27", mine: true }])]);
+    fireEvent.click(screen.getByRole("button", { name: "Take it off" }));
+    expect(calls).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "Keep it" }));
+    expect(calls).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "Take it off" }));
+    fireEvent.click(screen.getByRole("button", { name: "Yes, take it off" }));
+    await waitFor(() => expect(calls.map((c) => [c.path, c.init.method])).toEqual([["/api/governance/applications/op-1/conversation-notes/1", "DELETE"]]));
+  });
+
+  it("dates read as words, and the section carries the anchor the bell lands on", () => {
+    draw([conv([{ id: 1, kind: "text", body: "Warm.", fileName: null, fileHref: null, author: "Iva", on: "2026-11-27", mine: false }])]);
+    expect(document.getElementById("conversation-notes")).toBeTruthy();
+    expect(document.body.textContent).toContain("November 27, 2026");
+  });
+
   it("posts a written note to that conversation's door, then reloads", async () => {
     const onSaved = vi.fn();
     draw([conv([])], onSaved);
+    // One place, one button: the box opens behind "Add a note or file" (QA round 1).
+    expect(screen.queryByLabelText("Write a note")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Add a note or file" }));
     fireEvent.change(screen.getByLabelText("Write a note"), { target: { value: "Talked about the budget." } });
     fireEvent.click(screen.getByRole("button", { name: "Save the note" }));
     await waitFor(() => expect(onSaved).toHaveBeenCalled());

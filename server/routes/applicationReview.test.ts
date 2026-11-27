@@ -245,7 +245,14 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
   };
   const scoreAll = async (id: string) => {
     for (const [i, u] of [IA, IB, IC, ID].entries()) {
-      const ivs = await interviews(id);
+      let ivs = await interviews(id);
+      // The final conversation never opens by itself (the lead, 27 Nov 2026; QA round 1): a holder of the power to
+      // place people in roles moves the application there once the others are written up.
+      if (Number(ivs[i].is_final) === 1 && ivs[i].state === "waiting") {
+        const moved = await call("POST", `/api/governance/applications/${id}/final-conversation`, {}, FOUNDER.id);
+        expect(moved.status, JSON.stringify(moved.body)).toBe(200);
+        ivs = await interviews(id);
+      }
       const out = await score(id, Number(ivs[i].id), u.id);
       expect(out.status, JSON.stringify(out.body)).toBe(200);
     }

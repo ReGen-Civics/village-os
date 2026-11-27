@@ -126,6 +126,11 @@ const PAGES = [
 /** Every file the joining journey draws with, pages included. */
 const JOURNEY = [
   ...PAGES,
+  // The applicant flow's new pieces (QA round 1): the applicant's refine form and the team's notes, versions and guide.
+  "client/src/components/openProposal/RefineProposal.tsx",
+  "client/src/components/openProposal/ConversationNotes.tsx",
+  "client/src/components/openProposal/ProposalVersions.tsx",
+  "client/src/components/openProposal/ConversationGuide.tsx",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",

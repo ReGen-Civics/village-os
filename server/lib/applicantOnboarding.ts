@@ -321,12 +321,12 @@ export async function saveFollowUp(deps: ReviewDeps, ref: string, viewerId: stri
 // ── The final conversation ──────────────────────────────────────────────────
 
 /**
- * ADD THE FINAL CONVERSATION: one more conversation in the existing model, held
- * by the role the village names for the final call, marked final, after every
- * other. It opens at once when the others are written up, and its holders hear
- * it waits on them; otherwise it opens in order. Nothing is added when the
- * application already has a final conversation (the role's own list may name
- * one), or when no role is named.
+ * MOVE TO THE FINAL CONVERSATION (the lead, 27 Nov 2026: "once they have their proposal solid and they passed this
+ * step they move to their final conversation"). A person's act, and the only way a final conversation opens: nothing
+ * opens it by itself (server/lib/applicationReview.ts never opens a final). It opens the application's final
+ * conversation, adding one for the role the village names for the final call when the role's own list named none,
+ * and its holders hear it waits on them. Opening it is what fixes the applicant's proposal (shared/proposalRefine.ts).
+ * Refused when the final conversation is already open or done, or when no role is named.
  */
 export async function addFinalConversation(deps: ReviewDeps, ref: string, viewerId: string): Promise<{ ok: true; opened: boolean } | Refusal> {
   const pool = deps.getPool();
@@ -336,28 +336,36 @@ export async function addFinalConversation(deps: ReviewDeps, ref: string, viewer
   const s = await standingOf(deps, ref, viewerId);
   if (s.isApplicant || s.recused || !(s.holdsPower || s.isFinalCall)) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
   const steps = await review.stepsOf(pool, ref);
-  if (shortlistOf(steps) !== "yes") return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
+  // A shortlist comes first, except when the role's own list already holds a final conversation waiting to be moved to
+  // (the review path before the shortlist existed, where nothing else opens it now).
+  const roleFinalWaits = (await review.interviewsOf(pool, ref)).some((i) => i.final && i.state === "waiting");
+  if (shortlistOf(steps) !== "yes" && !roleFinalWaits) return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
   const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
-  if (!roleId) return refuse(409, "no_role", ONBOARDING_WORDS.finalNoRole);
   const at = deps.now();
-  const minutes = 30;
-  let opened: { position: number } | null = null;
+  let opened: { position: number; roleId: string; minutes: number } | null = null;
   const out = await inTransaction(pool, async (conn): Promise<Refusal | null> => {
     const list = await review.interviewsOf(conn, ref, true);
-    if (list.some((i) => i.final)) return refuse(409, "exists", ONBOARDING_WORDS.finalExists);
+    const final = list.find((i) => i.final);
+    if (final && final.state !== "waiting") return refuse(409, "exists", ONBOARDING_WORDS.finalExists);
+    // Our review still waiting means nothing opens before the invitation.
+    if (reviewStageOf(steps) === "review") return refuse(409, "review_first", ONBOARDING_WORDS.shortlistWaitsReview);
+    // One conversation open at a time: the ones before the final are written up first (the lead: "they passed this step").
+    if (list.some((i) => !i.final && i.state !== "scored" && i.state !== "skipped")) return refuse(409, "talks_first", ONBOARDING_WORDS.finalTalksFirst);
+    if (final) {
+      if (await review.openInterview(conn, final.id, at)) opened = { position: final.position, roleId: final.roleId, minutes: final.minutes };
+      return null;
+    }
+    if (!roleId) return refuse(409, "no_role", ONBOARDING_WORDS.finalNoRole);
     const position = list.reduce((m, i) => Math.max(m, i.position), 0) + 1;
-    const othersDone = list.every((i) => i.state === "scored" || i.state === "skipped");
-    // Our review still waiting means nothing opens before the invitation; the conversation waits like every other.
-    const open = othersDone && reviewStageOf(steps) !== "review";
-    await review.insertInterviewAt(conn, ref, { position, roleId, minutes, final: true }, open ? at : null);
-    if (open) opened = { position };
+    await review.insertInterviewAt(conn, ref, { position, roleId, minutes: 30, final: true }, at);
+    opened = { position, roleId, minutes: 30 };
     return null;
   });
   if (out) return out;
-  const o = opened as { position: number } | null;
+  const o = opened as { position: number; roleId: string; minutes: number } | null;
   if (o) {
     const name = kindOfRef(ref) === "open" ? ((await proposals.readOpenProposal(pool, ref))?.name ?? null) : null;
-    await tellInterviewers(deps, ref, o.position, roleId, minutes, name ? (name.trim().split(/\s+/)[0] ?? null) : null);
+    await tellInterviewers(deps, ref, o.position, o.roleId, o.minutes, name ? (name.trim().split(/\s+/)[0] ?? null) : null);
   }
   return { ok: true, opened: !!o };
 }
@@ -447,6 +455,8 @@ export interface Walkthrough {
   conversations: ConversationNotesView[];
   /** The proposal's earlier versions, oldest first, when the applicant refined it (shared/proposalRefine.ts). */
   proposalVersions: ProposalVersion[];
+  /** The proposal's words now, beside the earlier versions; null when there are none. */
+  proposalNow: { why: string; aim: string } | null;
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -526,12 +536,12 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     scorecards: await scorecardsFor(deps, ref, viewerId),
     guide: await guideFor(deps, ref, s, viewerId),
     conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
-    proposalVersions: s.isReviewer || s.isFinalCall ? await proposalVersionsFor(deps, ref) : [],
+    ...(await versionsView(deps, ref, s.isReviewer || s.isFinalCall)),
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
       mayAskReferences: open && s.holdsPower && !s.recused && (member ? member.firstRole : shortlist === "yes" && kindOfRef(ref) === "open") && !steps.some((x) => x.kind === "refs_asked"),
-      mayAddFinal: !member && open && (s.holdsPower || s.isFinalCall) && !s.recused && shortlist === "yes" && !!finalRole && !interviews.some((i) => i.final),
+      mayAddFinal: !member && open && (s.holdsPower || s.isFinalCall) && !s.recused && shortlist === "yes" && !!finalRole && !interviews.some((i) => i.final && i.state !== "waiting"),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,
     },
@@ -580,6 +590,9 @@ function readsConversation(s: Standing, roleId: string): boolean {
   return mayReadConversationNotes({ isApplicant: s.isApplicant, recused: s.recused, holdsPower: s.holdsPower, isFinalCall: s.isFinalCall, holdsConversationRole: s.roles.has(roleId) });
 }
 
+/** Where the notes bell lands: the notes section itself (QA round 1). */
+export const notesHref = (ref: string): string => walkthroughHref(ref).replace(/#walkthrough$/, "#conversation-notes");
+
 /** The file door for one note: it asks who the reader is again on every read. */
 export const noteFileHref = (ref: string, id: number): string => `/api/governance/applications/${encodeURIComponent(ref)}/conversation-notes/${id}/file`;
 
@@ -625,7 +638,8 @@ async function writableConversation(deps: ReviewDeps, ref: string, viewerId: str
   const interview = await review.interviewById(pool, interviewId);
   if (!interview || interview.ref !== ref) return refuse(404, "not_found", NOTES_WORDS.notFound);
   const s = await standingOf(deps, ref, viewerId);
-  if (!readsConversation(s, interview.roleId)) return refuse(403, "not_allowed", NOTES_WORDS.notAllowed);
+  // Anybody who may not read this conversation gets the same 404 as a stranger (QA round 1).
+  if (!readsConversation(s, interview.roleId)) return refuse(404, "not_found", NOTES_WORDS.notFound);
   return { ok: true, interview };
 }
 
@@ -667,6 +681,9 @@ export async function removeConversationNote(deps: ReviewDeps, ref: string, view
   const pool = deps.getPool();
   const note = await notesRepo.conversationNoteById(pool, ref, id);
   if (!note) return refuse(404, "not_found", NOTES_WORDS.notFound);
+  // A non-reader learns nothing, not even that the note exists; a reader who did not write it is told why.
+  const interview = await review.interviewById(pool, note.interviewId);
+  if (!interview || !readsConversation(await standingOf(deps, ref, viewerId), interview.roleId)) return refuse(404, "not_found", NOTES_WORDS.notFound);
   if (!mayRemoveNote(note.authorUserId, viewerId)) return refuse(403, "not_yours", NOTES_WORDS.notYours);
   return (await notesRepo.removeConversationNote(pool, ref, id, viewerId)) ? { ok: true } : refuse(404, "not_found", NOTES_WORDS.notFound);
 }
@@ -697,7 +714,7 @@ async function tellNotesAdded(deps: ReviewDeps, ref: string, interview: review.S
   for (const userId of people) {
     if (told.has(userId) || recused.has(userId) || (await isApplicant(deps, ref, userId))) continue;
     told.add(userId);
-    await deps.notify({ userId, type: "application_conversation_notes", title: NOTES_NOTICES.title(names), body: NOTES_NOTICES.body, link: walkthroughHref(ref), actorUserId: authorId, dedupeKey: `app:${ref}:conv-note:${noteId}:${userId}` });
+    await deps.notify({ userId, type: "application_conversation_notes", title: NOTES_NOTICES.title(names), body: NOTES_NOTICES.body, link: notesHref(ref), actorUserId: authorId, dedupeKey: `app:${ref}:conv-note:${noteId}:${userId}` });
   }
 }
 
@@ -779,6 +796,14 @@ export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown
     if (!(await proposals.refineOpenProposal(conn, ref, words.why, words.aim, versions))) return { ok: false, status: 409, error: "closed" } as RefineOutcome;
     return { ok: true, versions: versions.length } as RefineOutcome;
   });
+}
+
+/** The earlier versions and the words now, for the team's walkthrough: only for the reviewers and the final call. */
+async function versionsView(deps: ReviewDeps, ref: string, reads: boolean): Promise<{ proposalVersions: ProposalVersion[]; proposalNow: { why: string; aim: string } | null }> {
+  const proposalVersions = reads ? await proposalVersionsFor(deps, ref) : [];
+  if (!proposalVersions.length) return { proposalVersions, proposalNow: null };
+  const own = await proposals.readOpenProposal(deps.getPool(), ref);
+  return { proposalVersions, proposalNow: own ? { why: own.body.why, aim: own.body.aim } : null };
 }
 
 /** The earlier versions of a proposal, for the team's walkthrough. Never the applicant's read of anybody else's. */

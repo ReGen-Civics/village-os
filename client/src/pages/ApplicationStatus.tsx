@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import Layout from "@/components/Layout";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LINK, TILE, WORLD } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CARD_FEATURED, DOOR, EYEBROW, FIELD, H1, H2, HINT, LABEL, LINK, TILE, WORLD } from "@/components/journey/look";
 import { ArrowRight, Check } from "lucide-react";
 import { SeedOfLife } from "@/components/journey/nature";
 import NextAct from "@/components/path/NextAct";
@@ -331,6 +331,40 @@ export default function ApplicationStatus() {
   const founding = !!s?.reviewFirst;
   const hints = founding && s?.outcome == null && view ? stepHints(view.path.map((p) => p.label), w.status, applicantSteps(lang, s?.afterFounding ? null : typeof s?.replyMoons === "number" ? s.replyMoons : 1)).map((h, i) => (view.path[i].state === "done" ? null : h)) : null;
 
+  /** The path as stepping stones, drawn once: first in the right column on the six-stage page, where it stood before otherwise. */
+  const trail = view ? (
+            <>
+            {/* The path as stepping stones: the line fills down to where you stand, one stone after another, and the
+                stone you are on answers with a ring on the water. Reduce motion: the filled path, at once. */}
+            {/* Phone: the guide button rides the right edge, so the steps keep a gutter clear of it (verify item 7). */}
+            {/* A founding application's steps carry what happens at each, and roughly when (D-07): one list, never two. */}
+            <ol className="jw-trail-v pr-16 md:pr-0" data-motion={still ? "still" : "live"} data-what-happens-next={hints ? "" : undefined}>
+              {view.path.map((p, i) => (
+                <li
+                  key={i}
+                  className={`sel-rise flex min-h-[52px] gap-3 py-1 ${hints?.[i] ? "items-start" : "items-center"}`}
+                  data-path-state={p.state}
+                  aria-current={p.state === "now" ? "step" : undefined}
+                  style={{ animationDelay: `${i * 80}ms`, ["--jw-delay" as string]: `${i * 80}ms` }}
+                >
+                  <span className="jw-stone flex w-11 shrink-0 justify-center" data-state={p.state === "done" ? "done" : p.state === "now" ? "here" : "ahead"} aria-hidden="true">
+                    <span className="jw-stone-face !m-0">{p.state === "done" ? <Check className="size-4" /> : p.state === "now" ? i + 1 : ""}</span>
+                  </span>
+                  <span className={`grid gap-0.5 ${hints?.[i] ? "pt-2.5" : ""}`}>
+                    <span className={p.state === "later" ? "text-muted-foreground" : p.state === "now" ? "font-bold text-foreground" : "font-medium text-foreground"}>{p.label}</span>
+                    {hints?.[i] && (
+                      <span className="text-sm text-muted-foreground" data-applicant-step={hints[i]!.key}>
+                        {hints[i]!.when}
+                      </span>
+                    )}
+                  </span>
+                  <span className="sr-only">{p.state === "done" ? w.status.stateDone : p.state === "now" ? w.status.stateNow : w.status.stateLater}</span>
+                </li>
+              ))}
+            </ol>
+            </>
+  ) : null;
+
   return (
     <Layout>
       <div className={`${WORLD} py-4 sm:py-10`}>
@@ -363,11 +397,25 @@ export default function ApplicationStatus() {
                     glowCurrent={s.outcome == null}
                   />
                 </div>
-                <section aria-label={w.status.nextLabel} className={`sel-rise ${CARD_FEATURED}`}>
+                {/* The six stages (QA round 1): the stage card and its one act sit above the art, on the phone's first screen. */}
+                <section aria-label={w.status.nextLabel} className={`sel-rise ${CARD_FEATURED} ${view.six ? "order-first lg:order-none" : ""}`} data-stage-card="">
                   <p className={EYEBROW}>{view.stepWords}</p>
                   {!(founding && s.outcome === "adopted") && <p className="mt-1 text-lg text-foreground">{view.move}</p>}
-                  {byDay && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
-                  {s.outcome == null && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
+                  {byDay && !view.applicantActs && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
+                  {/* "We'll reply" is said only while the next move is ours, never beside the applicant's own act. */}
+                  {s.outcome == null && !view.applicantActs && (s.afterFounding || typeof s.replyMoons === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyMoons as number))}</p>}
+                  {view.six && view.booking?.book && "links" in view.booking.book && (
+                    <div className="mt-4 flex flex-wrap gap-2" data-stage-book="">
+                      {view.booking.book.links
+                        .filter((l) => /^https:\/\//.test(l.url))
+                        .map((l) => (
+                          <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={view.bookGold ? BTN_PRIMARY : BTN_NOTICE} data-book-now="" data-book-gold={view.bookGold ? "" : undefined}>
+                            {l.label}
+                          </a>
+                        ))}
+                    </div>
+                  )}
+                  {view.six && view.booking?.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
                   {s.outcome === "adopted" && (
                     <p className="mt-2 font-medium text-notice" data-adopted-line="">
                       {founding
@@ -378,6 +426,24 @@ export default function ApplicationStatus() {
                 </section>
               </div>
               <div className="space-y-6">
+            {view.six && trail}
+            {view.tasks && (
+              <section aria-labelledby="stage-tasks" data-stage-tasks="">
+                <p id="stage-tasks" className={EYEBROW}>{w.status.six.tasks.heading}</p>
+                <ul className="mt-2 divide-y divide-border">
+                  {view.tasks.map((task) => (
+                    <li key={task.key} className="flex min-h-11 items-center justify-between gap-3 py-2" data-stage-task={task.key}>
+                      {task.href ? (
+                        <a className="font-medium text-foreground underline underline-offset-4" href={task.href}>{task.label}</a>
+                      ) : (
+                        <span className="font-medium text-foreground">{task.label}</span>
+                      )}
+                      <span className="text-sm text-muted-foreground">{task.state}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             {s.note && (
               <section aria-label={w.page.noteHeading} className="rounded-xl border border-border bg-card p-4" data-applicant-note="">
                 <h2 className="font-display text-xl font-bold text-foreground">{w.page.noteHeading}</h2>
@@ -443,38 +509,11 @@ export default function ApplicationStatus() {
                 onSaved={(o) => setS((cur) => (cur ? { ...cur, offer: o } : cur))}
               />
             )}
-            {/* The path as stepping stones: the line fills down to where you stand, one stone after another, and the
-                stone you are on answers with a ring on the water. Reduce motion: the filled path, at once. */}
-            {/* Phone: the guide button rides the right edge, so the steps keep a gutter clear of it (verify item 7). */}
-            {/* A founding application's steps carry what happens at each, and roughly when (D-07): one list, never two. */}
-            <ol className="jw-trail-v pr-16 md:pr-0" data-motion={still ? "still" : "live"} data-what-happens-next={hints ? "" : undefined}>
-              {view.path.map((p, i) => (
-                <li
-                  key={i}
-                  className={`sel-rise flex min-h-[52px] gap-3 py-1 ${hints?.[i] ? "items-start" : "items-center"}`}
-                  data-path-state={p.state}
-                  aria-current={p.state === "now" ? "step" : undefined}
-                  style={{ animationDelay: `${i * 80}ms`, ["--jw-delay" as string]: `${i * 80}ms` }}
-                >
-                  <span className="jw-stone flex w-11 shrink-0 justify-center" data-state={p.state === "done" ? "done" : p.state === "now" ? "here" : "ahead"} aria-hidden="true">
-                    <span className="jw-stone-face !m-0">{p.state === "done" ? <Check className="size-4" /> : p.state === "now" ? i + 1 : ""}</span>
-                  </span>
-                  <span className={`grid gap-0.5 ${hints?.[i] ? "pt-2.5" : ""}`}>
-                    <span className={p.state === "later" ? "text-muted-foreground" : p.state === "now" ? "font-bold text-foreground" : "font-medium text-foreground"}>{p.label}</span>
-                    {hints?.[i] && (
-                      <span className="text-sm text-muted-foreground" data-applicant-step={hints[i]!.key}>
-                        {hints[i]!.when}
-                      </span>
-                    )}
-                  </span>
-                  <span className="sr-only">{p.state === "done" ? w.status.stateDone : p.state === "now" ? w.status.stateNow : w.status.stateLater}</span>
-                </li>
-              ))}
-            </ol>
+            {!view.six && trail}
             {view.references && (
               <p className="text-sm text-muted-foreground" data-references-given="">{view.references}</p>
             )}
-            {view.booking && (
+            {view.booking && !view.six && (
               <section aria-label={w.status.booking.label} className={TILE}>
                 {/* One story whatever the role's conversationMode holds: the applicant books each conversation at times they choose, in order. */}
                 {view.booking.text ? <p className="text-foreground">{view.booking.text}</p> : null}
@@ -503,7 +542,7 @@ export default function ApplicationStatus() {
                 onSaved={(versions) => setS((cur) => (cur?.sixStages ? { ...cur, sixStages: { ...cur.sixStages, refine: { ...cur.sixStages.refine, versions } } } : cur))}
               />
             )}
-            {s.outcome == null && (
+            {s.outcome == null && !view.applicantActs && (
               <section aria-labelledby="while-you-wait" className={CARD} data-while-you-wait="">
                 <h2 id="while-you-wait" className={H2}>{w.status.wait.heading}</h2>
                 <p className="mt-1 text-foreground">{t({ message: `None of this is required. These are open doors to meet us.`, context: "applicant's application status, while you wait" })}</p>
@@ -516,7 +555,7 @@ export default function ApplicationStatus() {
                   </div>
                 ) : (
                 <div className="mt-3 grid gap-2">
-                  {path && pathSaid && !termsWait ? (
+                  {path && pathSaid && !termsWait && !view.six ? (
                     <div data-path-step={path.state}>
                       <p className="mb-2 font-medium text-foreground">{pathSaid.step}</p>
                       <NextAct state={path.state} href={path.step.href} block className="sm:w-auto" />

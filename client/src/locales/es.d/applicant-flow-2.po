@@ -23,6 +23,16 @@ msgctxt "applicant onboarding: primary.conversation"
 msgid "Go to the conversation"
 msgstr "Ir a la conversación"
 
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: primary.add_final"
+msgid "Move to the final conversation"
+msgstr "Pasar a la conversación final"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the kicker"
+msgid "The proposal"
+msgstr "La propuesta"
+
 # needs-native-review: the proposal's earlier versions, 27 Nov 2026
 msgctxt "proposal versions: the heading"
 msgid "Earlier versions of the proposal"
@@ -30,10 +40,65 @@ msgstr "Versiones anteriores de la propuesta"
 
 # needs-native-review: the proposal's earlier versions, 27 Nov 2026
 msgctxt "proposal versions: what they are"
-msgid "The applicant refined their proposal. The proposal above is the current one; these are the words it replaced."
-msgstr "La persona que postula mejoró su propuesta. La propuesta de arriba es la actual; estas son las palabras que reemplazó."
+msgid "The applicant refined their proposal. Each earlier version sits beside the words it became."
+msgstr "La persona que postula mejoró su propuesta. Cada versión anterior está junto a las palabras en que se convirtió."
 
 # needs-native-review: the proposal's earlier versions, 27 Nov 2026
-msgctxt "proposal versions: when one was replaced"
-msgid "Replaced on {0}"
-msgstr "Reemplazada el {0}"
+msgctxt "proposal versions: the words until that day"
+msgid "Before {0}"
+msgstr "Antes del {0}"
+
+# needs-native-review: the proposal's earlier versions, 27 Nov 2026
+msgctxt "proposal versions: the current words"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: the kicker"
+msgid "Private to the team"
+msgstr "Privado para el equipo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: the guide's questions, folded in"
+msgid "Questions to talk through"
+msgstr "Preguntas para conversar"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: opens the note box and the file picker"
+msgid "Add a note or file"
+msgstr "Agregar una nota o un archivo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: closes the note box"
+msgid "Done"
+msgstr "Listo"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: confirm before deleting"
+msgid "Take this off for good?"
+msgstr "¿Quitarla para siempre?"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: confirm the delete"
+msgid "Yes, take it off"
+msgstr "Sí, quitarla"
+
+# needs-native-review: conversation notes, QA round 1, 27 Nov 2026
+msgctxt "conversation notes: cancel the delete"
+msgid "Keep it"
+msgstr "Conservarla"
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and their proposal is fixed."
+msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y su propuesta queda fija."
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalExists"
+msgid "The final conversation is already open."
+msgstr "La conversación final ya está abierta."
+
+# needs-native-review: the team's move to the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalTalksFirst"
+msgid "Write up the conversations before it first. Then move the application to the final conversation."
+msgstr "Primero escriba las conversaciones anteriores. Después pase la postulación a la conversación final."

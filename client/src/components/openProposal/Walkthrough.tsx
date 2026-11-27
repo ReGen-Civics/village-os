@@ -61,8 +61,9 @@ interface ServedWalkthrough {
   guide?: GuideView | null;
   /** Each conversation's private notes and files this reader may read (0442). Never served to the applicant. */
   conversations?: ConversationNotesView[];
-  /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts). */
+  /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts), and its words now. */
   proposalVersions?: ProposalVersion[];
+  proposalNow?: { why: string; aim: string } | null;
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -88,9 +89,11 @@ export interface WalkthroughProps {
   onChanged?: () => void;
   /** Where "Go to the decision" leads on this page: the open proposal's decide panel, or a member application's holder card. */
   decideHref?: string;
+  /** Tells the page the stage it stands at, so the phone's adopt row floats only at Agreement (QA round 1). */
+  onStage?: (stage: TrackStage) => void;
 }
 
-export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel" }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage }: WalkthroughProps) {
   const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
@@ -105,6 +108,10 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (w) onStage?.(w.track.now);
+  }, [w, onStage]);
 
   const act = async (path: string, body?: unknown) => {
     setBusy(true);
@@ -181,9 +188,13 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         <References w={w} busy={busy} act={act} />
       )}
 
-      {w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />}
-      {w.conversations && w.conversations.length > 0 && <ConversationNotes base={base} conversations={w.conversations} onSaved={() => void load()} />}
-      {w.proposalVersions && w.proposalVersions.length > 0 && <ProposalVersions versions={w.proposalVersions} />}
+      {/* One place for notes (QA round 1): the guide's questions fold into each conversation; alone only when there is none. */}
+      {w.conversations && w.conversations.length > 0 ? (
+        <ConversationNotes base={base} conversations={w.conversations} guide={w.guide ?? null} onSaved={() => void load()} />
+      ) : (
+        w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />
+      )}
+      {w.proposalVersions && w.proposalVersions.length > 0 && <ProposalVersions versions={w.proposalVersions} current={w.proposalNow ?? null} />}
       {gathered && <Gathered w={w} />}
     </section>
   );
