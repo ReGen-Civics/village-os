@@ -11,11 +11,11 @@
  * which quest surfaces the profile draws on My work, read off the real Profile, YourQuests and QuestsDoor.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
-const session = vi.hoisted(() => ({ roles: [] as Array<{ id: string; name: string }> }));
+const session = vi.hoisted(() => ({ roles: [] as Array<{ id: string; name: string }>, meDown: false, progressionHangs: false }));
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/contexts/AuthContext", () => ({
@@ -25,7 +25,8 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("@/lib/gameApi", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   authToken: () => "a-token",
-  gameFetch: (url: string) => Promise.resolve(answer(String(url))),
+  gameFetch: (url: string) =>
+    session.progressionHangs && String(url).startsWith("/api/game/progression") ? new Promise<Response>(() => undefined) : Promise.resolve(answer(String(url))),
 }));
 vi.mock("@/modules/ModuleProvider", () => ({
   useModules: () => ({ loaded: true, modules: [] }),
@@ -56,6 +57,7 @@ vi.mock("@/components/profile/MoonDock", () => ({ default: () => null }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 import Profile from "./Profile";
+import { TOKEN_KEY } from "@/lib/gameApi";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -78,7 +80,7 @@ const ME = {
 };
 
 function answer(url: string): Response {
-  if (url.startsWith("/api/game/me")) return json(ME);
+  if (url.startsWith("/api/game/me")) return session.meDown ? json({ error: "down" }, 500) : json(ME);
   if (url.startsWith("/api/game/progression"))
     return json({ stage: null, stageIndex: 0, consentedQuests: 1, capabilities: [], capabilityCatalogue: [], roles: session.roles, history: [], firsts: {}, signing: null });
   if (url.startsWith("/api/game/quests/suited")) return json({ quests: [{ id: "compost", title: "Turn the compost bays", circle: "Land and Food", why: "circle" }] });
@@ -88,13 +90,20 @@ function answer(url: string): Response {
 
 beforeEach(() => {
   // fetchGameMe asks gameApi's own authToken, which the module mock cannot reach: the session is on disk.
-  localStorage.setItem("village-auth-token", "a-token");
-  vi.stubGlobal("fetch", vi.fn(async (url: unknown) => answer(String(url))));
+  localStorage.setItem(TOKEN_KEY, "a-token");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: unknown) =>
+      session.progressionHangs && String(url).startsWith("/api/game/progression") ? new Promise<Response>(() => undefined) : Promise.resolve(answer(String(url))),
+    ),
+  );
 });
 afterEach(() => {
   vi.unstubAllGlobals();
   localStorage.clear();
   session.roles = [];
+  session.meDown = false;
+  session.progressionHangs = false;
 });
 
 const view = () => render(<Router><Profile /></Router>);
@@ -132,6 +141,29 @@ describe("My work", () => {
     // Last of the member's own quest surfaces: the door follows their quests, never leads them.
     const own = await screen.findByRole("region", { name: "Your quests" });
     expect(own.compareDocumentPosition(door) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("draws no door until it knows whether the member holds a role, so the wrong words never flash", async () => {
+    session.progressionHangs = true;
+    view();
+    await screen.findByRole("region", { name: "Your quests" });
+    expect(document.querySelector("[data-quests-door]")).toBeNull();
+  });
+
+  it("says when the member's quests did not load, and reads them again on Try again", async () => {
+    session.meDown = true;
+    view();
+    const tile = await waitFor(() => {
+      const el = document.querySelector("[data-quests-failed]");
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(tile.textContent).toContain("Your quests did not load.");
+    session.meDown = false;
+    fireEvent.click(within(tile).getByRole("button", { name: "Try again" }));
+    const own = await screen.findByRole("region", { name: "Your quests" });
+    expect(within(own).getByRole("link", { name: /Build a seed library shelf/ })).toBeTruthy();
+    expect(document.querySelector("[data-quests-failed]")).toBeNull();
   });
 
   it("invites a member with no role to find a quest", async () => {

@@ -21,6 +21,15 @@ import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { gameFetch, type QuestClaim } from "@/lib/gameApi";
 import { useLingui } from "@lingui/react/macro";
+import { claimStatus } from "@/lib/questStatus";
+import { dateLocale } from "@shared/civilDay";
+import { PlantGlyph } from "@/components/openWork/StatusMark";
+
+/** The board's own mark for a claim: a sprout in hand, a flower done this moon, nothing for an older finish. */
+function Mark({ claim }: { claim: QuestClaim }) {
+  const plant = claimStatus(claim);
+  return plant ? <PlantGlyph state={plant} className="size-5" /> : <span className="size-5 shrink-0" aria-hidden="true" />;
+}
 
 interface SuitedQuest {
   id: string;
@@ -35,7 +44,7 @@ const DONE_SHOWN = 3;
 const ROW = "flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [suited, setSuited] = useState<SuitedQuest[] | null>(null);
   useEffect(() => {
     let live = true;
@@ -47,6 +56,11 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
   }, []);
 
   const doing = claims.filter((c) => c.status === "claimed" || c.status === "submitted");
+  /** The day the village consented, short ("21 Nov"), in the reader's language; empty when unknown. */
+  const doneOn = (c: QuestClaim): string => {
+    const at = c.resolvedAt ? new Date(c.resolvedAt) : null;
+    return at && !Number.isNaN(at.getTime()) ? at.toLocaleDateString(dateLocale(i18n.locale), { day: "numeric", month: "short" }) : "";
+  };
   const done = claims
     .filter((c) => c.status === "consented")
     .sort((a, b) => String(b.resolvedAt ?? b.claimedAt ?? "").localeCompare(String(a.resolvedAt ?? a.claimedAt ?? "")))
@@ -67,7 +81,8 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
             {doing.map((c) => (
               <li key={c.id}>
                 <Link href={`/quests/${encodeURIComponent(c.questId)}`} className={ROW} data-your-quest={c.status}>
-                  <span className="min-w-0">
+                  <Mark claim={c} />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{c.questTitle}</span>
                     <span className="block text-xs text-muted-foreground">
                       {c.status === "claimed"
@@ -93,10 +108,13 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
             {done.map((c) => (
               <li key={c.id}>
                 <Link href={`/quests/${encodeURIComponent(c.questId)}`} className={ROW} data-your-quest={c.status}>
-                  <span className="min-w-0">
+                  <Mark claim={c} />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{c.questTitle}</span>
                     <span className="block text-xs text-muted-foreground">
-                      {t({ message: "Complete. The village consented to it.", context: "profile: a quest the village consented to" })}
+                      {doneOn(c)
+                        ? t({ message: `Done · ${doneOn(c)}`, context: "profile: a quest the village consented to, and the day" })
+                        : t({ message: "Done", context: "profile: a quest the village consented to, no day known" })}
                     </span>
                   </span>
                   <ArrowRight className="size-4 shrink-0 text-notice" aria-hidden="true" />

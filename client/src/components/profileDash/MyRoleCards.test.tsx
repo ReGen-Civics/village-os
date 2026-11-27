@@ -8,11 +8,12 @@
  * much you give stay on the tab, once. A member with no role reads one plain empty state and the door.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 import { FIXTURE_ROLE_TITLE, fixturePayload } from "@/test/playerCardFixture";
+import { TOKEN_KEY } from "@/lib/gameApi";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -42,7 +43,7 @@ function answer(url: string): Response {
 }
 
 beforeEach(() => {
-  localStorage.setItem("village-auth-token", "a-token");
+  localStorage.setItem(TOKEN_KEY, "a-token");
   vi.stubGlobal("fetch", vi.fn(async (url: unknown) => answer(String(url))));
 });
 afterEach(() => {
@@ -82,18 +83,62 @@ describe("My roles", () => {
       expect(card.textContent).toContain("Held until 31 Dec 2026");
       expect(card.querySelector("[data-role-health]")).not.toBeNull();
       expect(card.querySelector('[data-role-section="purpose"]')).not.toBeNull();
-      // The Your roles facts: the member's part of their commitment and the doors.
+      // The Your roles facts: the member's part of their commitment and the role's own page.
       expect(card.querySelector("[data-role-part]")!.textContent).toBe(part);
-      expect(inCard.getByRole("link", { name: /This moon/ }).getAttribute("href")).toBe("#pc-moons-h");
-      expect(inCard.getByRole("link", { name: /Season plan/ }).getAttribute("href")).toBe("/season#plan");
       expect(inCard.getByRole("link", { name: "On the roles page" }).getAttribute("href")).toBe(`/roles?seat=r${i}`);
+      // The moon and the season plan are the same door for every role: never inside a card.
+      expect(inCard.queryByRole("link", { name: /This moon/ })).toBeNull();
+      expect(inCard.queryByRole("link", { name: /Season plan/ })).toBeNull();
     }
 
-    // Once on the tab, never per role: how much you give, and the proposing door.
+    // Once on the tab, after the cards: the moon and the season plan, how much you give, the proposing door.
+    expect(screen.getAllByRole("link", { name: /This moon/ })).toHaveLength(1);
+    expect(screen.getByRole("link", { name: /This moon/ }).getAttribute("href")).toBe("#pc-moons-h");
+    expect(screen.getAllByRole("link", { name: /^Season plan$/ })).toHaveLength(1);
+    const doors = document.querySelector("[data-roles-doors]")!;
+    expect(cards[1]!.compareDocumentPosition(doors) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(document.querySelectorAll("[data-commitment-field]")).toHaveLength(1);
     const door = document.querySelector("[data-proposing-door]") as HTMLElement;
-    expect(within(door).getByRole("link", { name: /Apply for a role/ }).getAttribute("href")).toContain("type=role_application");
+    const apply = within(door).getByRole("link", { name: /Apply for a role/ });
+    expect(apply.getAttribute("href")).toContain("type=role_application");
+    // Apply is the door's one gold act; the rest are pills.
+    expect(door.querySelectorAll(".pc-act")).toHaveLength(1);
+    expect(apply.classList.contains("pc-act")).toBe(true);
     expect(within(door).getByRole("link", { name: /Plan your season/ }).getAttribute("href")).toBe("/season#plan");
+  });
+
+  it("breathes while the card is on its way, never a blank slot", async () => {
+    let release: () => void = () => undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: unknown) =>
+        String(url).startsWith("/api/people/me/role-card")
+          ? new Promise<Response>((r) => { release = () => r(answer(String(url))); })
+          : Promise.resolve(answer(String(url))),
+      ),
+    );
+    view();
+    expect(document.querySelector("[data-roles-loading] [role='status']")?.textContent).toContain("Opening your roles");
+    release();
+    await waitFor(() => expect(document.querySelectorAll("article.pc-rolecard")).toHaveLength(2));
+    expect(document.querySelector("[data-roles-loading]")).toBeNull();
+  });
+
+  it("says when the roles held did not load, and asks again on Retry", async () => {
+    let fail = true;
+    vi.stubGlobal("fetch", vi.fn(async (url: unknown) => (String(url).startsWith("/api/season-plans/mine") && fail ? json({ error: "down" }, 500) : answer(String(url)))));
+    view();
+    const line = await waitFor(() => {
+      const el = document.querySelector("[data-roles-failed]");
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(line.textContent).toContain("Your roles did not load.");
+    expect(document.querySelector("[data-commitment-field]")).toBeNull();
+    fail = false;
+    fireEvent.click(within(line).getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(document.querySelectorAll("[data-commitment-field]")).toHaveLength(1));
+    expect(document.querySelector("[data-roles-failed]")).toBeNull();
   });
 
   it("gives a member with no role one plain empty state and the door to take one on", async () => {
@@ -106,7 +151,9 @@ describe("My roles", () => {
     });
     expect(empty.textContent).toContain("You are not holding a role for the village's work yet.");
     expect(document.querySelectorAll("article.pc-rolecard")).toHaveLength(0);
-    expect(document.querySelector("[data-commitment-field]")).toBeNull();
+    // Nothing is lost: how much you give is still there with no role, and no per-role moon door.
+    await waitFor(() => expect(document.querySelectorAll("[data-commitment-field]")).toHaveLength(1));
+    expect(document.querySelector("[data-roles-doors]")).toBeNull();
     // The door follows the empty state directly, and nothing is drawn across no roles.
     expect(empty.nextElementSibling?.hasAttribute("data-proposing-door")).toBe(true);
     await waitFor(() => expect(within(document.querySelector("[data-proposing-door]") as HTMLElement).getByRole("link", { name: /Apply for a role/ })).toBeTruthy());
@@ -114,12 +161,18 @@ describe("My roles", () => {
     expect(document.querySelector("[data-player-card] section.pc-panel[aria-label]")).toBeNull();
   });
 
-  it("falls back to the plain Your roles panel when the card cannot load", async () => {
-    vi.stubGlobal("fetch", vi.fn(async (url: unknown) => (String(url).startsWith("/api/people/me/role-card") ? json({ error: "nope" }, 500) : answer(String(url)))));
+  it("says the card did not load, with Retry, above the plain Your roles panel", async () => {
+    let fail = true;
+    vi.stubGlobal("fetch", vi.fn(async (url: unknown) => (String(url).startsWith("/api/people/me/role-card") && fail ? json({ error: "nope" }, 500) : answer(String(url)))));
     view();
     await waitFor(() => expect(screen.getByRole("heading", { name: "Your roles" })).toBeTruthy());
     expect(document.querySelector("[data-player-card]")).toBeNull();
+    const failed = document.querySelector("[data-card-failed]") as HTMLElement;
+    expect(failed.firstElementChild?.textContent).toContain("This card did not load.");
     await waitFor(() => expect(screen.getByRole("link", { name: new RegExp(FIXTURE_ROLE_TITLE(1)) }).getAttribute("href")).toBe("/roles?seat=r1"));
+    fail = false;
+    fireEvent.click(within(failed.firstElementChild as HTMLElement).getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(document.querySelectorAll("article.pc-rolecard")).toHaveLength(2));
   });
 });
 

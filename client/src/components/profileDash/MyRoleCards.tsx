@@ -29,7 +29,7 @@ import { sharesOfYou, splitForRoles } from "@shared/commitment";
 import { fetchMine, type HeldSeat, type MinePayload } from "@/components/seasonPlans/seasonPlansApi";
 import { fetchApplications, type ServedApplication } from "@/components/governance/seatApplicationsApi";
 import { fetchCard } from "@/components/playerCard/playerCardApi";
-import { PlayerRoleCardView } from "@/components/playerCard/PlayerRoleCard";
+import { CARD_LOAD_WORDS, PlayerRoleCardView } from "@/components/playerCard/PlayerRoleCard";
 import { FirstDaysContext } from "@/components/playerCard/CardLower";
 import { Eyebrow } from "@/components/playerCard/cardParts";
 import { RoleIconSvg } from "@/components/playerCard/roleIcons";
@@ -38,6 +38,7 @@ import YourRolesSection, { YOUR_ROLES_WORDS, openApplicationsOf } from "@/compon
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { authToken } from "@/lib/gameApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
+import BreathingLoader from "@/components/natural/BreathingLoader";
 
 /** Where "This moon" goes: My moon on this page when the village runs it, else the card's own moon cycle. */
 const MOON_ON_PAGE = "#my-moon";
@@ -66,18 +67,21 @@ function RoleMark({ tile }: { tile: TileOut | null }) {
   );
 }
 
+/**
+ * After a role's chips and health: what the "Your roles" list said about it that the card did not, the
+ * member's part of their commitment (or that its term has ended), and the role's own place on /roles.
+ * The moon and the season plan are the same door for every role, so they are drawn once, after the cards.
+ */
 function RoleLead({
   role,
   seat,
   part,
   manyRoles,
-  moonHref,
 }: {
   role: { id: string; title: string };
   seat: HeldSeat | null;
   part: { pct: number; share: number | null } | null;
   manyRoles: boolean;
-  moonHref: string;
 }) {
   const { t } = useLingui();
   const partWords = !part
@@ -95,20 +99,41 @@ function RoleLead({
           {partWords ? <span data-role-part="">{partWords}</span> : null}
         </p>
       ) : null}
-      <nav className="pc-doors" aria-label={t({ message: `Doors for ${role.title}`, context: "profile My roles: a role's doors, aria-label" })}>
-        <a href={moonHref} className="pc-tab">
-          <Moon aria-hidden="true" />
-          {t({ message: "This moon", context: "profile My roles: a role's door to My moon" })}
-        </a>
-        <Link href="/season#plan" className="pc-tab">
-          <CalendarDays aria-hidden="true" />
-          {t({ message: "Season plan", context: "profile My roles: a role's door to the season plan" })}
-        </Link>
+      <div className="pc-doors">
         <Link href={`/roles?seat=${encodeURIComponent(role.id)}`} className="pc-tab">
           {t({ message: "On the roles page", context: "profile My roles: a role's door to its place on the Roles page" })}
         </Link>
-      </nav>
+      </div>
     </div>
+  );
+}
+
+/** The moon and the season plan, the one door every role shares, drawn once after the cards. */
+function MoonAndSeasonDoors({ moonHref }: { moonHref: string }) {
+  const { t } = useLingui();
+  return (
+    <nav className="pc-doors" data-roles-doors="" aria-label={t({ message: "The moon and the season for your roles", context: "profile My roles: the doors every role shares, aria-label" })}>
+      <a href={moonHref} className="pc-tab">
+        <Moon aria-hidden="true" />
+        {t({ message: "This moon", context: "profile My roles: the door to My moon, once for every role" })}
+      </a>
+      <Link href="/season#plan" className="pc-tab">
+        <CalendarDays aria-hidden="true" />
+        {t({ message: "Season plan", context: "profile My roles: the door to the season plan, once for every role" })}
+      </Link>
+    </nav>
+  );
+}
+
+/** A failed read of the roles held, said with a way to ask again (the old Your roles panel's sentence). */
+function RolesReadFailed({ onRetry }: { onRetry: () => void }) {
+  return (
+    <p role="status" className="pc-f14" data-roles-failed="">
+      {YOUR_ROLES_WORDS.failed}{" "}
+      <button type="button" onClick={onRetry} className="pc-tab">
+        {YOUR_ROLES_WORDS.retry}
+      </button>
+    </p>
   );
 }
 
@@ -129,7 +154,8 @@ function ProposingDoor({ mine, apps }: { mine: MinePayload | null; apps: readonl
           <>
             <p className="pc-dim pc-f14">{YOUR_ROLES_WORDS.applyLine}</p>
             <div className="pc-doors">
-              <Link href={applySeatsHref([], { seasonId: mine.season?.id ?? null })} className="pc-tab">
+              {/* The door's one gold act; the rest are pills. */}
+              <Link href={applySeatsHref([], { seasonId: mine.season?.id ?? null })} className="pc-tab pc-act">
                 <UserPlus aria-hidden="true" />
                 {YOUR_ROLES_WORDS.apply}
               </Link>
@@ -192,6 +218,7 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
   const [card, setCard] = useState<PlayerCardPayload | null>(null);
   const [cardFailed, setCardFailed] = useState(false);
   const [mine, setMine] = useState<MinePayload | null>(null);
+  const [mineFailed, setMineFailed] = useState(false);
   const [apps, setApps] = useState<ServedApplication[]>([]);
 
   const loadCard = useCallback(() => {
@@ -208,10 +235,15 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
   }, [locale]);
   useEffect(() => loadCard(), [loadCard]);
 
-  useEffect(() => {
+  const loadMine = useCallback(() => {
     let alive = true;
+    setMineFailed(false);
     void fetchMine().then((a) => {
-      if (!alive || !a.ok || !a.data || typeof a.data !== "object") return;
+      if (!alive) return;
+      if (!a.ok || !a.data || typeof a.data !== "object") {
+        setMineFailed(true);
+        return;
+      }
       setMine(a.data);
       if (a.data.mayApply !== false) {
         void fetchApplications().then((l) => {
@@ -223,6 +255,7 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
       alive = false;
     };
   }, []);
+  useEffect(() => loadMine(), [loadMine]);
 
   // Arriving by a link to one role (`/profile#role-<id>`): the role exists only once the card has loaded.
   useEffect(() => {
@@ -231,9 +264,29 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
     if (id.startsWith("role-")) document.getElementById(id)?.scrollIntoView?.({ block: "start" });
   }, [card]);
 
-  // The card is the whole tab; without it, the plain panel still carries the roles and the door.
-  if (cardFailed) return <YourRolesSection />;
-  if (!card) return null;
+  // The card is the whole tab; without it, the plain panel still carries the roles and the door, under
+  // the card's own sentence and a way to ask again.
+  if (cardFailed) {
+    return (
+      <div className="flex flex-col gap-4" data-card-failed="">
+        <p role="status" className="text-foreground">
+          {CARD_LOAD_WORDS.failed}{" "}
+          <button type="button" onClick={loadCard} className="min-h-11 font-medium text-notice underline underline-offset-2">
+            {CARD_LOAD_WORDS.retry}
+          </button>
+        </p>
+        <YourRolesSection />
+      </div>
+    );
+  }
+  // Never a blank slot while the card is on its way: the leaf breathes where the roles will be.
+  if (!card) {
+    return (
+      <div className="flex justify-center py-10" data-roles-loading="">
+        <BreathingLoader label={t({ message: "Opening your roles", context: "profile My roles: waiting for the role cards" })} showLabel />
+      </div>
+    );
+  }
 
   const held = mine?.heldSeats ?? [];
   const heldIds = held.map((s) => s.id);
@@ -247,7 +300,6 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
       seat={seatOf.get(role.id) ?? null}
       part={partOfYou(role.id, heldIds, commitment.now)}
       manyRoles={manyRoles}
-      moonHref={moonHref}
     />
   );
   const undrawn = held.filter((s) => !drawn.has(s.id));
@@ -278,7 +330,13 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
                 </p>
               </section>
             ),
-            after: held.length ? <RolesCommitment seats={held} mine={commitment} /> : null,
+            after: (
+              <>
+                {held.length || card.card.roles.length ? <MoonAndSeasonDoors moonHref={moonHref} /> : null}
+                {/* How much you give stays for everybody, a member with no role too (the old panel drew it with none). */}
+                {mineFailed ? <RolesReadFailed onRetry={loadMine} /> : mine ? <RolesCommitment seats={held} mine={commitment} /> : null}
+              </>
+            ),
             door: <ProposingDoor mine={mine} apps={apps} />,
           }}
         />

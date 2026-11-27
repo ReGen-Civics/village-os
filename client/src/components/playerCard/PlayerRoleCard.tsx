@@ -220,9 +220,9 @@ export function PlayerRoleCardView({
             ) : (
               layout?.empty
             )}
-            {layout?.after}
             {/* With no role the door is the next act, so it follows the empty roles, and nothing is drawn across none. */}
             {noRoles ? layout?.door : null}
+            {layout?.after}
 
             {layout && !noRoles ? <AcrossSection across={card.across} sheets={sheets} timeZone={timeZone} /> : null}
             <MoonTimeline timeline={card.timeline} />

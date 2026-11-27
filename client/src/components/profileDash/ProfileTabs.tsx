@@ -55,12 +55,33 @@ export const TAB_OF_ANCHOR: Record<string, ProfileTab> = {
   invite: "sheet",
   "map-light": "sheet",
   roles: "roles",
+  // The role cards (MyRoleCards): the section, and each role by `#role-<id>` (tabOfAnchor below).
+  "sheet-roles": "roles",
   // The path's own doors (shared/yourPath.ts): each opens the tab its section lives on.
   "your-path": "today",
   "before-you-start": "today",
   onboarding: "today",
   "my-moon": "roles",
 };
+
+/** The tab an anchor opens: the table above, a path's card on the Sheet, a role's card on My roles. */
+export function tabOfAnchor(hash: string): ProfileTab | undefined {
+  return TAB_OF_ANCHOR[hash] ?? (hash.startsWith("path-") ? "sheet" : hash.startsWith("role-") ? "roles" : undefined);
+}
+
+/**
+ * Bring the anchor into view once its tab shows it. A section on another phone tab is `display: none`
+ * until the tab opens, and some (My moon, a role's card) arrive after a read, so the browser's own jump
+ * found nothing to land on. This waits, briefly, for the element to be drawn and visible, then scrolls.
+ */
+export function scrollWhenShown(id: string, tries = 30): void {
+  const el = document.getElementById(id);
+  if (el && el.getClientRects().length > 0) {
+    el.scrollIntoView?.({ block: "start" });
+    return;
+  }
+  if (tries > 0) window.setTimeout(() => scrollWhenShown(id, tries - 1), 100);
+}
 
 export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t: ProfileTab) => void }) {
   const { t, i18n } = useLingui();
@@ -70,8 +91,10 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
     const go = () => {
       const hash = window.location.hash.replace(/^#/, "");
       // A path's own card (/profile#path-<id>, the bar's path slot) lives on the Sheet.
-      const t = TAB_OF_ANCHOR[hash] ?? (hash.startsWith("path-") ? "sheet" : undefined);
-      if (t) onTab(t);
+      const t = tabOfAnchor(hash);
+      if (!t) return;
+      onTab(t);
+      scrollWhenShown(decodeURIComponent(hash));
     };
     go();
     window.addEventListener("hashchange", go);

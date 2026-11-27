@@ -42,9 +42,11 @@ describe("your quests", () => {
     gameFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ quests: [{ id: "bees", title: "Tend the hives", circle: null, why: "role" }] }) });
     view([claim("swale", "claimed"), claim("mulch", "submitted"), claim("old", "consented"), claim("back", "claimed", { submittedAt: "2026-11-26T09:00:00.000Z" })]);
     expect(screen.getByRole("link", { name: /Quest swale/ }).getAttribute("href")).toBe("/quests/swale");
+    // The board's sprout: a quest in hand carries the same mark it wears on the board.
+    expect(screen.getByRole("link", { name: /Quest swale/ }).querySelector("svg")).not.toBeNull();
     expect(screen.getByRole("link", { name: /Quest mulch/ }).textContent).toContain("Turned in. Waiting on a steward.");
     expect(screen.getByRole("link", { name: /Quest back/ }).textContent).toContain("Taken back to change.");
-    expect(screen.getByRole("link", { name: /Quest old/ }).textContent).toContain("Complete. The village consented to it.");
+    expect(screen.getByRole("link", { name: /Quest old/ }).textContent).toContain("Done");
     await waitFor(() => expect(screen.getByRole("link", { name: /Tend the hives/ }).getAttribute("href")).toBe("/quests/bees"));
     expect(gameFetch).toHaveBeenCalledWith("/api/game/quests/suited");
   });
@@ -60,6 +62,9 @@ describe("your quests", () => {
     ]);
     const done = screen.getAllByRole("link").filter((a) => a.getAttribute("data-your-quest") === "consented");
     expect(done.map((a) => a.getAttribute("href"))).toEqual(["/quests/d", "/quests/c", "/quests/b"]);
+    // One short line with the day, and the board's own mark beside each row (a flower only for this moon).
+    expect(done[0]!.textContent).toContain("Done · 20 Nov");
+    expect(done.every((a) => a.firstElementChild?.getAttribute("aria-hidden") === "true")).toBe(true);
     expect(screen.queryByRole("link", { name: /Quest e/ })).toBeNull();
     await waitFor(() => expect(gameFetch).toHaveBeenCalled());
   });

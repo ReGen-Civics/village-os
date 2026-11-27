@@ -7,11 +7,11 @@
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import ProfileTabs, { PROFILE_TABS, TAB_OF_ANCHOR } from "./ProfileTabs";
+import ProfileTabs, { PROFILE_TABS, TAB_OF_ANCHOR, scrollWhenShown, tabOfAnchor } from "./ProfileTabs";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -32,6 +32,34 @@ describe("the member portal's tabs", () => {
     expect(TAB_OF_ANCHOR["my-tasks"]).toBe("quests");
     expect(TAB_OF_ANCHOR["cash-owed"]).toBe("treasury");
     expect(TAB_OF_ANCHOR["sheet-paths"]).toBe("sheet");
+  });
+
+  it("open My roles for the role cards, the section and each role, and the Sheet for a path's card", () => {
+    expect(tabOfAnchor("sheet-roles")).toBe("roles");
+    expect(tabOfAnchor("role-seat-garden")).toBe("roles");
+    expect(tabOfAnchor("my-moon")).toBe("roles");
+    expect(tabOfAnchor("path-resident")).toBe("sheet");
+    expect(tabOfAnchor("nowhere")).toBeUndefined();
+  });
+
+  it("scroll to an anchor once its tab draws it, waiting for a section that arrives after a read", () => {
+    vi.useFakeTimers();
+    try {
+      const el = document.createElement("div");
+      el.id = "my-moon";
+      const scrolled = vi.fn();
+      el.scrollIntoView = scrolled;
+      scrollWhenShown("my-moon");
+      expect(scrolled).not.toHaveBeenCalled();
+      // Drawn and visible a moment later (jsdom has no layout, so visibility is stubbed).
+      document.body.appendChild(el);
+      el.getClientRects = () => [{}] as unknown as DOMRectList;
+      vi.advanceTimersByTime(100);
+      expect(scrolled).toHaveBeenCalledTimes(1);
+      el.remove();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("keep the hero on Today, and put the door to proposing on My work and My roles", () => {

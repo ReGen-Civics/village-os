@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
-import QuestsDoor from "@/components/profileDash/QuestsDoor";
+import QuestsDoor, { QuestsReadFailed } from "@/components/profileDash/QuestsDoor";
 import YourQuests from "@/components/profileDash/YourQuests";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
@@ -668,9 +668,9 @@ export default function Profile() {
                   </div>
                 )}
                 <div className={tabOf("quests")}>
-                  {me && <YourQuests claims={me.quests ?? []} />}{/* in full: doing, done, and suited to your roles (the lead, 27 Nov 2026) */}
+                  {me ? <YourQuests claims={me.quests ?? []} /> : meFailed && <QuestsReadFailed onRetry={reloadMe} />}{/* in full: doing, done, suited */}
                   {/* The village's board is one door now (the portal's next moves, 27 Nov 2026), last for a role holder. */}
-                  <QuestsDoor holdsRole={(prog?.roles ?? []).length > 0} />
+                  <QuestsDoor holdsRole={prog ? (prog.roles ?? []).length > 0 : undefined} />
                 </div>
                 {/* Deeds: stage turns, firsts, recognition flows, the ledger. */}
                 <div id="ledger" className={`scroll-mt-28 ${tabOf("treasury")}`}>
@@ -698,12 +698,12 @@ export default function Profile() {
                 In the narrow character column the headings wrapped a word at
                 a time and the applications card left a blank field beside it.
                 The proposal door itself stays at the top. */}
-            {/* One card per role (MyRoleCards: Your roles and the player card, merged), then My moon and the season plan. */}
+            {/* One card per role (MyRoleCards: Your roles and the player card, merged) in the card slot, so a phone still draws My moon first (batch 157). */}
             <RolesBand
               id="roles"
               className={`scroll-mt-28 ${tabOf("roles")}`}
-              roles={<MyRoleCards firstDays={firstDays} />}
-              card={null}
+              roles={null}
+              card={<MyRoleCards firstDays={firstDays} />}
               moon={<MyMoonMount reviewer={holdsReviewPower(prog?.capabilityCatalogue)} />}
               season={!firstDays ? <SeasonPlanSection /> : null}
             />

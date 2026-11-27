@@ -9,19 +9,22 @@
  *
  * A MEMBER WHO HOLDS A ROLE IS NOT PUSHED TOWARD QUESTS (the lead, 27 Nov 2026: roles do not
  * normally do quests; quests are a way for others to contribute). For them the door stays last on
- * the tab and says the board is there if they want it. For everyone else it is the way in.
+ * the tab and says the board is there if they want it. For everyone else it is the way in. Until
+ * the page knows which (`holdsRole` undefined), it draws nothing, so the wrong words never flash.
  */
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { SeedGlint } from "@/components/sacred/living";
-import { CARD, DOOR, H2, HINT } from "@/components/journey/look";
+import { BTN_SECONDARY, CARD, DOOR, EYEBROW, H2, HINT, TILE } from "@/components/journey/look";
 
-export default function QuestsDoor({ holdsRole }: { holdsRole: boolean }) {
+export default function QuestsDoor({ holdsRole }: { holdsRole: boolean | undefined }) {
   const { t } = useLingui();
+  if (holdsRole === undefined) return null;
   return (
     <section aria-labelledby="quests-door-h" className={CARD} data-quests-door={holdsRole ? "role" : "open"}>
-      <h2 id="quests-door-h" className={`flex items-center gap-2 ${H2}`}>
+      <p className={EYEBROW}>{t({ message: "The board", context: "profile My work: the door to the Quests page, kicker" })}</p>
+      <h2 id="quests-door-h" className={`mt-1 flex items-center gap-2 ${H2}`}>
         <SeedGlint className="h-5 w-5 text-notice" aria-hidden="true" />
         {t({ message: "The village's quests", context: "profile My work: the door to the Quests page, heading" })}
       </h2>
@@ -35,5 +38,21 @@ export default function QuestsDoor({ holdsRole }: { holdsRole: boolean }) {
         <ArrowRight className="h-4 w-4 shrink-0 text-notice transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </Link>
     </section>
+  );
+}
+
+/**
+ * The member's own quests could not be read (`/api/game/me` failed and nothing is in hand). GameDashboard
+ * said so with a Retry; with it gone, this tile says it, so the quests never simply vanish.
+ */
+export function QuestsReadFailed({ onRetry }: { onRetry: () => void }) {
+  const { t } = useLingui();
+  return (
+    <div role="status" className={`mb-6 flex flex-wrap items-center gap-3 ${TILE}`} data-quests-failed="">
+      <p className="m-0 text-foreground">{t({ message: "Your quests did not load.", context: "profile My work: the member's quests could not be read" })}</p>
+      <button type="button" onClick={onRetry} className={BTN_SECONDARY}>
+        {t({ message: "Try again", context: "profile My work: read the member's quests again" })}
+      </button>
+    </div>
   );
 }

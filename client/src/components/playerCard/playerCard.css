@@ -1368,6 +1368,17 @@ a.pc-chip:hover {
   width: 28px;
   height: 28px;
 }
+/* A panel's one gold act among its pills (the profile's proposing door: Apply for a role). */
+.pc-tab.pc-act {
+  background: var(--pc-gold);
+  border-color: var(--pc-gold);
+  color: var(--pc-ground);
+}
+.pc-tab.pc-act:hover {
+  background: var(--pc-gold-lit);
+  border-color: var(--pc-gold-lit);
+  color: var(--pc-ground);
+}
 .pc-list-plain {
   list-style: none;
   margin: 0;
