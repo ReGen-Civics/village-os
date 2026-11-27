@@ -42,7 +42,6 @@ export interface HolderFact {
   /** When the onboarding path opened, and when its last item was done (null while any is open). */
   pathOpenedAt: number | null;
   pathDoneAt: number | null;
-  firstQuestDoneAt: number | null;
   /** Moon renewals whose term has ended: how each went. */
   renewalsDue: number;
   renewalsRenewed: number;
@@ -68,7 +67,6 @@ export interface MeasureRow {
   holders: {
     count: number;
     pathCompleteBy30: Share;
-    firstQuestBy14: Share;
     stillInRoleAt90: Share;
     renewed: Share;
   };
@@ -78,7 +76,8 @@ export interface MeasureRow {
 export const MEASURE_KEYS = {
   row: ["seasonId", "circleId", "applications", "holders"],
   applications: ["count", "answered", "medianHoursToReply", "medianHoursToInterview", "medianHoursToDecision"],
-  holders: ["count", "pathCompleteBy30", "firstQuestBy14", "stillInRoleAt90", "renewed"],
+  // No quest step (the lead, 27 Nov 2026: "roles don't do quests normally ... not part of the flow").
+  holders: ["count", "pathCompleteBy30", "stillInRoleAt90", "renewed"],
   share: ["eligible", "yes", "share"],
 } as const;
 
@@ -123,7 +122,6 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
       return share(eligible.length, eligible.filter(done).length);
     };
     const path = by(30, (h) => h.pathDoneAt !== null && h.pathOpenedAt !== null && h.pathDoneAt <= h.pathOpenedAt + 30 * DAY, (h) => h.pathOpenedAt);
-    const quest = by(14, (h) => h.firstQuestDoneAt !== null && h.pathOpenedAt !== null && h.firstQuestDoneAt <= h.pathOpenedAt + 14 * DAY, (h) => h.pathOpenedAt);
     const kept = by(90, (h) => h.endedAt === null || h.endedAt >= h.startedAt + 90 * DAY, (h) => h.startedAt);
     const due = r.h.reduce((n, h) => n + h.renewalsDue, 0);
     const renewed = r.h.reduce((n, h) => n + h.renewalsRenewed, 0);
@@ -138,7 +136,7 @@ export function buildMeasures(apps: readonly ApplicationFact[], holders: readonl
         medianHoursToInterview: median(interview),
         medianHoursToDecision: median(decision),
       },
-      holders: { count: r.h.length, pathCompleteBy30: path, firstQuestBy14: quest, stillInRoleAt90: kept, renewed: share(due, renewed) },
+      holders: { count: r.h.length, pathCompleteBy30: path, stillInRoleAt90: kept, renewed: share(due, renewed) },
     });
   }
   return out.sort((a, b) => String(b.seasonId ?? "").localeCompare(String(a.seasonId ?? "")) || String(a.circleId ?? "").localeCompare(String(b.circleId ?? "")));

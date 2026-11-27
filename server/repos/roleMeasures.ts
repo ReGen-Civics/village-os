@@ -90,15 +90,15 @@ export async function holderFacts(pool: Pool): Promise<HolderFact[]> {
       "WHERE a.holder_kind = 'member' AND a.is_example = 0",
   );
   if (seatings.length === 0) return [];
-  const paths = new Map<string, { opened: number | null; done: number | null; quest: number | null }>();
+  const paths = new Map<string, { opened: number | null; done: number | null }>();
   for (const p of await rows(
     pool,
     "SELECT p.assignment_id AS aid, UNIX_TIMESTAMP(p.opened_on) AS opened, COUNT(i.id) AS items, SUM(i.done_at IS NULL) AS open_items, " +
-      "UNIX_TIMESTAMP(MAX(i.done_at)) AS last_done, UNIX_TIMESTAMP(MAX(CASE WHEN i.kind = 'quest' THEN i.done_at END)) AS quest " +
+      "UNIX_TIMESTAMP(MAX(i.done_at)) AS last_done " +
       "FROM onboarding_paths p LEFT JOIN onboarding_items i ON i.path_id = p.id GROUP BY p.id, p.assignment_id, p.opened_on",
   )) {
     const complete = Number(p.items) > 0 && Number(p.open_items) === 0;
-    paths.set(String(p.aid), { opened: ms(p.opened), done: complete ? ms(p.last_done) : null, quest: ms(p.quest) });
+    paths.set(String(p.aid), { opened: ms(p.opened), done: complete ? ms(p.last_done) : null });
   }
   const renewals = new Map<string, { due: number; renewed: number }>();
   for (const x of await rows(
@@ -118,7 +118,6 @@ export async function holderFacts(pool: Pool): Promise<HolderFact[]> {
       endedAt: ms(s.ended),
       pathOpenedAt: path?.opened ?? null,
       pathDoneAt: path?.done ?? null,
-      firstQuestDoneAt: path?.quest ?? null,
       renewalsDue: ren?.due ?? 0,
       renewalsRenewed: ren?.renewed ?? 0,
     };

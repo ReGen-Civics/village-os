@@ -6,8 +6,8 @@ Date: 2026-11-27. Status: accepted. The lead's ruling, 27 Nov 2026.
 
 How roles are going (`GET /api/role-measures`) counts, per season and circle,
 the applications a circle's roles drew and how its holders fared: applied,
-answered, first reply, first interview, decision, seated, path done, first
-quest, still in the role, renewed. No name, no id of a person.
+answered, first reply, first interview, decision, seated, path done, still in
+the role, renewed. No name, no id of a person.
 
 It was admin only. The lead, 27 Nov 2026:
 

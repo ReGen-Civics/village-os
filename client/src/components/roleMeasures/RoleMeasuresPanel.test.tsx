@@ -37,7 +37,7 @@ const row = (seasonId: string | null, circleId: string | null, circleName: strin
   circleId,
   circleName,
   applications: { count: n, answered: share(n, n - 1), medianHoursToReply: 30, medianHoursToInterview: 100, medianHoursToDecision: null },
-  holders: { count: 2, pathCompleteBy30: share(2, 1), firstQuestBy14: share(1, 1), stillInRoleAt90: share(2, 0), renewed: share(0, 0) },
+  holders: { count: 1, pathCompleteBy30: share(1, 1), stillInRoleAt90: share(2, 0), renewed: share(0, 0) },
 });
 const ROWS = [row("s2", "c-garden", "Garden Circle", 4), row("s2", null, null, 1), row("s1", "c-garden", "Garden Circle", 6), row("s2", "c-anchor", "Anchor Circle", 2)];
 
@@ -143,8 +143,9 @@ describe("RoleMeasuresPanel", () => {
     expect(step("Applied").textContent).toContain("2");
     expect(step("Answered").textContent).toContain("50%");
     expect(step("Answered").textContent).toContain("1 of 2");
-    expect(step("First quest by day 14").textContent).toContain("100%");
-    expect(step("First quest by day 14").textContent).toContain("1 of 1");
+    expect(step("Seated").textContent).toContain("1");
+    expect(step("Path done by day 30").textContent).toContain("100%");
+    expect(step("Path done by day 30").textContent).toContain("1 of 1");
     // Two counted, none still in the role: a real zero.
     expect(step("Still in the role at day 90").textContent).toContain("0%");
     expect(step("Still in the role at day 90").querySelector("[data-no-data]")).toBeNull();
@@ -154,6 +155,24 @@ describe("RoleMeasuresPanel", () => {
     expect(panel.textContent).not.toMatch(/too few|not yet/);
     expect(screen.getByText("Only this circle's lead and administrators see this")).toBeTruthy();
     expect(screen.getByRole("heading", { level: 2 }).getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("draws holding the role as four stones, with no quest step", async () => {
+    Object.assign(auth, { admin: true, signedIn: true });
+    gameFetch.mockResolvedValue(answer(200, { rows: [ROWS[3]], scope: "village" }));
+    show("c-anchor");
+    const panel = await screen.findByTestId("role-measures-panel");
+    await waitFor(() => expect(panel.textContent).toContain("Holding the role"));
+    const holding = Array.from(panel.querySelectorAll("h3")).find((h) => h.textContent === "Holding the role")!.parentElement!;
+    const labels = Array.from(holding.querySelectorAll("li")).map((li) => li.textContent ?? "");
+    expect(labels).toHaveLength(4);
+    expect(labels.map((l) => ["Seated", "Path done by day 30", "Still in the role at day 90", "Renewed at each moon"].find((w) => l.includes(w)))).toEqual([
+      "Seated",
+      "Path done by day 30",
+      "Still in the role at day 90",
+      "Renewed at each moon",
+    ]);
+    expect(panel.textContent).not.toMatch(/quest/i);
   });
 
   it("reads eighteen minutes as under an hour, and only exactly 0 as 0 hours", async () => {

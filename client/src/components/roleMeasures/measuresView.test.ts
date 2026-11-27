@@ -7,7 +7,7 @@ const r = (seasonId: string | null, circleId: string | null, circleName: string 
   circleId,
   circleName,
   applications: { count: 1, answered: share, medianHoursToReply: null, medianHoursToInterview: null, medianHoursToDecision: null },
-  holders: { count: 0, pathCompleteBy30: share, firstQuestBy14: share, stillInRoleAt90: share, renewed: share },
+  holders: { count: 0, pathCompleteBy30: share, stillInRoleAt90: share, renewed: share },
 });
 
 describe("measuresView", () => {

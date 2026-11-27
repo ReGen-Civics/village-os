@@ -19,7 +19,6 @@ const holder = (o: Partial<HolderFact> = {}): HolderFact => ({
   endedAt: null,
   pathOpenedAt: T0,
   pathDoneAt: T0 + 20 * D,
-  firstQuestDoneAt: T0 + 10 * D,
   renewalsDue: 2,
   renewalsRenewed: 2,
   ...o,
@@ -28,13 +27,12 @@ const holder = (o: Partial<HolderFact> = {}): HolderFact => ({
 describe("buildMeasures", () => {
   it("computes medians and shares per season and circle", () => {
     const apps = [app(2, 24, 100), app(4, 48, 200), app(6, null, 300), app(null, null, null)];
-    const holders = [holder(), holder(), holder({ pathDoneAt: T0 + 40 * D, firstQuestDoneAt: null }), holder({ endedAt: T0 + 30 * D, renewalsRenewed: 1 })];
+    const holders = [holder(), holder(), holder({ pathDoneAt: T0 + 40 * D }), holder({ endedAt: T0 + 30 * D, renewalsRenewed: 1 })];
     const [row] = buildMeasures(apps, holders, T0 + 200 * D);
     // Two interviews recorded: their median shows (it was withheld under three before 27 Nov 2026).
     expect(row.applications).toMatchObject({ count: 4, medianHoursToReply: 4, medianHoursToInterview: 36, medianHoursToDecision: 200 });
     expect(row.applications.answered).toEqual({ eligible: 4, yes: 3, share: 0.75 });
     expect(row.holders.pathCompleteBy30).toEqual({ eligible: 4, yes: 3, share: 0.75 });
-    expect(row.holders.firstQuestBy14).toEqual({ eligible: 4, yes: 3, share: 0.75 });
     expect(row.holders.stillInRoleAt90).toEqual({ eligible: 4, yes: 3, share: 0.75 });
     expect(row.holders.renewed).toEqual({ eligible: 8, yes: 7, share: 0.88 });
   });
@@ -57,6 +55,11 @@ describe("buildMeasures", () => {
     expect(row.holders.count).toBe(0);
     expect(row.holders.renewed).toEqual({ eligible: 0, yes: 0, share: NO_DATA });
     expect(NO_DATA).toBeNull();
+  });
+  it("has no quest step in holding the role (the lead, 27 Nov 2026: roles don't do quests normally)", () => {
+    expect([...MEASURE_KEYS.holders]).toEqual(["count", "pathCompleteBy30", "stillInRoleAt90", "renewed"]);
+    const [row] = buildMeasures([], [holder()], T0 + 200 * D);
+    expect(Object.keys(row.holders).some((k) => /quest/i.test(k))).toBe(false);
   });
   it("splits by circle", () => {
     expect(buildMeasures([app(1, 1, 1, "c1"), app(1, 1, 1, "c2")], [], T0)).toHaveLength(2);

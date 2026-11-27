@@ -12,7 +12,7 @@
  *     one row each with its three headline numbers, opening to both chains,
  *     and the roles in no circle last.
  *
- * Each chain is drawn as five stones on a thread, the way a quest chain reads:
+ * Each chain is drawn as stones on a thread (five for applying, four for holding the role):
  * on a phone the thread runs down the screen, from `sm` up it runs across.
  *
  * WHO SEES IT (the lead, 27 Nov 2026): an administrator sees every circle; a
@@ -305,7 +305,6 @@ function Chains({ row }: { row: ServedRow }) {
   const holding: Step[] = [
     { label: t({ message: "Seated", context: "role measures, holding chain" }), value: String(h.count) },
     { label: t({ message: "Path done by day 30", context: "role measures, holding chain" }), ...share(h.pathCompleteBy30) },
-    { label: t({ message: "First quest by day 14", context: "role measures, holding chain" }), ...share(h.firstQuestBy14) },
     { label: t({ message: "Still in the role at day 90", context: "role measures, holding chain" }), ...share(h.stillInRoleAt90) },
     { label: t({ message: "Renewed at each moon", context: "role measures, holding chain" }), ...share(h.renewed) },
   ];
@@ -317,11 +316,17 @@ function Chains({ row }: { row: ServedRow }) {
   );
 }
 
+/** Across, the thread runs from the first stone's centre to the last: five stones for applying, four for holding the role. */
+const ACROSS = {
+  4: { cols: "@2xl:grid-cols-4", thread: "@2xl:left-[12.5%] @2xl:right-[12.5%]" },
+  5: { cols: "@2xl:grid-cols-5", thread: "@2xl:left-[10%] @2xl:right-[10%]" },
+} as const;
+
 /** A stone whose number was withheld: the ring's shape in the quiet edge. */
 const STONE_DIM = "inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border text-muted-foreground";
 
 /**
- * Five stones on a thread: down the screen while the panel is narrow (a phone, or a circle's page's
+ * Stones on a thread: down the screen while the panel is narrow (a phone, or a circle's page's
  * reading column on a desktop), across once the panel itself is 42rem wide (`@2xl`, the section's container).
  */
 function Chain({ title, steps }: { title: string; steps: readonly Step[] }) {
@@ -332,8 +337,8 @@ function Chain({ title, steps }: { title: string; steps: readonly Step[] }) {
         <span className={`font-body ${EYEBROW}`}>{title}</span>
       </h3>
       <div className="relative mt-3">
-      <span aria-hidden="true" className="absolute bottom-6 left-[21px] top-6 w-px bg-border @2xl:bottom-auto @2xl:left-[10%] @2xl:right-[10%] @2xl:top-[21px] @2xl:h-px @2xl:w-auto" />
-      <ol className="relative grid gap-3 @2xl:grid-cols-5 @2xl:gap-2">
+      <span aria-hidden="true" className={`absolute bottom-6 left-[21px] top-6 w-px bg-border @2xl:bottom-auto @2xl:top-[21px] @2xl:h-px @2xl:w-auto ${ACROSS[steps.length === 4 ? 4 : 5].thread}`} />
+      <ol className={`relative grid gap-3 @2xl:gap-2 ${ACROSS[steps.length === 4 ? 4 : 5].cols}`}>
         {steps.map((s, i) => (
           <li key={s.label} className="relative flex items-center gap-3 @2xl:flex-col @2xl:items-center @2xl:gap-2 @2xl:text-center">
             <span className={`${s.value === null ? STONE_DIM : RING} bg-card text-sm font-semibold ${NUM}`} aria-hidden="true">
