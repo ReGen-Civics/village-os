@@ -41,44 +41,44 @@ const at = (path: string, menu?: Record<string, unknown>) => {
 };
 
 // Inside the open dropdown: a deeper page also draws the entry in its breadcrumb.
-const dropdown = () => within(document.getElementById("nav-menu-decide")!);
+const dropdown = () => within(document.getElementById("nav-menu-governance")!);
 const group = (name: string) => screen.getByRole("button", { name: new RegExp(`^${name}`) });
 
 describe("the branch the page belongs to", () => {
   it("is lit on the group, and only that group", () => {
-    at("/decisions/42");
-    expect(group("Decide").getAttribute("aria-current")).toBe("true");
-    expect(group("Decide").querySelector("[data-lit-rule]")).toBeTruthy();
+    at("/governance/decisions/42");
+    expect(group("Governance").getAttribute("aria-current")).toBe("true");
+    expect(group("Governance").querySelector("[data-lit-rule]")).toBeTruthy();
     expect(group("Community").getAttribute("aria-current")).toBeNull();
     expect(group("Community").querySelector("[data-lit-rule]")).toBeNull();
   });
 
   it("marks the entry in the open dropdown: the page itself, or the entry above a deeper page", () => {
     at("/powers");
-    fireEvent.click(group("Decide"));
+    fireEvent.click(group("Governance"));
     expect(dropdown().getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("page");
-    expect(document.getElementById("nav-menu-decide")?.hasAttribute("data-nav-dropdown")).toBe(true); // a Sea chart hook
+    expect(document.getElementById("nav-menu-governance")?.hasAttribute("data-nav-dropdown")).toBe(true); // a Sea chart hook
     cleanup();
     at("/powers/water");
-    fireEvent.click(group("Decide"));
+    fireEvent.click(group("Governance"));
     expect(dropdown().getByRole("link", { name: "What We Look After" }).getAttribute("aria-current")).toBe("true");
   });
 
   it("lights the group for a page whose entry this reader is not offered, and marks no entry", () => {
-    at("/decisions/42"); // Decisions is a member's door: a visitor's Decide has no such entry
-    fireEvent.click(group("Decide"));
-    expect(group("Decide").getAttribute("aria-current")).toBe("true");
+    at("/governance/decisions/42"); // Decisions is a member's door: a visitor's Governance has no such entry
+    fireEvent.click(group("Governance"));
+    expect(group("Governance").getAttribute("aria-current")).toBe("true");
     expect(dropdown().queryByRole("link", { name: "Decisions" })).toBeNull();
-    expect(document.querySelector('#nav-menu-decide [aria-current]')).toBeNull();
+    expect(document.querySelector('#nav-menu-governance [aria-current]')).toBeNull();
   });
 
   it("follows the village's own name for the group", () => {
-    at("/decisions/42", { groups: { Decide: "Choose together" } });
+    at("/governance/decisions/42", { groups: { Governance: "Choose together" } });
     expect(group("Choose together").getAttribute("aria-current")).toBe("true");
   });
 
   it("lights nothing for a page the village hid from its menu", () => {
-    at("/decisions/42", { hidden: ["/decisions"] });
+    at("/governance/decisions/42", { hidden: ["/governance/decisions"] });
     expect(document.querySelector("[data-lit-rule]")).toBeNull();
     expect(screen.getByTestId("bar").textContent).toBe("false");
   });
@@ -88,7 +88,7 @@ describe("the branch the page belongs to", () => {
     expect(document.querySelector('[aria-current="true"], [aria-current="page"]')).toBeNull();
     expect(screen.getByTestId("bar").textContent).toBe("false");
     cleanup();
-    at("/decisions/42");
+    at("/governance/decisions/42");
     expect(screen.getByTestId("bar").textContent).toBe("true");
   });
 });
