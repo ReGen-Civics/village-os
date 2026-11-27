@@ -15,55 +15,31 @@
       "path": "/",
       "page": "client/src/pages/Home.tsx",
       "maxGzipKB": 260,
-      "known": [
-        "client/src/components/natural/index.ts",
-        "client/src/components/natural/moments.ts",
-        "client/src/lib/celebrated.ts",
-        "shared/capabilities.ts"
-      ]
+      "known": []
     },
     {
       "path": "/ (story pages off)",
       "page": "client/src/pages/VillageWelcome.tsx",
       "maxGzipKB": 226,
-      "known": [
-        "client/src/components/natural/index.ts",
-        "client/src/components/natural/moments.ts",
-        "client/src/lib/celebrated.ts",
-        "shared/capabilities.ts"
-      ]
+      "known": []
     },
     {
       "path": "/roles",
       "page": "client/src/pages/Roles.tsx",
       "maxGzipKB": 385,
-      "known": [
-        "client/src/components/natural/index.ts",
-        "client/src/components/natural/moments.ts",
-        "client/src/lib/celebrated.ts",
-        "shared/capabilities.ts"
-      ]
+      "known": []
     },
     {
       "path": "/propose-a-role",
       "page": "client/src/pages/ProposeARole.tsx",
       "maxGzipKB": 312,
-      "known": [
-        "client/src/components/natural/moments.ts",
-        "client/src/lib/celebrated.ts",
-        "shared/capabilities.ts"
-      ]
+      "known": []
     },
     {
       "path": "/steward",
       "page": "client/src/pages/StewardJourney.tsx",
       "maxGzipKB": 282,
-      "known": [
-        "client/src/components/natural/index.ts",
-        "client/src/components/natural/moments.ts",
-        "client/src/lib/celebrated.ts",
-        "shared/capabilities.ts"
-      ]
+      "known": []
     }
   ]
 }

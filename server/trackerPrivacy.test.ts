@@ -128,9 +128,18 @@ describe("the founders' tracker ships nothing private in its chunk", () => {
       chunkFiles(),
       "the entry named by index.html must exist on disk",
     ).toContain(entry!);
+    /*
+     * EVERY SCRIPT index.html LOADS, not the entry alone (headroom pass 3, 27 Nov
+     * 2026). The router now sits in the named "first-page" chunk the entry
+     * imports (vite.config.ts, FIRST_PAGE), so the entry chunk holds only the
+     * entry module. What an anonymous visitor receives is every script the page
+     * loads, and that is what this reads.
+     */
+    const firstPage = Array.from(new Set(html.match(/assets\/[A-Za-z0-9_-]+\.js/g) ?? [])).map((a) => a.replace(/^assets\//, ""));
+    expect(firstPage, "index.html loads the entry").toContain(entry!);
     expect(
-      readChunk(entry!),
-      "an anonymous visitor learns the tracker chunk's name from the entry bundle",
+      firstPage.map((f) => readChunk(f)).join("\n"),
+      "an anonymous visitor learns the tracker chunk's name from the scripts index.html loads",
     ).toContain(name.replace(/\.js$/, ""));
   });
 

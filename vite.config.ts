@@ -584,16 +584,13 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
   // What a key page reaches is a static closure, so none of it can import this module back.
   const deps = ok ? m.importedIds.filter((dep) => !(dep.includes("node_modules") || eager.has(dep) || key.has(dep))) : [];
   const verdicts = deps.map((dep) => smallGroupOf(dep, info, eager, key));
-  const importsFirstPage = !!m?.importedIds.some((x) => eager.has(x) && !x.includes("node_modules"));
   const group = ok
     ? homes.find(
         (g) =>
           g.fits(m.code as string) &&
           deps.every((dep, i) => {
             const of = verdicts[i];
-            if (of !== null && (g.mayImport as readonly string[]).includes(of)) return true;
-            // A follower only for a module that imports no first-page module itself: see FOLLOWER_IMPORTERS.
-            return !importsFirstPage && followsInto(dep, id, g.mayImport, info, eager, key);
+            return (of !== null && (g.mayImport as readonly string[]).includes(of)) || followsInto(dep, id, g.mayImport, info, eager, key);
           }),
       )
     : undefined;
@@ -615,13 +612,12 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
  * any member, and everything it imports must be a member its importer's
  * group may import, or a follower in turn.
  *
- * FOLLOWER_IMPORTERS: the importer a follower lets in must not itself import a
- * first-page module. Measured on 7366a88: admitting every importer took the
- * total to 7896 KB but main JS from 293 to 404 KB, over its 400 KB budget,
- * because rollup folded the shared first-page chunk (internalPath, about 110
- * KB) into the entry once a group reached it by a new path. A bisection named
- * VillageConflictSteps and SeatTermField, both of which import gameApi or
- * AuthContext directly; this rule keeps both out, and every importer like them.
+ * Pass 2 (7366a88) let a follower in only for an importer that imported no
+ * first-page module: admitting every importer took main JS from 293 to 404 KB,
+ * because rollup folded its own shared first-page chunk (internalPath) into
+ * the entry. Since pass 3 every first-page module of ours sits in the named
+ * "first-page" chunk (FIRST_PAGE below), so there is nothing left to fold, and
+ * the limit is gone.
  *
  * Measured on 7366a88 with scripts/check-dist-budget.mjs, together with
  * "lazy-shell" below and the pages' words in "tables": 7980 KB of 8000
@@ -1076,7 +1072,72 @@ const LONG_COPY_PARTS = path.resolve(import.meta.dirname, "dist", "i18n", "parts
  * The chunk a module joins under the rules above, before the "keyset-" groups
  * (keySetPlan below), or undefined for rollup's own chunking.
  */
+/** The modules the entry imports statically, worked out once per build (`eagerModules`). */
+function eagerSet(getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): Set<string> {
+  if (!eagerModules) {
+    eagerModules = new Set();
+    const stack = Array.from(getModuleIds()).filter((m) => getModuleInfo(m)?.isEntry);
+    while (stack.length) {
+      const m = stack.pop() as string;
+      if (eagerModules.has(m)) continue;
+      eagerModules.add(m);
+      for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
+    }
+  }
+  return eagerModules;
+}
+
+/*
+ * FIRST_PAGE: EVERY FIRST-PAGE MODULE OF OURS IN ONE NAMED CHUNK (headroom pass
+ * 3, 27 Nov 2026). On 0067ce5 the total stood at 7944 KB of 8000 and the 1.3.87
+ * batch could not land.
+ *
+ * The keyset- groups (keySetPlan below) refused most of the small modules a key
+ * route reaches, 40 files and 99 KB of padding, for one reason: joining would
+ * cut an "atom", a set of first-page modules rollup keeps together because the
+ * same named chunks reach them, and cutting one splits a first-page file. Those
+ * atoms existed only because our first-page modules sat outside every named
+ * chunk, in the entry and in rollup's own shared chunk (internalPath). Named,
+ * they are no atom: a group may reach any of them without splitting anything.
+ *
+ * Nothing moves onto or off the first page by this: every module named here is
+ * one the entry imports statically, which index.html already loaded. Only our
+ * own JavaScript and TypeScript are named. A package stays with rollup, because
+ * the static graph overstates what the first page uses (an import a page never
+ * calls is shaken out of the entry's reach, and naming it pulled 100 KB of
+ * framer-motion and Radix onto the first page when tried); so do stylesheets,
+ * font files and rollup's virtual modules, which made circular chunks when
+ * tried. The packages a first-page module uses at the root (React, React DOM
+ * and the few small ones between them and the shell's own) join "shell-libs"
+ * below, for the same reason: as atoms they made every candidate a cut.
+ *
+ * The entry chunk keeps only the entry module, so MAX_MAIN_JS_KB now reads a few
+ * KB; MAX_BOOT_JS_KB, every script index.html loads, is the budget that counts
+ * for the first page.
+ *
+ * Measured on 7fed159 with scripts/check-dist-budget.mjs, together with the
+ * follower limit lifted (FOLLOWER rule above): 7944 KB of 8000 block-charged
+ * before, 7836 after; main JS 291 to 8 KB; first-page JS 684 to 666 KB, in 7
+ * scripts where it was 9 (natural/index, natural/moments, lib/celebrated and
+ * shared/capabilities no longer ride the first page at all, so
+ * scripts/boot-set-baseline.json is empty). Every key route's first view is
+ * lighter, gzipped: / 238.3 to 233.5 KB, / (story pages off) 223.0 to 218.9,
+ * /roles 364.2 to 354.8, /propose-a-role 296.1 to 289.8, /steward 263.9 to 257.5.
+ * Each part alone: the named first-page chunk with its packages left to rollup
+ * 7892; React and its neighbours in shell-libs 7872; the follower limit lifted 7836.
+ */
+function isFirstPageSource(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): boolean {
+  return (
+    eagerSet(getModuleInfo, getModuleIds).has(id) &&
+    !getModuleInfo(id)?.isEntry &&
+    !id.includes("node_modules") &&
+    !id.startsWith("\0") &&
+    /\.[cm]?[jt]sx?$/.test(id.split("?")[0])
+  );
+}
+
 function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): string | undefined {
+  if (isFirstPageSource(id, getModuleInfo, getModuleIds)) return "first-page";
   if (id.includes("lucide-react")) return "icons";
   /*
    * THE SHELL'S LIBRARIES, ONE NAMED CHUNK (role journey PR-B, 2026-11-09).
@@ -1087,7 +1148,8 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    * stayed at 641 KB, i.e. nothing new was loaded. Named, the split no
    * longer depends on how many lazy chunks import them.
    */
-  if (/node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?(?:motion-dom|tailwind-merge|sonner|wouter|@lingui\/core)\//.test(id)) return "shell-libs";
+  // React, React DOM, the scheduler and the small packages between them and the shell's own joined in headroom pass 3: see FIRST_PAGE above.
+  if (/node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?(?:motion-dom|tailwind-merge|sonner|wouter|@lingui\/core|react|react-dom|scheduler|use-sync-external-store|regexparam|motion-utils)\//.test(id)) return "shell-libs";
   /*
    * The natural interface kit, one chunk instead of four.
    *
@@ -1109,16 +1171,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
   // SMALL SHARED MODULES, two lazy chunks: see SMALL_MODULE_BYTES above.
   // Only modules the entry does NOT import statically, so the first
   // page load fetches nothing it did not fetch before.
-  if (!eagerModules) {
-    eagerModules = new Set();
-    const stack = Array.from(getModuleIds()).filter((m) => getModuleInfo(m)?.isEntry);
-    while (stack.length) {
-      const m = stack.pop() as string;
-      if (eagerModules.has(m)) continue;
-      eagerModules.add(m);
-      for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
-    }
-  }
+  eagerSet(getModuleInfo, getModuleIds);
   // What the key routes' pages reach statically joins no group: see KEY_ROUTE_PAGES above.
   if (!keyRouteModules) {
     keyRouteModules = new Set();
