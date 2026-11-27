@@ -83,6 +83,8 @@ jobs:
       contents: read
       # For reading ci's verdict on a tagged commit.
       actions: read
+      # For asking the registry whether a version image already exists.
+      packages: read
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
       # true for a version tag, pushed or dispatched. Every job below that
@@ -92,6 +94,9 @@ jobs:
       sha: ${{ steps.decide.outputs.sha }}
       version: ${{ steps.decide.outputs.version }}
       tags: ${{ steps.decide.outputs.tags }}
+      # On the :edge path only: the version tag already holding this commit's
+      # image, so :edge can point at it instead of building it again.
+      reuse_from: ${{ steps.reuse.outputs.from }}
     steps:
       - id: decide
         name: Decide the tags
@@ -174,13 +179,43 @@ jobs:
           echo "publish=${publish} sha=${sha}"
           echo "${tags}"
 
+      - name: Is this commit already published under a version
+        # NO SECOND BUILD FOR :edge (26 Nov 2026). A release merge is tagged
+        # within minutes, and its tag release builds, boots, signs and pushes
+        # the image before ci's push run on main finishes. The :edge build that
+        # run then starts used to build the SAME commit again (45856729821
+        # rebuilt 7dac6f1; 45872165204 rebuilt 05131cc), 4 to 5.5 runner-
+        # minutes for an image that already existed. When a version tag points
+        # at this commit AND the registry holds that version, :edge is pointed
+        # at it (job edge-reuse) and the image job is skipped. If the tag
+        # release has not pushed yet, nothing is found and the image job
+        # builds :edge exactly as before.
+        id: reuse
+        if: steps.decide.outputs.publish == 'true' && steps.decide.outputs.tag_release != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ghcr.io/regen-civics/village-os
+          SHA: ${{ steps.decide.outputs.sha }}
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USER" --password-stdin > /dev/null
+          for name in $(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" --jq ".[] | select(.commit.sha == \"${SHA}\") | .name"); do
+            case "$name" in v[0-9]*.[0-9]*.[0-9]*) ;; *) continue ;; esac
+            ref="${IMAGE}:${name#v}"
+            if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+              echo "${SHA} is already published as ${ref}; :edge will point at it."
+              echo "from=${ref}" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "${name} points at ${SHA}, but ${ref} is not in the registry yet; building :edge as before."
+          done
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
         with:
           ref: ${{ steps.decide.outputs.sha }}
-          # The commit and its parents, so the tested-twin fallback below can
-          # compare the tagged tree with its second parent's.
-          fetch-depth: 2
 
       - name: The tag, package.json and the platform version agree
         # 1.1.0 stayed the answer of /api/platform/info for 236 commits after
@@ -378,7 +413,12 @@ jobs:
   # uploads rather than rebuilds.
   # -------------------------------------------------------------------------
   image:
-    needs: [plan, rollback]
+    # NOT `needs: rollback` (26 Nov 2026). The image builds and boots WHILE
+    # rollback checks the schema, and the step "The rollback check passed"
+    # below waits for rollback's verdict before anything is pushed, so nothing
+    # is published unless it passed, as before. Waiting for the whole job cost
+    # its 55 s of work plus a runner hop (64 s on 1.3.82, 140 s on 1.3.83).
+    needs: [plan]
     # `!cancelled()` is load-bearing and is not decoration. A job whose `needs`
     # were SKIPPED is skipped too unless its own `if` calls a status function,
     # and `rollback` is skipped on the :edge path. Without it, wiring rollback
@@ -386,11 +426,13 @@ jobs:
     #
     # `needs.plan.result == 'success'` is then required explicitly, because
     # `!cancelled()` also stops a failed `plan` from blocking this job.
-    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.rollback.result != 'failure' }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.publish == 'true' && needs.plan.outputs.reuse_from == '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      # To read the rollback job's verdict in this same run.
+      actions: read
       # R044: keyless signing and the provenance attestation. `id-token` lets
       # this job ask GitHub's OIDC issuer for a short-lived identity that
       # Sigstore binds to this workflow file; `attestations` lets it record the
@@ -440,6 +482,19 @@ jobs:
           # only thing that lets /health say which commit is serving.
           build-args: |
             GIT_SHA=${{ needs.plan.outputs.sha }}
+          # Set HERE, on the image the smoke tests run, because the Push step
+          # below pushes this exact image and does not build again.
+          labels: |
+            org.opencontainers.image.title=village-os
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ needs.plan.outputs.sha }}
+            org.opencontainers.image.version=${{ needs.plan.outputs.version }}
+            org.opencontainers.image.licenses=AGPL-3.0-or-later
+          # No attestation manifests on the image that gets pushed: they turn it
+          # into an index with an unknown/unknown entry, which older
+          # self-hosted docker and some mirrors refuse. Provenance is published
+          # separately by the attest step below (R044).
+          provenance: false
           # linux/amd64 only, deliberately. arm64 would have to cross-build
           # bcrypt and sharp under emulation, which is slow and is exactly the
           # kind of thing that half-works. Add it when a village needs it, and
@@ -543,38 +598,89 @@ jobs:
         if: always()
         run: docker logs village || true
 
+      - name: The rollback check passed
+        # A tag release publishes only an image a village can roll back from.
+        # rollback runs beside this job; wait here for its verdict, before the
+        # push. Its success lets this continue; anything else (failed,
+        # cancelled, skipped, or no verdict in 25 minutes) stops the release
+        # before a single tag is pushed. The :edge path has no rollback job.
+        if: needs.plan.outputs.tag_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 150); do
+            verdict=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?filter=latest&per_page=100" \
+                        --jq '[.jobs[] | select(.name == "rollback")][0] | "\(.status) \(.conclusion)"')
+            case "$verdict" in
+              "completed success") echo "rollback: passed"; exit 0 ;;
+              completed\ *) echo "::error::rollback concluded '${verdict#completed }', so this release is not published"; exit 1 ;;
+              "null null"|"") echo "::error::this run has no rollback job, so nothing says a village can go back; not published"; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::rollback gave no verdict in 25 minutes; not published"
+          exit 1
+
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push
+      - name: Push the image that was smoke-tested
+        # PUSH WHAT WAS TESTED, AND DO NOT BUILD AGAIN (26 Nov 2026). This used
+        # to be a second build-push-action run, which rebuilt the app layer
+        # (`pnpm run build`, 69 s on 1.3.82 and 1.3.83) instead of reusing it.
+        # Besides the minute, that meant the image on the registry was a
+        # rebuild of the one the three smoke steps above had booted. Now the
+        # loaded village-os:candidate is tagged with every published name and
+        # pushed as it is, so the registry holds the tested image, byte for byte.
+        #
+        # Then the registry is asked what it holds: every tag must resolve to
+        # ONE digest, and that manifest must not be an index carrying an
+        # unknown/unknown entry (the shape older docker refuses). The digest
+        # comes from the registry, not from the local store, and it is what
+        # gets signed and attested below.
         id: push
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          push: true
-          tags: ${{ needs.plan.outputs.tags }}
-          build-args: |
-            GIT_SHA=${{ needs.plan.outputs.sha }}
-          labels: |
-            org.opencontainers.image.title=village-os
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ needs.plan.outputs.sha }}
-            org.opencontainers.image.version=${{ needs.plan.outputs.version }}
-            org.opencontainers.image.licenses=AGPL-3.0-or-later
-          platforms: linux/amd64
-          # Attestations turn the image into a multi-platform index carrying an
-          # unknown/unknown entry. GHCR is fine with it; older self-hosted
-          # docker and some mirrors are not, and this image is meant to be
-          # pullable by thirteen operators we do not control. Provenance is
-          # still published (R044), by the attest step below, as a separate
-          # referrer in the registry that leaves this image's manifest alone.
-          provenance: false
-          # Every layer is already in this scope from the Build step above, so
-          # this is an upload and not a second build.
-          cache-from: type=gha,scope=release
+        env:
+          TAGS: ${{ needs.plan.outputs.tags }}
+        run: |
+          set -euo pipefail
+          mapfile -t tags < <(printf '%s\n' "$TAGS" | sed '/^$/d')
+          if [ "${#tags[@]}" -eq 0 ]; then
+            echo "::error::plan named no tags, so nothing was pushed"
+            exit 1
+          fi
+          # The FIRST tag is the immutable one (the version, or :edge alone).
+          # Push it and check what the registry holds BEFORE any moving tag
+          # (:stable) points anywhere, so a bad push stops at a tag nobody
+          # pulls by default.
+          first="${tags[0]}"
+          docker tag village-os:candidate "$first"
+          docker push "$first"
+          raw=$(docker buildx imagetools inspect --raw "$first")
+          if jq -e '(.manifests // []) | map(select(.platform.os == "unknown")) | length > 0' <<< "$raw" > /dev/null; then
+            echo "::error::${first} was pushed as an index with an unknown/unknown entry, which older docker refuses. No other tag was moved."
+            exit 1
+          fi
+          digest=$(docker buildx imagetools inspect "$first" --format '{{json .Manifest}}' | jq -r '.digest')
+          case "$digest" in
+            sha256:*) ;;
+            *) echo "::error::the registry reported no digest for ${first} ('${digest}')"; exit 1 ;;
+          esac
+          for tag in "${tags[@]:1}"; do
+            docker tag village-os:candidate "$tag"
+            docker push "$tag"
+            other=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ "$other" != "$digest" ]; then
+              echo "::error::${tag} resolves to ${other}, not ${digest}; the tags do not name one image"
+              exit 1
+            fi
+          done
+          echo "Pushed ${digest} as: ${tags[*]}"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
 
       # R044: sign what was pushed, by digest and never by tag, because a tag
       # can be moved after the signature is made and a digest cannot. Keyless:
@@ -613,6 +719,46 @@ jobs:
             echo "commit: ${{ needs.plan.outputs.sha }}"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # :edge for a commit a tag release already built: point at that image, the
+  # same digest (pulled, tagged, pushed; never rebuilt), which that release
+  # already booted, signed and attested. See plan's "already published" step.
+  edge-reuse:
+    needs: plan
+    if: needs.plan.outputs.publish == 'true' && needs.plan.outputs.tag_release != 'true' && needs.plan.outputs.reuse_from != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Point :edge at the released image
+        env:
+          FROM: ${{ needs.plan.outputs.reuse_from }}
+          TAGS: ${{ needs.plan.outputs.tags }}
+          SHA: ${{ needs.plan.outputs.sha }}
+        run: |
+          set -euo pipefail
+          want=$(docker buildx imagetools inspect "$FROM" --format '{{json .Manifest}}' | jq -r '.digest')
+          docker pull -q "$FROM"
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            docker tag "$FROM" "$tag"
+            docker push -q "$tag"
+            got=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r '.digest')
+            if [ "$got" != "$want" ]; then
+              echo "::error::${tag} resolves to ${got}, not ${want} (${FROM}); :edge must name the released image"
+              exit 1
+            fi
+            echo "${tag} -> ${want} (the image ${FROM} shipped for ${SHA})"
+          done <<< "$TAGS"
+          { echo "### :edge reused"; echo; echo "\`$(printf '%s' "$TAGS" | tr '\n' ' ' | sed 's/ *$//')\` now names ${want}, the image already published as \`${FROM}\` for ${SHA}. Nothing was rebuilt."; } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # The GitHub release, and the starter kit attached to it.
