@@ -37,17 +37,17 @@ A person present gets a reading only when all three hold, and the SQL itself che
 (`cardReadableGeneKeys` in `server/repos/geneKeys.ts`):
 
 - their lines are shown (`member_gene_keys.visibility = 'show'`);
-- they let Maia use their lines (`maia = 1`), since Maia may weave the card;
+- they let the village guide use their lines (`maia = 1`), since the village guide may weave the card;
 - they said yes to session cards themselves (`card_in = 1` and `card_out = 0`, from their own Gene Keys controls:
   "Read me on session cards" and "Leave me out of session cards").
 
-Whether a card asks its own yes, or reads anyone who lets Maia use their lines unless they said no, is Rye's call
+Whether a card asks its own yes, or reads anyone who lets the village guide use their lines unless they said no, is Rye's call
 (the clause 13 review's F4). It is one constant, `CARDS_ASK_THEIR_OWN_YES` in `shared/geneKeys.ts`: true asks
 (`card_in = 1`), false reads by default (`card_out = 0`). The toggle writes both columns, so either answer reads
 what members have already chosen. It shows in the Gene Keys controls whether or not the village has cards on.
 
 The same rule is asked again every time the cards are read. When somebody a card read has since hidden their
-lines, stopped Maia, said no to cards or deleted their lines, that card is taken back for everyone and deleted.
+lines, stopped the village guide, said no to cards or deleted their lines, that card is taken back for everyone and deleted.
 
 Everyone else present is named in "Welcome too" and nothing more is said about them. The card tells a person who
 was not read why, and how to be read next time, without telling anyone else.
@@ -65,18 +65,18 @@ onboarding. Anyone may pull (his ruling of 2026-10-30), so any pull opens it.
   (`client/src/components/sessionCard/CardInvite.tsx`, mounted beside the stages). It reads the room's one card
   poll (`sharedCards.ts`), so it adds no request. Nobody read, signed out, outside the room, or in a room with the
   module off ever sees it.
-- It names, in plain words, each thing being read still needs that is off for this member (lines shown, Maia
+- It names, in plain words, each thing being read still needs that is off for this member (lines shown, the village guide
   allowed to use them, their own yes to cards), above one button that turns on exactly those, through the
   member's own `PATCH /api/gene-keys/me`. Nothing is implied: a thing not listed is not changed.
 - A yes reads them from the NEXT card. The card on the table was read from the room as it was pulled and is not
-  rewritten, even when they say yes while Maia is still weaving it.
+  rewritten, even when they say yes while the village guide is still weaving it.
 - "Not today", or closing it any way, means not again in that session (kept on the device). A later session may
   ask once more.
 - Somebody with no lines yet is sent to find them (`/profile/gene-keys?next=/sessions/:id`) and brought back to the
   room after. That page reads Gene Keys and, from the same birth, the Human Design type, strategy and authority and
   the member's own Sun, Moon and, from an exact birth time, rising signs (0309; see docs/modules/gene-keys.md), so the invitation
   promises those and nothing more. Reached this way, that page's last step asks
-  Maia's permission and the card's own yes as two named boxes of their own (`ShareChoices`), unticked unless the
+  the village guide's permission and the card's own yes as two named boxes of their own (`ShareChoices`), unticked unless the
   member ticked them before, and the save carries the card answer (`cards` in `PUT /api/gene-keys/me`). Reached
   any other way it asks nothing about cards and sends no card answer, so an earlier one stands.
 
@@ -100,15 +100,15 @@ sentence about them is Amora's. The strategy and authority lines are the ones th
   new moon, thanks at the full. Nothing changes on its own: for the tension, the facilitator can park an item
   for next time from the card, through the room's own item door.
 
-## Maia
+## The village guide
 
-When an assistant key is set, Maia weaves the same facts into warmer words (mode `card`, its own day budget in
+When an assistant key is set, the village guide weaves the same facts into warmer words (mode `card`, its own day budget in
 `server/lib/assistant.ts`, no tools, the facts prefetched). She never sees a name or a member id. A display name
 is member-written text, so each person read is a key (`p1`, `p2`), the people welcomed are only a count, and the
 draft she is given is rebuilt from the keyed facts. Her reply must use every key and no other, and the names go
 back in on the server. Her card is thrown away, and the plain card served, when it is cut off or unreadable,
 leaves out a key, uses a key nobody holds, gives someone no line, runs long, or trips the house voice check. The
-card says which it is: "Woven by Maia" or "Read from today's sky".
+card says which it is: "Woven by the village guide" or "Read from today's sky".
 
 On the platform's borrowed key, woven cards are capped at 5 per member and 20 per village a day
 (`PLATFORM_WOVEN`), because that key's day cap is shared by every mode; past either, the plain card is served.

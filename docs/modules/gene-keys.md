@@ -11,7 +11,7 @@ Provenance: platform
 **Each member can find their Gene Keys lines and Human Design type from their birth details. The details are
 read on the member's own device and never sent: the village stores the result (26 activations) and nothing
 else. The two profile lines show as a seal on the portrait unless the member hides them, a circle sees which of
-the six lines it holds, and Maia shapes her suggestions to how a member works best when they say yes.**
+the six lines it holds, and the village guide shapes her suggestions to how a member works best when they say yes.**
 
 ## Status
 
@@ -43,7 +43,7 @@ Rulings it follows (Rye, 2026-10-22):
   nodes opposite, the design Sun 88 degrees back) is refused.
 - **Another member's lines are read only when shown.** Both batched reads filter on `visibility = 'show'` in the
   SQL. Hidden means hidden everywhere: profile, circle view, role applications.
-- **Maia reads the lines only with the member's yes** (`maia`), and only while the module is on. Showing lines
+- **The village guide reads the lines only with the member's yes** (`maia`), and only while the module is on. Showing lines
   to the circle and letting the guide use them are separate permissions. "Talk to me plainly" (`maia_plain`)
   keeps the lines for choosing what she suggests and takes them out of her wording.
 - **"Who complements me" lists only members who joined it and show their lines**, and only to a member who did
@@ -110,11 +110,11 @@ Every surface wears the profile's night world (`sheet-night`) and renders nothin
 
 - **`/profile/gene-keys`** (`client/src/pages/GeneKeys.tsx`, a lazy chunk so nobody downloads the sky maths
   until they open it): birth date, time or "I don't know my birth time", the birth town searched on the device,
-  the window choice when time decides the result, the reveal, then show or hide and Maia's yes, then the save.
+  the window choice when time decides the result, the reveal, then show or hide and the village guide's yes, then the save.
 - **The seal** (`GeneKeysSeal.tsx`) on the member's own portrait (`ProfileHero`) and on another member's
   (`PublicProfile`): hover or focus shows the two words, a click or tap opens the lines card, as a dialog on a
   wide screen and a sheet on a phone.
-- **The lines card** on the member's own profile, with their controls (show or hide, Maia, find again, remove),
+- **The lines card** on the member's own profile, with their controls (show or hide, the village guide, find again, remove),
   and on another member's public profile without them. Before a result exists, the own-profile card invites.
 - **The character page** (`GeneKeysPrompt.tsx`): a card while the member has no result, and a popup once, after
   a character joins their party. "Once" is per device (`localStorage`).
@@ -140,7 +140,7 @@ Every surface wears the profile's night world (`sheet-night`) and renders nothin
   prompt on the Life's Work key, the member's own words, and where they met it from (Shadow, Gift, Siddhi), kept
   as a private `free` Journal entry. The ladder shows the last 13 moons. No Gene Keys text of Richard's is
   reproduced; the card links to genekeys.com.
-- **Maia speaks your type** (`MaiaTypeLine.tsx`) under the quest board's first suggestion, only with Maia's yes
+- **The village guide speaks your type** (`MaiaTypeLine.tsx`) under the quest board's first suggestion, only with the village guide's yes
   and not while the member asked for plain talk; her note (`assistantNoteFor`) says when she shapes something.
 - **On the living map of the circles** (`/map/circles`), mounted by the map lane on its renderer, which this module
   does not edit: `CircleGlyph` (`{ cx, cy, r, px, holderIds }`: six bars on a plate outside a circle's rim, solid for

@@ -10,15 +10,18 @@
  * own just above it (#1646). Now the companions ARE the button, standing
  * together with a count of drafts waiting for a yes, and a tap opens:
  *
- *   Your companions   one row each; a row opens the companions panel.
- *   Ask {guide}       the village concierge, who answers how things work here
- *                     and who to ask (/map/circles#ask). A visitor's goes to
- *                     the guide's conversation on Work with us.
- *   Ask {guide} about Admin
- *                     for an admin only, tagged Admin. It goes to
- *                     /admin?helper=open, where the Admin helper opens (agreed
- *                     with the Admin evolution lane); it is never mounted over
- *                     a member page.
+ *   Your companions   one row each; a row opens the companions panel. The
+ *                     personal companion is not one of them: the guide's row
+ *                     stands for it (below).
+ *   {guide}           ONE row for the village guide (the lead, 27 Nov 2026:
+ *                     "Scarlet is Maia and Maia admin all 3 can be scarlet"),
+ *                     wearing the personal companion's face, the village's
+ *                     macaw by default. It opens the guide's panel: the chat,
+ *                     "How things work here" (/map/circles#ask), and for an
+ *                     admin "Admin help" (/admin?helper=open, where the Admin
+ *                     helper opens; it is never mounted over a member page).
+ *                     A member with no chat and no Admin goes straight to the
+ *                     guide's help; a visitor to the guide on Work with us.
  *   Sign in           for a visitor.
  *
  * A member with no companions yet, and a visitor, see the guide's spiral in the
@@ -62,8 +65,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { FabTriggerIcon } from "@/config/mobileNav";
 import { haptic } from "@/lib/haptics";
 import { useGuideName } from "@/hooks/useGuideName";
-import { CompanionsDialog, Standing, STANDING, draftsWaiting, useCompanions } from "@/components/profileDash/companionStanding";
-import type { CompanionView } from "@shared/companionItems";
+import { CompanionsDialog, Face, Standing, STANDING, draftsWaiting, useCompanions, type GuideDoor } from "@/components/profileDash/companionStanding";
+import { SCARLET_LOOK, type CompanionLook, type CompanionView } from "@shared/companionItems";
 import { isBareRoute, normalisePath } from "./MobileTabBar";
 import { useLingui } from "@lingui/react/macro";
 import { useEntranceStands } from "@/lib/entranceStatus";
@@ -101,39 +104,70 @@ export type CornerRow = {
   href?: string;
   /** Opens the companions panel instead of navigating. */
   companion?: CompanionView;
-  admin?: boolean;
+  /** The guide's own row: opens the guide's panel (its chat, its help, Admin's helper for an admin). */
+  guidePanel?: boolean;
+  /** The face the row wears, in a circle: a companion's, or the guide's. */
+  face?: { look: CompanionLook; url: string | null };
 };
 
-/** The corner's rows, for who is asking. Pure, so the order and the gates are tested without a page. */
-export function cornerRows(o: { signedIn: boolean; admin: boolean; army: readonly CompanionView[] | null; guide: string; t: (d: { message: string; context?: string }) => string }): CornerRow[] {
+type T = (d: { message: string; context?: string }) => string;
+
+const waitingWords = (n: number, t: T): string | undefined =>
+  n === 0 ? undefined : n === 1 ? t({ message: "One draft waits for your yes", context: "the corner: under a companion's name" }) : t({ message: `${n} drafts wait for your yes`, context: "the corner: under a companion's name" });
+
+/**
+ * The member's personal companion, which the guide's row stands for (the lead, 27 Nov 2026: "Scarlet is Maia and
+ * Maia admin all 3 can be scarlet"): it starts as the village's own macaw and answers through the guide.
+ */
+export function personalCompanion(army: readonly CompanionView[] | null): CompanionView | null {
+  return army?.find((c) => c.scope === "personal") ?? null;
+}
+
+/**
+ * The corner's rows, for who is asking. Pure, so the order and the gates are tested without a page.
+ *
+ * ONE GUIDE ROW (the lead, 27 Nov 2026: "I should only see (4 my companions + scarlet) and members without
+ * Companions would only see Scarlet"). The guide's help, the member's personal companion and Admin's helper used to
+ * be three rows; they are one, named with the village guide's name and wearing the personal companion's face (the
+ * village's macaw until the member picks another). A member's other companions keep a row each. A tap on the guide
+ * opens its panel: the chat, "How things work here", and Admin's helper for an admin. A member with nothing to show
+ * there goes straight to the guide's help, and a visitor to the guide on Work with us.
+ */
+export function cornerRows(o: { signedIn: boolean; admin: boolean; army: readonly CompanionView[] | null; guide: string; t: T }): CornerRow[] {
   const rows: CornerRow[] = [];
+  const personal = personalCompanion(o.army);
   for (const c of o.army ?? []) {
-    const waiting = draftsWaiting([c]);
-    rows.push({
-      key: `companion-${c.id}`,
-      label: c.name,
-      sub: waiting === 0 ? undefined : waiting === 1 ? o.t({ message: "One draft waits for your yes", context: "the corner: under a companion's name" }) : o.t({ message: `${waiting} drafts wait for your yes`, context: "the corner: under a companion's name" }),
-      companion: c,
-    });
+    if (c === personal) continue;
+    rows.push({ key: `companion-${c.id}`, label: c.name, sub: waitingWords(draftsWaiting([c]), o.t), companion: c, face: { look: c.look, url: c.lookUrl } });
   }
-  const guide = o.guide;
+  const panel = o.signedIn && (!!personal || o.admin);
   rows.push({
-    key: "ask-guide",
-    label: o.t({ message: `Ask ${guide}`, context: "the corner: the help row, the village guide's name follows Ask" }),
-    sub: o.t({ message: "How things work here, and who to ask", context: "the corner: under the help row" }),
-    href: o.signedIn ? ASK_GUIDE_HREF : "/work-with-us",
+    key: "guide",
+    label: o.guide,
+    sub: (personal ? waitingWords(draftsWaiting([personal]), o.t) : undefined) ?? o.t({ message: "How things work here, and who to ask", context: "the corner: under the help row" }),
+    href: panel ? undefined : o.signedIn ? ASK_GUIDE_HREF : "/work-with-us",
+    guidePanel: panel || undefined,
+    face: personal ? { look: personal.look, url: personal.lookUrl } : { look: SCARLET_LOOK, url: null },
   });
+  if (!o.signedIn) rows.push({ key: "signin", label: o.t({ message: "Sign in", context: "the corner: a visitor's row" }), href: "/login" });
+  return rows;
+}
+
+/** The doors the guide's panel opens on: its help for everyone, and Admin's helper for an admin. Pure. */
+export function guideDoors(o: { admin: boolean; t: T }): GuideDoor[] {
+  const doors: GuideDoor[] = [
+    { key: "ask", label: o.t({ message: "How things work here", context: "the guide's panel: the door to the guide's help" }), sub: o.t({ message: "Who to ask, and where things are", context: "the guide's panel: under the help door" }), href: ASK_GUIDE_HREF },
+  ];
   if (o.admin) {
-    rows.push({
-      key: "ask-admin",
-      label: o.t({ message: `Ask ${guide} about Admin`, context: "the corner: the Admin helper's row, for an admin" }),
+    doors.push({
+      key: "admin",
+      label: o.t({ message: "Admin help", context: "the guide's panel: the door to Admin's helper, for an admin" }),
       sub: o.t({ message: "Find any setting, or get a change drafted for you to save", context: "the corner: under the Admin helper's row" }),
       href: ADMIN_HELPER_HREF,
       admin: true,
     });
   }
-  if (!o.signedIn) rows.push({ key: "signin", label: o.t({ message: "Sign in", context: "the corner: a visitor's row" }), href: "/login" });
-  return rows;
+  return doors;
 }
 
 export default function MobileFab() {
@@ -146,13 +180,14 @@ export default function MobileFab() {
   const { name: guideName } = useGuideName();
   const { army, reread } = useCompanions(!!user);
   const entrance = useEntranceStands(location, !!user);
-  const [panel, setPanel] = useState(false);
+  // Which panel is open: the companions', or the guide's (its chat, its help, Admin's helper for an admin).
+  const [panel, setPanel] = useState<false | "companions" | "guide">(false);
   const rows = cornerRows({ signedIn: !!user, admin, army, guide: guideName, t });
   const standing = (army ?? []).slice(0, STANDING);
   const waiting = draftsWaiting(army ?? []);
   // A link to /profile#companions (and the welcome tour) opens the panel once the companions are read.
   useEffect(() => {
-    if (army?.length && window.location.hash === "#companions") setPanel(true);
+    if (army?.length && window.location.hash === "#companions") setPanel("companions");
   }, [army]);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -332,19 +367,19 @@ export default function MobileFab() {
             const inner = (
               <>
                 <span className="flex max-w-[16rem] select-none flex-col items-end rounded-xl border border-border bg-card px-3 py-1.5 text-right shadow-lg transition-colors group-hover/row:bg-muted">
-                  <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
-                    {a.label}
-                    {a.admin ? (
-                      <span className="rounded border border-notice px-1 text-[10px] font-semibold uppercase tracking-wider text-notice">
-                        {t({ message: "Admin", context: "the corner: the tag on the Admin helper's row" })}
-                      </span>
-                    ) : null}
-                  </span>
+                  <span className="flex items-center gap-2 text-sm font-semibold text-card-foreground">{a.label}</span>
                   {a.sub ? <span className="text-xs text-muted-foreground">{a.sub}</span> : null}
                 </span>
-                <span className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card text-card-foreground shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-active/row:scale-95">
-                  {a.companion ? <Standing c={a.companion} lead={false} small /> : a.key === "signin" ? <LogIn aria-hidden="true" className="size-5" /> : <FabTriggerIcon className="size-5" />}
-                </span>
+                {a.face ? (
+                  // Every animal in the corner is a circle (the lead, 27 Nov 2026), the guide's macaw included.
+                  <span className="flex shrink-0 rounded-full shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-active/row:scale-95">
+                    <Face look={a.face.look} url={a.face.url} size="md" />
+                  </span>
+                ) : (
+                  <span className="flex w-12 h-12 flex-shrink-0 items-center justify-center rounded-full border border-border bg-card text-card-foreground shadow-lg transition-transform duration-200 group-hover/row:scale-105 group-active/row:scale-95">
+                    {a.key === "signin" ? <LogIn aria-hidden="true" className="size-5" /> : <FabTriggerIcon className="size-5" />}
+                  </span>
+                )}
               </>
             );
 
@@ -354,7 +389,8 @@ export default function MobileFab() {
               // Focus goes back to the trigger first, the way Escape does: the rows are about to hide.
               if (menuRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
               setOpen(false);
-              if (a.companion) setPanel(true);
+              if (a.companion) setPanel("companions");
+              else if (a.guidePanel) setPanel("guide");
             };
 
             if (a.href) {
@@ -438,6 +474,9 @@ export default function MobileFab() {
             reread(); // a yes in the panel changes what waits; the count follows
             window.setTimeout(() => triggerRef.current?.focus(), 0);
           }}
+          {...(panel === "guide"
+            ? { title: guideName, doors: guideDoors({ admin, t }), companions: !!personalCompanion(army) }
+            : {})}
         />
       ) : null}
     </>
