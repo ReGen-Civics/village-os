@@ -163,3 +163,23 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     expect(document.querySelector("[aria-current]")).toBeNull();
   });
 });
+
+describe("a top-level entry lit in More (the live check, 27 Nov 2026)", () => {
+  it("stands its edge on the text column, with no pull to the left", async () => {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    const LIBRARY: NavLink = { href: "/modules", label: "Module Library" };
+    const { hook } = memoryLocation({ path: "/modules/feed" });
+    render(
+      <Router hook={hook}>
+        <MoreSheet entries={[LIBRARY, COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} lit={{ group: null, href: "/modules", exact: false, item: LIBRARY }} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    const link = screen.getByRole("link", { name: /Module Library/ });
+    expect(link.getAttribute("aria-current")).toBe("true");
+    expect(link.className).toContain("border-l-2");
+    expect(link.className).not.toContain("-ml-3");
+  });
+});
