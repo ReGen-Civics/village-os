@@ -323,6 +323,9 @@ export interface ApplicantMessages {
         sendYes: string;
         sendKeep: string;
         sendFailed: string;
+        /** Agreement: the counter-offer to answer, as a task on the page and the profile card (QA pass 1). */
+        terms: string;
+        answer: string;
       };
       refine: { eyebrow: string; heading: string; line: string; why: string; aim: string; save: string; saved: string; frozen: string; failed: string; versions(n: number): string };
       /** The village's real averages (the lead, 27 Nov 2026: "give them actual averages based on our work"). */
@@ -670,6 +673,8 @@ const en: ApplicantMessages = {
         sendYes: "Send it",
         sendKeep: "Not yet",
         sendFailed: "That didn't go through. Try again in a moment.",
+        terms: "The counter-offer",
+        answer: "Answer the counter-offer",
       },
       refine: {
         eyebrow: "Your proposal",
@@ -1028,6 +1033,8 @@ const es: ApplicantMessages = {
         sendYes: "Enviarla", // needs-native-review: ruling 7, 27 Nov 2026
         sendKeep: "Todavía no", // needs-native-review: ruling 7, 27 Nov 2026
         sendFailed: "No se envió. Inténtelo de nuevo en un momento.", // needs-native-review: ruling 7, 27 Nov 2026
+        terms: "La contraoferta", // needs-native-review: QA round 4, 27 Nov 2026
+        answer: "Responder la contraoferta", // needs-native-review: QA round 4, 27 Nov 2026
       },
       refine: {
         eyebrow: "Su propuesta",
@@ -1176,8 +1183,10 @@ const ON_PAGE: Record<ApplicantLanguage, [RegExp, string]> = {
  * point "below", to the form or the button on that page; on the profile they point to the application's page. Only
  * our own words pass through here, so the swap is exact.
  */
-export function sayOnProfile(lang: ApplicantLanguage | null | undefined, line: string): string {
+export function sayOnProfile(lang: ApplicantLanguage | null | undefined, line: string, ownButton = false): string {
   const [word, said] = ON_PAGE[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
+  // The card draws the button itself (QA pass 1: "on your application's page" beside its own Book button): no pointer.
+  if (ownButton) return line.replace(new RegExp(`\\s*${word.source}`, "g"), "");
   return line.replace(word, said);
 }
 
@@ -1282,7 +1291,7 @@ export interface StatusView {
    * it is done, and the button's words and where it goes (`external`: a booking page). At References and proposal and
    * at the Final conversation; null at every other stage.
    */
-  tasks: Array<{ key: "references" | "proposal" | "conversation" | "send"; label: string; state: string; done: boolean; href: string | null; action: string | null; external: boolean }> | null;
+  tasks: Array<{ key: "references" | "proposal" | "conversation" | "send" | "terms"; label: string; state: string; done: boolean; href: string | null; action: string | null; external: boolean }> | null;
 }
 
 /** The status page's booking doors: "Book a time with Role (First, First)", and each person's link under it when there are several. */
@@ -1459,6 +1468,9 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
             ? // Ruling 7: the call is written up; refine, then send it on (the page asks once before it sends).
               [proposalTask, { key: "send", label: sw.tasks.sendRow, state: sw.tasks.sendState, done: false, href: "#send-to-circle", action: sw.tasks.sendLabel(anchor), external: false }]
             : [conversationTask, proposalTask]
+          : six.now === "agreement" && hasOffer && !!s.offer?.mayAnswer
+            ? // The counter-offer as a task too, so the profile card offers it (QA pass 1).
+              [{ key: "terms", label: sw.tasks.terms, state: sw.tasks.todo, done: false, href: "#changed-terms", action: sw.tasks.answer, external: false }]
           : // Received and Our review offer refining too (the lead, 27 Nov 2026: "they can refine proposal in each
             // stage"), with the open conversation's button first once there is one.
             (six.now === "received" || six.now === "review") && refineOpen

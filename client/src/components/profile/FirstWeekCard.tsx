@@ -42,10 +42,28 @@ export default function FirstWeekCard() {
   const at = week.allHands ? zonedInstant(week.startIso, week.allHands.time, week.allHands.zone) : null;
   const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const lang = i18n.locale === "es" ? "es" : "en";
+  // The start date, and the week's steps with done or to do (QA pass 1): done once its moment has passed.
+  const startAt = new Date(`${week.startIso}T12:00:00Z`);
+  const started = Date.now() >= Date.parse(`${week.startIso}T00:00:00Z`);
+  const startDay = new Intl.DateTimeFormat(i18n.locale, { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(startAt);
+  const steps: Array<{ key: string; label: string; done: boolean }> = [
+    { key: "start", label: t({ message: `Your start day: ${startDay}`, context: "profile: a newcomer's first week, the start day step" }), done: started },
+    ...(at ? [{ key: "all-hands", label: t({ message: "Join the all-hands that day", context: "profile: a newcomer's first week, the all-hands step" }), done: Date.now() >= at.getTime() }] : []),
+    ...(week.buddy ? [{ key: "buddy", label: t({ message: `Meet ${week.buddy.name}, your buddy`, context: "profile: a newcomer's first week, the buddy step" }), done: false }] : []),
+  ];
   return (
     <section aria-labelledby="first-week-heading" className={CARD} data-first-week="">
       <p className={EYEBROW}>{t({ message: "Your first week", context: "profile: a newcomer's first week, kicker" })}</p>
       <h2 id="first-week-heading" className={`mt-1 ${H2}`}>{t({ message: "Welcome. Here's how you start", context: "profile: a newcomer's first week, heading" })}</h2>
+      <p className="mt-1 text-foreground" data-first-week-start="">{t({ message: `You start ${startDay}.`, context: "profile: a newcomer's first week, the start date" })}</p>
+      <ol className="mt-3 grid gap-2" data-first-week-steps="">
+        {steps.map((step) => (
+          <li key={step.key} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3" data-first-week-step={step.key} data-step-done={step.done ? "" : undefined}>
+            <span className="text-foreground">{step.label}</span>
+            <span className={`text-sm ${step.done ? "text-open" : "text-muted-foreground"}`}>{step.done ? t({ message: "Done", context: "profile: a first-week step, done" }) : t({ message: "To do", context: "profile: a first-week step, to do" })}</span>
+          </li>
+        ))}
+      </ol>
       <ul className="mt-3 grid gap-2 text-foreground">
         {week.buddy && (
           <li data-first-week-buddy="">

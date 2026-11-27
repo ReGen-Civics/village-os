@@ -3,7 +3,7 @@
  * booking button, in their language.
  */
 import { describe, expect, it } from "vitest";
-import { statusView, type StatusServedForView } from "./applicantWords";
+import { sayOnProfile, statusView, type StatusServedForView } from "./applicantWords";
 
 const KEYS = ["received", "review", "references", "final_interview", "agreement", "start"] as const;
 const six = (now: (typeof KEYS)[number], refine = { open: false, frozen: false, why: "", aim: "", versions: 0 }): StatusServedForView["sixStages"] => {
@@ -70,6 +70,13 @@ describe("the applicant's six stages", () => {
     expect(review.tasks?.map((t) => [t.key, t.action])).toEqual([["conversation", "Book with Ops"], ["proposal", "Refine your proposal"]]);
     // Not yet invited: the refine button alone, no conversation row.
     expect(statusView("en", served({ sixStages: six("review", refine) })).tasks?.map((t) => t.key)).toEqual(["proposal"]);
+  });
+
+  it("QA round 4: the counter-offer is a task too, so the profile card offers it; a card with its own button points nowhere else", () => {
+    const v = statusView("en", served({ sixStages: { ...six("agreement", { open: false, frozen: true, why: "", aim: "", versions: 1 })!, anchorCircle: "Anchor Circle" }, offer: { mayAnswer: true, rows: [{}] } as any }));
+    expect(v.tasks?.map((t) => [t.key, t.action, t.href])).toEqual([["terms", "Answer the counter-offer", "#changed-terms"]]);
+    expect(sayOnProfile("en", "Book your first conversation with Ops below. It's part of our review.", true)).toBe("Book your first conversation with Ops. It's part of our review.");
+    expect(sayOnProfile("en", "Book your first conversation with Ops below.")).toBe("Book your first conversation with Ops on your application's page.");
   });
 
   it("an adopted applicant reads Start as done; a declined one keeps its own answer and the older path", () => {

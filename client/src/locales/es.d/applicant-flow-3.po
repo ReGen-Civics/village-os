@@ -274,3 +274,33 @@ msgstr "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Inicie s
 msgctxt "applicant's application status, adoption, the sign-in door"
 msgid "Sign in to see your roles"
 msgstr "Inicie sesión para ver sus roles"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the start day step"
+msgid "Your start day: {startDay}"
+msgstr "Su día de inicio: {startDay}"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the all-hands step"
+msgid "Join the all-hands that day"
+msgstr "Únase a la reunión general ese día"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the buddy step"
+msgid "Meet {0}, your buddy"
+msgstr "Conozca a {0}, su acompañante"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the start date"
+msgid "You start {startDay}."
+msgstr "Usted empieza el {startDay}."
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a first-week step, done"
+msgid "Done"
+msgstr "Hecho"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a first-week step, to do"
+msgid "To do"
+msgstr "Por hacer"

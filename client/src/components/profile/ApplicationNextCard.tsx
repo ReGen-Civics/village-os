@@ -42,6 +42,8 @@ export default function ApplicationNextCard() {
   const view = statusView(lang, next.status);
   const page = `/application-status/${encodeURIComponent(next.ref)}`;
   const book = view.booking?.book && "links" in view.booking.book ? view.booking.book.links.filter((l) => /^https:\/\//.test(l.url)) : [];
+  // The card draws the act's own button: its line then points nowhere else (QA pass 1).
+  const ownButton = book.length > 0 || !!view.tasks?.some((task) => task.external && task.href);
   // "I've booked it" beside the booking (the lead, 27 Nov 2026), signed in as the applicant.
   const b = next.status.bookNow;
   const bookedIt = view.booking && b && next.status.outcome == null ? (
@@ -60,7 +62,7 @@ export default function ApplicationNextCard() {
         {view.stepWords}
       </h2>
       {/* The page's line points "below"; here it points to the application's page, where the form is. */}
-      <p className="mt-1 text-lg text-foreground" data-application-next-move="">{sayOnProfile(lang, view.move)}</p>
+      <p className="mt-1 text-lg text-foreground" data-application-next-move="">{sayOnProfile(lang, view.move, ownButton)}</p>
       {view.average && <p className="mt-1 text-sm text-muted-foreground" data-application-next-average="">{view.average}</p>}
       {/* With the stage's buttons below, the same acts are drawn once, there. */}
       {!view.tasks?.length && (view.primary || book.length > 0) && (
