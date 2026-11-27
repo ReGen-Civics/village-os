@@ -156,6 +156,7 @@ describe.skipIf(!configured)("Edit this role", () => {
         ["GET", `/api/org/role-edit/${id}`, undefined],
         ["POST", `/api/org/role-edit/${id}`, body],
         ["GET", `/api/org/role-edit/${id}/history`, undefined],
+        ["GET", `/api/org/role-edit/${id}/drafts`, undefined],
         ["GET", `/api/org/role-edit/${id}/sera`, undefined],
         ["POST", `/api/org/role-edit/${id}/history/none/revert`, {}],
         ["POST", "/api/org/role-edit/new-from-card", { text: "x" }],
@@ -168,6 +169,20 @@ describe.skipIf(!configured)("Edit this role", () => {
       holders = new Set(["holder-1"]);
       expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", body)).status).toBe(200);
       expect((await row(id)).aim).toBe(body.words.aim);
+    });
+
+    it("names the open drafts that change this role, for the card's \"a change is waiting\" link, and no others", async () => {
+      holders = new Set(["holder-1"]);
+      const { id } = await seedRole();
+      const { addChange, createDraft } = await import("../lib/orgDrafts");
+      const mine = await createDraft(pool, { title: "Sharpen the reading room's aim", rationale: null, createdBy: "holder-1", sourceKind: "human", openCap: null });
+      const other = await createDraft(pool, { title: "Something else entirely", rationale: null, createdBy: "holder-1", sourceKind: "human", openCap: null });
+      if (!mine.ok || !other.ok) throw new Error("draft");
+      await addChange(pool, mine.id, { op: "update_seat", orgRoleId: id, payload: { aim: "A sharper aim" } });
+      await addChange(pool, other.id, { op: "update_seat", orgRoleId: "some-other-role", payload: { aim: "x" } });
+      const r = await call("GET", `/api/org/role-edit/${id}/drafts`, "holder-1");
+      expect(r.status).toBe(200);
+      expect(r.json.drafts).toEqual([{ id: mine.id, title: "Sharpen the reading room's aim" }]);
     });
 
     it("an admin is let in until the village launches by vote, as for any draft", async () => {

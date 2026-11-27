@@ -63,10 +63,11 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // to /role-applications/:id (members say role, 2026-10-21) and the /roles/draft redirect
     // to /roles/select (the board is "select" now, 2026-11-10), the /join and /apply redirects to /roles
     // and the /tokens redirect to /wallet (one page called Wallet, 2026-11-25), and the /review, /decisions and
-    // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), and the four old
-    // addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights, redirects
-    // to /rights since the rights fold, 27 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 15);
+    // /decisions/:id redirects into /governance (the lead, 26 Nov 2026: call it governance), the /budget redirect
+    // to /governance/treasury#cash-budget (the cash budget folded into Governance, the lead, 27 Nov 2026), and the
+    // four old addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights,
+    // redirects to /rights since the rights fold, 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 16);
     expect(routes.length).toBeGreaterThan(60);
   });
 

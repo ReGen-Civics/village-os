@@ -244,3 +244,29 @@ export async function readDraftBodies(conn: Pool | PoolConnection, filter: Draft
   );
   return { drafts: drafts as any[], changes: changes as any[] };
 }
+
+// ── A fresh id for a new role whose id a retired role holds (the coordinator, 26 Nov 2026) ────────────────────────
+// Steps of `addChange`'s own transaction, on its connection.
+
+/** Whether a role row with this id is live (true), retired (false), or absent (null). */
+export async function roleRowActive(conn: PoolConnection, id: string): Promise<boolean | null> {
+  const [rows]: any = await conn.query("SELECT active FROM org_roles WHERE id = ?", [id]);
+  return rows[0] ? Number(rows[0].active) === 1 : null;
+}
+
+/** Which of these ids a role already holds, or an open draft is about to give a new role. */
+export async function roleIdsTaken(conn: PoolConnection, ids: readonly string[]): Promise<Set<string>> {
+  if (!ids.length) return new Set();
+  const [held]: any = await conn.query("SELECT id FROM org_roles WHERE id IN (?)", [ids]);
+  const [drafted]: any = await conn.query(
+    "SELECT c.org_role_id AS id FROM org_draft_changes c JOIN org_drafts d ON d.id = c.draft_id WHERE d.status = 'open' AND c.op = 'create_seat' AND c.org_role_id IN (?)",
+    [ids],
+  );
+  return new Set([...(held as any[]), ...(drafted as any[])].map((r) => String(r.id)));
+}
+
+/** The new roles this draft already holds, with the id each was asked for when it was given a fresh one. */
+export async function newRolesInDraft(conn: PoolConnection, draftId: string): Promise<Array<{ id: string; payload: unknown }>> {
+  const [rows]: any = await conn.query("SELECT org_role_id, payload FROM org_draft_changes WHERE draft_id = ? AND op = 'create_seat'", [draftId]);
+  return (rows as any[]).map((r) => ({ id: String(r.org_role_id), payload: r.payload }));
+}
