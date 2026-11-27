@@ -116,7 +116,7 @@ export default function SpeedCardPicker({ reg, kept, onPick, onClose }: SpeedCar
                         disabled={on}
                         onClick={() => onPick(c.id)}
                         data-speed-pick={c.id}
-                        className="flex min-h-[4.5rem] w-full flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:text-notice focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:hover:text-foreground"
+                        className="flex min-h-[calc(4.5rem-2px)] w-full flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground hover:text-notice focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-default disabled:hover:text-foreground"
                       >
                         <Glyph card={c} className="size-6 shrink-0" />
                         <span className="leading-tight">{c.label}</span>

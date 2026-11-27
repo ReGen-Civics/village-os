@@ -454,7 +454,9 @@ const EDIT_EDGE = "pointer-events-none absolute inset-2.5 rounded-md border-2 bo
  * flat beige).
  */
 const PAPER = "relative rounded-xl border border-border bg-muted";
-const FILL = "relative flex min-h-[4.5rem] w-full select-none flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground [-webkit-touch-callout:none]";
+// The paper's 1px border above and below is inside the card's 72px, so the button inside is 2px shorter (QA round 3:
+// filled cards measured 74px in edit mode against 72px at rest).
+const FILL ="relative flex min-h-[calc(4.5rem-2px)] w-full select-none flex-col items-center justify-center gap-1 rounded-xl bg-transparent px-1.5 py-2.5 text-center text-sm font-medium text-foreground [-webkit-touch-callout:none]";
 
 /** A card at rest: a door, and a hold opens edit mode. */
 function Card({ card, who, current, onGo, onHold }: { card: SpeedCard; who: string; current: boolean; onGo: () => void; onHold: (byHold: boolean) => void }) {

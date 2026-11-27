@@ -302,7 +302,7 @@ describe("edit mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
     expect(container.querySelector("[data-edit-card] [data-dir]")).toBeNull();
     expect(container.querySelector("[data-move-strip] [data-dir='left']")).toBeTruthy();
-    expect(container.querySelector("[data-speed-face]")?.className).toContain("min-h-[4.5rem]");
+    expect(container.querySelector("[data-speed-face]")?.className).toContain("min-h-[calc(4.5rem-2px)]");
   });
 
   it("keeps the paper: the skin sits on a box (the light skin skips buttons), with a clear button filling it", async () => {

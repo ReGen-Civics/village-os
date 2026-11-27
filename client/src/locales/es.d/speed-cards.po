@@ -3,6 +3,11 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Language: es\n"
 
+# needs-native-review: the speed cards' heading, untranslated in es.po until now and caught by the strict catalog check after the fold, 27 Nov 2026
+msgctxt "the phone's More sheet: heading"
+msgid "Yours"
+msgstr "Lo suyo"
+
 # needs-native-review: the speed cards, the picker's catch-all group, 27 Nov 2026
 msgctxt "the speed-card picker: a group for menu entries outside every group"
 msgid "More"
