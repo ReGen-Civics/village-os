@@ -15,7 +15,7 @@
  * appearing for a member, and these tests would say so.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
 
 const authMock = vi.fn();
@@ -59,9 +59,10 @@ const LAUNCH_PLAN = '/journey-to-launch';
 const COMMAND_CENTRE = '/project-history';
 
 /**
- * Render the shell as `who`, then open the Decide dropdown (the Launch Plan moved there from About on 2026-10-09), because the desktop
- * dropdown mounts its items only while it is open. `null` is a signed-out
- * visitor.
+ * Render the shell as `who`, then open the account menu and its "Running the village" folder, where the Launch
+ * Plan and the Command Centre live since the menu by membership (27 Nov 2026), because the desktop menus mount
+ * their items only while open. A folder with one link for this reader draws as that link (config/navNest.ts), so
+ * there may be no folder to open. `null` is a signed-out visitor, who has no account menu at all.
  */
 function openDecide(who: { id: string; name: string; role?: string; membershipGranted?: boolean } | null) {
   authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
@@ -72,9 +73,10 @@ function openDecide(who: { id: string; name: string; role?: string; membershipGr
       </Layout>
     </Router>,
   );
-  // A visitor may have no Decide group at all: every entry in it is a member's (the front door, 24 Nov 2026).
-  const buttons = screen.queryAllByRole("button", { name: /Governance/i });
-  if (buttons[0]) fireEvent.click(buttons[0]);
+  const account = screen.queryAllByRole("button", { name: /Your account/i });
+  if (account[0]) fireEvent.click(account[0]);
+  const folder = screen.queryAllByRole("button", { name: /Running the village/i });
+  if (folder[0]) fireEvent.click(folder[0]);
 }
 
 /** Every anchor in the whole shell pointing at `href`, header and footer both. */
@@ -143,20 +145,16 @@ describe("the Launch Plan entry in the header", () => {
 
 /*
  * /governance was renamed "How we work together" on 2026-09-28 and kept its
- * route, so every link to it, header and footer, must carry the new name and
- * still point at the old address.
+ * route (now /governance/how), so every link to it, header and footer, must carry
+ * the new name and still point at the old address. Since 27 Nov 2026 it sits with
+ * Governance's other views, in the "More in Governance" folder.
  */
 describe("the How we work together entry", () => {
   beforeEach(() => {
     authMock.mockReset();
   });
 
-  /**
-   * Render the shell as `who`, then open the About dropdown, where /governance
-   * still sits after the 2026-10-09 menu restructure moved the Launch Plan to
-   * Decide (the file's own opener above now opens Decide). `null` is a
-   * signed-out visitor.
-   */
+  /** Render the shell as `who`, then open Governance and its "More in Governance" folder. `null` is a visitor. */
   function openAbout(who: { id: string; name: string; role?: string } | null) {
     authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
     render(
@@ -166,8 +164,8 @@ describe("the How we work together entry", () => {
         </Layout>
       </Router>,
     );
-    const buttons = screen.getAllByRole("button", { name: /About/i });
-    fireEvent.click(buttons[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Governance/i })[0]!);
+    fireEvent.click(screen.getAllByRole("button", { name: /More in Governance/i })[0]!);
   }
 
   for (const [who, user] of [
@@ -177,7 +175,7 @@ describe("the How we work together entry", () => {
     it(`reads "How we work together" for ${who}, in the menu and the footer, and opens /governance/how`, () => {
       openAbout(user);
       const links = linksTo("/governance/how");
-      // One in the About menu, one in the footer.
+      // One in the Governance menu, one in the footer.
       expect(links.length).toBeGreaterThanOrEqual(2);
       for (const a of links) expect(a.textContent?.trim()).toBe("How we work together");
       // Nothing is still called Governance and pointing there.
@@ -198,7 +196,7 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
    * hrefs (/roles among them), so counting the whole shell would pass with the
    * menu entry gone; the difference is the menu alone.
    */
-  function addedByOpening(label: RegExp, hrefs: string[]) {
+  function addedByOpening(label: RegExp, hrefs: string[], folder?: RegExp) {
     authMock.mockReturnValue({ user: { id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true }, loading: false, logout: vi.fn() });
     render(
       <Router>
@@ -209,6 +207,7 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     );
     const before = hrefs.map((h) => linksTo(h).length);
     fireEvent.click(screen.getAllByRole("button", { name: label })[0]!);
+    if (folder) fireEvent.click(screen.getAllByRole("button", { name: folder })[0]!);
     return Object.fromEntries(hrefs.map((h, i) => [h, linksTo(h).length - before[i]!]));
   }
 
@@ -216,26 +215,37 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     expect(addedByOpening(/Village/i, ["/quests"])["/quests"]).toBe(1);
   });
 
-  it("gives the plain Circles and Roles pages back their own entries on a village with no map", () => {
-    // The mocked village runs no modules, so the map view is hidden and both
-    // plain pages must still have a door in the menu.
-    const added = addedByOpening(/Village/i, ["/circles", "/roles", "/map/circles"]);
-    expect(added).toEqual({ "/circles": 1, "/roles": 1, "/map/circles": 0 });
+  it("gives the plain Circles page back its own entry on a village with no map", () => {
+    // The mocked village runs no modules, so the map view is hidden and the plain page must still have a door.
+    const added = addedByOpening(/^Village/i, ["/circles", "/map/circles"]);
+    expect(added).toEqual({ "/circles": 1, "/map/circles": 0 });
   });
 
-  it("folds Circles and Roles into the map view where the map runs", () => {
+  it("folds Circles into the map view where the map runs", () => {
     running.modules = [{ id: "map", lifecycle: "public" }];
-    const added = addedByOpening(/Village/i, ["/circles", "/roles", "/map/circles"]);
-    expect(added).toEqual({ "/circles": 0, "/roles": 0, "/map/circles": 1 });
+    const added = addedByOpening(/^Village/i, ["/circles", "/map/circles"]);
+    expect(added).toEqual({ "/circles": 0, "/map/circles": 1 });
   });
 
-  it("offers Your work and the powers page under Governance", () => {
-    const added = addedByOpening(/Governance/i, ["/governance/work", "/powers"]);
-    expect(added).toEqual({ "/governance/work": 1, "/powers": 1 });
+  it("offers the open roles under Join, with or without a map (27 Nov 2026)", () => {
+    expect(addedByOpening(/^Join/i, ["/roles"])["/roles"]).toBe(1);
+    cleanup();
+    running.modules = [{ id: "map", lifecycle: "public" }];
+    expect(addedByOpening(/^Join/i, ["/roles"])["/roles"]).toBe(1);
+  });
+
+  it("offers Your work and the powers page in Governance's More folder, and the Treasury on its first level", () => {
+    expect(addedByOpening(/^Governance/i, ["/governance/work", "/powers", "/governance/treasury"])).toEqual({ "/governance/work": 0, "/powers": 0, "/governance/treasury": 1 });
+    cleanup();
+    expect(addedByOpening(/^Governance/i, ["/governance/work", "/powers"], /More in Governance/i)).toEqual({ "/governance/work": 1, "/powers": 1 });
   });
 });
 
-describe("design pass D-27: a shorter bar for a visitor, the same doors", () => {
+/*
+ * The Module Library: last of all, under About, for every reader (the lead, 27 Nov 2026: "module library at the
+ * bottom"). It left the member's bar so the bar keeps five entries.
+ */
+describe("the Module Library at the bottom", () => {
   beforeEach(() => {
     authMock.mockReset();
     brochure.on = true;
@@ -253,24 +263,18 @@ describe("design pass D-27: a shorter bar for a visitor, the same doors", () => 
     );
   }
 
-  it("keeps the Module Library off a visitor's bar and offers it under About", () => {
-    shell(null);
-    const before = linksTo("/modules").length;
-    fireEvent.click(screen.getAllByRole("button", { name: /About/i })[0]!);
-    expect(linksTo("/modules").length - before).toBe(1);
-    expect(before).toBe(0);
-  });
-
-  it("keeps the Module Library off a signed-in applicant's bar", () => {
-    shell({ id: "u-ana", name: "Ana Applicant", role: "member" });
-    expect(linksTo("/modules").length).toBe(0);
-  });
-
-  it("keeps the Module Library on a member's bar, and adds no second door under About (control)", () => {
-    shell({ id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true });
-    const before = linksTo("/modules").length;
-    expect(before).toBeGreaterThan(0);
-    fireEvent.click(screen.getAllByRole("button", { name: /About/i })[0]!);
-    expect(linksTo("/modules").length).toBe(before);
-  });
+  for (const [who, user] of [
+    ["a visitor", null],
+    ["a signed-in applicant", { id: "u-ana", name: "Ana Applicant", role: "member" }],
+    ["a member", { id: "u-wren", name: "Wren Ash", role: "member", membershipGranted: true }],
+  ] as const) {
+    it(`keeps it off the bar for ${who}, and offers it as About's last entry`, () => {
+      shell(user);
+      expect(linksTo("/modules").length).toBe(0);
+      fireEvent.click(screen.getAllByRole("button", { name: /^About/i })[0]!);
+      const about = document.querySelector("[data-nav-dropdown]") as HTMLElement;
+      const links = Array.from(about.querySelectorAll(":scope > a, :scope > div > a, :scope > [data-nav-folder] > button"));
+      expect(links.at(-1)?.getAttribute("href")).toBe("/modules");
+    });
+  }
 });

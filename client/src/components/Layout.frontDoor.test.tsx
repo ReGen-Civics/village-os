@@ -58,7 +58,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-/** Every address the desktop bar offers, every dropdown opened in turn. */
+/** Every address the desktop bar offers, every dropdown opened in turn, and every folder in it (config/navNest.ts). */
 async function menuHrefs(): Promise<string[]> {
   render(
     <Router>
@@ -75,6 +75,7 @@ async function menuHrefs(): Promise<string[]> {
   const hrefs = new Set<string>();
   for (const b of within(nav).queryAllByRole("button")) {
     fireEvent.click(b);
+    document.querySelectorAll<HTMLElement>("[data-nav-dropdown] [data-nav-folder] > button[aria-expanded='false']").forEach((f) => fireEvent.click(f));
     document.querySelectorAll("header a[href]").forEach((a) => hrefs.add(a.getAttribute("href") ?? ""));
   }
   document.querySelectorAll("header a[href]").forEach((a) => hrefs.add(a.getAttribute("href") ?? ""));

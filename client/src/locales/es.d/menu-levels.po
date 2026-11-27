@@ -1,0 +1,109 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "Open Roles"
+msgstr "Roles abiertos"
+
+# needs-native-review: the menu by membership, Governance's hub, 27 Nov 2026
+msgctxt "site menu: Governance's own page, its Now view"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "Become a partner"
+msgstr "Hágase aliado"
+
+# needs-native-review: the menu by membership, a new entry, 27 Nov 2026
+msgctxt "site menu"
+msgid "Propose a quest"
+msgstr "Proponga una misión"
+
+# needs-native-review: the menu by membership, a member's own settings, 27 Nov 2026
+msgctxt "site menu: a member's own settings"
+msgid "Settings"
+msgstr "Configuración"
+
+# needs-native-review: the menu by membership, the admin's review page, 27 Nov 2026
+msgctxt "site menu: the admin's review page"
+msgid "Review"
+msgstr "Revisión"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Choose your path"
+msgstr "Elija su camino"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Come and see"
+msgstr "Venga a conocernos"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Build with us"
+msgstr "Construya con nosotros"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Fund the village"
+msgstr "Financie la aldea"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Places and homes"
+msgstr "Lugares y hogares"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Shared things"
+msgstr "Lo que compartimos"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Gatherings"
+msgstr "Encuentros"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Welcoming"
+msgstr "Bienvenida"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "This season"
+msgstr "Esta temporada"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "More in Governance"
+msgstr "Más en Gobernanza"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Our story"
+msgstr "Nuestra historia"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "How we work"
+msgstr "Cómo trabajamos"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Your things"
+msgstr "Lo suyo"
+
+# needs-native-review: the menu by membership, a folder, 27 Nov 2026
+msgctxt "site menu: a folder"
+msgid "Running the village"
+msgstr "Llevar la aldea"
+
+# needs-native-review: the footer, the library beside the tools, 27 Nov 2026
+msgctxt "Layout, Link"
+msgid "Village Library"
+msgstr "Biblioteca de la aldea"

@@ -67,7 +67,16 @@ export function bearingsFor(
   defined: readonly NavEntry[] = NAV,
 ): Bearings | null {
   const path = bearingsPath(location);
-  return find(path, seen, hidden) ?? find(path, defined, hidden);
+  // The most specific entry in the whole menu decides (27 Nov 2026). Governance's hub, /governance, is an entry and
+  // a prefix of every Governance page, so a decision page must not fall back to it when its own entry is hidden from
+  // this reader or from the village's menu: a page whose own entry the village hid lights nothing, and a page whose
+  // own entry this reader is not offered lights its group and no entry, as before the hub had an entry.
+  const own = find(path, defined, []);
+  if (own && hidden.includes(own.item.href)) return null;
+  const mine = find(path, seen, hidden);
+  const whole = find(path, defined, hidden);
+  if (whole && (!mine || bearingsPath(whole.item.href).length > bearingsPath(mine.item.href).length)) return whole;
+  return mine ?? whole;
 }
 
 /** What the bar, the drawer and the More sheet light: the group by its DRAWN name, and the entry by its address. */
@@ -115,9 +124,13 @@ export function litFor(
   const own = b.group ? defined.find((e): e is NavGroup => isGroup(e) && e.label === b.group)?.href : undefined;
   // The page's entry gave way to another (the live check, 27 Nov 2026: a role lit Village and marked nothing inside it).
   // The one that took its place is the entry in the same group gated on the module that hid this one.
-  const swappedFor = b.item.unlessModule && !visible(b.item)
-    ? seen.flatMap((e) => (isGroup(e) ? (e.label === b.group ? e.items : []) : b.group ? [] : [e])).find((l) => l.module === b.item.unlessModule && !menu.hidden.includes(l.href))
-    : undefined;
+  // The entry that took this one's place: one of the module's entries in the same group, the one whose address ends
+  // with this one's when there is one (/map/circles for /circles; since 27 Nov 2026 the map's own entry is in Village
+  // too, so the first of the module's entries is no longer the right one).
+  const swapCandidates = b.item.unlessModule && !visible(b.item)
+    ? seen.flatMap((e) => (isGroup(e) ? (e.label === b.group ? e.items : []) : b.group ? [] : [e])).filter((l) => l.module === b.item.unlessModule && !menu.hidden.includes(l.href))
+    : [];
+  const swappedFor = swapCandidates.find((l) => l.href.endsWith(b.item.href)) ?? swapCandidates[0];
   return {
     group: b.group ? menu.groups[b.group] || word(b.group) : null,
     groupHref: own && !menu.hidden.includes(own) ? own : undefined,

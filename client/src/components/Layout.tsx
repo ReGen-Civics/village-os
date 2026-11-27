@@ -33,6 +33,7 @@ import { useNewcomerShows } from "@/lib/newcomer";
 import FooterBlurb from "@/components/FooterBlurb";
 import MenuIcon from "@/components/nav/MenuIcon";
 import LitRule from "@/components/nav/LitRule";
+import MenuRows from "@/components/nav/MenuRows";
 import NavDropdown from "@/components/nav/NavDropdown";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
 import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
@@ -129,7 +130,9 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   // Groups collapse to nothing when every child is filtered out, so a fork with
   // its optional modules off never renders an empty dropdown.
   const groupItems = (group: NavGroup) => group.items.filter(visible).map(withTokenLabel);
-  const navEntries = NAV.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
+  // A group that `leads` for newcomers comes first for them (the lead, 27 Nov 2026: "having join be first").
+  const ordered = newcomer ? [...NAV.filter((e) => isGroup(e) && e.leads === "newcomers"), ...NAV.filter((e) => !(isGroup(e) && e.leads === "newcomers"))] : NAV;
+  const navEntries = ordered.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
     isGroup(e) ? { ...e, label: menu.groups[e.label] || navWord(e.label, i18n) } : withTokenLabel(e),
   );
   // Where the page sits in the menu this reader sees, the village's renames and hidden entries included (config/navBearings.ts).
@@ -145,6 +148,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const crowdpoolModule = moduleOn("crowdpool");
   const staysModule = moduleOn("stays");
   const toolsModule = moduleOn("tools");
+  const libraryModule = moduleOn("library");
   const healthModule = moduleOn("health");
   const mapModule = moduleOn("map");
 
@@ -370,9 +374,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         transition={{ duration: 0.15 }}
                         className="absolute top-full right-0 mt-2 w-52 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        {accountItems.map((item) => (
+                        <MenuRows links={accountItems} here={lit?.href} rowClassName="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted" listClassName="border-l-2 border-border bg-muted/40" renderLink={(item) => (
                           <Link
-                            key={item.href}
                             href={item.href}
                             className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-gray-50 transition-colors"
                             onClick={() => setAccountOpen(false)}
@@ -381,7 +384,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                             {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
                             {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                           </Link>
-                        ))}
+                        )} />
                         <button
                           type="button"
                           onClick={() => { setAccountOpen(false); logout(); }}
@@ -497,9 +500,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                             exit={{ opacity: 0, height: 0 }}
                             className="overflow-hidden pl-3 border-l border-white/20 ml-1"
                           >
-                            {groupItems(entry).map((item) => (
+                            <MenuRows links={groupItems(entry)} here={lit?.href} rowClassName="flex w-full items-center justify-between gap-2 py-1.5 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
                               <Link
-                                key={item.href}
                                 href={item.href}
                                 aria-current={currentFor(lit, item.href)}
                                 className={`flex items-center gap-2 transition-colors text-sm py-1.5 ${item.accent ? "text-amber-on-band hover:underline" : "text-white hover:underline"} ${currentFor(lit, item.href) ? "font-semibold underline decoration-2 underline-offset-4" : ""}`}
@@ -508,7 +510,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                                 <MenuIcon href={item.href} fallback={item.icon} />{item.label}
                                 {lifecycleOf(item.module) === "preview" ? " (preview)" : ""}
                               </Link>
-                            ))}
+                            )} />
                           </m.div>
                         )}
                       </AnimatePresence>
@@ -535,9 +537,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   {!user && visitor && <VisitorLink place="menu" onClick={() => setMobileMenuOpen(false)} />}
                   {user ? (
                     <>
-                      {accountItems.map((item) => (
+                      <MenuRows links={accountItems} here={lit?.href} rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-2 text-left text-sm text-white hover:underline" listClassName="ml-1 border-l border-white/20 pl-3" renderLink={(item) => (
                         <Link
-                          key={item.href}
                           href={item.href}
                           className="flex min-h-11 items-center gap-2 text-white hover:underline transition-colors text-sm py-2"
                           onClick={() => setMobileMenuOpen(false)}
@@ -546,7 +547,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                           {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
                           {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
                         </Link>
-                      ))}
+                      )} />
                       <button
                         onClick={() => { setMobileMenuOpen(false); logout(); }}
                         className="block text-white hover:opacity-80 transition-opacity text-sm py-2 text-left"
@@ -821,6 +822,14 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   <li>
                     <Link href="/tools" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
                       <Trans context="Layout, Link">Village Tools</Trans>
+                    </Link>
+                  </li>
+                )}
+                {/* The library's second way in, beside the tools (its other was Your First Walk, removed 27 Nov 2026). */}
+                {libraryModule && showsHref("/library") && (
+                  <li>
+                    <Link href="/library" className="text-white hover:underline transition-colors text-sm flex min-h-11 items-center">
+                      <Trans context="Layout, Link">Village Library</Trans>
                     </Link>
                   </li>
                 )}

@@ -18,7 +18,7 @@
  *                 own history, client/src/lib/navVisits.ts). Each tile is an
  *                 account entry Layout already gated by module and role, so a
  *                 tile shows exactly when its menu entry would.
- *   Also yours    the rest of the account entries (Wallet, Badges, Treasury...).
+ *   Also yours    the rest of the account entries, in their folders (config/navNest.ts).
  *   The village   the menu's sections, as Layout filtered them.
  *   Foot          language, light or dark, and sign out (or sign in).
  *
@@ -38,6 +38,7 @@ import { gameFetch } from "@/lib/gameApi";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch from "@/components/ThemeSwitch";
 import MenuIcon from "@/components/nav/MenuIcon";
+import MenuRows from "@/components/nav/MenuRows";
 import { isGroup, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
 import { TAB_SLOTS } from "@/config/mobileNav";
 import { currentFor, type Lit } from "@/config/navBearings";
@@ -239,14 +240,19 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
             </div>
             {rest.length ? (
               <ul className="mt-3 divide-y divide-border/60" aria-label={t({ message: "Also yours", context: "the phone's More sheet: the rest of the account links" })}>
-                {rest.map((a) => (
-                  <li key={a.href}>
+                <MenuRows
+                  asListItems
+                  links={rest}
+                  here={lit?.href}
+                  rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-2 text-left text-sm text-foreground hover:underline"
+                  listClassName="mb-2 ml-1 border-l border-border pl-3"
+                  renderLink={(a) => (
                     <Link href={a.href} onClick={close} className="flex min-h-11 items-center gap-2 py-2 text-sm text-foreground hover:underline">
                       <MenuIcon href={a.href} fallback={a.icon} />
                       {a.label}
                     </Link>
-                  </li>
-                ))}
+                  )}
+                />
               </ul>
             ) : null}
           </section>
@@ -279,14 +285,19 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                   </button>
                   {openGroup === e.label ? (
                     <ul className="mb-2 ml-1 border-l border-border pl-3">
-                      {itemsOf(e).map((l) => (
-                        <li key={l.href}>
+                      <MenuRows
+                        asListItems
+                        links={itemsOf(e)}
+                        here={lit?.href}
+                        rowClassName="flex min-h-11 w-full items-center justify-between gap-2 py-1.5 text-left text-sm text-foreground hover:underline"
+                        listClassName="mb-1 ml-1 border-l border-border pl-3"
+                        renderLink={(l) => (
                           <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
                             <MenuIcon href={l.href} fallback={l.icon} />
                             {l.label}
                           </Link>
-                        </li>
-                      ))}
+                        )}
+                      />
                     </ul>
                   ) : null}
                 </li>

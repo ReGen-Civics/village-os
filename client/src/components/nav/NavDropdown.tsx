@@ -5,6 +5,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Trans } from "@lingui/react/macro";
 import { navMenuId, type NavGroup, type NavLink } from "@/config/nav";
+import MenuRows from "@/components/nav/MenuRows";
 import { currentFor, type Lit } from "@/config/navBearings";
 import MenuIcon from "@/components/nav/MenuIcon";
 import LitRule from "@/components/nav/LitRule";
@@ -40,6 +41,28 @@ export default function NavDropdown({
   // for both leaves either the paths cramped or the short menus floating.
   const wide = items.some((i) => i.subtitle);
   const menuId = navMenuId(group.label);
+  // One link of the dropdown, at the top level or inside a folder (config/navNest.ts).
+  const drawLink = (item: NavLink) => (
+    <Link
+      href={item.href}
+      aria-current={currentFor(lit, item.href)}
+      className={`flex items-start gap-3 border-l-2 px-4 py-2.5 hover:bg-muted transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
+      onClick={() => setOpen(false)}
+    >
+      <MenuIcon href={item.href} fallback={item.icon} chip />
+      <span className="min-w-0">
+        <span className={`block text-sm font-semibold ${item.accent ? "text-gold" : "text-foreground"}`}>
+          {item.label}
+          {/* Same badge the bar used to carry, in the ink the white
+              sheet needs: amber-200 on white measured below 2:1. */}
+          {lifecycleOf(item.module) === "preview" && (
+            <span className="ml-1.5 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground align-middle"><Trans context="Layout, span">preview</Trans></span>
+          )}
+        </span>
+        {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
+      </span>
+    </Link>
+  );
 
   return (
     <div
@@ -72,28 +95,13 @@ export default function NavDropdown({
             transition={{ duration: 0.15 }}
             className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 ${wide ? "w-60" : "w-48"} bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50`}
           >
-            {items.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={currentFor(lit, item.href)}
-                className={`flex items-start gap-3 border-l-2 px-4 py-2.5 hover:bg-muted transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
-                onClick={() => setOpen(false)}
-              >
-                <MenuIcon href={item.href} fallback={item.icon} chip />
-                <span className="min-w-0">
-                  <span className={`block text-sm font-semibold ${item.accent ? "text-gold" : "text-foreground"}`}>
-                    {item.label}
-                    {/* Same badge the bar used to carry, in the ink the white
-                        sheet needs: amber-200 on white measured below 2:1. */}
-                    {lifecycleOf(item.module) === "preview" && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground align-middle"><Trans context="Layout, span">preview</Trans></span>
-                    )}
-                  </span>
-                  {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
-                </span>
-              </Link>
-            ))}
+            <MenuRows
+              links={items}
+              here={lit?.href}
+              renderLink={drawLink}
+              rowClassName="flex w-full items-center justify-between gap-3 border-l-2 border-transparent px-4 py-2.5 text-left text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              listClassName="border-l-2 border-border bg-muted/40"
+            />
           </m.div>
         )}
       </AnimatePresence>

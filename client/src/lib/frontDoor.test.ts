@@ -64,12 +64,15 @@ describe("when an area is in use", () => {
     expect(areaInUse({ href: "/seasonal-festivals" }, { exampleModules: null, seasons: 0 })).toBe(false);
   });
 
-  it("keeps Badges (examples only) and the Cash Budget (refused before admission) out of a newcomer's account menu", () => {
+  it("keeps Badges (examples only) and the Cash Budget (refused before admission) away from a newcomer", () => {
     // The every-page audit (24 Nov 2026) found both on a newcomer's phone menu: Badges showed only standing examples,
-    // and /budget answered the newcomer's read with 403.
+    // and /budget answered the newcomer's read with 403. The budget is Governance's Treasury tab since 27 Nov 2026
+    // (#1843; /budget redirects there), and its menu entry moved to Governance with it.
     const at = (href: string) => ACCOUNT_MENU.find((l) => l.href === href);
+    const inMenu = (href: string) => NAV.flatMap((e) => (isGroup(e) ? e.items : [e])).find((l) => l.href === href);
     expect(at("/badges")?.newcomers).toBe("in-use");
-    expect(at("/budget")?.newcomers).toBe("never");
+    expect(at("/budget")).toBeUndefined();
+    expect(inMenu("/governance/treasury")?.newcomers).toBe("never");
     expect(areaInUse(at("/badges")!, { exampleModules: ["badges"], seasons: 0 }), "hidden while badges shows examples").toBe(false);
   });
 

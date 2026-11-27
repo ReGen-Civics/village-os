@@ -51,7 +51,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/map": "Village map",
   "/map/circles": "Circles and roles",
   "/events": "Village Calendar",
-  "/first-walk": "Your First Walk",
+  // Your First Walk is gone (27 Nov 2026); its old address redirects home, so a tab never reads blank there.
+  "/first-walk": "Home",
   "/stay": "Stays",
   "/library": "Material library",
   "/badges": "Badges & skills",

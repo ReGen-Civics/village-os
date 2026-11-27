@@ -613,7 +613,6 @@ const FIXED: Record<string, number> = {
   "client/src/components/admin/comms/CommsSetupEditors.tsx": 1,
   // Bootstrap.tsx's one left on 2026-11-25 (whole-app QA, #1684): /claim stands in the sheet's world, its act the sheet's gold. 38.
   "client/src/pages/CoCreatorsGuide.tsx": 1,
-  "client/src/pages/FirstWalk.tsx": 2,
   "client/src/pages/Forum.tsx": 1,
   "client/src/pages/GameMechanics.tsx": 5,
   // GoodNeighbor.tsx's one left this list on 2026-11-24 (public launch QA): the page stands in the sheet's
@@ -659,11 +658,12 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 48 since the prosperity path moved to the night world too (public launch QA, 24 Nov 2026).
     // 46 since both rights pages moved to the night world too (public launch QA, 24 Nov 2026).
     // 38 fixed since /claim moved to the night world (whole-app QA, 25 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(38);
+    // 36 since Your First Walk and its two hovers were removed (the lead, 27 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(36);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(38 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(36 + 25);
   });
 
   for (const list of POINTER_LISTS) {

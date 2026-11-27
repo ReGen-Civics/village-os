@@ -51,13 +51,14 @@ const at = (where: string, opts: { menu?: Record<string, unknown>; name?: string
 const trail = () => screen.queryByRole("navigation", { name: "Breadcrumb" });
 
 describe("the breadcrumb", () => {
-  it("leads back up from a page below its entry: the group as words, the entry as a link", () => {
+  it("leads back up from a page below its entry: the group to its hub, the entry as a link", () => {
+    // Governance has a page of its own since 27 Nov 2026 (/governance, its Now view), so its name links there.
     at("/powers/water");
     const nav = trail()!;
     expect(nav).toBeTruthy();
     expect(nav.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Governance / What We Look After");
     const links = within(nav).getAllByRole("link");
-    expect(links.map((a) => a.getAttribute("href"))).toEqual(["/powers"]);
+    expect(links.map((a) => a.getAttribute("href"))).toEqual(["/governance", "/powers"]);
   });
 
   it("ends with the page's own name when it gives one, marked as the page", () => {

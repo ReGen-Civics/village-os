@@ -10,7 +10,7 @@
  * the same switch, and it must still be there.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { Router } from "wouter";
 
 const switches = { brochurePages: true, brochureHidden: [] as string[] };
@@ -95,12 +95,15 @@ describe("a story page switched off on its own", () => {
     expect(drawer.querySelectorAll('a[href="/quests"]')).toHaveLength(1);
     expect(drawer.querySelectorAll('a[href="/housing"]')).toHaveLength(0);
     fireEvent.click(group("Join"));
+    // Plan a Visit sits in Join's "Come and see" folder since 27 Nov 2026 (config/navNest.ts).
+    fireEvent.click(group("Come and see"));
     expect(drawer.querySelectorAll('a[href="/visit"]')).toHaveLength(1);
   });
 
-  it("takes a whole dropdown entry with it once every story page in it is off", () => {
-    // The four journeys and the other Join pages are all story pages; with
-    // them off only the module-gated entries remain, and those are off here.
+  it("takes its story-page folders with it once every story page in them is off, and keeps the rest", () => {
+    // The four journeys and the other Join pages are all story pages. With them off, Join keeps what is not a story
+    // page (27 Nov 2026): Open Roles, and Become a partner and Propose a quest in their folder. The module-gated
+    // entries are off here.
     switches.brochureHidden = ["/investor", "/steward", "/resident", "/prosperity", "/opportunities", "/visit", "/love-letter", "/work-with-us"];
     render(
       <Router>
@@ -109,6 +112,10 @@ describe("a story page switched off on its own", () => {
         </Layout>
       </Router>,
     );
-    expect(screen.queryAllByRole("button", { name: /^Join/i })).toHaveLength(0);
+    fireEvent.click(screen.getAllByRole("button", { name: /^Join/i })[0]!);
+    const join = document.getElementById("nav-menu-join")!;
+    expect(Array.from(join.querySelectorAll("[data-nav-folder]")).map((f) => f.getAttribute("data-nav-folder"))).toEqual(["Build with us"]);
+    fireEvent.click(within(join).getByRole("button", { name: /Build with us/ }));
+    expect(Array.from(join.querySelectorAll("a[href]")).map((a) => a.getAttribute("href"))).toEqual(["/roles", "/partner", "/propose-quest"]);
   });
 });
