@@ -27,12 +27,49 @@ import { Trans, useLingui } from "@lingui/react/macro";
  * The frame is inert: `pointer-events: none` and `tabIndex={-1}`, so the peek
  * cannot swallow a scroll on a phone or trap focus on the way down the page.
  * It is a picture that happens to be alive; the whole card is the link.
+ *
+ * ── A CLEAN VIEW OF THE MAP AS IT STANDS (the lead, 27 Nov 2026) ─────────
+ * "it's actually not reflecting the latest map ... we shouldn't show those big
+ * annoying buttons ... a really nice clean view of the map as it currently
+ * stands with the building scale properly". Two causes, two fixes:
+ *  - The frame had no shell. The artifact draws its own sample village until a
+ *    shell pushes the village's config, so the peek showed the sample: its
+ *    EXAMPLE numbers and another village's buildings. The peek now answers the
+ *    artifact's `grounds-ready` with the same push the Living Map sends
+ *    (components/map/configPush.ts, loaded only once the frame is live).
+ *  - The artifact had no peek mode, so its whole HUD and its quest seals drew
+ *    in a small window. `#peek` now takes every control, card, seal and name
+ *    off and shrinks the buildings to the frame (docs/prototypes/grounds-v0.html,
+ *    THE PEEK). `skipIntro` keeps the welcome card out of it.
  */
+
+/** The peek's address: the map's own page, drawn clean, with no welcome card. */
+export const PEEK_SRC = "/grounds/index.html#peek&skipIntro";
 export default function MapPeek() {
   const { t } = useLingui();
   const mapModule = useModule("map");
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
   const [live, setLive] = useState(false);
+
+  /*
+   * The village's own map, pushed into the frame when the artifact says it is
+   * ready. Only a message from THIS frame, on this origin, is answered.
+   */
+  useEffect(() => {
+    if (!live) return;
+    const blankSent = { current: false };
+    const onMessage = (ev: MessageEvent) => {
+      if (ev.origin !== window.location.origin) return;
+      const win = frameRef.current?.contentWindow;
+      if (!win || ev.source !== win) return;
+      if (!ev.data || typeof ev.data !== "object" || ev.data.type !== "grounds-ready") return;
+      blankSent.current = false;
+      void import("@/components/map/configPush").then((m) => m.pushVillageConfig(win, { blankSent, land: m.readLand() }));
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [live]);
 
   useEffect(() => {
     if (!mapModule) return;
@@ -92,7 +129,8 @@ export default function MapPeek() {
           >
             {live ? (
               <iframe
-                src="/grounds/index.html#?peek=1"
+                ref={frameRef}
+                src={PEEK_SRC}
                 title=""
                 aria-hidden="true"
                 tabIndex={-1}
