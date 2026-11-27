@@ -19,6 +19,7 @@
  *             POST   /api/admin/quests/mark-examples   (every real quest stamped, 2026-11-24)
  *   the walk  POST /api/game/quests/:id/claim
  *             POST /api/game/quests/:id/submit
+ *             POST /api/game/quests/:id/withdraw   (put a quest back, 2026-11-27)
  *
  * ORDER INSIDE THIS FILE IS LOAD-BEARING, and one pair especially:
  * `/api/quests/field` is registered BEFORE `/api/quests/:id`, so the literal
@@ -1361,5 +1362,37 @@ export function register(app: Express, deps: Deps): void {
       console.error(`[quests] claim ${active.id}: could not read who to ring about the submission`, who);
     }
     res.json(updated);
+  });
+
+  /**
+   * PUT IT BACK: the member lets go of a quest they took and have not turned in
+   * (the lead, 27 Nov 2026: "decline the quest and remove it from my thing").
+   *
+   * The same move the map's toggle makes, through the same repo door
+   * (`claimsRepo.remove`): a `claimed` row is deleted, so the quest leaves the
+   * member's lists and opens for somebody else, and no trace is kept, because
+   * nothing was done and no value moved. That door's own header says why this
+   * is not a decline: a decline is a steward's judgement and stays on record.
+   *
+   * WORK TURNED IN IS NOT PUT BACK FROM HERE. A `submitted` claim carries the
+   * member's evidence and a steward has been rung to read it, so letting it
+   * vanish would pull work out from under that steward. The refusal says who
+   * can hand it back. `remove` re-tests the status in its own WHERE, so a claim
+   * turned in between the read below and the delete survives too.
+   */
+  app.post("/api/game/quests/:id/withdraw", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required" });
+    const mine = await claimsRepo.forUser(user.id);
+    const active = mine.find((c) => c.questId === req.params.id && (c.status === "claimed" || c.status === "submitted"));
+    if (!active) return res.status(404).json({ error: "No active claim for this quest" });
+    const turnedIn = {
+      error: "You already turned this in, so a steward is reading it. Ask the steward if you want it handed back.",
+      status: "submitted",
+    };
+    if (active.status === "submitted") return res.status(409).json(turnedIn);
+    const removed = await claimsRepo.remove(active.id);
+    if (!removed) return res.status(409).json(turnedIn);
+    res.json({ ok: true, questId: active.questId, claimId: active.id });
   });
 }

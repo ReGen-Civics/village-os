@@ -129,6 +129,11 @@ msgctxt "SeatApplication, label"
 msgid "Reading the proposal"
 msgstr "Reading the proposal"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "The date for goal {n} falls outside this moon."
+msgstr "The date for goal {n} falls outside this moon."
+
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, invoice due"
 msgid "Invoice due"
@@ -4328,6 +4333,11 @@ msgctxt "CommunityCalendarCard, placeholder"
 msgid "Seed swap on the porch"
 msgstr "Seed swap on the porch"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Goal {n} moves a goal this role does not have. Pick one from the role's own goals."
+msgstr "Goal {n} moves a goal this role does not have. Pick one from the role's own goals."
+
 #. placeholder {0}: t.quote
 #. placeholder {1}: fmtTs(t.timestamp_ms)
 #: client/src/pages/Admin.tsx
@@ -6750,9 +6760,9 @@ msgstr "Next"
 #. placeholder {2}: c.engineConnected ? "" : ` ${c.engine} is not connected yet, so ${c.chatEngine} answers for now.`
 #. placeholder {3}: consent && agreed ? ` ${consent.disclosure.sentence}` : ""
 #: client/src/components/profileDash/YourCompanions.tsx
-msgctxt "YourCompanions, p"
-msgid "{0} speaks through {1}, the village guide.{2}{3}"
-msgstr "{0} speaks through {1}, the village guide.{2}{3}"
+#~ msgctxt "YourCompanions, p"
+#~ msgid "{0} speaks through {1}, the village guide.{2}{3}"
+#~ msgstr "{0} speaks through {1}, the village guide.{2}{3}"
 
 #: client/src/components/openProposal/SplitReview.tsx
 msgctxt "open proposal: the split table"
@@ -8363,6 +8373,11 @@ msgstr "Vedic chart"
 msgctxt "sera answers"
 msgid "it cannot be taken from this list"
 msgstr "it cannot be taken from this list"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: check"
+msgid "Say whether you accept or would like to talk about {label}."
+msgstr "Say whether you accept or would like to talk about {label}."
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft steps"
@@ -10068,6 +10083,11 @@ msgstr "We're receiving a lot of proposals right now and can't send another conf
 msgctxt "game variable village.satellite_provider, description"
 msgid "Which imagery provider Where the Land Is fetches the village's picture from. A provider that needs a key reads it from Admin, Integrations, where its card appears once it is chosen here. Blank leaves the choice to the host, which may have set one for this deployment. Some providers forbid keeping their pictures, and Where the Land Is says which before anything is fetched."
 msgstr "Which imagery provider Where the Land Is fetches the village's picture from. A provider that needs a key reads it from Admin, Integrations, where its card appears once it is chosen here. Blank leaves the choice to the host, which may have set one for this deployment. Some providers forbid keeping their pictures, and Where the Land Is says which before anything is fetched."
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: keep the quest, do not put it back"
+msgid "Keep it"
+msgstr "Keep it"
 
 #: client/src/components/admin/TokenMeaningField.tsx
 msgctxt "TokenMeaningField, too long"
@@ -14926,6 +14946,11 @@ msgctxt "an outside contact's organisation"
 msgid "Organisation"
 msgstr "Organisation"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: check"
+msgid "Keep your note on {label} to {max} characters."
+msgstr "Keep your note on {label} to {max} characters."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for {seasonName}, say what you bring, and send it. Your name and email come from your account."
 #~ msgstr "Pick up to {maxRoles} roles for {seasonName}, say what you bring, and send it. Your name and email come from your account."
@@ -15283,6 +15308,11 @@ msgstr "Customize this section"
 msgctxt "the bell: why a notice of this kind matters, kind circle_place_waiting"
 msgid "A gathering is full for circles, so a circle you are in waits in line, and you will hear the moment a place opens."
 msgstr "A gathering is full for circles, so a circle you are in waits in line, and you will hear the moment a place opens."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Write the date for goal {n} as a day, like 2026-11-16."
+msgstr "Write the date for goal {n} as a day, like 2026-11-16."
 
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
@@ -17379,6 +17409,11 @@ msgstr "How many people one group thread may hold, the creator included. Every m
 msgid "{count, plural, one {# idea so far.} other {# ideas so far.}}"
 msgstr "{count, plural, one {# idea so far.} other {# ideas so far.}}"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Up to {max} goals for a role."
+msgstr "Up to {max} goals for a role."
+
 #: client/src/pages/Review.tsx
 msgctxt "Review, h1"
 msgid "Your work"
@@ -18037,6 +18072,11 @@ msgctxt "game variable governance.tier_structural_quorum_pct, description"
 msgid "The least share of the village's voting weight that must turn up before a structural change can be decided. Structural means it changes how the village decides or who belongs to it: the unity and quorum settings themselves, how ballots decide, who may be admitted, what the village mints, and turning a part of the Game on or off. The shipped 50 is this platform's starting number and your village may raise it. It cannot go below the platform floor."
 msgstr "The least share of the village's voting weight that must turn up before a structural change can be decided. Structural means it changes how the village decides or who belongs to it: the unity and quorum settings themselves, how ballots decide, who may be admitted, what the village mints, and turning a part of the Game on or off. The shipped 50 is this platform's starting number and your village may raise it. It cannot go below the platform floor."
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: putting a quest back, in progress"
+msgid "Putting it back…"
+msgstr "Putting it back…"
+
 #: client/src/components/modules/starterSetWords.ts
 msgctxt "module starter set hosting-guests, name"
 msgid "Hosting guests"
@@ -18263,6 +18303,11 @@ msgstr "Remove this week"
 msgctxt "SeatClaimCard, p"
 msgid "The village wrote these down before you had an account here. Say which one is yours and a steward confirms it, and the role keeps everything it already knew."
 msgstr "The village wrote these down before you had an account here. Say which one is yours and a steward confirms it, and the role keeps everything it already knew."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Ending"
+msgstr "Ending"
 
 #. placeholder {0}: day(openCycle.startsAt)
 #. placeholder {1}: day(openCycle.endsAt)
@@ -18506,6 +18551,11 @@ msgctxt "Admin, placeholder"
 msgid "New category label"
 msgstr "New category label"
 
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: jump to the member's actions on this quest"
+msgid "Your next step"
+msgstr "Your next step"
+
 #: client/src/pages/gameMechanicsConstitutionWords.ts
 msgctxt "constitution law \"Caps fail closed\", enforcedBy"
 msgid "server/lib/exchange.ts: fail-closed swap caps"
@@ -18638,6 +18688,11 @@ msgstr "{openSeats, plural, one {# open} other {# open}}"
 msgctxt "open work: invite the reader to say their percent"
 msgid "Say how much you can give on your profile, and the work that fits comes first."
 msgstr "Say how much you can give on your profile, and the work that fits comes first."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Clocks"
+msgstr "Clocks"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -19592,6 +19647,12 @@ msgstr "A token needs a name."
 msgctxt "LookPanel, p"
 msgid "Blank lets your character choose one from the seed."
 msgstr "Blank lets your character choose one from the seed."
+
+#. placeholder {0}: c.name
+#: client/src/components/profileDash/YourCompanions.tsx
+msgctxt "YourCompanions, p"
+msgid "{0} is your Village Guide"
+msgstr "{0} is your Village Guide"
 
 #: client/src/components/sessions/libraryCopy.ts
 msgctxt "the agenda library: close a long note"
@@ -20615,6 +20676,11 @@ msgstr "What it is for"
 msgctxt "role lists, opens the new role from a card dialog"
 msgid "New role from a card"
 msgstr "New role from a card"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Say when goal {n} is done."
+msgstr "Say when goal {n} is done."
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "AgentsPanel, p"
@@ -27144,6 +27210,11 @@ msgctxt "map chip treasury, what it counts"
 msgid "What the village treasury holds of the token the cycle pool pays out, in whole tokens."
 msgstr "What the village treasury holds of the token the cycle pool pays out, in whole tokens."
 
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the investor tile at the top of /roles"
+msgid "Join the cap table"
+msgstr "Join the cap table"
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable progression.unlock.proposal.open, description"
 msgid "Which rung of the ladder grants \"proposal.open\" by progression alone. Roles and badges can still grant it at any stage; \"never by stage\" makes it role/badge-only. This is the constitution's parameter table, so move rungs deliberately."
@@ -28772,6 +28843,11 @@ msgstr "Propose for this moon"
 msgctxt "ToolsHub, p"
 msgid "Governance & Pay"
 msgstr "Governance & Pay"
+
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the strip for a member holding the quest"
+msgid "You took this quest. Turn in your work when it is done, or put it back."
+msgstr "You took this quest. Turn in your work when it is done, or put it back."
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -38403,6 +38479,11 @@ msgctxt "Admin, p"
 msgid "No address is set. A visitor can still request the packet and still receives it, and nobody here is told the request happened."
 msgstr "No address is set. A visitor can still request the packet and still receives it, and nobody here is told the request happened."
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: check"
+msgid "Choose your commitment, from 0 to 100 in steps of 10."
+msgstr "Choose your commitment, from 0 to 100 in steps of 10."
+
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: agendaEmpty"
 msgid "The agenda is still blank. Anyone in the room can add the first item."
@@ -38823,6 +38904,11 @@ msgctxt "founding application check, a box over its limit"
 msgid "Where you are based"
 msgstr "Where you are based"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "One of your goals could not be read."
+msgstr "One of your goals could not be read."
+
 #. placeholder {0}: d.date
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -39189,6 +39275,11 @@ msgstr "Ocean"
 msgctxt "game variable valuation.band_below_pct, label"
 msgid "How far under the suggestion one person may set pay"
 msgstr "How far under the suggestion one person may set pay"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Done when is too long. Keep it under {n} characters."
+msgstr "Done when is too long. Keep it under {n} characters."
 
 #: client/src/pages/Decisions.tsx
 #~ msgctxt "Decisions, p"
@@ -39953,6 +40044,11 @@ msgstr "Nobody holds the power to change the org chart, so a village vote decide
 msgctxt "NotificationBell, p"
 msgid "Nothing yet. Go be seen."
 msgstr "Nothing yet. Go be seen."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Goal {n} names a season goal this season does not have."
+msgstr "Goal {n} names a season goal this season does not have."
 
 #: client/src/components/ErrorBoundary.tsx
 msgid "Still stuck? Give this device a fresh start"
@@ -44268,6 +44364,11 @@ msgctxt "tag on the canvas block a season starts with"
 msgid "First up"
 msgstr "First up"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Add at least one goal for your first moon."
+msgstr "Add at least one goal for your first moon."
+
 #: client/src/pages/gameMechanicsDialWords3.ts
 msgctxt "game variable library.loan_days_default, label"
 msgid "Loan length"
@@ -45819,6 +45920,11 @@ msgctxt "ResourcesPanel, p"
 msgid "Opening a decision requires the co-creator stage or a role that grants it."
 msgstr "Opening a decision requires the co-creator stage or a role that grants it."
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Scoreboard"
+msgstr "Scoreboard"
+
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "ProposeQuest, a"
 msgid "<0/>Back to Quests"
@@ -46775,6 +46881,11 @@ msgstr "Take this change out."
 msgid "A note for the applicant (they will see this)"
 msgstr "A note for the applicant (they will see this)"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Send your goals as a list."
+msgstr "Send your goals as a list."
+
 #: client/src/components/playerCard/playerCardMessages.ts
 msgctxt "player card, timeline lede"
 msgid "Work is planned a moon at a time, from one new moon to the next."
@@ -47223,6 +47334,11 @@ msgctxt "AsksPanel, button"
 msgid "Done"
 msgstr "Done"
 
+#: client/src/pages/QuestDetail.tsx
+msgctxt "quest page: the strip for a member whose work is turned in"
+msgid "You turned this in. A steward will read it soon."
+msgstr "You turned this in. A steward will read it soon."
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft stat"
 #~ msgid "Time"
@@ -47612,6 +47728,11 @@ msgstr "New date set. Nobody needs a reason."
 msgctxt "game variable progression.multiplier.initiate, label"
 msgid "Sending-budget multiplier: Initiate"
 msgstr "Sending-budget multiplier: Initiate"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Goals"
+msgstr "Goals"
 
 #: client/src/pages/Admin.tsx
 msgctxt "Admin, p"
@@ -48767,6 +48888,11 @@ msgstr "This application already has a shortlist answer."
 msgctxt "moon recap: SERA_STATE_WORDS: running"
 msgid "Sera is drafting your moon."
 msgstr "Sera is drafting your moon."
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: let go of a quest you took"
+msgid "Put this quest back"
+msgstr "Put this quest back"
 
 #: client/src/components/playerCard/roleSignMessages.ts
 msgctxt "role sign sheet, missing part a term"
@@ -52720,6 +52846,11 @@ msgstr "{contact} on {when}"
 #~ msgid "Why this price (optional)"
 #~ msgstr "Why this price (optional)"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: confirm putting a quest back"
+msgid "Yes, put it back"
+msgstr "Yes, put it back"
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft filter"
 msgid "Only roles that fit"
@@ -53412,6 +53543,11 @@ msgstr "Ask the circle to consent after the conversations"
 msgctxt "Admin, span"
 msgid "admins only"
 msgstr "admins only"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Bonus"
+msgstr "Bonus"
 
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
@@ -59447,6 +59583,11 @@ msgctxt "circles page, the map picture for a visitor"
 msgid "How the circles sit together"
 msgstr "How the circles sit together"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Goal {n} names a role that is not in this proposal."
+msgstr "Goal {n} names a role that is not in this proposal."
+
 #: client/src/pages/Register.tsx
 msgctxt "register, invitation needed: the second button"
 msgid "See calls and events"
@@ -59657,6 +59798,11 @@ msgstr "A fixed monthly stipend and allowance for three moons, with a weekly rhy
 msgctxt "Admin, p"
 msgid "Nothing would change."
 msgstr "Nothing would change."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Term"
+msgstr "Term"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -60574,6 +60720,11 @@ msgctxt "LetterComposer, title"
 msgid "The letter as it arrives"
 msgstr "The letter as it arrives"
 
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: a turned-in quest cannot be put back by its doer"
+msgid "Want it back? Ask the steward to hand it back."
+msgstr "Want it back? Ask the steward to hand it back."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice clip beside an answer"
 msgid "Stop"
@@ -60946,6 +61097,11 @@ msgstr "Before the vote"
 msgctxt "founding application refusal"
 msgid "Choose your commitment for each role you added."
 msgstr "Choose your commitment for each role you added."
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: putting a quest back failed"
+msgid "That didn't go through. Try again."
+msgstr "That didn't go through. Try again."
 
 #: client/src/pages/RoleDraft.tsx
 msgid "This role has not written its aim yet."
@@ -61776,6 +61932,11 @@ msgstr "Reset"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "Your first moon in {roleName}: up to {0} quests, each with a \"Done when\" test"
 #~ msgstr "Your first moon in {roleName}: up to {0} quests, each with a \"Done when\" test"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "A goal is too long. Keep it under {n} characters."
+msgstr "A goal is too long. Keep it under {n} characters."
 
 #: client/src/pages/gameMechanicsDialWords1.ts
 msgctxt "game variable ledger.org_redemption_moon_cap, label"
@@ -62614,6 +62775,11 @@ msgstr "Try again"
 msgctxt "live sessions: howOften.every1"
 msgid "Every week"
 msgstr "Every week"
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Rhythm"
+msgstr "Rhythm"
 
 #: client/src/components/myMoon/moonWords.ts
 msgctxt "moon recap: MY_MOON_WORDS: saveRoute"
@@ -65613,6 +65779,11 @@ msgstr "Nothing yet. Feedback arrives unsigned on Monday mornings, village time.
 msgctxt "SeatSettingsFields, label"
 msgid "Fewest quests a moon"
 msgstr "Fewest quests a moon"
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: the ask before putting a quest back"
+msgid "Put this quest back? It leaves your quests and opens for someone else."
+msgstr "Put this quest back? It leaves your quests and opens for someone else."
 
 #: client/src/components/admin/CashPayoutsTab.tsx
 msgctxt "CashPayoutsTab, button"
@@ -72321,6 +72492,11 @@ msgctxt "how someone appeals a consequence"
 msgid "Appeal: {appealShown}"
 msgstr "Appeal: {appealShown}"
 
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the investor tile, a compact tile"
+msgid "Invest in the village as a capital contributor."
+msgstr "Invest in the village as a capital contributor."
+
 #: client/src/components/admin/WorkWithUsTab.tsx
 msgctxt "WorkWithUsTab, label"
 msgid "AI guide's name"
@@ -73112,6 +73288,11 @@ msgctxt "game variable unit"
 msgid "entries"
 msgstr "entries"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "Name goal {n}."
+msgstr "Name goal {n}."
+
 #: client/src/pages/gameMechanicsDialWords2.ts
 msgctxt "game variable map.concierge_enabled, label"
 msgid "Show the coordination concierge"
@@ -73739,6 +73920,11 @@ msgstr "Copy work summary"
 msgctxt "review inbox: a row, what deciding it does"
 msgid "Approving it lets it go live. Seatings are listed in the order they arrived."
 msgstr "Approving it lets it go live. Seatings are listed in the order they arrived."
+
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role goals: check"
+msgid "{what} is too long. Keep it under {n} characters."
+msgstr "{what} is too long. Keep it under {n} characters."
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: profileSubmitted"
@@ -76196,6 +76382,11 @@ msgctxt "priority board, an item's status"
 msgid "Under way"
 msgstr "Under way"
 
+#: client/src/components/governance/parsedChecks.ts
+msgctxt "role terms: a setting a check names"
+msgid "Allowance"
+msgstr "Allowance"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "your guide"
@@ -77055,6 +77246,11 @@ msgstr "Sending..."
 msgctxt "review inbox: a row, what it is"
 msgid "Finished work"
 msgstr "Finished work"
+
+#: client/src/components/QuestActions.tsx
+msgctxt "quest page: after putting a quest back"
+msgid "Put back. It has left your quests and is open for someone else."
+msgstr "Put back. It has left your quests and is open for someone else."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."
