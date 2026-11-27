@@ -42,6 +42,7 @@ vi.mock("@/components/messages/MessageCountBadge", () => ({ default: () => <span
 // The registered cards, as the Pull a card lane will add its own: one with a rule this test turns on and off.
 const lens = vi.hoisted(() => ({ on: false }));
 vi.mock("@/lib/speedCards/registered", () => ({
+  cardLabel: (c: { label: { message: string } }) => c.label.message,
   REGISTERED_CARDS: [
     {
       id: "pull-a-card",

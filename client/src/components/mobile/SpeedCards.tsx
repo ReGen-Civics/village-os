@@ -25,7 +25,7 @@ import { navWord, type NavEntry, type NavGroup, type NavLink } from "@/config/na
 import { TASK_BOARD_PATH } from "@shared/taskMenu";
 import type { SpeedCardSlots } from "@shared/speedCards";
 import { buildRegistry, defaultSlots, moveSlot, placeAt, removeAt, resolveSlots, sixSlots, type SpeedCard, type SpeedCardDef } from "@/lib/speedCards/registry";
-import { REGISTERED_CARDS, type RegisteredCard } from "@/lib/speedCards/registered";
+import { cardLabel, REGISTERED_CARDS, type RegisteredCard } from "@/lib/speedCards/registered";
 import { useSpeedCards } from "@/lib/speedCards/useSpeedCards";
 
 const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
@@ -70,7 +70,7 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
   const { t, i18n } = useLingui();
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const onAnswer = useMemo(() => (id: string, shown: boolean) => setAnswers((a) => (a[id] === shown ? a : { ...a, [id]: shown })), []);
-  const registered: SpeedCardDef[] = REGISTERED_CARDS.filter((c) => answers[c.id]).map((c) => ({ ...c, label: i18n._(c.label) }));
+  const registered: SpeedCardDef[] = REGISTERED_CARDS.filter((c) => answers[c.id]).map((c) => ({ ...c, label: cardLabel(c, i18n) }));
   const words = {
     yours: t({ message: "Yours", context: "the phone's More sheet: heading" }),
     more: t({ message: "More", context: "the speed-card picker: a group for menu entries outside every group" }),

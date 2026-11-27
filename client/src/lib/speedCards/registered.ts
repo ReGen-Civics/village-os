@@ -13,7 +13,9 @@
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
 import { msg } from "@lingui/core/macro";
-import type { MessageDescriptor } from "@lingui/core";
+// A value import of the runtime, as budgetWords.ts has: precompileEnglish compiles the messages of a file that
+// imports it and skips one that only uses `msg` (a build of the first cut shipped "Pay" uncompiled).
+import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { creditsInUse, type PayRead, type PayRecentRead } from "@shared/payGate";
@@ -21,6 +23,11 @@ import { PULL_A_CARD_ID, type SpeedCardDef } from "./registry";
 
 /** A registered card's name is a message, translated where the sheet draws it. */
 export type RegisteredCard = Omit<SpeedCardDef, "label"> & { label: MessageDescriptor };
+
+/** A registered card's name in the reader's language. */
+export function cardLabel(card: RegisteredCard, i18n: I18n = appI18n): string {
+  return i18n._(card.label);
+}
 
 /** Credits are in use for this member (shared/payGate.ts): read once per opening of the sheet. */
 export function usePayShown(): boolean {
