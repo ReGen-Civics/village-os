@@ -190,9 +190,9 @@ export default function PhotoViewer({
       >
         <div className="relative bg-muted">
           {photo.hiddenAt ? (
-            <CuratorImage src={photo.url} alt={photo.altText} className="max-h-[55vh]" />
+            <CuratorImage src={photo.url} alt={photo.altText} className="w-full max-h-[50vh]" />
           ) : (
-            <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority className="max-h-[55vh]" />
+            <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority className="w-full max-h-[50vh]" />
           )}
           <DialogClose className={`${ROUND} right-2 top-2`} aria-label={t({ message: "Close the photo", context: "place photo viewer" })}>
             <X className="size-5" />
