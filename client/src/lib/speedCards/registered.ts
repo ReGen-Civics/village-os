@@ -18,6 +18,7 @@ import { msg } from "@lingui/core/macro";
 import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyGeneKeys } from "@/components/geneKeys/useMyGeneKeys";
+import { useModules } from "@/modules/ModuleProvider";
 import { gameFetch } from "@/lib/gameApi";
 import { creditsInUse, type PayRead, type PayRecentRead } from "@shared/payGate";
 import { PULL_A_CARD_ID, type SpeedCardDef } from "./registry";
@@ -65,11 +66,15 @@ export const PAY_CARD: RegisteredCard = {
  * Human Design or Gene Keys is on for this member: the village has the Gene Keys module on (Human Design is read
  * from the same lines; there is no separate module) and the member has found their lines, so there is a deck to
  * draw from. The read every profile surface already shares, so the sheet costs no new request once it has run.
- * False while the lines are still being read.
+ * Null while the module catalog or the lines are still being read, so the sheet holds the slot quietly (as it does
+ * for Pay) and never shows a "+" that Pull a card then fills.
  */
-export function usePullACardShown(): boolean {
+export function usePullACardShown(): boolean | null {
+  const { loaded } = useModules();
   const { on, mine } = useMyGeneKeys();
-  return on && !!mine;
+  if (!loaded) return null;
+  if (!on) return false;
+  return mine === undefined ? null : !!mine;
 }
 
 /** Today's card, drawn from the member's own lines (/profile/today-card, shared/myCard.ts; PR #1859). */
