@@ -21,11 +21,13 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Send, X } from "lucide-react";
+import { X } from "lucide-react";
 import { CANVAS_BLOCKS, type CanvasBlockId } from "@shared/governanceCanvas";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -90,7 +92,8 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
         : "Ask about the canvas. The guide reads what the village adopted and its readings first, then the shelf.",
     },
   ]);
-  const [draft, setDraft] = useState("");
+  // One draft per block, kept in this tab: closing the panel and asking again opens on the same words.
+  const [draft, setDraft] = useChatDraft(`canvas-companion:${block ?? "canvas"}`);
   const [busy, setBusy] = useState(false);
   /** The line waiting for a yes, if the last answer came back with one. */
   const [line, setLine] = useState<CompanionLine | null>(null);
@@ -98,7 +101,8 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
   /** The member's standing yes, if any, as the server holds it. */
   const [agreed, setAgreed] = useState<{ provider: string; at: string } | null>(null);
   const [lineError, setLineError] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     input.current?.focus();
@@ -202,6 +206,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
   // From md up the bar is gone and --tabbar-h is 0.
   return (
     <div
+      ref={panel}
       role="dialog"
       aria-label={name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}
       data-testid="companion-panel"
@@ -252,28 +257,20 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
           </button>
         </p>
       )}
-      <div className="p-3 border-t border-stone-100 flex gap-2">
-        <input
-          ref={input}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") send();
-          }}
-          aria-label={t({ message: "Your question", context: "guide question field" })}
-          placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
-          className="flex-1 min-w-0 text-sm border border-stone-300 rounded-lg px-3 py-2"
-        />
-        <button
-          type="button"
-          onClick={send}
-          disabled={busy || !draft.trim()}
-          aria-label={t({ message: "Ask", context: "send the question to the guide" })}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-teal-deep text-white rounded-lg disabled:opacity-40"
-        >
-          <Send className="w-4 h-4" aria-hidden="true" />
-        </button>
-      </div>
+      <ChatComposer
+        id="companion-question"
+        className="p-3 border-t border-stone-100"
+        inputRef={input}
+        within={panel}
+        value={draft}
+        onChange={setDraft}
+        onSend={send}
+        busy={busy}
+        label={t({ message: "Your question", context: "guide question field" })}
+        placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
+        sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
+        sendClassName="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-teal-deep text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
       <p className="px-4 pb-3 text-xs text-stone-600">
         <Trans>
           The guide never changes the canvas. To change an answer, suggest it under Say on the block.{" "}
