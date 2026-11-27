@@ -205,6 +205,7 @@ const Profile = lazyPage(() => import("./pages/Profile"));
 const ProfileSettings = lazyPage(() => import("./pages/ProfileSettings"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
+const TodayCardPage = lazyPage(() => import("./pages/TodayCard"));
 // Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
 const RitesWelcome = lazyPage(() => import("./pages/rites/Welcome"));
 const RitesComeAboard = lazyPage(() => import("./pages/rites/ComeAboard"));
@@ -480,6 +481,8 @@ function Router() {
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      {/* Pull a card: today's card, drawn from the member's own lines (shared/myCard.ts). Before /profile/:handle. */}
+      <Route path="/profile/today-card" component={TodayCardPage} />
       {/* Profile settings (Direction D). Before /profile/:handle, which would otherwise take "settings" as a handle. */}
       <Route path="/profile/settings" component={ProfileSettings} />
       <Route path="/welcome" component={RitesWelcome} />

@@ -347,6 +347,22 @@ export async function ownChartOf(pool: Pool, userId: string): Promise<Chart | nu
   return row ? chartOf(row) : null;
 }
 
+/**
+ * A member's own chart and whether their guide may use it, for their own daily card (shared/myCard.ts). The
+ * chart is read for the member alone; `maia` is their own yes to the guide using their lines, which the card
+ * asks before the guide writes it.
+ */
+export async function ownLinesFor(pool: Pool, userId: string): Promise<{ chart: Chart; maia: boolean } | null> {
+  const row = await readGeneKeys(pool, userId);
+  const chart = row ? chartOf(row) : null;
+  return row && chart ? { chart, maia: Boolean(row.maia) } : null;
+}
+
+/** The member's own yes to the guide using their lines, from the card's one tap. Their other choices stay as they are. */
+export async function letGuideUseLines(pool: Pool, userId: string): Promise<boolean> {
+  return updateGeneKeysSettings(pool, userId, { maia: true });
+}
+
 /** Why a card does not read this member, in the order they would fix it, or null when it does. */
 export async function cardStandingOf(pool: Pool, userId: string): Promise<"no-lines" | "hidden" | "no-maia" | "left-out" | "not-asked" | null> {
   const row = await readGeneKeys(pool, userId);
