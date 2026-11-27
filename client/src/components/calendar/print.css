@@ -16,8 +16,17 @@
   /* Only the wrapped view prints. The visibility pattern beats hunting the
      page's chrome selector by selector: everything vanishes, then the print
      area and its children come back. The page around it (tabs, steppers,
-     cards, toasts) needs no cooperation and no markup changes. */
-  body * {
+     cards, toasts) needs no cooperation and no markup changes.
+     Only on a page that HOLDS a print sheet (the calendar's, or the rites
+     packet, rites.css): unscoped, this hid every other page in the app on
+     paper, and Rights and agreements printed blank (fold QA, 27 Nov 2026).
+     Inside :where(), so the scope adds no weight: the show rules below
+     (.calendar-print *, and .rites .packtable * in rites.css) must outrank
+     this hide, exactly as they outranked the old bare `body *`. Written
+     without :where() it printed the calendar and the packet blank (fold QA
+     round 2). calendar/printSheet.test.ts holds this. */
+  :where(body:has(.calendar-print)) *,
+  :where(body:has(.rites .packtable)) * {
     visibility: hidden;
   }
 
@@ -33,9 +42,15 @@
     width: 100% !important;
   }
 
-  /* Hidden AND removed, so they cost no layout space above the sheet. */
-  header,
-  footer,
+  /* Hidden AND removed, so they cost no layout space above the sheet. Every
+     header and footer goes on a page holding a sheet, as it always did. On any
+     other page only navigation and `.print-hide` go: a page's own <header> or
+     <footer> often holds its words (a role card's title, a card's actions),
+     and the site's header, footer and path strip are print:hidden in Layout. */
+  :where(body:has(.calendar-print)) header,
+  :where(body:has(.calendar-print)) footer,
+  :where(body:has(.rites .packtable)) header,
+  :where(body:has(.rites .packtable)) footer,
   nav,
   .print-hide {
     display: none !important;
@@ -43,6 +58,12 @@
 
   body {
     background: #fff !important;
+  }
+
+  /* A scroll-driven entrance (.m-germ, index.css) has no scroll on paper, so a
+     card below the first page printed half faded. Every card prints whole. */
+  .m-germ {
+    animation: none !important;
   }
 
   .print-header {

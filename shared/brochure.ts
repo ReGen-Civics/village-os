@@ -75,12 +75,31 @@ export type BrochurePath = (typeof BROCHURE_PATHS)[number];
 const SET: ReadonlySet<string> = new Set(BROCHURE_PATHS);
 
 /**
+ * THREE STORY PAGES ARE CHAPTERS NOW (the rights fold, 27 Nov 2026). The Good
+ * Neighbor criteria and the two rights pages are chapters of /rights, each
+ * under its own anchor, and each keeps the switch it always had, under its old
+ * address. So a link to the chapter is a link to that story page as far as
+ * every switch is concerned: a menu entry, a footer link or a saved page button
+ * to `/rights#good-neighbor` goes when `/good-neighbor` is switched off. /rights
+ * itself is never a story page: its Leaving Well chapter is guaranteed.
+ */
+export const STORY_CHAPTERS: Readonly<Record<string, BrochurePath>> = {
+  "/rights#good-neighbor": "/good-neighbor",
+  "/rights#resident-rights": "/resident-rights",
+  "/rights#steward-rights": "/steward-rights",
+};
+
+/**
  * The path alone: no query string, no hash, no trailing slash, lower case.
  * The router matches a route whatever its case (`/HOUSING` opens `/housing`),
  * so a switch that only knew the lower-case spelling could be walked round.
+ * A story chapter's anchor reads as the story page it was (STORY_CHAPTERS).
  */
 function barePath(path: string): string {
-  return path.split(/[?#]/, 1)[0].replace(/\/+$/, "").toLowerCase() || "/";
+  const bare = path.split(/[?#]/, 1)[0].replace(/\/+$/, "").toLowerCase() || "/";
+  const at = path.indexOf("#");
+  const chapter = at === -1 ? undefined : STORY_CHAPTERS[`${bare}${path.slice(at).toLowerCase()}`];
+  return chapter ?? bare;
 }
 
 /** True for a brochure route, ignoring any query string or hash. */

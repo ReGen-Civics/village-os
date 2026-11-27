@@ -499,7 +499,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
                   Nobody can sign in to this account again.
                 </Trans></p>
                 <p className="text-xs text-card-foreground mt-2">
-                  <Trans context="NotifyPrefsPanel, p"><Link href="/exit-policy?focus=begin-departure" className="font-medium underline">
+                  <Trans context="NotifyPrefsPanel, p"><Link href="/rights?focus=begin-departure#leaving-well" className="font-medium underline">
                     Leave the village instead
                   </Link>
                   . Leaving keeps your account, your tokens and any cash owed to you, and you stay on as a former member.

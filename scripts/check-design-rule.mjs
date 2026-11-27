@@ -72,9 +72,8 @@ const PAGES = [
   "client/src/pages/LoveLetter.tsx",
   "client/src/pages/ApplicationStatus.tsx",
   "client/src/pages/StewardJourney.tsx",
-  "client/src/pages/StewardRights.tsx",
-  "client/src/pages/ResidentRights.tsx",
-  "client/src/pages/ExitPolicy.tsx",
+  // Rights and agreements (the rights fold, 27 Nov 2026): the two rights pages, Good Neighbor and Leaving Well, as one page.
+  "client/src/pages/RightsAndAgreements.tsx",
   "client/src/pages/Quests.tsx",
   "client/src/pages/MySeason.tsx",
   // The village calendar, moon first (Phase C, decision 3).
@@ -100,7 +99,6 @@ const PAGES = [
   "client/src/pages/ResidentJourney.tsx",
   "client/src/pages/Powers.tsx",
   "client/src/pages/Team.tsx",
-  "client/src/pages/GoodNeighbor.tsx",
   "client/src/pages/HowWeCreate.tsx",
   "client/src/pages/OpenProposal.tsx",
   "client/src/pages/Training.tsx",
@@ -149,6 +147,12 @@ const JOURNEY = [
   "client/src/components/canvas/DecisionMatrix.tsx",
   "client/src/components/canvas/ConflictAgreementPublic.tsx",
   "client/src/components/journey/look.ts",
+  // The four chapters of /rights and the frame they share (the rights fold, 27 Nov 2026).
+  "client/src/components/rights/chapterParts.tsx",
+  "client/src/components/rights/GoodNeighborChapter.tsx",
+  "client/src/components/rights/ResidentRightsChapter.tsx",
+  "client/src/components/rights/StewardRightsChapter.tsx",
+  "client/src/components/rights/LeavingWellChapter.tsx",
   // How roles are going, folded into Circles & Roles (27 Nov 2026): the panel a circle's page and the circles page draw.
   "client/src/components/roleMeasures/RoleMeasuresPanel.tsx",
   // The /roles coming-soon group (20 Nov 2026): born inside the rule.

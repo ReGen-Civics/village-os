@@ -119,7 +119,7 @@ export default function VillageConflictSteps() {
 
   const policyLink = (
     <Link
-      href="/exit-policy"
+      href="/rights#leaving-well"
       className="inline-flex min-h-11 items-center gap-2 font-semibold text-notice underline underline-offset-2 hover:text-foreground transition-colors"
     >
       <Trans>Read the village's exit policy</Trans> <ArrowRight className="w-4 h-4" />

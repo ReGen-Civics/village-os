@@ -70,8 +70,10 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // 26 Nov 2026), and the /approvals, /changes, /changes/:id and /governance/decisions/changes redirects into Your
     // work and Decisions (the lead, 27 Nov 2026: the folds), and the /feedback redirect into the guide's panel (the
     // feedback fold, 27 Nov 2026), and the
-    // /photographs redirect to /places#photos (the places fold, 26 Nov 2026) is lazy today.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 20);
+    // /photographs redirect to /places#photos (the places fold, 26 Nov 2026), and the four old
+    // addresses of Rights and agreements (/exit-policy, /good-neighbor, /resident-rights, /steward-rights, redirects
+    // to /rights since the rights fold, 27 Nov 2026) is lazy today.
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 24);
     expect(routes.length).toBeGreaterThan(60);
   });
 

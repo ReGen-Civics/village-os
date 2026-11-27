@@ -100,6 +100,12 @@ const ALLOWLIST = {
   "/feedback": "a redirect to the page the member came from with the guide's panel open on Share feedback (lib/guideFeedback.ts); the footer and the corner open the panel in place",
   // The old all-photos page (the places fold, 26 Nov 2026). It redirects to /places#photos; old bookmarks and links already sent are its doors.
   "/photographs": "a redirect to /places#photos, the all-photos page's old address, kept for old links",
+  // Rights and agreements (the rights fold, 27 Nov 2026): four pages became /rights, one chapter each. Each old
+  // address redirects to its chapter's anchor with its query; old links, notifications and saved page buttons are its doors.
+  "/exit-policy": "a redirect to /rights#leaving-well with its query, kept for links and notifications already sent",
+  "/good-neighbor": "a redirect to /rights#good-neighbor, kept for links already sent and the buttons villages saved",
+  "/resident-rights": "a redirect to /rights#resident-rights, kept for links already sent and the buttons villages saved",
+  "/steward-rights": "a redirect to /rights#steward-rights, kept for links already sent and the buttons villages saved",
   "/review": "a redirect to /governance/work (the lead, 26 Nov 2026: call it governance), kept for links already sent",
   "/decisions": "a redirect to /governance/decisions, kept for links already sent",
   // Game Mechanics folded into How we work together (26 Nov 2026). Notifications, emails and the canvas still link here.

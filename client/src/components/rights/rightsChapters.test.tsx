@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 /**
- * The two rights pages render every word from their specs
+ * The two rights chapters of /rights (the rights fold, 27 Nov 2026; until then
+ * the pages /resident-rights and /steward-rights) render every word from their specs
  * (shared/pageContent/rights.ts), hide what a village hides, and say what
  * Rye approved about tokens on 2026-10-22 (TOKEN_COPY_PROPOSAL rows 15-20).
  *
@@ -58,8 +59,8 @@ vi.mock("@/hooks/useVillageContent", () => ({
       : { content: null, loading: false, isPlaceholder: true },
 }));
 
-import ResidentRights from "./ResidentRights";
-import StewardRights from "./StewardRights";
+import ResidentRights from "./ResidentRightsChapter";
+import StewardRights from "./StewardRightsChapter";
 
 beforeEach(() => {
   stored = {};
@@ -78,9 +79,9 @@ const show = (Page: ComponentType) =>
     </Router>,
   );
 
-/** The page has finished loading once the hero headline is visible. */
+/** The chapter has finished loading once its title (the chapter's h2; the page holds the h1) is visible. */
 async function loaded() {
-  const h1 = await screen.findByRole("heading", { level: 1 });
+  const h1 = await screen.findByRole("heading", { level: 2 });
   await vi.waitFor(() => expect(h1).not.toHaveClass("invisible"));
   return h1;
 }
@@ -147,7 +148,7 @@ describe.each(PAGES)("$name, every field in its spec reaches the page", ({ spec,
   it("stays invisible until the saved words arrive, so the defaults never flash first", () => {
     stored = new Proxy({}, { get: () => new Promise(() => {}) }) as Record<string, unknown>;
     show(Page);
-    expect(screen.getByRole("heading", { level: 1, hidden: true })).toHaveClass("invisible");
+    expect(screen.getByRole("heading", { level: 2, hidden: true })).toHaveClass("invisible");
     expect(screen.queryByText("What You Hold")).toBeNull();
   });
 

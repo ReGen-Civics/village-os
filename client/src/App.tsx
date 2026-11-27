@@ -231,7 +231,6 @@ const ForgotPassword = lazyPage(() => import("./pages/ForgotPassword"));
 // One change request, a kind of decision under Decisions since 27 Nov 2026 (the lead). The list is a section of Decisions.
 const ChangeRequest = lazyPage(() => import("./pages/ChangeRequest"));
 const VillageEmail = lazyPage(() => import("./pages/VillageEmail"));
-const GoodNeighbor = brochurePage(() => import("./pages/GoodNeighbor"));
 const JourneyToLaunch = lazyPage(() => import("./pages/JourneyToLaunch"));
 const SetupGame = lazyPage(() => import("./pages/SetupGame"));
 const CanvasWorkbook = lazyPage(() => import("./pages/CanvasWorkbook"));
@@ -240,8 +239,6 @@ const Bootstrap = lazyPage(() => import("./pages/Bootstrap"));
 const Network = lazyPage(() => import("./pages/Network"));
 const Contribute = lazyPage(() => import("./pages/Contribute"));
 const SeasonalFestivals = lazyPage(() => import("./pages/SeasonalFestivals"));
-const StewardRights = brochurePage(() => import("./pages/StewardRights"));
-const ResidentRights = brochurePage(() => import("./pages/ResidentRights"));
 const Training = lazyPage(() => import("./pages/Training"));
 const Governance = lazyPage(() => import("./pages/Governance"));
 const GovernanceNow = lazyPage(() => import("./pages/GovernanceNow"));
@@ -295,7 +292,8 @@ const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
 const Library = lazyPage(() => import("./pages/Library"));
 const VillageHealth = lazyPage(() => import("./pages/VillageHealth"));
-const ExitPolicy = lazyPage(() => import("./pages/ExitPolicy"));
+// Rights and agreements: the Good Neighbor criteria, both rights pages and Leaving Well, as one page (the rights fold, 27 Nov 2026).
+const RightsAndAgreements = lazyPage(() => import("./pages/RightsAndAgreements"));
 const Modules = lazyPage(() => import("./pages/Modules"));
 const ModuleDetail = lazyPage(() => import("./pages/ModuleDetail"));
 const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
@@ -445,7 +443,10 @@ function Router() {
       <Route path="/library" component={Library} />
       {/* /village-health, not /health: the server owns /health as the ops probe */}
       <Route path="/village-health" component={VillageHealth} />
-      <Route path="/exit-policy" component={ExitPolicy} />
+      <Route path="/rights" component={RightsAndAgreements} />
+      {/* The four old addresses of Rights and agreements, each to its own chapter, with the query riding along
+          (`/exit-policy?focus=begin-departure` still lands on the departure card). Kept for links already sent. */}
+      <Route path="/exit-policy">{() => <Redirect to={`/rights${window.location.search}#leaving-well`} replace />}</Route>
       <Route path="/forum" component={Forum} />
       <Route path="/forum/:id" component={Forum} />
       <Route path="/messages" component={Messages} />
@@ -521,9 +522,9 @@ function Router() {
       <Route path="/changes">{() => <Redirect to={`/governance/decisions${window.location.search}#changes`} replace />}</Route>
       <Route path="/changes/:id">{(p) => <Redirect to={`${changeRequestHref(p.id)}${window.location.search}${window.location.hash}`} replace />}</Route>
       <Route path="/village-email" component={VillageEmail} />
-      <Route path="/good-neighbor" component={GoodNeighbor} />
-      <Route path="/steward-rights" component={StewardRights} />
-      <Route path="/resident-rights" component={ResidentRights} />
+      <Route path="/good-neighbor">{() => <Redirect to={`/rights${window.location.search}#good-neighbor`} replace />}</Route>
+      <Route path="/steward-rights">{() => <Redirect to={`/rights${window.location.search}#steward-rights`} replace />}</Route>
+      <Route path="/resident-rights">{() => <Redirect to={`/rights${window.location.search}#resident-rights`} replace />}</Route>
       {/* One training page per track, each with its own words in Admin, Pages; /training chooses between them. */}
       <Route path="/training/steward">{() => <Training track="steward" />}</Route>
       <Route path="/training/resident">{() => <Training track="resident" />}</Route>

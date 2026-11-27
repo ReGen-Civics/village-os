@@ -75,7 +75,7 @@ vi.mock("@/lib/moneyClaims", () => ({ useValueConversion: () => "" }));
 
 import ProsperityJourney from "./ProsperityJourney";
 import InvestorJourney from "./InvestorJourney";
-import StewardRights from "./StewardRights";
+import StewardRights from "@/components/rights/StewardRightsChapter";
 
 beforeEach(() => {
   vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver);
