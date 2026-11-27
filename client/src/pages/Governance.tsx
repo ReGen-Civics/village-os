@@ -291,6 +291,8 @@ export default function Governance() {
               phone it is the first thing under the tabs; on a desktop the
               contents beside the page carry it too. */}
           {member ? (
+            // Once the chapter is folded the mechanics sit right under it, so the jump has nothing left to skip.
+            folded ? null : (
             <div className={`${QUIET} mt-6 flex flex-wrap items-center justify-between gap-3 bg-card`} data-testid="mechanics-jump">
               <p className={`${NOTE} min-w-0`}>
                 <Trans context="how we work together: the jump">Read how we work together before?</Trans>
@@ -300,6 +302,7 @@ export default function Governance() {
                 <ArrowDown className="size-4" aria-hidden="true" />
               </a>
             </div>
+            )
           ) : (
             <div className="mt-6 space-y-3">
               {askedForMechanics && (

@@ -1083,6 +1083,8 @@ describe("I've read this, under How we work together", () => {
     expect(line).toHaveTextContent(/How we work together, read on .*2026/);
     expect(screen.queryByTestId("how-we-work-tick")).toBeNull();
     expect(screen.queryByRole("heading", { name: said("principles") })).toBeNull();
+    // Nothing left to skip: the jump goes with the chapter.
+    expect(screen.queryByTestId("mechanics-jump")).toBeNull();
     // The mechanics move up: they now follow the one line directly.
     expect(line.compareDocumentPosition(document.getElementById("game-mechanics")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
