@@ -77,6 +77,7 @@ const PAGES = [
   "client/src/pages/ExitPolicy.tsx",
   "client/src/pages/Quests.tsx",
   "client/src/pages/MySeason.tsx",
+  "client/src/pages/TodayCard.tsx",
   "client/src/pages/RoleMeasures.tsx",
   // The village calendar, moon first (Phase C, decision 3).
   "client/src/pages/Events.tsx",

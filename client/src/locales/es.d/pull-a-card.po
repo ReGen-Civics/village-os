@@ -270,10 +270,40 @@ msgctxt "today's card: the line bars on the card, read aloud"
 msgid "Line {0} of 6"
 msgstr "Línea {0} de 6"
 
-# needs-native-review: Pull a card, today's card, 27 Nov 2026
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
 msgctxt "today's card: a member with no lines yet"
-msgid "Your card is drawn from your own lines. Find them first, and a card waits for you each day."
-msgstr "Su carta se saca de sus propias líneas. Encuéntrelas primero, y cada día le espera una carta."
+msgid "Find your lines to open your deck."
+msgstr "Encuentre sus líneas para abrir su baraja."
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: the reading's heading"
+msgid "Your day, read"
+msgstr "Su día, leído"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: the reading's first row"
+msgid "The sky and your card"
+msgstr "El cielo y su carta"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: the reading's second row"
+msgid "Your design today"
+msgstr "Su diseño hoy"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: the reading's third row"
+msgid "What waits on you"
+msgstr "Lo que le espera"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: the draw button while the day's doors are read"
+msgid "Reading your day"
+msgstr "Leyendo su día"
+
+# needs-native-review: Pull a card, QA round 1, 27 Nov 2026
+msgctxt "today's card: try a failed step again"
+msgid "Try again"
+msgstr "Intentar de nuevo"
 
 # needs-native-review: Pull a card, today's card, 27 Nov 2026
 msgctxt "today's card: what waits on the member, heading"

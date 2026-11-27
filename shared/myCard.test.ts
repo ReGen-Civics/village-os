@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { chartAt, skyAt, zonedToUtc } from "./geneKeysSky";
 import { SPHERES, sphereOf } from "./geneKeys";
-import { drawCard, parseCardDate, parseTodayFacts, plainCardReading, seedOf, skyFitsDate, timeLine, todayLine, NO_FACTS } from "./myCard";
+import { drawCard, focusFor, giftOf, noonUtc, parseCardDate, parseTodayFacts, plainCardReading, seedOf, skyFitsDate, timeLine, todayLine, twoSentences, NO_FACTS } from "./myCard";
 
 const WREN = chartAt(zonedToUtc(1990, 6, 15, 14, 30, "America/New_York"));
 const SKY = skyAt(new Date("2024-08-05T12:00:00Z"));
@@ -52,8 +52,11 @@ describe("the date and the sky", () => {
     expect(parseCardDate("2024-02-31", NOW)).toBeNull();
     expect(parseCardDate("tomorrow", NOW)).toBeNull();
   });
-  it("weighs the card against the sky at noon of its date", () => {
+  it("weighs the card against the sky at noon UTC of its date, the same instant on every device", () => {
+    expect(noonUtc("2024-08-05").toISOString()).toBe("2024-08-05T12:00:00.000Z");
     expect(skyFitsDate(SKY, "2024-08-05")).toBe(true);
+    // A device's own local noon is another sky, so it is refused: UTC-10 and UTC+12 would draw differently.
+    expect(skyFitsDate(skyAt(new Date("2024-08-05T22:00:00Z")), "2024-08-05")).toBe(false);
     expect(skyFitsDate(SKY, "2024-08-07")).toBe(false);
   });
 });
@@ -73,13 +76,24 @@ describe("what is going on today", () => {
     expect(todayLine(NO_FACTS, "Generator", "Sacral")).toMatch(/^Nothing waits on you in the village today\. As a Generator: let life bring you things/);
   });
 
-  it("builds the plain reading from the card, the chart's line and the day", () => {
+  it("builds the plain reading as three rows of two sentences at most, and a focus written for the day", () => {
     const card = drawCard(WREN, SKY, seedOf("7", "2024-08-05"));
-    const r = plainCardReading(card, SKY, "Your chart line.", { ...NO_FACTS, tasks: 1 }, "Projector", "Splenic");
+    const r = plainCardReading(card, SKY, "One. Two. Three.", { ...NO_FACTS, tasks: 1 }, "Projector", "Splenic");
     expect(r.source).toBe("plain");
-    expect(r.focus.charAt(0)).toBe(r.focus.charAt(0).toUpperCase());
-    expect(r.paragraphs).toHaveLength(3);
-    expect(r.paragraphs[0]).toContain(`gate ${card.gate}, your ${card.name}`);
-    expect(r.paragraphs[2]).toMatch(/^One task from your sessions\./);
+    expect(r.sky).toContain(`gate ${card.gate}, your ${card.name}`);
+    expect(r.design).toBe("One. Two.");
+    expect(r.waits).toMatch(/^One task from your sessions\./);
+    for (const row of [r.sky, r.design, r.waits]) expect(row.split(/(?<=[.!?])\s+(?=[A-Z])/).length).toBeLessThanOrEqual(2);
+    expect(r.focus).toBe(focusFor(card));
+    expect(r.focus).toContain(card.name);
+  });
+
+  it("writes the focus from how the sky touches the card and the gift of its line", () => {
+    const base = drawCard(WREN, SKY, seedOf("7", "2024-08-05"));
+    expect(focusFor({ ...base, name: "Core", word: "Rejection / Gentleness", touch: "channel" })).toBe("A whole current through your Core: Gentleness");
+    expect(focusFor({ ...base, name: "Pearl", word: "Power", touch: null })).toBe("Your Pearl, held steady: Power");
+    expect(focusFor({ ...base, name: "Radiance", word: "", touch: "sun" })).toBe("The Sun on your Radiance");
+    expect(giftOf("Lust / Passion")).toBe("Passion");
+    expect(twoSentences("A. B? C! D.")).toBe("A. B?");
   });
 });

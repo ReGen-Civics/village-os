@@ -27,11 +27,12 @@ import {
   parseSave, parseSettings, removeGeneKeys, saveGeneKeys, LINES_FOUND_BADGE,
 } from "../lib/geneKeys";
 import { requireModule } from "../lib/modules";
+import { withoutKeptCards } from "../lib/myCard";
 
 /** Re-exported so server/index.ts reaches them on its one exempt import line for this module. */
 export { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing } from "../lib/geneKeys";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit" | "notify">;
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit" | "notify"> & Partial<Pick<AppDeps, "members">>;
 
 /** The badge's own words for the notice, the same title cycle close sends (server/lib/cycleSettlement.ts). */
 const BADGE_TITLE = "Badge earned: Lines found";
@@ -49,7 +50,7 @@ const HOUR_MS = 60 * 60 * 1000;
 const SAVES_PER_HOUR = 30;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, getPool, overLimit, notify } = deps;
+  const { authedUser, getPool, overLimit, notify, members } = deps;
   /** "Lines found" the moment it is earned, with the notice cycle close would have sent. True when it was. */
   const earn = async (uid: string, visibility: "show" | "hide"): Promise<boolean> => {
     if (!(await earnLinesFound(getPool(), uid, visibility))) return false;
@@ -95,7 +96,12 @@ export function register(app: Express, deps: Deps): void {
   app.delete("/api/gene-keys/me", async (req, res) => {
     const me = await authedUser(req);
     if (!me) return res.status(401).json({ error: "auth_required" });
-    res.json({ removed: await removeGeneKeys(getPool(), String(me.id)) });
+    const removed = await removeGeneKeys(getPool(), String(me.id));
+    // The daily cards were drawn from these lines (shared/myCard.ts): they go with them.
+    await members?.update(String(me.id), (u: any) => {
+      u.prefs = withoutKeptCards(u.prefs);
+    });
+    res.json({ removed });
   });
 
   app.get("/api/gene-keys/people", async (req, res) => {

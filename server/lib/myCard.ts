@@ -1,11 +1,13 @@
 /**
  * Today's card for one member (shared/myCard.ts says what it is and why).
  *
- *   - The sky comes from the browser, read at the member's noon of the day, and is checked as a session pull
+ *   - The sky comes from the browser, read at noon UTC of the card's date, and is checked as a session pull
  *     checks it; the chart is the member's own and never leaves this file except as the facts of their own card.
- *   - The draw is seeded by the member and the date, so it is the same all day. The first pull of the day keeps
- *     the card in the member's own prefs (`MY_CARD_PREFS_KEY`, one slot), so every later read that day answers
- *     the same card and the same words without asking anybody again.
+ *   - The draw is seeded by the member and the date and weighed by the sky at noon UTC of that date, so it is the
+ *     same all day on every device. The first pull of a date keeps the card in the member's own prefs, by date
+ *     (`MY_CARD_PREFS_KEY`, the last `MY_CARD_KEEP_DAYS` dates), so every later read that day answers the same
+ *     card without asking anybody again. A plain card's "what waits on you" row is rebuilt from the day's counts
+ *     on a later pull, so a draw tapped before the counts arrived is not stuck saying nothing waits.
  *   - The plain reading is always there. The village guide weaves the same facts into its own words only when
  *     the member said yes to both the guide using their lines and the provider line that names who runs the
  *     model (`cardDisclosure`). Nothing of theirs goes upstream before that, and a woven reading that is cut off,
@@ -18,8 +20,9 @@ import type { Pool } from "mysql2/promise";
 import { analyse, AUTHORITY_WORDS, SPHERES, STRATEGY_WORDS, profileOf, type Chart } from "../../shared/geneKeys";
 import { parseSky, plainReading, readRoom, skyLines, type CardSky } from "../../shared/sessionCard";
 import {
-  MY_CARD_PREFS_KEY, MY_CARD_REFUSALS, WOVEN_LIMITS, drawCard, parseCardDate, parseTodayFacts, plainCardReading, seedOf, skyFitsDate, timeLine,
-  type CardConsent, type CardReading, type MyCard, type MyCardAnswer,
+  MY_CARD_KEEP_DAYS, MY_CARD_PREFS_KEY, MY_CARD_REFUSALS, READING_ROWS, WOVEN_LIMITS, drawCard, parseCardDate, parseTodayFacts, plainCardReading, seedOf,
+  skyFitsDate, timeLine,
+  type CardConsent, type CardReading, type MyCard, type MyCardAnswer, type TodayFacts,
 } from "../../shared/myCard";
 import { asTheVillageGuide } from "../../shared/guideName";
 import { voiceLint } from "../../shared/comms/voiceLint";
@@ -87,21 +90,41 @@ function consentOf(prefs: unknown, line: GuideLine | null, maia: boolean): CardC
 
 // ── The kept card ───────────────────────────────────────────────────────────
 
-/** The day's kept card from prefs, when it is this date's and still reads as one. */
+/** The kept cards by date, as prefs hold them; anything else reads as none. */
+function keptByDate(prefs: unknown): Record<string, unknown> {
+  const raw = (prefs as Record<string, unknown> | null | undefined)?.[MY_CARD_PREFS_KEY];
+  return raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+}
+
+/** This date's kept card from prefs, when it still reads as one. */
 export function keptCard(prefs: unknown, date: string): MyCard | null {
-  const raw = (prefs as Record<string, unknown> | null | undefined)?.[MY_CARD_PREFS_KEY] as Partial<MyCard> | undefined;
+  const raw = keptByDate(prefs)[date] as Partial<MyCard> | undefined;
   if (!raw || typeof raw !== "object" || raw.date !== date) return null;
-  const c = raw.card, r = raw.reading;
-  if (!c || !SPHERES.includes(c.sphere) || !r || !Array.isArray(r.paragraphs) || r.paragraphs.some((p) => typeof p !== "string")) return null;
+  const c = raw.card, r = raw.reading as Partial<CardReading> | undefined;
+  if (!c || !SPHERES.includes(c.sphere) || !r || typeof r.focus !== "string" || READING_ROWS.some((k) => typeof r[k] !== "string")) return null;
   if (!raw.sky || !parseSky(raw.sky, Date.parse(raw.sky.at))) return null;
   return raw as MyCard;
 }
 
+/** Prefs with this card kept under its date, the newest `MY_CARD_KEEP_DAYS` dates only. A new object. */
+export function withKeptCard(prefs: unknown, card: MyCard): Record<string, unknown> {
+  const base = prefs && typeof prefs === "object" && !Array.isArray(prefs) ? { ...(prefs as Record<string, unknown>) } : {};
+  const byDate = { ...keptByDate(base), [card.date]: card };
+  const dates = Object.keys(byDate).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().slice(-MY_CARD_KEEP_DAYS);
+  base[MY_CARD_PREFS_KEY] = Object.fromEntries(dates.map((d) => [d, byDate[d]]));
+  return base;
+}
+
+/** Prefs with every kept card gone: the member removed their lines, so the cards drawn from them go too. */
+export function withoutKeptCards(prefs: unknown): Record<string, unknown> {
+  const base = prefs && typeof prefs === "object" && !Array.isArray(prefs) ? { ...(prefs as Record<string, unknown>) } : {};
+  delete base[MY_CARD_PREFS_KEY];
+  return base;
+}
+
 async function keep(deps: MyCardDeps, userId: string, card: MyCard): Promise<void> {
   await deps.updateMember(userId, (m) => {
-    const base = m.prefs && typeof m.prefs === "object" && !Array.isArray(m.prefs) ? { ...(m.prefs as Record<string, unknown>) } : {};
-    base[MY_CARD_PREFS_KEY] = card;
-    m.prefs = base;
+    m.prefs = withKeptCard(m.prefs, card);
   });
 }
 
@@ -127,17 +150,24 @@ export function buildCard(userId: string, chart: Chart, sky: CardSky, date: stri
   };
 }
 
+/** A kept card with the day's counts as they are now, and, for a plain card, the plain reading built again from them. */
+function withFacts(kept: MyCard, chart: Chart, facts: TodayFacts): MyCard {
+  if (kept.reading.source !== "plain") return { ...kept, facts };
+  const d = analyse(chart);
+  return { ...kept, facts, reading: plainCardReading(kept.card, kept.sky, kept.line, facts, d.type, d.authority) };
+}
+
 // ── The guide's weaving ─────────────────────────────────────────────────────
 
 const systemPrompt = (guide: string): string => [
   `You are ${asTheVillageGuide(guide)}, writing one member's card for the day.`,
   "The card was drawn from their own chart: one of their Gene Keys spheres, with its gate and line, weighed by today's sky.",
   "You are given the card, their Human Design type, authority, profile and strategy, the day's sky, counts of what waits on them in the village today, the village's moon and season, and a plain draft built from all of it.",
-  "Write a short focus line for the day, under twelve words, and two or three short paragraphs: what today's sky does with the card; how their own design meets the day; how they might meet what waits on them, by how they decide.",
+  "Write a short focus line for the day, under twelve words, and three bullets, each under 30 words and at most two sentences: sky, what today's sky does with the card; design, how their own design meets the day; waits, how they might meet what waits on them, by how they decide.",
   "Speak to them as you. Keep every fact exactly as given. Add no number, fact, prediction or promise, and name no person.",
   "It is a lens for the day: invite, never predict, never tell them what they are able to do, never steer them away from work or from people.",
-  "Plain warm words, no headings, no lists, no emoji, no dashes between clauses. Each paragraph under 80 words.",
-  'Reply with JSON only: {"focus":"...","paragraphs":["...","..."]}',
+  "Plain warm words, no headings, no emoji, no dashes between clauses.",
+  'Reply with JSON only: {"focus":"...","sky":"...","design":"...","waits":"..."}',
 ].join(" ");
 
 const undash = (s: string): string => s.replace(/\s*[–—]\s*/g, ", ").replace(/\s+/g, " ").trim();
@@ -192,16 +222,16 @@ export async function weaveCard(deps: MyCardDeps, card: MyCard, userId: string, 
   });
   await noteUsage(deps.getPool(), call, userId);
   if (!call.ok || call.stopReason === "max_tokens" || call.stopReason === "length") return null;
-  const got = parseJsonReply<{ focus?: unknown; paragraphs?: unknown }>(call.text, {});
+  const got = parseJsonReply<Record<string, unknown>>(call.text, {});
   const focus = undash(String(got.focus ?? ""));
-  if (focus.length < 3 || focus.length > WOVEN_LIMITS.focus || !Array.isArray(got.paragraphs)) return null;
-  const paragraphs = got.paragraphs.slice(0, WOVEN_LIMITS.paragraphs).map((p) => undash(String(p ?? ""))).filter(Boolean);
-  if (!paragraphs.length || paragraphs.some((p) => p.length > WOVEN_LIMITS.paragraph)) return null;
+  if (focus.length < 3 || focus.length > WOVEN_LIMITS.focus) return null;
+  const rows = Object.fromEntries(READING_ROWS.map((k) => [k, undash(String(got[k] ?? ""))])) as Record<(typeof READING_ROWS)[number], string>;
+  if (READING_ROWS.some((k) => rows[k].length < 3 || rows[k].length > WOVEN_LIMITS.row)) return null;
   const allowed = allowedNumbers(card);
-  const words = [focus, ...paragraphs];
+  const words = [focus, ...READING_ROWS.map((k) => rows[k])];
   if (words.some((t) => (t.match(/\d+/g) ?? []).some((num) => !allowed.has(String(Number(num)))))) return null;
   if (words.some((t) => voiceLint(t, "body").length > 0)) return null;
-  return { focus, paragraphs, source: "guide" };
+  return { focus, ...rows, source: "guide" };
 }
 
 async function noteUsage(pool: Pool, call: AssistantResult, userId: string): Promise<void> {
@@ -250,12 +280,19 @@ export async function pullTodayCard(deps: MyCardDeps, member: CardMember, body: 
   const line = await guideLineFor(deps, member.id);
   const consent = consentOf(member.prefs, line, lines.maia);
   const kept = keptCard(member.prefs, date);
-  if (kept && (kept.reading.source === "guide" || consent.state !== "given")) return { ok: true, value: { card: kept, consent } };
+  if (kept && kept.reading.source === "guide") return { ok: true, value: { card: kept, consent } };
+  if (kept && consent.state !== "given") {
+    // A plain card is the same card all day; only its "what waits on you" row follows the day's counts.
+    if (b.today === undefined) return { ok: true, value: { card: kept, consent } };
+    const fresh = withFacts(kept, lines.chart, parseTodayFacts(b.today));
+    if (fresh.reading.waits !== kept.reading.waits) await keep(deps, member.id, fresh);
+    return { ok: true, value: { card: fresh, consent } };
+  }
 
   let card: MyCard;
   if (kept) {
     // The same card and sky; the day's counts as they are now, for the guide to read.
-    card = b.today === undefined ? kept : { ...kept, facts: parseTodayFacts(b.today) };
+    card = b.today === undefined ? kept : withFacts(kept, lines.chart, parseTodayFacts(b.today));
   } else {
     const sky = parseSky(b.sky, now);
     if (!sky || !skyFitsDate(sky, date)) return { ok: false, status: 400, error: MY_CARD_REFUSALS.badSky };

@@ -2,11 +2,11 @@
  * Today's card, client side: the three doors in server/routes/myCard.ts, through `gameFetch` so each carries
  * the member's token. Shapes: shared/myCard.ts.
  *
- * A pull sends the member's own date and the sky at noon of that date where they are, read in this browser
- * (shared/geneKeysSky.ts `skyAt`): the server cannot hold the ephemeris, and noon makes the sky the same for
- * every pull that day, so the draw is too. The ephemeris loads only when somebody pulls.
+ * A pull sends the member's own date and the sky at NOON UTC of that date, read in this browser
+ * (shared/geneKeysSky.ts `skyAt`): the server cannot hold the ephemeris, and one instant per date makes the sky
+ * the same on every device and in every time zone, so the draw is too. The ephemeris loads only on a pull.
  */
-import { MY_CARD_API, MY_CARD_CONSENT_API, type CardConsent, type MyCardAnswer, type TodayFacts } from "@shared/myCard";
+import { MY_CARD_API, MY_CARD_CONSENT_API, noonUtc, type CardConsent, type MyCardAnswer, type TodayFacts } from "@shared/myCard";
 import { gameFetch } from "./gameApi";
 
 /** A refusal in the server's own sentence. */
@@ -32,19 +32,13 @@ export function localDate(now = new Date()): string {
   return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`;
 }
 
-/** Noon of a `YYYY-MM-DD` date where this device is. */
-export function localNoon(date: string): Date {
-  const [y, m, d] = date.split("-").map(Number);
-  return new Date(y, m - 1, d, 12, 0, 0);
-}
-
 export function readTodayCard(date: string): Promise<MyCardAnswer> {
   return call<MyCardAnswer>(`${MY_CARD_API}?date=${encodeURIComponent(date)}`);
 }
 
 export async function pullTodayCard(date: string, today: TodayFacts | null): Promise<MyCardAnswer> {
   const { skyAt } = await import("@shared/geneKeysSky");
-  const sky = skyAt(localNoon(date));
+  const sky = skyAt(noonUtc(date));
   return call<MyCardAnswer>(MY_CARD_API, { method: "POST", body: JSON.stringify({ date, sky, ...(today ? { today } : {}) }) });
 }
 

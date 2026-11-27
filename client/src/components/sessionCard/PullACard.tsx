@@ -30,6 +30,7 @@ import type { SessionView } from "@shared/sessions";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import MoonGlyph from "@/components/calendar/MoonGlyph";
+import LineBars from "./LineBars";
 import { CardRefusal, pullCard, shareMyLine } from "@/lib/sessionCardApi";
 import { BTN_QUIET, BTN_SECONDARY, EYEBROW, H3, HINT, SOFT } from "@/components/sessions/roomUi";
 import type { RoomActions } from "@/components/sessions/useSessionRoom";
@@ -77,24 +78,10 @@ function SystemTag({ system }: { system: CardSystem }) {
   return <span className={SYSTEM_TAG}>{SYSTEM_LABELS[system]}</span>;
 }
 
-/** Six bars read from the bottom up, the Sun's line lit in gold. */
-function LineBars({ line }: { line: number }) {
+/** The Sun's line, in the bars the daily card draws too (LineBars.tsx). */
+function SunLine({ line }: { line: number }) {
   const { t } = useLingui();
-  return (
-    <svg viewBox="0 0 28 34" className="h-14 w-12 shrink-0" role="img" aria-label={t({ message: `Line ${line} of 6`, context: "PullACard, aria-label" })}>
-      {[1, 2, 3, 4, 5, 6].map((n) => (
-        <rect
-          key={n}
-          x={2}
-          y={2 + (6 - n) * 5.4}
-          width={24}
-          height={3.2}
-          rx={1.2}
-          className={n === line ? "fill-notice" : "fill-muted-foreground/35"}
-        />
-      ))}
-    </svg>
-  );
+  return <LineBars line={line} label={t({ message: `Line ${line} of 6`, context: "PullACard, aria-label" })} />;
 }
 
 function timeWords(iso: string): string {
@@ -176,7 +163,7 @@ function CardFace({
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4">
-        <LineBars line={card.sky.gates.Sun.line} />
+        <SunLine line={card.sky.gates.Sun.line} />
         <div className="min-w-0">
           <p className={EYEBROW}>
             <Trans context="PullACard, p">Card {card.n} · pulled by {card.pulledByName}</Trans>

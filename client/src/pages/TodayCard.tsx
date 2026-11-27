@@ -2,18 +2,25 @@
  * /profile/today-card: PULL A CARD (the lead, 27 Nov 2026; shared/myCard.ts says what the card is).
  *
  * One card a day, drawn from the member's own chart. It waits face down on a back of sacred geometry until
- * they draw it; then it turns over, the seed of life behind it opens its petals once, and the day's reading
- * sits beside it:
+ * they draw it; then it turns over, the seed of life behind it opens its petals once, focus moves to the day's
+ * focus line, and the reading sits beside it:
  *
- *   1. the card: the sphere drawn, its gate and line, the line's word, and how today's sky touches it;
- *   2. today's focus, in a line;
- *   3. the reading: what the sky does with the card, the whole chart today, and the day's work read by how
- *      they decide. In the platform's plain words, or the village guide's once the member has said yes;
+ *   1. the card: the sphere drawn with its glyph, its gate and line, the line's word, and how today's sky
+ *      touches it;
+ *   2. today's focus, in a line written for the day;
+ *   3. the reading, three labelled rows of two sentences at most (the lead: bullets, not paragraphs): the sky
+ *      and your card, your design today, what waits on you. In the platform's plain words, or the village
+ *      guide's once the member has said yes;
  *   4. today in the village: decisions, quests in hand, tasks, asks, sessions and gatherings, each a door;
  *   5. the moon and the season, and the day's sky in a fold.
  *
- * Opened again the same day, the card is already face up: the same card, the same words. A new one at
- * midnight, the member's own.
+ * The draw waits for what is going on today to be read (a few seconds at most), so the card is never drawn
+ * saying nothing waits on a member who has work waiting; a plain card opened again later picks up the day's
+ * counts as they are then.
+ *
+ * Opened again the same day, the card is already face up: the same card. A new one at midnight.
+ *
+ * A member with no lines yet sees the deck face down and dimmed, with the door to find their lines.
  *
  * The guide's one tap sits under the reading when the member has not said yes, naming who runs the model and
  * who holds the key (server/lib/companionConsent.ts `cardDisclosure`); until they tap it nothing of theirs is
@@ -23,7 +30,7 @@
  * Phone first: the card, then the words, one column. From `md` the card stands on the left and the words read
  * beside it. Reduced motion lands the card face up with the petals already open.
  */
-import { useEffect, useId, useState, type ComponentType } from "react";
+import { useEffect, useId, useRef, useState, type ComponentType } from "react";
 import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { CalendarClock, Compass, HandHelping, ListChecks, NotebookPen, RotateCcw, Scale, Share2, Sparkles, Users } from "lucide-react";
@@ -34,28 +41,38 @@ import { useAuth } from "@/contexts/AuthContext";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useReducedMotion } from "@/components/natural/useReducedMotion";
 import { Fireflies, MoonPhase, SeedOfLife } from "@/components/journey/nature";
-import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, HINT, LINK, NOTE, STATEMENT, TILE, WORLD } from "@/components/journey/look";
+import { DaySun, GoldenSpiral, Labyrinth, Lotus, NightMoon, SeedOfLife as SeedGlyph, Tripoint, Triad, Vesica, type GlyphProps } from "@/components/sacred/glyphs";
+import LineBars from "@/components/sessionCard/LineBars";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP, CHIP_SOFT, EYEBROW, H1, H2, HINT, LINK, NOTE, STATEMENT, TILE, WORLD } from "@/components/journey/look";
 import { useGuideName } from "@/hooks/useGuideName";
 import { gameFetch } from "@/lib/gameApi";
 import { consentToCard, localDate, pullTodayCard, readTodayCard, TodayCardRefusal } from "@/lib/todayCardApi";
 import { useTodayFacts, type TodayRow, type TodayRowKind } from "@/components/todayCard/useTodayFacts";
-import { timeLine, type CardConsent, type DrawnCard, type MyCard } from "@shared/myCard";
+import { READING_ROWS, timeLine, type CardConsent, type DrawnCard, type MyCard, type ReadingRow } from "@shared/myCard";
+import type { Sphere } from "@shared/geneKeys";
 
 type Phase = { kind: "reading" } | { kind: "no-lines" } | { kind: "down" } | { kind: "drawing" } | { kind: "up"; fresh: boolean };
 
-/** Six bars read from the bottom up, the card's line lit in gold (the session card draws the same). */
-function LineBars({ line, label }: { line: number; label: string }) {
-  return (
-    <svg viewBox="0 0 28 34" className="h-12 w-10 shrink-0" role="img" aria-label={label}>
-      {[1, 2, 3, 4, 5, 6].map((n) => (
-        <rect key={n} x={2} y={2 + (6 - n) * 5.4} width={24} height={3.2} rx={1.2} className={n === line ? "fill-notice" : "fill-muted-foreground/35"} />
-      ))}
-    </svg>
-  );
-}
+/** How long the draw waits for the day's doors before it goes without them. */
+export const FACTS_WAIT_MS = 4000;
+
+/** Each sphere's glyph from the sacred set (components/sacred/glyphs.tsx): eleven spheres, nine shapes. */
+const SPHERE_GLYPH: Record<Sphere, ComponentType<GlyphProps>> = {
+  lifesWork: DaySun,
+  evolution: GoldenSpiral,
+  radiance: Lotus,
+  purpose: Tripoint,
+  attraction: NightMoon,
+  iq: Triad,
+  eq: Vesica,
+  sq: Lotus,
+  core: Labyrinth,
+  culture: SeedGlyph,
+  pearl: GoldenSpiral,
+};
 
 /** The card itself: a back of sacred geometry, and a face that turns over when it is drawn. */
-function TheCard({ card, up, drawing, onDraw, dateWords }: { card: DrawnCard | null; up: boolean; drawing: boolean; onDraw?: () => void; dateWords: string }) {
+function TheCard({ card, up, drawing, dim = false, onDraw, dateWords }: { card: DrawnCard | null; up: boolean; drawing: boolean; dim?: boolean; onDraw?: () => void; dateWords: string }) {
   const { t } = useLingui();
   const touchWords: Record<Exclude<DrawnCard["touch"], null> | "none", string> = {
     sun: t({ message: "Sun-lit", context: "today's card: the chip on the card, today's Sun stands in its gate" }),
@@ -65,6 +82,7 @@ function TheCard({ card, up, drawing, onDraw, dateWords }: { card: DrawnCard | n
     none: t({ message: "Steady", context: "today's card: the chip on the card, today's sky leaves it alone" }),
   };
   const lit = !!card?.touch;
+  const Glyph = card ? SPHERE_GLYPH[card.sphere] : null;
   const back = (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-notice/60 bg-muted p-4 shadow-sm [backface-visibility:hidden]">
       <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-xl border border-notice/30" />
@@ -74,32 +92,35 @@ function TheCard({ card, up, drawing, onDraw, dateWords }: { card: DrawnCard | n
       </span>
     </div>
   );
-  const face = card ? (
-    <div
-      className={`absolute inset-0 flex flex-col overflow-hidden rounded-2xl border-2 bg-card p-4 text-card-foreground shadow-sm [backface-visibility:hidden] [transform:rotateY(180deg)] ${lit ? "border-notice" : "border-notice/60"}`}
-      data-today-card-face={card.sphere}
-    >
-      <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-xl border border-notice/30" />
-      <div className="relative flex items-center justify-between gap-2">
-        <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-widest ${lit ? "border-notice bg-notice/15 text-notice" : "border-border text-muted-foreground"}`}>
-          {touchWords[card.touch ?? "none"]}
-        </span>
-        <span className="font-display text-sm lining-nums text-muted-foreground">
-          {card.gate}.{card.line}
-        </span>
+  const face =
+    card && Glyph ? (
+      <div
+        className={`absolute inset-0 isolate flex flex-col overflow-hidden rounded-2xl border-2 p-4 text-card-foreground shadow-sm [backface-visibility:hidden] [transform:rotateY(180deg)] ${lit ? "border-notice" : "border-notice/60"}`}
+        data-today-card-face={card.sphere}
+      >
+        {/* An opaque ground under the face, so the bloom behind the card never shows through it in light mode. */}
+        <span aria-hidden="true" className="absolute inset-0 -z-10 rounded-2xl bg-background" />
+        <span aria-hidden="true" className="absolute inset-0 -z-10 rounded-2xl bg-card" />
+        <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-xl border border-notice/30" />
+        <div className="relative flex items-center justify-between gap-2">
+          <span className={lit ? CHIP : CHIP_SOFT}>{touchWords[card.touch ?? "none"]}</span>
+          <span className="font-display text-sm lining-nums text-muted-foreground">
+            {card.gate}.{card.line}
+          </span>
+        </div>
+        <div className="relative flex flex-1 flex-col items-center justify-center gap-1 text-center">
+          <Glyph className="size-9 text-notice" />
+          <span className="font-display text-6xl leading-none lining-nums text-notice">{card.gate}</span>
+          <LineBars line={card.line} className="h-10 w-9" label={t({ message: `Line ${card.line} of 6`, context: "today's card: the line bars on the card, read aloud" })} />
+          <span className="font-display text-3xl leading-tight text-foreground">{card.name}</span>
+          {card.word ? <span className="text-sm italic text-muted-foreground">{card.word}</span> : null}
+        </div>
+        <p className="relative text-center text-xs uppercase tracking-widest text-muted-foreground">{dateWords}</p>
       </div>
-      <div className="relative flex flex-1 flex-col items-center justify-center gap-1 text-center">
-        <span className="font-display text-7xl leading-none lining-nums text-notice">{card.gate}</span>
-        <LineBars line={card.line} label={t({ message: `Line ${card.line} of 6`, context: "today's card: the line bars on the card, read aloud" })} />
-        <span className="mt-1 font-display text-3xl leading-tight text-foreground">{card.name}</span>
-        {card.word ? <span className="text-sm italic text-muted-foreground">{card.word}</span> : null}
-      </div>
-      <p className="relative text-center text-xs uppercase tracking-widest text-muted-foreground">{dateWords}</p>
-    </div>
-  ) : null;
+    ) : null;
 
   const body = (
-    <div className="mx-auto w-60 [perspective:1000px] sm:w-64">
+    <div className={`mx-auto w-60 [perspective:1000px] sm:w-64 ${dim ? "opacity-60" : ""}`}>
       <div
         className={`relative aspect-[5/7] w-full [transform-style:preserve-3d] motion-safe:transition-transform motion-safe:duration-500 motion-safe:ease-out ${up ? "[transform:rotateY(180deg)]" : drawing ? "motion-safe:-translate-y-2" : ""}`}
       >
@@ -114,7 +135,7 @@ function TheCard({ card, up, drawing, onDraw, dateWords }: { card: DrawnCard | n
       type="button"
       onClick={onDraw}
       disabled={drawing}
-      className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring disabled:cursor-wait"
       aria-label={t({ message: "Draw today's card", context: "today's card: the face down card, read aloud" })}
     >
       {body}
@@ -192,6 +213,36 @@ function TodayRows({ rows }: { rows: TodayRow[] }) {
   );
 }
 
+/** The reading: three labelled rows, each two sentences at most. */
+function Reading({ card, guide, headingId }: { card: MyCard; guide: string; headingId: string }) {
+  const { t } = useLingui();
+  const labels: Record<ReadingRow, string> = {
+    sky: t({ message: "The sky and your card", context: "today's card: the reading's first row" }),
+    design: t({ message: "Your design today", context: "today's card: the reading's second row" }),
+    waits: t({ message: "What waits on you", context: "today's card: the reading's third row" }),
+  };
+  return (
+    <>
+      <p className={EYEBROW}>
+        {card.reading.source === "guide"
+          ? t({ message: `Read by ${guide}`, context: "today's card: the reading's eyebrow, woven by the village guide" })
+          : t({ message: "Your chart today", context: "today's card: the reading's eyebrow, in plain words" })}
+      </p>
+      <h2 id={headingId} className={`mt-1 ${H2}`}>
+        <Trans context="today's card: the reading's heading">Your day, read</Trans>
+      </h2>
+      <ul className="mt-4 grid gap-3" data-today-card-reading={card.reading.source}>
+        {READING_ROWS.map((k) => (
+          <li key={k} className="border-l-2 border-notice/60 pl-3">
+            <span className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground">{labels[k]}</span>
+            <span className="mt-0.5 block text-base leading-relaxed text-foreground">{card.reading[k]}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
 /** The one tap: the guide may read the member's lines, and the provider line, together. */
 function GuideAsk({ line, guide, onYes, busy }: { line: Extract<CardConsent, { state: "ask" }>; guide: string; onYes: () => void; busy: boolean }) {
   const [hidden, setHidden] = useState(false);
@@ -233,10 +284,13 @@ export default function TodayCardPage() {
   const [phase, setPhase] = useState<Phase>({ kind: "reading" });
   const [card, setCard] = useState<MyCard | null>(null);
   const [consent, setConsent] = useState<CardConsent>({ state: "none" });
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<{ words: string; retry: "draw" | "reread" | "keep" } | null>(null);
   const [busy, setBusy] = useState(false);
   const [kept, setKept] = useState<"no" | "saving" | "yes">("no");
   const [shared, setShared] = useState(false);
+  const [waited, setWaited] = useState(false);
+  const focusRef = useRef<HTMLHeadingElement>(null);
+  const refreshed = useRef(false);
   const today = useTodayFacts(on && !!user);
 
   const signedIn = !!user;
@@ -253,15 +307,42 @@ export default function TodayCardPage() {
       .catch((e) => {
         if (!live) return;
         if (e instanceof TodayCardRefusal && e.status === 404) setPhase({ kind: "no-lines" });
-        else {
-          setPhase({ kind: "down" });
-          setProblem(e instanceof TodayCardRefusal && e.message ? e.message : null);
-        }
+        else setPhase({ kind: "down" });
       });
     return () => {
       live = false;
     };
   }, [on, signedIn, date]);
+
+  // The draw waits for the day's doors, a few seconds at most.
+  useEffect(() => {
+    const id = window.setTimeout(() => setWaited(true), FACTS_WAIT_MS);
+    return () => window.clearTimeout(id);
+  }, []);
+  const factsReady = today.ready || waited;
+
+  // After the card turns over, the reader lands on the day's focus.
+  useEffect(() => {
+    if (phase.kind === "up" && phase.fresh) focusRef.current?.focus();
+  }, [phase]);
+
+  const failed = (e: unknown, retry: "draw" | "reread") =>
+    setProblem({ words: e instanceof TodayCardRefusal && e.message ? e.message : t({ message: "The card did not turn. Try again.", context: "today's card: a pull that failed" }), retry });
+
+  const take = async () => {
+    const a = await pullTodayCard(date, today.ready ? today.facts : null);
+    setConsent(a.consent);
+    setCard(a.card);
+    return a;
+  };
+
+  // A plain card kept from earlier today picks up the day's counts once they are read, so its last row is current.
+  useEffect(() => {
+    if (refreshed.current || phase.kind !== "up" || phase.fresh || !today.ready || card?.reading.source !== "plain") return;
+    refreshed.current = true;
+    void take().catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, today.ready, card]);
 
   const dateWords = (() => {
     try {
@@ -283,20 +364,17 @@ export default function TodayCardPage() {
   if (!moduleIsOn(modules, "gene-keys")) return <ModuleGate moduleId="gene-keys" name="Gene Keys" />;
   if (!user) return <SignInToSee moduleId="gene-keys" name="Gene Keys" />;
 
-  const failed = (e: unknown) =>
-    setProblem(e instanceof TodayCardRefusal && e.message ? e.message : t({ message: "The card did not turn. Try again.", context: "today's card: a pull that failed" }));
-
   const draw = async () => {
+    if (!factsReady) return;
     setProblem(null);
     setPhase({ kind: "drawing" });
     try {
-      const a = await pullTodayCard(date, today.ready ? today.facts : null);
-      setConsent(a.consent);
-      setCard(a.card);
+      refreshed.current = true;
+      await take();
       setPhase({ kind: "up", fresh: true });
     } catch (e) {
       setPhase({ kind: "down" });
-      failed(e);
+      failed(e, "draw");
     }
   };
 
@@ -304,11 +382,9 @@ export default function TodayCardPage() {
     setBusy(true);
     setProblem(null);
     try {
-      const a = await pullTodayCard(date, today.ready ? today.facts : null);
-      setConsent(a.consent);
-      setCard(a.card);
+      await take();
     } catch (e) {
-      failed(e);
+      failed(e, "reread");
     } finally {
       setBusy(false);
     }
@@ -321,11 +397,9 @@ export default function TodayCardPage() {
     try {
       const out = await consentToCard(consent);
       setConsent(out.consent);
-      const a = await pullTodayCard(date, today.ready ? today.facts : null);
-      setConsent(a.consent);
-      setCard(a.card);
+      await take();
     } catch (e) {
-      failed(e);
+      failed(e, "reread");
     } finally {
       setBusy(false);
     }
@@ -334,7 +408,12 @@ export default function TodayCardPage() {
   const keepInJournal = async () => {
     if (!card) return;
     setKept("saving");
-    const text = [`${card.reading.focus}.`, ...card.reading.paragraphs].join("\n\n");
+    setProblem(null);
+    const text = [`${card.reading.focus}.`, ...READING_ROWS.map((k) => card.reading[k])].join("\n\n");
+    const fail = () => {
+      setKept("no");
+      setProblem({ words: t({ message: "The card did not save to your journal. Try again.", context: "today's card: keeping it failed" }), retry: "keep" });
+    };
     try {
       const res = await gameFetch("/api/journal/entries", {
         method: "POST",
@@ -345,11 +424,10 @@ export default function TodayCardPage() {
           answers: [{ questionKey: "today-card", prompt: t({ message: `Today's card: ${card.card.name}`, context: "today's card: the journal entry's heading" }), text }],
         }),
       });
-      setKept(res.ok ? "yes" : "no");
-      if (!res.ok) setProblem(t({ message: "The card did not save to your journal. Try again.", context: "today's card: keeping it failed" }));
+      if (res.ok) setKept("yes");
+      else fail();
     } catch {
-      setKept("no");
-      setProblem(t({ message: "The card did not save to your journal. Try again.", context: "today's card: keeping it failed" }));
+      fail();
     }
   };
 
@@ -366,9 +444,28 @@ export default function TodayCardPage() {
     }
   };
 
+  const retry = () => {
+    if (!problem) return;
+    if (problem.retry === "draw") void draw();
+    else if (problem.retry === "keep") void keepInJournal();
+    else void reread();
+  };
+
   const up = phase.kind === "up";
   const fresh = up && phase.fresh && !still;
   const time = card ? timeLine(card.facts) : today.ready ? timeLine(today.facts) : "";
+  const noLines = phase.kind === "no-lines";
+  const waitingForDay = !factsReady && phase.kind === "down";
+
+  const problemTile = problem ? (
+    <div role="alert" className={`${TILE} flex flex-wrap items-center justify-between gap-3`}>
+      <p className="text-base text-foreground">{problem.words}</p>
+      <button type="button" className={BTN_SECONDARY} onClick={retry}>
+        <RotateCcw aria-hidden="true" className="size-4" />
+        <Trans context="today's card: try a failed step again">Try again</Trans>
+      </button>
+    </div>
+  ) : null;
 
   return (
     <Layout>
@@ -394,36 +491,45 @@ export default function TodayCardPage() {
             <div className="flex min-h-[40vh] items-center justify-center">
               <BreathingLoader label={t({ message: "Opening today's card", context: "today's card: loading" })} />
             </div>
-          ) : phase.kind === "no-lines" ? (
-            <section className={`mt-6 ${CARD}`}>
-              <p className={NOTE}>
-                <Trans context="today's card: a member with no lines yet">Your card is drawn from your own lines. Find them first, and a card waits for you each day.</Trans>
-              </p>
-              <Link href="/profile/gene-keys" className={`mt-4 ${BTN_PRIMARY}`}>
-                <Trans context="today's card: a member with no lines yet, the door">Find your lines</Trans>
-              </Link>
-            </section>
           ) : (
             <div className="mt-6 grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start">
               {/* The card, and its draw. */}
-              <div className="relative flex flex-col items-center gap-5 md:sticky md:top-24">
+              <div className="relative isolate flex flex-col items-center gap-5 md:sticky md:top-24">
                 {fresh ? (
                   // A circle of light gathering behind the card, once, as it lands: a bloom, never a burst.
-                  <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-6 flex justify-center opacity-40">
+                  <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-6 -z-10 flex justify-center opacity-40">
                     <SeedOfLife total={7} walked={7} label="" bloom size="lg" />
                   </div>
                 ) : null}
-                <div className="relative">
-                  <TheCard card={card?.card ?? null} up={up} drawing={phase.kind === "drawing"} onDraw={up ? undefined : () => void draw()} dateWords={dateWords} />
-                </div>
-                {!up ? (
+                <TheCard
+                  card={card?.card ?? null}
+                  up={up}
+                  drawing={phase.kind === "drawing"}
+                  dim={noLines}
+                  onDraw={up || noLines || waitingForDay ? undefined : () => void draw()}
+                  dateWords={dateWords}
+                />
+                {noLines ? (
+                  <div className="flex flex-col items-center gap-3 text-center">
+                    <p className={`max-w-[18rem] ${NOTE}`}>
+                      <Trans context="today's card: a member with no lines yet">Find your lines to open your deck.</Trans>
+                    </p>
+                    <Fireflies>
+                      <Link href="/profile/gene-keys" className={BTN_PRIMARY}>
+                        <Trans context="today's card: a member with no lines yet, the door">Find your lines</Trans>
+                      </Link>
+                    </Fireflies>
+                  </div>
+                ) : !up ? (
                   <div className="flex flex-col items-center gap-2">
                     <Fireflies>
-                      <button type="button" className={BTN_PRIMARY} disabled={phase.kind === "drawing"} onClick={() => void draw()}>
+                      <button type="button" className={BTN_PRIMARY} disabled={phase.kind === "drawing" || waitingForDay} onClick={() => void draw()}>
                         <Sparkles aria-hidden="true" className="size-4" />
                         {phase.kind === "drawing"
                           ? t({ message: "Reading the sky", context: "today's card: the draw button while it pulls" })
-                          : t({ message: "Draw today's card", context: "today's card: the draw button" })}
+                          : waitingForDay
+                            ? t({ message: "Reading your day", context: "today's card: the draw button while the day's doors are read" })
+                            : t({ message: "Draw today's card", context: "today's card: the draw button" })}
                       </button>
                     </Fireflies>
                     <p className={`max-w-[18rem] text-center ${HINT}`}>
@@ -434,39 +540,21 @@ export default function TodayCardPage() {
               </div>
 
               {/* The reading. */}
-              <div className="grid gap-5" aria-live="polite">
-                {problem ? (
-                  <p role="alert" className="text-sm text-destructive">
-                    {problem}
-                  </p>
-                ) : null}
+              <div className="grid gap-5">
+                {problemTile}
                 {up && card ? (
                   <>
                     <section aria-labelledby={`${base}-focus`}>
-                      <p id={`${base}-focus`} className={EYEBROW}>
+                      <h2 id={`${base}-focus`} ref={focusRef} tabIndex={-1} className={`${EYEBROW} focus:outline-none`}>
                         <Trans context="today's card: the focus line's eyebrow">Today's focus</Trans>
-                      </p>
-                      <p className={`mt-1 ${STATEMENT}`} data-today-card-focus="">
+                      </h2>
+                      <p className={`mt-1 ${STATEMENT}`} data-today-card-focus="" aria-live="polite">
                         {card.reading.focus}
                       </p>
                     </section>
 
                     <section className={CARD} aria-labelledby={`${base}-reading`}>
-                      {/* The eyebrow's look on a span: the sheet's own h2 rule would otherwise set the face. */}
-                      <h2 id={`${base}-reading`}>
-                        <span className={EYEBROW}>
-                          {card.reading.source === "guide"
-                            ? t({ message: `Read by ${guide}`, context: "today's card: the reading's eyebrow, woven by the village guide" })
-                            : t({ message: "Your chart today", context: "today's card: the reading's eyebrow, in plain words" })}
-                        </span>
-                      </h2>
-                      <div className="mt-3 grid gap-3">
-                        {card.reading.paragraphs.map((p, i) => (
-                          <p key={i} className="text-base leading-relaxed text-foreground">
-                            {p}
-                          </p>
-                        ))}
-                      </div>
+                      <Reading card={card} guide={guide} headingId={`${base}-reading`} />
                       <p className={`mt-4 ${HINT}`}>
                         {card.design.type} · {card.design.profile} · {t({ message: `${card.design.authority} authority`, context: "today's card: the member's design under the reading" })}
                       </p>
@@ -481,10 +569,8 @@ export default function TodayCardPage() {
                     {consent.state === "ask" ? <GuideAsk line={consent} guide={guide} busy={busy} onYes={() => void yes()} /> : null}
 
                     <section aria-labelledby={`${base}-village`}>
-                      <h2 id={`${base}-village`}>
-                        <span className={EYEBROW}>
-                          <Trans context="today's card: what waits on the member, heading">Today in the village</Trans>
-                        </span>
+                      <h2 id={`${base}-village`} className={EYEBROW}>
+                        <Trans context="today's card: what waits on the member, heading">Today in the village</Trans>
                       </h2>
                       <div className="mt-2">
                         {today.rows.length ? (

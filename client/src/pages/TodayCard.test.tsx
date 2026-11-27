@@ -35,7 +35,7 @@ const gameFetch = vi.fn();
 vi.mock("@/lib/gameApi", () => ({ gameFetch: (...a: unknown[]) => gameFetch(...a) }));
 
 import TodayCardPage from "./TodayCard";
-import { localDate, localNoon } from "@/lib/todayCardApi";
+import { localDate } from "@/lib/todayCardApi";
 
 const answer = (body: unknown, status = 200) => Promise.resolve({ ok: status < 300, status, json: async () => body });
 
@@ -48,7 +48,7 @@ const CARD = {
   skyLines: { "human-design": "The Sun in gate 26.", western: "The Sun in Sagittarius." },
   design: { type: "Projector", authority: "Emotional", profile: "2/4", strategy: "Wait for the invitation" },
   facts: { quests: 1, tasks: 0, decisions: 1, asks: 0, sessions: 0, gatherings: 0, moon: null, season: null },
-  reading: { focus: "What keeps you well", paragraphs: ["Today's Sun stands in gate 12, your Radiance."], source: "plain" },
+  reading: { focus: "What keeps you well", sky: "Today's Sun stands in gate 12, your Radiance.", design: "Your design line.", waits: "A decision waits on you.", source: "plain" },
 };
 const ASK = { state: "ask", provider: "Anthropic", operator: "Op", source: "platform", sentence: "To write your card in its own words, the guide sends your lines." };
 
@@ -86,16 +86,20 @@ describe("Pull a card", () => {
     const post = gameFetch.mock.calls.find(([u, i]) => u === "/api/me/today-card" && i?.method === "POST")!;
     const sent = JSON.parse(String(post[1].body));
     expect(sent.date).toBe(localDate());
-    expect(sent.sky.at).toBe(localNoon(localDate()).toISOString());
+    expect(sent.sky.at).toBe(`${localDate()}T12:00:00.000Z`);
     expect(sent.today).toMatchObject({ quests: 1, decisions: 1 });
     expect(JSON.stringify(sent)).not.toContain("Mend the well");
     expect(document.querySelector("[data-today-card-face]")?.getAttribute("data-today-card-face")).toBe("radiance");
     expect(screen.getByText("Mend the well")).toBeTruthy();
     expect(screen.getByText("A decision waits on you")).toBeTruthy();
     expect(screen.getByText("Sun-lit")).toBeTruthy();
+    // The reading is three labelled rows, and the reader lands on the day's focus once the card turns.
+    expect(screen.getByText("The sky and your card")).toBeTruthy();
+    expect(screen.getByText("What waits on you")).toBeTruthy();
+    expect(document.activeElement?.textContent).toBe("Today's focus");
 
     // The one tap: the line shown is posted, then the card is read again, now in the guide's words.
-    card = { ...CARD, reading: { focus: "Let it be seen", paragraphs: ["Woven."], source: "guide" } };
+    card = { ...CARD, reading: { focus: "Let it be seen", sky: "Woven sky.", design: "Woven design.", waits: "Woven waits.", source: "guide" } };
     doors({
       "POST /api/me/today-card/consent": () => answer({ consent: { state: "given" } }),
       "POST /api/me/today-card": () => answer({ card, consent: { state: "given" } }),
@@ -107,12 +111,19 @@ describe("Pull a card", () => {
     expect(screen.queryByRole("button", { name: "Yes, read my card" })).toBeNull();
   });
 
-  it("shows a card kept from earlier today face up, without drawing again", async () => {
-    doors({ "GET /api/me/today-card": () => answer({ card: CARD, consent: { state: "none" } }) });
+  it("shows a card kept from earlier today face up, and re-reads it once with the day's counts", async () => {
+    const later = { ...CARD, reading: { ...CARD.reading, waits: "Two quests in hand now." } };
+    doors({
+      "GET /api/me/today-card": () => answer({ card: CARD, consent: { state: "none" } }),
+      "POST /api/me/today-card": () => answer({ card: later, consent: { state: "none" } }),
+    });
     render(<TodayCardPage />);
     expect(await screen.findByText("What keeps you well")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Draw today's card" })).toBeNull();
-    expect(gameFetch.mock.calls.some(([u, i]) => u === "/api/me/today-card" && i?.method === "POST")).toBe(false);
+    expect(await screen.findByText("Two quests in hand now.")).toBeTruthy();
+    const posts = gameFetch.mock.calls.filter(([u, i]) => u === "/api/me/today-card" && i?.method === "POST");
+    expect(posts).toHaveLength(1);
+    expect(JSON.parse(String(posts[0][1].body)).today).toMatchObject({ quests: 1, decisions: 1 });
     expect(screen.queryByText("Let Sol read your card")).toBeNull();
   });
 
@@ -128,9 +139,25 @@ describe("Pull a card", () => {
     expect(saved).toMatchObject({ clientId: `today-card-${CARD.date}`, practice: "free", privacy: "private" });
   });
 
-  it("sends a member with no lines to find them", async () => {
+  it("shows a member with no lines the deck face down and dimmed, with the door to find them", async () => {
     doors({ "GET /api/me/today-card": () => answer({ error: "Find your lines first, and the card reads them." }, 404) });
     render(<TodayCardPage />);
     expect((await screen.findByText("Find your lines")).closest("a")?.getAttribute("href")).toBe("/profile/gene-keys");
+    expect(screen.getByText("Find your lines to open your deck.")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Draw today's card" })).toBeNull();
+  });
+
+  it("holds the draw until the day's doors answer, so the card never says nothing waits on a busy day", async () => {
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((r) => (release = r));
+    doors({
+      "GET /api/me/today-card": () => answer({ card: null, consent: { state: "none" } }),
+      "GET /api/governance/waiting-on-me": () => gate.then(() => answer({ applications: [], drafts: [], toConsent: [{ proposalId: "p" }] })),
+    });
+    render(<TodayCardPage />);
+    const waiting = await screen.findByRole("button", { name: "Reading your day" });
+    expect((waiting as HTMLButtonElement).disabled).toBe(true);
+    release();
+    expect(await screen.findAllByRole("button", { name: "Draw today's card" })).toHaveLength(2);
   });
 });

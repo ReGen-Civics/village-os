@@ -11,9 +11,9 @@
  * cards in their hand, and each day one is drawn:
  *
  *   - ONE CARD A DAY, THE SAME ALL DAY. The draw is seeded by the member and the date (`seedOf`), and the sky it
- *     is weighed against is the sky at noon of that date where the member is, so a second pull, a reload or
- *     another phone draws the same card. The server keeps the day's card (`MY_CARD_PREFS_KEY`), so the words
- *     stay the same too.
+ *     is weighed against is the sky at NOON UTC of that date (`noonUtc`), the same on every device and in every
+ *     time zone, so a second pull, a reload or another phone draws the same card. The server keeps the last few
+ *     days' cards by date (`MY_CARD_PREFS_KEY`, `MY_CARD_KEEP_DAYS`), so the words stay the same too.
  *   - THE SKY LEANS THE DRAW. A sphere whose gate today's Sun or Earth stands in is six times as likely, one the
  *     Moon passes or whose channel today's sky completes three times (`drawCard`). Nothing is a rank: the chip
  *     on the card says only how today's sky touches it.
@@ -45,8 +45,14 @@ export const TODAY_CARD_PATH = "/profile/today-card";
 
 /** Pulls one member may make in an hour. */
 export const MY_CARD_PER_HOUR = 30;
-/** Where the day's card is kept, in `users.prefs` (the way `companionConsent` lives there). One slot, overwritten each day. */
+/**
+ * Where the day's cards are kept, in `users.prefs` (the way `companionConsent` lives there), by date: a pull for
+ * tomorrow's date (a member just past midnight) never overwrites today's. Never sent anywhere but the member's
+ * own card reads: `publicUser` passes on named prefs keys only (server/lib/publicPrefs.ts).
+ */
 export const MY_CARD_PREFS_KEY = "todayCard";
+/** How many dates of cards are kept; the oldest falls off. */
+export const MY_CARD_KEEP_DAYS = 3;
 
 // ── THE DATE ────────────────────────────────────────────────────────────────
 
@@ -58,14 +64,20 @@ export function parseCardDate(raw: unknown, now: number): string | null {
   if (typeof raw !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
   const noon = Date.parse(`${raw}T12:00:00Z`);
   if (!Number.isFinite(noon) || new Date(noon).toISOString().slice(0, 10) !== raw) return null;
-  return Math.abs(noon - now) <= 38 * 60 * 60 * 1000 ? raw : null;
+  // The sky is read at this noon and the sky check allows a day and a half (SKY_SLACK_MS), so the date may too.
+  return Math.abs(noon - now) <= 36 * 60 * 60 * 1000 ? raw : null;
 }
 
-/** The sky a card is weighed against is read at the member's local noon of its date: within fifteen hours of noon UTC. */
-export const NOON_SLACK_MS = 15 * 60 * 60 * 1000;
+/** Noon UTC of a `YYYY-MM-DD` date: the instant every device reads the card's sky at. */
+export function noonUtc(date: string): Date {
+  return new Date(`${date}T12:00:00Z`);
+}
+
+/** A minute's grace either side of noon UTC, for a clock that rounds. Any other instant is another sky. */
+export const NOON_SLACK_MS = 60 * 1000;
 
 export function skyFitsDate(sky: CardSky, date: string): boolean {
-  return Math.abs(Date.parse(sky.at) - Date.parse(`${date}T12:00:00Z`)) <= NOON_SLACK_MS;
+  return Math.abs(Date.parse(sky.at) - noonUtc(date).getTime()) <= NOON_SLACK_MS;
 }
 
 // ── THE DRAW ────────────────────────────────────────────────────────────────
@@ -221,15 +233,33 @@ export function parseTodayFacts(raw: unknown): TodayFacts {
 
 // ── THE WORDS ───────────────────────────────────────────────────────────────
 
+/** The gift side of a line's word: "Rejection / Gentleness" reads "Gentleness"; a single word stands as it is. */
+export function giftOf(word: string): string {
+  const parts = word.split("/").map((w) => w.trim()).filter(Boolean);
+  return parts[parts.length - 1] ?? "";
+}
+
+/** Today's focus, written for the day: how today's sky touches the card, and its line's word. */
+export function focusFor(c: DrawnCard): string {
+  const lead =
+    c.touch === "sun" ? `The Sun on your ${c.name}`
+    : c.touch === "earth" ? `The Earth under your ${c.name}`
+    : c.touch === "moon" ? `The Moon through your ${c.name}`
+    : c.touch === "channel" ? `A whole current through your ${c.name}`
+    : `Your ${c.name}, held steady`;
+  const gift = giftOf(c.word);
+  return gift ? `${lead}: ${gift}` : lead;
+}
+
 /** What today's sky does with the drawn card, then what its line says. */
 export function cardLine(c: DrawnCard, sky: CardSky): string {
   const where = `gate ${c.gate}, your ${c.name}`;
   let first: string;
-  if (c.touch === "sun") first = `Today's Sun stands in ${where}. That part of you is easy to see today: let it be seen.`;
-  else if (c.touch === "earth") first = `Today's Earth stands in ${where}. It grounds the whole day.`;
-  else if (c.touch === "moon") first = `The Moon passes through ${where}, for a few hours today. Notice how it feels when it does.`;
+  if (c.touch === "sun") first = `Today's Sun stands in ${where}: that part of you is easy to see today.`;
+  else if (c.touch === "earth") first = `Today's Earth stands in ${where}, and grounds the whole day.`;
+  else if (c.touch === "moon") first = `The Moon passes through ${where} for a few hours today: notice how it feels.`;
   else if (c.touch === "channel") first = `Today's sky brings gate ${c.skyGate} to ${where}, and together they make channel ${c.channel}: a current you carry half of runs whole today.`;
-  else first = `Today's Sun is in gate ${sky.gates.Sun.gate} and leaves ${where} alone. A steady card: yours to bring whatever the weather.`;
+  else first = `Today's Sun is in gate ${sky.gates.Sun.gate} and leaves ${where} alone: a steady card, yours to bring whatever the weather.`;
   return c.word ? `${first} Line ${c.line} here is ${c.word}.` : first;
 }
 
@@ -273,25 +303,42 @@ export function timeLine(f: TodayFacts): string {
 /** Who wrote the reading: the platform's plain words, or the village guide weaving the same facts. */
 export type CardSource = "plain" | "guide";
 
+/** The reading's three rows, each two sentences at most (the lead: bullets, not paragraphs). */
+export const READING_ROWS = ["sky", "design", "waits"] as const;
+export type ReadingRow = (typeof READING_ROWS)[number];
+
 export interface CardReading {
   /** "Today's focus", in a short line. */
   focus: string;
-  /** Two to four short paragraphs. */
-  paragraphs: string[];
+  /** The sky and your card. */
+  sky: string;
+  /** Your design today. */
+  design: string;
+  /** What waits on you. */
+  waits: string;
   source: CardSource;
+}
+
+/** The first two sentences of a line. */
+export function twoSentences(text: string): string {
+  const parts = text.trim().split(/(?<=[.!?])\s+(?=[A-Z])/);
+  return parts.slice(0, 2).join(" ");
 }
 
 /** The plain reading, from the facts alone: what the sky does with the card, the whole chart today, the day's work. */
 export function plainCardReading(c: DrawnCard, sky: CardSky, personLine: string, f: TodayFacts, type: HdType, authority: Authority): CardReading {
+  const design = twoSentences(personLine);
   return {
-    focus: upperFirst(c.focus),
-    paragraphs: [cardLine(c, sky), personLine, todayLine(f, type, authority, personLine.includes(AUTHORITY_WORDS[authority].line))].filter(Boolean),
+    focus: focusFor(c),
+    sky: twoSentences(cardLine(c, sky)),
+    design,
+    waits: twoSentences(todayLine(f, type, authority, design.includes(AUTHORITY_WORDS[authority].line))),
     source: "plain",
   };
 }
 
 /** The limits on a woven reading: anything longer is served plain. */
-export const WOVEN_LIMITS = { focus: 120, paragraph: 520, paragraphs: 4 } as const;
+export const WOVEN_LIMITS = { focus: 120, row: 220 } as const;
 
 // ── THE ANSWER ──────────────────────────────────────────────────────────────
 
