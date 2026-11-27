@@ -218,6 +218,38 @@ export default function TreasuryPanel({
       </div>
 
       <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-[repeat(auto-fit,minmax(250px,1fr))]">
+        {/* Gratitude first, above cash (the lead, 26 Nov 2026). */}
+        {data.gratitude ? (
+          <Purse
+            coin="thanks"
+            glyph={thanksName.trim().slice(0, 1).toUpperCase()}
+            name={thanksName}
+            value={whole(data.gratitude.receivedThisCycle)}
+            delta="received this cycle"
+            what={null}
+            actions={
+              <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
+                <Trans context="TreasuryPanel, Link">Send {thanksName.toLowerCase()}</Trans>
+              </Link>
+            }
+          >
+            {data.gratitude.total > 0 ? (
+              <div className="flex flex-col gap-1">
+                <div className="h-2 overflow-hidden rounded bg-dash-track">
+                  <div
+                    className="h-full bg-dash-thanks"
+                    style={{ width: `${Math.round((Math.min(data.gratitude.remaining, data.gratitude.total) / data.gratitude.total) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  <Trans context="TreasuryPanel, span">{whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
+                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}</Trans>
+                </span>
+              </div>
+            ) : null}
+          </Purse>
+        ) : null}
+
         {cash ? (
           <Purse
             coin="cash"
@@ -312,36 +344,6 @@ export default function TreasuryPanel({
           />
         ) : null}
 
-        {data.gratitude ? (
-          <Purse
-            coin="thanks"
-            glyph={thanksName.trim().slice(0, 1).toUpperCase()}
-            name={thanksName}
-            value={whole(data.gratitude.receivedThisCycle)}
-            delta="received this cycle"
-            what={null}
-            actions={
-              <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
-                <Trans context="TreasuryPanel, Link">Send {thanksName.toLowerCase()}</Trans>
-              </Link>
-            }
-          >
-            {data.gratitude.total > 0 ? (
-              <div className="flex flex-col gap-1">
-                <div className="h-2 overflow-hidden rounded bg-dash-track">
-                  <div
-                    className="h-full bg-dash-thanks"
-                    style={{ width: `${Math.round((Math.min(data.gratitude.remaining, data.gratitude.total) / data.gratitude.total) * 100)}%` }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  <Trans context="TreasuryPanel, span">{whole(data.gratitude.remaining)} of {whole(data.gratitude.total)} left to send
-                  {typeof data.cycle?.daysRemaining === "number" ? ` · cycle closes in ${data.cycle.daysRemaining} ${data.cycle.daysRemaining === 1 ? "day" : "days"}` : ""}</Trans>
-                </span>
-              </div>
-            ) : null}
-          </Purse>
-        ) : null}
       </ul>
 
       <div className="flex flex-wrap gap-4">

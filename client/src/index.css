@@ -3077,7 +3077,8 @@ html:has(#sera-changes [data-sera-strip-on]) {
   to { opacity: 1; transform: none; }
 }
 @supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
+  /* A wide screen only: on a phone the scroll-driven rise fought the visitor's own scrolling (26 Nov 2026). */
+  @media (prefers-reduced-motion: no-preference) and (min-width: 640px) {
     .entrance-rise {
       animation: entrance-rise linear both;
       animation-timeline: view();
@@ -3087,7 +3088,8 @@ html:has(#sera-changes [data-sera-strip-on]) {
 }
 
 /*
- * "Come in" brings the card, and the first field in it, to the top of the page, and the sticky header sits there:
+ * "Come in" brings the card, and the first field in it, to the top of the page, and on a wide screen the sticky
+ * header sits there (on a phone the header scrolls away on the entrance, Layout's headerScrollsOnPhone):
  * without a margin the focused field scrolls up under it (iPhone 13, 1.3.77). The header is 6rem at most; the card
  * and every field keep that and a little more clear above them, and the tab bar's height below.
  */

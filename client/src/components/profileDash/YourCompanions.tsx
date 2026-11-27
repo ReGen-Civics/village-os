@@ -483,9 +483,8 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
         </h3>
       </div>
       <p className="m-0 rounded-xl border border-dash-edge px-3 py-2.5 text-[13px] leading-normal text-foreground/80">
-        <Trans context="YourCompanions, p">{c.name} speaks through {c.chatEngine}, the village guide.
-        {c.engineConnected ? "" : ` ${c.engine} is not connected yet, so ${c.chatEngine} answers for now.`}
-        {consent && agreed ? ` ${consent.disclosure.sentence}` : ""}</Trans>
+        {/* One line only (the lead, 26 Nov 2026). Where the words go is still said before the member agrees, below. */}
+        <Trans context="YourCompanions, p">{c.name} is your Village Guide</Trans>
       </p>
       {!consent ? (
         <p className="m-0 text-sm text-muted-foreground"><Trans context="YourCompanions, p">{c.chatEngine} has no key in this village yet, so companions cannot talk in their own words.</Trans></p>
