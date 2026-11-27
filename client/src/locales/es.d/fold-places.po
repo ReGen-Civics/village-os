@@ -65,8 +65,8 @@ msgstr "Si lo deja en blanco, dirá cuándo se agregó."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "add a photo form"
-msgid "Location data is removed before it is stored."
-msgstr "Los datos de ubicación se quitan antes de guardarla."
+msgid "Location data is removed before it is stored. Your name and the month stay with it."
+msgstr "Los datos de ubicación se quitan antes de guardarla. Su nombre y el mes quedan con ella."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "add a photo form"
@@ -110,8 +110,8 @@ msgstr "¿Alguna de estas es de usted?"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "all photos view"
-msgid "It hides at once, and the curators get your request."
-msgstr "Se oculta de inmediato y los curadores reciben su solicitud."
+msgid "It hides at once, its file stops loading, and the curators get your request."
+msgstr "Se oculta de inmediato, su archivo deja de cargarse y los curadores reciben su solicitud."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "all photos view"
@@ -195,8 +195,8 @@ msgstr "Abrir {place}"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "photo reports queue"
-msgid "Raised by {who} on {when}"
-msgstr "Reportado por {who} el {when}"
+msgid "Raised by {who} on {when}."
+msgstr "Reportado por {who} el {when}."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "photo reports queue"
@@ -207,11 +207,6 @@ msgstr "Leyendo la cola"
 msgctxt "photo reports queue"
 msgid "Report status"
 msgstr "Estado del reporte"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "photo reports queue"
-msgid "Reports about photos"
-msgstr "Reportes sobre fotos"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "photo reports queue"
@@ -390,11 +385,6 @@ msgstr "¿Quitarla para siempre?"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
-msgid "Remove it for good? The file and its description go, and it cannot be undone."
-msgstr "¿Quitarla para siempre? El archivo y su descripción se van, y no se puede deshacer."
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
 msgid "Remove my photo"
 msgstr "Quitar mi foto"
 
@@ -417,11 +407,6 @@ msgstr "Retirar"
 msgctxt "place photo viewer"
 msgid "Take it down for good?"
 msgstr "¿Retirarla para siempre?"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
-msgid "Take it down for good? The file and its description go, and it cannot be undone."
-msgstr "¿Retirarla para siempre? El archivo y su descripción se van, y no se puede deshacer."
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "place photo viewer"
@@ -462,11 +447,6 @@ msgstr "Sí, quitarla"
 msgctxt "place photo viewer"
 msgid "Yes, take it down"
 msgstr "Sí, retirarla"
-
-# needs-native-review: the places fold, 26 Nov 2026
-msgctxt "place photo viewer"
-msgid "{position} of {total}"
-msgstr "{position} de {total}"
 
 # needs-native-review: the places fold, 26 Nov 2026
 msgctxt "places page"

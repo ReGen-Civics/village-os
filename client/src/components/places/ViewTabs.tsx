@@ -26,7 +26,8 @@ export default function ViewTabs<K extends string>({
 }: {
   tabs: ViewTab<K>[];
   value: K;
-  onChange: (key: K) => void;
+  /** `how` says whether a key or a press chose it: a page may record a press in the history and not each arrow step. */
+  onChange: (key: K, how: "key" | "press") => void;
   label: string;
   idPrefix: string;
 }) {
@@ -34,7 +35,7 @@ export default function ViewTabs<K extends string>({
 
   const go = (i: number) => {
     const next = tabs[(i + tabs.length) % tabs.length];
-    onChange(next.key);
+    onChange(next.key, "key");
     refs.current.get(next.key)?.focus();
   };
 
@@ -64,7 +65,7 @@ export default function ViewTabs<K extends string>({
             aria-controls={panelId(idPrefix, tab.key)}
             aria-selected={on}
             tabIndex={on ? 0 : -1}
-            onClick={() => onChange(tab.key)}
+            onClick={() => onChange(tab.key, "press")}
             onKeyDown={(e) => onKey(e, i)}
             className={on ? TAB_ON : TAB}
           >

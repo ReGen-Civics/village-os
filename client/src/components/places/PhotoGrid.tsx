@@ -146,7 +146,6 @@ export default function PhotoGrid({
       </ul>
       <PhotoViewer
         photo={index >= 0 ? photos[index] : null}
-        position={index + 1}
         total={photos.length}
         onStep={step}
         onClose={() => setOpenId(null)}

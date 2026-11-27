@@ -201,6 +201,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
   const { t } = useLingui();
   const [file, setFile] = useState<File | null>(null);
   const [shown, setShown] = useState(false);
+  const [named, setNamed] = useState("");
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const [altText, setAltText] = useState("");
   const [caption, setCaption] = useState("");
@@ -225,6 +226,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
    */
   useEffect(() => {
     setShown(false);
+    setNamed(file?.name ?? "");
     if (!file || typeof createImageBitmap !== "function") return;
     let live = true;
     createImageBitmap(file)
@@ -288,7 +290,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
       </div>
 
       <ul className={`${NOTE} m-0 list-disc space-y-1 pl-5`}>
-        <li><Trans context="add a photo form">Location data is removed before it is stored.</Trans></li>
+        <li><Trans context="add a photo form">Location data is removed before it is stored. Your name and the month stay with it.</Trans></li>
         <li><Trans context="add a photo form">Up to {maxMb} MB.</Trans></li>
       </ul>
 
@@ -308,7 +310,7 @@ function AddPhoto({ structureKey, maxMb, onAdded, onClose }: { structureKey: str
             {!shown && (
               <span className="flex flex-col items-center gap-1 p-4 text-center text-sm text-muted-foreground">
                 <Camera className="size-7 text-notice" aria-hidden="true" />
-                <Trans context="add a photo form">Choose a picture</Trans>
+                {named || <Trans context="add a photo form">Choose a picture</Trans>}
               </span>
             )}
           </span>

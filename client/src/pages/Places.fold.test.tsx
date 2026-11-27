@@ -216,7 +216,8 @@ describe("one place", () => {
     at("/places/community-kitchen");
     expect(await screen.findByRole("heading", { level: 1, name: "Community kitchen" })).toBeTruthy();
     fireEvent.click(await screen.findByRole("button", { name: "Add a photo" }));
-    expect(screen.getByText("Location data is removed before it is stored.")).toBeTruthy();
+    // The contributor is told both what leaves the file and what stays with it.
+    expect(screen.getByText("Location data is removed before it is stored. Your name and the month stay with it.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Add it to this place" }).hasAttribute("disabled")).toBe(true);
   });
 
@@ -226,7 +227,7 @@ describe("one place", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Remove my photo" }));
     const keep = await screen.findByRole("button", { name: "Keep it" });
     await waitFor(() => expect(document.activeElement).toBe(keep));
-    expect(screen.getAllByText(/Remove it for good\?/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Remove it for good?").length).toBeGreaterThan(0);
     // The second half of a double click lands at once: ignored.
     fireEvent.click(screen.getByRole("button", { name: "Yes, remove it" }));
     expect(calls.some((c) => c.method === "DELETE")).toBe(false);
@@ -242,6 +243,24 @@ describe("one place", () => {
     vi.restoreAllMocks();
   });
 
+  it("hands focus back to the button that asked when the answer is Keep it", async () => {
+    curate = true;
+    at("/places/community-kitchen");
+    fireEvent.click(await screen.findByRole("button", { name: /Open the photo: The north wall, view 2/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Take down" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Keep it" }));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: "Take down" })));
+    expect(calls.some((c) => c.method === "DELETE")).toBe(false);
+  });
+
+  it("keeps an act's button focusable while it is on its way (aria-disabled, never disabled)", async () => {
+    curate = true;
+    at("/places/community-kitchen");
+    fireEvent.click(await screen.findByRole("button", { name: /Open the photo: The north wall, view 2/ }));
+    const hide = await screen.findByRole("button", { name: "Hide" });
+    expect(hide.hasAttribute("disabled")).toBe(false);
+  });
+
   it("keeps the viewer on its photo when a new cover reorders the list, and says so", async () => {
     curate = true;
     at("/places/community-kitchen");
@@ -249,8 +268,9 @@ describe("one place", () => {
     expect(viewerTitle()).toBe("The north wall, view 2");
     fireEvent.click(await screen.findByRole("button", { name: "Make it the cover" }));
     await waitFor(() => expect(screen.getAllByText("This place opens with that one now.").length).toBeGreaterThan(0));
-    // The list now leads with p2, and the viewer is still on it.
-    await waitFor(() => expect(screen.getAllByText("1 of 3").length).toBeGreaterThan(0));
+    // The list now leads with p2 (the reload has landed), and the viewer is still on it.
+    await waitFor(() => expect(calls.filter((c) => c.url.startsWith("/api/places/community-kitchen/photos")).length).toBe(2));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /Open the photo/, hidden: true })[0].getAttribute("aria-label")).toContain("view 2"));
     expect(viewerTitle()).toBe("The north wall, view 2");
   });
 

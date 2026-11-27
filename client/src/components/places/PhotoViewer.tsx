@@ -40,10 +40,12 @@ const ROUND =
 /** A confirm pressed sooner than this after the first press is a double click, not an answer. */
 const CONFIRM_AFTER_MS = 500;
 
+/** The edged act, faded while an act is on its way (aria-disabled keeps focus on it, where disabled would drop it). */
+const ACT = `${BTN_SECONDARY} aria-disabled:opacity-50`;
+
 export interface PhotoViewerProps {
   /** The open photo, or null when the viewer is shut. */
   photo: PlacePhoto | null;
-  position: number;
   total: number;
   onStep: (delta: number) => void;
   onClose: () => void;
@@ -65,7 +67,6 @@ export interface PhotoViewerProps {
 
 export default function PhotoViewer({
   photo,
-  position,
   total,
   onStep,
   onClose,
@@ -84,15 +85,22 @@ export default function PhotoViewer({
   const [asking, setAsking] = useState(false);
   const askedAt = useRef(0);
   const keep = useRef<HTMLButtonElement | null>(null);
+  const dropBtn = useRef<HTMLButtonElement | null>(null);
+  /** "Keep it" hands focus back to the button that asked. */
+  const backToDrop = useRef(false);
 
   // A new picture starts with no half-asked takedown.
   useEffect(() => {
     setAsking(false);
   }, [photo?.id]);
 
-  // The second question takes focus on its safe answer.
+  // The second question takes focus on its safe answer; "Keep it" gives it back to the button that asked.
   useEffect(() => {
     if (asking) keep.current?.focus();
+    else if (backToDrop.current) {
+      backToDrop.current = false;
+      dropBtn.current?.focus();
+    }
   }, [asking]);
 
   if (!photo) return null;
@@ -100,6 +108,10 @@ export default function PhotoViewer({
   const mayDrop = canCurate || mine;
   const many = total > 1;
   const id = encodeURIComponent(photo.id);
+  /** The second question, asked in its row and said in the line. */
+  const question = canCurate
+    ? t({ message: "Take it down for good?", context: "place photo viewer" })
+    : t({ message: "Remove it for good?", context: "place photo viewer" });
   const coverSet = t({ message: "This place opens with that one now.", context: "place photo viewer" });
   const failedDrop = t({ message: "That did not come down. Try again in a moment.", context: "place photo viewer" });
 
@@ -131,11 +143,7 @@ export default function PhotoViewer({
     if (busy || asking) return;
     askedAt.current = Date.now();
     setAsking(true);
-    onSay(
-      canCurate
-        ? t({ message: "Take it down for good? The file and its description go, and it cannot be undone.", context: "place photo viewer" })
-        : t({ message: "Remove it for good? The file and its description go, and it cannot be undone.", context: "place photo viewer" }),
-    );
+    onSay(question);
   };
 
   const drop = async () => {
@@ -180,9 +188,9 @@ export default function PhotoViewer({
       >
         <div className="relative bg-muted">
           {photo.hiddenAt ? (
-            <CuratorImage src={photo.url} alt={photo.altText} />
+            <CuratorImage src={photo.url} alt={photo.altText} className="max-h-[55vh]" />
           ) : (
-            <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority />
+            <Image src={photo.url} alt={photo.altText} ratio={4 / 3} fit="contain" priority className="max-h-[55vh]" />
           )}
           <DialogClose className={`${ROUND} right-2 top-2`} aria-label={t({ message: "Close the photo", context: "place photo viewer" })}>
             <X className="size-5" aria-hidden="true" />
@@ -207,11 +215,6 @@ export default function PhotoViewer({
               </Link>
             ) : (
               <p className={EYEBROW}>{where}</p>
-            )}
-            {many && (
-              <span className={CHIP_SOFT}>
-                <Trans context="place photo viewer">{position} of {total}</Trans>
-              </span>
             )}
             {photo.heroAt && (
               <span className={CHIP_SOFT}>
@@ -242,14 +245,10 @@ export default function PhotoViewer({
           {asking ? (
             <div className={`${TILE} space-y-3`}>
               <p className="text-sm font-semibold text-foreground">
-                {canCurate ? (
-                  <Trans context="place photo viewer">Take it down for good?</Trans>
-                ) : (
-                  <Trans context="place photo viewer">Remove it for good?</Trans>
-                )}
+                {question}
               </p>
               <div className="flex flex-wrap gap-2">
-                <button type="button" disabled={busy} className={BTN_DANGER} onClick={drop}>
+                <button type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={drop}>
                   <Trash2 className="size-4" aria-hidden="true" />
                   {canCurate ? (
                     <Trans context="place photo viewer">Yes, take it down</Trans>
@@ -257,7 +256,7 @@ export default function PhotoViewer({
                     <Trans context="place photo viewer">Yes, remove it</Trans>
                   )}
                 </button>
-                <button ref={keep} type="button" className={BTN_SECONDARY} onClick={() => { setAsking(false); onSay(""); }}>
+                <button ref={keep} type="button" className={BTN_SECONDARY} onClick={() => { backToDrop.current = true; setAsking(false); onSay(""); }}>
                   <Trans context="place photo viewer">Keep it</Trans>
                 </button>
               </div>
@@ -268,8 +267,8 @@ export default function PhotoViewer({
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    disabled={busy}
-                    className={BTN_SECONDARY}
+                    aria-disabled={busy || undefined}
+                    className={ACT}
                     onClick={() => post(`/api/places/photo/${id}/subject-request`, SUBJECT_FILED, SUBJECT_ALREADY, { reason: "" })}
                   >
                     <UserRound className="size-4" aria-hidden="true" />
@@ -277,15 +276,15 @@ export default function PhotoViewer({
                   </button>
                   <button
                     type="button"
-                    disabled={busy}
-                    className={BTN_SECONDARY}
+                    aria-disabled={busy || undefined}
+                    className={ACT}
                     onClick={() => post(`/api/places/photo/${id}/report`, CONCERN_FILED, CONCERN_ALREADY, { reason: "" })}
                   >
                     <SunLeaf className="size-4" aria-hidden="true" />
                     <Trans context="place photo viewer">SunLeaf this</Trans>
                   </button>
                   {mine && !canCurate && (
-                    <button type="button" disabled={busy} className={BTN_DANGER} onClick={ask}>
+                    <button ref={dropBtn} type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={ask}>
                       <Trash2 className="size-4" aria-hidden="true" />
                       <Trans context="place photo viewer">Remove my photo</Trans>
                     </button>
@@ -306,8 +305,8 @@ export default function PhotoViewer({
                     {photo.hiddenAt ? (
                       <button
                         type="button"
-                        disabled={busy}
-                        className={BTN_SECONDARY}
+                        aria-disabled={busy || undefined}
+                        className={ACT}
                         onClick={() => post(`/api/places/photo/${id}/restore`, t({ message: "Back on the place.", context: "place photo viewer" }), t({ message: "Already showing.", context: "place photo viewer" }), {})}
                       >
                         <Undo2 className="size-4" aria-hidden="true" />
@@ -316,8 +315,8 @@ export default function PhotoViewer({
                     ) : (
                       <button
                         type="button"
-                        disabled={busy}
-                        className={BTN_SECONDARY}
+                        aria-disabled={busy || undefined}
+                        className={ACT}
                         onClick={() => post(`/api/places/photo/${id}/hide`, t({ message: "Hidden. The file stopped answering too.", context: "place photo viewer" }), t({ message: "Already hidden.", context: "place photo viewer" }), { reason: "" })}
                       >
                         <EyeOff className="size-4" aria-hidden="true" />
@@ -327,8 +326,8 @@ export default function PhotoViewer({
                     {!photo.hiddenAt && !photo.heroAt && (
                       <button
                         type="button"
-                        disabled={busy}
-                        className={BTN_SECONDARY}
+                        aria-disabled={busy || undefined}
+                        className={ACT}
                         onClick={() =>
                           post(
                             `/api/places/${encodeURIComponent(photo.structureKey)}/hero`,
@@ -344,7 +343,7 @@ export default function PhotoViewer({
                       </button>
                     )}
                     {mayDrop && (
-                      <button type="button" disabled={busy} className={BTN_DANGER} onClick={ask}>
+                      <button ref={dropBtn} type="button" aria-disabled={busy || undefined} className={BTN_DANGER} onClick={ask}>
                         <Trash2 className="size-4" aria-hidden="true" />
                         <Trans context="place photo viewer">Take down</Trans>
                       </button>

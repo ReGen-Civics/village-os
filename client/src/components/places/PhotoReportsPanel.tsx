@@ -79,8 +79,7 @@ export default function PhotoReportsPanel() {
   };
 
   return (
-    <section aria-labelledby="photo-reports-h" className="space-y-5">
-      <h2 id="photo-reports-h" className="sr-only"><Trans context="photo reports queue">Reports about photos</Trans></h2>
+    <div className="space-y-5">
       <ul className={`${NOTE} m-0 list-disc space-y-1 pl-5`}>
         <li><Trans context="photo reports queue">Closing a report tells the member who raised it that someone read it.</Trans></li>
         <li><Trans context="photo reports queue">Taking a photo down closes every open report on it.</Trans></li>
@@ -121,7 +120,7 @@ export default function PhotoReportsPanel() {
                   <p className="text-sm font-semibold text-foreground">{reportHeadline(r)}</p>
                   {r.reason && <p className="text-sm text-foreground">{r.reason}</p>}
                   <p className="text-xs text-muted-foreground">
-                    <Trans context="photo reports queue">Raised by {who} on {when}</Trans>
+                    <Trans context="photo reports queue">Raised by {who} on {when}.</Trans>
                     {r.photoHidden && (
                       <>
                         {" "}
@@ -156,6 +155,6 @@ export default function PhotoReportsPanel() {
         </ul>
       )}
       </div>
-    </section>
+    </div>
   );
 }

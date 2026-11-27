@@ -126,13 +126,14 @@ function PlacesHome() {
     };
   }, [attempt]);
 
-  // Each view is a step in the history, so Back walks between them.
-  const pick = (next: View) => {
+  // A press is a step in the history, so Back walks between views; an arrow key only moves the address along.
+  const pick = (next: View, how: "key" | "press") => {
     if (next === view) return;
     const url = `${window.location.pathname}${window.location.search}${next === "places" ? "" : `#${next}`}`;
-    window.history.pushState(window.history.state, "", url);
-    // wouter's patched pushState announces this itself; said again here so the view moves even where it is not loaded.
-    window.dispatchEvent(new Event("pushState"));
+    const step = how === "press" ? "pushState" : "replaceState";
+    window.history[step](window.history.state, "", url);
+    // wouter's patched history announces this itself; said again here so the view moves even where it is not loaded.
+    window.dispatchEvent(new Event(step));
   };
   const onLocked = useCallback(() => setLocked(true), []);
 
@@ -178,14 +179,15 @@ function PlacesHome() {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           {data && placeCount > 0 && (
             <dl className="m-0 grid grid-cols-2 gap-2">
-              <div className="min-w-24 rounded-xl border border-border bg-muted px-3 py-2">
-                <dt className="text-xs text-muted-foreground"><Trans context="places page">Places</Trans></dt>
-                <dd className="m-0 font-display text-2xl leading-tight text-foreground">{placeCount}</dd>
-              </div>
-              <div className="min-w-24 rounded-xl border border-border bg-muted px-3 py-2">
-                <dt className="text-xs text-muted-foreground"><Trans context="places page">Photos</Trans></dt>
-                <dd className="m-0 font-display text-2xl leading-tight text-foreground">{photoCount}</dd>
-              </div>
+              {[
+                [t({ message: "Places", context: "places page" }), placeCount],
+                [t({ message: "Photos", context: "places page" }), photoCount],
+              ].map(([label, n]) => (
+                <div key={label} className="min-w-24 rounded-xl border border-border bg-muted px-3 py-2">
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="m-0 font-display text-2xl leading-tight text-foreground">{n}</dd>
+                </div>
+              ))}
             </dl>
           )}
           <Link href="/map" className={`${LINK} inline-flex min-h-11 items-center gap-1.5 text-sm`}>

@@ -74,7 +74,7 @@ export const BTN_NOTICE =
 
 /** An act that cannot be undone (a photo taken down for good): BTN_SECONDARY's shape in the destructive ink. Always asked twice. */
 export const BTN_DANGER =
-  "jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-destructive/60 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50";
+  "jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-destructive/60 px-4 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-50 aria-disabled:opacity-50";
 
 /** A view switch's tab (the Places page's views): TAB at rest, TAB_ON for the chosen one, gold like the one act. */
 export const TAB =
