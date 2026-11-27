@@ -130,6 +130,9 @@ function Tile({ href, label, onGo, children, Icon }: { href: string; label: stri
 /** The entry the page is at or under wears a gold edge on its left (the accent on the panel, measured 3:1 in modePalettes.test.ts). */
 // Pulled left by what it pads, so the words stay where they were and only the edge appears.
 const LIT_ON = "-ml-3 border-l-2 border-notice pl-2.5 font-semibold";
+// A top-level entry has no group rule to sit on, so its edge stands on the text column and the words step in after it
+// (the live check, 27 Nov 2026: pulled left, the edge sat at the sheet's own edge, outside the list).
+const LIT_TOP = "border-l-2 border-notice pl-3 font-semibold";
 
 /** Below `md`, where the bar and its More exist. From `md` up the header's drawer answers the same open state (Layout.tsx). */
 const PHONE = "(max-width: 767.98px)";
@@ -286,7 +289,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                 </li>
               ) : (
                 <li key={e.href}>
-                  <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} data-lit={currentFor(lit, e.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_ON : ""}`}>
+                  <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} data-lit={currentFor(lit, e.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_TOP : ""}`}>
                     <MenuIcon href={e.href} fallback={e.icon} bare />
                     {e.label}
                   </Link>

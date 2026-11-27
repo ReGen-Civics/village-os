@@ -568,7 +568,7 @@ export default function Layout({ children }: LayoutProps) {
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
       <main id="main" tabIndex={-1} className="flex-1 min-h-svh max-md:pb-[var(--fab-clear)]">
         {/* Below its menu entry, a page gets the trail back up (nav/Breadcrumbs.tsx); an entry's own page gets none. */}
-        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} item={{ href: lit.href, label: withTokenLabel(lit.item).label }} leaf={leaf} /> : null}
+        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} item={{ href: lit.item.href, label: withTokenLabel(lit.item).label }} leaf={leaf} /> : null}
         {children}
         <MachineTranslationNote />
       </main>
