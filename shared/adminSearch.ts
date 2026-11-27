@@ -232,7 +232,7 @@ export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
   { id: "page.mint", kind: "outside", path: "/admin/mint", title: "Mint desk", help: "Issue tokens, with every guard the mint has.", synonyms: ["mint", "issue tokens"], capability: "token.mint" },
   { id: "page.treasury", kind: "outside", path: "/treasury", title: "Treasury", help: "The treasurer's desk: End of Moon review and payouts.", synonyms: ["treasurer", "end of moon", "moon review", "invoices"] },
   { id: "page.pricing", kind: "outside", path: "/pricing", title: "Pricing desk", help: "Every open quest beside the engine's suggested price.", synonyms: ["pricing", "quest price"] },
-  { id: "page.budget", kind: "outside", path: "/budget", title: "Cash budget", help: "The cash the village plans to pay this moon.", synonyms: ["budget"] },
+  { id: "page.budget", kind: "outside", path: "/governance/treasury", title: "Cash budget", help: "The cash the village plans to pay this moon.", synonyms: ["budget"] },
   { id: "page.powers", kind: "outside", path: "/powers", title: "Powers", help: "Every power, and who holds it.", synonyms: ["powers", "capabilities", "who can"] },
   { id: "page.role-measures", kind: "outside", path: "/role-measures", title: "Role measures", help: "How each role's work is measured.", synonyms: ["measures", "role measures"] },
   { id: "page.decisions", kind: "outside", path: "/decisions", title: "Decisions", help: "Votes and decisions, open and closed.", synonyms: ["votes", "ballots", "decide"] },

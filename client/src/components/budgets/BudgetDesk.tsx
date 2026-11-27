@@ -9,8 +9,8 @@
  * `role.pay`, `budgetDoorOf` in server/routes/budgets.ts) and the caller lets
  * it, the editor loads as its own chunk; nobody else downloads it.
  *
- * Drawn in Admin (components/admin/BudgetsTab.tsx) and on /budget
- * (pages/Budget.tsx), each with its own look and its own bearer.
+ * Drawn in Admin (components/admin/BudgetsTab.tsx) and on /governance/treasury
+ * (pages/GovernanceTreasury.tsx), each with its own look and its own bearer.
  */
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";

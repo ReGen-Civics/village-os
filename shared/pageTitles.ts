@@ -38,7 +38,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/propose-quest": "Propose a quest",
   "/partner": "Become a partner",
   "/pricing": "Pricing desk",
-  "/budget": "Cash budget",
+  "/budget": "Cash budget", // redirects to /governance/treasury#cash-budget (27 Nov 2026)
+  "/governance/treasury": "Treasury", // the cash budget, folded in from /budget (27 Nov 2026)
   "/roles": "Roles",
   "/roles/select": "Find your roles",
   "/roles/draft": "Find your roles",
