@@ -109,7 +109,7 @@ function TheCard({ card, up, drawing, dim = false, onDraw, dateWords }: { card: 
           </span>
         </div>
         <div className="relative flex flex-1 flex-col items-center justify-center gap-1 text-center">
-          <Glyph className="size-9 text-notice" />
+          <Glyph className="size-11 text-notice" />
           <span className="font-display text-6xl leading-none lining-nums text-notice">{card.gate}</span>
           <LineBars line={card.line} className="h-10 w-9" label={t({ message: `Line ${card.line} of 6`, context: "today's card: the line bars on the card, read aloud" })} />
           <span className="font-display text-3xl leading-tight text-foreground">{card.name}</span>
@@ -545,8 +545,11 @@ export default function TodayCardPage() {
                 {up && card ? (
                   <>
                     <section aria-labelledby={`${base}-focus`}>
-                      <h2 id={`${base}-focus`} ref={focusRef} tabIndex={-1} className={`${EYEBROW} focus:outline-none`}>
-                        <Trans context="today's card: the focus line's eyebrow">Today's focus</Trans>
+                      {/* The eyebrow's look on a span: the sheet's own h2 rule would otherwise set the face. */}
+                      <h2 id={`${base}-focus`} ref={focusRef} tabIndex={-1} className="focus:outline-none">
+                        <span className={EYEBROW}>
+                          <Trans context="today's card: the focus line's eyebrow">Today's focus</Trans>
+                        </span>
                       </h2>
                       <p className={`mt-1 ${STATEMENT}`} data-today-card-focus="" aria-live="polite">
                         {card.reading.focus}
@@ -569,8 +572,10 @@ export default function TodayCardPage() {
                     {consent.state === "ask" ? <GuideAsk line={consent} guide={guide} busy={busy} onYes={() => void yes()} /> : null}
 
                     <section aria-labelledby={`${base}-village`}>
-                      <h2 id={`${base}-village`} className={EYEBROW}>
-                        <Trans context="today's card: what waits on the member, heading">Today in the village</Trans>
+                      <h2 id={`${base}-village`}>
+                        <span className={EYEBROW}>
+                          <Trans context="today's card: what waits on the member, heading">Today in the village</Trans>
+                        </span>
                       </h2>
                       <div className="mt-2">
                         {today.rows.length ? (
