@@ -91,7 +91,7 @@ export interface SpeedCardsProps {
   who: string;
   entries: readonly NavEntry[];
   itemsOf: (group: NavGroup) => NavLink[];
-  account: readonly (NavLink & { count?: "tasks" | "messages" })[];
+  account: readonly NavLink[];
   /** The page being read, so its card is marked. */
   here?: string | null;
   onClose: () => void;

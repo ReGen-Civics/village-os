@@ -10,7 +10,8 @@
  */
 import { Fragment, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { navWord, type NavLink } from "@/config/nav";
+import type { NavLink } from "@/config/nav";
+import { folderWord, useFolderNames } from "@/components/nav/menuFolders";
 import { folderHolds, navRows } from "@/config/navNest";
 import NavFolder from "@/components/nav/NavFolder";
 
@@ -38,6 +39,8 @@ export default function MenuRows({
   opens?: string | null;
 }) {
   const { i18n } = useLingui();
+  // The village's own folder names, where it gave one (Admin, Menu); else the platform's word.
+  const folders = useFolderNames();
   const rows = navRows(links);
   const [open, setOpen] = useState<string | null>(() => {
     const holding = rows.find((r) => folderHolds(r, here));
@@ -52,7 +55,7 @@ export default function MenuRows({
         ) : (
           <NavFolder
             key={row.label}
-            label={navWord(row.label, i18n)}
+            label={folderWord(row.label, folders, i18n)}
             links={row.links}
             holdsHere={folderHolds(row, here)}
             open={open === row.label}

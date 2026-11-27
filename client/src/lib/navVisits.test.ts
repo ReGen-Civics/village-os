@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TOKEN_PREFIX } from "../../../server/lib/agentTokens";
-import { AGENT_TOKEN_PREFIX, forgetBar, HISTORY_KEY, loadBar, personalFor, SENT_KEY, visited } from "./navVisits";
+import { AGENT_TOKEN_PREFIX, forgetBar, HISTORY_KEY, loadBar, personalFor, recentPages, SENT_KEY, visited } from "./navVisits";
 
 const ok = (body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
 
@@ -59,6 +59,22 @@ describe("visited", () => {
       throw new Error("blocked");
     });
     await expect(visited("/quests", "tok", (() => Promise.reject(new Error("offline"))) as unknown as typeof fetch)).resolves.toBeUndefined();
+  });
+});
+
+/* The More sheet's Recent row (27 Nov 2026): every opening, newest first, on this device only. */
+describe("recentPages", () => {
+  it("keeps every opening newest first, even one the session already counted, and leaves out what it is told to", async () => {
+    const f = vi.fn(() => ok({}));
+    for (const p of ["/quests", "/journal", "/forum", "/quests"]) await visited(p, "tok", f as unknown as typeof fetch);
+    expect(f).toHaveBeenCalledTimes(3);
+    expect(recentPages([], 8)).toEqual(["/quests", "/forum", "/journal"]);
+    expect(recentPages(["/forum"], 2)).toEqual(["/quests", "/journal"]);
+  });
+
+  it("keeps nothing for an agent's look", async () => {
+    await visited("/quests", AGENT_TOKEN_PREFIX + "x", vi.fn() as unknown as typeof fetch);
+    expect(recentPages([], 8)).toEqual([]);
   });
 });
 

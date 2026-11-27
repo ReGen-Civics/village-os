@@ -17,6 +17,8 @@ import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { useDraftDoc } from "@/lib/unsavedChanges";
 
 const GROUPS = NAV.filter(isGroup);
+/** Every folder the menu draws, by the platform's name, in the menu's order (NavLink.sub). */
+const FOLDERS = Array.from(new Set([...GROUPS.flatMap((g) => g.items), ...ACCOUNT_MENU].map((l) => l.sub).filter((s): s is string => !!s)));
 const ENTRIES = Array.from(
   new Map([...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => [l.href, l] as const)).values(),
 );
@@ -49,6 +51,12 @@ export default function MenuPanel({ password }: { password: string }) {
     else delete groups[name];
     setDoc({ ...doc, groups });
   };
+  const setFolder = (name: string, v: string) => {
+    const folders = { ...doc.folders };
+    if (v) folders[name] = v.slice(0, MENU_LABEL_MAX);
+    else delete folders[name];
+    setDoc({ ...doc, folders });
+  };
   const toggleHidden = (href: string, hide: boolean) =>
     setDoc({ ...doc, hidden: hide ? [...doc.hidden, href] : doc.hidden.filter((h) => h !== href) });
   const setTab = (i: number, href: string) => {
@@ -75,7 +83,7 @@ export default function MenuPanel({ password }: { password: string }) {
       </h3>
       <p className="text-xs text-muted-foreground mb-4 max-w-prose">
         <Trans>
-          Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An
+          Your own word for each menu entry, which ones show, the names of the groups and folders, and the phone's four tabs. An
           entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu.
           Blank keeps the platform's word.
         </Trans>
@@ -92,6 +100,27 @@ export default function MenuPanel({ password }: { password: string }) {
             onChange={(e) => setGroup(g.label, e.target.value)}
             placeholder={g.label}
             aria-label={t`The name for the ${g.label} group`}
+            className="text-sm border border-border rounded-lg px-2.5 py-2"
+          />
+        ))}
+      </div>
+
+      <p className="text-sm font-medium text-foreground mb-1">
+        <Trans context="admin menu: the folder names">Folders</Trans>
+      </p>
+      <p className="text-xs text-muted-foreground mb-2 max-w-prose">
+        <Trans context="admin menu: the folder names, explained">
+          A folder holds a few entries inside a group. Blank keeps the platform's name, in each reader's language.
+        </Trans>
+      </p>
+      <div className="grid gap-2 sm:grid-cols-3 mb-4">
+        {FOLDERS.map((f) => (
+          <input
+            key={f}
+            value={doc.folders[f] ?? ""}
+            onChange={(e) => setFolder(f, e.target.value)}
+            placeholder={f}
+            aria-label={t({ message: `The name for the ${f} folder`, context: "admin menu: a folder name field" })}
             className="text-sm border border-border rounded-lg px-2.5 py-2"
           />
         ))}

@@ -1,6 +1,6 @@
 // Moved out of components/Layout.tsx whole (26 Nov 2026), when lighting the page's branch took the shell past the
 // 1000-line ratchet (scripts/check-file-lines.mjs).
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
@@ -10,6 +10,11 @@ import MenuRows from "@/components/nav/MenuRows";
 import { currentFor, type Lit } from "@/config/navBearings";
 import MenuIcon from "@/components/nav/MenuIcon";
 import LitRule from "@/components/nav/LitRule";
+import { Firefly, SeasonMark } from "@/components/nav/menuJoys";
+import { warmOnHover } from "@/lib/warmRoute";
+
+// Its own chunk, so the first page's scripts do not grow (nav/WaitingCount.tsx).
+const WaitingCount = lazy(() => import("@/components/nav/WaitingCount"));
 
 /**
  * One grouped menu in the desktop bar.
@@ -37,6 +42,7 @@ export default function NavDropdown({
   lifecycleOf,
   lit,
   opens = null,
+  waitingFor = null,
 }: {
   group: NavGroup;
   items: readonly NavLink[];
@@ -46,6 +52,8 @@ export default function NavDropdown({
   lit: Lit | null;
   /** The folder this reader meets open (Join's paths, for a newcomer). */
   opens?: string | null;
+  /** The member whose waiting count this group carries as a dot (Govern's), or null for none. */
+  waitingFor?: string | null;
 }) {
   const { i18n } = useLingui();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -77,6 +85,7 @@ export default function NavDropdown({
   const drawLink = (item: NavLink) => (
     <Link
       href={item.href}
+      {...warmOnHover(item.href)}
       aria-current={currentFor(lit, item.href)}
       className={`flex min-h-11 items-center gap-3 border-l-2 px-4 py-1.5 hover:bg-muted transition-colors group ${currentFor(lit, item.href) ? "border-notice bg-muted" : "border-transparent"}`}
       onClick={() => setOpen(false)}
@@ -93,6 +102,7 @@ export default function NavDropdown({
         </span>
         {item.subtitle && <span className="block text-xs text-muted-foreground">{item.subtitle}</span>}
       </span>
+      <Firefly href={item.href} />
     </Link>
   );
 
@@ -126,6 +136,7 @@ export default function NavDropdown({
       >
         {group.label}
         {here ? <LitRule /> : null}
+        {waitingFor ? <Suspense fallback={null}><WaitingCount who={waitingFor} variant="dot" /></Suspense> : null}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
@@ -143,7 +154,7 @@ export default function NavDropdown({
           >
             {/* What the group holds, as the More sheet heads its sections (the menu's QA, round 2). Words only. */}
             {group.holds ? (
-              <p data-menu-eyebrow="" className="pl-15 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice">{navWord(group.holds, i18n)}</p>
+              <p data-menu-eyebrow="" className="pl-15 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><SeasonMark />{navWord(group.holds, i18n)}</p>
             ) : null}
             <MenuRows
               links={items}

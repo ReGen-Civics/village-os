@@ -10,11 +10,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 // A member's bell and counts load on their own: a visitor who is not signed in never draws them, so they stay off the first page's scripts (MAX_BOOT_JS_KB).
 const NotificationBell = lazy(() => import("@/components/NotificationBell"));
-const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
-const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
+const WaitingCount = lazy(() => import("@/components/nav/WaitingCount")); // the account button's dot (nav/WaitingCount.tsx)
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
 import { currentFor, litFor } from "@/config/navBearings";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
@@ -37,6 +36,10 @@ import MenuRows from "@/components/nav/MenuRows";
 import NavDropdown from "@/components/nav/NavDropdown";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
 import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
+import AccountCount from "@/components/nav/AccountCount";
+import { MenuFolderNames, folderWord } from "@/components/nav/menuFolders";
+import { Firefly, MenuFirefly, SeasonMark, useFirefly } from "@/components/nav/menuJoys";
+import SearchSlot from "@/components/search/SearchSlot";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 import { openGuideFeedback } from "@/lib/guideFeedback";
 
@@ -140,6 +143,16 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const lit = litFor(location, visible, menu, (g) => navWord(g, i18n));
   const leaf = useCrumbLeafValue(); // the page's own name for the breadcrumb (nav/crumbLeaf.tsx)
   const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
+  // One firefly on one entry new since this member last looked (nav/menuJoys.tsx), and Govern's waiting dot.
+  const firefly = useFirefly([...NAV.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href), location, !!user && !newcomer);
+  const waitingFor = user && !newcomer ? String(user.id) : null;
+  // The folder the lit entry sits in, when it draws as one (two or more visible links), for the full breadcrumb.
+  const litSub = lit?.item.sub && NAV.filter(isGroup).some((g) => g.items.filter((i) => visible(i) && i.sub === lit.item.sub).length > 1) ? lit.item.sub : null;
+  // A breadcrumb step with no page of its own opens the menu there: the group's dropdown when the bar shows, else the menu.
+  const openMenuAt = () => {
+    const trigger = lit?.group ? document.querySelector<HTMLButtonElement>(`[data-wayfinding="menu"] button[aria-controls="${navMenuId(lit.group)}"]`) : null;
+    if (trigger && trigger.offsetParent) { trigger.click(); trigger.focus(); } else { setOpenMobileGroup(lit?.group ?? null); setMobileMenuOpen(true); }
+  };
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
   // fork, because every one of these pages renders NotFound with its module
@@ -214,6 +227,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   }, [mobileMenuOpen]);
 
   return (
+    <MenuFolderNames.Provider value={menu.folders}><MenuFirefly.Provider value={firefly}>
     <div className="flex flex-col min-h-screen">
       {/*
        * Skip link. Measured before it existed: 40 to 63 focus stops between the
@@ -316,6 +330,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                   lifecycleOf={lifecycleOf}
                   lit={lit}
                   opens={newcomer ? entry.opens : null}
+                  waitingFor={entry.href === "/governance" ? waitingFor : null}
                 />
               ) : (
                 <Link
@@ -331,7 +346,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
             )}
 
             {/* The language selector (spec i18n US2; mock approved by Rye 2026-11-06). */}
-            <ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
+            <SearchSlot place="desktop" /><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} />
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -357,7 +372,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     // Named for a screen reader at every width, because the
                     // visible name below hides between lg and xl.
                     aria-label={t({ message: `Your account, ${firstName}`, context: "site header" })}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+                    className="relative flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                   >
                     <User className="w-4 h-4" />
                     {/* Icon only from lg to xl. Between 1024px and 1280px the
@@ -366,6 +381,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         "A..." at 1024px with the bell beside it). */}
                     <span className="lg:hidden xl:inline">{user.name.split(" ")[0]}</span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`} />
+                    {waitingFor ? <Suspense fallback={null}><WaitingCount who={waitingFor} variant="dot" /></Suspense> : null}
                   </button>
                   <AnimatePresence>
                     {accountOpen && (
@@ -377,16 +393,14 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                         transition={{ duration: 0.15 }}
                         className="absolute top-full right-0 mt-2 w-60 bg-card border border-border rounded-xl shadow-sm overflow-hidden z-50"
                       >
-                        <p data-menu-eyebrow="" className="pl-11 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><Trans context="the phone's More sheet: heading">Yours</Trans></p>
+                        <p data-menu-eyebrow="" className="pl-11 pr-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-widest text-notice"><SeasonMark /><Trans context="the phone's More sheet: heading">Yours</Trans></p>
                         <MenuRows links={accountItems} here={lit?.href} gutter={<span aria-hidden="true" className="size-5 shrink-0" />} rowClassName="flex min-h-11 w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted" listClassName="ml-4 border-l-2 border-border [&_a]:pl-3" renderLink={(item) => (
                           <Link
                             href={item.href}
                             className="flex min-h-11 items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
                             onClick={() => setAccountOpen(false)}
                           >
-                            <MenuIcon href={item.href} fallback={item.icon} />{item.label}
-                            {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
-                            {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
+                            <MenuIcon href={item.href} fallback={item.icon} />{item.label}<AccountCount count={item.count} who={user.id} /><Firefly href={item.href} />
                           </Link>
                         )} />
                         <button
@@ -433,7 +447,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
               that the bottom right more button opens up"): Menu opens the very sheet More opens (MoreSheet), so the
               two doors can never show different menus, and a visitor with no More tab still has one. */}
           <div className="lg:hidden flex items-center gap-2 text-white">
-            <span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
+            <SearchSlot place="phone" /><span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
             <button
               type="button"
               onClick={() => { setMobileMenuOpen(false); setPathsOpen(true); }}
@@ -512,7 +526,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                                 onClick={() => { setMobileMenuOpen(false); setOpenMobileGroup(null); }}
                               >
                                 <MenuIcon href={item.href} fallback={item.icon} />{item.label}
-                                {lifecycleOf(item.module) === "preview" ? " (preview)" : ""}
+                                {lifecycleOf(item.module) === "preview" ? " (preview)" : ""}<Firefly href={item.href} />
                               </Link>
                             )} />
                           </m.div>
@@ -548,8 +562,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <MenuIcon href={item.href} fallback={item.icon} />{item.href === "/profile" && !menu.labels[item.href] ? t({ message: `My Profile (${user.name.split(" ")[0]})`, context: "site menu, the drawer's profile link with the member's first name" }) : item.label}
-                          {item.count === "tasks" && <Suspense fallback={null}><TaskCountBadge who={user.id} /></Suspense>}
-                          {item.count === "messages" && <Suspense fallback={null}><MessageCountBadge who={user.id} /></Suspense>}
+                          <AccountCount count={item.count} who={user.id} /><Firefly href={item.href} />
                         </Link>
                       )} />
                       <button
@@ -597,7 +610,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
       <main id="main" tabIndex={-1} className="flex-1 min-h-svh max-md:pb-[var(--fab-clear)]">
         {/* Below its menu entry, a page gets the trail back up (nav/Breadcrumbs.tsx); an entry's own page gets none. */}
-        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} item={{ href: lit.item.href, label: withTokenLabel(lit.item).label }} leaf={leaf} /> : null}
+        {lit && !lit.exact ? <Breadcrumbs group={lit.group} groupHref={lit.groupHref} folder={litSub ? folderWord(litSub, menu.folders, i18n) : null} item={{ href: lit.item.href, label: withTokenLabel(lit.item).label }} leaf={leaf} onOpen={openMenuAt} /> : null}
         {children}
         <MachineTranslationNote />
       </main>
@@ -969,5 +982,6 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           member never sees the same moment twice. */}
       {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
     </div>
+    </MenuFirefly.Provider></MenuFolderNames.Provider>
   );
 }

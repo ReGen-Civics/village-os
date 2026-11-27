@@ -17,7 +17,10 @@
  *                 member can be a card (lib/speedCards/registry.ts), so a card shows exactly when its menu entry
  *                 would. Hold a card, right-click it, or press Edit to rearrange them.
  *   Also yours    the account entries that are not on the cards, in their folders (config/navNest.ts).
- *   The village   the menu's sections, as Layout filtered them.
+ *   Recent        the last few pages this member opened, kept on this device only (lib/navVisits.ts).
+ *   The village   the menu's sections, as Layout filtered them: one group at a time, its rows above and the group
+ *                 tabs at the bottom of the sheet, where the thumb is (27 Nov 2026, the lead: "phone reach"). A
+ *                 sideways swipe over the rows moves to the next or the previous group.
  *   Foot          language, light or dark, and sign out (or sign in).
  *
  * Roles is not here: it is a tab. It is a whole scene rather than a box of
@@ -25,10 +28,10 @@
  * DIALOGUE IS SAND), and it is modal, so the corner button steps aside while it
  * is open (index.css hides [data-mobile-fab] under an md:hidden aria-modal).
  */
-import { useEffect, useRef, useState, type ComponentType } from "react";
+import { useEffect, useRef, useState, type ComponentType, type TouchEvent } from "react";
 import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { ChevronDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch from "@/components/ThemeSwitch";
@@ -38,9 +41,14 @@ import { useNewcomer } from "@/lib/newcomer";
 import { isGroup, type NavEntry, type NavGroup, type NavLink } from "@/config/nav";
 import { currentFor, type Lit } from "@/config/navBearings";
 import { DEFAULT_ORDER } from "@/lib/speedCards/registry";
+import { recentPages } from "@/lib/navVisits";
+import { usePathState } from "@/lib/usePath";
+import { sayPath } from "@shared/yourPath";
+import { pageTitleFor } from "@shared/pageTitles";
+import { Firefly, SeasonMark } from "@/components/nav/menuJoys";
 import SpeedCards from "./SpeedCards";
 
-type AccountLink = NavLink & { count?: "tasks" | "messages" };
+type AccountLink = NavLink;
 
 export interface MoreSheetProps {
   /** The menu, as Layout filtered it (modules, roles, the brochure switch). */
@@ -87,11 +95,12 @@ export default function MoreSheet(props: MoreSheetProps) {
 }
 
 function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null }: MoreSheetProps) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const { user, logout } = useAuth();
   const [location] = useLocation();
-  // The branch the page belongs to opens with the sheet, so the reader sees where they are before they choose.
-  const [openGroup, setOpenGroup] = useState<string | null>(() => lit?.group ?? null);
+  // The group the page belongs to is the one shown, so the reader sees where they are before they choose; else the first.
+  const groups = entries.filter(isGroup);
+  const [openGroup, setOpenGroup] = useState<string | null>(() => lit?.group ?? groups[0]?.label ?? null);
   const panel = useRef<HTMLDivElement>(null);
   const opener = useRef<Element | null>(null);
 
@@ -115,7 +124,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
   }, []);
   // The entry the page belongs to is brought into view, so its open branch is never below the sheet's fold.
   useEffect(() => {
-    const here = panel.current?.querySelector<HTMLElement>("#more-village ~ ul a[aria-current]");
+    const here = panel.current?.querySelector<HTMLElement>("#more-group-panel a[aria-current]");
     if (typeof here?.scrollIntoView === "function") here.scrollIntoView({ block: "nearest" });
   }, []);
   // A new page closes it.
@@ -130,6 +139,33 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
   // and a page shows once in the sheet (the menu's QA, 27 Nov 2026).
   const newcomer = useNewcomer();
   const rest: AccountLink[] = account.filter((a) => !onCards.includes(a.href));
+  // Recent: the last pages opened here, named as the menu names them, else by the page's own title.
+  const named = new Map<string, string>();
+  for (const e of entries) for (const l of isGroup(e) ? itemsOf(e) : [e]) named.set(l.href, l.label);
+  for (const a of account) named.set(a.href, a.label);
+  const [recent] = useState(() => (user ? recentPages([location.split(/[?#]/)[0] || "/", ...onCards], 4) : []));
+  const recentRows = recent.map((href) => ({ href, label: named.get(href) ?? pageTitleFor(href) })).filter((r) => r.label);
+  // The greeting: the member's first name and their one next step (shared/yourPath.ts), as the root strip says it.
+  const { path } = usePathState();
+  const step = user && path && !path.visitor ? sayPath(path, i18n.locale).step : null;
+  const firstName = user?.name.split(" ")[0] ?? "";
+  // A sideways swipe over the rows moves between the groups, as the tabs below do.
+  const swipe = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: TouchEvent) => {
+    swipe.current = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY };
+  };
+  const onTouchEnd = (e: TouchEvent) => {
+    const from = swipe.current;
+    swipe.current = null;
+    const t0 = e.changedTouches[0];
+    if (!from || !t0) return;
+    const dx = t0.clientX - from.x;
+    if (Math.abs(dx) < 56 || Math.abs(dx) < 2 * Math.abs(t0.clientY - from.y)) return;
+    const at = groups.findIndex((g) => g.label === openGroup);
+    const next = groups[at + (dx < 0 ? 1 : -1)];
+    if (next) setOpenGroup(next.label);
+  };
+  const shown = groups.find((g) => g.label === openGroup) ?? null;
 
   const eyebrow = "text-xs font-semibold uppercase tracking-widest text-notice";
   return (
@@ -151,6 +187,12 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
           </button>
         </div>
 
+        {step ? (
+          <p data-more-greeting="" className="mt-1 text-sm text-foreground motion-reduce:hidden">
+            <Trans context="the phone's More sheet: the greeting, with the member's next step">Hello, {firstName}. Next:</Trans>{" "}
+            {path?.step.href ? <Link href={path.step.href} onClick={close} className="font-semibold underline underline-offset-4">{step}</Link> : <span className="font-semibold">{step}</span>}
+          </p>
+        ) : null}
         {user ? (
           <section aria-labelledby="more-yours" className="mt-2">
             <SpeedCards who={String(user.id)} entries={entries} itemsOf={itemsOf} account={account} here={location} onClose={close} onShown={setOnCards} />
@@ -172,6 +214,21 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                 />
               </ul>
             ) : null}
+            {recentRows.length ? (
+              <div className="mt-3" data-more-recent="">
+                <h3 id="more-recent" className="text-xs font-semibold text-muted-foreground"><Trans context="the phone's More sheet: the pages opened last">Recent</Trans></h3>
+                <ul aria-labelledby="more-recent" className="mt-1 flex flex-wrap gap-2">
+                  {recentRows.map((r) => (
+                    <li key={r.href}>
+                      <Link href={r.href} onClick={close} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-3 text-sm text-foreground hover:bg-muted">
+                        <MenuIcon href={r.href} bare />
+                        {r.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </section>
         ) : (
           // One tile for a visitor: Work With Us is in Join's Build with us, so it is not drawn twice (QA, 27 Nov 2026).
@@ -181,55 +238,68 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
         )}
 
         <section aria-labelledby="more-village" className="mt-4">
-          <h2 id="more-village" className={eyebrow}><Trans context="the phone's More sheet: heading">The village</Trans></h2>
-          <ul className="mt-1 divide-y divide-border/60" data-wayfinding="menu">
-            {entries.map((e) =>
-              isGroup(e) ? (
-                <li key={e.label}>
-                  <button
-                    type="button"
-                    onClick={() => setOpenGroup(openGroup === e.label ? null : e.label)}
-                    aria-expanded={openGroup === e.label}
-                    aria-current={lit?.group === e.label ? "true" : undefined}
-                    data-lit={lit?.group === e.label ? "" : undefined}
-                    className={`flex min-h-11 w-full items-center justify-between py-2 text-left text-base text-foreground ${lit?.group === e.label ? "font-semibold" : ""}`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      {lit?.group === e.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
-                      {e.label}
-                    </span>
-                    <ChevronDown aria-hidden="true" className={`size-4 transition-transform ${openGroup === e.label ? "rotate-180" : ""}`} />
-                  </button>
-                  {openGroup === e.label ? (
-                    <ul className="mb-2 ml-1 border-l border-border pl-3">
-                      <MenuRows
-                        asListItems
-                        links={itemsOf(e)}
-                        opens={newcomer || !user ? e.opens : null}
-                        here={lit?.href}
-                        gutter={<span aria-hidden="true" className="size-5 shrink-0" />}
-                        rowClassName="flex min-h-11 w-full items-center gap-2 py-1.5 text-left text-sm text-foreground hover:underline"
-                        listClassName="mb-1 ml-1 border-l border-border pl-3"
-                        renderLink={(l) => (
-                          <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
-                            <MenuIcon href={l.href} fallback={l.icon} />
-                            {l.label}
-                          </Link>
-                        )}
-                      />
-                    </ul>
-                  ) : null}
-                </li>
-              ) : (
+          <h2 id="more-village" className={eyebrow}><SeasonMark hang={false} /><Trans context="the phone's More sheet: heading">The village</Trans></h2>
+          {entries.filter((e) => !isGroup(e)).length ? (
+            <ul className="mt-1 divide-y divide-border/60">
+              {entries.filter((e): e is NavLink => !isGroup(e)).map((e) => (
                 <li key={e.href}>
                   <Link href={e.href} onClick={close} aria-current={currentFor(lit, e.href)} data-lit={currentFor(lit, e.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-2 text-base text-foreground hover:underline ${currentFor(lit, e.href) ? LIT_TOP : ""}`}>
                     <MenuIcon href={e.href} fallback={e.icon} bare />
                     {e.label}
                   </Link>
                 </li>
-              ),
-            )}
-          </ul>
+              ))}
+            </ul>
+          ) : null}
+          {shown ? (
+            <div role="tabpanel" id="more-group-panel" aria-labelledby={`more-tab-${groups.indexOf(shown)}`} data-more-panel="" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+              <ul key={shown.label} className="mt-1 divide-y divide-border/60">
+                <MenuRows
+                  asListItems
+                  links={itemsOf(shown)}
+                  opens={newcomer || !user ? shown.opens : null}
+                  here={lit?.href}
+                  gutter={<span aria-hidden="true" className="size-5 shrink-0" />}
+                  rowClassName="flex min-h-11 w-full items-center gap-2 py-1.5 text-left text-sm text-foreground hover:underline"
+                  listClassName="mb-1 ml-1 border-l border-border pl-3"
+                  renderLink={(l) => (
+                    <Link href={l.href} onClick={close} aria-current={currentFor(lit, l.href)} data-lit={currentFor(lit, l.href) ? "" : undefined} className={`flex min-h-11 items-center gap-2 py-1.5 text-sm text-foreground hover:underline ${currentFor(lit, l.href) ? LIT_ON : ""}`}>
+                      <MenuIcon href={l.href} fallback={l.icon} />
+                      {l.label}
+                      <Firefly href={l.href} />
+                    </Link>
+                  )}
+                />
+              </ul>
+            </div>
+          ) : null}
+          {/* The group tabs, at the bottom of the sheet where the thumb is; they stay in reach while the rows scroll. */}
+          <div role="tablist" aria-label={t({ message: "The menu's groups", context: "the phone's More sheet: the group tabs, read aloud" })} data-wayfinding="menu" className="sticky bottom-0 -mx-4 mt-2 flex gap-1 border-t border-border bg-card px-2 pb-1 pt-2">
+            {groups.map((g, i) => (
+              <button
+                key={g.label}
+                type="button"
+                role="tab"
+                id={`more-tab-${i}`}
+                aria-selected={openGroup === g.label}
+                aria-controls="more-group-panel"
+                aria-current={lit?.group === g.label ? "true" : undefined}
+                data-lit={lit?.group === g.label ? "" : undefined}
+                onClick={() => setOpenGroup(g.label)}
+                onKeyDown={(e) => {
+                  const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+                  const next = step ? groups[i + step] : undefined;
+                  if (!next) return;
+                  setOpenGroup(next.label);
+                  (e.currentTarget.parentElement?.children[i + step] as HTMLElement | undefined)?.focus();
+                }}
+                className={`relative inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-sm ${openGroup === g.label ? "bg-muted font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {lit?.group === g.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
+                {g.label}
+              </button>
+            ))}
+          </div>
         </section>
 
         <div className="mt-4 flex items-center gap-2 text-foreground" data-more-foot="">

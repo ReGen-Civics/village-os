@@ -77,7 +77,7 @@ export type NavLink = {
    * messages (components/messages/MessageCountBadge.tsx). Each is read for
    * them alone and hidden at zero. Never anyone else's number.
    */
-  count?: "tasks" | "messages";
+  count?: "tasks" | "messages" | "waiting";
   /**
    * true: shown only to someone signed in. false: shown only to a visitor.
    * Absent: both.
@@ -182,9 +182,12 @@ export const NAV: readonly NavEntry[] = [
       // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
       { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
       { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
-      // Its own entry (the lead, round 2: "Library could just be its own tab under village, and so could village
-      // health"). Neither is a stranger's: a visitor is not offered them.
-      { href: "/library", label: "Library", module: "library", newcomers: "never" },
+      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). Village holds
+      // five rows already, so Tools is a folder: the village's tools grid (chat, calendar, Hypha) and the Library, the
+      // things the village lends and borrows. A reader offered only one of them sees it as its own row (navNest.ts).
+      // Neither is a stranger's: a visitor is not offered them.
+      { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Tools" },
+      { href: "/library", label: "Library", module: "library", newcomers: "never", sub: "Tools" },
       { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
     ],
   },
@@ -201,8 +204,6 @@ export const NAV: readonly NavEntry[] = [
       { href: "/network", label: "Village Network", module: "network", newcomers: "in-use", sub: "Our story" },
       { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use", sub: "Conversations" },
       { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use", sub: "Conversations" },
-      // The village's tools grid: where it talks and meets outside this app. A member's.
-      { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Conversations" },
       { href: "/feedback", label: "Share Feedback", sub: "Conversations" },
       // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only).
       { href: "/gratitude", label: "Gratitude", token: "recognition" },
@@ -296,6 +297,9 @@ export const NAV: readonly NavEntry[] = [
       { href: "/training", label: "Training", sub: "Guides" },
       { href: "/rights", label: "Rights and agreements", sub: "Guides" },
       { href: "/rights#leaving-well", label: "Leaving Well", sub: "Guides" },
+      // The village's checklists and their practice runs: the reference shelf's, beside the guides (it left Your things
+      // so Pay could join the Wallet there, 27 Nov 2026).
+      { href: "/protocols", label: "Protocols", module: "protocols", sub: "Guides" },
       // How we work (the lead, round 2: "the how we work and the game mechanics and all of that would also be under
       // the governance"). Renamed on 2026-09-28 with the page it opens; the route stays put.
       { href: "/governance/how", label: "How we work together", sub: "How we work" },
@@ -331,10 +335,13 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
    * door (round 2: "wallet shouldn't be under shared things"). Settings has no entry: the profile's own Settings
    * button is its door, and the folder keeps five.
    */
-  { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", sub: "Your things" },
+  // With the count of what waits, as the menu's dots carry it (nav/WaitingCount.tsx).
+  { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", count: "waiting", sub: "Your things" },
   { href: "/wallet", label: "Wallet", module: "exchange", newcomers: "never", sub: "Your things" },
+  // PAY (the lead, 27 Nov 2026: "Yes and while we haven't issued credits we can still have it active and showing"). A
+  // member's row beside the Wallet, shown before the village issues credits: the page itself says when there are none.
+  { href: "/pay", label: "Pay", roles: ["member", "admin", "founder"], newcomers: "never", sub: "Your things" },
   { href: "/journal", label: "Journal", module: "journal", sub: "Your things" },
-  { href: "/protocols", label: "Protocols", module: "protocols", sub: "Your things" },
   // Examples only until the village's first real badge (UNFINISHED-AREAS 20), so a newcomer meets it once it is in use.
   { href: "/badges", label: "Badges", module: "badges", newcomers: "in-use", sub: "Your things" },
   /**
