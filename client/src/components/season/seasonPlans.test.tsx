@@ -347,6 +347,25 @@ describe("your own season", () => {
   });
 });
 
+describe("the plan card's frame", () => {
+  it("is bare only in the list of everyone's plans, and keeps its frame on a member's profile (QA round 3)", async () => {
+    render(<SeasonPlans />);
+    await screen.findByText("2 of 3 have filed");
+    const listed = Array.from(
+      document.querySelectorAll("[data-plan-card]")
+    ).map(a => a.getAttribute("data-plan-card"));
+    expect(listed.length).toBeGreaterThan(0);
+    expect(new Set(listed)).toEqual(new Set(["bare"]));
+    cleanup();
+    render(<SeasonPlanSection handle="ana" />);
+    await screen.findByText("The north orchard is planted.");
+    // CONTROL: the profile's card is framed, so its tiles never sit on the bare page.
+    const card = document.querySelector("[data-plan-card]")!;
+    expect(card.getAttribute("data-plan-card")).toBe("framed");
+    expect(card.className).toContain("bg-card");
+  });
+});
+
 describe("the profile section", () => {
   it("draws another member's filed plan, and nothing at all on a 401", async () => {
     render(<SeasonPlanSection handle="ana" />);

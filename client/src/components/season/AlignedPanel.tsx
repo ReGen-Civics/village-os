@@ -144,9 +144,7 @@ function Register() {
       <div>
         <p className={EYEBROW}>{ALIGNED_WORDS.eyebrow}</p>
         <h2 id="aligned-register-h" className={`${H2} mt-1`}>
-          <Trans context="season page">
-            The register
-          </Trans>
+          <Trans context="season page">The register</Trans>
         </h2>
         <p className={`${LEDE} mt-2`}>{ALIGNED_WORDS.lede}</p>
       </div>
@@ -334,13 +332,9 @@ export default function AlignedPanel({
         </p>
         <h2 id="aligned-standing-h" className={`${H2} mt-1`}>
           {waiting && waiting.length > 0 ? (
-            <Trans context="season page">
-              Waiting on you
-            </Trans>
+            <Trans context="season page">Waiting on you</Trans>
           ) : (
-            <Trans context="season page">
-              What you align with
-            </Trans>
+            <Trans context="season page">What you align with</Trans>
           )}
         </h2>
         {mine === null ? null : waiting && waiting.length > 0 ? (
@@ -365,10 +359,11 @@ export default function AlignedPanel({
             </ul>
           </>
         ) : (
-          <p className="mt-2 font-semibold text-open" role="status">
-            <Trans context="season page">
-              No terms wait on you.
-            </Trans>
+          <p
+            className={`mt-2 font-semibold ${agreement === "asked" ? "text-muted-foreground" : "text-open"}`}
+            role="status"
+          >
+            <Trans context="season page">No terms wait on you.</Trans>
           </p>
         )}
       </section>

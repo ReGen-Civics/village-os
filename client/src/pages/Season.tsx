@@ -51,10 +51,17 @@ import AlignedPanel, {
 } from "@/components/season/AlignedPanel";
 import TabBoundary from "@/components/season/TabBoundary";
 import { landOn } from "@/components/season/land";
+import {
+  CARD,
+  EYEBROW,
+  H1,
+  HINT,
+  LEDE,
+  WORLD,
+} from "@/components/journey/look";
 
 /** Anchors on the Season tab that still land, because they name a place lower on it. */
 const LANDS = new Set(["#everyone"]);
-import { CARD, EYEBROW, H1, HINT, WORLD } from "@/components/journey/look";
 import { seasonView, type SeasonGoalView } from "@shared/seasonGoalsView";
 import { civilDayWords } from "@shared/seasonPlans";
 
@@ -189,6 +196,14 @@ export default function Season() {
   }, [settled, tab, tabsId]);
   useEffect(() => () => stopLanding.current(), []);
 
+  /**
+   * Whether the tab bar is stuck under the header (its top at or above 97px). A tab chosen on a stuck bar brings its
+   * own panel up, or the reader deep in one tab lands in the footer of the next (QA round 3).
+   */
+  const barStuck = () =>
+    (document.getElementById(`${tabsId}-bar`)?.getBoundingClientRect().top ??
+      Infinity) <= 97;
+
   /** The tab bar's keys: Left and Right move to the next tab, Home and End to the first and last (the ARIA tabs pattern). */
   const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
     const i = shown.indexOf(tab);
@@ -204,7 +219,7 @@ export default function Season() {
               : null;
     if (!to) return;
     e.preventDefault();
-    open(to, false);
+    open(to, barStuck());
     document.getElementById(`${tabsId}-tab-${to}`)?.focus();
   };
   const failed = t({
@@ -353,17 +368,11 @@ export default function Season() {
                 <p className={`${EYEBROW} inline-flex items-center gap-2`}>
                   <DaySun className="size-4" aria-hidden="true" />
                   {seasonName || (
-                    <Trans context="season page">
-                      This season
-                    </Trans>
+                    <Trans context="season page">This season</Trans>
                   )}
                 </p>
                 <h1 className={H1}>
-                  {focus || (
-                    <Trans context="season page">
-                      The season
-                    </Trans>
-                  )}
+                  {focus || <Trans context="season page">The season</Trans>}
                 </h1>
                 {closes && active ? (
                   <SeasonLine
@@ -372,6 +381,13 @@ export default function Season() {
                     day={view?.day ?? null}
                     of={view?.of ?? null}
                   />
+                ) : null}
+                {!active && live?.upcoming?.startsOn ? (
+                  <p className={LEDE}>
+                    <Trans context="season page">
+                      Begins on {civilDayWords(live.upcoming.startsOn)}.
+                    </Trans>
+                  </p>
                 ) : null}
               </div>
             </div>
@@ -421,7 +437,7 @@ export default function Season() {
                     aria-selected={tab === x}
                     tabIndex={tab === x ? 0 : -1}
                     aria-controls={`${tabsId}-panel-${x}`}
-                    onClick={() => open(x, false)}
+                    onClick={() => open(x, barStuck())}
                     className={`jw-btn relative flex min-h-11 items-center justify-center rounded-xl px-2 text-sm ${tab === x ? "bg-notice font-semibold text-background" : "font-medium text-muted-foreground hover:text-foreground"}`}
                   >
                     {tabLabel[x]}

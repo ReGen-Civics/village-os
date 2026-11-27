@@ -91,6 +91,14 @@ describe("landOn", () => {
     expect(calls).toHaveLength(1);
   });
 
+  it("stops at a pointer press too", () => {
+    landOn(target);
+    window.dispatchEvent(new Event("pointerdown"));
+    top = 60;
+    resize();
+    expect(calls).toHaveLength(1);
+  });
+
   it("stops after the hold", () => {
     landOn(target);
     vi.advanceTimersByTime(LAND_HOLD_MS + 1);

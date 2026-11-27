@@ -159,7 +159,7 @@ export default function VillagePlans() {
         <ul className="grid gap-4 lg:grid-cols-2">
           {people.map(card => (
             <li key={card.userId}>
-              <PlanCard card={card} headingLevel={3} />
+              <PlanCard card={card} headingLevel={3} bare />
             </li>
           ))}
         </ul>

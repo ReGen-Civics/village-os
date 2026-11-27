@@ -97,12 +97,24 @@ function Chip({
   );
 }
 
+/**
+ * The card's own frame. `bare` is for a list of cards inside one panel (the Season tab's everyone's plans): in light
+ * mode it drops its frame, so its tiles are not three levels deep, and a rule above it separates one person from the
+ * next. Everywhere else (a member's profile) the card keeps its frame in both modes (QA round 3).
+ */
+const FRAMED =
+  "rounded-xl border border-border bg-card p-4 text-card-foreground sm:p-5";
+const BARE =
+  "border-t border-border pt-4 text-card-foreground [[data-mode=dark]_&]:rounded-xl [[data-mode=dark]_&]:border [[data-mode=dark]_&]:bg-card [[data-mode=dark]_&]:p-4";
+
 export default function PlanCard({
   card,
   headingLevel = 3,
+  bare = false,
 }: {
   card: PlanCardData;
   headingLevel?: 2 | 3;
+  bare?: boolean;
 }) {
   const H = headingLevel === 2 ? "h2" : "h3";
   // A server before the player card sends only `servesGoal`.
@@ -114,7 +126,8 @@ export default function PlanCard({
   const seasonal = card.seasonalGoals ?? [];
   return (
     <article
-      className="rounded-xl text-card-foreground [[data-mode=dark]_&]:border [[data-mode=dark]_&]:border-border [[data-mode=dark]_&]:bg-card [[data-mode=dark]_&]:p-4"
+      className={bare ? BARE : FRAMED}
+      data-plan-card={bare ? "bare" : "framed"}
       aria-labelledby={`plan-${card.userId}`}
     >
       <header className="flex flex-wrap items-baseline justify-between gap-2">

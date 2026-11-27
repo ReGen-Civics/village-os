@@ -420,14 +420,48 @@ describe("where the reader stands", () => {
     expect(you.textContent).not.toContain("Terms for Orchard steward");
   });
 
+  it("says no terms wait in green only while the agreement is not asked of the reader (QA round 3)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        url.startsWith("/api/confidentiality")
+          ? json({
+              agreement: {
+                title: "Confidentiality agreement",
+                body: "Keep it inside.",
+                intent: "I align.",
+                version: "v1",
+                document: null,
+              },
+              you: { holds: false, confirmFresh: true },
+              message: null,
+            })
+          : url.startsWith("/api/profile/alignments")
+            ? json({ alignments: [] })
+            : page(ROWS)
+      )
+    );
+    render(<Aligned />);
+    const line = await screen.findByText("No terms wait on you.");
+    await waitFor(() =>
+      expect(line.className).toContain("text-muted-foreground")
+    );
+    expect(line.className).not.toContain("text-open");
+    cleanup();
+    serve(() => page(ROWS));
+    render(<Aligned />);
+    // CONTROL: with no agreement asked, it is the held green.
+    await waitFor(() =>
+      expect(screen.getByText("No terms wait on you.").className).toContain(
+        "text-open"
+      )
+    );
+  });
+
   it("says nothing waits when nothing does", async () => {
     serve(() => page(ROWS));
     render(<Aligned />);
-    expect(
-      await screen.findByText(
-        "No terms wait on you."
-      )
-    ).toBeTruthy();
+    expect(await screen.findByText("No terms wait on you.")).toBeTruthy();
   });
 
   it("tells the page how many wait, for its steps", async () => {

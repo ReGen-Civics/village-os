@@ -209,3 +209,13 @@ msgstr "Esta parte de la temporada no se pudo mostrar."
 msgctxt "season page"
 msgid "Held this season"
 msgstr "Los que tiene esta temporada"
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Begins on {0}."
+msgstr "Empieza el {0}."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page"
+msgid "Renew this role"
+msgstr "Renueve este rol"

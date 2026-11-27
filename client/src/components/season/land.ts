@@ -13,13 +13,13 @@
  *
  * So the scroll is instant, and for a short while after it the body is watched:
  * when the target drifts more than a few pixels from where it landed, it is
- * landed again. The first wheel, touch or key from the reader ends the watch,
+ * landed again. The first wheel, touch, pointer press or key from the reader ends the watch,
  * because from then on the reader is choosing where to be.
  */
 export const LAND_HOLD_MS = 2500;
 export const LAND_DRIFT_PX = 4;
 /** The reader taking over: any of these ends the watch. */
-const USER_MOVES = ["wheel", "touchstart", "keydown"] as const;
+const USER_MOVES = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
 
 /** Where the target's top sits once landed: its own scroll margin (scroll-mt-40 is 160px). */
 function landedTop(target: Element): number {

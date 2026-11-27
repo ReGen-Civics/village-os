@@ -221,9 +221,7 @@ export default function JoinSeason({
         {!picked && (
           <fieldset className="mt-6 space-y-2">
             <legend className={LABEL}>
-              <Trans context="season page">
-                Which circle you ask to join
-              </Trans>
+              <Trans context="season page">Which circle you ask to join</Trans>
             </legend>
             {options.map(o => (
               <label

@@ -95,9 +95,10 @@ const SEASON = {
     state: "open",
   },
 };
+let seasonNow: unknown = SEASON;
 vi.mock("@/lib/gameApi", async orig => ({
   ...(await orig<typeof import("@/lib/gameApi")>()),
-  useSeason: () => SEASON,
+  useSeason: () => seasonNow,
 }));
 
 import Season, { seasonSteps } from "./Season";
@@ -158,6 +159,7 @@ let mineOverride: Record<string, unknown> = {};
 
 beforeEach(() => {
   signedIn = { id: "u-ana" };
+  seasonNow = SEASON;
   modulesOn = new Set(["governance", "season-places"]);
   alignments = [];
   agreement = null;
@@ -369,6 +371,10 @@ describe("arriving for a tab", () => {
     render(<Season />);
     await waitFor(() => expect(scrolled).toContain("seat-seat-host"));
     expect(scrolled.filter(id => id === "seat-seat-host")).toHaveLength(1);
+    // The role the warning names carries a gold chip that says so, in both modes (QA round 3).
+    expect(
+      document.querySelector("#seat-seat-host [data-renew-chip]")?.textContent
+    ).toBe("Renew this role");
   });
 
   it("#everyone lands on everyone's plans, on the Season tab", async () => {
@@ -396,6 +402,39 @@ describe("arriving for a tab", () => {
 });
 
 describe("the tab bar", () => {
+  it("on a stuck bar, a tab brings its own panel up; on a resting bar it does not scroll (QA round 3)", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    render(<Season />);
+    const bar = await screen.findByRole("tablist");
+    bar.getBoundingClientRect = () => ({ top: 300 }) as DOMRect;
+    fireEvent.click(tab("Join"));
+    await new Promise(r => setTimeout(r, 30));
+    expect(scrolled.some(id => id.endsWith("-panel-join"))).toBe(false);
+    bar.getBoundingClientRect = () => ({ top: 96 }) as DOMRect;
+    fireEvent.click(tab("Aligned"));
+    await waitFor(() =>
+      expect(scrolled.some(id => id.endsWith("-panel-aligned"))).toBe(true)
+    );
+    fireEvent.keyDown(bar, { key: "Home" });
+    await waitFor(() =>
+      expect(scrolled.some(id => id.endsWith("-panel-season"))).toBe(true)
+    );
+  });
+
+  it("between seasons, the hero says when the next one begins", () => {
+    seasonNow = {
+      ...SEASON,
+      current: null,
+      upcoming: { ...SEASON.current, startsOn: "2027-02-01" },
+      daysUntilStart: 66,
+    };
+    render(<Season />);
+    expect(screen.getByText("Begins on 1 February 2027.")).toBeTruthy();
+  });
+
   it("moves with Left, Right, Home and End, and only the selected tab is in the tab order", async () => {
     render(<Season />);
     const bar = await screen.findByRole("tablist");

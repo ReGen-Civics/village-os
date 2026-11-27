@@ -27,7 +27,7 @@
  *
  * `?renew=<seat>` (the term warning's link) lights that seat up.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useRef, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Plus, Trash2 } from "lucide-react";
 import { BreathingLoader } from "@/components/natural";
@@ -65,6 +65,7 @@ import {
   BTN_PRIMARY,
   BTN_SECONDARY,
   CARD,
+  CHIP,
   EYEBROW,
   FIELD,
   H2,
@@ -410,6 +411,23 @@ export default function YourPlan({
     };
   }, []);
 
+  // A field that takes focus while partly under that strip comes clear of it: the nearest scroll that shows it,
+  // which the scroll padding above measures from the top of the strip (QA round 3).
+  const plan = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = plan.current;
+    if (
+      !el ||
+      typeof window === "undefined" ||
+      !window.matchMedia?.("(max-width: 639px)").matches
+    )
+      return;
+    const clear = (e: FocusEvent) =>
+      (e.target as Element | null)?.scrollIntoView?.({ block: "nearest" });
+    el.addEventListener("focusin", clear);
+    return () => el.removeEventListener("focusin", clear);
+  }, [state]);
+
   useEffect(() => {
     if (!onStatus) return;
     const season = data?.season ?? null;
@@ -519,7 +537,7 @@ export default function YourPlan({
   }
 
   return (
-    <div className="space-y-5">
+    <div ref={plan} className="space-y-5">
       <header className={CARD}>
         {/* The season this plan is for, said once here: a window often plans the NEXT season, not the one in the hero. */}
         <p className={EYEBROW}>
@@ -550,9 +568,7 @@ export default function YourPlan({
 
       <section aria-labelledby="ms-seats" className={CARD}>
         <p className={EYEBROW}>
-          <Trans context="season page">
-            Held this season
-          </Trans>
+          <Trans context="season page">Held this season</Trans>
         </p>
         <h2 id="ms-seats" className={`${H2} mt-1`}>
           {MY_SEASON_WORDS.seatsHeading}
@@ -574,8 +590,15 @@ export default function YourPlan({
                   className={`scroll-mt-40 rounded-xl border bg-muted p-4 ${lit ? "border-notice ring-2 ring-notice/30" : "border-border"}`}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-display text-lg font-bold text-foreground">
+                    <p className="flex flex-wrap items-center gap-2 font-display text-lg font-bold text-foreground">
                       {seat.name}
+                      {/* The term warning's ?renew= names this role: a gold chip says so in both modes (the weathered
+                          frame in light mode hides the ring). */}
+                      {lit && (
+                        <span className={CHIP} data-renew-chip="">
+                          <Trans context="season page">Renew this role</Trans>
+                        </span>
+                      )}
                     </p>
                     {seat.termEndsOn && (
                       <p className="text-sm text-muted-foreground">
