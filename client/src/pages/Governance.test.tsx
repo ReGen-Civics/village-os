@@ -211,7 +211,8 @@ describe("the page with nothing saved", () => {
   it("says the starter words, filled with the village's own name and commitment", async () => {
     renderPage();
 
-    expect(await headline()).toHaveTextContent("How Willowbrook Decides");
+    // The lead's name for the page is the starter headline (26 Nov 2026); the intro still names the village.
+    expect(await headline()).toHaveTextContent("How we work together");
     expect(screen.getByText(/^Here is how a proposal becomes a decision in Willowbrook/)).toBeInTheDocument();
     expect(screen.getByText("Anyone can propose")).toBeInTheDocument();
     expect(screen.getByText("The village decides, in the way it agreed for that kind of decision.")).toBeInTheDocument();
@@ -319,7 +320,7 @@ describe("a village that hides every section it may", () => {
     await new Promise((r) => setTimeout(r, 0));
 
     // What is left is the canvas: its three headings and its own links, nothing the page words carry.
-    expect(Array.from(document.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(["How we work together", ...CANVAS_SECTION_HEADINGS]);
+    expect(Array.from(document.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(CANVAS_SECTION_HEADINGS);
     expect(document.querySelectorAll("h3")).toHaveLength(0);
     // The page words' part only: the Governance views and the contents beside it are the page's own frame.
     for (const a of Array.from(document.getElementById("how-we-work")!.querySelectorAll("a"))) {
@@ -608,7 +609,7 @@ function memberCanvas(mayRecord: boolean) {
 describe("How we work together", () => {
   it("draws the canvas's public lines under the village's own heading, on the same route", async () => {
     renderPage();
-    expect(await screen.findByRole("heading", { level: 1, name: "How Willowbrook Decides" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { level: 1, name: "How we work together" })).toBeTruthy();
     // The old heading is gone.
     expect(screen.queryByText("Power Belongs to the Circle, Not the Person")).toBeNull();
     await screen.findByTestId("public-line-purpose");
@@ -986,5 +987,39 @@ describe("a newcomer and the game mechanics", () => {
     expect(screen.getByTestId("mechanics-jump")).toBeInTheDocument();
     expect(screen.queryByTestId("join-act")).toBeNull();
     expect(screen.queryByTestId("mechanics-locked")).toBeNull();
+  });
+
+  it("brings a visitor whose link asked by query alone (?dial=) to the locked row, the way in just under it", async () => {
+    const landed: string[] = [];
+    const before = window.HTMLElement.prototype.scrollIntoView;
+    window.HTMLElement.prototype.scrollIntoView = function (this: HTMLElement) {
+      landed.push(this.id);
+    };
+    window.history.replaceState(null, "", "/governance/how?dial=comms.daily_cap");
+    try {
+      renderPage();
+      await headline();
+      await waitFor(() => expect(landed).toContain("game-mechanics"));
+      const locked = screen.getByTestId("mechanics-locked");
+      expect(locked.compareDocumentPosition(screen.getByTestId("join-act")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = before;
+    }
+  });
+});
+
+/* One name on the first screen (round 2): the chapter heading is left out while it would repeat the headline. */
+describe("the first chapter's heading", () => {
+  it("is left out under the starter headline, which already says How we work together", async () => {
+    renderPage();
+    expect(await headline()).toHaveTextContent("How we work together");
+    expect(screen.queryByRole("heading", { level: 2, name: "How we work together" })).toBeNull();
+  });
+
+  it("names the chapter under a headline the village wrote itself (CONTROL)", async () => {
+    stored["page-governance"] = { hero: { headline: "How Willowbrook Decides" } };
+    renderPage();
+    expect(await headline()).toHaveTextContent("How Willowbrook Decides");
+    expect(screen.getByRole("heading", { level: 2, name: "How we work together" })).toBeInTheDocument();
   });
 });

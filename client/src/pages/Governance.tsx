@@ -39,6 +39,16 @@ const STEP_ICONS = [Seed, MessageSquare, MushroomNetwork, CheckCircle2, Eye];
 /** Paragraphs a village left blank are not drawn. */
 const paragraphs = (...texts: string[]) => texts.filter((t) => t.trim() !== "");
 
+/** Whether the address asks for the game mechanics: their anchors, a proposal, a dial, a notification's focus. */
+function asksForMechanics(): boolean {
+  const hash = window.location.hash.slice(1);
+  const query = new URLSearchParams(window.location.search);
+  return hash === GAME_MECHANICS_ANCHOR || hash.startsWith("mechanics-") || hash.startsWith("proposal-") || query.has("dial") || (query.get("focus") ?? "").startsWith("proposal-");
+}
+
+/** Two headings that say the same thing, whatever their case and spacing. */
+const sameWords = (a: string, b: string) => a.trim().replace(/\s+/g, " ").toLowerCase() === b.trim().replace(/\s+/g, " ").toLowerCase();
+
 /** The anchor every door to the mechanics lands on (the old /game-mechanics redirects here). */
 export const GAME_MECHANICS_ANCHOR = "game-mechanics";
 
@@ -137,7 +147,9 @@ export default function Governance() {
     if (!page) return;
     const go = () => {
       if (window.location.pathname !== "/governance/how") return;
-      const id = window.location.hash.slice(1);
+      // A newcomer whose link asked for the mechanics by query alone (?dial=, ?focus=) lands on the locked row
+      // too, as the #game-mechanics arrival does, so the row and the way in under it are on the first screen.
+      const id = window.location.hash.slice(1) || (!member && asksForMechanics() ? GAME_MECHANICS_ANCHOR : "");
       if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
       window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView?.({ block: "start" }));
     };
@@ -190,6 +202,7 @@ export default function Governance() {
     { id: "mechanics-proposals", label: t({ message: "Proposals", context: "how we work together: contents" }), icon: <Triad className="size-4" /> },
     { id: "mechanics-history", label: t({ message: "Amendment History", context: "how we work together: contents" }), icon: <Labyrinth className="size-4" /> },
   ];
+  const chapterName = t({ message: "How we work together", context: "how we work together: chapter" });
   const contentsLink = "flex min-h-11 items-center rounded-lg px-3 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
   /*
    * A door pressed again on the anchor already in the address changes nothing
@@ -204,11 +217,7 @@ export default function Governance() {
    * mechanics (the old address, a notification, a dial): one quiet locked row
    * that says so and what opens it, and nothing of the mechanics themselves.
    */
-  const askedForMechanics = (() => {
-    const hash = window.location.hash.slice(1);
-    const query = new URLSearchParams(window.location.search);
-    return hash === GAME_MECHANICS_ANCHOR || hash.startsWith("mechanics-") || hash.startsWith("proposal-") || query.has("dial") || (query.get("focus") ?? "").startsWith("proposal-");
-  })();
+  const askedForMechanics = asksForMechanics();
   /* A newcomer's one act on the first screen: the village's own way in, as the closing invitation names it. */
   const joinAct = storyShown("/steward") && !cta.hidden
     ? { href: "/steward", label: <>{cta.fields.stewardLabel}</> }
@@ -286,10 +295,9 @@ export default function Governance() {
           <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-start lg:gap-8">
             <div className="min-w-0 space-y-6">
               <div id="how-we-work" className="scroll-mt-24 space-y-6">
-                {/* The first of the page's two chapters (groupLook.ts, as /roles splits its chapters). */}
-                <h2 className={GROUP_H2}>
-                  <Trans context="how we work together: chapter">How we work together</Trans>
-                </h2>
+                {/* The first of the page's two chapters (groupLook.ts, as /roles splits its chapters). Left out
+                    while it would only repeat the headline (the default headline is these same words). */}
+                {!sameWords(hero.fields.headline, chapterName) && <h2 className={GROUP_H2}>{chapterName}</h2>}
                 {/* Who holds the Voice: the spread across everyone who votes, in
                     groups, and this season's votes as counts. Draws nothing while
                     governance is off, or for a stranger while the village keeps its people. */}
