@@ -107,7 +107,8 @@ export function register(app: Express, deps: Deps): void {
     const detail = String(req.body?.detail ?? "").trim();
     // The member's title, or the guide's suggestion from their own first line when they left it empty.
     const typed = String(req.body?.title ?? "").trim();
-    const title = typed.length >= FEEDBACK_TITLE_MIN ? typed : suggestTitle(detail);
+    const suggested = suggestTitle(detail);
+    const title = typed.length >= FEEDBACK_TITLE_MIN ? typed : suggested.length >= FEEDBACK_TITLE_MIN ? suggested : detail.slice(0, 72);
     if (!kind || title.length < FEEDBACK_TITLE_MIN || detail.length < FEEDBACK_DETAIL_MIN) {
       return res.status(400).json({ error: "Say what kind it is, and enough detail to act on" });
     }

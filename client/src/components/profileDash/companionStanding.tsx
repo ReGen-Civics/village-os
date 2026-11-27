@@ -127,10 +127,15 @@ export function CompanionsDialog({
   // way back for a member taking a phone screenshot; "hidden" draws nothing while the browser captures the screen.
   const [aside, setAside] = useState<false | "pill" | "hidden">(false);
   const back = useRef<HTMLButtonElement>(null);
+  const asideNow = useRef(aside);
+  asideNow.current = aside;
   useEffect(() => {
     close.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") shut.current();
+      if (e.key !== "Escape") return;
+      // Escape while stepped aside brings the draft back; it never throws the draft away.
+      if (asideNow.current) setAside(false);
+      else shut.current();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

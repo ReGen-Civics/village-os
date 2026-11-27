@@ -98,7 +98,8 @@ export default function GuideFeedback({
   const page = pageForHeard(here);
   const village = cfg?.villageName || t({ message: "your village", context: "feedback page: where it goes, before the village name loads" });
   const detailShort = detail.trim().length < FEEDBACK_DETAIL_MIN;
-  const titleShort = shownTitle.trim().length < FEEDBACK_TITLE_MIN;
+  // An emptied title is fine (the server takes the guide's suggestion); one to three letters is not a title yet.
+  const titleShort = shownTitle.trim().length > 0 && shownTitle.trim().length < FEEDBACK_TITLE_MIN;
   const onMarks = useCallback((n: number) => setMarks(n), []);
 
   const takeScreen = async () => {
@@ -337,8 +338,10 @@ export default function GuideFeedback({
           ? t({ message: `Where this goes: ${village}'s team, and a copy of the words to the platform team, so a bug fixed once is fixed for every village. Your name and your screenshot stay here.`, context: "guide feedback: where it goes, shared" })
           : t({ message: `Where this goes: ${village}'s team, and nowhere else.`, context: "feedback page: where it goes" })}
       </p>
-      {detailShort || titleShort ? (
+      {detailShort ? (
         <p className={HINT}>{t({ message: "Add a little more detail, at least ten characters, so somebody can act on it.", context: "feedback page: why Send waits" })}</p>
+      ) : titleShort ? (
+        <p className={HINT}>{t({ message: "Give it a short title first, at least four characters.", context: "feedback page: why Send waits" })}</p>
       ) : null}
       {/* A failure is a sentence beside the act it stopped, and Send stays to try again. */}
       {error ? (
