@@ -153,18 +153,23 @@ const json = (body: unknown, status = 200) =>
   });
 const asked: string[] = [];
 let alignments: unknown[] = [];
+let agreement: unknown = null;
+let mineOverride: Record<string, unknown> = {};
 
 beforeEach(() => {
   signedIn = { id: "u-ana" };
   modulesOn = new Set(["governance", "season-places"]);
   alignments = [];
+  agreement = null;
+  mineOverride = {};
   asked.length = 0;
   window.history.replaceState(null, "", "/season");
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
       asked.push(url);
-      if (url.startsWith("/api/season-plans/mine")) return json(MINE);
+      if (url.startsWith("/api/season-plans/mine"))
+        return json({ ...MINE, ...mineOverride });
       if (url.startsWith("/api/season-plans"))
         return json({
           season: MINE.season,
@@ -187,7 +192,11 @@ beforeEach(() => {
       if (url.startsWith("/api/profile/alignments"))
         return json({ alignments });
       if (url.startsWith("/api/confidentiality"))
-        return json({ agreement: null, you: null, message: null });
+        return json({
+          agreement,
+          you: agreement ? { holds: false, confirmFresh: true } : null,
+          message: null,
+        });
       if (url.startsWith("/api/aligned"))
         return json({ kinds: [], rows: [], more: false, query: null });
       return json({});
@@ -315,7 +324,7 @@ describe("the address picks the tab", () => {
 });
 
 describe("arriving for a tab", () => {
-  it("opens it and brings its tab bar to the top, keeping an anchor such as #confidentiality", async () => {
+  it("opens it and lands on its panel once, keeping an anchor such as #confidentiality", async () => {
     const scrolled: string[] = [];
     Element.prototype.scrollIntoView = function (this: Element) {
       scrolled.push(this.id || this.getAttribute("role") || "");
@@ -326,9 +335,51 @@ describe("arriving for a tab", () => {
       expect(tab("Aligned").getAttribute("aria-selected")).toBe("true")
     );
     await waitFor(() =>
-      expect(scrolled.some(id => id.endsWith("-bar"))).toBe(true)
+      expect(scrolled.some(id => id.endsWith("-panel-aligned"))).toBe(true)
     );
     expect(window.location.hash).toBe("#confidentiality");
+  });
+
+  it("lands on the agreement for #confidentiality once it has drawn, and on the role for ?renew=", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    agreement = {
+      title: "Confidentiality agreement",
+      body: "Keep it inside.",
+      intent: "I align.",
+      version: "v1",
+      document: null,
+    };
+    window.history.replaceState(null, "", "/season#confidentiality");
+    render(<Season />);
+    await waitFor(() => expect(scrolled).toContain("confidentiality"));
+    // The page does the only landing scroll: one scroll, onto the agreement.
+    expect(scrolled.filter(id => id === "confidentiality")).toHaveLength(1);
+    cleanup();
+    scrolled.length = 0;
+    agreement = null;
+    mineOverride = {
+      heldSeats: [
+        { id: "seat-host", name: "Host", termEndsOn: null, lapsed: false },
+      ],
+    };
+    window.history.replaceState(null, "", "/season?renew=seat-host#plan");
+    render(<Season />);
+    await waitFor(() => expect(scrolled).toContain("seat-seat-host"));
+    expect(scrolled.filter(id => id === "seat-seat-host")).toHaveLength(1);
+  });
+
+  it("#everyone lands on everyone's plans, on the Season tab", async () => {
+    const scrolled: string[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this.id);
+    };
+    window.history.replaceState(null, "", "/season#everyone");
+    render(<Season />);
+    await waitFor(() => expect(scrolled).toContain("everyone"));
+    expect(tab("Season").getAttribute("aria-selected")).toBe("true");
   });
 
   it("CONTROL: a bare /season stays on the hero and scrolls nowhere", async () => {

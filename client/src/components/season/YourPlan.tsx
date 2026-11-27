@@ -394,6 +394,22 @@ export default function YourPlan({
     void load();
   }, [load]);
 
+  // On a phone, File and Save stick above the tab bar. The page's scroll padding keeps a focused field clear of that
+  // strip, so the browser brings the field into view above it, never under it (QA round 2).
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      !window.matchMedia?.("(max-width: 639px)").matches
+    )
+      return;
+    const html = document.documentElement;
+    const before = html.style.scrollPaddingBottom;
+    html.style.scrollPaddingBottom = "calc(var(--tabbar-h, 0px) + 72px)";
+    return () => {
+      html.style.scrollPaddingBottom = before;
+    };
+  }, []);
+
   useEffect(() => {
     if (!onStatus) return;
     const season = data?.season ?? null;
@@ -408,19 +424,7 @@ export default function YourPlan({
     });
   }, [onStatus, state, data]);
 
-  // The term warning's ?renew= lands on its role: after the plan has drawn and after the page has opened this tab,
-  // to the top of the screen, clear of the sticky header and tab bar (scroll-mt-40 on the seat).
-  useEffect(() => {
-    if (state !== "ready" || !renew) return;
-    const id = requestAnimationFrame(() =>
-      requestAnimationFrame(() =>
-        document
-          .getElementById(`seat-${renew}`)
-          ?.scrollIntoView?.({ block: "start" })
-      )
-    );
-    return () => cancelAnimationFrame(id);
-  }, [state, renew]);
+  // ?renew= lights its role; the page lands on it once the page has settled (pages/Season.tsx, land.ts).
 
   const body = useMemo((): PlanBody => {
     const n = (v: string) => (v.trim() === "" ? undefined : Number(v));
@@ -545,7 +549,12 @@ export default function YourPlan({
       <RoleCarryOn />
 
       <section aria-labelledby="ms-seats" className={CARD}>
-        <h2 id="ms-seats" className={H2}>
+        <p className={EYEBROW}>
+          <Trans context="season page, your roles eyebrow">
+            Held this season
+          </Trans>
+        </p>
+        <h2 id="ms-seats" className={`${H2} mt-1`}>
           {MY_SEASON_WORDS.seatsHeading}
         </h2>
         {data.heldSeats.length === 0 ? (

@@ -219,3 +219,8 @@ msgstr "Abra lo que le espera"
 msgctxt "season page, a tab that failed"
 msgid "This part of the season could not be drawn."
 msgstr "Esta parte de la temporada no se pudo mostrar."
+
+# needs-native-review: the season page, 27 Nov 2026
+msgctxt "season page, your roles eyebrow"
+msgid "Held this season"
+msgstr "Los que tiene esta temporada"

@@ -50,6 +50,10 @@ import AlignedPanel, {
   type AlignedStatus,
 } from "@/components/season/AlignedPanel";
 import TabBoundary from "@/components/season/TabBoundary";
+import { landOn } from "@/components/season/land";
+
+/** Anchors on the Season tab that still land, because they name a place lower on it. */
+const LANDS = new Set(["#everyone"]);
 import {
   CARD,
   EYEBROW,
@@ -114,11 +118,15 @@ export default function Season() {
           "",
           `${window.location.pathname}${window.location.search}#${next}`
         );
+      // A tab lands on its own panel (scroll-mt-40 keeps it clear of the header and the sticky tab bar).
       if (scroll)
         requestAnimationFrame(() =>
           document
-            .getElementById(`${tabsId}-bar`)
-            ?.scrollIntoView?.({ block: "start" })
+            .getElementById(`${tabsId}-panel-${next}`)
+            ?.scrollIntoView?.({
+              block: "start",
+              behavior: "instant" as ScrollBehavior,
+            })
         );
     },
     [tabsId]
@@ -135,14 +143,18 @@ export default function Season() {
     const go = () => {
       const next = tabFromHash(window.location.hash, shown);
       if (!next) return;
-      if (next === "season") setTab(next);
+      if (next === "season" && !LANDS.has(window.location.hash)) setTab(next);
       else open(next, true, true);
     };
     if (!arrived.current) {
       arrived.current = true;
+      // The first arrival does not scroll here: the landing below does it once, after the page has settled.
       const next = tabFromHash(window.location.hash, shown);
-      if (next && next !== "season") landing.current = true;
-      go();
+      if (next) {
+        setTab(next);
+        if (next !== "season" || LANDS.has(window.location.hash))
+          landing.current = true;
+      }
     }
     window.addEventListener("hashchange", go);
     return () => window.removeEventListener("hashchange", go);
@@ -165,20 +177,26 @@ export default function Season() {
       (!governance || plan !== null) &&
       aligned?.waiting != null &&
       aligned?.agreement != null);
+  // The page does the only landing scroll (QA round 2): instant, and held for a moment against anything above it
+  // folding (land.ts). Its target, most specific first: the agreement, the role to renew, everyone's plans, the panel.
+  const stopLanding = useRef<() => void>(() => {});
   useEffect(() => {
     if (!settled || !landing.current) return;
     landing.current = false;
     const renew = new URLSearchParams(window.location.search).get("renew");
+    const hash = window.location.hash;
     const target =
-      (window.location.hash === "#confidentiality"
+      (hash === "#confidentiality"
         ? document.getElementById("confidentiality")
         : null) ??
       (renew && tab === "plan"
         ? document.getElementById(`seat-${renew}`)
         : null) ??
-      document.getElementById(`${tabsId}-bar`);
-    requestAnimationFrame(() => target?.scrollIntoView?.({ block: "start" }));
+      (hash === "#everyone" ? document.getElementById("everyone") : null) ??
+      document.getElementById(`${tabsId}-panel-${tab}`);
+    if (target) stopLanding.current = landOn(target);
   }, [settled, tab, tabsId]);
+  useEffect(() => () => stopLanding.current(), []);
 
   /** The tab bar's keys: Left and Right move to the next tab, Home and End to the first and last (the ARIA tabs pattern). */
   const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -430,9 +448,9 @@ export default function Season() {
               <div
                 id={`${tabsId}-panel-season`}
                 role="tabpanel"
+                className="scroll-mt-40 space-y-5"
                 aria-labelledby={`${tabsId}-tab-season`}
                 hidden={tab !== "season"}
-                className="space-y-5"
               >
                 <TabBoundary message={failed}>
                   {goals.length > 0 ? (
@@ -464,7 +482,7 @@ export default function Season() {
                     </section>
                   ) : null}
                   {governance ? (
-                    <div id="everyone">
+                    <div id="everyone" className="scroll-mt-40">
                       <VillagePlans />
                     </div>
                   ) : null}
@@ -475,6 +493,7 @@ export default function Season() {
                 <div
                   id={`${tabsId}-panel-join`}
                   role="tabpanel"
+                  className="scroll-mt-40"
                   aria-labelledby={`${tabsId}-tab-join`}
                   hidden={tab !== "join"}
                 >
@@ -488,6 +507,7 @@ export default function Season() {
                 <div
                   id={`${tabsId}-panel-plan`}
                   role="tabpanel"
+                  className="scroll-mt-40"
                   aria-labelledby={`${tabsId}-tab-plan`}
                   hidden={tab !== "plan"}
                 >
@@ -500,6 +520,7 @@ export default function Season() {
               <div
                 id={`${tabsId}-panel-aligned`}
                 role="tabpanel"
+                className="scroll-mt-40"
                 aria-labelledby={`${tabsId}-tab-aligned`}
                 hidden={tab !== "aligned"}
               >
