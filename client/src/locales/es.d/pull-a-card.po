@@ -231,11 +231,6 @@ msgid "One ask from another member"
 msgstr "Un pedido de otro miembro"
 
 # needs-native-review: Pull a card, today's card, 27 Nov 2026
-msgctxt "the phone's More sheet: speed card, today's card drawn from the member's own lines"
-msgid "Pull a card"
-msgstr "Saque una carta"
-
-# needs-native-review: Pull a card, today's card, 27 Nov 2026
 msgctxt "today's card: in the village today"
 msgid "Session today · {at}"
 msgstr "Sesión hoy · {at}"
