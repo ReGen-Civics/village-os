@@ -148,7 +148,8 @@ export const isGroup = (entry: NavEntry): entry is NavGroup => "items" in entry;
  * village is run and how we work in Govern, the ways in in Join, and nothing a stranger does not need shown to a
  * signed-out visitor. "So with the feedback that I gave you here, take that same logic and apply it to the rest."
  *
- * Four groups, and no group shows more than five rows to anyone: a row is a link or a folder (`sub`), and a folder
+ * Four groups, and no group shows more than five rows to anyone (Village six: the lead chose "Allow six rows", 27 Nov
+ * 2026): a row is a link or a folder (`sub`), and a folder
  * opens to five links at most. navNest.test.ts holds both counts for every audience.
  *
  *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health.
@@ -182,14 +183,14 @@ export const NAV: readonly NavEntry[] = [
       // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
       { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
       { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
-      // The Library is its own row (the lead, 27 Nov 2026: "LIbrary as it's own village row").
+      // The Library and Village Health are each their own row (the lead, 27 Nov 2026: "LIbrary as it's own village
+      // row", and round 2's "so could village health"). Neither is a stranger's: a visitor is not offered them.
       { href: "/library", label: "Library", module: "library", newcomers: "never" },
-      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). With the
-      // Library its own row, Village would hold six, so Tools is a folder of the village's instruments: its tools grid
-      // (chat, calendar, Hypha) and Village Health, its dashboard. A reader offered only one of them sees it as its own
-      // row (navNest.ts). Neither is a stranger's: a visitor is not offered them.
+      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
+      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). A folder, so
+      // the village's other tools can join it; holding only the tools grid (chat, calendar, Hypha) it shows as that row
+      // (navNest.ts). Village is the one group with six rows: the lead chose "Allow six rows" (27 Nov 2026).
       { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Tools" },
-      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never", sub: "Tools" },
     ],
   },
   {

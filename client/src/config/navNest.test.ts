@@ -41,14 +41,17 @@ describe("the menu by membership", () => {
     expect(NAV.every(isGroup)).toBe(true);
   });
 
+  /** The one named exception to five rows: Village (the lead, 27 Nov 2026, on the Library and Village Health each a row: "Allow six rows"). */
+  const ROWS_ALLOWED: Readonly<Record<string, number>> = { Village: 6 };
+
   for (const a of AUDIENCES) {
     describe(a.name, () => {
-      it("sees five groups at most, and five rows at most in each, and five links at most in each folder", () => {
+      it("sees five groups at most, and five rows at most in each (Village six), and five links at most in each folder", () => {
         const bar = barFor(a);
         expect(bar.length).toBeLessThanOrEqual(5);
         for (const { group, links } of bar) {
           const rows = navRows(links);
-          expect(rows.length, group.label).toBeLessThanOrEqual(5);
+          expect(rows.length, group.label).toBeLessThanOrEqual(ROWS_ALLOWED[group.label] ?? 5);
           for (const r of rows) if (r.kind === "folder") expect(r.links.length, `${group.label} / ${r.label}`).toBeLessThanOrEqual(5);
         }
         if (a.signedIn) {
@@ -118,11 +121,11 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
     expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
     for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
-    // The Library is its own row (the lead, 27 Nov 2026: "LIbrary as it's own village row"), and Village Tools left Community for
-    // a Tools folder in Village, beside Village Health ("should be under tools"), which keeps Village at five rows.
+    // The Library and Village Health are each a row (the lead, 27 Nov 2026: "LIbrary as it's own village row", then "Allow six
+    // rows"), and Village Tools left Community for a Tools folder in Village ("should be under tools").
     expect(at("/library")).toEqual(["Village/"]);
+    expect(at("/village-health")).toEqual(["Village/"]);
     expect(at("/tools")).toEqual(["Village/Tools"]);
-    expect(at("/village-health")).toEqual(["Village/Tools"]);
     // Pay is a member's own, beside the Wallet; Protocols, the village's checklists, joined the guides to make room.
     expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.sub).toBe("Your things");
     expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.module).toBeUndefined();
