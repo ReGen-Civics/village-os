@@ -1211,6 +1211,38 @@ jobs:
 
           exit $fail
 
+      - name: Keep the budget numbers for the pull request comment
+        # The three budget numbers as JSON, with du's total (the gate), so
+        # budget-comment.yml can tell the pull request what it costs against
+        # main before a ceiling fails it. Main's push runs keep theirs too:
+        # they are the baseline. Measures only; the gate is the step above.
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dist-budget"
+          GITHUB_STEP_SUMMARY= node scripts/check-dist-budget.mjs --json --report > "$RUNNER_TEMP/dist-budget/measured.json"
+          du_kb=$(du -sk dist/public | awk '{print $1}')
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const out = { sha: process.env.GITHUB_SHA, pr: Number(process.env.PR_NUMBER) || null, baseSha: process.env.BASE_SHA || null,
+              duKb: Number(process.argv[2]), blockChargedKb: m.blockChargedKb, maxTotalDistKb: m.maxTotalDistKb,
+              mainJsKb: m.mainJsKb, maxMainJsKb: m.maxMainJsKb, bootJsKb: m.bootJsKb, maxBootJsKb: m.maxBootJsKb };
+            fs.writeFileSync(process.argv[3], JSON.stringify(out, null, 2));
+          ' "$RUNNER_TEMP/dist-budget/measured.json" "$du_kb" "$RUNNER_TEMP/dist-budget/budget.json"
+          cat "$RUNNER_TEMP/dist-budget/budget.json"
+
+      - name: Upload the budget numbers
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist-budget
+          path: ${{ runner.temp }}/dist-budget/budget.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Main stays green after the docs bot folds this tree
         # After the merge, generated-docs.yml folds the es.d fragments into
         # es.po and re-extracts en.po, then pushes that as a bot commit. On
