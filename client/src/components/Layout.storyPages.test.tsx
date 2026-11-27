@@ -41,7 +41,10 @@ const linksTo = (href: string) => Array.from(document.querySelectorAll(`a[href="
 const footer = () => document.querySelector("footer")!;
 const footerLinksTo = (href: string) => Array.from(footer().querySelectorAll(`a[href="${href}"]`));
 
-/** The shell, with the Village dropdown opened the way a visitor opens it. */
+/**
+ * The shell, with the Village dropdown opened the way a visitor opens it, and its "Places and homes" folder, where
+ * Housing sits since round 2 (27 Nov 2026), opened where it is a folder.
+ */
 function openVillage() {
   render(
     <Router>
@@ -52,6 +55,8 @@ function openVillage() {
   );
   const before = { housing: linksTo("/housing").length };
   fireEvent.click(screen.getAllByRole("button", { name: /Village/i })[0]!);
+  const folder = screen.queryAllByRole("button", { name: /Places and homes/ });
+  if (folder[0]) fireEvent.click(folder[0]);
   return { addedHousing: linksTo("/housing").length - before.housing };
 }
 
@@ -95,8 +100,7 @@ describe("a story page switched off on its own", () => {
     expect(drawer.querySelectorAll('a[href="/quests"]')).toHaveLength(1);
     expect(drawer.querySelectorAll('a[href="/housing"]')).toHaveLength(0);
     fireEvent.click(group("Join"));
-    // Plan a Visit sits in Join's "Come and see" folder since 27 Nov 2026 (config/navNest.ts).
-    fireEvent.click(group("Come and see"));
+    // Plan a Visit is a row of Join again since round 2 (the Love Letter moved to Community).
     expect(drawer.querySelectorAll('a[href="/visit"]')).toHaveLength(1);
   });
 

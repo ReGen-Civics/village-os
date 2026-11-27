@@ -107,6 +107,10 @@ describe("the menu", () => {
     // Open the renamed group: the village's word is there, the hidden entry is not,
     // and an entry whose module is off stays out whatever the document says.
     fireEvent.click(within(nav).getByRole("button", { name: /Aboard/ }));
+    // The forum sits in Community's Conversations folder since round 2 (27 Nov 2026); a folder left with one entry
+    // draws as that entry, so open it only where it is a folder.
+    const folder = within(document.body).queryAllByRole("button", { name: /Conversations/ });
+    if (folder[0]) fireEvent.click(folder[0]);
     const body = document.body.textContent ?? "";
     expect(body).toContain("Crew Talk");
     expect(body).not.toContain("Seasonal Festivals");

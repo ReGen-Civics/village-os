@@ -44,7 +44,7 @@ describe("bearingsFor", () => {
 
   it("takes the page's own entry in the whole menu over a shorter one the reader sees (Governance's hub is a prefix)", () => {
     const HUB: NavEntry[] = [{ label: "Governance", items: [{ href: "/governance", label: "Now" }] }];
-    expect(bearingsFor("/governance/decisions/42", HUB)).toMatchObject({ group: "Governance", item: { href: "/governance/decisions" }, exact: false });
+    expect(bearingsFor("/governance/decisions/42", HUB)).toMatchObject({ group: "Govern", item: { href: "/governance/decisions" }, exact: false });
     // CONTROL: the hub's own page still lights the hub.
     expect(bearingsFor("/governance", HUB)).toMatchObject({ item: { href: "/governance" }, exact: true });
     // A page whose own entry the village hid lights nothing, and never falls back to the hub.
@@ -101,8 +101,8 @@ describe("litFor", () => {
     expect(litFor("/steward/x", all, { hidden: ["/ways-in"], groups: {} }, word, MENU)?.groupHref).toBeUndefined();
   });
 
-  it("carries one group page on the platform's own menu: Governance's hub (27 Nov 2026; /join only redirects)", () => {
-    expect(NAV.filter(isGroup).filter((g) => g.href).map((g) => [g.label, g.href])).toEqual([["Governance", "/governance"]]);
+  it("carries one group page on the platform's own menu: Govern's hub (27 Nov 2026; /join only redirects)", () => {
+    expect(NAV.filter(isGroup).filter((g) => g.href).map((g) => [g.label, g.href])).toEqual([["Govern", "/governance"]]);
   });
 });
 
