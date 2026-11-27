@@ -40,6 +40,27 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.87 (2026-11-27)
+
+### What changed for your village
+
+- **Make this yours, step one.** Setup starts with "Bring your agent or guide", and the guide's Review and save goes through the one save bar.
+- **A word before a proposal lapses.** An agent's proposal shows when it lapses, and the people who may decide it get a notice in the bell a day before.
+- **Sea chart's wayfinding.** In the light chart look, the current menu section and the breadcrumb trail take a nautical style; a role page now marks "Circles & Roles" as the way there.
+- **Apply by, plainly, on phones too.**
+- **More Spanish:** the proposal wizard's checks and the role application checks.
+- **Steadier checks:** the generated files' commit no longer runs a full check of its own, the duplicate run on release branches is gone, each pull request is told its size against the limit, and two tests that could fail by chance are fixed.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+None. No migration in this release, so going back to 1.3.86 still works.
+
+---
+
 ## 1.3.86 (2026-11-26)
 
 ### What changed for your village
