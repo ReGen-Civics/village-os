@@ -45,7 +45,8 @@ import { recentPages } from "@/lib/navVisits";
 import { usePathState } from "@/lib/usePath";
 import { sayPath } from "@shared/yourPath";
 import { pageTitleFor } from "@shared/pageTitles";
-import { Firefly, SeasonMark } from "@/components/nav/menuJoys";
+import { Firefly, SeasonMark } from "@/components/nav/joyDoors";
+import AccountCount from "@/components/nav/AccountCount";
 import SpeedCards from "./SpeedCards";
 
 type AccountLink = NavLink;
@@ -188,7 +189,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
         </div>
 
         {step ? (
-          <p data-more-greeting="" className="mt-1 text-sm text-foreground motion-reduce:hidden">
+          <p data-more-greeting="" className="mt-1 text-sm text-foreground">
             <Trans context="the phone's More sheet: the greeting, with the member's next step">Hello, {firstName}. Next:</Trans>{" "}
             {path?.step.href ? <Link href={path.step.href} onClick={close} className="font-semibold underline underline-offset-4">{step}</Link> : <span className="font-semibold">{step}</span>}
           </p>
@@ -209,6 +210,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
                     <Link href={a.href} onClick={close} className="flex min-h-11 items-center gap-2 py-2 text-sm text-foreground hover:underline">
                       <MenuIcon href={a.href} fallback={a.icon} />
                       {a.label}
+                      {user ? <AccountCount count={a.count} who={user.id} /> : null}
                     </Link>
                   )}
                 />
@@ -273,33 +275,6 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
               </ul>
             </div>
           ) : null}
-          {/* The group tabs, at the bottom of the sheet where the thumb is; they stay in reach while the rows scroll. */}
-          <div role="tablist" aria-label={t({ message: "The menu's groups", context: "the phone's More sheet: the group tabs, read aloud" })} data-wayfinding="menu" className="sticky bottom-0 -mx-4 mt-2 flex gap-1 border-t border-border bg-card px-2 pb-1 pt-2">
-            {groups.map((g, i) => (
-              <button
-                key={g.label}
-                type="button"
-                role="tab"
-                id={`more-tab-${i}`}
-                aria-selected={openGroup === g.label}
-                aria-controls="more-group-panel"
-                aria-current={lit?.group === g.label ? "true" : undefined}
-                data-lit={lit?.group === g.label ? "" : undefined}
-                onClick={() => setOpenGroup(g.label)}
-                onKeyDown={(e) => {
-                  const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-                  const next = step ? groups[i + step] : undefined;
-                  if (!next) return;
-                  setOpenGroup(next.label);
-                  (e.currentTarget.parentElement?.children[i + step] as HTMLElement | undefined)?.focus();
-                }}
-                className={`relative inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-sm ${openGroup === g.label ? "bg-muted font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              >
-                {lit?.group === g.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
-                {g.label}
-              </button>
-            ))}
-          </div>
         </section>
 
         <div className="mt-4 flex items-center gap-2 text-foreground" data-more-foot="">
@@ -310,6 +285,39 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
               <Trans context="the phone's More sheet: sign out">Sign out</Trans>
             </button>
           ) : null}
+        </div>
+        {/*
+          The group tabs: the sheet's own sticky footer, so they stay at its bottom edge, where the thumb is, at every
+          height (the menu's QA, round 1: inside their section they were cut off at 320 by 640). One Tab stop: the
+          arrows, Home and End move between them (roving focus).
+        */}
+        <div role="tablist" aria-label={t({ message: "The menu's groups", context: "the phone's More sheet: the group tabs, read aloud" })} data-wayfinding="menu" className="sticky -bottom-4 -mx-4 -mb-4 mt-3 flex gap-1 border-t border-border bg-card px-2 pb-3 pt-2">
+          {groups.map((g, i) => (
+            <button
+              key={g.label}
+              type="button"
+              role="tab"
+              id={`more-tab-${i}`}
+              aria-selected={openGroup === g.label}
+              aria-controls="more-group-panel"
+              tabIndex={openGroup === g.label ? 0 : -1}
+              aria-current={lit?.group === g.label ? "true" : undefined}
+              data-lit={lit?.group === g.label ? "" : undefined}
+              onClick={() => setOpenGroup(g.label)}
+              onKeyDown={(e) => {
+                const to = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? groups.length - 1 : -1;
+                const next = groups[to];
+                if (to < 0 || !next) return;
+                e.preventDefault();
+                setOpenGroup(next.label);
+                (e.currentTarget.parentElement?.children[to] as HTMLElement | undefined)?.focus();
+              }}
+              className={`relative inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-sm ${openGroup === g.label ? "bg-muted font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              {lit?.group === g.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
+              {g.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

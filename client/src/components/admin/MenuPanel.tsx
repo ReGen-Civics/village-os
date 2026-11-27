@@ -121,7 +121,7 @@ export default function MenuPanel({ password }: { password: string }) {
             onChange={(e) => setFolder(f, e.target.value)}
             placeholder={f}
             aria-label={t({ message: `The name for the ${f} folder`, context: "admin menu: a folder name field" })}
-            className="text-sm border border-border rounded-lg px-2.5 py-2"
+            className="min-h-11 text-sm border border-border rounded-lg px-2.5 py-2"
           />
         ))}
       </div>

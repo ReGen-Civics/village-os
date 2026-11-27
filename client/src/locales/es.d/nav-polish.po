@@ -105,3 +105,51 @@ msgstr "Abrir {words} en el menú"
 msgctxt "the phone's More sheet: read aloud when a + opens edit mode and the picker"
 msgid "Editing your cards. Pick one to add, or drag a card to move it."
 msgstr "Editando sus tarjetas. Elija una para añadir, o arrastre una tarjeta para moverla."
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page title"
+msgid "Pay"
+msgstr "Pagar"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Propose.tsx
+msgctxt "Propose, h1"
+msgid "Make a proposal"
+msgstr "Hacer una propuesta"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Season"
+msgstr "Temporada"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Library.tsx
+msgctxt "Library, h1"
+msgid "Library"
+msgstr "Biblioteca"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Badges.tsx
+msgctxt "Badges, h1"
+msgid "Badges"
+msgstr "Insignias"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Events.tsx
+msgctxt "calendar page title"
+msgid "Events"
+msgstr "Eventos"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: h1"
+msgid "Treasury"
+msgstr "Tesorería"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/components/nav/menuJoys.tsx
+msgctxt "the menu: the mark before a heading, the village's season, read aloud"
+msgid "Season: {name}"
+msgstr "Temporada: {name}"

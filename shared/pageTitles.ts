@@ -119,7 +119,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/opportunities": "Business opportunities",
   "/visit": "Plan a visit",
   "/work-with-us": "Work with us",
-  "/team": "Team",
+  "/team": "Our team", // the menu's word (one name per page, 27 Nov 2026)
   "/master-plan": "Master plan",
   "/good-neighbor": "Good neighbor",
   "/co-creators-guide": "Co-creators guide",

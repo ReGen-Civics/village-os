@@ -241,6 +241,26 @@ describe("the group tabs at the bottom, within thumb reach", () => {
     expect(shown()).toContain("/events");
   });
 
+  it("is one Tab stop: the arrows, Home and End move between the tabs and show their groups", async () => {
+    await sheet();
+    const tab = (name: string) => screen.getByRole("tab", { name });
+    expect(tab("Village").tabIndex).toBe(0);
+    expect(tab("Community").tabIndex).toBe(-1);
+    fireEvent.keyDown(tab("Village"), { key: "End" });
+    expect(tab("Community").getAttribute("aria-selected")).toBe("true");
+    expect(tab("Community")).toHaveFocus();
+    fireEvent.keyDown(tab("Community"), { key: "Home" });
+    expect(tab("Village")).toHaveFocus();
+    expect(tab("Village").tabIndex).toBe(0);
+  });
+
+  it("is the sheet's own last child, so it sticks to the sheet's bottom edge at any height", async () => {
+    await sheet();
+    const tabs = screen.getByRole("tablist");
+    expect(tabs.parentElement?.getAttribute("role")).toBe("dialog");
+    expect(tabs.parentElement?.lastElementChild).toBe(tabs);
+  });
+
   it("moves to the next group on a swipe left, and back on a swipe right, and ignores a scroll", async () => {
     await sheet();
     const panel = document.getElementById("more-group-panel")!;

@@ -37,8 +37,8 @@ import NavDropdown from "@/components/nav/NavDropdown";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
 import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
 import AccountCount from "@/components/nav/AccountCount";
-import { MenuFolderNames, folderWord } from "@/components/nav/menuFolders";
-import { Firefly, MenuFirefly, SeasonMark, useFirefly } from "@/components/nav/menuJoys";
+import { MenuFirefly, MenuFolderNames, folderWord } from "@/components/nav/menuFolders";
+import { Firefly, FireflyPicker, SeasonMark } from "@/components/nav/joyDoors";
 import SearchSlot from "@/components/search/SearchSlot";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
 import { openGuideFeedback } from "@/lib/guideFeedback";
@@ -61,7 +61,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const accountRef = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
   const bare = isBareRoute(location);
-  const { user, token, logout } = useAuth();
+  const { user, token, logout, loading: authLoading } = useAuth();
   const visitor = useVerifiedVisitor(!!user); // a visitor with a profile, and no member account
   const { t, i18n } = useLingui();
   // Named, so the catalog reads "Your account, {firstName}" and not "{0}".
@@ -82,7 +82,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const villageSource = servedVillageSourceUrl(cfg?.villageSourceUrl); // https only; "" hides the link (shared/sourceUrl.ts)
   // One subscription for the whole shell instead of thirteen useModule calls.
   // The nav is data now (config/nav.ts), and a list cannot call a hook per row.
-  const { modules } = useModules();
+  const { modules, loaded: modulesLoaded } = useModules();
   const moduleOn = (id?: string) => !id || modules.some((m) => m.id === id);
   const lifecycleOf = (id?: string) => modules.find((m) => m.id === id)?.lifecycle;
 
@@ -144,7 +144,9 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const leaf = useCrumbLeafValue(); // the page's own name for the breadcrumb (nav/crumbLeaf.tsx)
   const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
   // One firefly on one entry new since this member last looked (nav/menuJoys.tsx), and Govern's waiting dot.
-  const firefly = useFirefly([...NAV.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href), location, !!user && !newcomer);
+  // Chosen only once the modules, the config, the sign-in and the newcomer answer are all in (the menu's QA, round 1).
+  const [firefly, setFirefly] = useState<string | null>(null);
+  const fireflyReady = modulesLoaded && !!cfg && !authLoading && !!user && !newcomer;
   const waitingFor = user && !newcomer ? String(user.id) : null;
   // The folder the lit entry sits in, when it draws as one (two or more visible links), for the full breadcrumb.
   const litSub = lit?.item.sub && NAV.filter(isGroup).some((g) => g.items.filter((i) => visible(i) && i.sub === lit.item.sub).length > 1) ? lit.item.sub : null;
@@ -369,17 +371,16 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
                     aria-expanded={accountOpen}
                     aria-haspopup="true"
                     aria-controls="account-menu"
-                    // Named for a screen reader at every width, because the
-                    // visible name below hides between lg and xl.
-                    aria-label={t({ message: `Your account, ${firstName}`, context: "site header" })}
+                    // Named for a screen reader at every width (the visible name hides between lg and xl), and with the
+                    // waiting count when one shows, so the name says what the dot says (nav/WaitingCount.tsx).
                     className="relative flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                   >
-                    <User className="w-4 h-4" />
+                    <User aria-hidden="true" className="w-4 h-4" /><span className="sr-only">{t({ message: `Your account, ${firstName}`, context: "site header" })}</span>
                     {/* Icon only from lg to xl. Between 1024px and 1280px the
                         bar is at its fullest, and a member's first name was
                         what pushed the village name out of the header (it read
                         "A..." at 1024px with the bell beside it). */}
-                    <span className="lg:hidden xl:inline">{user.name.split(" ")[0]}</span>
+                    <span aria-hidden="true" className="lg:hidden xl:inline">{user.name.split(" ")[0]}</span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${accountOpen ? "rotate-180" : ""}`} />
                     {waitingFor ? <Suspense fallback={null}><WaitingCount who={waitingFor} variant="dot" /></Suspense> : null}
                   </button>
@@ -981,6 +982,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
       {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
+      {fireflyReady ? <FireflyPicker hrefs={[...NAV.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href)} here={location} onPick={setFirefly} /> : null}
     </div>
     </MenuFirefly.Provider></MenuFolderNames.Provider>
   );

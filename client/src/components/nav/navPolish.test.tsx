@@ -12,12 +12,12 @@ import { memoryLocation } from "wouter/memory-location";
 import type { NavLink } from "@/config/nav";
 import MenuRows from "@/components/nav/MenuRows";
 import { MenuFolderNames, folderWord } from "@/components/nav/menuFolders";
-import { SEEN_KEY, chooseFirefly, seasonInk } from "@/components/nav/menuJoys";
+import { SEASON_RINGS, SEEN_KEY, chooseFirefly, seasonRing } from "@/components/nav/menuJoys";
 import { WARM_AFTER_MS, warmOnHover } from "@/lib/warmRoute";
-import { routePreloadScript } from "@/lib/routePreload";
+import { routePreloadScript, routePreloadTable } from "@/lib/routePreload";
 
 const fetchMock = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/gameApi", () => ({ authToken: () => "t", gameFetch: fetchMock }));
+vi.mock("@/lib/gameApi", () => ({ authToken: () => "t", gameFetch: fetchMock, useSeason: () => null }));
 
 import WaitingCount, { forgetWaiting, waitingOf } from "@/components/nav/WaitingCount";
 
@@ -57,14 +57,14 @@ describe("warm the page on hover", () => {
     window.__routePreload = vi.fn();
   });
 
-  it("asks the route table for the page after a mouse rests 150 ms", () => {
+  it("asks the route table for the page's own chunk after a mouse rests 150 ms", () => {
     vi.useFakeTimers();
     const h = warmOnHover("/quests?x=1#y");
     h.onPointerEnter({ pointerType: "mouse" } as never);
     vi.advanceTimersByTime(WARM_AFTER_MS - 1);
     expect(window.__routePreload).not.toHaveBeenCalled();
     vi.advanceTimersByTime(1);
-    expect(window.__routePreload).toHaveBeenCalledWith("/quests");
+    expect(window.__routePreload).toHaveBeenCalledWith("/quests", true);
   });
 
   it("does nothing for a touch, or for a pointer that leaves first", () => {
@@ -78,17 +78,33 @@ describe("warm the page on hover", () => {
     expect(window.__routePreload).not.toHaveBeenCalled();
   });
 
-  it("is served by the build's route-preload script, which hints each file once", () => {
+  it("is served by the build's route-preload script: a hover hints the page's own chunk alone, each file once", () => {
     const added: string[] = [];
     const document = { head: { appendChild: (l: { href: string }) => added.push(l.href) }, createElement: () => ({}) };
     const ctx: Record<string, unknown> = { location: { pathname: "/" }, document, window: {} };
     ctx.window = ctx;
-    vm.runInNewContext(routePreloadScript({ files: ["assets/Quests.js"], routes: [["^/quests/?$", [0]]] }, "/"), ctx);
-    const warm = (ctx.window as { __routePreload: (p: string) => void }).__routePreload;
-    warm("/quests");
-    warm("/quests");
-    warm("/nowhere");
+    const table = { files: ["assets/Quests.js", "assets/QuestCard.js", "assets/Forum.js"], routes: [["^/quests/?$", [0, 1]], ["^/forum/?$", [2]]] as Array<[string, number[]]> };
+    vm.runInNewContext(routePreloadScript(table, "/"), ctx);
+    const warm = (ctx.window as { __routePreload: (p: string, own?: boolean) => void }).__routePreload;
+    warm("/quests", true);
+    warm("/quests", true);
+    warm("/nowhere", true);
     expect(added).toEqual(["/assets/Quests.js"]);
+    // The first visit to a page still hints its imports too.
+    warm("/quests");
+    expect(added).toEqual(["/assets/Quests.js", "/assets/QuestCard.js"]);
+  });
+
+  it("finds a page packed into a shared group through that group's chunk (the QA's /forum, /powers, /quests)", () => {
+    const t = routePreloadTable(
+      [{ path: "/forum", module: "pages/Forum" }],
+      [
+        { fileName: "assets/index.js", imports: [], isEntry: true, isDynamicEntry: false, facadeModuleId: "/r/client/src/main.tsx", css: [] },
+        { fileName: "assets/pages-2.js", imports: [], isEntry: false, isDynamicEntry: true, facadeModuleId: null, css: [], modules: ["/r/client/src/pages/Forum.tsx", "/r/client/src/pages/Quests.tsx"] },
+      ],
+    );
+    expect(t.routes).toEqual([["^/forum/?$", [0]]]);
+    expect(t.files).toEqual(["assets/pages-2.js"]);
   });
 });
 
@@ -98,14 +114,23 @@ describe("the waiting-on-you count", () => {
     fetchMock.mockReset();
   });
 
-  it("reads the inbox's waiting count, and nothing else", () => {
-    expect(waitingOf({ counts: { waiting: 3 } })).toBe(3);
-    expect(waitingOf({ counts: { waiting: -1 } })).toBeNull();
+  /* The menu's QA, round 1: a member with two ballots saw "2" on a row that opens /governance/work, which lists none. */
+  it("counts only what the page it opens lists: items decided on /governance/work (or /review, its old address)", () => {
+    const items = [
+      { decideAt: "/decisions/7" },
+      { decideAt: "/governance/work#approvals" },
+      { decideAt: "/review" },
+      { decideAt: "/governance/treasury#end-of-moon" },
+      { decideAt: "/reviewers" },
+    ];
+    expect(waitingOf({ items })).toBe(2);
+    expect(waitingOf({ items: [{ decideAt: "/decisions/1" }, { decideAt: "/decisions/2" }] })).toBe(0);
+    expect(waitingOf({ counts: { waiting: 3 } })).toBeNull();
     expect(waitingOf(null)).toBeNull();
   });
 
   it("asks once for every dot on the page, and shows nothing at zero", async () => {
-    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ counts: { waiting: 4 } }), { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: Array.from({ length: 4 }, () => ({ decideAt: "/review" })) }), { status: 200 }));
     render(
       <>
         <WaitingCount who="u1" variant="dot" />
@@ -120,7 +145,7 @@ describe("the waiting-on-you count", () => {
     expect(document.querySelector("[data-waiting-count]")?.textContent).toBe("4");
     cleanup();
     forgetWaiting();
-    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ counts: { waiting: 0 } }), { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: [{ decideAt: "/decisions/9" }] }), { status: 200 }));
     render(<WaitingCount who="u2" variant="dot" />);
     await act(async () => {
       await new Promise((done) => setTimeout(done, 0));
@@ -131,7 +156,7 @@ describe("the waiting-on-you count", () => {
   it("reads again when the window comes back after a minute away", async () => {
     let now = 1_000_000;
     vi.spyOn(Date, "now").mockImplementation(() => now);
-    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ counts: { waiting: 1 } }), { status: 200 }));
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: [{ decideAt: "/review" }] }), { status: 200 }));
     render(<WaitingCount who="u3" />);
     await act(async () => {
       await new Promise((done) => setTimeout(done, 0));
@@ -168,9 +193,10 @@ describe("the firefly", () => {
 });
 
 describe("the season's mark", () => {
-  it("takes one of the palette's own inks for each quarter of the year", () => {
-    const inks = [0, 3, 6, 9].map((m) => seasonInk(new Date(2026, m, 15)));
-    expect(new Set(inks).size).toBe(4);
-    for (const i of inks) expect(i).toMatch(/^bg-(teal-deep|open|notice|coral)$/);
+  it("takes its ring's colour from the village's own season, steady for that season, never the brand or the gold", () => {
+    expect(seasonRing("s-dry-2026")).toBe(seasonRing("s-dry-2026"));
+    const rings = new Set(["a", "b", "c", "d", "e", "f"].map((id) => seasonRing(id)));
+    expect(rings.size).toBeGreaterThan(1);
+    for (const r of SEASON_RINGS) expect(r).not.toMatch(/teal-deep|notice|gold/);
   });
 });

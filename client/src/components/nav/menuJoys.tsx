@@ -1,30 +1,60 @@
 /**
- * SMALL JOYS IN THE MENU (27 Nov 2026, the lead: "and small joys. Do these as well"). Calm, and none of it under
- * reduced motion: each one is drawn with `motion-reduce:hidden`, so a reader who asked for less motion sees the menu
- * exactly as it was.
+ * SMALL JOYS IN THE MENU (27 Nov 2026, the lead: "and small joys. Do these as well"). Calm, and none of their motion
+ * under reduced motion. A LAZY CHUNK: the shell holds only the two small doors below (`SeasonMark`, `Firefly`,
+ * `FireflyPicker`, which load this file when there is something to draw), so the first page carries none of it.
  *
- *   SeasonMark  a small mark in the season's colour before each menu eyebrow. The season is the quarter of the year
- *               (December to February, and so on), in the palette's own inks. Decorative: hidden from a screen reader.
- *   Firefly     one firefly beside ONE entry that is new since the reader last looked at the menu. The menu
- *               remembers, on this device only, the entries it has shown; on the very first look it remembers them all
- *               and shows none. The firefly leaves once its page is opened, or after a fortnight.
- *
- * The greeting at the top of the phone's More sheet lives in MoreSheet.tsx, beside the sheet it greets.
+ *   season   a small ring before each menu eyebrow in the colour of the village's OWN season (useSeason, the one
+ *            cached read every season surface shares), named for a screen reader. No season running: nothing. A ring,
+ *            never a filled dot, so it is never mistaken for the gold "you are here" dot.
+ *   firefly  one firefly beside ONE entry new since the member last looked at the menu. The menu remembers, on this
+ *            device only, the entries it has shown; on the very first look it remembers them all and shows none. It is
+ *            chosen only once the modules, the config, the sign-in and the newcomer answer are all in, so a menu still
+ *            filling in never reads as new entries. It leaves once its page is opened, or after a fortnight, and its
+ *            glow rests after about twenty seconds.
+ *   pick     the work of choosing the firefly, run by Layout once everything has loaded.
  */
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useLingui } from "@lingui/react/macro";
+import * as gameApi from "@/lib/gameApi";
+import type { SeasonState } from "@/lib/gameApi";
 
-/** The season's ink, by month: the palette's own tokens, so both modes are already measured. */
-export function seasonInk(at: Date = new Date()): string {
-  const m = at.getMonth();
-  if (m === 11 || m <= 1) return "bg-teal-deep";
-  if (m <= 4) return "bg-open";
-  if (m <= 7) return "bg-notice";
-  return "bg-coral";
+/**
+ * The season read, taken once as this chunk loads. A module double that has no `useSeason` (a test's mock of
+ * lib/gameApi) gives a menu with no season mark rather than an error inside the menu. The choice is fixed for the life
+ * of the page, so the hook order never changes.
+ */
+const noSeason = (): SeasonState | null => null;
+const useVillageSeason: () => SeasonState | null = (() => {
+  try {
+    return (gameApi as { useSeason?: () => SeasonState | null }).useSeason ?? noSeason;
+  } catch {
+    return noSeason;
+  }
+})();
+
+/** The season's ring colour, from the season itself: the same season keeps the same colour all through it. */
+export function seasonRing(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return SEASON_RINGS[h % SEASON_RINGS.length]!;
 }
+/** Palette inks for the ring: never the bar's brand ink, never the gold of the "you are here" dot. */
+export const SEASON_RINGS = ["border-open", "border-coral"] as const;
 
-/** `hang`: the mark sits in the gutter before the words, so they keep their edge (the dropdowns, the account menu). */
-export function SeasonMark({ hang = true }: { hang?: boolean }) {
-  return <span aria-hidden="true" data-season-mark="" className={`${hang ? "-ml-3.5" : ""} mr-2 inline-block size-1.5 rounded-full align-middle motion-reduce:hidden ${seasonInk()}`} />;
+function Season({ hang }: { hang: boolean }) {
+  const { t } = useLingui();
+  const season = useVillageSeason();
+  const now = season?.current;
+  if (!now) return null;
+  const name = now.name;
+  return (
+    <span
+      role="img"
+      aria-label={t({ message: `Season: ${name}`, context: "the menu: the mark before a heading, the village's season, read aloud" })}
+      data-season-mark=""
+      className={`${hang ? "-ml-3.5" : ""} mr-2 inline-block size-2 rounded-full border-2 align-middle ${seasonRing(now.id)}`}
+    />
+  );
 }
 
 export const SEEN_KEY = "village-menu-seen";
@@ -81,24 +111,35 @@ export function chooseFirefly(hrefs: readonly string[], here: string, now: numbe
   return pick;
 }
 
-export const MenuFirefly = createContext<string | null>(null);
-
-/** Layout's half: works out the firefly once per page for the entries this reader is offered. */
-export function useFirefly(hrefs: readonly string[], here: string, on: boolean): string | null {
+function Pick({ hrefs, here, onPick }: { hrefs: readonly string[]; here: string; onPick: (href: string | null) => void }) {
   const key = hrefs.join("|");
-  const [pick, setPick] = useState<string | null>(null);
   useEffect(() => {
-    if (!on || !hrefs.length) return setPick(null);
-    setPick(chooseFirefly(hrefs, here));
+    onPick(hrefs.length ? chooseFirefly(hrefs, here) : null);
     // `hrefs` is read through its key: the same entries in a new array are the same question.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, here, on]);
-  return pick;
+  }, [key, here]);
+  return null;
 }
 
-/** Drawn beside an entry's words: a firefly when this entry is the new one, else nothing. */
-export function Firefly({ href }: { href: string }) {
-  const pick = useContext(MenuFirefly);
-  if (pick !== href) return null;
-  return <span aria-hidden="true" data-firefly="" className="ml-2 inline-block size-2 shrink-0 rounded-full bg-notice ring-2 ring-notice/30 motion-safe:animate-pulse motion-reduce:hidden" />;
+/** The glow pulses ten times (about twenty seconds) and rests; with reduced motion it never pulses. */
+function Glow() {
+  return (
+    <span
+      aria-hidden="true"
+      data-firefly=""
+      className="ml-2 inline-block size-2 shrink-0 rounded-full bg-notice ring-2 ring-notice/30 motion-safe:animate-pulse"
+      style={{ animationIterationCount: 10 }}
+    />
+  );
+}
+
+export type MenuJoyProps =
+  | { kind: "season"; hang?: boolean }
+  | { kind: "firefly" }
+  | { kind: "pick"; hrefs: readonly string[]; here: string; onPick: (href: string | null) => void };
+
+export default function MenuJoy(props: MenuJoyProps) {
+  if (props.kind === "season") return <Season hang={props.hang !== false} />;
+  if (props.kind === "firefly") return <Glow />;
+  return <Pick hrefs={props.hrefs} here={props.here} onPick={props.onPick} />;
 }

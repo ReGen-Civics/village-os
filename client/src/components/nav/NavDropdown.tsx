@@ -10,7 +10,7 @@ import MenuRows from "@/components/nav/MenuRows";
 import { currentFor, type Lit } from "@/config/navBearings";
 import MenuIcon from "@/components/nav/MenuIcon";
 import LitRule from "@/components/nav/LitRule";
-import { Firefly, SeasonMark } from "@/components/nav/menuJoys";
+import { Firefly, SeasonMark } from "@/components/nav/joyDoors";
 import { warmOnHover } from "@/lib/warmRoute";
 
 // Its own chunk, so the first page's scripts do not grow (nav/WaitingCount.tsx).

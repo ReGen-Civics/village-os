@@ -16,7 +16,7 @@ const SHELL = `<html><head>
 describe("what a shared link shows", () => {
   it("names the page and the village, and falls back to the Tagline and homepage picture", () => {
     const meta = sitePageMeta("/visit", "https://willow.example", config, null);
-    expect(meta.title).toBe("Visit · Willowbrook");
+    expect(meta.title).toBe("Plan a visit · Willowbrook"); // the menu's word for /visit (one name per page, 27 Nov 2026)
     expect(meta.description).toBe("Roots and rivers");
     expect(meta.image).toBe("https://willow.example/uploads/hero.webp");
     expect(meta.url).toBe("https://willow.example/visit");
@@ -45,7 +45,7 @@ describe("what a shared link shows", () => {
   it("replaces the neutral tags rather than adding a second set", () => {
     const html = spliceMeta(SHELL, sitePageMeta("/team", "https://willow.example", config, null));
     expect(html.match(/<title>/g)).toHaveLength(1);
-    expect(html).toContain("<title>Team · Willowbrook</title>");
+    expect(html).toContain("<title>Our team · Willowbrook</title>");
     expect(html.match(/property="og:title"/g)).toHaveLength(1);
     expect(html).toContain('<meta property="og:image" content="https://willow.example/uploads/hero.webp" />');
     expect(html).not.toContain("A coordination platform");

@@ -3,8 +3,8 @@
  * about 150 ms, the page's chunk starts loading, so the click feels instant.
  *
  * It asks the route preload table the build already ships (lib/routePreload.ts writes route-preload.js, which leaves
- * its lookup on `window.__routePreload`): the same hints, for the same routes, that the first visit to that page
- * would add. A file already hinted is not hinted again. Where the table is absent (the dev server, a test), nothing
+ * its lookup on `window.__routePreload`), for the page's own chunk alone: the one file that page's lazy import loads
+ * first, never the imports and parts behind it. A file already hinted is not hinted again. Where the table is absent (the dev server, a test), nothing
  * happens. A touch never warms anything: a finger has no hover, and a tap is already the click.
  */
 import type { PointerEvent } from "react";
@@ -13,7 +13,7 @@ export const WARM_AFTER_MS = 150;
 
 declare global {
   interface Window {
-    __routePreload?: (path: string) => void;
+    __routePreload?: (path: string, own?: boolean) => void;
   }
 }
 
@@ -21,7 +21,7 @@ declare global {
 export function warmRoute(href: string): void {
   const path = href.split(/[?#]/)[0] || "/";
   try {
-    window.__routePreload?.(path);
+    window.__routePreload?.(path, true);
   } catch {
     /* a hint that fails costs nothing */
   }

@@ -8,6 +8,11 @@
  * once, kept for two minutes, and read again when the window comes back into focus after a minute away. The answer is
  * kept per member, so a number read for one member is never shown to the next one on the same browser.
  *
+ * IT COUNTS WHAT THE ROW OPENS (the menu's QA, round 1: a member with two ballots saw "2" and found nothing on the
+ * page). The dots stand for "Waiting on you", which opens /governance/work, so they count only the inbox items decided
+ * there: each item names the page it is decided on (`decideAt`, shared/reviewInbox.ts), and an item whose page is
+ * /governance/work (or /review, its old address) counts. Ballots, recaps and the rest wait on their own pages.
+ *
  * Loaded on its own (Layout and NavDropdown import it lazily), so the first page's scripts do not grow. Nothing
  * shows while it loads, when the read fails, at zero, or for a visitor (the menus mount it only for a member).
  */
@@ -23,10 +28,14 @@ let kept: { who: string; at: number; n: number | null } | null = null;
 let asking: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
-/** The inbox's reply, read defensively: how many items wait. Null when it is not one. */
+/** An item decided on the page "Waiting on you" opens. */
+export const DECIDED_ON_WORK = /^\/(?:governance\/work|review)(?:[?#/]|$)/;
+
+/** The inbox's reply, read defensively: how many of its items wait on /governance/work. Null when it is not one. */
 export function waitingOf(v: unknown): number | null {
-  const n = (v as { counts?: { waiting?: unknown } } | null)?.counts?.waiting;
-  return typeof n === "number" && Number.isInteger(n) && n >= 0 ? n : null;
+  const items = (v as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) return null;
+  return items.filter((i) => typeof (i as { decideAt?: unknown })?.decideAt === "string" && DECIDED_ON_WORK.test((i as { decideAt: string }).decideAt)).length;
 }
 
 function ask(who: string): Promise<void> {
@@ -78,14 +87,14 @@ export default function WaitingCount({ who, variant = "badge" }: { who: string |
   const words = t({ message: `${n} waiting on you`, context: "the menu: how many things wait on the reader, read aloud" });
   return variant === "dot" ? (
     <>
-      <span aria-hidden="true" data-waiting-dot="" className="absolute -right-1.5 -top-1 inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold leading-none text-teal-deep">
+      <span aria-hidden="true" data-waiting-dot="" className="absolute -right-1.5 -top-1 inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-card px-1 text-xs font-bold leading-none text-foreground">
         {n > 9 ? "9+" : n}
       </span>
       <span className="sr-only">, {words}</span>
     </>
   ) : (
     <>
-      <span aria-hidden="true" data-waiting-count="" className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full border border-border bg-muted px-1.5 text-[11px] font-bold leading-none text-foreground align-middle">
+      <span aria-hidden="true" data-waiting-count="" className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full border border-border bg-muted px-1.5 text-xs font-bold leading-none text-foreground align-middle">
         {n > 99 ? "99+" : n}
       </span>
       <span className="sr-only">, {words}</span>
