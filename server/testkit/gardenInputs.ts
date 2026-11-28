@@ -9,7 +9,7 @@
  *   the dials         VARIABLES (shared/gameVariables.ts)
  *   the tabs          ADMIN_TABS (shared/adminTabs.ts)
  *   the ledger        shared/adminActs/ledger.ts
- *   the mount, cuts   shared/gardenMounts.ts
+ *   the mount, cuts   shared/gardenMounts.ts, with the empty table of the place each kind of dial governs
  *   not admin's       shared/notAdminRoutes.ts
  *   the old doors     the folded tab keys (client/src/components/admin/adminTabAliases.ts) and the client's router,
  *                     read from client/src/App.tsx by the reader the QA sweeps use (scripts/qa/routes.mjs)
@@ -26,7 +26,7 @@ import { ADMIN_ACTS } from "../../shared/adminActs";
 import { LEDGER_NEVER_DRAWN, LEDGER_STILL_OPEN, PARITY_LEDGER } from "../../shared/adminActs/ledger";
 import { ADMIN_TABS } from "../../shared/adminTabs";
 import { VARIABLES } from "../../shared/gameVariables";
-import { CUT_BY_RULING, GARDEN_MOUNTS } from "../../shared/gardenMounts";
+import { CUT_BY_RULING, DIAL_PLACE_BY_CATEGORY, GARDEN_MOUNTS } from "../../shared/gardenMounts";
 import type { MatrixSnapshot, ScoreInputs } from "../../shared/gardenScore";
 import { NOT_ADMIN_ROUTES } from "../../shared/notAdminRoutes";
 import { routeDoors } from "./routeDoors";
@@ -55,6 +55,7 @@ export function gatherScoreInputs(root: string): ScoreInputs {
     tabs: ADMIN_TABS,
     ledger: { rows: PARITY_LEDGER, stillOpen: LEDGER_STILL_OPEN, neverDrawn: LEDGER_NEVER_DRAWN },
     mounts: GARDEN_MOUNTS,
+    dialPlaces: DIAL_PLACE_BY_CATEGORY,
     cuts: CUT_BY_RULING,
     notAdmin: NOT_ADMIN_ROUTES,
     old: { movedTabs: MOVED_TABS, leftAdmin: LEFT_ADMIN, clientRoutes: readClientRoutes() },

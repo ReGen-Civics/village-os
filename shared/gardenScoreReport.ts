@@ -55,6 +55,12 @@ function countLines(count: Count, options: ReportOptions, bullet: string, spaced
   }
   for (const p of count.parts) out.push(`${bullet}${p.name}: ${p.value}${p.of === undefined ? "" : ` of ${p.of}`}`);
   for (const note of count.notes) out.push(`${bullet}${note}`);
+  for (const list of count.named ?? []) {
+    gap();
+    out.push(`${list.heading}: ${list.items.length}`);
+    gap();
+    for (const item of list.items) out.push(`${bullet}${item}`);
+  }
   const groups = openGroups(count);
   gap();
   if (!groups.length) {

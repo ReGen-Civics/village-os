@@ -29,7 +29,7 @@ import { describe, expect, it } from "vitest";
 import ts from "typescript";
 import { ADMIN_ACTS } from "./adminActs";
 import { LEDGER_NEVER_DRAWN, LEDGER_STILL_OPEN, PARITY_LEDGER } from "./adminActs/ledger";
-import { CUT_BY_RULING, GARDEN_MOUNTS } from "./gardenMounts";
+import { CUT_BY_RULING, DIAL_PLACE_BY_CATEGORY, GARDEN_MOUNTS } from "./gardenMounts";
 import { NOT_ADMIN_ROUTES } from "./notAdminRoutes";
 
 const DOCKERFILE = path.resolve(__dirname, "..", "Dockerfile");
@@ -97,7 +97,7 @@ describe("the registry's words never read as an import to the image build's prob
     const tables: Record<string, unknown> = {
       "shared/notAdminRoutes.ts": NOT_ADMIN_ROUTES.map(({ key, kind, names, why }) => ({ key, kind, names, why })),
       "shared/adminActs/ledger.ts": { PARITY_LEDGER, LEDGER_STILL_OPEN, LEDGER_NEVER_DRAWN },
-      "shared/gardenMounts.ts": { GARDEN_MOUNTS, CUT_BY_RULING },
+      "shared/gardenMounts.ts": { GARDEN_MOUNTS, CUT_BY_RULING, DIAL_PLACE_BY_CATEGORY },
     };
     const found = Object.entries(tables).flatMap(([file, table]) =>
       [...captures(printed(table), patterns), ...captures(JSON.stringify(table), patterns), ...captures(JSON.stringify(table, null, 2), patterns)].map((c) => `${file}: ${c}`),
@@ -109,7 +109,7 @@ describe("the registry's words never read as an import to the image build's prob
     // The sentences the scoreboard prints are string literals in code, so the source itself is read. A file's real
     // imports are captures too: each is taken off by name, and what is left is a string that reads as one.
     const stray: string[] = [];
-    for (const file of ["gardenScore.ts", "gardenScoreReport.ts", "gardenMounts.ts", "notAdminRoutes.ts", "adminActs/ledger.ts"]) {
+    for (const file of ["gardenScore.ts", "gardenScoreReport.ts", "gardenScoreRatchet.ts", "gardenWalk.ts", "gardenMounts.ts", "notAdminRoutes.ts", "adminActs/ledger.ts", "adminActs/reads.ts"]) {
       const text = fs.readFileSync(path.resolve(__dirname, file), "utf8");
       const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
       const real = new Set(sf.statements.filter(ts.isImportDeclaration).map((s) => JSON.stringify((s.moduleSpecifier as ts.StringLiteral).text)));

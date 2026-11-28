@@ -9,7 +9,7 @@ import { mayPropose } from "./adminHelper";
 import { VARIABLES } from "./gameVariables";
 import type { GardenMount } from "./gardenMounts";
 import { gardenPlaceOf } from "./gardenMounts";
-import { actFacts, actSettingFacts, countOf, dialFacts, guideCanToday, matrixVerdict, oldDoors, routeGroup, routeMatches, scoreGarden, stewardsByItsHandler, type ScoreInputs } from "./gardenScore";
+import { actFacts, actSettingFacts, countOf, dialFacts, guideCanToday, matrixAdmits, matrixVerdict, oldDoors, routeGroup, routeMatches, scoreGarden, stewardsByItsHandler, type ScoreInputs } from "./gardenScore";
 import { openGroups, scoreMarkdown, scoreTable, scoreText, summaryRow } from "./gardenScoreReport";
 import type { NotAdminFamily } from "./notAdminRoutes";
 
@@ -224,6 +224,68 @@ describe("Settings: the five answers", () => {
     expect(c.parts.find((p) => p.name === "dials: its path by the highest vote")).toMatchObject({ value: 1, of: 2 });
     expect(c.parts.find((p) => p.name === "keys: its path by the highest vote")).toMatchObject({ value: 0, of: 1 });
     expect(c.parts.find((p) => p.name === "shipped controls: who may change it")).toMatchObject({ value: 0, of: 1 });
+  });
+});
+
+describe("three lines that are printed and held by nothing", () => {
+  const identities = ["signedOut", "member", "powerHolder", "adminGroup", "admin", "founder"];
+
+  it("the matrix figure says who passes: an admin, a founder alone, or a power's holder alone", () => {
+    const matrix = {
+      identities,
+      routes: {
+        "GET /a": [401, 401, 401, 200, 200, 200],
+        "PUT /b": [401, 401, 403, 403, 403, 400],
+        "PUT /c": [401, 403, 400, 403, 403, 403],
+        "GET /d": [401, 200, 200, 200, 200, 200],
+        "PUT /e": [401, 401, 401, 401, 401, 401],
+      },
+    };
+    expect(matrixAdmits(matrix, "GET /a")).toBe("an admin");
+    expect(matrixAdmits(matrix, "PUT /b")).toBe("a founder alone");
+    expect(matrixAdmits(matrix, "PUT /c")).toBe("a power's holder alone");
+    // Open to a member, and refused to everybody, are neither of them admin's by the rule.
+    expect(matrixAdmits(matrix, "GET /d")).toBeNull();
+    expect(matrixAdmits(matrix, "PUT /e")).toBeNull();
+    const routes = Object.keys(matrix.routes).map((k) => ({ method: k.split(" ")[0], path: k.split(" ")[1] }));
+    const c = countOf(scoreGarden(inputs({ routes, matrix, acts: [] })), "endpoints");
+    expect(c.parts.find((p) => p.name === "open, and the permission matrix shows it is admin's")!.value).toBe(3);
+    expect(c.parts.find((p) => p.name === "of those, a founder alone passes and an admin is refused")!.value).toBe(1);
+    expect(c.parts.find((p) => p.name === "of those, a power's holder alone passes")!.value).toBe(1);
+    expect(c.notes.join(" ")).toContain("Founder-only routes are inside that figure: of the 3 routes it shows are admin's, 1 route let in a founder and refuse an admin, and 1 route let in only the holder of a power.");
+  });
+
+  it("dials also shown in the place they govern follows the founder's table, and moves no count", () => {
+    const acts = [dialAct(proposable), dialAct(sealed)];
+    const empty = countOf(scoreGarden(inputs({ acts, dials: [proposable, sealed] })), "settings");
+    expect(empty.parts.find((p) => p.name === "dials also shown in the place they govern")).toMatchObject({ value: 0, of: 2 });
+    const filled = countOf(scoreGarden(inputs({ acts, dials: [proposable, sealed], dialPlaces: { [proposable.category]: "tower" } })), "settings");
+    const expected = [proposable, sealed].filter((d) => d.category === proposable.category).length;
+    expect(filled.parts.find((p) => p.name === "dials also shown in the place they govern")).toMatchObject({ value: expected, of: 2 });
+    // The count itself does not move: a dial's home is the greenhouse either way.
+    expect([filled.done, filled.total, filled.open.length]).toEqual([empty.done, empty.total, empty.open.length]);
+    // A place the garden does not have shows no dial.
+    const wrong = countOf(scoreGarden(inputs({ acts, dials: [proposable, sealed], dialPlaces: { [proposable.category]: "attic" as never } })), "settings");
+    expect(wrong.parts.find((p) => p.name === "dials also shown in the place they govern")!.value).toBe(0);
+  });
+
+  it("names every dial the helper would prepare while the registry says a person's alone, and the list empties by itself", () => {
+    const split = VARIABLES.find((v) => mayPropose(v) && v.key.startsWith("agents."))!;
+    const acts = [dialAct(proposable), dialAct(split)];
+    const c = countOf(scoreGarden(inputs({ acts, dials: [proposable, split] })), "threeWays");
+    expect(c.named).toHaveLength(1);
+    expect(c.named![0].heading).toContain("the helper would prepare today, while the registry says a person's alone");
+    expect(c.named![0].items).toHaveLength(1);
+    expect(c.named![0].items[0].startsWith(`dial.${split.key} ${split.label}: `)).toBe(true);
+    // It is not counted as done by the guide, and it is open by name.
+    expect(c.done).toBe(1);
+    expect(c.open.map((o) => o.id)).toEqual([`dial.${split.key}`]);
+    expect(scoreText(scoreGarden(inputs({ acts, dials: [proposable, split] })))).toContain(`dial.${split.key} ${split.label}`);
+    // With the lists agreeing (nothing makes it a person's alone), the list is gone and the dial is hers.
+    const agreeing = { always: [], neverProposed: () => null, variableNever: () => null, proposalRefusal: () => null };
+    const closed = countOf(scoreGarden(inputs({ acts, dials: [proposable, split], lists: agreeing })), "threeWays");
+    expect(closed.named).toBeUndefined();
+    expect(closed.done).toBe(2);
   });
 });
 

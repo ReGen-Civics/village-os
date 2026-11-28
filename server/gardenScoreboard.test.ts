@@ -20,12 +20,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { actClass } from "../shared/adminActs";
 import { dialAct } from "../shared/adminActs/derived";
+import { mayPropose } from "../shared/adminHelper";
 import { LEDGER_TOTAL, PARITY_LEDGER } from "../shared/adminActs/ledger";
 import type { AdminAct } from "../shared/adminActs/types";
 import { ADMIN_PLACES, ADMIN_TABS } from "../shared/adminTabs";
-import { CUT_BY_RULING, GARDEN_MOUNTS } from "../shared/gardenMounts";
-import { COUNT_KEYS, countOf, routeKey, routeMatches, scoreGarden, stewardsByItsHandler, type ScoreInputs } from "../shared/gardenScore";
+import { CUT_BY_RULING, DIAL_PLACE_BY_CATEGORY, GARDEN_MOUNTS, placeADialGoverns } from "../shared/gardenMounts";
+import { COUNT_KEYS, countOf, matrixAdmits, routeKey, routeMatches, scoreGarden, stewardsByItsHandler, type ScoreInputs } from "../shared/gardenScore";
 import { scoreTable } from "../shared/gardenScoreReport";
 import { BY_HAND, inOrder, isRatchet, ratchetFailures, ratchetLeft, ratchetNow, ratchetText, rewritten, type CountRatchet, type Ratchet } from "../shared/gardenScoreRatchet";
 import { walkCsv, walkMarkdown, walkOf } from "../shared/gardenWalk";
@@ -353,6 +355,40 @@ describe("the two lists a person fills are well formed, so the lane that fills t
         mounted.add(`page ${page}`);
       }
     }
+  });
+});
+
+describe("three lines the scoreboard prints and holds nothing to", () => {
+  it("the table of the place each kind of dial governs is well formed, and its line is derived from it", () => {
+    const categories = new Set(inputs.dials.map((d) => d.category));
+    for (const [category, place] of Object.entries(DIAL_PLACE_BY_CATEGORY)) {
+      expect(categories.has(category), `${category} is not a category any dial has`).toBe(true);
+      expect(ADMIN_PLACES as readonly string[], `${category}: ${place}`).toContain(place);
+    }
+    const part = countOf(board, "settings").parts.find((p) => p.name === "dials also shown in the place they govern")!;
+    expect(part.value).toBe(inputs.dials.filter((d) => placeADialGoverns(d.category) !== null).length);
+    expect(part.of).toBe(inputs.dials.length);
+    // The ratchet does not read this line: it is printed and held by nothing.
+    expect(JSON.stringify(ratchet)).not.toContain("dials also shown");
+  });
+
+  it("the dials the two lists disagree on are named, derived, and none is counted", () => {
+    const disagree = inputs.dials.filter((d) => mayPropose(d) && actClass(dialAct(d)) === "person-only").map((d) => `dial.${d.key}`);
+    const threeWays = countOf(board, "threeWays");
+    const named = threeWays.named ?? [];
+    expect(named.flatMap((l) => l.items).map((item) => item.split(" ")[0])).toEqual(disagree);
+    if (disagree.length) console.log(`\n[garden scoreboard] ${named[0].heading}:\n  ${named[0].items.join("\n  ")}\n`);
+    const open = new Set(threeWays.open.map((o) => o.id));
+    for (const id of disagree) expect(open.has(id), `${id} is counted as done by the guide`).toBe(true);
+  });
+
+  it("the matrix figure says founder-only routes are inside it, and how many, from the matrix itself", () => {
+    const keys = Object.keys(inputs.matrix.routes);
+    const founder = keys.filter((k) => matrixAdmits(inputs.matrix, k) === "a founder alone");
+    const all = keys.filter((k) => matrixAdmits(inputs.matrix, k) !== null);
+    const said = countOf(board, "endpoints").notes.join(" ");
+    expect(said).toContain(`Founder-only routes are inside that figure: of the ${all.length} routes it shows are admin's, ${founder.length} route${founder.length === 1 ? "" : "s"} let in a founder and refuse an admin`);
+    console.log(`\n[garden scoreboard] founder-only routes in the matrix: ${founder.join(", ") || "none"}\n`);
   });
 });
 

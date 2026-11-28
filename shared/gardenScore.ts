@@ -33,10 +33,10 @@
 import { PERSON_ONLY_LISTS, actClass, actConsequence, actHref, actReason, actSearchEntry, type PersonOnlyLists } from "./adminActs";
 import { DIAL_ROUTE } from "./adminActs/derived";
 import type { AdminAct } from "./adminActs/types";
-import { ADMIN_PLACES, type AdminTabEntry } from "./adminTabs";
+import { ADMIN_PLACES, type AdminPlace, type AdminTabEntry } from "./adminTabs";
 import { STAGE_UNLOCKS, type Capability } from "./capabilities";
 import { MOVED_TO_SECRET_SENTENCE, applyTimingOf, criticalityOf, ringOf, validateVariable, type VariableDef } from "./gameVariables";
-import { barePath, gardenPlaceOf, type CutByRuling, type GardenMount } from "./gardenMounts";
+import { DIAL_PLACE_BY_CATEGORY, barePath, gardenPlaceOf, placeADialGoverns, type CutByRuling, type GardenMount } from "./gardenMounts";
 import { notAdminFamily, type NotAdminFamily, type NotAdminKind } from "./notAdminRoutes";
 
 // ── What comes in ──────────────────────────────────────────────────────────
@@ -99,6 +99,8 @@ export interface ScoreInputs {
   cuts: readonly CutByRuling[];
   notAdmin: readonly NotAdminFamily[];
   old: OldAddresses;
+  /** The place each category of dial governs (DIAL_PLACE_BY_CATEGORY, shared/gardenMounts.ts). Absent: that table. */
+  dialPlaces?: Readonly<Record<string, AdminPlace>>;
   /** The lists a class is computed from. A test hands in its own. */
   lists?: PersonOnlyLists;
 }
@@ -145,6 +147,8 @@ export interface Count {
   open: OpenItem[];
   parts: CountPart[];
   notes: string[];
+  /** Things a reader is owed by name that are neither done nor open: each a heading and its items. Printed, and held by nothing. */
+  named?: Array<{ heading: string; items: string[] }>;
 }
 
 export interface Scoreboard {
@@ -184,6 +188,19 @@ export function matrixVerdict(matrix: MatrixSnapshot, key: string): "admin" | "o
   const cell = (who: string) => row[matrix.identities.indexOf(who)];
   const above = matrix.identities.filter((who) => who !== "signedOut" && who !== "member");
   return refused(cell("signedOut")) && refused(cell("member")) && above.some((who) => !refused(cell(who))) ? "admin" : "open";
+}
+
+/**
+ * Who the matrix shows passes a route it calls admin's: "an admin" when the admin column is let in, "a founder alone"
+ * when an admin is refused and a founder is let in, "a power's holder alone" when both are refused and only somebody
+ * holding a power is let in. Null for a route the matrix does not call admin's.
+ */
+export function matrixAdmits(matrix: MatrixSnapshot, key: string): "an admin" | "a founder alone" | "a power's holder alone" | null {
+  if (matrixVerdict(matrix, key) !== "admin") return null;
+  const row = matrix.routes[key];
+  const cell = (who: string) => row[matrix.identities.indexOf(who)];
+  if (!refused(cell("admin"))) return "an admin";
+  return refused(cell("founder")) ? "a power's holder alone" : "a founder alone";
 }
 
 /** Whether a router pattern (`/forum/:id`) draws a page for a path. */
@@ -418,12 +435,22 @@ export function routeOwner(route: ScoreRoute, named: ReturnType<typeof actRoutes
   return { by: "not-admin", family: family.key, kind: family.kind };
 }
 
+/** The sentence printed beside the matrix figure: what the rule counts as admin's, and how many founder-only routes are inside it. */
+function matrixRuleNote(matrix: MatrixSnapshot): string {
+  const keys = Object.keys(matrix.routes);
+  const admits = keys.map((key) => matrixAdmits(matrix, key));
+  const all = admits.filter((a) => a !== null).length;
+  const founder = admits.filter((a) => a === "a founder alone").length;
+  const holder = admits.filter((a) => a === "a power's holder alone").length;
+  return `The matrix counts a route as admin's when a signed-out visitor and a plain member are both refused and anyone above them is let in. Founder-only routes are inside that figure: of the ${all} routes it shows are admin's, ${some(founder, "route")} let in a founder and refuse an admin, and ${some(holder, "route")} let in only the holder of a power.`;
+}
+
 function endpointsCount(i: ScoreInputs): Count {
   const distinct = new Map<string, ScoreRoute>();
   for (const r of i.routes) if (!distinct.has(routeKey(r.method, r.path))) distinct.set(routeKey(r.method, r.path), r);
   const named = actRoutes(i.acts);
   const open: OpenItem[] = [];
-  const n = { act: 0, reads: 0, public: 0, member: 0, machine: 0, openAdminByMatrix: 0, openUnderAdmin: 0, overruled: 0, openAsksAdmin: 0, openRolePower: 0 };
+  const n = { act: 0, reads: 0, public: 0, member: 0, machine: 0, openAdminByMatrix: 0, openFounderAlone: 0, openHolderAlone: 0, openUnderAdmin: 0, overruled: 0, openAsksAdmin: 0, openRolePower: 0 };
 
   for (const [key, r] of Array.from(distinct)) {
     const owner = routeOwner(r, named, i.notAdmin);
@@ -434,6 +461,9 @@ function endpointsCount(i: ScoreInputs): Count {
       const verdict = matrixVerdict(i.matrix, key);
       const stewards = stewardsByItsHandler(r);
       if (verdict === "admin") n.openAdminByMatrix++;
+      const admits = matrixAdmits(i.matrix, key);
+      if (admits === "a founder alone") n.openFounderAlone++;
+      if (admits === "a power's holder alone") n.openHolderAlone++;
       if (r.path.startsWith("/api/admin/")) n.openUnderAdmin++;
       if (owner.overruled) n.overruled++;
       if (r.asksAdmin) n.openAsksAdmin++;
@@ -460,6 +490,7 @@ function endpointsCount(i: ScoreInputs): Count {
     "A route is accounted for when an act calls it (method and path, exactly as Express registers them), when an act's page reads it, or when a named family of routes that are not admin's holds it (shared/notAdminRoutes.ts).",
     i.notAdmin.length ? `Families of routes that are not admin's: ${i.notAdmin.length}.` : "The list of routes that are not admin's is empty, so every route no act names is open.",
     `The permission matrix holds ${Object.keys(i.matrix.routes).length} of these routes. A route outside its scope reads as absent there, which says nothing about whose it is.`,
+    matrixRuleNote(i.matrix),
     "The permission matrix is a recorded table: it proves the server agreed with the table on the day it was written, and no more. No route is counted done on its word. It only labels open routes, beside what each handler's own code asks.",
     "What a route's own handler asks overrules the families: one that asks the admin question, or names a power only a role gives, is never counted as not admin's (server/testkit/routeDoors.ts says what that reader cannot see).",
   ];
@@ -484,6 +515,8 @@ function endpointsCount(i: ScoreInputs): Count {
       { name: "open", value: open.length },
       { name: "open, under /api/admin/", value: n.openUnderAdmin },
       { name: "open, and the permission matrix shows it is admin's", value: n.openAdminByMatrix },
+      { name: "of those, a founder alone passes and an admin is refused", value: n.openFounderAlone },
+      { name: "of those, a power's holder alone passes", value: n.openHolderAlone },
       { name: "open, and its handler asks whether the caller is an admin", value: n.openAsksAdmin },
       { name: "open, and its handler names a power only a role gives", value: n.openRolePower },
       { name: "open, in a family that is not admin's and overruled by its own handler", value: n.overruled },
@@ -584,11 +617,16 @@ function settingsCount(i: ScoreInputs): Count {
   }
 
   const dialPlaces = unique(i.dials.map((d) => byId.get(`dial.${d.key}`)?.place).filter((p): p is AdminAct["place"] => !!p));
+  // Printed, and held by nothing: how many dials are ALSO shown in the place they govern, by the founder's table.
+  const governs = i.dialPlaces ?? DIAL_PLACE_BY_CATEGORY;
+  const alsoShown = i.dials.filter((d) => (ADMIN_PLACES as readonly string[]).includes(placeADialGoverns(d.category, governs) ?? "")).length;
+  parts.push({ name: "dials also shown in the place they govern", value: alsoShown, of: i.dials.length });
   const notes = [
     "A dial's five answers are read off what decides it: the place of its act, its label, its description, its ring (ringOf: the village governs it, or whoever runs the deployment holds it), and whether any write path may give it a new value.",
     dialPlaces.length === 1
       ? `Every dial carries the same place, ${dialPlaces[0]}: one tab holds them all. No dial is shown in the place it governs.`
       : `The dials sit in ${dialPlaces.length} places: ${dialPlaces.join(", ")}.`,
+    "Dials also shown in the place they govern is printed and held by nothing. It reads a table of dial category to place that is empty and needs the founder's eye (DIAL_PLACE_BY_CATEGORY, shared/gardenMounts.ts). A dial's home stays the greenhouse either way.",
     "Keys and shipped controls cannot answer their path by the highest vote yet: nothing in the registry ties one to a kind of change a ballot can carry.",
     "A shipped control with no route cannot answer who may change it: its door was never read. One with a route can, partial or not: the registry's test proves its handler names the power.",
   ];
@@ -638,6 +676,7 @@ function threeWaysCount(i: ScoreInputs): Count {
   const open: OpenItem[] = [];
   const n = { click: 0, find: 0, guide: 0, all: 0 };
   const disagree: string[] = [];
+  const disagreeNamed: string[] = [];
 
   for (const a of i.acts) {
     const click = !!actHref(a);
@@ -651,7 +690,11 @@ function threeWaysCount(i: ScoreInputs): Count {
       continue;
     }
     const def = isDialAct(a) ? defs.get(a.route?.params?.key ?? "") : undefined;
-    if (def && lists.proposalRefusal(def) === null && actClass(a, lists) !== "prepare") disagree.push(a.id);
+    // The helper would prepare it (its own list lets it), and the registry's class says a person's alone.
+    if (def && lists.proposalRefusal(def) === null && actClass(a, lists) === "person-only") {
+      disagree.push(a.id);
+      disagreeNamed.push(`${a.id} ${def.label}: ${actReason(a, lists)?.words ?? "the registry gives no reason"}`);
+    }
     const lacks = [click ? "" : "It has no address to click.", find ? "" : "Find anything has no entry for it."].filter(Boolean);
     if (!guide) {
       if (!isDialAct(a)) lacks.push("The guide can prepare a dial today and nothing else. No code lets her do this one.");
@@ -667,7 +710,8 @@ function threeWaysCount(i: ScoreInputs): Count {
     "By asking the guide counts only what her code can do today: prepare a change to a dial she may propose (mayPropose, shared/adminHelper.ts), where the act's tier is also one to prepare. Everything else waits for the code that lets her do it.",
     "Whether the three ways leave the same record is not measured here.",
   ];
-  if (disagree.length) notes.push(`Two lists disagree on ${some(disagree.length, "dial")}: the helper would prepare each today, and the registry's tier says a person's alone (${disagree.join(", ")}). None is counted.`);
+  if (disagree.length) notes.push(`Two lists disagree on ${some(disagree.length, "dial")}, named below. None is counted as done by the guide.`);
+  const named = disagree.length ? [{ heading: "Dials the helper would prepare today, while the registry says a person's alone (not counted)", items: disagreeNamed }] : [];
 
   return {
     key: "threeWays",
@@ -684,6 +728,7 @@ function threeWaysCount(i: ScoreInputs): Count {
       { name: "all three", value: n.all, of: i.acts.length },
     ],
     notes,
+    ...(named.length ? { named } : {}),
   };
 }
 
