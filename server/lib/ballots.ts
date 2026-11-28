@@ -680,7 +680,7 @@ export const LEFT_THE_VILLAGE_OBJECTION =
  * village's launch asks its founding members (`VoterStanding.notAFoundingMember`).
  */
 export const FOUNDERS_ONLY_VOTE =
-  "Only founding members vote on starting the Game, so this vote is not open to your account. Every vote the village holds after it is";
+  "Only founding members vote on the village's launch, so this vote is not open to your account. Every other vote the village holds is";
 
 /**
  * WHY A LAUNCH VOTE CANNOT BE CLOSED BY HAND BEFORE ITS WINDOW ENDS.
@@ -1438,7 +1438,7 @@ export async function withdrawBallot(pool: Pool, input: WithdrawBallotInput): Pr
     if (others > 0) {
       return {
         ok: false,
-        error: "Other people have voted on starting the Game, so it can no longer be called off. It carries the moment enough of its roll have said yes with nobody saying no, and otherwise it runs its whole window.",
+        error: "Other people have voted on the launch, so it can no longer be called off. It carries the moment enough of its roll have said yes with nobody saying no, and otherwise it runs its whole window.",
       };
     }
   }

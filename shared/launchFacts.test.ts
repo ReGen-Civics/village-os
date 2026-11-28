@@ -116,11 +116,17 @@ describe("launchDoors: what a screen may offer", () => {
     expect(launchDoors(CLAIMED)).toEqual({ rowsOpen: true, voteCanBeAsked: true });
   });
 
-  it("does not offer the vote to a village that is already issuing, and still lets it answer its rows", () => {
-    // The state the page got wrong: Start the Game showed, and the server answered 409.
+  it("offers the vote to a village that was issuing before the vote existed, and still lets it answer its rows", () => {
+    // The state the page once got wrong: Start the Game showed, and the server answered 409. The server now lets
+    // such a village hold the vote once, and it never restarts issuance (server/lib/launchRatify.ts), so the page offers it.
     const d = launchDoors(facts({ issuing: true, founderPowerStands: false }));
-    expect(d.voteCanBeAsked).toBe(false);
+    expect(d.voteCanBeAsked).toBe(true);
     expect(d.rowsOpen).toBe(true);
+  });
+
+  it("does not offer it again once that vote has carried", () => {
+    const d = launchDoors(facts({ issuing: true, founderPowerStands: false, voteCarried: true, launchedByBallotId: "bal-3", checklistFrozen: true, launchedAt: "2026-12-30T00:00:00.000Z" }));
+    expect(d.voteCanBeAsked).toBe(false);
   });
 
   it("closes the row answers and the vote once the checklist froze", () => {

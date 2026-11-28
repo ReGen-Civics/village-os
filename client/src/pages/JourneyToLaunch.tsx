@@ -293,11 +293,11 @@ export default function JourneyToLaunch() {
    */
   const [askRefusal, setAskRefusal] = useState("");
   const askTheVillage = () => {
-    if (
-      !window.confirm(
-        t({ message: "Open the vote on starting the Game? It carries the moment enough of its roll have said yes, unless somebody on it has said no. It does not wait for its window to end.", context: "JourneyToLaunch, confirm before opening the launch vote" }),
-      )
-    ) {
+    // A village already issuing opens a RATIFYING vote, and is told so before it presses (Rye, 2026-11-27).
+    const asking = (status?.vote as LaunchVote | undefined)?.ratifying
+      ? t({ message: "Open the vote on starting the Game? Issuance is already open and does not restart: the day this carries is the Game's birthday. It carries the moment enough of its roll have said yes, unless somebody on it has said no.", context: "JourneyToLaunch, confirm before opening the launch vote of a village already issuing" })
+      : t({ message: "Open the vote on starting the Game? It carries the moment enough of its roll have said yes, unless somebody on it has said no. It does not wait for its window to end.", context: "JourneyToLaunch, confirm before opening the launch vote" });
+    if (!window.confirm(asking)) {
       return;
     }
     setBusy("launch");

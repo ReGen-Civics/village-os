@@ -39,8 +39,7 @@ const DIST = path.resolve(process.cwd(), "dist/index.js");
 // Its window is checked by scripts/check-e2e-ports.mjs, not claimed here: the
 // hand-written claims this replaces had gone stale and were describing a tree
 // that had moved on.
-// 1,300 wide since 2026-11-27: the port map was full, and the last 200 went to server/permissionMatrix.routes.e2e.test.ts.
-const PORT = 11500 + (process.pid % 1300);
+const PORT = 11500 + (process.pid % 700); // narrowed from 1500 on 2026-11-27: the port map was full, and 12200-12949 went to the road to launch suites
 const BASE = `http://localhost:${PORT}`;
 const ADMIN = "examples-routes-admin";
 

@@ -2683,6 +2683,25 @@ const RULINGS = [
       "Game starts. Once a village is issuing they close to the panel and move only by a vote at its highest tier, " +
       "which is the path for a village with fewer than three catalysts. A ballot freezes both when it opens.",
   },
+  {
+    id: 35,
+    title: "A village already issuing holds its Start the Game vote once, and it does not restart issuance",
+    dates: ["2026-11-27", "2026-11-28"],
+    quotes: [
+      "one ratifying launch vote that does not restart issuance",
+      "Let's stay with start the game and have it as the 'birthday of the game' going forward",
+    ],
+    status: () => "**Built.**",
+    note: () =>
+      "Some villages were issuing before the launch vote existed, and a migration recorded their Game as started with " +
+      "no ballot behind it. Such a village was refused the launch vote, because the route that must never start a " +
+      "Game twice read that record alone. It may now hold the vote once. The vote keeps its name, Start the Game, and " +
+      "its document says what was already running: issuance does not restart. When it carries, the launch is " +
+      "recorded with the ballot that did it and the record of when issuance began is not written at all, so that " +
+      "day does not move. The day it carries is the Game's birthday, and Moon 1 is the moon it falls in. Everything " +
+      "else a launch does happens the same way: the seating, the powers that cross, the doors that close. A village " +
+      "that started by its own vote, or that has already held this one, is refused a second.",
+  },
 ];
 
 /**

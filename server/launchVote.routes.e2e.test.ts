@@ -640,7 +640,7 @@ describe.skipIf(!DB_CONFIGURED)("the third founder arrives and the vote can be a
     const [running] = await launchBallots();
     const refused = await vote(running.id, tamToken, "yes");
     expect(refused.status).toBe(409);
-    expect(String(refused.json?.error)).toContain("Only founding members vote on starting the Game");
+    expect(String(refused.json?.error)).toContain("Only founding members vote on the village's launch");
     // The known positive: a founder's vote on the same ballot is taken, two cases below.
     const [votes] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM ballot_votes WHERE ballot_id = ?", [running.id]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     expect(Number(votes[0].n)).toBe(0);

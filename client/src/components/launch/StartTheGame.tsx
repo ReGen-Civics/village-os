@@ -31,6 +31,14 @@ export interface LaunchVote {
    * on the launch). Absent on a server older than the field.
    */
   yesNeeded?: number | null;
+  /**
+   * This village is already issuing and never held its launch vote, so the
+   * vote it may open is a RATIFYING one: it puts the launch on the record and
+   * never restarts issuance (Rye, 2026-11-27). Absent on an older server.
+   */
+  ratifying?: boolean;
+  /** The instant issuance began, which a ratifying vote never moves. */
+  issuingSince?: string | null;
   unityPct: number | null;
   quorumPct: number | null;
   minElectorate: number | null;
@@ -98,8 +106,12 @@ export default function StartTheGame({
   const running = vote?.openBallot ?? null;
   const shortOfPeople = !!vote?.tooFew;
   const governanceOff = vote?.governanceOn === false;
-  // The door this button opens refuses a village that is already issuing, so the card reads the same fact.
+  // The card reads the fact the button's own door reads (shared/launchFacts.ts).
   const cannotBeAsked = !running && !!facts && !launchDoors(facts).voteCanBeAsked;
+  // Issuing with no vote held: from the launch read, or from the facts when that read is the one in hand.
+  const alreadyIssuing = !!vote?.ratifying || (!!facts && facts.issuing && !facts.voteCarried && !facts.checklistFrozen);
+  const issuingSince = vote?.issuingSince ?? facts?.issuingSince ?? null;
+  const issuingDay = issuingSince ? new Date(issuingSince).toLocaleDateString() : "";
   const canAsk = !!status.readyToLaunch && !shortOfPeople && !governanceOff && !running && isFounder && !cannotBeAsked;
 
   return (
@@ -113,18 +125,22 @@ export default function StartTheGame({
           <p className="font-semibold text-stone-900 flex items-center gap-2">
             <SeedGlint className="w-4 h-4 text-teal-deep" /> {launchName}
           </p>
-          {/* One line, in one element: the village that cannot be asked gets its plain sentence where the governance line sits. */}
-          {!running && (cannotBeAsked || governanceOff) && (
-            <p data-testid={cannotBeAsked ? "start-already-issuing" : undefined} className="text-xs text-stone-700 mt-1 max-w-md">
-              {cannotBeAsked ? (
+          {/* One line, in one element. A village already issuing may hold this vote once (server/lib/launchRatify.ts), and it
+              keeps the name (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game'
+              going forward"). So it is told what does not restart, and what begins the day the vote carries. */}
+          {!running && (alreadyIssuing || governanceOff) && (
+            <p data-testid={alreadyIssuing ? "start-already-issuing" : undefined} className="text-xs text-stone-700 mt-1 max-w-md">
+              {alreadyIssuing && (
                 <>
-                  <Trans context="StartTheGame, p">This village is already issuing {tokens}, and no launch vote has carried, so this page cannot open the vote. Changing that is the village's own decision, by its highest vote.</Trans>{" "}
-                  {/* Where members propose a change to the rules and the village votes on it: GAME_MECHANICS_ANCHOR on pages/Governance.tsx. */}
-                  <Link href="/governance/how#game-mechanics" className="text-teal-deep underline">
-                    <Trans context="StartTheGame, Link">Open the game mechanics</Trans>
-                  </Link>
+                  {issuingDay ? (
+                    <Trans context="StartTheGame, a village already issuing">This village has been issuing {tokens} since {issuingDay}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.</Trans>
+                  ) : (
+                    <Trans context="StartTheGame, a village already issuing">This village is already issuing {tokens}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.</Trans>
+                  )}
+                  {governanceOff && " "}
                 </>
-              ) : (
+              )}
+              {governanceOff && (
               <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
               <Link href="/modules/governance" className="text-teal-deep underline">
                 Turn it on for members first

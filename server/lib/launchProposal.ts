@@ -204,6 +204,14 @@ export interface LaunchProposalDocInput {
    * have. Absent or empty means every row read done.
    */
   carriedOpen?: readonly string[];
+  /**
+   * Set when this is a RATIFYING vote: the village was already issuing when it
+   * opened (Rye, 2026-11-27: "one ratifying launch vote that does not restart
+   * issuance"). `issuingSince` is the instant `game-start` holds. Every
+   * sentence that says issuance starts is replaced, because on this village it
+   * already did. Absent means a first launch, exactly as before.
+   */
+  ratifying?: { issuingSince: string | null };
 }
 
 /**
@@ -217,14 +225,7 @@ export interface LaunchProposalDocInput {
  */
 export function launchProposalDoc(input: LaunchProposalDocInput): string {
   return [
-    `# Start the Game`,
-    "",
-    `${input.villageName} is built. This vote is what starts it.`,
-    "",
-    "## What changes when this carries",
-    "",
-    "Token issuance turns on. Until then this village can be set up in every other way, and nothing can be issued to anybody.",
-    "",
+    ...openingSection(input),
     ...doorsSection(input),
     ...stewardSection(input),
     ...handoverSection(input),
@@ -258,6 +259,53 @@ export function launchProposalDoc(input: LaunchProposalDocInput): string {
       : `Every item on the journey to launch read done when ${input.openedBy} opened this, on ${input.openedOn}.`,
     "",
   ].join("\n");
+}
+
+/**
+ * THE OPENING, AND THE ONE PLACE A RATIFYING VOTE READS DIFFERENTLY.
+ *
+ * A first launch starts issuance, and says so. A ratifying vote is held by a
+ * village that has been issuing since before the vote existed, so saying
+ * "issuance turns on" would be false twice: it is already on, and a member
+ * could read it as a restart. It says what is true instead: the day issuance
+ * began, that it does not move, and that nothing already issued changes.
+ * Everything below this section is the same for both, because what the launch
+ * hands over and who is seated is the same act.
+ */
+function openingSection(input: LaunchProposalDocInput): string[] {
+  if (!input.ratifying) {
+    return [
+      `# Start the Game`,
+      "",
+      `${input.villageName} is built. This vote is what starts it.`,
+      "",
+      "## What changes when this carries",
+      "",
+      "Token issuance turns on. Until then this village can be set up in every other way, and nothing can be issued to anybody.",
+      "",
+    ];
+  }
+  const iso = String(input.ratifying.issuingSince ?? "");
+  const day = /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : "";
+  return [
+    // The vote keeps its name (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game' going forward").
+    `# Start the Game`,
+    "",
+    day
+      ? `${input.villageName} has been issuing tokens since ${day}, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`
+      : `${input.villageName} was already issuing tokens before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`,
+    "",
+    "## What was already running",
+    "",
+    day
+      ? `Token issuance. It does not restart, and the day it began stays ${day}. Nothing already issued changes, and nobody's balance moves because of this vote.`
+      : "Token issuance. It does not restart, and the day it began does not move. Nothing already issued changes, and nobody's balance moves because of this vote.",
+    "",
+    "## What changes when this carries",
+    "",
+    "That day is the Game's birthday, and Moon 1 is the moon it falls in. The village's powers pass the way a launch passes them, as the sections below say: who may turn a module on, who may publish the org chart, who is seated as a steward, and what the village holds from that day.",
+    "",
+  ];
 }
 
 const rollKindOf = (input: LaunchProposalDocInput): LaunchRollKind => input.rollKind ?? "founders";

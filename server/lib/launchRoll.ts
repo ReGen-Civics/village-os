@@ -192,7 +192,7 @@ export function launchRollProblem(roll: LaunchRoll, standing: LaunchRollStanding
 function wayThrough(kind: LaunchRollKind, founderPowerStands: boolean, asked: number): string {
   if (kind === "members") {
     // Three is the floor nothing lowers (R67), so at three the only way is more people.
-    if (asked <= LAUNCH_YES_HEADS) return "The way through: more members join. A Game needs three people to start.";
+    if (asked <= LAUNCH_YES_HEADS) return "The way through: more members join. A launch needs three people.";
     return founderPowerStands
       ? "The way through: more members join, or a founder lowers how many the launch asks in the governance settings, never below three."
       : "The way through: more members join, or the village lowers how many the launch asks, never below three, by a vote at its highest tier.";
