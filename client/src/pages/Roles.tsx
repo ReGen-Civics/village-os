@@ -40,6 +40,7 @@ import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/Qu
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import ComingSoonRoles, { type SoonRole } from "@/components/roleCard/ComingSoonRoles";
 import { soonIsPaid } from "@/components/roleCard/frontWords";
 import { waitlistHash } from "@shared/roleWaitlist";
@@ -365,8 +366,9 @@ export default function Roles() {
   const memberPct = useMyCommitment(!!user).pct;
   const [showBeyond, setShowBeyond] = useState(false);
   const { t } = useLingui();
-  const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
-  const isAdmin = useIsAdmin();
+  const canTagNeeds = hasAdminAccess(user);
+  // The waitlist offers a letter to everyone waiting, and that route asks the mail power: the account's own role.
+  const isAdmin = useIsAdmin("account-role");
   // "Show only what matches my roots": the same filter and rule the quests board runs.
   const roots = useRootsFilter(user?.id ?? null);
   // The card's clock and the village's class names: one cached read each for

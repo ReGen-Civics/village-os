@@ -20,6 +20,16 @@ This file is the map. `client/src/config/nav.ts` is the menu it describes, and `
 7. **Each page in one place, with two named exceptions:** Quests (Village, and Govern's This season) and the roles (Join's Open Roles, and Govern's Circles & Roles). The test names both.
 8. **The same rows everywhere:** the desktop dropdowns, the drawer, the account menu and the phone's More sheet draw through `client/src/components/nav/MenuRows.tsx`.
 
+## Module entries are the village's to name and place (27 Nov 2026)
+
+The lead, 27 Nov 2026: "For all modules when you turn a module on, you actually say what its name is going to be we give it a default name and where in the menu it will show up so that all module menu items are up for the village to determine where in the menu they would like them to be and what their name would be rather than us trying to predict all of this upfront".
+
+- **Defaults.** Every entry in `nav.ts` with a `module` gate is a module's own entry. Its default name is its label there and its default place is where this map puts it: its group, its folder and its position. `shared/moduleMenu.ts` (`MENU_SHAPE`, `MODULE_MENU`) carries the same menu for the server, and `client/src/config/moduleMenu.test.ts` holds the two equal. A village that never chooses anything has exactly the menu below.
+- **The village's choice.** The village names and places a module entry when it turns the module on (the Module Library's Turn on, or the module page's switch: "In the menu as", "Where", "Position", with a live preview of the group), and changes either at any time in Admin, Menu, Module entries. The name is the menu document's `labels`, the place its `places` (`shared/menuDoc.ts`, `shared/menuPlace.ts`), saved through the content route under `story.tell` like every other menu setting, or filed as a `page_content` proposal on `app-menu` for whoever decides. A choice equal to the default writes nothing.
+- **The same rules.** A place is refused, in a plain sentence, when it would give a group more rows than above (five, Village six, the account menu five) or a folder more than five links once every module is on, when it names a group or folder the menu has not got, or when it would sit below the Module Library. Only a module's entries move; the platform's own pages stay where this map puts them.
+- **Read everywhere.** The desktop bar, the drawer, the phone's More sheet, the account menu, the breadcrumb, Recent, the firefly and the browser tab all read the placed menu (`client/src/config/navPlaces.ts`). "One name per page" means the village's chosen name once it has chosen one.
+- **So the trees below are the defaults.** A village's own menu can differ by the entries it moved.
+
 Audiences, as the gates see them: **V** visitor, **N** newcomer (signed in, not admitted), **M** member, **R** role holder (a seat or a power, such as a treasury power), **I** investor (the investor tag from #1837 unlocks `/investor`; their menu is a member's or a visitor's), **A** admin or founder. The gates are the existing ones in `nav.ts`: `roles`, `newcomers`, `module`, `door`, `brochure` and `signedIn`.
 
 ## The menu each audience sees
@@ -446,7 +456,7 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 | `/team` | Team | V N M R I A | About / Our Team | Community / Our story / Our Team | STAY |  |
 | `/admin` | Village settings | A | Account menu / Village Settings | Account menu / Running the village / Village Settings | STAY |  |
 | `/admin/mint` |  | R A | - | - | STAY | reached from the Treasury desk |
-| `/admin/proposals` |  | A | - | - | FOLDING | the Governance lane folds it into /admin/review |
+| `/admin/proposals` |  | A | - | - | FOLDED | lands on /admin/review?view=batches, which draws its desk (27 Nov 2026) |
 | `/admin/review` |  | A | - | Account menu / Running the village / Review | STAY | new menu door (27 Nov 2026): the admin's one review page |
 | `/profile` | My profile | N M R I A | Account menu / My Profile | Account menu / My Profile | STAY |  |
 | `/profile/characters` |  | M R A | - | - | STAY | reached from the profile |

@@ -275,7 +275,7 @@ export default function AgentsPanel({ password, players }: { password: string; p
       <ApprovedWritesPanel password={password} />
       <AiAgentsApprovalPanel password={password} />
       <LetterDraftsPanel password={password} />
-      <a href="/admin/proposals" className="inline-flex min-h-11 items-center text-sm text-teal-deep underline">
+      <a href="/admin/review?view=batches" className="inline-flex min-h-11 items-center text-sm text-teal-deep underline">
         <Trans context="proposed changes">Proposed changes: review, edit and accept what agents propose</Trans>
       </a>
       <div className="space-y-3 rounded-xl border border-border bg-white p-4">

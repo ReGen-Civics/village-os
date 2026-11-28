@@ -47,6 +47,7 @@ import ConnectorSetupPanel from "@/components/agent/ConnectorSetupPanel";
 import { adminRootClass, readAdminNight, writeAdminNight } from "@/components/admin/adminNight";
 import { AdminSeraChip, SeraAdminHome } from "@/components/admin/AdminSeraLink";
 import { tabFromSearch } from "@/components/admin/adminAreas";
+import { leftAdminTarget, settleTabAddress, tabLanding } from "@/components/admin/adminTabAliases";
 import AdminSearch from "@/components/admin/search/AdminSearch";
 import HealthStrip from "@/components/admin/HealthStrip";
 import AdminHelp from "@/components/admin/AdminHelp";
@@ -57,14 +58,12 @@ import { TourCard } from "@/components/admin/AdminFeel";
 
 const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
 const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
-const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
-const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
 const MenuUseTab = lazy(() => import("@/components/admin/MenuUseTab")); // How the menu is used, and below it Compare proposals (the lead, 20 Nov 2026): lazy, the first page never pays for them.
 const CompareTab = lazy(() => import("@/components/admin/CompareTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 const ArtLibraryTab = lazy(() => import("@/components/admin/ArtLibraryTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
-import { adminNavRailClass, filterNavByModules, TAB_MODULE, type TabBadge } from "@/lib/adminNav";
+import { adminNavRailClass, filterNavByModules, moduleIsOn, tabModules, type TabBadge } from "@/lib/adminNav";
 import { AdminGoLive } from "@/components/modules/GoLiveCard";
 import type { ModuleLifecycle } from "@shared/modules";
 import type { UploadsSweepReport } from "@shared/uploadsSweep";
@@ -119,6 +118,7 @@ import SetupSection from "@/components/admin/SetupSection";
 import BrandTextField from "@/components/admin/BrandTextField";
 import HandoverTab from "@/components/admin/HandoverTab";
 import AdminGate from "@/components/admin/AdminGate";
+import CreditSaleMissing, { readCreditSale } from "@/components/admin/CreditSaleMissing";
 import FailuresTab from "@/components/admin/FailuresTab";
 import PortalVisitorsTab from "@/components/admin/PortalVisitorsTab";
 import SecretsKeyBanner, { SealedSaveButton } from "@/components/admin/SecretsKeyBanner";
@@ -159,7 +159,7 @@ async function saveProblem(res: Response, fallback = ""): Promise<string> {
 }
 
 /**
- * One locale decision for the moderation queues, so a card and the line under
+ * One locale decision for the Reports queue, so a card and the line under
  * it never disagree about how a date looks.
  */
 function shortDate(iso: string): string {
@@ -167,8 +167,8 @@ function shortDate(iso: string): string {
 }
 
 /**
- * Who closed a report, and when. Both moderation queues render it, so the
- * forum and the message queue stay one pattern for a moderator.
+ * Who closed a report, and when. Both kinds of card in the Reports queue
+ * render it, so a forum report and a message report stay one pattern.
  */
 function ResolutionNote({ report }: { report: { status: string; resolvedBy?: string | null; resolvedAt?: string | null } }) {
   const line = resolutionLine(report, shortDate);
@@ -177,218 +177,210 @@ function ResolutionNote({ report }: { report: { status: string; resolvedBy?: str
 }
 
 /**
- * Forum moderation, which had no surface at all.
+ * ONE REPORTS QUEUE: every flag a member raises, on the forum or in a private
+ * message (cut C7, 27 Nov 2026).
  *
- * Three endpoints have existed since the forum shipped — the report queue,
- * resolving a report, and hiding or locking a thread — and not one of them had
- * a caller anywhere in the client. Meanwhile the server auto-hides a thread
- * once enough people softly report it. So the village could silence a
- * conversation on its own, and the stewards had no way to see that it had
- * happened, why, or how to put it back. Moderation that only ever removes is
- * not moderation.
+ * It was two tabs, Moderation and Message Reports, built to match on purpose:
+ * the same status chips, the same card, the same two verbs. A moderator
+ * learned one pattern and still had two places to look. It is one list now,
+ * newest first, and each card keeps every act its own tab had.
+ *
+ * THE FORUM HALF. Three endpoints have existed since the forum shipped (the
+ * report queue, resolving a report, and hiding or locking a thread) and for a
+ * long time none had a caller. Meanwhile the server auto-hides a thread once
+ * enough people softly report it, so the village could silence a conversation
+ * on its own and the stewards had no way to see it or put it back. Moderation
+ * that only ever removes is not moderation.
+ *
+ * THE MESSAGES HALF, AND WHAT IT DELIBERATELY DOES NOT SHOW. Private
+ * correspondence is the whole difference. The server hands over one message
+ * body and the thread it sat in, and that is all a card renders: no
+ * surrounding lines, no author name, no link into the conversation. A direct
+ * thread is never named, because its name is the two people in it. The page
+ * says so out loud, so a moderator knows they are judging one line and not a
+ * thread.
+ *
+ * EACH HALF FOLLOWS ITS MODULE. `/api/admin/forum` and `/api/admin/messages`
+ * each mount behind their module, so the queue reads only the half that is on
+ * (TAB_MODULES in client/src/lib/adminNav.ts).
  */
-function ForumModerationTab({ password }: { password: string }) {
-  const [status, setStatus] = useState<"open" | "resolved" | "dismissed">("open");
-  const [reports, setReports] = useState<any[] | null>(null);
-  const [busy, setBusy] = useState<string>("");
+type QueuedReport = { kind: "forum"; r: any } | { kind: "message"; r: MessageReport };
+/** The address comes first: scripts/check-admin-reach.mjs reads a call's first argument to find a route's door. */
+type ReportAct = (url: string, method: "PUT" | "POST", body: unknown, okMsg: string, fallback: string, key: string) => void;
 
-  const load = useCallback(() => {
-    setReports(null);
-    fetch(`${API_BASE}/admin/forum/reports?status=${status}`, { headers: authHeaders(password) })
-      .then((r) => (r.ok ? r.json() : []))
-      .then(setReports)
-      .catch(() => setReports([]));
-  }, [password, status]);
-  useEffect(load, [load]);
+const reportTime = (q: QueuedReport) => new Date(q.r.at).getTime() || 0;
 
-  const act = async (url: string, body: any, okMsg: string, key: string) => {
-    setBusy(key);
-    try {
-      const res = await fetch(url, {
-        method: url.includes("/reports/") ? "PUT" : "POST",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error || "Failed");
-      toast.success(okMsg);
-      load();
-    } catch (e: any) {
-      toast.error(e?.message || "Failed");
-    } finally {
-      setBusy("");
-    }
-  };
-
+/** A forum report: read it, hide it or put it back, lock replies, and close the report. */
+function ForumReportCard({ r, open, busy, act }: { r: any; open: boolean; busy: boolean; act: ReportAct }) {
+  const moderate = (body: unknown, okMsg: string) => act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, "POST", body, okMsg, "Failed", `forum:${r.id}`);
+  const close = (status: "resolved" | "dismissed", okMsg: string) => act(`${API_BASE}/admin/forum/reports/${r.id}`, "PUT", { status }, okMsg, "Failed", `forum:${r.id}`);
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-gray-900"><Trans context="Admin, h2">Moderation</Trans></h2>
-        <p className="text-sm text-gray-500 mt-1">
-          <Trans context="Admin, p">What the village has flagged, and what it has already hidden on its own.
-          Hiding is always reversible. Nothing here deletes anyone's words.
-        </Trans></p>
+    <div className="bg-white border border-gray-100 rounded-xl p-4" data-report="forum">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <p className="font-medium text-gray-900 break-words">{r.threadTitle}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            <Trans context="Admin, p">{r.severity === "hard" ? "Serious report" : "Flagged"} by {r.reporter} ·{" "}
+            {new Date(r.at).toLocaleDateString()}
+            {r.replyId ? " · on a reply" : ""}</Trans>
+          </p>
+          {r.reason && <p className="text-sm text-gray-600 mt-2 break-words">"{r.reason}"</p>}
+          {/* Who closed it and when. Written on every close since the
+              queue shipped, and read by nobody until now. */}
+          <ResolutionNote report={r} />
+        </div>
+        {r.alreadyHidden && (
+          <span className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
+            <Trans context="Admin, span">Auto-hidden
+          </Trans></span>
+        )}
       </div>
-
-      {/* The category list, which the forum has validated on every write and
-          read on every request since it shipped, with no editor anywhere. */}
-      <ForumCategoriesEditor password={password} />
-
-      <div className="flex flex-wrap gap-2">
-        {(["open", "resolved", "dismissed"] as const).map((s) => (
+      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
+        <a
+          href={`/forum/${r.threadId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50"
+        >
+          <Trans context="Admin, a">Read it
+        </Trans></a>
+        {r.alreadyHidden ? (
           <button
-            key={s}
-            onClick={() => setStatus(s)}
-            aria-pressed={status === s}
-            className={`text-sm rounded-lg px-3 py-1.5 border capitalize transition-colors ${
-              status === s
-                ? "bg-teal-deep text-white border-teal-deep"
-                : "bg-white text-gray-600 border-gray-200 hover:border-teal-deep/40"
-            }`}
+            disabled={busy}
+            onClick={() => moderate({ action: "restore" }, "Back in the open")}
+            className="text-xs text-emerald-700 border border-emerald-200 rounded-lg px-2.5 py-1.5 hover:bg-emerald-50 disabled:opacity-40"
           >
-            {s}
-          </button>
-        ))}
-      </div>
-
-      {reports === null && <p className="text-sm text-muted-foreground"><Trans context="Admin, p">Loading…</Trans></p>}
-      {reports?.length === 0 && (
-        <p className="text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-xl p-6">
-          <Trans context="Admin, p">Nothing {status}. A quiet queue is the good outcome.
-        </Trans></p>
-      )}
-
-      <div className="space-y-3">
-        {(reports ?? []).map((r) => (
-          <div key={r.id} className="bg-white border border-gray-100 rounded-xl p-4">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900 break-words">{r.threadTitle}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  <Trans context="Admin, p">{r.severity === "hard" ? "Serious report" : "Flagged"} by {r.reporter} ·{" "}
-                  {new Date(r.at).toLocaleDateString()}
-                  {r.replyId ? " · on a reply" : ""}</Trans>
-                </p>
-                {r.reason && <p className="text-sm text-gray-600 mt-2 break-words">"{r.reason}"</p>}
-                {/* Who closed it and when. Written on every close since the
-                    queue shipped, and read by nobody until now. */}
-                <ResolutionNote report={r} />
-              </div>
-              {r.alreadyHidden && (
-                <span className="text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 shrink-0">
-                  <Trans context="Admin, span">Auto-hidden
-                </Trans></span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
-              <a
-                href={`/forum/${r.threadId}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50"
-              >
-                <Trans context="Admin, a">Read it
-              </Trans></a>
-              {r.alreadyHidden ? (
-                <button
-                  disabled={busy === r.id}
-                  onClick={() => act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, { action: "restore" }, "Back in the open", r.id)}
-                  className="text-xs text-emerald-700 border border-emerald-200 rounded-lg px-2.5 py-1.5 hover:bg-emerald-50 disabled:opacity-40"
-                >
-                  <Trans context="Admin, button">Put it back
-                </Trans></button>
-              ) : (
-                <button
-                  disabled={busy === r.id}
-                  onClick={() => {
-                    const reason = window.prompt("Why is this being hidden? The author is told.");
-                    if (reason === null) return;
-                    act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, { action: "hide", reason }, "Hidden", r.id);
-                  }}
-                  className="text-xs text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 hover:bg-red-50 disabled:opacity-40"
-                >
-                  <Trans context="Admin, button">Hide it
-                </Trans></button>
-              )}
-              <button
-                disabled={busy === r.id}
-                onClick={() => act(`${API_BASE}/forum/threads/${r.threadId}/moderate`, { action: "lock" }, "Locked to new replies", r.id)}
-                className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
-              >
-                <Trans context="Admin, button">Lock replies
-              </Trans></button>
-              {status === "open" && (
-                <>
-                  <button
-                    disabled={busy === r.id}
-                    onClick={() => act(`${API_BASE}/admin/forum/reports/${r.id}`, { status: "resolved" }, "Marked handled", r.id)}
-                    className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    <Trans context="Admin, button">Handled
-                  </Trans></button>
-                  <button
-                    disabled={busy === r.id}
-                    onClick={() => act(`${API_BASE}/admin/forum/reports/${r.id}`, { status: "dismissed" }, "Dismissed", r.id)}
-                    className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    <Trans context="Admin, button">Nothing wrong here
-                  </Trans></button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+            <Trans context="Admin, button">Put it back
+          </Trans></button>
+        ) : (
+          <button
+            disabled={busy}
+            onClick={() => {
+              const reason = window.prompt("Why is this being hidden? The author is told.");
+              if (reason === null) return;
+              moderate({ action: "hide", reason }, "Hidden");
+            }}
+            className="text-xs text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 hover:bg-red-50 disabled:opacity-40"
+          >
+            <Trans context="Admin, button">Hide it
+          </Trans></button>
+        )}
+        <button
+          disabled={busy}
+          onClick={() => moderate({ action: "lock" }, "Locked to new replies")}
+          className="text-xs text-gray-600 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
+        >
+          <Trans context="Admin, button">Lock replies
+        </Trans></button>
+        {open && (
+          <>
+            <button
+              disabled={busy}
+              onClick={() => close("resolved", "Marked handled")}
+              className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
+            >
+              <Trans context="Admin, button">Handled
+            </Trans></button>
+            <button
+              disabled={busy}
+              onClick={() => close("dismissed", "Dismissed")}
+              className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
+            >
+              <Trans context="Admin, button">Nothing wrong here
+            </Trans></button>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-/**
- * Direct-message reports, which went into a void.
- *
- * Members have always been able to flag a line in a private conversation
- * (`Messages.tsx`), the server has always stored it, and the queue that reads
- * those rows plus the route that resolves one have had no caller anywhere in
- * the client. So somebody reporting harassment got a success path into
- * nothing, and the platform never told them otherwise.
- *
- * Built to match the forum queue above on purpose: the same status chips, the
- * same card, the same two verbs. A moderator learns one pattern.
- *
- * WHAT THIS DELIBERATELY DOES NOT SHOW. Private correspondence is the whole
- * difference from the forum queue. The server hands over one message body and
- * the thread it sat in, and that is all this renders: no surrounding lines, no
- * author name, no link into the conversation. A direct thread is never named,
- * because its name is the two people in it. The card says so out loud, so a
- * moderator knows they are judging one line and not a thread.
- */
-function MessageReportsTab({ password }: { password: string }) {
+/** A report on one private message: the one line, why it was flagged, and the two ways to close it. */
+function MessageReportCard({ r, busy, act }: { r: MessageReport; busy: boolean; act: ReportAct }) {
+  const line = reportedLine(r);
+  const close = (status: "resolved" | "dismissed", okMsg: string) => act(`${API_BASE}/admin/messages/reports/${r.id}`, "PUT", { status }, okMsg, "That report could not be updated.", `message:${r.id}`);
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl p-4" data-report="message">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
+          <p className="font-medium text-gray-900 break-words">{reportPlace(r)}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            <Trans context="Admin, p">Reported by {r.reporter} · {new Date(r.at).toLocaleDateString()}</Trans>
+          </p>
+        </div>
+        {r.deleted && (
+          <span className="text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1 shrink-0">
+            <Trans context="Admin, span">Deleted by its author
+          </Trans></span>
+        )}
+      </div>
+
+      <blockquote
+        className={`mt-3 border-l-2 pl-3 text-sm break-words ${
+          line.present ? "border-gray-300 text-gray-800" : "border-gray-200 text-gray-500 italic"
+        }`}
+      >
+        {line.text}
+      </blockquote>
+
+      {r.reason && (
+        <p className="text-sm text-gray-600 mt-2 break-words">
+          <Trans context="Admin, p">Why they flagged it: "{r.reason}"
+        </Trans></p>
+      )}
+
+      <ResolutionNote report={r} />
+
+      {canAct(r) && (
+        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
+          <button
+            disabled={busy}
+            onClick={() => close("resolved", "Marked handled")}
+            className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
+          >
+            <Trans context="Admin, button">Handled
+          </Trans></button>
+          <button
+            disabled={busy}
+            onClick={() => close("dismissed", "Dismissed")}
+            className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
+          >
+            <Trans context="Admin, button">Nothing wrong here
+          </Trans></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ReportsTab({ password, forum = true, messages = true }: { password: string; forum?: boolean; messages?: boolean }) {
   const [status, setStatus] = useState<ReportStatus>("open");
-  const [reports, setReports] = useState<MessageReport[] | null>(null);
+  const [reports, setReports] = useState<QueuedReport[] | null>(null);
   const [busy, setBusy] = useState<string>("");
 
   const load = useCallback(() => {
     setReports(null);
-    fetch(`${API_BASE}/admin/messages/reports?status=${status}`, { headers: authHeaders(password) })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((rows) => setReports(Array.isArray(rows) ? rows : []))
-      .catch(() => setReports([]));
-  }, [password, status]);
+    const rows = (res: Promise<Response>) => res.then((r) => (r.ok ? r.json() : [])).then((d) => (Array.isArray(d) ? d : [])).catch(() => []);
+    Promise.all([
+      forum ? rows(fetch(`${API_BASE}/admin/forum/reports?status=${status}`, { headers: authHeaders(password) })) : [],
+      messages ? rows(fetch(`${API_BASE}/admin/messages/reports?status=${status}`, { headers: authHeaders(password) })) : [],
+    ]).then(([posts, lines]) => {
+      const all: QueuedReport[] = [...posts.map((r: any) => ({ kind: "forum" as const, r })), ...lines.map((r: MessageReport) => ({ kind: "message" as const, r }))];
+      setReports(all.sort((a, b) => reportTime(b) - reportTime(a)));
+    });
+  }, [password, status, forum, messages]);
   useEffect(load, [load]);
 
-  const resolve = async (id: string, next: "resolved" | "dismissed", okMsg: string) => {
-    setBusy(id);
+  const act: ReportAct = async (url, method, body, okMsg, fallback, key) => {
+    setBusy(key);
     try {
-      const res = await fetch(`${API_BASE}/admin/messages/reports/${id}`, {
-        method: "PUT",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ status: next }),
-      });
+      const res = await fetch(url, { method, headers: authHeaders(password, { "Content-Type": "application/json" }), body: JSON.stringify(body) });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(refusal(data, "That report could not be updated."));
+      if (!res.ok) throw new Error(refusal(data, fallback));
       toast.success(okMsg);
       load();
     } catch (e: any) {
-      toast.error(e?.message || "That report could not be updated.");
+      toast.error(e?.message || fallback);
     } finally {
       setBusy("");
     }
@@ -397,11 +389,23 @@ function MessageReportsTab({ password }: { password: string }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-display font-bold text-gray-900"><Trans context="Admin, h2">Message Reports</Trans></h2>
-        <p className="text-sm text-gray-500 mt-1">
-          <Trans context="Admin, p">Lines members have flagged inside private conversations. {DISCLOSURE_NOTE}</Trans>
-        </p>
+        <h2 className="text-2xl font-display font-bold text-gray-900"><Trans context="Admin, h2">Reports</Trans></h2>
+        {forum && (
+          <p className="text-sm text-gray-500 mt-1">
+            <Trans context="Admin, p">What the village has flagged, and what it has already hidden on its own.
+            Hiding is always reversible. Nothing here deletes anyone's words.
+          </Trans></p>
+        )}
+        {messages && (
+          <p className="text-sm text-gray-500 mt-1">
+            <Trans context="Admin, p">Lines members have flagged inside private conversations. {DISCLOSURE_NOTE}</Trans>
+          </p>
+        )}
       </div>
+
+      {/* The category list, which the forum has validated on every write and
+          read on every request since it shipped, with no editor anywhere. */}
+      {forum && <ForumCategoriesEditor password={password} />}
 
       <div className="flex flex-wrap gap-2">
         {(["open", "resolved", "dismissed"] as const).map((s) => (
@@ -428,61 +432,9 @@ function MessageReportsTab({ password }: { password: string }) {
       )}
 
       <div className="space-y-3">
-        {(reports ?? []).map((r) => {
-          const line = reportedLine(r);
-          return (
-            <div key={r.id} className="bg-white border border-gray-100 rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900 break-words">{reportPlace(r)}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    <Trans context="Admin, p">Reported by {r.reporter} · {new Date(r.at).toLocaleDateString()}</Trans>
-                  </p>
-                </div>
-                {r.deleted && (
-                  <span className="text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1 shrink-0">
-                    <Trans context="Admin, span">Deleted by its author
-                  </Trans></span>
-                )}
-              </div>
-
-              <blockquote
-                className={`mt-3 border-l-2 pl-3 text-sm break-words ${
-                  line.present ? "border-gray-300 text-gray-800" : "border-gray-200 text-gray-500 italic"
-                }`}
-              >
-                {line.text}
-              </blockquote>
-
-              {r.reason && (
-                <p className="text-sm text-gray-600 mt-2 break-words">
-                  <Trans context="Admin, p">Why they flagged it: "{r.reason}"
-                </Trans></p>
-              )}
-
-              <ResolutionNote report={r} />
-
-              {canAct(r) && (
-                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
-                  <button
-                    disabled={busy === r.id}
-                    onClick={() => void resolve(r.id, "resolved", "Marked handled")}
-                    className="text-xs text-teal-deep border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    <Trans context="Admin, button">Handled
-                  </Trans></button>
-                  <button
-                    disabled={busy === r.id}
-                    onClick={() => void resolve(r.id, "dismissed", "Dismissed")}
-                    className="text-xs text-gray-500 border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 disabled:opacity-40"
-                  >
-                    <Trans context="Admin, button">Nothing wrong here
-                  </Trans></button>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {(reports ?? []).map((q) => (q.kind === "forum"
+          ? <ForumReportCard key={`forum:${q.r.id}`} r={q.r} open={status === "open"} busy={busy === `forum:${q.r.id}`} act={act} />
+          : <MessageReportCard key={`message:${q.r.id}`} r={q.r} busy={busy === `message:${q.r.id}`} act={act} />))}
       </div>
     </div>
   );
@@ -2419,134 +2371,12 @@ function MilestonesAdminTab({ password }: { password: string }) { const { t } = 
   );
 }
 
-// ── Visit Program Admin Tab (NEW-5) ───────────────────────────────────────────
-
-interface VisitType {
-  id: string;
-  title: string;
-  duration: string;
-  format: string;
-  cost: string;
-  description: string;
-  cta_label: string;
-  cta_url: string;
-  order: number;
-}
-
-interface VisitConfig {
-  hero_subtitle: string;
-  visit_types: VisitType[];
-  logistics: { getting_there: string; accommodation: string; what_to_bring: string; contact_note: string };
-}
-
-function VisitAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
-  const [cfg, setCfg] = useState<VisitConfig | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/admin/visit-config`, { headers: authHeaders(password) });
-      setCfg(await res.json());
-    } catch { toast.error(t({ message: "Failed to load", context: "Admin, toast" })); }
-    setLoading(false);
-  }, [password]);
-
-  useEffect(() => { load(); }, [load]);
-
-  const save = async () => {
-    if (!cfg) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`${API_BASE}/admin/visit-config`, {
-        method: "PUT",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify(cfg),
-      });
-      // The server refuses a call-to-action link that points into the investor
-      // vault, and it says which door is open in a whole sentence. Throwing an
-      // empty Error here turned that sentence into "Save failed", so an admin
-      // met a wall with no reason on it and no way to guess the reason.
-      if (!res.ok) throw new Error(await saveProblem(res));
-      toast.success(t({ message: "Saved", context: "Admin, toast" }));
-    } catch (e) { toast.error(e instanceof Error && e.message ? e.message : "Save failed"); }
-    setSaving(false);
-  };
-
-  const updateVisitType = (idx: number, patch: Partial<VisitType>) => {
-    if (!cfg) return;
-    const next = { ...cfg, visit_types: cfg.visit_types.map((v, i) => i === idx ? { ...v, ...patch } : v) };
-    setCfg(next);
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Visit Program</Trans></h2>
-          <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Controls the /visit page.</Trans></p>
-        </div>
-        <button onClick={save} disabled={saving || loading} className="px-4 py-2 bg-teal-deep text-white rounded-lg text-sm font-medium hover:bg-teal-deep-dark disabled:opacity-50">
-          {saving ? "Saving..." : "Save"}
-        </button>
-      </div>
-      {loading || !cfg ? (
-        <div className="text-center py-12 text-muted-foreground"><Trans context="Admin, div">Loading...</Trans></div>
-      ) : (
-        <div className="space-y-6">
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1"><Trans context="Admin, label">Hero Subtitle</Trans></label>
-            <textarea
-              value={cfg.hero_subtitle}
-              onChange={(e) => setCfg({ ...cfg, hero_subtitle: e.target.value })}
-              rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y"
-            />
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3"><Trans context="Admin, h3">Visit Types</Trans></h3>
-            <div className="space-y-3">
-              {cfg.visit_types.map((v, idx) => (
-                <div key={v.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="text" value={v.title} onChange={(e) => updateVisitType(idx, { title: e.target.value })} placeholder={t({ message: "Title", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.duration} onChange={(e) => updateVisitType(idx, { duration: e.target.value })} placeholder={t({ message: "Duration", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.format} onChange={(e) => updateVisitType(idx, { format: e.target.value })} placeholder={t({ message: "Format", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.cost} onChange={(e) => updateVisitType(idx, { cost: e.target.value })} placeholder={t({ message: "Cost", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  </div>
-                  <textarea value={v.description} onChange={(e) => updateVisitType(idx, { description: e.target.value })} placeholder={t({ message: "Description", context: "Admin, placeholder" })} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input type="text" value={v.cta_label} onChange={(e) => updateVisitType(idx, { cta_label: e.target.value })} placeholder={t({ message: "CTA Label", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                    <input type="text" value={v.cta_url} onChange={(e) => updateVisitType(idx, { cta_url: e.target.value })} placeholder={t({ message: "https://..., mailto:..., or /visit. Blank shows the contact form", context: "Admin, placeholder" })} className="px-3 py-2 text-sm border border-gray-200 rounded-lg" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3"><Trans context="Admin, h3">Logistics</Trans></h3>
-            <div className="space-y-3">
-              {(["getting_there", "accommodation", "what_to_bring", "contact_note"] as const).map((k) => (
-                <div key={k}>
-                  <label className="text-xs font-medium text-gray-500 block mb-1">{k.replace(/_/g, " ")}</label>
-                  <textarea
-                    value={cfg.logistics[k]}
-                    onChange={(e) => setCfg({ ...cfg, logistics: { ...cfg.logistics, [k]: e.target.value } })}
-                    rows={2}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-y"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+// ── Visit Program: one editor, inside Pages (cut C6, 27 Nov 2026) ─────────────
+//
+// The Visit Program tab lived here. Two editors wrote the same document, and
+// this one could only change the cards a village started with. The one that
+// stays is components/admin/pages/VisitProgramEditor.tsx, on the Visit page
+// in Pages, and `?tab=visit-config` lands on it (adminTabAliases.ts).
 
 // ── Investor Summary Admin Tab (NEW-6) ────────────────────────────────────────
 
@@ -2585,9 +2415,10 @@ function InvestorSummaryAdminTab({ password }: { password: string }) { const { t
         headers: authHeaders(password, { "Content-Type": "application/json" }),
         body: JSON.stringify(cfg),
       });
-      // Same reason as VisitAdminTab above: this page is public, the server
-      // refuses a CTA that would publish a vault document, and the admin has
-      // to be able to read why.
+      // This page is public, and the server refuses a CTA that would publish a
+      // vault document. It says which door is open in a whole sentence, and an
+      // empty Error here turned that sentence into "Save failed", so the
+      // server's own words go on the toast.
       if (!res.ok) throw new Error(await saveProblem(res));
       toast.success(t({ message: "Saved", context: "Admin, toast" }));
     } catch (e) { toast.error(e instanceof Error && e.message ? e.message : "Save failed"); }
@@ -2657,38 +2488,11 @@ function InvestorSummaryAdminTab({ password }: { password: string }) { const { t
   );
 }
 
-// ── Game Admin: Quest Claims, a door to /review ───────────────────────────────
-
-/**
- * The consent queue lives on /review now (client/src/components/review/ConsentQueue.tsx).
- *
- * This tab was the only consent screen for as long as the server has let a
- * steward who is not an admin consent, and `AdminGate` refused every one of
- * them. Its amount box also opened at a hardcoded 50, a certain 409 on any
- * quest whose advertised range leaves 50 out. The screen on /review answers
- * anybody holding `quest.consent`, opens each box on the quest's floor and
- * refuses what the consent route would refuse, so this stays only as a door
- * where admins already look for it.
- */
-function QuestClaimsTab() {
-  return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900"><Trans context="Admin, h2">Quest Claims</Trans></h2>
-        <p className="text-sm text-gray-500 mt-1"><Trans context="Admin, p">Consent releases the reward. Value only moves with a human yes.</Trans></p>
-      </div>
-      <div className="bg-white border border-gray-100 rounded-xl p-5">
-        <p className="text-sm text-gray-700">
-          <Trans context="Admin, p">Finished work waiting for a witness is on the Review page, beside the other things a steward
-          decides. Stewards who are not admins can open it there.
-        </Trans></p>
-        <a href="/governance/work" className="inline-block mt-3 text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium">
-          <Trans context="Admin, a">Open Review
-        </Trans></a>
-      </div>
-    </div>
-  );
-}
+// ── Quest Claims: folded into the review list (cut C4, 27 Nov 2026) ───────────
+//
+// The tab held one link. Finished work waiting for a witness is a kind on the
+// review list, which answers anybody holding `quest.consent`, and
+// `?tab=quest-claims` redirects to it (adminTabAliases.ts).
 
 /**
  * The quest LIBRARY, not the claims on it.
@@ -4236,7 +4040,7 @@ function StaysAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (
  * reasons shown, not hidden), append-only prices with a required note,
  * treasury stock under the shared mint cap, and the order book.
  */
-function ExchangeAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
+export function ExchangeAdminTab({ password }: { password: string }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -4377,72 +4181,6 @@ function ExchangeAdminTab({ password }: { password: string }) { const { t } = us
           </>
         )}
       </div>
-
-      {/* L9: the library-credit sale card. Selling a shelf-backed credit
-          changes what the token IS, so it opens like trading opened —
-          read here, accepted by a named admin, stamped by the server. */}
-      {data?.creditSale?.libraryOn && (
-        <div className={`rounded-xl border p-5 ${data.creditSale.open ? "border-teal-deep/30 bg-teal-deep/5" : "border-amber-200 bg-amber-50/50"}`}>
-          <h3 className="font-semibold text-gray-900 mb-1">
-            <Trans context="Admin, h3">Selling library credits is {data.creditSale.open ? "OPEN" : "CLOSED"}</Trans>
-          </h3>
-          {data.creditSale.open ? (
-            <>
-              <p className="text-xs text-gray-500 mb-3">
-                <Trans context="Admin, p">Library credits can be listed and sold for fiat like any credit token.
-                Accepted {data.creditSale.ack?.acceptedAt ? new Date(data.creditSale.ack.acceptedAt).toLocaleDateString() : "-"} by{" "}
-                {data.creditSale.ack?.acceptedBy ?? "-"} (card {data.creditSale.ack?.cardVersion}). Swapping stays sealed regardless.
-              </Trans></p>
-              <button
-                onClick={async () => {
-                  if (!window.confirm("Close credit sales? Existing holders keep every credit; the listing is refused from the next sale on.")) return;
-                  const d = await call("/admin/modules/library/config", { config: { creditSaleEnabled: false } }, "PUT");
-                  if (d) { toast.success("Credit sales closed"); load(); }
-                }}
-                className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 font-medium"
-              >
-                <Trans context="Admin, button">Close credit sales
-              </Trans></button>
-            </>
-          ) : (
-            <>
-              <p className="text-xs text-gray-500 mb-2">
-                <Trans context="Admin, p">Before you open this, read what it changes (card {data.creditSale.cardVersion}):
-              </Trans></p>
-              <ul className="text-xs text-gray-600 space-y-1.5 mb-3 list-disc pl-4">
-                <li>
-                  <Trans context="Admin, li">Today every library credit is backed by a physical item someone brought
-                  to the shelf. A SOLD credit is backed by money instead, and after the
-                  sale, the two are indistinguishable claims on the same shelves.
-                </Trans></li>
-                <li>
-                  <Trans context="Admin, li">If more credits circulate than the shelves can honor, the promise
-                  behind every credit, including the earned ones, weakens. Stock
-                  the treasury conservatively and watch the ledger's two provenances
-                  (sys:library-mint = shelf-backed intake; sys:mint = sold stock).
-                </Trans></li>
-                <li>
-                  <Trans context="Admin, li">Prepaid credits can be a regulated product (gift-card and escheatment
-                  law in some places). This is the point to ask a lawyer, not after.
-                </Trans></li>
-                <li><Trans context="Admin, li">Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market.</Trans></li>
-              </ul>
-              <button
-                onClick={async () => {
-                  if (!window.confirm(`Accept caution card ${data.creditSale.cardVersion} and open library-credit sales? Your name and the time are recorded.`)) return;
-                  const d = await call("/admin/modules/library/config", {
-                    config: { creditSaleEnabled: true, creditSaleAck: { cardVersion: data.creditSale.cardVersion } },
-                  }, "PUT");
-                  if (d) { toast.success("Credit sales open. List and price library-credit below"); load(); }
-                }}
-                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
-              >
-                <Trans context="Admin, button">Accept and open credit sales
-              </Trans></button>
-            </>
-          )}
-        </div>
-      )}
 
       {/* Listings */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
@@ -4976,8 +4714,12 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
  * the loan pipeline with its single terminal, and the invariants made
  * visible: escrow reconciliation and supply-vs-backing.
  */
-function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
+export function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
+  // The credit-sale card's state. The exchange's own read serves it (GET /api/admin/exchange), and
+  // answers only while the exchange is on; when it does not answer, the place says why (CreditSaleMissing).
+  // Read on its own, so the desk never waits for the exchange's books.
+  const [creditSale, setCreditSale] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
   const [players, setPlayers] = useState<any[]>([]);
@@ -4987,6 +4729,8 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
 
   const load = useCallback(async () => {
     setLoading(true);
+    fetch(`${API_BASE}/admin/exchange`, { headers: authHeaders(password) })
+      .then(readCreditSale).then(setCreditSale).catch(() => setCreditSale({ missing: "unread" }));
     try {
       const [lRes, pRes] = await Promise.all([
         fetch(`${API_BASE}/admin/library`, { headers: authHeaders(password) }),
@@ -5063,6 +4807,75 @@ function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab:
           <p className="text-sm font-semibold text-gray-900"><Trans context="Admin, p">{data?.poolBalance} credit(s)</Trans></p>
         </div>
       </div>
+
+      {/* L9: the library-credit sale card. Selling a shelf-backed credit
+          changes what the token IS, so it opens like trading opened —
+          read here, accepted by a named admin, stamped by the server.
+          It sat inside the Exchange tab until 27 Nov 2026; it is the
+          library's switch (`library.creditSaleEnabled`), so it is here. */}
+      {creditSale?.missing && <CreditSaleMissing why={creditSale.missing} />}
+      {creditSale?.libraryOn && (
+        <div className={`rounded-xl border p-5 ${creditSale.open ? "border-teal-deep/30 bg-teal-deep/5" : "border-amber-200 bg-amber-50/50"}`}>
+          <h3 className="font-semibold text-gray-900 mb-1">
+            <Trans context="Admin, h3">Selling library credits is {creditSale.open ? "OPEN" : "CLOSED"}</Trans>
+          </h3>
+          {creditSale.open ? (
+            <>
+              <p className="text-xs text-gray-500 mb-3">
+                <Trans context="Admin, p">Library credits can be listed and sold for fiat like any credit token.
+                Accepted {creditSale.ack?.acceptedAt ? new Date(creditSale.ack.acceptedAt).toLocaleDateString() : "-"} by{" "}
+                {creditSale.ack?.acceptedBy ?? "-"} (card {creditSale.ack?.cardVersion}). Swapping stays sealed regardless.
+              </Trans></p>
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Close credit sales? Existing holders keep every credit; the listing is refused from the next sale on.")) return;
+                  const d = await call("/admin/modules/library/config", { config: { creditSaleEnabled: false } }, "PUT");
+                  if (d) { toast.success("Credit sales closed"); load(); }
+                }}
+                className="text-sm text-gray-600 bg-white border border-gray-200 rounded-lg px-3 py-1.5 font-medium"
+              >
+                <Trans context="Admin, button">Close credit sales
+              </Trans></button>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-2">
+                <Trans context="Admin, p">Before you open this, read what it changes (card {creditSale.cardVersion}):
+              </Trans></p>
+              <ul className="text-xs text-gray-600 space-y-1.5 mb-3 list-disc pl-4">
+                <li>
+                  <Trans context="Admin, li">Today every library credit is backed by a physical item someone brought
+                  to the shelf. A SOLD credit is backed by money instead, and after the
+                  sale, the two are indistinguishable claims on the same shelves.
+                </Trans></li>
+                <li>
+                  <Trans context="Admin, li">If more credits circulate than the shelves can honor, the promise
+                  behind every credit, including the earned ones, weakens. Stock
+                  the treasury conservatively and watch the ledger's two provenances
+                  (sys:library-mint = shelf-backed intake; sys:mint = sold stock).
+                </Trans></li>
+                <li>
+                  <Trans context="Admin, li">Prepaid credits can be a regulated product (gift-card and escheatment
+                  law in some places). This is the point to ask a lawyer, not after.
+                </Trans></li>
+                <li><Trans context="Admin, li">Fiat still flows IN only, and credits still never swap. This card opens the shop, never the market.</Trans></li>
+              </ul>
+              <button
+                onClick={async () => {
+                  if (!window.confirm(`Accept caution card ${creditSale.cardVersion} and open library-credit sales? Your name and the time are recorded.`)) return;
+                  const d = await call("/admin/modules/library/config", {
+                    config: { creditSaleEnabled: true, creditSaleAck: { cardVersion: creditSale.cardVersion } },
+                  }, "PUT");
+                  if (d) { toast.success("Credit sales open. List and price library-credit on the Exchange screen"); load(); }
+                }}
+                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium"
+              >
+                <Trans context="Admin, button">Accept and open credit sales
+              </Trans></button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Intake */}
       <div className="bg-white border border-gray-100 rounded-xl p-5">
@@ -7825,17 +7638,23 @@ export default function Admin() {
   // a specific admin screen; "go to Integrations" had no address. Same
   // `activeTab`/`setActiveTab` contract, so the ~35 call sites are untouched,
   // and back/forward now walk tab history the way a browser should.
+  // A folded tab's key opens the tab that holds its control now (adminTabAliases.ts), and its old address is
+  // rewritten in place: in an effect, never while rendering, and before any panel has mounted to read it.
   const [activeTab, setActiveTabState] = useState<string>(() => tabFromSearch(window.location.search));
+  useEffect(() => { settleTabAddress(); }, []);
   const tabNow = useRef(activeTab);
   const tabHref = useRef(window.location.href);
   useEffect(() => { tabNow.current = activeTab; tabHref.current = window.location.href; }, [activeTab]);
-  const setActiveTab = useCallback((tab: string) => {
+  const setActiveTab = useCallback((asked: string) => {
+    // A folded tab's key still works from any button that names it: it opens where its control lives now.
+    const { tab, params } = tabLanding(asked);
     // Unsaved edits on the open panel ask first (lib/unsavedChanges.ts).
     if (tab !== tabFromSearch(window.location.search) && !confirmLeave()) return;
     setActiveTabState(tab);
     const p = new URLSearchParams(window.location.search);
     if (p.get("tab") !== tab) { p.delete("circle"); p.delete("role"); }
     p.set("tab", tab);
+    for (const [k, v] of Object.entries(params ?? {})) p.set(k, v);
     window.history.pushState({}, "", `${window.location.pathname}?${p.toString()}`);
     // Choosing from low in the rail leaves you scrolled past the top of the
     // panel you just opened; every tab change starts at its own beginning.
@@ -7845,7 +7664,7 @@ export default function Admin() {
   }, []);
   useEffect(() => {
     const onPop = () => {
-      const next = tabFromSearch(window.location.search);
+      const next = tabFromSearch(settleTabAddress());
       // Back to another tab with edits waiting: ask, and stay put on a no.
       if (next !== tabNow.current && !confirmLeave()) { window.history.pushState({}, "", tabHref.current); return; }
       setActiveTabState(next);
@@ -7897,6 +7716,9 @@ export default function Admin() {
   if (activeTab === "modules" && new URLSearchParams(window.location.search).get("module") !== "saberra") {
     return <Redirect to={legacyModulesTabTarget(window.location.search) ?? "/modules"} replace />;
   }
+  // A folded tab whose control lives on a page outside Admin (the review list, the Treasury) lands there.
+  const left = leftAdminTarget(activeTab);
+  if (left) return <Redirect to={left} replace />;
   if (!password) {
     return <AdminGate onAuth={setPassword} />;
   }
@@ -7963,7 +7785,7 @@ export default function Admin() {
           <AdminHelp tab={activeTab} />
           {activeTab === "home" && <Suspense fallback={null}><HomeBase password={password} onOpenTab={setActiveTab} groups={shownGroups} role={user?.role} /></Suspense>}
           {activeTab === "modules" && <SeraAdminHome />}
-          <AdminGoLive token={password} moduleId={TAB_MODULE[activeTab] ?? null}
+          <AdminGoLive token={password} moduleIds={tabModules(activeTab)}
             onLifecycles={(m) => setModuleLifecycles(m as Record<string, ModuleLifecycle>)} />
           {/* The two facts only this village can state. VillageAnswers.tsx says why it outlives the checklist. */}
           <VillageAnswers password={password} />
@@ -7971,7 +7793,7 @@ export default function Admin() {
           {activeTab === "events-admin" && <EventsAdminPanel password={password} />}
           {activeTab === "submissions" && <SubmissionsTab password={password} />}
           {CONTENT_SECTIONS.map(({ key, label }) => (activeTab === key ? <ContentEditorTab key={key} password={password} sectionKey={key} sectionLabel={label} /> : null))}
-          {(activeTab === "comms-settings" || activeTab === "email-settings") && <CommsSettings password={password} openIntegrations={() => setActiveTab("integrations")} />}
+          {activeTab === "comms-settings" && <CommsSettings password={password} openIntegrations={() => setActiveTab("integrations")} />}
           {activeTab === "comms-overview" && <CommsOverview password={password} />}
           {activeTab === "comms-journeys" && <CommsJourneys password={password} />}
           {activeTab === "comms-words" && <CommsWords password={password} />}
@@ -7980,14 +7802,12 @@ export default function Admin() {
           {activeTab === "comms-sent" && <CommsSentMail password={password} />}
           {activeTab === "integrations" && <IntegrationsTab password={password} />}
           {activeTab === "feedback" && <FeedbackAdminTab password={password} />}
-          {activeTab === "forum-moderation" && <ForumModerationTab password={password} />}
-          {activeTab === "message-reports" && <MessageReportsTab password={password} />}
+          {activeTab === "reports" && <ReportsTab password={password} forum={moduleIsOn(moduleLifecycles, "forum")} messages={moduleIsOn(moduleLifecycles, "messaging")} />}
           {activeTab === "products" && <ProductsAdminTab password={password} />}
           {activeTab === "investor-vault" && <InvestorVaultTab password={password} />}
           {activeTab === "uploaded-files" && <UploadedFilesTab password={password} />}
           {activeTab === "training-modules" && <TrainingModulesTab password={password} />}
           {activeTab === "quests-admin" && <QuestsTab password={password} />}
-          {activeTab === "quest-claims" && <QuestClaimsTab />}
           {activeTab === "players" && <PlayersTab password={password} />}
           {activeTab === "game-roles" && <GameRolesTab password={password} />}
           {activeTab === "handover" && <HandoverTab password={password} />}
@@ -7997,8 +7817,6 @@ export default function Admin() {
           {(activeTab === "compare" || activeTab === "menu-use") && <Suspense fallback={null}>{activeTab === "compare" ? <CompareTab password={password} /> : <MenuUseTab password={password} />}</Suspense>}
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
           {activeTab === "art-library" && <Suspense fallback={null}><ArtLibraryTab password={password} /></Suspense>}
-          {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
-          {activeTab === "budgets" && <Suspense fallback={null}><BudgetsTab password={password} /></Suspense>}
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
           {activeTab === "brain" && <VillageBrainTab password={password} />}
           {activeTab === "failures" && <FailuresTab password={password} />}
@@ -8029,7 +7847,6 @@ export default function Admin() {
           {activeTab === "work-with-us" && <WorkWithUsTab password={password} />}
           {activeTab === "faqs" && <FaqAdminTab password={password} />}
           {activeTab === "milestones" && <MilestonesAdminTab password={password} />}
-          {activeTab === "visit-config" && <VisitAdminTab password={password} />}
           {activeTab === "investor-summary" && <InvestorSummaryAdminTab password={password} />}
         </main>
       </div>

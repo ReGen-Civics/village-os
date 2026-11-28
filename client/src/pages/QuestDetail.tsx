@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { GrowthRings, MushroomNetwork, Seed, SeedGlint, SeedPin } from "@/components/sacred/living";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { CATALYST_FALLBACK, fetchGameMe, gameFetch, QuestClaim, useGameConfig, villageWord } from "@/lib/gameApi";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import NextStepBox from "@/components/NextStepBox";
@@ -74,7 +75,7 @@ export default function QuestDetail() {
   // What this quest is for (R1, R18). It arrives on the same detail read, so
   // the chips are painted with the page and never after a second round trip.
   const [needTags, setNeedTags] = useState<NeedTag[]>([]);
-  const iAmAdmin = !!user && (user.role === "admin" || user.role === "founder");
+  const iAmAdmin = hasAdminAccess(user);
 
   useEffect(() => {
     if (!questId) return;

@@ -10,8 +10,12 @@
  * name to hide. Each page in FIND_PAGES passes, in order: its audience (signed in, admitted as the server reads
  * admission, admin by `isAdmin`), its module's lifecycle the way `requireModule` reads it, its story-page switch
  * (`storyServed`, the switches every page and the not-found answer read), and any power it names, through the one
- * gate (`mayStillSee`, shared/capabilities.ts). An admin also gets the admin search's own entries, filtered by the
- * same `visibleEntries` admin search uses. Roles and circles follow the listing rule `/api/org` reads (an unlisted
+ * gate (`mayStillSee`, shared/capabilities.ts). An admin also gets the registry of acts (shared/adminActs.ts): every
+ * Admin tab, control, act and dial, filtered by the same `visibleEntries` admin search uses. The registry is read for
+ * words and addresses only; nothing here decides access from it, and each act's own door still answers for itself.
+ * PEOPLE AND CODES for an admin are not in this answer: the dialog reads the Players page's own route for people
+ * and sends a code to the Review page, so each stays behind the door its own page already has.
+ * Roles and circles follow the listing rule `/api/org` reads (an unlisted
  * role is a steward's or its holder's); quests are the board's, closed ones out; people are the village's admitted
  * members, read only by an admitted member.
  *
@@ -51,7 +55,8 @@ import { visibleEntries } from "./adminSearch";
 import { effectiveLifecycle } from "../lib/modules";
 import { brochurePageServed } from "../lib/brochurePages";
 import { isMemberDoor } from "../../shared/brochure";
-import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref } from "../../shared/adminSearch";
+import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, type AdminSearchEntry } from "../../shared/adminSearch";
+import { ADMIN_ACT_ENTRIES } from "../../shared/adminActs";
 import { circleViews } from "../../shared/circleView";
 import { circlesToShow, visibleTo } from "../../shared/roleListing";
 import { rolePath } from "../../shared/roleSlug";
@@ -70,6 +75,15 @@ import {
   type FindIndex,
 } from "../../shared/findAnything";
 import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry, type FindReader } from "../../shared/findPages";
+
+/**
+ * An Admin search entry as Find anything draws it: a tab or a page beside Admin is a page, and a control, an act or
+ * a dial is one of the village's settings. The address is admin search's own, so both searches land the same.
+ */
+export function findEntryOf(e: AdminSearchEntry): FindEntry {
+  const kind = e.kind === "page" || e.kind === "outside" ? "page" : "setting";
+  return { id: `${kind}:${e.id}`, kind, title: e.title, help: e.help, path: adminSearchHref(e), synonyms: e.synonyms };
+}
 
 /** Where the roles, circles, quests and people come from. `searchSources` reads them; a test hands in its own. */
 export interface SearchSources {
@@ -98,6 +112,8 @@ export interface SearchDeps extends Pick<AppDeps, "authedUser" | "isAdmin" | "ma
   villageName(): string;
   /** The village's word for what a member signs (`project.commitmentName`), for that page's name. */
   commitmentName(): string;
+  /** The village's own names for its menu entries, by address (the menu document's `labels`), so search says them. */
+  menuNames?(): Readonly<Record<string, string>>;
   /** The village guide's stored name (`workWithUs.assistantName`). */
   villageGuideName(): unknown;
   noteAssistantUsage(mode: string, model: string, call: AssistantResult, userId: string | null, path?: AssistantPath): Promise<void>;
@@ -155,13 +171,24 @@ export async function readerOf(deps: Pick<SearchDeps, "authedUser" | "isAdmin">,
   return { viewer, reader: { signedIn: !!viewer, member, admin } };
 }
 
-/** Every place this reader may open, pages first. People only when `withPeople` and the reader is a member. */
-export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any | null, r: FindReader, withPeople: boolean): Promise<FindEntry[]> {
+/**
+ * Every place this reader may open, pages first. People only when `withPeople` and the reader is a member.
+ * `registry: false` is the guide's list: an admin's pages and shipped controls as before, without the registry's
+ * tabs, acts and dials, so what goes to the provider stays as it was and the list keeps room for roles and quests.
+ */
+export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any | null, r: FindReader, withPeople: boolean, opts: { registry?: boolean } = {}): Promise<FindEntry[]> {
   const out: FindEntry[] = [];
   const seen = new Set<string>();
   const put = (e: FindEntry) => {
     if (seen.has(e.path)) return;
     seen.add(e.path);
+    out.push(e);
+  };
+  // Several acts live on one page and share its address, so an act is kept by its own id.
+  const ids = new Set<string>();
+  const putAct = (e: FindEntry) => {
+    if (ids.has(e.id)) return;
+    ids.add(e.id);
     out.push(e);
   };
   const asked = new Map<string, boolean>();
@@ -172,7 +199,7 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
 
   const lifecycle = deps.lifecycle ?? effectiveLifecycle;
   const served = deps.storyServed ?? storyServed;
-  const words = { commitment: deps.commitmentName() };
+  const words = { commitment: deps.commitmentName(), names: deps.menuNames?.() ?? {} };
   for (const p of FIND_PAGES) {
     if (!audienceAdmits(p.audience, r)) continue;
     if (p.module && !lifecycleAdmits(lifecycle(p.module), r)) continue;
@@ -187,9 +214,11 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
   }
 
   if (r.admin) {
-    const admin = await visibleEntries([...OUTSIDE_ENTRIES, ...CONTROL_ENTRIES], may, lifecycle);
+    const admin = await visibleEntries(opts.registry === false ? [...OUTSIDE_ENTRIES, ...CONTROL_ENTRIES] : ADMIN_ACT_ENTRIES, may, lifecycle);
     for (const e of admin) {
-      put({ id: `${e.kind === "control" ? "setting" : "page"}:${e.id}`, kind: e.kind === "control" ? "setting" : "page", title: e.title, help: e.help, path: adminSearchHref(e), synonyms: e.synonyms });
+      const found = findEntryOf(e);
+      if (found.kind === "page") put(found);
+      else putAct(found);
     }
   }
 
@@ -232,6 +261,7 @@ export function register(app: Express, deps: SearchDeps): void {
     const body: FindIndex = {
       entries,
       people: entries.some((e) => e.kind === "person"),
+      admin: reader.admin,
       guide: { name: guideName(deps.villageGuideName(), guideAudience(viewer)).name, available: resolveKey() !== null },
     };
     res.set("Cache-Control", "private, no-store");
@@ -260,7 +290,7 @@ export function register(app: Express, deps: SearchDeps): void {
     if (resolveKey() === null) return res.json(unavailable);
 
     // Never people: the guide's list is places, and the reader's own.
-    const allowed = await buildFindIndex(deps, req, viewer, reader, false);
+    const allowed = await buildFindIndex(deps, req, viewer, reader, false, { registry: false });
     const destinations = guideDestinations(allowed);
     const uid = viewer?.id ? String(viewer.id) : null;
     const bucket = ipBucket(deps.clientIp(req));

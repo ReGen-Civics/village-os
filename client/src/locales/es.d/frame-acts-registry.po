@@ -1,0 +1,24 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: Find anything for an admin, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: where a person from the roster opens"
+msgid "On the Players page"
+msgstr "En la página de Jugadores"
+
+# needs-native-review: Find anything for an admin, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a review code an admin typed"
+msgid "Open {code} in Review"
+msgstr "Abrir {code} en Revisión"
+
+# needs-native-review: Find anything for an admin, 27 Nov 2026
+#: client/src/components/search/FindAnythingDialog.tsx
+msgctxt "find anything: a review code an admin typed, its line"
+msgid "The batch or the change with this code, among what you may see."
+msgstr "El lote o el cambio con este código, entre lo que usted puede ver."
