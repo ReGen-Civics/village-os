@@ -25,3 +25,22 @@ export async function visitTotals(pool: Pool, sinceDay: string): Promise<PathCou
   );
   return rows.map((r) => ({ path: String(r.path), count: Number(r.total) }));
 }
+
+/**
+ * Each page's visits in a window of days, `fromDay` inclusive and `untilDay` exclusive, most first (the admin's "How
+ * the menu is used", wayfinding lane). A season is such a window.
+ */
+export async function visitTotalsBetween(pool: Pool, fromDay: string, untilDay: string): Promise<PathCount[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT `path`, SUM(`visits`) AS total FROM nav_path_visits WHERE `day` >= ? AND `day` < ? GROUP BY `path` ORDER BY total DESC LIMIT 500",
+    [fromDay, untilDay],
+  );
+  return rows.map((r) => ({ path: String(r.path), count: Number(r.total) }));
+}
+
+/** The first day any visit was counted, "YYYY-MM-DD", or null before the first. Formatted in SQL so no clock shifts it. */
+export async function firstVisitDay(pool: Pool): Promise<string | null> {
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT DATE_FORMAT(MIN(`day`), '%Y-%m-%d') AS first FROM nav_path_visits");
+  const first = rows[0]?.first;
+  return typeof first === "string" && first ? first : null;
+}
