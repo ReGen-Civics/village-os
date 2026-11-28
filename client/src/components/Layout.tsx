@@ -37,7 +37,7 @@ import NavDropdown from "@/components/nav/NavDropdown";
 import Breadcrumbs from "@/components/nav/Breadcrumbs";
 import { useCrumbLeafValue } from "@/components/nav/crumbLeaf";
 import AccountCount from "@/components/nav/AccountCount";
-import { MenuFirefly, MenuFolderNames, folderWord } from "@/components/nav/menuFolders";
+import { MenuFirefly, MenuFolderNames, MenuWaitingFor, folderWord } from "@/components/nav/menuFolders";
 import { Firefly, FireflyPicker, SeasonMark } from "@/components/nav/joyDoors";
 import SearchSlot from "@/components/search/SearchSlot";
 import VisitorLink, { useVerifiedVisitor } from "@/components/VisitorLink";
@@ -218,8 +218,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
     };
     window.addEventListener("village:open-menu", openAny);
     w.__openMenuReady = true;
-    window.dispatchEvent(new Event("village:open-menu-ready"));
-    return () => { window.removeEventListener("open-mobile-menu", openMenu); window.removeEventListener("village:open-menu", openAny); delete w.__openMenuReady; };
+    window.dispatchEvent(new CustomEvent("village:open-menu-ready", { detail: true }));
+    return () => { window.removeEventListener("open-mobile-menu", openMenu); window.removeEventListener("village:open-menu", openAny); delete w.__openMenuReady; window.dispatchEvent(new CustomEvent("village:open-menu-ready", { detail: false })); };
   }, []);
   // The bar's More button reads this for its aria-expanded (lib/mobileMenuState.ts).
   useEffect(() => announceMobileMenu(mobileMenuOpen), [mobileMenuOpen]);
@@ -239,7 +239,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   }, [mobileMenuOpen]);
 
   return (
-    <MenuFolderNames.Provider value={menu.folders}><MenuFirefly.Provider value={firefly}>
+    <MenuFolderNames.Provider value={menu.folders}><MenuFirefly.Provider value={firefly}><MenuWaitingFor.Provider value={waitingFor}>
     <div className="flex flex-col min-h-screen">
       {/*
        * Skip link. Measured before it existed: 40 to 63 focus stops between the
@@ -457,7 +457,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
               lead, 27 Nov 2026: "one button for paths ... and another button for menu to then open up the same thing
               that the bottom right more button opens up"): Menu opens the very sheet More opens (MoreSheet), so the
               two doors can never show different menus, and a visitor with no More tab still has one. */}
-          <div className="lg:hidden flex items-center gap-2 text-white">
+          <div className="lg:hidden flex items-center gap-1 min-[360px]:gap-2 text-white">
             <SearchSlot place="phone" /><span className="hidden md:contents"><ThemeSwitch /><LanguagePicker villageDefault={cfg?.defaultLocale ?? null} /></span>
             <button
               type="button"
@@ -994,6 +994,6 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
       {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
       {fireflyReady ? <FireflyPicker hrefs={[...NAV.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href)} here={location} onPick={setFirefly} /> : null}
     </div>
-    </MenuFirefly.Provider></MenuFolderNames.Provider>
+    </MenuWaitingFor.Provider></MenuFirefly.Provider></MenuFolderNames.Provider>
   );
 }

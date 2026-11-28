@@ -1947,6 +1947,11 @@ html:has(#sera-changes [data-sera-strip-on]) {
   color: var(--day-accent, var(--pal-day-accent));
 }
 
+/* The menu's season ring: green at night, where coral measured 2.26:1 on the menus (nav/menuJoys.tsx, QA round 2). */
+:root[data-mode="dark"] [data-season-mark] {
+  border-color: var(--color-open);
+}
+
 /* The page's light: a warm sky by day, the goldwash over the canopy by night. */
 :root[data-mode="light"] .sheet-night.min-h-screen {
   background-image:

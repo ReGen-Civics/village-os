@@ -273,6 +273,9 @@ export const NAV: readonly NavEntry[] = [
       { href: "/governance/treasury", label: "Treasury", newcomers: "never", sub: "Decide" },
       // Signed out, the page itself asks the visitor to sign in to write one.
       { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never", sub: "Decide" },
+      // What waits on the reader, with its count: Govern's dot leads here (the menu's QA, round 2). The account menu
+      // keeps it too, as the member's own; a page in two places on purpose (navNest.test.ts names it).
+      { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", count: "waiting", sub: "Decide" },
       // No Change Requests entry: folds 6 and 7 (#1861) put change requests inside Decisions
       // (/governance/decisions#changes), and the approvals inside Your work (/governance/work#approvals).
       /**

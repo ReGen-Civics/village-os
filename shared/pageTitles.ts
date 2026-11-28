@@ -188,8 +188,10 @@ export const EXACT_TITLES: Readonly<Record<string, string>> = {
  * /forum/123 still reads as the forum. `{commitment}` is the village's own
  * word for what a member signs. Empty means the location has no page name.
  */
-export function pageTitleFor(location: string, words: { commitment?: string } = {}): string {
+export function pageTitleFor(location: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
   const bare = location.split(/[?#]/)[0]!.replace(/(.)\/$/, "$1");
+  // A story page the village names itself (Admin, Pages, Whole site) takes that name, as its menu entry does.
+  if (words.names?.[bare]?.trim()) return words.names[bare]!.trim();
   if (EXACT_TITLES[bare]) return EXACT_TITLES[bare]!;
   const match = Object.keys(PAGE_TITLES)
     .filter((p) => (p === "/" ? location === "/" : location.startsWith(p)))
@@ -199,7 +201,7 @@ export function pageTitleFor(location: string, words: { commitment?: string } = 
 }
 
 /** "Page · Village", or the village alone where the page has no name. */
-export function documentTitle(location: string, village: string, words: { commitment?: string } = {}): string {
+export function documentTitle(location: string, village: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
   const page = pageTitleFor(location, words);
   return page ? `${page} · ${village}` : village;
 }

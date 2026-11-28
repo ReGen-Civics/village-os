@@ -76,7 +76,7 @@ describe("the menu by membership", () => {
         // (MoreSheet.tsx; its own test renders it with every folder open).
         const sheet = [...(a.signedIn ? ACCOUNT_MENU.filter(visibleTo(a)) : []), ...barFor(a).flatMap((g) => g.links)].map((l) => l.href);
         const twice = Array.from(new Set(sheet.filter((h, i) => sheet.indexOf(h) !== i))).sort();
-        for (const h of twice) expect(["/quests", "/roles"], h).toContain(h);
+        for (const h of twice) expect(["/quests", "/roles", "/governance/work"], h).toContain(h);
       });
 
       // Join first for every reader (the lead, 27 Nov 2026: "Join should be first on the list"), Govern last.
@@ -190,16 +190,18 @@ describe("every entry has a page, and Your First Walk is gone", () => {
   /**
    * The named exceptions (the lead, round 2): Quests is something you do in the village and the work the season is
    * made of ("Quests could be in both village and in governance"), and the roles are both the way in (Join, Open
-   * Roles) and how the village is organised (Govern, Circles & Roles).
+   * Roles) and how the village is organised (Govern, Circles & Roles). Waiting on you is the member's own (the account
+   * menu) and where Govern's waiting dot leads (Decide), so the dot opens to a row that shows its count (the menu's QA,
+   * round 2).
    */
-  const IN_TWO_PLACES = ["/quests", "/roles"];
+  const IN_TWO_PLACES = ["/quests", "/roles", "/governance/work"];
 
   it("lists each page once, so nobody meets the same page in two places, but for the named exceptions", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href);
     const twice = hrefs.filter((h, i) => hrefs.indexOf(h) !== i);
     expect(twice.sort()).toEqual([...IN_TWO_PLACES].sort());
-    // Each exception sits in two different groups, never twice in one.
-    for (const h of IN_TWO_PLACES) {
+    // Each exception sits in two different groups, never twice in one (Waiting on you: Govern and the account menu).
+    for (const h of IN_TWO_PLACES.filter((x) => x !== "/governance/work")) {
       const groups = NAV.filter(isGroup).filter((g) => g.items.some((l) => l.href === h)).map((g) => g.label);
       expect(new Set(groups).size, h).toBe(2);
     }

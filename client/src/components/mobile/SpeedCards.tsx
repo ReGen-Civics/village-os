@@ -188,7 +188,13 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
   const enterEdit = (from?: string, byHold = false, byAdd = false) => {
     if (editing) return;
     openedByAdd.current = byAdd;
-    if (byHold) swallowLift();
+    if (byHold) {
+      swallowLift();
+      // After a hold or a right-click, focus goes to Done once the finger lifts, as the keyboard path does (QA, round 2).
+      const toDone = () => requestAnimationFrame(() => doneButton.current?.focus());
+      window.addEventListener("pointerup", toDone, { once: true, capture: true });
+      setTimeout(toDone, 0);
+    }
     const slots = sixSlots(base);
     setDraft(slots);
     setPicked(from ?? resolveSlots(slots, reg).find((c) => c)?.id ?? null);
@@ -234,6 +240,9 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
     if (!editing) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || live.current.pickOpen) return;
+      // An Escape meant for a dialog above the sheet (search) is not ours: an unsaved edit stays.
+      const at = document.activeElement instanceof Element ? document.activeElement : null;
+      if (at?.closest('[role="dialog"]') && !at.closest("[data-more-sheet]")) return;
       e.stopPropagation();
       live.current.cancel();
     };

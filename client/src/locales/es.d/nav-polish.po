@@ -153,3 +153,15 @@ msgstr "Tesorería"
 msgctxt "the menu: the mark before a heading, the village's season, read aloud"
 msgid "Season: {name}"
 msgstr "Temporada: {name}"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/VillageMap.tsx
+msgctxt "VillageMap, h1"
+msgid "Circles"
+msgstr "Círculos"
