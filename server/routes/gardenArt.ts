@@ -1,10 +1,12 @@
 /**
  * The Admin Garden's painted art: one building per place, built and under
- * scaffolding, and the guide's portrait (shared/gardenArt.ts).
+ * scaffolding, the guide's portrait, and the four painted grounds a person
+ * may pick for the land behind the places (shared/gardenArt.ts).
  *
  *   GET /images/garden/<place>.webp            a place, built
  *   GET /images/garden/<place>-scaffold.webp   the same place, not built yet
  *   GET /images/garden/guide.webp              the guide's portrait
+ *   GET /images/garden/ground-<ground>.webp    a painted ground: forest, valley, hills, beach
  *
  * WHY THE SERVER AND NOT `client/public`. The same reason, and the same
  * remedy, as the module cards (server/routes/moduleArt.ts): CI caps the whole
@@ -16,7 +18,8 @@
  * Last-Modified express.static sends; a repaint reaches everyone by tomorrow.
  *
  * A MISS FALLS THROUGH to the server's own `/images/` rule, which answers 404
- * text/plain, and a place draws its plaque and lantern without a building.
+ * text/plain, and a place draws its plaque and lantern without a building. A
+ * ground that misses leaves the land its painted colours.
  *
  * REGISTERED beside the module art in server/index.ts, before the `/images/`
  * rule, so a painting is found before that rule answers its 404.
