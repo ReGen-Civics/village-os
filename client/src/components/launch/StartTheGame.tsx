@@ -105,14 +105,29 @@ export default function StartTheGame({
             {/* A village already issuing does not start anything, so its card says what the vote is (Rye, 2026-11-27). */}
             <SeedGlint className="w-4 h-4 text-teal-deep" /> {vote?.ratifying ? t({ message: "Ratify the launch", context: "StartTheGame, the card's name on a village already issuing" }) : launchName}
           </p>
-          {!running && governanceOff && (
+          {/* One paragraph for the two facts a founder needs before the count: a village already issuing ratifies and
+              starts nothing (Rye, 2026-11-27), and the vote is held in the governance module. */}
+          {!running && (governanceOff || vote?.ratifying) && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">
-              <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
-              <Link href="/modules/governance" className="text-teal-deep underline">
-                Turn it on for members first
-              </Link>
-              .
-            </Trans></p>
+              {vote?.ratifying && (
+                <>
+                  {vote.issuingSince ? (
+                    <Trans context="StartTheGame, a village already issuing">This village has been issuing tokens since {new Date(vote.issuingSince).toLocaleDateString()}. This vote puts the launch on the record. It does not restart issuance, and that date does not move.</Trans>
+                  ) : (
+                    <Trans context="StartTheGame, a village already issuing">This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance.</Trans>
+                  )}
+                  {governanceOff && " "}
+                </>
+              )}
+              {governanceOff && (
+                <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
+                <Link href="/modules/governance" className="text-teal-deep underline">
+                  Turn it on for members first
+                </Link>
+                .
+              </Trans>
+              )}
+            </p>
           )}
           {!running && !status.readyToLaunch && shortOfPeople && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">{vote?.tooFew}</p>
@@ -126,15 +141,6 @@ export default function StartTheGame({
                   ? vote?.tooFew
                   : vote?.why ?? "This opens the village's vote on starting its Game."}
           </p>
-          {!running && vote?.ratifying && (
-            <p className="text-xs text-stone-700 mt-1 max-w-md">
-              {vote.issuingSince ? (
-                <Trans context="StartTheGame, a village already issuing">This village has been issuing tokens since {new Date(vote.issuingSince).toLocaleDateString()}. This vote puts the launch on the record. It does not restart issuance, and that date does not move.</Trans>
-              ) : (
-                <Trans context="StartTheGame, a village already issuing">This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance.</Trans>
-              )}
-            </p>
-          )}
           {!running && status.readyToLaunch && !shortOfPeople && vote?.onTheRoll != null && (
             <p className="text-xs text-stone-500 mt-1 max-w-md">
               <Trans context="StartTheGame, p">{vote.onTheRoll} people are on its roll today, and the vote carries without waiting for its window to end.</Trans>

@@ -46,7 +46,7 @@ if (!DB_CONFIGURED) {
 const DIST = path.resolve(process.cwd(), "dist/index.js");
 
 /** This suite's port window. `scripts/check-e2e-ports.mjs` holds it apart from every other file's. */
-const PORT = 8300 + (process.pid % 400);
+const PORT = 12200 + (process.pid % 250);
 const BASE = `http://localhost:${PORT}`;
 const ADMIN = "launchratify-admin";
 const PASSWORD = "LaunchRatifyTest123!";
