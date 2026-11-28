@@ -19,7 +19,7 @@
  *
  * Pure: no I/O, no clock.
  */
-import { PERSON_ONLY_LISTS, actClass, actHref, actReason, type PersonOnlyLists } from "./adminActs";
+import { PERSON_ONLY_LISTS, actClass, actHref, actModule, actModulesAny, actReason, type PersonOnlyLists } from "./adminActs";
 import { DIAL_ROUTE } from "./adminActs/derived";
 import type { AdminAct } from "./adminActs/types";
 import { ADMIN_PLACES } from "./adminTabs";
@@ -45,6 +45,8 @@ export interface WalkAct {
   why: string;
   ledger: string;
   partial: boolean;
+  /** The module that must be on for it to show, or the modules any one of which shows it. Empty: always there. */
+  needs: string;
 }
 
 export interface WalkDial {
@@ -122,6 +124,7 @@ export function walkOf(inputs: ScoreInputs, board: Scoreboard): Walk {
       ...tierOf(a, lists),
       ledger: (a.parity ?? []).join(" "),
       partial: !!a.partial,
+      needs: actModule(a) ?? actModulesAny(a)?.join(" or ") ?? "",
     }));
 
   const dialActs = new Map(inputs.acts.filter(isDial).map((a) => [a.route?.params?.key ?? "", a]));
@@ -185,6 +188,7 @@ export function walkMarkdown(walk: Walk, board: Scoreboard, stamp: string): stri
   out.push("1. Go place by place through part 1: open each address after the site's own, find the control, and press it or read it as its row says.");
   out.push("2. An act marked partial has a control, and its route or its fields were never read from the server, so walk it with more care and say what it really does.");
   out.push("3. Part 2 is where a function could be hiding with no entry: a route an admin can reach that no act claims. Part 3 is every setting with no full home.");
+  out.push("", "A row that names a module under Needs on shows only while that module is on. With the module off its tab is hidden, and that is not a lost function.");
   out.push("");
   const tiers = new Map<string, number>();
   for (const a of walk.acts) tiers.set(a.tier, (tiers.get(a.tier) ?? 0) + 1);
@@ -205,10 +209,10 @@ export function walkMarkdown(walk: Walk, board: Scoreboard, stamp: string): stri
     }
     if (a.on !== on) {
       on = a.on;
-      out.push(`#### ${place}: ${on}`, "", "| Act | Title | Opens | Calls | Door admits | Guide's tier | Ledger | Partial |", "|---|---|---|---|---|---|---|---|");
+      out.push(`#### ${place}: ${on}`, "", "| Act | Title | Opens | Calls | Door admits | Guide's tier | Ledger | Partial | Needs on |", "|---|---|---|---|---|---|---|---|---|");
     }
     const tier = a.why ? `${a.tier}: ${a.why}` : a.tier;
-    out.push(`| \`${a.id}\` | ${cell(a.title)} | \`${a.opens}\` | ${a.calls === "reads only" ? a.calls : `\`${cell(a.calls)}\``} | ${cell(a.door)} | ${cell(tier)} | ${a.ledger} | ${a.partial ? "partial" : ""} |`);
+    out.push(`| \`${a.id}\` | ${cell(a.title)} | \`${a.opens}\` | ${a.calls === "reads only" ? a.calls : `\`${cell(a.calls)}\``} | ${cell(a.door)} | ${cell(tier)} | ${a.ledger} | ${a.partial ? "partial" : ""} | ${a.needs} |`);
     const next = walk.acts[walk.acts.indexOf(a) + 1];
     if (!next || next.on !== a.on || next.place !== a.place) out.push("");
   }
@@ -240,9 +244,9 @@ const csvCell = (s: string): string => (/[",\n\r]/.test(s) ? `"${s.replace(/"/g,
 
 /** The walk list as one CSV. Its first column says which part a row belongs to. */
 export function walkCsv(walk: Walk): string {
-  const head = ["part", "place", "on", "id", "title", "opens", "calls", "door admits", "guide's tier", "why", "ledger", "partial", "handler", "matrix", "missing", "category"];
+  const head = ["part", "place", "on", "id", "title", "opens", "calls", "door admits", "guide's tier", "why", "ledger", "partial", "handler", "matrix", "missing", "category", "needs module on"];
   const rows: string[][] = [head];
-  for (const a of walk.acts) rows.push(["1 act", a.place, a.on, a.id, a.title, a.opens, a.calls, a.door, a.tier, a.why, a.ledger, a.partial ? "partial" : "", "", "", "", ""]);
+  for (const a of walk.acts) rows.push(["1 act", a.place, a.on, a.id, a.title, a.opens, a.calls, a.door, a.tier, a.why, a.ledger, a.partial ? "partial" : "", "", "", "", "", a.needs]);
   for (const d of walk.dials) rows.push(["1 dial", "greenhouse", "tab variables", `dial.${d.key}`, d.label, `/admin?tab=variables&variable=${encodeURIComponent(d.key)}`, `PUT ${DIAL_ROUTE} (key=${d.key})`, d.who, d.tier, "", "", "", "", "", "", d.category]);
   for (const r of walk.routes) rows.push(["2 unclaimed route", "", "", `${r.method} ${r.path}`, "", "", `${r.method} ${r.path}`, "", "", r.why, "", "", r.at, r.matrix, "", ""]);
   for (const u of walk.undecided) rows.push(["2 not decided", "", "", u.family, `${u.count} open routes`, "", "", "", "", "", "", "", "", "", "", ""]);
