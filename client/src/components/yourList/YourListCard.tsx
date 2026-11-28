@@ -176,6 +176,8 @@ export default function YourListCard() {
 
   const shown = (h: Horizon) => live.open.filter((t) => t.horizonNow === h && (showHidden || t.shown));
   const chosen = live.open.filter((t) => selected.includes(t.id));
+  // The held action's subject: the same tasks pressed again take the earlier hold's place (adminUndo.ts).
+  const bulkKey = `tasks:${chosen.map((t) => t.id).join(",")}`;
   const applyBulk = async (mode: "remove" | "redirect" | "done", p?: ReasonPick) => {
     setBusy(true);
     setProblem(null);
@@ -247,7 +249,7 @@ export default function YourListCard() {
         <div className="mt-4 rounded-xl border border-border bg-background p-3">
           <p className="text-sm text-foreground"><Trans context="YourListCard, p">{chosen.length} selected. The reason you pick applies to every task you selected.</Trans></p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk("done"); })}><Trans context="YourListCard, button">Done</Trans></button>
+            <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk("done"); }, bulkKey)}><Trans context="YourListCard, button">Done</Trans></button>
             <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "remove" ? null : "remove")}><Trans context="YourListCard, button">Remove</Trans></button>
             <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setBulk(bulk === "redirect" ? null : "redirect")}><Trans context="YourListCard, button">Redirect</Trans></button>
           </div>
@@ -257,7 +259,7 @@ export default function YourListCard() {
               busy={busy}
               others={chosen.map((t) => ({ id: t.id, title: t.title }))}
               onCancel={() => setBulk(null)}
-              onPick={(p) => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk(bulk, p); })}
+              onPick={(p) => holdUndo(`Applying this to ${chosen.length} tasks.`, () => { void applyBulk(bulk, p); }, bulkKey)}
             />
           )}
         </div>
@@ -286,8 +288,8 @@ export default function YourListCard() {
                           busy={busy}
                           selected={selected.includes(t.id)}
                           onToggle={() => setSelected((cur) => cur.includes(t.id) ? cur.filter((id) => id !== t.id) : [...cur, t.id])}
-                          onDone={() => holdUndo("Marking this done.", () => { void act(() => markDone(t)); })}
-                          onPick={(mode, p) => holdUndo(mode === "remove" ? "Removing this task." : "Handing this task on.", () => { void pressed(t, mode, p); })}
+                          onDone={() => holdUndo("Marking this done.", () => { void act(() => markDone(t)); }, `task:${t.id}`)}
+                          onPick={(mode, p) => holdUndo(mode === "remove" ? "Removing this task." : "Handing this task on.", () => { void pressed(t, mode, p); }, `task:${t.id}`)}
                           onPin={() => act(() => pinTask(t, !t.memberPinned))}
                           onTier={(tr2) => act(() => changeTier(t, tr2, contextOf(t)))}
                         />
