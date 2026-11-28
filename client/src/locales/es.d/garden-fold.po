@@ -16,3 +16,15 @@ msgstr "Lotes"
 msgctxt "review inbox: batches view"
 msgid "Reading the batches."
 msgstr "Leyendo los lotes."
+
+# needs-native-review: a Waiting card names its batch, 27 Nov 2026
+#: client/src/components/reviewInbox/ConnectorWaiting.tsx
+msgctxt "review inbox: a change's batch"
+msgid "Part of batch {code}."
+msgstr "Parte del lote {code}."
+
+# needs-native-review: a Waiting card names its batch, 27 Nov 2026
+#: client/src/components/reviewInbox/ConnectorWaiting.tsx
+msgctxt "review inbox: a change's batch"
+msgid "See the whole batch"
+msgstr "Ver el lote completo"

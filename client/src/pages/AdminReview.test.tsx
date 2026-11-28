@@ -441,3 +441,15 @@ describe("the Batches view: /admin/proposals folded into this page (the accepted
     expect(screen.queryByTestId("batches-view")).toBeNull();
   });
 });
+
+describe("a change under Waiting names its batch and links to it in the Batches view", () => {
+  it("says which batch it is part of, with a door to that batch, and stays one decision", async () => {
+    stub({ changes: [PAGE] });
+    render(<AdminReview />);
+    const line = await screen.findByTestId("batch-of-pc_3");
+    expect(line.textContent).toBe("Part of batch B-3. See the whole batch");
+    expect(within(line).getByRole("link").getAttribute("href")).toBe("/admin/review?view=batches&find=B-3");
+    // The change is drawn here and in the Batches view; the count is the server's one row for it, said once.
+    expect(screen.getByTestId("inbox-status").textContent).toContain("1 decision waiting on you.");
+  });
+});
