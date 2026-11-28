@@ -1144,6 +1144,69 @@ function capturePreloadBundle(): Plugin {
 }
 
 /**
+ * WRITE THE BUILD'S CHUNK GRAPH BESIDE dist/public (the admin and member split
+ * of the size gate, 28 Nov 2026).
+ *
+ * scripts/check-dist-budget.mjs counts an admin-only page apart from a member
+ * page, and it decides which is which from what this build emitted, never from
+ * a file name: each chunk's static and dynamic imports, the modules rollup
+ * placed in it, and the styles and files it pulls in (scripts/lib/distSplit.mjs
+ * has the rule). Vite's own manifest names no modules, so it cannot say which
+ * chunk a grouped page landed in, and it is written INSIDE dist/public, where
+ * the budget would count it and any browser could fetch it. This writes the
+ * facts to dist/chunk-graph.json instead, outside dist/public like
+ * dist/client-routes.json: nothing a browser fetches, nothing the budget counts.
+ *
+ * Read at writeBundle, so it lists exactly the files that reached the disk
+ * (Vite drops a CSS-only chunk's empty script during generateBundle). `lazy`
+ * is the one module-level list: for each lazily imported module, the modules
+ * that import it. An import list at module level keeps edges the bundler
+ * dropped, so the gate reads it in one direction only, to count a page as a
+ * member's when something other than the router imports it.
+ */
+function writeChunkGraph(): Plugin {
+  const root = import.meta.dirname;
+  const name = (id: string) => shortId(id, root);
+  const real = (id: string) => !id.startsWith("\0");
+  return {
+    name: "write-chunk-graph",
+    apply: "build",
+    writeBundle(_options, bundle) {
+      const chunks = [];
+      const assets: string[] = [];
+      const lazy: Record<string, { importers: string[]; dynamicImporters: string[] }> = {};
+      for (const out of Object.values(bundle)) {
+        if (out.type !== "chunk") {
+          assets.push(out.fileName);
+          continue;
+        }
+        const modules: Record<string, number> = {};
+        for (const [id, m] of Object.entries(out.modules)) if (real(id)) modules[name(id)] = m.renderedLength;
+        chunks.push({
+          file: out.fileName,
+          isEntry: out.isEntry,
+          isDynamicEntry: out.isDynamicEntry,
+          facade: out.facadeModuleId && real(out.facadeModuleId) ? name(out.facadeModuleId) : null,
+          imports: out.imports,
+          dynamicImports: out.dynamicImports,
+          css: Array.from(out.viteMetadata?.importedCss ?? []),
+          assets: Array.from(out.viteMetadata?.importedAssets ?? []),
+          modules,
+        });
+        for (const id of Object.keys(out.modules)) {
+          const info = this.getModuleInfo(id);
+          if (!real(id) || !info || info.dynamicImporters.length === 0) continue;
+          lazy[name(id)] = { importers: info.importers.filter(real).map(name).sort(), dynamicImporters: info.dynamicImporters.filter(real).map(name).sort() };
+        }
+      }
+      chunks.sort((a, b) => a.file.localeCompare(b.file));
+      fs.mkdirSync(path.resolve(root, "dist"), { recursive: true });
+      fs.writeFileSync(path.resolve(root, "dist", "chunk-graph.json"), JSON.stringify({ version: 1, chunks, assets: assets.sort(), lazy }) + "\n");
+    },
+  };
+}
+
+/**
  * Long English moved out of the lazy chunks into dist/i18n/parts/en, outside
  * dist/public (client/src/i18n/copySplit.ts). One collector per build: the
  * transform half (precompileEnglish) fills it, the renderChunk half reads it.
@@ -1323,7 +1386,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
 }
 
 export default defineConfig({
-  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet(), guardRouteFirstViews(), capturePreloadBundle()],
+  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet(), guardRouteFirstViews(), capturePreloadBundle(), writeChunkGraph()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
