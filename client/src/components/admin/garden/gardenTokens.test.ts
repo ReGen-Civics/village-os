@@ -18,6 +18,7 @@ import { i18n } from "@lingui/core";
 import { contrastRatio } from "@shared/brandTokens";
 import { GARDEN_PLACE_KEYS, gardenArtFiles } from "@shared/gardenArt";
 import { GARDEN_FRAME_TWO_COLUMNS_REM } from "./frame";
+import { GARDEN_EXIT } from "./oldAdmin";
 import { GARDEN_PLACES, PLACE_NAME_MAX, tidyPlaceName } from "./places";
 
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -445,5 +446,48 @@ describe("what the garden's stylesheet promises a host page", () => {
       // The row above the land: the heading where it starts, the picker where it ends, wrapping where there is no room.
       expect(everywhere).toMatch(/\n\.gd-grounds-head \{\s*display: flex;\s*flex-wrap: wrap;\s*align-items: flex-end;\s*justify-content: space-between;/);
     });
+  });
+});
+
+/**
+ * THE WAY TO THE OLD ADMIN, AND BACK (./oldAdmin.tsx). The way back is drawn OUTSIDE the garden's night, on the old
+ * admin page, so it may read nothing of the garden's. Its words and their underline are the page's own text colour
+ * (`text-foreground`), with no fill and no edge of its own. What must hold, then, is each page's own pair: its ink on
+ * the surfaces it draws, in both mode palettes. In the band the same class is the garden's ink on the band.
+ */
+describe("the way to the old admin, and back: readable in the band and outside the garden", () => {
+  const P = palette();
+
+  it("draws from the page's own tokens: its text colour for the words, and nothing only the garden defines", () => {
+    const classes = GARDEN_EXIT.split(" ");
+    expect(classes).toContain("text-foreground");
+    // No fill and no edge: nothing of its own to be unreadable against.
+    expect(classes.filter((c) => /bg-|border/.test(c))).toEqual([]);
+    expect(GARDEN_EXIT).not.toMatch(/gd-|--garden|var\(|notice/);
+    // A full finger tall, with the journey button's focus ring, which is the page's own --ring.
+    expect(classes).toEqual(expect.arrayContaining(["jw-btn", "min-h-11"]));
+    expect(indexCss).toMatch(/\.jw-btn:focus-visible \{\s*outline: 2px solid var\(--ring\);/);
+  });
+
+  it.each([
+    ["day, on the page", "--pal-day-ink", "--pal-day-ground"],
+    ["day, on a panel", "--pal-day-ink", "--pal-day-panel"],
+    ["day, on a tile", "--pal-day-ink", "--pal-day-panel-raised"],
+    ["night, on the page", "--pal-night-ink", "--pal-night-ground"],
+    ["night, on a panel", "--pal-night-ink", "--pal-night-panel"],
+    ["night, on a tile", "--pal-night-ink", "--pal-night-panel-raised"],
+    ["night, on the band", "--pal-night-ink", "--pal-night-band"],
+  ])("outside the garden, the page's own ink is readable: %s", (_where, ink, ground) => {
+    expect(P[ink], ink).toBeDefined();
+    expect(P[ground], ground).toBeDefined();
+    const ratio = contrastRatio(P[ink], P[ground]);
+    expect(ratio, `${P[ink]} on ${P[ground]} is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEXT);
+  });
+
+  it("in the band, the same class is the garden's ink on the band, and its focus ring the garden's gold", () => {
+    expect(TOKENS["--foreground"]).toBe("var(--garden-ink)");
+    expect(TOKENS["--ring"]).toBe("var(--garden-gold)");
+    expect(contrastRatio(token("ink"), token("band"))).toBeGreaterThanOrEqual(TEXT);
+    expect(contrastRatio(token("gold"), token("band"))).toBeGreaterThanOrEqual(MARK);
   });
 });

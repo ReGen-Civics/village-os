@@ -43,10 +43,16 @@ export interface StatusBandProps {
    * the band draws none and a caller places its lens toggle where it always did.
    */
   switches?: ReactNode;
+  /**
+   * The way out, for now: the door to the old admin dashboard (SeeOldAdmin, ./oldAdmin.tsx). Drawn at the far end of
+   * the band, after the switches and the band's own door, and under them when the band is narrow. Unlike the view
+   * switch it is drawn at every width: a person on a phone must be able to reach the old admin too.
+   */
+  exit?: ReactNode;
   className?: string;
 }
 
-export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, switches, className = "" }: StatusBandProps) {
+export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, switches, exit, className = "" }: StatusBandProps) {
   const cycle = [season, moon].filter((w): w is string => typeof w === "string" && w.trim() !== "");
   const { t } = useLingui();
   return (
@@ -77,6 +83,12 @@ export default function StatusBand({ label, sentence, action, season, moon, moon
             {action.label}
           </button>
         )
+      ) : null}
+      {exit ? (
+        // Last in the band and last in the document. No rule hides it at any width: it is the one way to the old admin.
+        <div className="flex items-center" data-testid="garden-band-exit">
+          {exit}
+        </div>
       ) : null}
     </section>
   );

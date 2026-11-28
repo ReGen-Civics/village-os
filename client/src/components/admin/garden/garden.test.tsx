@@ -25,6 +25,7 @@ import {
   dockDrawnAfter,
   Fireflies,
   Garden,
+  GARDEN_EXIT,
   GARDEN_FRAME_TWO_COLUMNS_REM,
   GARDEN_GROUND_PICK_KEY,
   GardenFrame,
@@ -33,7 +34,9 @@ import {
   Lantern,
   LensToggle,
   Place,
+  ReturnToGarden,
   SeedOfLife,
+  SeeOldAdmin,
   StatusBand,
   SteppingStones,
   useGardenDock,
@@ -1561,5 +1564,176 @@ describe("a real lantern is never mistaken for a painted one", () => {
   it("says a dark lantern on the Desk's rows too, after the caller's own line", () => {
     show(<Place place="gate" lens="desk" note="Two people are new this moon" href="/b" />);
     expect(screen.getByRole("link", { name: "The Gate" })).toHaveAccessibleDescription("Two people are new this moon Nothing waiting.");
+  });
+});
+
+/**
+ * A WAY TO THE OLD ADMIN DASHBOARD, AND BACK (the founder, 28 Nov 2026: "yes new one live with the old as a 'return to
+ * old' button for now", and "Okay a 'see the old admin dashboard' button"). An exit in the band, and the way back for
+ * the old admin page. Neither holds anything: the page that mounts the garden owns where the choice is kept.
+ */
+describe("the way to the old admin dashboard, and back", () => {
+  const nothing = () => undefined;
+  const exitButton = (name: string) => screen.getByRole("button", { name });
+  /** The way back as the old admin page draws it: no <Garden> above it. */
+  const onTheOldPage = (ui: ReactElement) =>
+    render(
+      <I18nProvider i18n={i18n}>
+        <main data-testid="old-admin">{ui}</main>
+      </I18nProvider>,
+    );
+
+  it("says each line warm and plain, and in its brief form when the person asked for brief and quiet", () => {
+    show(
+      <>
+        <SeeOldAdmin onPress={nothing} />
+        <ReturnToGarden onPress={nothing} />
+        <QuietSwitch />
+      </>,
+    );
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    fireEvent.click(exitButton("brief and quiet"));
+    expect(exitButton("Old admin")).toBeTruthy();
+    expect(exitButton("The garden")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "See the old admin dashboard" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Return to the garden" })).toBeNull();
+    fireEvent.click(exitButton("brief and quiet"));
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+  });
+
+  it("is a real button a finger tall, and quieter than a switch: words with an underline, never a marked side's fill", () => {
+    show(
+      <>
+        <SeeOldAdmin onPress={nothing} />
+        <ReturnToGarden onPress={nothing} />
+      </>,
+    );
+    for (const button of [exitButton("See the old admin dashboard"), exitButton("Return to the garden")]) {
+      expect(button.tagName).toBe("BUTTON");
+      expect(button.getAttribute("type")).toBe("button");
+      const classes = button.className.split(/\s+/);
+      expect(classes).toEqual(GARDEN_EXIT.split(" "));
+      expect(classes).toEqual(expect.arrayContaining(["jw-btn", "min-h-11", "underline", "text-foreground"]));
+      // An exit, never one side of a choice: nothing is marked, nothing is filled, nothing is edged.
+      expect(button.hasAttribute("aria-pressed")).toBe(false);
+      expect(classes.filter((c) => /^(?:hover:|focus:)?(?:bg-|border)/.test(c))).toEqual([]);
+      expect(button.closest(".gd-lens")).toBeNull();
+    }
+  });
+
+  it("does what the page gave it, once a press, and itself keeps nothing, remembers nothing and asks for nothing", () => {
+    const toTheOld = vi.fn();
+    const back = vi.fn();
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    show(
+      <>
+        <SeeOldAdmin onPress={toTheOld} />
+        <ReturnToGarden onPress={back} />
+      </>,
+    );
+    fireEvent.click(exitButton("See the old admin dashboard"));
+    expect(toTheOld).toHaveBeenCalledTimes(1);
+    expect(toTheOld).toHaveBeenCalledWith();
+    expect(back).not.toHaveBeenCalled();
+    fireEvent.click(exitButton("Return to the garden"));
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(back).toHaveBeenCalledWith();
+    expect(toTheOld).toHaveBeenCalledTimes(1);
+    // Both are still there, saying the same thing: a press changed nothing of their own.
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    // Nothing kept in the browser, nothing sent: where the choice is kept is the page's own business.
+    expect(localStorage.length).toBe(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("stands in the band's own slot: after the switches and the band's own door, last in the band", () => {
+    function Band() {
+      const dock = useGardenDock();
+      const lens = useGardenLens();
+      const switches = (
+        <>
+          <ViewSwitch dock={dock} />
+          <LensToggle lens={lens.lens} onChange={lens.setLens} />
+        </>
+      );
+      return <StatusBand label="The Game is running" switches={switches} action={{ label: "See the road to launch", href: "/admin?tab=launch" }} exit={<SeeOldAdmin onPress={nothing} />} />;
+    }
+    show(<Band />);
+    const band = screen.getByRole("region", { name: "Where the village stands" });
+    const slot = screen.getByTestId("garden-band-exit");
+    const button = within(slot).getByRole("button", { name: "See the old admin dashboard" });
+    // The far end: the last thing in the band, in the document as on the page.
+    expect(band.lastElementChild).toBe(slot);
+    for (const earlier of [screen.getByRole("group", { name: "What leads this page" }), screen.getByRole("group", { name: "How you see the garden" }), within(band).getByRole("link", { name: "See the road to launch" })]) {
+      expect(earlier.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+    // So Tab meets it after both switches and the band's door.
+    const stops = Array.from(band.querySelectorAll("a[href], button")).map((el) => el.textContent);
+    expect(stops[stops.length - 1]).toBe("See the old admin dashboard");
+    expect(stops).toEqual(["Guide first", "Dashboard", "The Grounds", "The Desk", "See the road to launch", "See the old admin dashboard"]);
+  });
+
+  it("is drawn at every width, a phone's too: nothing steps it back, and it wraps under the switches when the band is narrow", () => {
+    show(<StatusBand label="The Game is running" exit={<SeeOldAdmin onPress={nothing} />} />);
+    const band = screen.getByRole("region", { name: "Where the village stands" });
+    const slot = screen.getByTestId("garden-band-exit");
+    const button = within(slot).getByRole("button", { name: "See the old admin dashboard" });
+    for (const el of [slot, button]) {
+      const classes = el.className.split(/\s+/);
+      // No class that hides it, at any width: the lens toggle steps back with `hidden lg:flex`, the view switch with `gd-view`.
+      expect(classes).not.toContain("hidden");
+      expect(classes).not.toContain("gd-view");
+      expect(classes.filter((c) => /^(?:sm|md|lg|xl|2xl|max-[a-z0-9]+):/.test(c))).toEqual([]);
+      expect(classes.filter((c) => c.startsWith("gd-"))).toEqual([]);
+      expect(el.hasAttribute("hidden")).toBe(false);
+    }
+    // No rule in the garden's stylesheet names the slot or the exit, so no container rule can hide it either.
+    expect(GARDEN_RULES.some((r) => /garden-band-exit|gd-exit|old-admin/i.test(r.selector))).toBe(false);
+    // The band wraps its items, so on a narrow band the exit goes to a row of its own under the switches.
+    expect(band.className.split(/\s+/)).toEqual(expect.arrayContaining(["flex", "flex-wrap"]));
+    expect(slot.parentElement).toBe(band);
+  });
+
+  it("draws no slot when the page gives no exit", () => {
+    show(<StatusBand label="The Game is running" />);
+    expect(screen.queryByTestId("garden-band-exit")).toBeNull();
+  });
+
+  it("the way back draws outside the garden's night, from the page's own tokens and nothing of the garden's", () => {
+    const back = vi.fn();
+    onTheOldPage(<ReturnToGarden onPress={back} />);
+    const button = exitButton("Return to the garden");
+    expect(button.closest(".garden")).toBeNull();
+    expect(screen.getByTestId("old-admin").contains(button)).toBe(true);
+    const classes = button.className.split(/\s+/);
+    // Its words and their underline are the page's own text colour, on whatever the page has drawn: no fill of its own.
+    expect(classes).toContain("text-foreground");
+    expect(classes).toContain("underline");
+    expect(classes.filter((c) => /bg-|border/.test(c))).toEqual([]);
+    // Nothing that only the garden defines: none of its classes, none of its tokens, none of its gold.
+    expect(classes.filter((c) => /^gd-|garden|notice|gold/.test(c))).toEqual([]);
+    expect(GARDEN_EXIT).not.toMatch(/--garden|gd-|var\(/);
+    // The focus ring is the page's own too: `jw-btn` draws it from --ring (client/src/index.css).
+    expect(classes).toContain("jw-btn");
+    fireEvent.click(button);
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it("outside a garden it reads the brief and quiet setting of the person the page names", () => {
+    localStorage.setItem(`${GARDEN_SPEAKING_KEY}:ana`, "quiet");
+    forgetPageCopy();
+    const ana = onTheOldPage(<ReturnToGarden onPress={nothing} personKey="ana" />);
+    expect(exitButton("The garden")).toBeTruthy();
+    ana.unmount();
+    const ben = onTheOldPage(<ReturnToGarden onPress={nothing} personKey="ben" />);
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    ben.unmount();
+    // With nobody named it speaks warm and plain.
+    onTheOldPage(<ReturnToGarden onPress={nothing} />);
+    expect(exitButton("Return to the garden")).toBeTruthy();
   });
 });

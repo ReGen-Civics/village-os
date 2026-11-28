@@ -129,6 +129,10 @@ export interface GardenWords {
   unbuilt: string;
   /** Beside the ground picker: what it does, and whose screen it changes. */
   groundPicker: string;
+  /** On the band's way out: the door to the old admin dashboard (./oldAdmin.tsx). */
+  seeOldAdmin: string;
+  /** On the old admin page: the way back to the garden. */
+  returnToGarden: string;
 }
 
 /**
@@ -192,6 +196,14 @@ export function useGardenWords(opts: { personKey?: string; now?: Date } = {}): G
     groundPicker: say(
       t({ message: "Pick the ground behind your garden. It changes only your own screen.", context: "garden ground picker" }),
       t({ message: "Your ground. Only your screen.", context: "garden ground picker, brief" }),
+    ),
+    seeOldAdmin: say(
+      t({ message: "See the old admin dashboard", context: "garden band, the way to the old admin" }),
+      t({ message: "Old admin", context: "garden band, the way to the old admin, brief" }),
+    ),
+    returnToGarden: say(
+      t({ message: "Return to the garden", context: "old admin page, the way back to the garden" }),
+      t({ message: "The garden", context: "old admin page, the way back to the garden, brief" }),
     ),
   };
 }

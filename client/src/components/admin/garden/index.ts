@@ -34,6 +34,8 @@ export { useGuideSpeaking, useGardenWords, useNumberWord, dayPartOf, readGuideSp
 export type { DayPart, GardenWords, GuideSpeaking, GuideSpeakingState } from "./speaking";
 export { ViewSwitch } from "./view";
 export type { ViewSwitchProps } from "./view";
+export { SeeOldAdmin, ReturnToGarden, GARDEN_EXIT } from "./oldAdmin";
+export type { SeeOldAdminProps, ReturnToGardenProps } from "./oldAdmin";
 export { LensToggle, useGardenLens, GARDEN_LENS_KEY } from "./lens";
 export type { GardenLens, GardenLensState, LensToggleProps } from "./lens";
 export { GroundPicker, useGardenGround, GARDEN_GROUND_PICK_KEY } from "./groundPick";
