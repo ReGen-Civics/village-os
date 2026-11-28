@@ -33,7 +33,6 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import ts from "typescript";
 import {
   GARDEN_DIR,
   ROAD_TO_LAUNCH_PATHS,
@@ -366,22 +365,11 @@ check("text that is not the table is not read as one", () => {
 });
 
 /*
- * The table is written by client/src/lib/routePreload.ts, at build time. That
- * file imports nothing, so it is compiled here and its own functions are run:
- * the reader must read back exactly what the writer writes, and spell a
- * route's pattern exactly as the writer does, for every route in the router.
+ * The table is written by client/src/lib/routePreload.ts, which is TypeScript
+ * and so out of this file's reach. client/src/lib/routePreloadReader.test.ts
+ * holds the reader to the writer itself: it runs the writer's own functions,
+ * reads the table back, and compares every route's pattern.
  */
-const writer = await (async () => {
-  const source = fs.readFileSync(path.join(HERE, "..", "client", "src", "lib", "routePreload.ts"), "utf8");
-  const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-  return import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
-})();
-
-check("the reader reads back the table the build's own writer writes", () => {
-  const table = { files: ["assets/Quests-AbC_1-x.js", "assets/site-9.css", "api/i18n/catalog/en/part/s5MJ_mISq62N", "assets/Admin-q.js"], routes: [["^/quests/[^/]+/?$", [0, 1, 2]], ["^/admin/?$", [3]]] };
-  const script = writer.routePreloadScript(table, "/");
-  assert.deepStrictEqual(readRoutePreloadTable(script), { files: table.files, rows: table.routes });
-});
 
 /* ------------------------------------------------------------------ the real router */
 
@@ -404,9 +392,11 @@ check("each road to launch path is still a route the router draws from a lazy pa
   }
 });
 
-check("a route's pattern is spelled exactly as the route-preload writer spells it, for every route in the router", () => {
-  for (const r of realRoutes) assert.strictEqual(routePatternOf(r.path), writer.routePattern(r.path), r.path);
-  assert.strictEqual(routePatternOf("/a.b/:id/"), writer.routePattern("/a.b/:id/"));
+check("a route's pattern is one segment per parameter, with the trailing slash optional", () => {
+  assert.strictEqual(routePatternOf("/admin"), "^/admin/?$");
+  assert.strictEqual(routePatternOf("/quests/:id"), "^/quests/[^/]+/?$");
+  assert.strictEqual(routePatternOf("/"), "^/?$");
+  assert.strictEqual(routePatternOf("/a.b/:id/"), "^/a\\.b/[^/]+/?$");
 });
 
 check("/admin is a route with a lazy page of its own", () => {
@@ -442,7 +432,7 @@ function tree(dir, o = {}) {
   // o.mapDeps: the list Vite writes beside a lazy import, which spells out the target's stylesheet in the importer's text.
   put("dist/public/assets/first-page-b.js", pad(`import("./Quests-c.js");import("./Admin-d.js");${o.mapDeps ? `const deps=["assets/Admin-d.js","assets/admin-g.css"];` : ""}`, 5000));
   // o.preload: one more script index.html loads that is no chunk, 4 KB on the members' side: the route-preload table, or text that is not one.
-  if (o.preload === "table") put("dist/public/assets/route-preload-r.js", pad(`(function () {\n  var b = "/", f = ["assets/Quests-c.js","assets/Admin-d.js","assets/admin-g.css"], r = [["^/quests/?$",[0]],["^/admin/?$",[1,2]]];\n  var p = location.pathname;\n})();\n`, 500));
+  if (o.preload === "table") put("dist/public/assets/route-preload-r.js", pad(`(function () {\n  var b = "/", f = ["assets/Quests-c.js","assets/shared-f.js","assets/Admin-d.js","assets/admin-g.css"], r = [["^/quests/?$",[0,1]],["^/admin/?$",${o.preloadShort ? "[2,3]" : "[2,1,3]"}]];\n  var p = location.pathname;\n})();\n`, 500));
   if (o.preload === "text") put("dist/public/assets/route-preload-r.js", pad(`var list = ["assets/Quests-c.js","assets/admin-g.css"];`, 500));
   put("dist/public/assets/Quests-c.js", pad(`import"./first-page-b.js";import"./shared-f.js";`, 3000));
   put("dist/public/assets/shared-f.js", pad(`export{};`, 100));
@@ -457,9 +447,9 @@ function tree(dir, o = {}) {
     chunks: [
       chunk("assets/index-a.js", { isEntry: true, imports: ["assets/first-page-b.js"], modules: { "client/src/main.tsx": 10 } }),
       chunk("assets/first-page-b.js", { dynamicImports: ["assets/Quests-c.js", "assets/Admin-d.js"], modules: { "client/src/App.tsx": 100 } }),
-      chunk("assets/Quests-c.js", { imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: o.plant ? ["assets/AdminTab-e.js"] : [], modules: { "client/src/pages/Quests.tsx": 50 } }),
-      chunk("assets/shared-f.js", { modules: { "client/src/lib/shared.ts": 20, ...(o.garden ? { [`${GARDEN_DIR}Lantern.tsx`]: 12 } : {}) } }),
-      chunk("assets/Admin-d.js", { imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: ["assets/AdminTab-e.js"], css: ["assets/admin-g.css"], modules: { "client/src/pages/Admin.tsx": 500 } }),
+      chunk("assets/Quests-c.js", { facade: "client/src/pages/Quests.tsx", imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: o.plant ? ["assets/AdminTab-e.js"] : [], modules: { "client/src/pages/Quests.tsx": 50 } }),
+      chunk("assets/shared-f.js", { modules: { "client/src/lib/shared.ts": 20, ...(o.garden ? { [`${GARDEN_DIR}Lantern.tsx`]: 12 } : {}), ...(o.leak ? { "client/src/components/admin/NeedTagPicker.tsx": 30 } : {}) } }),
+      chunk("assets/Admin-d.js", { facade: "client/src/pages/Admin.tsx", imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: ["assets/AdminTab-e.js"], css: ["assets/admin-g.css"], modules: { "client/src/pages/Admin.tsx": 500 } }),
       chunk("assets/AdminTab-e.js", { modules: { "client/src/components/admin/AgentsTab.tsx": 80 } }),
     ],
     assets: ["assets/admin-g.css", "assets/both-h.woff2", "assets/crest-i.webp"],
@@ -467,6 +457,7 @@ function tree(dir, o = {}) {
   };
   if (o.graph !== false) put("dist/chunk-graph.json", JSON.stringify(o.staleGraph ? { ...graph, chunks: [...graph.chunks, chunk("assets/gone-z.js")] } : graph));
   if (o.record) put("scripts/admin-shell-step-down.json", JSON.stringify(o.record));
+  if (o.spec) put("scripts/route-first-view.json", JSON.stringify(o.spec));
 }
 
 /** Run the gate over a fixture tree. The budgets come from `env`; nothing is inherited from the machine or from CI. */
@@ -476,11 +467,14 @@ function gate(o = {}, env = {}, extra = []) {
     tree(dir, o);
     const clean = { ...process.env };
     for (const k of ["MAX_MAIN_JS_KB", "MAX_BOOT_JS_KB", "MAX_TOTAL_DIST_KB", "MAX_MEMBER_DIST_KB", "MAX_ADMIN_DIST_KB", "GITHUB_ACTIONS", "GITHUB_STEP_SUMMARY"]) delete clean[k];
-    const r = spawnSync(process.execPath, [GATE, "--root", dir, ...extra], {
+    // "@md" in the arguments is a file inside the fixture, read back before the fixture is removed (--split-md @md).
+    const md = path.join(dir, "split.md");
+    if (o.buildLog) fs.writeFileSync(path.join(dir, "build.log"), o.buildLog);
+    const r = spawnSync(process.execPath, [GATE, "--root", dir, ...extra.map((a) => (a === "@md" ? md : a === "@log" ? path.join(dir, "build.log") : a))], {
       encoding: "utf8",
       env: { ...clean, MAX_MAIN_JS_KB: "400", MAX_BOOT_JS_KB: "750", MAX_TOTAL_DIST_KB: "200", ...env },
     });
-    return { code: r.status, out: r.stdout, err: r.stderr };
+    return { code: r.status, out: r.stdout, err: r.stderr, md: fs.existsSync(md) ? fs.readFileSync(md, "utf8") : null };
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -646,6 +640,59 @@ check("with no admin allowance set, a retired shell fails nothing: the gate exit
   const r = gate({ record: { page: "client/src/pages/OldAdmin.tsx", chargedKb: 12, allowanceWithShellKb: 60 } });
   assert.strictEqual(r.code, 0, r.err);
   assert.strictEqual(r.err, "");
+});
+
+/* The written tables (--split-md): the same measurement as Markdown, for whoever sets the two numbers. */
+
+check("--split-md writes the split's tables and the arithmetic, and changes nothing the gate decides", () => {
+  const plain = gate({});
+  const r = gate({}, {}, ["--split-md", "@md"]);
+  assert.strictEqual(r.code, plain.code);
+  assert.ok(r.md, "no file was written");
+  assert.match(r.md, /\| \*\*Members\*\* \| 7 \| \d+ KB \| \*\*40 KB\*\* \|/);
+  assert.match(r.md, /\| \*\*Admin-only\*\* \| 4 \| \d+ KB \| \*\*28 KB\*\* \|/);
+  assert.match(r.md, /\| `\/admin` \| pages\/Admin \| `Admin-d\.js` \| admin-only \|/);
+  assert.match(r.md, /\| 1 \| `Admin-d\.js` \| 9,000 \| 12 KB \| `\/admin` \|/);
+  assert.match(r.md, /Members' ceiling = the members' side \+ the gate's safety margin\.\*\* 40 \+ 12 = \*\*52 KB\*\*/);
+  assert.match(r.md, /Admin allowance = admin-only \+ room[^\n]*28 \+ room\. No room was given/);
+  assert.match(r.md, /6 chunks; 0 whose import statements differ/);
+  assert.match(r.md, /first views guard's own record\.\*\* NOT RUN/);
+});
+
+check("--room-kb is added to the admin-only weight in the worked arithmetic, and the total is the two added together", () => {
+  const r = gate({}, {}, ["--report", "--split-md", "@md", "--room-kb", "20"]);
+  assert.match(r.md, /28 \+ 20 = \*\*48 KB\*\*/);
+  assert.match(r.md, /MAX_TOTAL_DIST_KB = the two added together[^\n]*52 \+ 48 = 100 KB/);
+});
+
+check("the written checks name a graph edge the built file does not write", () => {
+  // The planted fixture adds the edge to the graph alone: the file of /quests still writes no such import.
+  const r = gate({ plant: true }, {}, ["--report", "--split-md", "@md"]);
+  assert.match(r.md, /6 chunks; 1 whose import statements differ from the graph's edges\. `Quests-c\.js`/);
+});
+
+check("the written checks compare the walk with the route-preload table and with the guard's own record", () => {
+  const log = "[route-first-view] /quests: 1.0 KB gzipped of 9, 4 chunks: assets/index-a.js assets/first-page-b.js assets/Quests-c.js assets/shared-f.js\n";
+  const spec = { routes: [{ path: "/quests", page: "client/src/pages/Quests.tsx", maxGzipKB: 9 }] };
+  const agree = gate({ preload: "table", buildLog: log, spec }, {}, ["--report", "--split-md", "@md", "--build-log", "@log"]);
+  assert.match(agree.md, /route-preload table against the walk\.\*\* 2 routes have a row \(0 for a page packed[^\n]*; 0 differ\./);
+  assert.match(agree.md, /guard's own record\.\*\* `\/quests` 4 chunks\. All agree\./);
+  const short = gate({ preload: "table", preloadShort: true }, {}, ["--report", "--split-md", "@md"]);
+  assert.match(short.md, /2 routes have a row[^\n]*; 1 differ\. `\/admin`/, "a row that leaves out a chunk the page's first view loads is named");
+  const differs = gate({ preload: "table", buildLog: log.replace(" assets/shared-f.js", ""), spec }, {}, ["--report", "--split-md", "@md", "--build-log", "@log"]);
+  assert.match(differs.md, /`\/quests` 3 chunks \(DIFFERS: only in the guard none; only in the walk assets\/shared-f\.js\)/);
+});
+
+check("a what-if says what a route would add as an admin route, and says so when the route is unknown or admin already", () => {
+  const r = gate({}, {}, ["--report", "--split-md", "@md", "--candidate", "/quests", "--candidate", "/admin", "--candidate", "/nowhere"]);
+  assert.match(r.md, /\| `\/quests` \| pages\/Quests \| 8 KB in 2 file\(s\) \|/, "the page's chunk, and the shared chunk no member page would load any more");
+  assert.match(r.md, /\| `\/admin` \| [^|]* \| it is an admin route already \|/);
+  assert.match(r.md, /\| `\/nowhere` \| not a route in the router \| \|/);
+});
+
+check("the leaks name an admin part inside a member chunk and the member route that loads it", () => {
+  const r = gate({ leak: true }, {}, ["--report", "--split-md", "@md"]);
+  assert.match(r.md, /\| `shared-f\.js` \| 0 KB \| 0 KB \| 1: NeedTagPicker\.tsx \| the first view of 1 member route\(s\): \/quests \|/);
 });
 
 check("--admin-top limits the list", () => {

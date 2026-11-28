@@ -50,6 +50,11 @@
  *   node scripts/check-dist-budget.mjs --json    # machine readable
  *   node scripts/check-dist-budget.mjs --admin-top 25   # list more of the admin-only files (ten by default)
  *   node scripts/check-dist-budget.mjs --root <dir>     # measure another tree; only the self-test uses it
+ *   node scripts/check-dist-budget.mjs --report --split-md <file>   # write the split's tables as Markdown
+ *       with --build-log <file>   the log of a build run with ROUTE_VIEW_REPORT=1, for the first views check
+ *            --room-kb <n>        room measured for what is about to land behind the admin routes
+ *            --candidate <route>  what the admin-only side would gain if this route were an admin route (repeat it)
+ *   node scripts/measure-dist-split.mjs                 # the one command: build, measure, write the tables
  *
  * THE ADMIN AND MEMBER SPLIT (the founder's ruling, 28 Nov 2026). One total
  * counted an admin-only page as though every member paid for it. The script
@@ -98,6 +103,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BLOCK, GARDEN_DIR, charged, classifyDist, memberChunksHolding, preloadFilesForMembers, readRoutePreloadTable, routesFromApp, splitTotals, textNames, unreadRoutes } from "./lib/distSplit.mjs";
 import { budgetInWorkflow, stepDownVerdict } from "./lib/adminShellStepDown.mjs";
+import { candidateDelta, checkFirstViewsAgainstGuard, checkGraphAgainstFiles, checkPreloadAgainstWalk, leaksOf, splitReportMarkdown } from "./lib/distSplitReport.mjs";
+import { execFileSync } from "node:child_process";
 
 const args = process.argv.slice(2);
 /** The value after a flag, or null: `--root <dir>`, `--admin-top <n>`. */
@@ -119,6 +126,8 @@ const onRunner = process.env.GITHUB_ACTIONS === "true";
 const marginApplies = !onRunner && !args.includes("--no-margin");
 const reportOnly = args.includes("--report");
 const adminTop = /^\d+$/.test(valueOf("--admin-top") ?? "") ? Number(valueOf("--admin-top")) : 10;
+/** Every value given for a flag that may be repeated: `--candidate /a --candidate /b`. */
+const valuesOf = (flag) => args.flatMap((a, i) => (a === flag && args[i + 1] ? [args[i + 1]] : []));
 
 /** Reads a budget off the workflow so this script and CI cannot disagree. */
 function budgetFromWorkflow(name, fallback) {
@@ -306,7 +315,16 @@ function measureSplit() {
     for (const f of named) if (t.path !== f.path && textNames(t.text, f.path)) textRefs.push({ from: t.path, to: f.path });
   }
   const split = classifyDist({ graph, routes, files, indexRefs, textRefs });
-  return { measured: true, split, totals: splitTotals(split, scan.dirBytes), garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)), oldShell: oldShellIn(graph) };
+  return {
+    measured: true,
+    split,
+    totals: splitTotals(split, scan.dirBytes),
+    garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)),
+    oldShell: oldShellIn(graph),
+    // What the split was worked out from, for the written tables (--split-md).
+    inputs: { graph, routes, files, indexRefs, textRefs },
+    textOf: (file) => texts.find((t) => t.path === file)?.text ?? null,
+  };
 }
 
 /**
@@ -448,6 +466,48 @@ say("Merging small chunks lowers the total. Watch both numbers on any chunking c
 
 if (process.env.GITHUB_STEP_SUMMARY) {
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\`\`\`\n${lines.join("\n")}\n\`\`\`\n`);
+}
+
+/*
+ * THE WRITTEN TABLES (--split-md <file>): the split, the admin-only files, the
+ * leaks, the checks of the chunk graph and the arithmetic for the two numbers,
+ * as Markdown, from this build (scripts/lib/distSplitReport.mjs). It changes
+ * nothing the gate decides.
+ */
+const splitMd = valueOf("--split-md");
+if (splitMd) {
+  const git = (...a) => {
+    try {
+      return execFileSync("git", ["-C", ROOT, ...a], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    } catch {
+      return null;
+    }
+  };
+  const head = git("rev-parse", "--short=8", "HEAD");
+  const main = git("rev-parse", "--short=8", "origin/main");
+  const tree = head ? { head, subject: git("log", "-1", "--format=%s") ?? "", dirty: Boolean(git("status", "--porcelain")), main, containsMain: main ? git("merge-base", "HEAD", "origin/main") === git("rev-parse", "origin/main") : null } : null;
+  let model = { tree, gate: result, leaks: { pages: [], parts: [], estBytes: 0 }, checks: { graph: { chunks: 0, differing: [] }, preload: { read: false, rows: 0, packed: 0, differing: [] }, firstViews: null }, candidates: [], roomKb: /^\d+$/.test(valueOf("--room-kb") ?? "") ? Number(valueOf("--room-kb")) : null };
+  if (sm.measured) {
+    const { graph, routes, indexRefs } = sm.inputs;
+    const bytesOf = new Map(files.map((f) => [f.path, f.bytes]));
+    const preloadFile = indexRefs.find((f) => f.endsWith(".js") && !graph.chunks.some((c) => c.file === f));
+    const logFile = valueOf("--build-log");
+    const specFile = path.join(ROOT, "scripts", "route-first-view.json");
+    model = {
+      ...model,
+      leaks: leaksOf(graph, sm.split, routes, indexRefs, bytesOf),
+      checks: {
+        graph: checkGraphAgainstFiles(graph, sm.textOf),
+        preload: checkPreloadAgainstWalk(graph, routes, indexRefs, preloadFile ? sm.textOf(preloadFile) : null),
+        firstViews: logFile && fs.existsSync(logFile) && fs.existsSync(specFile) ? checkFirstViewsAgainstGuard(graph, indexRefs, JSON.parse(fs.readFileSync(specFile, "utf8")), fs.readFileSync(logFile, "utf8")) : null,
+      },
+      candidates: valuesOf("--candidate").map((route) => candidateDelta(sm.inputs, sm.split, route)),
+    };
+  }
+  fs.mkdirSync(path.dirname(path.resolve(splitMd)), { recursive: true });
+  fs.writeFileSync(path.resolve(splitMd), splitReportMarkdown(model));
+  if (!asJson) console.log(`
+The split's tables are written to ${path.resolve(splitMd)}`);
 }
 
 if (reportOnly) process.exit(0);

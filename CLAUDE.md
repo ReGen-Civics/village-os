@@ -324,6 +324,9 @@ the Admin Garden's code. `MAX_MEMBER_DIST_KB` and `MAX_ADMIN_DIST_KB` gate the t
 are set beside the other three in `ci.yml`; unset, the single total gates alone as before. The
 rule is `scripts/lib/distSplit.mjs`, held by `scripts/check-dist-budget.test.mjs`;
 `node scripts/plant-admin-import.mjs` proves it on a real build (two client builds, minutes).
+`node scripts/measure-dist-split.mjs` builds, measures and writes the split's tables as Markdown
+(the two sides, the admin-only files, admin code found on the members' side, three checks of the
+chunk graph, and the arithmetic for the two numbers): run it on the tree a number is set from.
 The allowance steps DOWN when the old admin shell is retired: `scripts/admin-shell-step-down.json`
 records that page and its weight, its header says what to do on the day, and
 `scripts/admin-shell-step-down.test.mjs` fails until the allowance has fallen by that much.
