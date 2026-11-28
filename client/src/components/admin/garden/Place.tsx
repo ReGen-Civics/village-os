@@ -93,7 +93,13 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
           <span id={detailId} className="block text-xs text-muted-foreground">
             {detail}
           </span>
-        ) : null}
+        ) : firstIsDetail ? null : (
+          // The plaque on the Grounds has room for one line, and the count or the scaffolding took it. What the place
+          // holds is still said: a screen reader hears it as the place's description.
+          <span id={detailId} className="sr-only">
+            {detail}
+          </span>
+        )}
       </span>
     </>
   );
@@ -105,7 +111,7 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
     "data-lit": lit ? "true" : "false",
     "data-scaffolding": scaffolding ? "true" : "false",
     "aria-label": label,
-    "aria-describedby": firstIsDetail || showSecond ? detailId : undefined,
+    "aria-describedby": detailId,
     "aria-current": current ? ("page" as const) : undefined,
   };
 

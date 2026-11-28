@@ -440,6 +440,14 @@ describe("GardenFrame: one place for the guide's dock", () => {
     expect(screen.queryByRole("complementary")).toBeNull();
   });
 
+  it("puts the dock before what you see in the document, so reading and tab order match what the eye meets", () => {
+    frame("docked");
+    const dock = screen.getByRole("complementary", { name: "Your guide" });
+    const main = screen.getByText("the grounds");
+    // DOCUMENT_POSITION_FOLLOWING: what you see comes after the dock.
+    expect(dock.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("takes the caller's own name for the dock", () => {
     show(
       <GardenFrame dock={<p>the guide</p>} dockLabel="Sol, your guide">
@@ -497,5 +505,48 @@ describe("useGardenDock: where a person left the guide", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "expand" }));
     expect(screen.getByTestId("dock-echo").textContent).toBe("expanded");
+  });
+});
+
+describe("the lens toggle steps back where there is no map to choose", () => {
+  it("is hidden below the map's width and drawn from it up, by the same breakpoint the lens uses", () => {
+    show(<LensToggle lens="grounds" onChange={() => undefined} />);
+    const toggle = screen.getByRole("group", { name: "How you see the garden" });
+    const classes = toggle.className.split(/\s+/);
+    expect(classes).toContain("hidden");
+    expect(classes).toContain("lg:flex");
+    // Drawn or not is the screen's: nothing draws it at every width.
+    expect(classes.filter((c) => c === "flex" || c === "inline-flex")).toEqual([]);
+  });
+});
+
+describe("a place always says what it holds", () => {
+  const described = (el: HTMLElement) => document.getElementById(el.getAttribute("aria-describedby") ?? "")?.textContent ?? null;
+
+  it("keeps what it holds as the description when the count takes the plaque's one line", () => {
+    show(<Place place="hall" waiting={3} href="/admin?tab=review" />);
+    const hall = screen.getByRole("link", { name: "The Hall, 3 waiting" });
+    expect(described(hall)).toBe(i18n._(GARDEN_PLACES.hall.holds));
+    // Said to a screen reader, not drawn a second time on the plaque.
+    expect(document.getElementById(hall.getAttribute("aria-describedby")!)?.className).toContain("sr-only");
+  });
+
+  it("keeps it for a place under scaffolding too", () => {
+    show(<Place place="stage" scaffolding href="/admin?tab=milestones" />);
+    expect(described(screen.getByRole("link", { name: "The Stage, not built yet" }))).toBe(i18n._(GARDEN_PLACES.stage.holds));
+  });
+
+  it("shows it in sight on a quiet place, and on the Desk beside the count", () => {
+    show(
+      <>
+        <Place place="library" href="/a" />
+        <Place place="gate" lens="desk" waiting={2} href="/b" />
+      </>,
+    );
+    const library = screen.getByRole("link", { name: "The Library" });
+    expect(document.getElementById(library.getAttribute("aria-describedby")!)?.className ?? "").not.toContain("sr-only");
+    const gate = screen.getByRole("link", { name: "The Gate, 2 waiting" });
+    expect(document.getElementById(gate.getAttribute("aria-describedby")!)?.className ?? "").not.toContain("sr-only");
+    expect(described(gate)).toBe(i18n._(GARDEN_PLACES.gate.holds));
   });
 });

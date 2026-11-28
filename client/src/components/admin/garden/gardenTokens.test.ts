@@ -232,3 +232,37 @@ describe("the ten places", () => {
     expect(tidyPlaceName("x".repeat(90))).toHaveLength(PLACE_NAME_MAX);
   });
 });
+
+describe("what the garden's stylesheet promises a host page", () => {
+  /** The first rule for one selector, as `property: value` pairs. */
+  const rule = (selector: string): Record<string, string> => {
+    const at = gardenCss.indexOf(`${selector} {`);
+    expect(at, `${selector} has a rule`).toBeGreaterThanOrEqual(0);
+    const body = gardenCss.slice(gardenCss.indexOf("{", at) + 1, gardenCss.indexOf("}", at));
+    return Object.fromEntries(
+      body
+        .split(";")
+        .map((d) => d.trim())
+        .filter(Boolean)
+        .map((d) => [d.slice(0, d.indexOf(":")).trim(), d.slice(d.indexOf(":") + 1).trim()]),
+    );
+  };
+
+  it("paints its own ground, so its night ink never lands on a host page that is still light", () => {
+    // Measured before this rule: a heading drawn straight on the scope read 1.01 to 1 on a white admin root.
+    const garden = rule(".garden");
+    expect(garden["background-color"]).toBe("var(--garden-ground)");
+    expect(garden.color).toBe("var(--garden-ink)");
+  });
+
+  it("draws the dock first in the document, and moves it beside what you see only in the wide docked state", () => {
+    // No rule pulls the dock ahead by order any more: the document order is the reading order.
+    expect(gardenCss).not.toMatch(/order:\s*-1/);
+    expect(gardenCss).toMatch(/\.gd-frame\[data-dock="docked"\] \.gd-frame-dock\s*\{\s*order:\s*1;/);
+  });
+
+  it("fills and ticks a walked stone, so it never reads as an empty box", () => {
+    expect(rule('[data-state="walked"] > .gd-stone')["background-color"]).toContain("var(--garden-stone-walked)");
+    expect(rule('[data-state="walked"] > .gd-stone::after')["border-width"]).toBe("0 2px 2px 0");
+  });
+});

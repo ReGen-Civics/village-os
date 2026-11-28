@@ -107,7 +107,7 @@ export function RenamePlace({ place, className = "" }: RenamePlaceProps) {
       <label htmlFor={fieldId} className={LABEL}>
         <Trans context="garden, rename a place">Your name for {villageName}</Trans>
       </label>
-      <input id={fieldId} type="text" value={draft} maxLength={PLACE_NAME_MAX} autoComplete="off" aria-describedby={hintId} onChange={(e) => setDraft(e.target.value)} className={FIELD} />
+      <input id={fieldId} type="text" value={draft} maxLength={PLACE_NAME_MAX} autoComplete="off" aria-describedby={hintId} onChange={(e) => setDraft(e.target.value)} className={`${FIELD} min-h-11`} />
       <p id={hintId} className={HINT}>
         <Trans context="garden, rename a place">Only you see this name. It is kept in this browser.</Trans>
       </p>

@@ -218,3 +218,16 @@ describe("a browser that refuses storage", () => {
     renameAndSwitch();
   });
 });
+
+describe("the rename field", () => {
+  it("is at least a finger tall", () => {
+    render(
+      <I18nProvider i18n={i18n}>
+        <Garden>
+          <RenamePlace place="hall" />
+        </Garden>
+      </I18nProvider>,
+    );
+    expect(screen.getByRole("textbox").className).toContain("min-h-11");
+  });
+});

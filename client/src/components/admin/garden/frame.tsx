@@ -16,7 +16,9 @@
  *   expanded   the conversation leads and what you see sits beside it.
  *
  * On a narrow screen the dock is a block of its own ABOVE what you see, in
- * both open states: she comes first, and nothing scrolls sideways.
+ * both open states: she comes first, and nothing scrolls sideways. She is
+ * first in the document too, so the reading order and the tab order match
+ * what the eye meets; only the wide docked state draws her second.
  *
  * THE FRAME OWNS THE PLACE, NEVER THE DOCK. Pass any element as `dock`: the
  * guide's own component draws inside the slot and reads `useGardenDock` for
@@ -82,12 +84,14 @@ export function GardenFrame({ band, dock, dockState = "docked", dockLabel, child
     <div className={`gd-frame ${className}`.trim()} data-dock={state}>
       {band}
       <div className="gd-frame-body">
-        <div className="gd-frame-main">{children}</div>
+        {/* The dock is FIRST in the document: she comes first on a phone, and a keyboard or a screen reader meets her
+            where the eye does. Docked on a wide screen, the stylesheet draws her after what you see. */}
         {state === "closed" ? null : (
           <aside className="gd-frame-dock" aria-label={dockLabel ?? t({ message: "Your guide", context: "garden frame, the guide's dock" })}>
             {dock}
           </aside>
         )}
+        <div className="gd-frame-main">{children}</div>
       </div>
     </div>
   );

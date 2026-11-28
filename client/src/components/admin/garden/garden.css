@@ -73,6 +73,8 @@
   --destructive-foreground: var(--garden-ground);
   --font-display: var(--sheet-font-display, var(--village-display));
 
+  /* Its own ground, always: the ink is the night's, so on a host page that is still light it would be cream on white. */
+  background-color: var(--garden-ground);
   color: var(--garden-ink);
   color-scheme: dark;
   /* Firefly light reaches a little past the act it gathers around. Near the edge of the garden it is cut there,
@@ -352,8 +354,22 @@
   border: 2px dashed var(--garden-stone-ahead);
 }
 [data-state="walked"] > .gd-stone {
+  position: relative;
   border-style: solid;
   border-color: var(--garden-stone-walked);
+  background-color: color-mix(in srgb, var(--garden-stone-walked) 28%, transparent);
+}
+/* The tick: two strokes in the walked gold, drawn, so a walked stone never reads as an empty box to tick. */
+[data-state="walked"] > .gd-stone::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0.3125rem;
+  height: 0.5625rem;
+  border: solid var(--garden-stone-walked);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 [data-state="current"] > .gd-stone {
   border-style: solid;
@@ -452,16 +468,14 @@ button.gd-stone-row:hover {
 .gd-frame-dock {
   min-width: 0;
 }
-.gd-frame-dock {
-  order: -1;
-}
 /* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. */
 @container (min-width: 64rem) {
   .gd-frame[data-dock="docked"] .gd-frame-body {
     grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
   }
+  /* First in the document, so it is first to a keyboard and a screen reader. Docked, it is drawn after what you see. */
   .gd-frame[data-dock="docked"] .gd-frame-dock {
-    order: 0;
+    order: 1;
   }
   .gd-frame[data-dock="expanded"] .gd-frame-body {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -472,3 +486,4 @@ button.gd-stone-row:hover {
     align-self: start;
   }
 }
+

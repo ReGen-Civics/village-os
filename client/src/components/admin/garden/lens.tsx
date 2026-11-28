@@ -60,7 +60,9 @@ const LENS_BUTTON = "jw-btn inline-flex min-h-11 items-center justify-center rou
 export function LensToggle({ lens, onChange, className = "" }: LensToggleProps) {
   const { t } = useLingui();
   return (
-    <div role="group" aria-label={t({ message: "How you see the garden", context: "garden lens toggle" })} className={`gd-lens inline-flex gap-1 rounded-xl p-1 ${className}`.trim()}>
+    // Below the map's width (`lg`, the same 1024px as GARDEN_WIDE_QUERY) the Grounds draw as rows, so the two lenses
+    // are the same list and the toggle steps back. The person's choice is kept for when they are on a wide screen.
+    <div role="group" aria-label={t({ message: "How you see the garden", context: "garden lens toggle" })} className={`gd-lens hidden w-fit gap-1 rounded-xl p-1 lg:flex ${className}`.trim()}>
       <button type="button" aria-pressed={lens === "grounds"} onClick={() => onChange("grounds")} className={LENS_BUTTON}>
         <Trans context="garden lens">The Grounds</Trans>
       </button>
