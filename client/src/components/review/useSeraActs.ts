@@ -170,6 +170,8 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
     sheet,
     acted,
     setActed,
+    /** Read the list again: after pay is set in the role's own setter, so its row settles. */
+    reload,
     tick,
     tickAll: (keys: string[]) => setTicked(new Set(keys)),
     /** Put an outcome from elsewhere on the list (the draft card) in the same strip, and focus it (review 23). */

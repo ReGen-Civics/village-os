@@ -1,0 +1,102 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: a pay row in Sera's list opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraPayRow.tsx
+msgctxt "sera pay"
+msgid "Open this role's pay"
+msgstr "Abrir el pago de este rol"
+
+# needs-native-review: a pay row in Sera's list opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraPayRow.tsx
+msgctxt "sera pay"
+msgid "Close this role's pay"
+msgstr "Cerrar el pago de este rol"
+
+# needs-native-review: a pay row in Sera's list opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraPayRow.tsx
+msgctxt "sera pay"
+msgid "Opening this role's pay."
+msgstr "Abriendo el pago de este rol."
+
+# needs-native-review: a pay row in Sera's list opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraPayRow.tsx
+msgctxt "sera pay"
+msgid "Nothing is set from this list. This opens the role's pay, where you set it."
+msgstr "Nada se fija desde esta lista. Esto abre el pago del rol, donde usted lo fija."
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "1 hour"
+msgstr "1 hora"
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "{0} hours"
+msgstr "{0} horas"
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "The last time this role's pay was set, the estimate was {storedKind}, {storedHours} for the moon."
+msgstr "La última vez que se fijó el pago de este rol, el estimado fue {storedKind}, {storedHours} para la luna."
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as little as {storedLow} or as much as {storedHigh}."
+msgstr "Podría ser tan poco como {storedLow} o tanto como {storedHigh}."
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as little as {storedLow}."
+msgstr "Podría ser tan poco como {storedLow}."
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as much as {storedHigh}."
+msgstr "Podría ser tanto como {storedHigh}."
+
+# needs-native-review: the pay setter offers the estimate kept with the role's last pay setting, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Use that estimate"
+msgstr "Usar ese estimado"
+
+# needs-native-review: the pay setter, opened from Sera's list, where the village does not set pay in US dollars, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "{agent} lists a figure in US dollars. This village sets pay in {currency}, so choose the suggestion or type your own figure."
+msgstr "{agent} indica una cifra en dólares estadounidenses. Esta aldea fija el pago en {currency}, así que elija la sugerencia o escriba su propia cifra."
+
+# needs-native-review: the pay setter, opened from Sera's list, offers her figure as a choice, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Use the figure {agent} lists, {hers} a month, as this moon's pay"
+msgstr "Usar la cifra que indica {agent}, {hers} al mes, como el pago de esta luna"
+
+# needs-native-review: Sera's row, now that a pay row opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. A new role apart from its circle, and anything marked Check first, are each taken on their own. Pay is set in the role's own pay setter, opened from its row by the people who set pay."
+msgstr "Marque las que quiera tomar y tómelas juntas. Las sugerencias de Sera sobre el pago y sobre roles nuevos también están en la lista. Un rol nuevo separado de su círculo, y todo lo marcado Revisar primero, se toman cada uno por separado. El pago se fija en el fijador de pago del propio rol, que abren desde su fila quienes fijan el pago."
+
+# needs-native-review: Sera's sheet, now that a pay row opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera answers"
+msgid "1 pay suggestion is left out of this take. Pay is set in the role's own pay setter, opened from its row."
+msgstr "Se deja fuera de esta toma 1 sugerencia de pago. El pago se fija en el fijador de pago del propio rol, que se abre desde su fila."
+
+# needs-native-review: Sera's sheet, now that a pay row opens the role's own pay setter, 28 Nov 2026
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera answers"
+msgid "{pays} pay suggestions are left out of this take. Pay is set in the role's own pay setter, opened from each row."
+msgstr "Se dejan fuera de esta toma {pays} sugerencias de pago. El pago se fija en el fijador de pago del propio rol, que se abre desde cada fila."
