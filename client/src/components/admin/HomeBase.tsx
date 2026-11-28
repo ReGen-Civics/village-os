@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import type { NavGroup } from "@/components/admin/adminNavGroups";
-import { ADMIN_AREAS, setHomeBaseOn, tabsInArea, type AreaId } from "./adminAreas";
+import { ADMIN_AREAS, homeBaseOn, setHomeBaseOn, tabsInArea, type AreaId } from "./adminAreas";
 import { connectionRows, glanceSentence, readLastGlance, rememberGlance, sinceLastVisit, type ConnectionRow } from "./todayGlance";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { useReviewInbox } from "@/components/reviewInbox/useReviewInbox";
@@ -81,6 +81,8 @@ export default function HomeBase({
   const [updated, setUpdated] = useState<string | null>(null);
   const [area, setArea] = useState<AreaId>("today");
   const [roleApps, setRoleApps] = useState<RoleApplicationRow[]>([]);
+  // The start page this device saved. The box below shows it: it used to draw unticked whatever was saved.
+  const [formListFirst, setFormListFirst] = useState(() => !homeBaseOn());
   const allowed = new Set(groups.flatMap((group) => group.items.map((item) => item.key)));
 
   const load = () => {
@@ -122,7 +124,7 @@ export default function HomeBase({
     rememberGlance(decisions, facts.rows.filter((row) => row.state !== "working").length, who);
   }, [facts, decisions, who]);
 
-  const tabs = tabsInArea(area).filter((tab) => tab.key === "home" || tab.key === "email-settings" || allowed.has(tab.key));
+  const tabs = tabsInArea(area).filter((tab) => tab.key === "home" || allowed.has(tab.key));
 
   return (
     <div className="space-y-4">
@@ -207,7 +209,9 @@ export default function HomeBase({
         <input
           type="checkbox"
           className="h-6 w-6 shrink-0"
+          checked={formListFirst}
           onChange={(e) => {
+            setFormListFirst(e.target.checked);
             setHomeBaseOn(!e.target.checked);
             if (e.target.checked) onOpenTab("submissions");
           }}

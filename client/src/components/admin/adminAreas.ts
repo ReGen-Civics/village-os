@@ -4,8 +4,13 @@
  * Home is the start page unless this device has turned it off. An old
  * `?tab=` link still opens that tab. The names and the one-line help are
  * the words a new steward reads.
+ *
+ * A tab is listed here once. A tab that was folded into another keeps its
+ * address in adminTabAliases.ts and has no row here, so Home never shows one
+ * page under two rows.
  */
 import { storedText, writeStored } from "@/lib/safeStorage";
+import { tabLanding } from "./adminTabAliases";
 
 export const HOME_SWITCH_KEY = "admin.homeBase";
 
@@ -41,9 +46,7 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("submissions", "inbox", "All forms", "Requests people sent, such as a visit or a wish to join."),
   entry("portal-visitors", "inbox", "Portal visitors", "Everyone who entered the portal, and who asked for updates."),
   entry("feedback", "inbox", "Feedback", "Notes people sent about the village."),
-  entry("quest-claims", "inbox", "Quest claims", "Finished quests waiting for a witness."),
-  entry("forum-moderation", "inbox", "Moderation", "Forum posts a member asked you to look at."),
-  entry("message-reports", "inbox", "Message reports", "Messages a member asked you to look at."),
+  entry("reports", "inbox", "Reports", "Forum posts and messages a member asked you to look at."),
   entry("drafts", "inbox", "Her drafts", "Drafts waiting for a person to send or drop."),
   entry("brain", "inbox", "Village brain", "What the assistant has learned for this village."),
   entry("failures", "inbox", "What is failing", "Work that did not go through, and what to do next."),
@@ -67,7 +70,6 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("work-with-us", "village", "Work with us", "The roles the village is asking for help with."),
   entry("faqs", "village", "FAQs", "Answers people can read before they ask."),
   entry("milestones", "village", "Build progress", "What has been built, and what is still ahead."),
-  entry("visit-config", "village", "Visit program", "How a visit works, in this village's words."),
   entry("investor-summary", "village", "Investor summary", "The short page for people looking at the venture."),
   entry("modules", "village", "Module library", "The extra parts of the village, and which ones are on."),
   entry("needs-admin", "village", "What this village is for", "The needs the village has taken on."),
@@ -90,8 +92,6 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("tokens", "village", "Tokens", "The tokens this village uses."),
   entry("ledger", "village", "Ledger", "Where value moved."),
   entry("cash-payouts", "village", "Cash to pay out", "Cash the village owes, and what has been paid."),
-  entry("pricing-desk", "village", "Pricing desk", "Every open quest beside the engine's suggestion, priced by the Treasurer."),
-  entry("budgets", "village", "Cash budget", "The cash the village plans to pay this moon, and what is left."),
   entry("cycles", "village", "Cycle close", "Closing a cycle, which is a human act."),
   entry("products", "village", "Payments", "Products and the payments around them."),
   entry("resources-admin", "village", "How resources flow", "How resources move through the village."),
@@ -108,7 +108,6 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("comms-letters", "events", "Letters", "Letters you can send."),
   entry("comms-sent", "events", "Sent mail", "Mail that has already gone out."),
   entry("comms-settings", "events", "Mail settings", "How the village sends mail."),
-  entry("email-settings", "events", "Mail settings", "The old address for mail settings. It opens the same page."),
   entry("integrations", "connections", "Integrations", "Outside services, and whether each one is connected."),
 ];
 
@@ -135,8 +134,11 @@ export function fallbackAdminTab(): string {
   return homeBaseOn() ? "home" : "submissions";
 }
 
-/** An explicit `?tab=` wins. A bare /admin uses the device's start page. */
+/**
+ * An explicit `?tab=` wins. A bare /admin uses the device's start page. A tab
+ * that was folded into another opens the one that holds its control now.
+ */
 export function tabFromSearch(search: string): string {
   const named = new URLSearchParams(search).get("tab");
-  return named && named.trim() ? named : fallbackAdminTab();
+  return named && named.trim() ? tabLanding(named).tab : fallbackAdminTab();
 }
