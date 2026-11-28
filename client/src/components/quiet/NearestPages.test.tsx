@@ -63,7 +63,7 @@ describe("the nearest pages, as the reader's menu would draw them", () => {
     expect(link.textContent).toContain("In Village, and in Govern under This season");
     // QA round 2: the heading wears the menu bar's gold kicker, and the place line keeps to one line on a phone with
     // the whole line in its title.
-    expect(screen.getByRole("heading", { name: "Perhaps you were looking for" }).className).toBe(EYEBROW);
+    expect(screen.getByRole("heading", { name: "Perhaps you were looking for" }).className).toBe(`${EYEBROW} font-body`);
     const place = Array.from(link.querySelectorAll("span")).find((el) => el.textContent === "In Village, and in Govern under This season")!;
     expect(place.className).toContain("max-sm:truncate");
     expect(place.getAttribute("title")).toBe("In Village, and in Govern under This season");

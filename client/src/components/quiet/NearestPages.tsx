@@ -51,8 +51,9 @@ function NearestList() {
   if (!near.length) return null;
   return (
     <nav aria-labelledby="nearest-pages-title" className="w-full max-w-md" data-testid="nearest-pages">
-      {/* The menu bar's gold kicker (NavDropdown's eyebrow, look.ts EYEBROW). */}
-      <h2 id="nearest-pages-title" className={EYEBROW}>
+      {/* The menu bar's gold kicker (NavDropdown's eyebrow, look.ts EYEBROW), in the body face as it is there: every h2 takes
+          the display face by default (index.css). */}
+      <h2 id="nearest-pages-title" className={`${EYEBROW} font-body`}>
         {t({ message: "Perhaps you were looking for", context: "404 page: the nearest real pages" })}
       </h2>
       <ul className="mt-2 space-y-2 sm:mt-3">
