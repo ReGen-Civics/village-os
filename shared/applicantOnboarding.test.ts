@@ -8,7 +8,6 @@ import {
   asksReferences,
   byStageThenDate,
   memberTrackOf,
-  mayAssignOwners,
   mayClaimReference,
   mayReadReference,
   ONBOARDING_REFERENCES_MAX,
@@ -73,25 +72,22 @@ describe("the shortlist answer", () => {
 });
 
 describe("who reads a reference: 'Interviewers + placers' (the lead, 27 Nov 2026)", () => {
-  const nobody = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false, isOwner: false };
-  it("the conversation roles' holders, the placers and the reference's own owner", () => {
+  const nobody = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
+  it("the conversation roles' holders and the placers, and nobody named an owner (ruling 22 has no exception)", () => {
     expect(mayReadReference({ ...nobody, isInterviewer: true })).toBe(true);
     expect(mayReadReference({ ...nobody, isPlacer: true })).toBe(true);
-    expect(mayReadReference({ ...nobody, isOwner: true })).toBe(true);
     // CONTROL: another member, a consent peer among them, reads nothing.
     expect(mayReadReference(nobody)).toBe(false);
   });
   it("never the applicant, never somebody who stepped out, whatever else they hold", () => {
     expect(mayReadReference({ ...nobody, isPlacer: true, isApplicant: true })).toBe(false);
-    expect(mayReadReference({ ...nobody, isOwner: true, recused: true })).toBe(false);
+    expect(mayReadReference({ ...nobody, isInterviewer: true, recused: true })).toBe(false);
   });
-  it("only interviewers and placers claim and pick owners, never an owner alone", () => {
+  it("only interviewers and placers claim", () => {
     const f = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
     expect(mayClaimReference({ ...f, isInterviewer: true })).toBe(true);
     expect(mayClaimReference({ ...f, isPlacer: true })).toBe(true);
     expect(mayClaimReference(f)).toBe(false);
-    expect(mayAssignOwners({ ...f, isPlacer: true })).toBe(true);
-    expect(mayAssignOwners(f)).toBe(false);
   });
 });
 

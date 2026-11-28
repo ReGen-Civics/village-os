@@ -21,7 +21,6 @@ import {
   FINAL_CALL_ROLE_VARIABLE,
   FOLLOWUP_NOTE_MAX,
   FOLLOWUP_ROLE_VARIABLE,
-  mayAssignOwners,
   mayClaimReference,
   mayReadReference,
   memberTrackOf,
@@ -118,7 +117,8 @@ export async function standingOf(deps: ReviewDeps, ref: string, viewerId: string
 /** The reference rule's reader, from a standing ("Interviewers + placers"). */
 const referenceReader = (s: Standing) => ({ isApplicant: s.isApplicant, recused: s.recused, isPlacer: s.holdsPower, isInterviewer: s.isInterviewer });
 
-const ownsReference = (s: Standing, r: repo.StoredReference, viewerId: string): boolean => (r.ownerUserId ? r.ownerUserId === viewerId : !!r.ownerRoleId && s.roles.has(r.ownerRoleId));
+/** The member who claimed it ("I'll follow up") writes its notes; nobody is named an owner (ruling 22, QA round 5). */
+const ownsReference = (_s: Standing, r: repo.StoredReference, viewerId: string): boolean => !!r.ownerUserId && r.ownerUserId === viewerId;
 
 // ── A member's own application ──────────────────────────────────────────────
 
@@ -253,7 +253,8 @@ export async function giveReferences(deps: ReviewDeps, ref: string, raw: unknown
   const parsed = parseReferenceList(raw);
   if (!parsed.ok) return { ok: false, status: 400, error: parsed.error, row: parsed.row, ...(parsed.field ? { field: parsed.field } : {}) };
   const at = deps.now();
-  const ownerRole = stringVar(FOLLOWUP_ROLE_VARIABLE).trim();
+  // No role owner (ruling 22, QA round 5): a reference waits for somebody who may read it to claim it.
+  const ownerRole = "";
   const won = await inTransaction(pool, async (conn) => {
     if (again) {
       // Checked again inside the write: a follow-up begun since closes the edit.
@@ -276,7 +277,13 @@ async function tellTeamReferencesIn(deps: ReviewDeps, ref: string, ownerRole: st
   const names = await roleNamesOfApplication(pool, ref);
   const recused = new Set(await review.recusedUsers(pool, ref));
   const told = new Set<string>();
-  const people = [...(await deps.liveHoldersOf(ADOPTING_POWER)), ...(await finalCallHolders(pool)), ...(ownerRole ? await review.liveHoldersOfRole(pool, ownerRole) : [])];
+  // "Interviewers + placers" (ruling 22): the placers, the final-call role, and the holders of the application's own
+  // conversation roles, the people who may read and claim them.
+  void ownerRole;
+  const talkRoles = Array.from(new Set((await review.interviewsOf(pool, ref)).map((i) => i.roleId)));
+  const talkers: string[] = [];
+  for (const roleId of talkRoles) talkers.push(...(await review.liveHoldersOfRole(pool, roleId)));
+  const people = [...(await deps.liveHoldersOf(ADOPTING_POWER)), ...(await finalCallHolders(pool)), ...talkers];
   for (const userId of people) {
     if (told.has(userId) || recused.has(userId) || (await isApplicant(deps, ref, userId))) continue;
     told.add(userId);
@@ -303,40 +310,6 @@ export async function ownReferencesFor(deps: ReviewDeps, ref: string, viewerId: 
   return { asked: true, given: given ? (await repo.referencesOf(pool, ref)).length : null, mayAdd: !given && !!m?.open };
 }
 
-// ── Follow-up owners ────────────────────────────────────────────────────────
-
-/**
- * GIVE A REFERENCE TO WHOEVER IS MOST ALIGNED with that person: a role (by id)
- * or a member (by id, who must hold a live role, so the owner is always
- * somebody in the village's structure). The reviewers and the final-call role
- * pick. The new owner hears it once per reference.
- */
-export async function assignOwner(deps: ReviewDeps, ref: string, viewerId: string, referenceId: number, body: unknown): Promise<{ ok: true } | Refusal> {
-  const pool = deps.getPool();
-  const closed = await openAndConfirmed(pool, ref);
-  if (closed) return closed;
-  const s = await standingOf(deps, ref, viewerId);
-  if (!mayAssignOwners(referenceReader(s))) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
-  const r = await repo.referenceById(pool, ref, referenceId);
-  if (!r) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
-  const o = body && typeof body === "object" ? (body as Record<string, unknown>) : {};
-  const roleId = typeof o.roleId === "string" ? o.roleId.trim().slice(0, 64) : "";
-  const userId = typeof o.userId === "string" ? o.userId.trim().slice(0, 64) : "";
-  if (!roleId && !userId) return refuse(400, "owner", "Pick a role or a member.");
-  if (roleId && !(await review.roleNamesById(pool, [roleId])).has(roleId)) return refuse(400, "owner", "That role is not on the org chart.");
-  if (userId) {
-    if ((await review.rolesHeldBy(pool, userId)).length === 0) return refuse(400, "owner", "Pick a member who holds a role now.");
-    if (await isApplicant(deps, ref, userId)) return refuse(400, "owner", "The applicant cannot follow up with their own references.");
-    if ((await review.recusedUsers(pool, ref)).includes(userId)) return refuse(400, "owner", "That member stepped out of this application.");
-  }
-  await repo.setOwner(pool, ref, referenceId, { roleId: roleId || r.ownerRoleId, userId: userId || null });
-  const names = await roleNamesOfApplication(pool, ref);
-  const recipients = userId ? [userId] : (await review.liveHoldersOfRole(pool, roleId)).filter((u) => u !== viewerId);
-  for (const u of recipients) {
-    await deps.notify({ userId: u, type: "application_reference_owner", title: ONBOARDING_NOTICES.ownerTitle(names), body: ONBOARDING_NOTICES.ownerBody, link: walkthroughHref(ref), actorUserId: null, dedupeKey: `app:${ref}:ref:${referenceId}:owner:${u}` });
-  }
-  return { ok: true };
-}
 
 /**
  * "I'LL FOLLOW UP" (the lead, 27 Nov 2026: "let different team members follow up with them and mark them done"). A
@@ -443,7 +416,7 @@ async function guideItemsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Pro
 
 /** The guide and the notes the viewer may read, or null when they may not use it. Notes only: nothing is scored or ranked. */
 async function guideFor(deps: ReviewDeps, ref: string, s: Standing, viewerId: string): Promise<GuideView | null> {
-  if (kindOfRef(ref) !== "open" || !mayUseGuide(s)) return null;
+  if (kindOfRef(ref) !== "open" || !mayUseGuide(referenceReader(s))) return null;
   const items = await guideItemsOf(deps, ref);
   if (!items) return null;
   const stored = (await guideRepo.guideNotesOf(deps.getPool(), ref)).filter((n) => items.some((i) => i.key === n.key));
@@ -462,7 +435,7 @@ export async function saveGuideNote(deps: ReviewDeps, ref: string, viewerId: str
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
-  if (!mayUseGuide(s)) return refuse(403, "not_allowed", GUIDE_WORDS.notAllowed);
+  if (!mayUseGuide(referenceReader(s))) return refuse(403, "not_allowed", GUIDE_WORDS.notAllowed);
   const items = (await guideItemsOf(deps, ref)) ?? [];
   const read = readGuideNote(body, items);
   if (!read.ok) return refuse(400, "note", read.error);
@@ -542,7 +515,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
   const owned = stored.filter((r) => ownsReference(s, r, viewerId));
   const interviews = await review.interviewsOf(pool, ref);
   const interviewer = interviews.some((i) => s.roles.has(i.roleId));
-  if (!s.isReviewer && !s.isFinalCall && !owned.length && !interviewer) return null;
+  if (!s.isReviewer && !s.isFinalCall && !interviewer) return null;
+  void owned;
 
   const decidedStep = steps.find((x) => x.kind === "decided");
   const how = decidedStep?.detail?.how;
@@ -576,8 +550,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     track.next = `${track.next} They start ${day} ${start.iso}: ${START_RULE_WORDS[start.rule](day)}.`;
   }
 
-  const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false, isOwner: false });
-  const visible = s.recused ? [] : readsAll ? stored : owned;
+  const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false });
+  const visible = s.recused || !readsAll ? [] : stored;
   const ownerIds = visible.map((r) => r.ownerUserId).filter((u): u is string => !!u);
   const ownerNames = new Map<string, string>();
   for (const u of ownerIds) {
@@ -585,7 +559,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     ownerNames.set(u, String(m?.name ?? "").trim().split(/\s+/)[0] || "A member");
   }
   const open = member ? member.open : !decidedStep;
-  const mayAssign = mayAssignOwners(referenceReader(s)) && open;
+  // Nobody names owners any more (ruling 22); the placers' member list serves the adopt act's buddy picker.
+  const mayAssign = false;
   const list: ServedReference[] = visible.map((r) => ({
     id: r.id,
     position: r.position,
@@ -612,7 +587,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       mayClaim: open && mayClaimReference(referenceReader(s)),
     },
     roles: mayAssign ? await review.activeRoles(pool) : [],
-    members: mayAssign ? await review.membersHoldingRoles(pool) : [],
+    members: s.holdsPower && !s.recused && open ? await review.membersHoldingRoles(pool) : [],
     scorecards: await scorecardsFor(deps, ref, viewerId),
     guide: await guideFor(deps, ref, s, viewerId),
     conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
@@ -991,7 +966,7 @@ function opsRoleIds(): string[] {
   const ids = new Set<string>();
   const welcome = stringVar("org.onboarding_role").trim();
   if (welcome) ids.add(welcome);
-  for (const [id, label] of parseRoleShortLabels(stringVar(ROLE_SHORT_LABELS_VARIABLE))) if (label.trim().toLowerCase() === "ops") ids.add(id);
+  for (const [id, label] of Array.from(parseRoleShortLabels(stringVar(ROLE_SHORT_LABELS_VARIABLE)))) if (label.trim().toLowerCase() === "ops") ids.add(id);
   return Array.from(ids);
 }
 

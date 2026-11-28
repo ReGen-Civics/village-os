@@ -365,30 +365,6 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
           {OW.claim}
         </button>
       )}
-      {w.references.mayAssign && (
-        <div className="mt-3 flex flex-wrap items-end gap-2">
-          <label className="grow">
-            <span className={LABEL}>{OW.ownerPick}</span>
-            <select className={`mt-1 min-h-11 ${FIELD}`} value={pick} onChange={(e) => setPick(e.target.value)} data-walk-owner-pick="">
-              <option value="">{OW.ownerPick}</option>
-              <optgroup label={OW.ownerRole}>
-                {w.roles.map((role) => <option key={`r:${role.id}`} value={`r:${role.id}`}>{role.name}</option>)}
-              </optgroup>
-              <optgroup label={OW.ownerMember}>
-                {w.members.map((m) => <option key={`u:${m.id}`} value={`u:${m.id}`}>{m.name}</option>)}
-              </optgroup>
-            </select>
-          </label>
-          <button
-            type="button"
-            className={BTN_SECONDARY}
-            disabled={busy || !pick}
-            onClick={() => void act(`/references/${r.id}/owner`, pick.startsWith("r:") ? { roleId: pick.slice(2) } : { userId: pick.slice(2) }).then((ok) => ok && setPick(""))}
-          >
-            {OW.ownerGive}
-          </button>
-        </div>
-      )}
       {r.mine ? (
         <div className="mt-3">
           <label className="block">

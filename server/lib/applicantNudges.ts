@@ -18,7 +18,7 @@ import { kindOfRef } from "../../shared/applicationReview";
 import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import * as repo from "../repos/applicationReview";
 import { referencesOf } from "../repos/applicantOnboarding";
-import { numberVar } from "./variables";
+import { numberVar, stringVar } from "./variables";
 import { isApplicant, scorecardHref, type ReviewDeps } from "./applicationReview";
 
 export const NUDGE_VARIABLES = { book: "org.nudge_book_days", step: "org.nudge_step_days", warn: "org.close_warning_days" } as const;
@@ -77,8 +77,10 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
         out.team++;
       }
     }
-    // A reference given and not followed up: its owner, else its owner role.
+    // A reference given and not followed up: the member who claimed it, else the follow-up role (nobody is named an
+    // owner any more, ruling 22).
     if (kindOfRef(r.ref) === "open") {
+      const followRole = stringVar("org.reference_followup_role").trim();
       for (const ref of await referencesOf(pool, r.ref)) {
         if (ref.followedUpAt || !ref.addedAt) continue;
         const age = Math.floor((now.getTime() - ref.addedAt.getTime()) / DAY);
@@ -86,8 +88,8 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
         const key = `app:${r.ref}:nudge:reference:${ref.id}`;
         if (ref.ownerUserId && !recused.has(ref.ownerUserId) && !(await isTheApplicant(ref.ownerUserId))) {
           await deps.notify({ userId: ref.ownerUserId, type: "application_interview_turn", title: NUDGE_WORDS.reference(await rolesNow(), age), link: scorecardHref(r.ref), actorUserId: null, dedupeKey: `${key}:${ref.ownerUserId}` });
-        } else if (ref.ownerRoleId) {
-          await notifyRole(ref.ownerRoleId, NUDGE_WORDS.reference(await rolesNow(), age), key);
+        } else if (!ref.ownerUserId && followRole) {
+          await notifyRole(followRole, NUDGE_WORDS.reference(await rolesNow(), age), key);
         }
         out.team++;
       }

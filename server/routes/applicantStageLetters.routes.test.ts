@@ -440,7 +440,12 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     }
     // The consent peer reads the application, never a reference, and cannot claim.
     const peer = await call("GET", `${app(id)}/walkthrough`, undefined, PEER.id);
-    if (peer.status === 200) expect(peer.body.walkthrough.references.list).toEqual([]);
+    // The guide's notes follow the same rule (QA round 5: a consent peer read them).
+    if (peer.status === 200) {
+      expect(peer.body.walkthrough.references.list).toEqual([]);
+      expect(peer.body.walkthrough.guide ?? null).toBeNull();
+    }
+    expect((await call("POST", `${app(id)}/guide-notes`, { key: "x", note: "peer" }, PEER.id)).status).not.toBe(200);
     expect(peer.text).not.toContain("cora@example.test");
     const [first, second] = (await call("GET", `${app(id)}/walkthrough`, undefined, IA.id)).body.walkthrough.references.list;
     expect((await call("POST", `${app(id)}/references/${first.id}/claim`, {}, PEER.id)).status).toBe(404);

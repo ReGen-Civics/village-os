@@ -279,12 +279,14 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     it("by the link, once; each goes to the follow-up role and the team hears they arrived", async () => {
       const { id, token } = await withReferences("give@example.test");
       const rows = await refRows(id);
+      // Nobody is named an owner (ruling 22, QA round 5): each waits for somebody who may read it to claim it.
       expect(rows.map((r: any) => [r.position, r.name, r.owner_role_id, r.owner_user_id])).toEqual([
-        [1, "Ana Reference", roleHR, null],
-        [2, "Ben Reference", roleHR, null],
+        [1, "Ana Reference", "", null],
+        [2, "Ben Reference", "", null],
       ]);
       const told = state.notices.filter((n) => n.type === "application_references_in").map((n) => n.userId).sort();
-      expect(told).toEqual([FOUNDER.id, FINAL.id, HR.id].sort());
+      // "Interviewers + placers" (ruling 22): the placer, the final-call role and the conversation's holder; not the follow-up role.
+      expect(told).toEqual([FOUNDER.id, FINAL.id, IA.id].sort());
       // No name or contact rides on a notice.
       expect(JSON.stringify(state.notices)).not.toContain("ana.reference@example.test");
       // THE EDIT (the lead, 27 Nov 2026): while nobody has reached out, a second list replaces the first, and the team
@@ -338,41 +340,34 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
   });
 
   describe("who reads the references", () => {
-    it("the reviewers, the final-call role and the owner read the details; another member gets a 404", async () => {
+    it("'Interviewers + placers' read the details; the follow-up role's holder with no conversation role and another member get a 404", async () => {
       const { id } = await withReferences("read@example.test");
-      for (const who of [FOUNDER.id, FINAL.id, HR.id]) {
+      // The placer, the final-call role and the first conversation's holder.
+      for (const who of [FOUNDER.id, FINAL.id, IA.id]) {
         const w = await walk(id, who);
         expect(w.status, who).toBe(200);
         expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       }
-      const out = await walk(id, OUTSIDER.id);
-      expect(out.status).toBe(404);
-      expect(JSON.stringify(out.body)).not.toContain("ana.reference");
+      for (const who of [OUTSIDER.id, HR.id]) {
+        const out = await walk(id, who);
+        if (out.status === 200) expect(out.body.walkthrough.references.list).toEqual([]);
+        else expect(out.status).toBe(404);
+        expect(JSON.stringify(out.body)).not.toContain("ana.reference");
+      }
     });
 
-    it("a reference given to a member leaves the role: the member reads and writes it, the role holder no longer does", async () => {
+    it("NOBODY IS NAMED AN OWNER (ruling 22, QA round 5): the owner door is gone; the member who claims a reference writes its notes, and nobody else", async () => {
       const { id } = await withReferences("owner@example.test");
       const [ana] = await refRows(id);
-      // Only the team picks: the owner role's holder cannot hand it on.
-      expect((await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, HR.id)).status).toBe(403);
-      const set = await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, FOUNDER.id);
-      expect(set.status, JSON.stringify(set.body)).toBe(200);
-      expect(state.notices.filter((n) => n.type === "application_reference_owner").map((n) => n.userId)).toEqual([IB.id]);
-
-      const ib = await walk(id, IB.id);
-      expect(ib.status).toBe(200);
-      expect(ib.body.walkthrough.references.list.map((r: any) => [r.name, r.mine])).toEqual([["Ana Reference", true]]);
-      expect(ib.body.walkthrough.references.total).toBe(2);
-
-      // The follow-up role's holder is no reviewer here: it reads only what it still owns, Ben.
-      const hr = await walk(id, HR.id);
-      expect(hr.body.walkthrough.references.list.map((r: any) => r.name)).toEqual(["Ben Reference"]);
-
-      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, HR.id)).status).toBe(403);
-      const saved = await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her. Warm, and keen to swap seeds with the village.", followedUp: true }, IB.id);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, FOUNDER.id)).status).toBe(404);
+      // Unclaimed, nobody writes its notes.
+      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, IA.id)).status).toBe(403);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/claim`, {}, IA.id)).status).toBe(200);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, FOUNDER.id)).status).toBe(403);
+      const saved = await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her. Warm, and keen to swap seeds with the village.", followedUp: true }, IA.id);
       expect(saved.status, JSON.stringify(saved.body)).toBe(200);
       const after = (await refRows(id))[0];
-      expect([after.notes_by, after.notes]).toEqual([IB.id, "Called her. Warm, and keen to swap seeds with the village."]);
+      expect([after.notes_by, after.notes]).toEqual([IA.id, "Called her. Warm, and keen to swap seeds with the village."]);
     });
   });
 
@@ -515,9 +510,9 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const given = await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id);
       expect(given.status, JSON.stringify(given.body)).toBe(200);
       expect((await mine(id, NEWBIE.id)).body.references).toEqual({ asked: true, given: 2, mayAdd: false });
-      // Each went to the follow-up role, and the reviewers read the details; the applicant and an outsider get a 404.
+      // Nobody is named an owner (ruling 22); the placers read the details; the applicant and an outsider get a 404.
       const rows = await refRows(id);
-      expect(rows.map((r: any) => r.owner_role_id)).toEqual([roleHR, roleHR]);
+      expect(rows.map((r: any) => r.owner_role_id)).toEqual(["", ""]);
       const w = await walk(id, FOUNDER.id);
       expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       expect(w.body.walkthrough.track.now).toBe("references");
