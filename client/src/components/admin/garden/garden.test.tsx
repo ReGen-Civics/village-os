@@ -14,16 +14,18 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import type { ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { DEFAULT_GARDEN_GROUND, GARDEN_GROUND_KEYS, GARDEN_PLACE_KEYS, gardenGroundUrl, gardenSpriteUrl, type GardenGroundKey } from "@shared/gardenArt";
 import {
   Circle,
   Desk,
+  dockDrawnAfter,
   Fireflies,
   Garden,
+  GARDEN_FRAME_TWO_COLUMNS_REM,
   GARDEN_GROUND_PICK_KEY,
   GardenFrame,
   GroundPicker,
@@ -38,6 +40,7 @@ import {
   useGardenGround,
   useGardenLens,
   ViewSwitch,
+  type GardenDockState,
   type GardenPlaceState,
   type Stone,
 } from "./index";
@@ -514,12 +517,17 @@ describe("GardenFrame: one place for the guide's dock", () => {
     expect(screen.queryByRole("complementary")).toBeNull();
   });
 
-  it("puts the dock before what you see in the document, so reading and tab order match what the eye meets", () => {
-    frame("docked");
-    const dock = screen.getByRole("complementary", { name: "Your guide" });
-    const main = screen.getByText("the grounds");
-    // DOCUMENT_POSITION_FOLLOWING: what you see comes after the dock.
-    expect(dock.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  it("puts the dock before what you see in the document where there is nothing to measure by, as on a phone: she comes first", () => {
+    // No ResizeObserver here (an old browser, this test environment): the frame falls back to her first.
+    expect(typeof ResizeObserver).toBe("undefined");
+    for (const state of ["docked", "expanded"] as const) {
+      const page = frame(state);
+      const dock = screen.getByRole("complementary", { name: "Your guide" });
+      const main = screen.getByText("the grounds");
+      // DOCUMENT_POSITION_FOLLOWING: what you see comes after the dock.
+      expect(dock.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING, state).toBeTruthy();
+      page.unmount();
+    }
   });
 
   it("takes the caller's own name for the dock", () => {
@@ -529,6 +537,235 @@ describe("GardenFrame: one place for the guide's dock", () => {
       </GardenFrame>,
     );
     expect(screen.getByRole("complementary", { name: "Sol, your guide" })).toBeTruthy();
+  });
+});
+
+/**
+ * THE DOCUMENT FOLLOWS WHAT IS DRAWN. Review of the garden look found: docked on a wide screen she stood first in the
+ * document and was drawn in the right-hand column, so Tab went from the band to her and then back left to what you
+ * see. Now where she is drawn first she is first in the document, where she is drawn after what you see she is after
+ * it, and moving between the two never remounts her and never lifts her out of the page.
+ */
+describe("GardenFrame: the document follows what is drawn", () => {
+  /** A ResizeObserver the test drives: it reports the frame's own width when told to. */
+  class FrameObserver {
+    static live: FrameObserver[] = [];
+    private readonly targets = new Set<Element>();
+    constructor(private readonly report: ResizeObserverCallback) {
+      FrameObserver.live.push(this);
+    }
+    observe(el: Element) {
+      this.targets.add(el);
+    }
+    unobserve(el: Element) {
+      this.targets.delete(el);
+    }
+    disconnect() {
+      this.targets.clear();
+      FrameObserver.live = FrameObserver.live.filter((o) => o !== this);
+    }
+    tell(width: number) {
+      for (const target of Array.from(this.targets)) this.report([{ target, contentRect: { width } } as unknown as ResizeObserverEntry], this as unknown as ResizeObserver);
+    }
+  }
+  /** The frame's own width is measured at this many pixels. One rem is 16px here, so two columns start at 1024. */
+  const frameIs = (width: number) =>
+    act(() => {
+      for (const o of Array.from(FrameObserver.live)) o.tell(width);
+    });
+  const WIDE = 1440;
+  const NARROW = 700;
+
+  let mounts = 0;
+  beforeEach(() => {
+    FrameObserver.live = [];
+    mounts = 0;
+    vi.stubGlobal("ResizeObserver", FrameObserver);
+  });
+
+  /** What stands in the dock's slot: something with a draft, a scrolled conversation, and a count of its own mounts. */
+  function Talk() {
+    const [draft, setDraft] = useState("");
+    useEffect(() => {
+      mounts += 1;
+    }, []);
+    return (
+      <>
+        <div data-testid="talk">the conversation so far</div>
+        <input aria-label="Ask the guide" value={draft} onChange={(e) => setDraft(e.target.value)} />
+        <input aria-label="A note the page does not hold" />
+      </>
+    );
+  }
+  function Page({ start = "docked" }: { start?: GardenDockState }) {
+    const [state, setState] = useState<GardenDockState>(start);
+    const switches = (
+      <>
+        <button type="button" onClick={() => setState("expanded")}>
+          guide first
+        </button>
+        <button type="button" onClick={() => setState("docked")}>
+          dashboard
+        </button>
+        <button type="button" onClick={() => setState("closed")}>
+          close her
+        </button>
+      </>
+    );
+    return (
+      <GardenFrame band={<StatusBand label="Setup" switches={switches} />} dock={<Talk />} dockState={state}>
+        <a href="/admin/hall">a place</a>
+      </GardenFrame>
+    );
+  }
+  const press = (name: string) => fireEvent.click(screen.getByRole("button", { name }));
+  const guide = () => screen.getByRole("complementary", { name: "Your guide" });
+  const body = () => document.querySelector(".gd-frame-body") as HTMLElement;
+  /** The frame's body, in the document's own order. */
+  const order = () => Array.from(body().children).map((c) => (c.classList.contains("gd-frame-dock") ? "dock" : c.classList.contains("gd-frame-main") ? "main" : c.className));
+  /** Everything a keyboard stops at, in the order Tab meets it. */
+  const tabStops = () => Array.from(document.querySelectorAll<HTMLElement>("a[href], button, input")).map((el) => el.getAttribute("aria-label") ?? el.textContent ?? "");
+
+  it("decides from the frame's own width at the stylesheet's own 64rem, and only for the docked state", () => {
+    expect(GARDEN_FRAME_TWO_COLUMNS_REM).toBe(64);
+    expect(dockDrawnAfter("docked", 1024)).toBe(true);
+    expect(dockDrawnAfter("docked", 1023.9)).toBe(false);
+    expect(dockDrawnAfter("docked", 1440)).toBe(true);
+    // A larger root type moves the threshold with it, as the container rule's rem does.
+    expect(dockDrawnAfter("docked", 1100, 20)).toBe(false);
+    expect(dockDrawnAfter("docked", 1280, 20)).toBe(true);
+    // Expanded, the conversation leads at every width. Closed, there is no dock to place.
+    for (const width of [320, 1024, 1920]) {
+      expect(dockDrawnAfter("expanded", width)).toBe(false);
+      expect(dockDrawnAfter("closed", width)).toBe(false);
+    }
+    // Not measured yet, or a measure that is no number: she stays first.
+    expect(dockDrawnAfter("docked", null)).toBe(false);
+    expect(dockDrawnAfter("docked", Number.NaN)).toBe(false);
+  });
+
+  it("puts her after what you see in the document where she is drawn after it: docked, with room for two columns", () => {
+    show(<Page />);
+    // Before the frame is measured she is first, which is the order on a phone.
+    expect(order()).toEqual(["dock", "main"]);
+    frameIs(WIDE);
+    expect(order()).toEqual(["main", "dock"]);
+    expect(screen.getByText("a place").compareDocumentPosition(guide()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Tab now goes from the band to what you see, and then to her: the order the eye meets them in.
+    expect(tabStops()).toEqual(["guide first", "dashboard", "close her", "a place", "Ask the guide", "A note the page does not hold"]);
+  });
+
+  it("keeps her first where she is drawn first: in one column, and at exactly the width the two columns start", () => {
+    show(<Page />);
+    frameIs(NARROW);
+    expect(order()).toEqual(["dock", "main"]);
+    expect(tabStops()).toEqual(["guide first", "dashboard", "close her", "Ask the guide", "A note the page does not hold", "a place"]);
+    frameIs(1023.5);
+    expect(order()).toEqual(["dock", "main"]);
+    frameIs(1024);
+    expect(order()).toEqual(["main", "dock"]);
+    frameIs(1023.5);
+    expect(order()).toEqual(["dock", "main"]);
+  });
+
+  it("keeps her first while expanded at any width, and follows the dock's state as it changes", () => {
+    show(<Page start="expanded" />);
+    frameIs(WIDE);
+    // Expanded: the conversation leads, so she is first in the document too.
+    expect(order()).toEqual(["dock", "main"]);
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+    // Closed and opened again on a wide frame: she arrives where she is drawn.
+    press("close her");
+    expect(order()).toEqual(["main"]);
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    press("close her");
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+  });
+
+  it("never remounts her and never lifts her out of the page: her draft, her nodes and her focus survive every move", () => {
+    show(<Page />);
+    const slot = guide();
+    const draft = screen.getByLabelText("Ask the guide") as HTMLInputElement;
+    const note = screen.getByLabelText("A note the page does not hold") as HTMLInputElement;
+    // A draft the page holds in state, and a value only the element itself holds.
+    fireEvent.change(draft, { target: { value: "How do I set the timezone" } });
+    note.value = "typed and held by the box alone";
+    draft.focus();
+    expect(document.activeElement).toBe(draft);
+
+    // Watch every node the frame's body gains or loses from here on.
+    const lifted: Node[] = [];
+    const watcher = new MutationObserver(() => undefined);
+    watcher.observe(body(), { childList: true });
+    const collect = () => {
+      for (const record of watcher.takeRecords()) lifted.push(...Array.from(record.removedNodes));
+    };
+
+    // Across the threshold and back, and through the dock's own states on a wide frame.
+    frameIs(WIDE);
+    expect(order()).toEqual(["main", "dock"]);
+    collect();
+    frameIs(NARROW);
+    expect(order()).toEqual(["dock", "main"]);
+    collect();
+    frameIs(WIDE);
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+    collect();
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    collect();
+    watcher.disconnect();
+
+    // The order changed four times, and each time it was what you see that moved. She was never taken out.
+    expect(lifted.length).toBeGreaterThanOrEqual(4);
+    expect(lifted.every((node) => node === document.querySelector(".gd-frame-main"))).toBe(true);
+    expect(lifted).not.toContain(slot);
+
+    // The same slot, the same boxes, the same words in them, and the focus where it was.
+    expect(guide()).toBe(slot);
+    expect(screen.getByLabelText("Ask the guide")).toBe(draft);
+    expect(draft.value).toBe("How do I set the timezone");
+    expect(note.value).toBe("typed and held by the box alone");
+    expect(document.activeElement).toBe(draft);
+    // Mounted once, for the whole of it.
+    expect(mounts).toBe(1);
+    expect(screen.getByTestId("talk").textContent).toBe("the conversation so far");
+  });
+
+  it("moves what you see with everything in it kept, where the browser can do that", () => {
+    const keptMoves: Array<[Node, Node | null]> = [];
+    const proto = Element.prototype as Element & { moveBefore?: (node: Node, before: Node | null) => void };
+    proto.moveBefore = function (this: Element, node: Node, before: Node | null) {
+      keptMoves.push([node, before]);
+      this.insertBefore(node, before);
+    };
+    try {
+      show(<Page />);
+      frameIs(WIDE);
+      expect(order()).toEqual(["main", "dock"]);
+      frameIs(NARROW);
+      expect(order()).toEqual(["dock", "main"]);
+      // Both moves went through it, and both moved what you see: before her, then last.
+      expect(keptMoves).toEqual([
+        [document.querySelector(".gd-frame-main"), guide()],
+        [document.querySelector(".gd-frame-main"), null],
+      ]);
+    } finally {
+      delete proto.moveBefore;
+    }
+  });
+
+  it("stops measuring when the frame leaves the page", () => {
+    const page = show(<Page />);
+    expect(FrameObserver.live).toHaveLength(1);
+    page.unmount();
+    expect(FrameObserver.live).toHaveLength(0);
   });
 });
 

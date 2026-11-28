@@ -14,7 +14,7 @@
  */
 export { default as Garden, GARDEN, useGardenSettings } from "./Garden";
 export type { GardenProps, GardenSettings } from "./Garden";
-export { GardenFrame, useGardenDock, defaultGardenDock, GARDEN_DOCK_KEY } from "./frame";
+export { GardenFrame, useGardenDock, defaultGardenDock, dockDrawnAfter, GARDEN_DOCK_KEY, GARDEN_FRAME_TWO_COLUMNS_REM } from "./frame";
 export type { GardenDock, GardenDockState, GardenFrameProps } from "./frame";
 export { default as StatusBand } from "./StatusBand";
 export type { StatusBandAction, StatusBandProps } from "./StatusBand";

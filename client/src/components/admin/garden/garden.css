@@ -674,14 +674,15 @@ button.gd-stone-row:hover {
   border: 1px solid color-mix(in srgb, var(--garden-gold) 32%, var(--garden-surface));
   border-radius: 1rem;
 }
-/* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. */
+/* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. The 64rem is
+   GARDEN_FRAME_TWO_COLUMNS_REM in frame.tsx, which orders the document from the same width: change the two together. */
 @container (min-width: 64rem) {
   .gd-frame[data-dock="docked"] .gd-frame-body {
     grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
   }
-  /* First in the document, so it is first to a keyboard and a screen reader. Docked, it is drawn after what you see. */
+  /* Docked, she is drawn after what you see, and she is after it in the document too: the frame itself puts her
+     there (frame.tsx), at this same width, so nothing here re-orders anything and a keyboard meets what the eye meets. */
   .gd-frame[data-dock="docked"] .gd-frame-dock {
-    order: 1;
     margin-left: 0;
   }
   .gd-frame[data-dock="expanded"] .gd-frame-body {

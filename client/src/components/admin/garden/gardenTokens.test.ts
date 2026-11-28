@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import { i18n } from "@lingui/core";
 import { contrastRatio } from "@shared/brandTokens";
 import { GARDEN_PLACE_KEYS, gardenArtFiles } from "@shared/gardenArt";
+import { GARDEN_FRAME_TWO_COLUMNS_REM } from "./frame";
 import { GARDEN_PLACES, PLACE_NAME_MAX, tidyPlaceName } from "./places";
 
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -255,10 +256,29 @@ describe("what the garden's stylesheet promises a host page", () => {
     expect(garden.color).toBe("var(--garden-ink)");
   });
 
-  it("draws the dock first in the document, and moves it beside what you see only in the wide docked state", () => {
-    // No rule pulls the dock ahead by order any more: the document order is the reading order.
-    expect(gardenCss).not.toMatch(/order:\s*-1/);
-    expect(gardenCss).toMatch(/\.gd-frame\[data-dock="docked"\] \.gd-frame-dock\s*\{\s*order:\s*1;/);
+  it("re-orders nothing: what is drawn is the document's own order, so the frame alone decides where the dock stands", () => {
+    // No rule anywhere pulls a thing ahead or pushes it behind by `order`. Docked in two columns the dock used to be
+    // drawn second while standing first in the document; the frame now puts it second in the document (frame.tsx).
+    expect(gardenCss).not.toMatch(/(?:^|[\s;{])order\s*:/);
+    // And the frame's own two-column rules place nothing by hand either: the grid fills in the document's order.
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    const wide = flat.slice(flat.indexOf(`@container (min-width: ${GARDEN_FRAME_TWO_COLUMNS_REM}rem)`));
+    expect(wide).toContain('.gd-frame[data-dock="docked"] .gd-frame-body');
+    expect(wide).not.toMatch(/grid-(?:column|row|area)(?:-start|-end)?\s*:|(?:row|column)-reverse|direction\s*:\s*rtl/);
+  });
+
+  it("lays the two columns out from the same width the frame orders the document by: one number, two readers", () => {
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    // The container rule that holds the docked columns, whatever its number is.
+    const columns = flat.indexOf('.gd-frame[data-dock="docked"] .gd-frame-body');
+    expect(columns).toBeGreaterThan(0);
+    const open = flat.lastIndexOf("@container", columns);
+    expect(flat.slice(open, flat.indexOf("{", open)).trim()).toBe(`@container (min-width: ${GARDEN_FRAME_TWO_COLUMNS_REM}rem)`);
+    expect(GARDEN_FRAME_TWO_COLUMNS_REM).toBe(64);
+    // Measured on the frame's own width, which is what the frame observes: never the window's.
+    expect(rule(".gd-frame")["container-type"]).toBe("inline-size");
+    // There is one such rule: no second width at which the layout changes without the document following.
+    expect(flat.match(/@container \(min-width: 64rem\)/g)).toHaveLength(1);
   });
 
   it("fills and ticks a walked stone, so it never reads as an empty box", () => {
