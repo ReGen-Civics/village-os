@@ -29,6 +29,14 @@ export interface LaunchVote {
    * on the launch). Absent on a server older than the field.
    */
   yesNeeded?: number | null;
+  /**
+   * This village is already issuing and never held its launch vote, so the
+   * vote it may open is a RATIFYING one: it puts the launch on the record and
+   * never restarts issuance (Rye, 2026-11-27). Absent on an older server.
+   */
+  ratifying?: boolean;
+  /** The instant issuance began, which a ratifying vote never moves. */
+  issuingSince?: string | null;
   unityPct: number | null;
   quorumPct: number | null;
   minElectorate: number | null;
@@ -94,7 +102,8 @@ export default function StartTheGame({
       <div className="flex items-center gap-3 flex-wrap justify-between">
         <div>
           <p className="font-semibold text-stone-900 flex items-center gap-2">
-            <SeedGlint className="w-4 h-4 text-teal-deep" /> {launchName}
+            {/* A village already issuing does not start anything, so its card says what the vote is (Rye, 2026-11-27). */}
+            <SeedGlint className="w-4 h-4 text-teal-deep" /> {vote?.ratifying ? t({ message: "Ratify the launch", context: "StartTheGame, the card's name on a village already issuing" }) : launchName}
           </p>
           {!running && governanceOff && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">
@@ -117,6 +126,15 @@ export default function StartTheGame({
                   ? vote?.tooFew
                   : vote?.why ?? "This opens the village's vote on starting its Game."}
           </p>
+          {!running && vote?.ratifying && (
+            <p className="text-xs text-stone-700 mt-1 max-w-md">
+              {vote.issuingSince ? (
+                <Trans context="StartTheGame, a village already issuing">This village has been issuing tokens since {new Date(vote.issuingSince).toLocaleDateString()}. This vote puts the launch on the record. It does not restart issuance, and that date does not move.</Trans>
+              ) : (
+                <Trans context="StartTheGame, a village already issuing">This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance.</Trans>
+              )}
+            </p>
+          )}
           {!running && status.readyToLaunch && !shortOfPeople && vote?.onTheRoll != null && (
             <p className="text-xs text-stone-500 mt-1 max-w-md">
               <Trans context="StartTheGame, p">{vote.onTheRoll} people are on its roll today, and the vote carries without waiting for its window to end.</Trans>

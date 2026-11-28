@@ -213,6 +213,7 @@ import { seatFoundersAtLaunch } from "./lib/launchSeating";
 import { launchProposalDoc, launchSlateProblem } from "./lib/launchProposal";
 import { FOUNDERS_COUNT_ONCE, launchRollNow, launchRollProblem } from "./lib/launchRoll"; // Rye, 2026-11-27: only founders vote on the launch
 import { carryAtOnceIfMet, carryEveryMetBallot, type CarryDeps } from "./lib/launchCarry";
+import { isRatifying, RATIFY_WORDS, ratifyStanding } from "./lib/launchRatify"; // Rye, 2026-11-27: one ratifying launch vote that does not restart issuance
 import { insertSlate } from "./repos/stewardSlate";
 import { freezeSeatTerm } from "./repos/ballotSeatTerms";
 import { roleHoldersNow } from "./repos/pathLadders";
@@ -12462,7 +12463,12 @@ async function startServer() {
     // never read here and cannot refuse the read.
     const rule = launchRule();
     const roll = await launchRoll();
+    const ratify = await ratifyStanding(getPool());
     return { governanceOn: LIFECYCLE_RANK[effectiveLifecycle("governance")] >= LIFECYCLE_RANK.members,
+      // An issuing village that never held its vote may hold ONE ratifying vote (server/lib/launchRatify.ts).
+      // It never restarts issuance, and `issuingSince` is the day that does not move.
+      ratifying: ratify.mayRatify,
+      issuingSince: ratify.issuingSince,
       onTheRoll: roll.electorate.length,
       // Short of its number: how many more, who is on it, who is not, and the way through.
       tooFew: launchRollProblem(roll, { villageMin: rule.yesNeeded, founderPowerStands: await founderPowerStands(getPool()) }),
@@ -12477,7 +12483,7 @@ async function startServer() {
       quorumPct: threshold ? launchQuorumPct(rule.yesNeeded, roll.electorate.length) : null,
       minElectorate: threshold ? rule.yesNeeded : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
       // The rule as this village holds it, then how an answer is counted on this one vote.
-      why: threshold ? `${launchRuleSentence(rule)} ${FOUNDERS_COUNT_ONCE}` : null,
+      why: threshold ? `${launchRuleSentence({ ...rule, ratifying: ratify.mayRatify })} ${FOUNDERS_COUNT_ONCE}` : null,
       openBallot: openNow
         ? {
             id: openNow.id,
@@ -13652,9 +13658,20 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!user || user.role !== "founder") {
       return res.status(403).json({ error: "Asking the village to start its Game is a founder's act" });
     }
-    if ((await readGameStart(getPool())).started) {
+    /*
+     * A VILLAGE THAT IS ALREADY ISSUING MAY HOLD ONE RATIFYING VOTE (Rye,
+     * 2026-11-27). `game-start` set with no ballot behind it, and no launch
+     * ballot on record, is a village migration 0112 found issuing before the
+     * vote existed. It was refused here, so it could never seat its stewards.
+     * It may ask now, and the vote it opens never restarts issuance
+     * (server/lib/launchRatify.ts). Every other started village is refused as
+     * before: one that voted, one that was ratified, and the test fixture's.
+     */
+    const ratify = await ratifyStanding(getPool());
+    if (ratify.gameStart.started && !ratify.mayRatify) {
       return res.status(409).json({ error: "This village has already started its Game." });
     }
+    const ratifying = ratify.mayRatify;
 
     // The journey gates the QUESTION and never the answer. Governance open to
     // members is one of its rows (`governance-on-for-members`), so a vote no
@@ -13725,12 +13742,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
       // Frozen here, in plain words: the hand-over control refuses to change it while this vote is open.
       handover: handoverSelection.map(powerInPlainWords),
       carriedOpen: (await launchStatus(getPool(), launchDeps)).carriedOpen.map((c) => c.title), // host-only rows this vote carries
+      // A ratifying vote says so in the frozen document, with the day issuance began.
+      ratifying: ratifying ? { issuingSince: ratify.issuingSince } : undefined,
     });
 
     const result = await openBallot(getPool(), {
       subjectType: VILLAGE_LAUNCH,
       subjectRef: LAUNCH_SUBJECT_REF,
-      title: `Start the Game in ${villageName}`,
+      title: ratifying ? RATIFY_WORDS.title(villageName) : `Start the Game in ${villageName}`,
       docMarkdown: doc,
       method,
       // One founder, one answer: never the village's weight mode (server/lib/launchRoll.ts).
@@ -13752,7 +13771,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // A fact on the public pulse, with nothing in it about being late or
     // early. A village of two weeks and a village of two years open this same
     // vote and the line reads the same for both (R55).
-    await addActivity("governance", `The village is deciding whether to start its Game: ${result.ballot.title}`, {
+    await addActivity("governance", `${ratifying ? RATIFY_WORDS.deciding : "The village is deciding whether to start its Game"}: ${result.ballot.title}`, {
       actorUserId: user.id,
       entityType: "ballot",
       entityRef: result.ballot.id,
@@ -13763,7 +13782,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
     void notifyRoll(result.ballot, {
       type: "ballot_opened",
-      title: `The village is deciding whether to start its Game`,
+      title: ratifying ? RATIFY_WORDS.deciding : `The village is deciding whether to start its Game`,
       body: `${roll.kind === "founders" ? "Only founding members vote on this one" : "Every member who holds a voice votes on this one"}, and you are on its roll. It carries the moment ${rule.yesNeeded} of you have said yes, unless one of you has said no. It is open until ${deadlineInVillage(result.ballot.closesAt)}.`,
       keySuffix: "open",
       except: [user.id],
@@ -21936,9 +21955,20 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * freeze, and the one that missed stays closed and immutable with its own
      * roll. The pass itself does not wait for the window: it lands here the
      * moment the third founder says yes (server/lib/launchCarry.ts).
+     *
+     * A RATIFYING VOTE RECORDS THE LAUNCH AND NEVER STARTS ISSUANCE (Rye,
+     * 2026-11-27: "one ratifying launch vote that does not restart issuance").
+     * A village that was already issuing when this ballot opened takes the
+     * second write alone: `recordGameStart` is not called, so the day issuance
+     * began does not move and `game-start` keeps its null ballot id, which is
+     * what `handTokenMintOverFor0112` keys on. Which case this is comes from
+     * the fact (`isRatifying`, server/lib/launchRatify.ts), never from the
+     * ballot's title, so a re-run of this executor answers the same way.
      */
     [VILLAGE_LAUNCH]: twoPhase(async (b, outcome, outcomeNote, actorId) => {
       const out: CloseRouting = { applied: [], held: null, proposerTold: null };
+      const startBefore = await readGameStart(getPool());
+      const ratifying = isRatifying(startBefore, b.id);
 
       if (outcome !== "passed") {
         out.proposerTold = b.openedBy;
@@ -21947,11 +21977,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
           type: "governance",
           title:
             outcome === "no_quorum"
-              ? "Too few on the roll said yes, so the Game has not started yet"
-              : "The village did not start its Game",
+              ? (ratifying ? RATIFY_WORDS.shortTitle : "Too few on the roll said yes, so the Game has not started yet")
+              : (ratifying ? RATIFY_WORDS.notRatifiedTitle : "The village did not start its Game"),
           body:
             outcome === "no_quorum"
-              ? "The window ended before enough of the roll had said yes. Nothing has changed and nothing is lost, and it can be asked again whenever they are more gathered."
+              ? (ratifying ? RATIFY_WORDS.shortBody : "The window ended before enough of the roll had said yes. Nothing has changed and nothing is lost, and it can be asked again whenever they are more gathered.")
               : `A no was still standing when the window ended. ${outcomeNote}\n\nEverything stays as it was, and the village can be asked again.`,
           link: ballotLink(b),
           actorUserId: actorId,
@@ -21962,11 +21992,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
         return out;
       }
 
-      const started = await recordGameStart(getPool(), {
-        ballotId: b.id,
-        startedBy: actorId,
-        note: "The village voted to start its Game.",
-      });
+      // A ratifying vote takes the second write alone: issuance is already open and its first day stands.
+      const started = ratifying
+        ? startBefore
+        : await recordGameStart(getPool(), {
+            ballotId: b.id,
+            startedBy: actorId,
+            note: "The village voted to start its Game.",
+          });
       await recordLaunchCarried(getPool(), { ballotId: b.id, closedBy: actorId });
       if (!started.started) {
         /*
@@ -21981,7 +22014,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
         return out;
       }
       // End of Moon shares approved before this vote are paid now; nothing else comes back for them (server/lib/moonReward.ts).
-      await settleOwedLineRewards(getPool()).catch((e) => console.error("[launch] could not pay the moon rewards owed before launch", e));
+      // A ratifying vote held nothing back: issuance was open, and the hourly retry has been paying them.
+      if (!ratifying) await settleOwedLineRewards(getPool()).catch((e) => console.error("[launch] could not pay the moon rewards owed before launch", e));
 
       /*
        * `applied` STAYS EMPTY, and that is a decision rather than an omission.
@@ -22008,8 +22042,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
       await notify({
         userId: b.openedBy,
         type: "governance",
-        title: `The village started its Game: ${b.title}`,
-        body: "Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.",
+        title: ratifying ? RATIFY_WORDS.carriedTitle(b.title) : `The village started its Game: ${b.title}`,
+        body: ratifying ? RATIFY_WORDS.carriedBody(startBefore.startedAt) : "Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.",
         link: ballotLink(b),
         actorUserId: actorId,
         dedupeKey: `bal:${b.id}:launch-carried`,
@@ -22019,7 +22053,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
        * about whoever closed the vote. This is the one line in the feed that a
        * village will still be reading in five years.
        */
-      await addActivity("governance", `The village started its Game: its launch vote carried.`, {
+      await addActivity("governance", ratifying ? RATIFY_WORDS.carriedPulse : `The village started its Game: its launch vote carried.`, {
         actorUserId: actorId,
         entityType: "ballot",
         entityRef: b.id,
@@ -22029,7 +22063,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       // the pulse line, the cache reload, and what a village whose calendar
       // cannot give a term gets instead. It never refuses the launch.
       await seatFoundersAtLaunch({
-        pool: getPool(), calendar: seatCalendar(), ballotId: b.id, actorId, withRoleHolderLock, notify,
+        pool: getPool(), calendar: seatCalendar(), ballotId: b.id, actorId, withRoleHolderLock, notify, ratifying,
         reloadRoleCaches: async () => { await Promise.all([rolesRepo.load(), roleHoldersRepo.load()]); },
         addActivity: (text, entityRef) => addActivity("governance", text, { actorUserId: actorId, entityType: "role", entityRef }),
         audit: (text) => { void recordEvent(getPool(), { kind: "audit", text, actorUserId: actorId, entityType: "role", entityRef: STEWARD_ROLE_ID, audience: "admin" }); },
@@ -22037,12 +22071,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
       });
       // token.mint crosses to the stewards just seated and the Treasury role (Rye, 2026-11-15). It never refuses the launch.
       try {
-        const minted = await handTokenMintToStewardsAndTreasury(tokenMintHandoverDeps(), { ballotId: b.id, note: "The Game started: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15)." });
+        const minted = await handTokenMintToStewardsAndTreasury(tokenMintHandoverDeps(), { ballotId: b.id, note: ratifying ? RATIFY_WORDS.mintNote : "The Game started: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15)." });
         void recordEvent(getPool(), { kind: "audit", text: `launch:token-mint:${minted.moved ? `moved:${minted.holderRoleId}` : minted.reason}`, actorUserId: actorId, entityType: "launch", entityRef: b.id, audience: "admin" });
       } catch (e) { console.error("[token.mint] the launch hand-over failed; the admin keeps hand minting", e); }
       void recordEvent(getPool(), {
         kind: "audit",
-        text: `launch:started-by-ballot:${b.id}`,
+        text: ratifying ? `launch:ratified-by-ballot:${b.id}` : `launch:started-by-ballot:${b.id}`,
         actorUserId: actorId,
         entityType: "launch",
         entityRef: b.id,

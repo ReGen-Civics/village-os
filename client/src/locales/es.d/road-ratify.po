@@ -1,0 +1,24 @@
+# needs-native-review: the ratifying launch vote, 27 Nov 2026
+#. placeholder {0}: new Date(vote.issuingSince).toLocaleDateString()
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, a village already issuing"
+msgid "This village has been issuing tokens since {0}. This vote puts the launch on the record. It does not restart issuance, and that date does not move."
+msgstr "Esta aldea emite fichas desde el {0}. Esta votación deja constancia del lanzamiento. La emisión sigue como está, sin reiniciarse, y esa fecha se mantiene."
+
+# needs-native-review: the ratifying launch vote, 27 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, a village already issuing"
+msgid "This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance."
+msgstr "Esta aldea ya emite fichas. Esta votación deja constancia del lanzamiento. La emisión sigue como está, sin reiniciarse."
+
+# needs-native-review: the ratifying launch vote, 27 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, confirm before opening a ratifying launch vote"
+msgid "Open the vote that puts this village's launch on the record? Issuance does not restart. It carries the moment enough of its roll have said yes, unless somebody on it has said no."
+msgstr "¿Abrir la votación que deja constancia del lanzamiento de esta aldea? La emisión sigue como está, sin reiniciarse. Se aprueba en el momento en que suficientes personas de su padrón hayan dicho que sí, salvo que alguna haya dicho que no."
+
+# needs-native-review: the ratifying launch vote, 27 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, the card's name on a village already issuing"
+msgid "Ratify the launch"
+msgstr "Ratificar el lanzamiento"

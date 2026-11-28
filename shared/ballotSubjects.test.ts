@@ -270,13 +270,13 @@ describe("per-subject thresholds", () => {
 
   it("says how many more FOUNDERS before a launch vote can open", () => {
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 0)).toBe(
-      "No founding member is on the roll today. 3 more founding members and the village can vote to start its Game.",
+      "No founding member is on the roll today. 3 more founding members and the village can hold its launch vote.",
     );
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 1)).toBe(
-      "One founding member is on the roll today. 2 more founding members and the village can vote to start its Game.",
+      "One founding member is on the roll today. 2 more founding members and the village can hold its launch vote.",
     );
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 2)).toBe(
-      "2 founding members are on the roll today. One more founding member and the village can vote to start its Game.",
+      "2 founding members are on the roll today. One more founding member and the village can hold its launch vote.",
     );
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 3)).toBeNull();
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 40)).toBeNull();
@@ -307,7 +307,7 @@ describe("per-subject thresholds", () => {
 
   it("says how many more MEMBERS when the village's launch asks every member", () => {
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 3, "members")).toBe(
-      "2 members hold a voice in this village today. One more member and the village can vote to start its Game.",
+      "2 members hold a voice in this village today. One more member and the village can hold its launch vote.",
     );
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 3, 3, "members")).toBeNull();
     expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }], 3, "members")).toContain("2 more members");
@@ -475,6 +475,11 @@ describe("the launch rule is the village's to change, and frozen on the ballot",
       "Every member who holds a voice votes on starting the Game, each counted once. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.",
     );
     expect(launchRuleSentence({ yesNeeded: 40, roll: "members" })).toContain("the moment 40 of them have said yes");
+    // A village already issuing ratifies its launch and starts nothing, and the sentence says so.
+    expect(launchRuleSentence({ yesNeeded: 3, roll: "founders", ratifying: true })).toBe(
+      "Only founding members vote on ratifying the launch. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.",
+    );
+    expect(launchRuleSentence({ yesNeeded: 3, roll: "members", ratifying: true })).not.toContain("starting the Game");
   });
 });
 

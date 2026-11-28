@@ -406,7 +406,7 @@ describe.skipIf(!DB_CONFIGURED)("three founders vote the Game to start", () => {
     for (const t of [annaToken, benToken]) {
       const v = await call("POST", `/api/governance/ballots/${ballotId}/vote`, { token: t, body: { choice: "yes" } });
       expect(v.status, "an administrator and a member are not founders").toBe(409);
-      expect(String(v.json?.error)).toContain("Only founding members vote on starting the Game");
+      expect(String(v.json?.error)).toContain("Only founding members vote on the village's launch");
     }
     for (const t of [founderToken, cai.token]) {
       const v = await call("POST", `/api/governance/ballots/${ballotId}/vote`, { token: t, body: { choice: "yes" } });

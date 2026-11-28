@@ -75,7 +75,7 @@ describe("the launch roll as shipped: the founders", () => {
       { id: "u-4", name: "Sol", reason: "left" },
     ]);
     expect(launchRollProblem(roll)).toBe(
-      "2 founding members are on the roll today. One more founding member and the village can vote to start its Game. " +
+      "2 founding members are on the roll today. One more founding member and the village can hold its launch vote. " +
         "On the roll: Wren and Ida. " +
         "Tam holds the founder role and has not signed in yet, so that account is not on the roll. " +
         "Sol holds the founder role and has left the village, so that account is not on the roll. " +
@@ -111,7 +111,7 @@ describe("the launch roll as shipped: the founders", () => {
     const roll = await launchRollNow(depsFor([person("u-9", "Noa", "member")]));
     expect(roll.electorate).toEqual([]);
     expect(launchRollProblem(roll)).toBe(
-      `No founding member is on the roll today. 3 more founding members and the village can vote to start its Game. ${BEFORE_START}`,
+      `No founding member is on the roll today. 3 more founding members and the village can hold its launch vote. ${BEFORE_START}`,
     );
   });
 
@@ -160,8 +160,8 @@ describe("no village is left without a path (Rye, 2026-11-06)", () => {
     expect(roll.electorate.map((e) => e.userId)).toEqual(["u-1", "u-3"]);
     // At three, the floor nothing lowers, the only way is more people.
     expect(launchRollProblem(roll, { founderPowerStands: true })).toBe(
-      "2 members hold a voice in this village today. One more member and the village can vote to start its Game. On the roll: Wren and Tam. " +
-        "The way through: more members join. A Game needs three people to start.",
+      "2 members hold a voice in this village today. One more member and the village can hold its launch vote. On the roll: Wren and Tam. " +
+        "The way through: more members join. A launch needs three people.",
     );
     // A village that raised its number may also lower it again: a founder before the Game starts, its highest vote after.
     expect(launchRollProblem(roll, { villageMin: 5, founderPowerStands: true })?.endsWith(

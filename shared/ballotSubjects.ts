@@ -264,12 +264,21 @@ function countWord(n: number): string {
  * actually holds. The registry's own `why` is this sentence at the shipped
  * values, so the default and a village's own reading cannot drift apart.
  */
-export function launchRuleSentence(rule: { yesNeeded: number; roll: LaunchRollKind }): string {
+export function launchRuleSentence(rule: {
+  yesNeeded: number;
+  roll: LaunchRollKind;
+  /**
+   * The village is already issuing, so this vote ratifies its launch and
+   * starts nothing (server/lib/launchRatify.ts). Absent reads as a first launch.
+   */
+  ratifying?: boolean;
+}): string {
   const n = countWord(rule.yesNeeded);
+  const what = rule.ratifying ? "ratifying the launch" : "starting the Game";
   if (rule.roll === "members") {
-    return `Every member who holds a voice votes on starting the Game, each counted once. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`;
+    return `Every member who holds a voice votes on ${what}, each counted once. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`;
   }
-  return `Only founding members vote on starting the Game. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.`;
+  return `Only founding members vote on ${what}. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.`;
 }
 
 /**
@@ -1218,11 +1227,12 @@ export function electorateFloorProblem(
     // "Founding member" is the word a member reads for the stored role `founder`.
     const here = onTheRoll === 0 ? "No founding member is" : onTheRoll === 1 ? "One founding member is" : `${onTheRoll} founding members are`;
     const moreFounders = short === 1 ? "One more founding member" : `${short} more founding members`;
-    return `${here} on the roll today. ${moreFounders} and the village can vote to start its Game.`;
+    return `${here} on the roll today. ${moreFounders} and the village can hold its launch vote.`;
   }
   const people = onTheRoll === 1 ? "One member holds a voice" : `${onTheRoll} members hold a voice`;
   const more = short === 1 ? "One more member" : `${short} more members`;
-  return `${people} in this village today. ${more} and the village can vote to start its Game.`;
+  // "Hold its launch vote", so the sentence is also true of a village already issuing, whose vote starts nothing.
+  return `${people} in this village today. ${more} and the village can hold its launch vote.`;
 }
 
 /** One seat on a frozen roll: who was asked, and what their answer weighs. */
