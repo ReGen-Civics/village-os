@@ -176,6 +176,7 @@ import { register as registerGovernanceLandingRoutes } from "./routes/governance
 import { register as registerMechanicsHistoryRoutes } from "./routes/mechanicsHistory";
 import { register as registerChangeRequestRoutes } from "./routes/changeRequests";
 import { register as registerStewardSlateRoutes } from "./routes/stewardSlate";
+import { register as registerLaunchFactsRoutes } from "./routes/launchFacts";
 import { registerMoonSettlementRoutes } from "./routes/moonSettlement";
 // The dispatcher lane: the landing path, the change-set executor and the roll notice.
 import { applyDueGovernance, autoSettleExpired, digestComposerFor, itemKindsOf, markNotApplicable, overrideDials, routeOutcome, runVetoWatch, vetoWindowOn, type CloseRouting, type LandingDeps, type SubjectCloser } from "./lib/applyDue";
@@ -194,6 +195,7 @@ import { register as registerAgentCompanionRoutes } from "./routes/companion";
 import { register as registerOrganizeRoutes } from "./routes/organize";
 import { register as registerAdminHelperRoutes } from "./routes/adminHelper";
 import { register as registerAdminSearchRoutes } from "./routes/adminSearch";
+import { register as registerSearchRoutes, searchSources } from "./routes/search";
 import { register as registerFieldGuideRoutes } from "./routes/fieldGuide";
 import { register as registerContentTranslationRoutes } from "./routes/contentTranslations";
 import { readTranslationReply, translationMessage, translationSystemPrompt } from "./lib/contentTranslationDraft";
@@ -355,6 +357,7 @@ import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBD
 import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
+import { register as registerGardenArtRoutes, GARDEN_ART_DIR } from "./routes/gardenArt";
 import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
 import { pathArtFocus } from "../shared/pathCardArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
@@ -6740,7 +6743,7 @@ async function startServer() {
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
   app.use(liveViewMiddleware({ verify: (t) => verifyToken(getPool(), t), userById: (id) => members.byId(id), stands: holderStands, mayView: mayLiveView, mayViewAdmin: mayLiveViewAdmin, auditAdminView: async (u, row) => { await recordEvent(getPool(), { kind: "audit", text: `live-view:admin-read:${row.prefix}`, actorUserId: String(u.id), entityType: "agent_token", entityRef: row.id, audience: "admin" }); }, sessionFor: (u) => encodeToken(AUTH_TOKEN_SECRET, u.id, u.email, u.tokenVersion ?? 0), overLimit })); // ahead of the people lock and the entrance: a live.view token reads as its holder, and only reads (server/lib/liveView.ts)
   registerPeopleLock(app, { authedUser, getPool, boolVar });
-  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name, origin: () => notifyDeps.origin() }, roleNames: async () => new Map((await listOrgRoles(getPool())).map((r) => [String(r.id), String(r.name)])), accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id), add: (m) => members.add(m), makeHandle: (name) => uniqueHandle(slugifyHandle(name)), joined: (u) => void joined(u) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
+  const entrance = registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name, origin: () => notifyDeps.origin() }, roleNames: async () => new Map((await listOrgRoles(getPool())).map((r) => [String(r.id), String(r.name)])), accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id), add: (m) => members.add(m), makeHandle: (name) => uniqueHandle(slugifyHandle(name)), joined: (u) => void joined(u) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
   // ── LANE L6 ZONE START: your agent ──────────────────────────────────────────
   //
@@ -12494,7 +12497,7 @@ async function startServer() {
       quorumPct: threshold ? launchQuorumPct(rule.yesNeeded, roll.electorate.length) : null,
       minElectorate: threshold ? rule.yesNeeded : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
       // The rule as this village holds it, then how an answer is counted on this one vote.
-      why: threshold ? `${launchRuleSentence({ ...rule, ratifying: ratify.mayRatify })} ${FOUNDERS_COUNT_ONCE}` : null,
+      why: threshold ? `${launchRuleSentence(rule)} ${FOUNDERS_COUNT_ONCE}` : null,
       openBallot: openNow
         ? {
             id: openNow.id,
@@ -13127,6 +13130,8 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
 
   // Admin search: the index the search bar and the guide read, filtered by the one gate (server/routes/adminSearch.ts).
   registerAdminSearchRoutes(app, { isAdmin, mayStillSee, dials: () => allVariables(), lifecycle: (id) => effectiveLifecycle(id) });
+  // Find anything: every place this reader may open, and the guide for words the search missed (server/routes/search.ts).
+  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", villageGuideName: () => getWorkWithUs().assistantName });
 
   registerCapabilityExplainerRoutes(app, { isAdmin, members, capabilityCtx, stageOf });
 
@@ -13765,7 +13770,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const result = await openBallot(getPool(), {
       subjectType: VILLAGE_LAUNCH,
       subjectRef: LAUNCH_SUBJECT_REF,
-      title: ratifying ? RATIFY_WORDS.title(villageName) : `Start the Game in ${villageName}`,
+      // One name for every village, issuing or not (Rye, 2026-11-28: "Let's stay with start the game").
+      title: `Start the Game in ${villageName}`,
       docMarkdown: doc,
       method,
       // One founder, one answer: never the village's weight mode (server/lib/launchRoll.ts).
@@ -13787,7 +13793,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // A fact on the public pulse, with nothing in it about being late or
     // early. A village of two weeks and a village of two years open this same
     // vote and the line reads the same for both (R55).
-    await addActivity("governance", `${ratifying ? RATIFY_WORDS.deciding : "The village is deciding whether to start its Game"}: ${result.ballot.title}`, {
+    await addActivity("governance", `The village is deciding whether to start its Game: ${result.ballot.title}`, {
       actorUserId: user.id,
       entityType: "ballot",
       entityRef: result.ballot.id,
@@ -13798,7 +13804,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
     void notifyRoll(result.ballot, {
       type: "ballot_opened",
-      title: ratifying ? RATIFY_WORDS.deciding : `The village is deciding whether to start its Game`,
+      title: `The village is deciding whether to start its Game`,
       body: `${roll.kind === "founders" ? "Only founding members vote on this one" : "Every member who holds a voice votes on this one"}, and you are on its roll. It carries the moment ${rule.yesNeeded} of you have said yes, unless one of you has said no. It is open until ${deadlineInVillage(result.ballot.closesAt)}.`,
       keySuffix: "open",
       except: [user.id],
@@ -21994,8 +22000,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
           type: "governance",
           title:
             outcome === "no_quorum"
-              ? (ratifying ? RATIFY_WORDS.shortTitle : "Too few on the roll said yes, so the Game has not started yet")
-              : (ratifying ? RATIFY_WORDS.notRatifiedTitle : "The village did not start its Game"),
+              ? "Too few on the roll said yes, so the Game has not started yet"
+              : "The village did not start its Game",
           body:
             outcome === "no_quorum"
               ? (ratifying ? RATIFY_WORDS.shortBody : "The window ended before enough of the roll had said yes. Nothing has changed and nothing is lost, and it can be asked again whenever they are more gathered.")
@@ -22059,8 +22065,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       await notify({
         userId: b.openedBy,
         type: "governance",
-        title: ratifying ? RATIFY_WORDS.carriedTitle(b.title) : `The village started its Game: ${b.title}`,
-        body: ratifying ? RATIFY_WORDS.carriedBody(startBefore.startedAt) : "Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.",
+        title: `The village started its Game: ${b.title}`,
+        // A village already issuing is told what was already running, never that issuance starts (server/lib/launchRatify.ts).
+        body: ratifying ? RATIFY_WORDS.carriedBody(mergedConfig().project.name, startBefore.startedAt) : "Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.",
         link: ballotLink(b),
         actorUserId: actorId,
         dedupeKey: `bal:${b.id}:launch-carried`,
@@ -22070,7 +22077,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
        * about whoever closed the vote. This is the one line in the feed that a
        * village will still be reading in five years.
        */
-      await addActivity("governance", ratifying ? RATIFY_WORDS.carriedPulse : `The village started its Game: its launch vote carried.`, {
+      await addActivity("governance", `The village started its Game: its launch vote carried.`, {
         actorUserId: actorId,
         entityType: "ballot",
         entityRef: b.id,
@@ -22094,7 +22101,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       // the pulse line, the cache reload, and what a village whose calendar
       // cannot give a term gets instead. It never refuses the launch.
       await seatFoundersAtLaunch({
-        pool: getPool(), calendar: seatCalendar(), ballotId: b.id, actorId, withRoleHolderLock, notify, ratifying,
+        pool: getPool(), calendar: seatCalendar(), ballotId: b.id, actorId, withRoleHolderLock, notify,
         reloadRoleCaches: async () => { await Promise.all([rolesRepo.load(), roleHoldersRepo.load()]); },
         addActivity: (text, entityRef) => addActivity("governance", text, { actorUserId: actorId, entityType: "role", entityRef }),
         audit: (text) => { void recordEvent(getPool(), { kind: "audit", text, actorUserId: actorId, entityType: "role", entityRef: STEWARD_ROLE_ID, audience: "admin" }); },
@@ -22102,7 +22109,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       });
       // token.mint crosses to the stewards just seated and the Treasury role (Rye, 2026-11-15). It never refuses the launch.
       try {
-        const minted = await handTokenMintToStewardsAndTreasury(tokenMintHandoverDeps(), { ballotId: b.id, note: ratifying ? RATIFY_WORDS.mintNote : "The Game started: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15)." });
+        const minted = await handTokenMintToStewardsAndTreasury(tokenMintHandoverDeps(), { ballotId: b.id, note: "The Game started: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15)." });
         void recordEvent(getPool(), { kind: "audit", text: `launch:token-mint:${minted.moved ? `moved:${minted.holderRoleId}` : minted.reason}`, actorUserId: actorId, entityType: "launch", entityRef: b.id, audience: "admin" });
       } catch (e) { console.error("[token.mint] the launch hand-over failed; the admin keeps hand minting", e); }
       void recordEvent(getPool(), {
@@ -24590,6 +24597,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
   registerGovernanceModeRoutes(app, { authedUser, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate });
   registerStewardSlateRoutes(app, { authedUser, isAdmin, getPool, members, firstName });
+  registerLaunchFactsRoutes(app, { isAdmin, getPool });
   registerGoverningPurposeRoutes(app, { authedUser, isAdmin, adminActor, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate, addActivity });
   registerGovernanceAgreementRoutes(app, { authedUser, isAdmin, hasMembership, getPool, capabilityCtx, firstName, weightModeNow, circlesRepo, notify, buildElectorate, addActivity, villageTimezone });
   // The two optional canvas modules close their doors here, before any of their routes (Rye, 2026-10-01).
@@ -25952,6 +25960,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
+  registerGardenArtRoutes(app, { dir: path.resolve(__dirname, "..", GARDEN_ART_DIR) });
   registerNatureArtRoutes(app, { dir: path.resolve(__dirname, "..", NATURE_ART_DIR), isAdmin, guardCapability, overLimit, getPool });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

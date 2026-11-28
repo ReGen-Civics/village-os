@@ -76,9 +76,11 @@ describe("the first village, before its ratifying vote is opened", () => {
 
   it("says which vote this is, and that issuance does not restart", () => {
     expect(out.kind).toBe("ratifying");
+    // The vote keeps its name, and the day it carries is the Game's birthday (Rye, 2026-11-28).
     expect(out.summary).toBe(
-      "This village has been issuing since 2026-03-14 and has never held its launch vote. The vote puts the launch on the record and passes the village's powers. Issuance does not restart.",
+      "This village has been issuing since 2026-03-14 and has never held its Start the Game vote. The day the vote carries is the Game's birthday, and the village's powers pass that day. Issuance was already open and does not restart.",
     );
+    expect(out.summary).not.toMatch(/ratif/i);
   });
 
   it("lists every door once, in one order", () => {
@@ -196,6 +198,24 @@ describe("with the vote open", () => {
       "Nobody has accepted the steward role on the open vote. If it carries this way, nobody is seated, no power crosses, and an admin keeps the pay doors and hand minting.",
     );
     expect(out.attention.some((a) => a.id === "nobody-accepted")).toBe(false);
+  });
+
+  it("WARNS WHEN THE STEWARD LIST LEAVES OUT SOMEBODY WHO SETS PAY TODAY, by name, before anybody has accepted", () => {
+    // Rye, 2026-11-28: the steward list "must include whoever runs pay". Ana sets pay as an admin and is not named.
+    const told = out.attention.find((a) => a.id === "pay-left-out");
+    expect(ids(told?.accounts ?? [])).toEqual(["ana", "qa"]);
+    expect(told?.text).toBe(
+      "The steward list leaves out 2 people who can set pay and keep the budget today: Ana Ruiz and Integration QA. Once somebody on the list is seated, they no longer can.",
+    );
+    // Bo reaches the panel through a group and does not pass the pay door today, so he is not somebody left out of it.
+    expect(told?.accounts.some((a) => a.id === "bo")).toBe(false);
+    // Somebody who already holds the pay power keeps it whoever is listed, so they are not warned about.
+    const held = launchCarryChanges({ ...open, holders: { ...open.holders, pay: ["ana"] } });
+    expect(ids(held.attention.find((a) => a.id === "pay-left-out")?.accounts ?? [])).toEqual(["qa"]);
+    // A list that names everybody who sets pay says nothing, and so does a village with no vote open.
+    const everyone = launchCarryChanges({ ...open, slate: { named: ["ana", "qa", "rye", "sera"].map((id) => ({ id, name: NAMES[id] })), accepted: [], declined: [] } });
+    expect(everyone.attention.some((a) => a.id === "pay-left-out")).toBe(false);
+    expect(launchCarryChanges(firstVillage()).attention.some((a) => a.id === "pay-left-out")).toBe(false);
   });
 
   it("somebody who already holds a power keeps its door without being a steward", () => {

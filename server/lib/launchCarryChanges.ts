@@ -143,7 +143,7 @@ export interface CarryChange {
 }
 
 export interface CarryAttention {
-  id: "test-founder" | "roll-short" | "founders-away" | "nobody-accepted" | "season" | "admins-lose";
+  id: "test-founder" | "roll-short" | "founders-away" | "nobody-accepted" | "pay-left-out" | "season" | "admins-lose";
   text: string;
   accounts: Person[];
 }
@@ -249,6 +249,7 @@ interface Words {
     rollShort(on: number, need: number): string;
     foundersAway(names: string): string;
     nobodyAccepted: string;
+    payLeftOut(n: number, names: string): string;
     seasonNoNext: string;
     seasonNoEnd(name: string): string;
     adminsLose(n: number, names: string): string;
@@ -260,10 +261,11 @@ const EN: Words = {
   nobody: "nobody",
   summary: {
     first: () => "This village has not started its Game. Its launch vote starts issuance and passes the village's powers, in one request.",
+    // The vote keeps its name for this village too (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game' going forward").
     ratifying: (day) =>
       day
-        ? `This village has been issuing since ${day} and has never held its launch vote. The vote puts the launch on the record and passes the village's powers. Issuance does not restart.`
-        : "This village was issuing before the launch vote existed and has never held it. The vote puts the launch on the record and passes the village's powers. Issuance does not restart.",
+        ? `This village has been issuing since ${day} and has never held its Start the Game vote. The day the vote carries is the Game's birthday, and the village's powers pass that day. Issuance was already open and does not restart.`
+        : "This village was issuing before the launch vote existed and has never held its Start the Game vote. The day the vote carries is the Game's birthday, and the village's powers pass that day. Issuance was already open and does not restart.",
     carried: (day) => (day ? `The launch carried on ${day}. Nothing is left to change.` : "The launch has carried. Nothing is left to change."),
   },
   title: {
@@ -384,6 +386,10 @@ const EN: Words = {
     rollShort: (on, need) => `${on} on the launch roll, and the vote needs ${need}. It cannot open yet.`,
     foundersAway: (names) => `${names}: holding the founder role and not on the launch roll, because the account has not signed in or has left.`,
     nobodyAccepted: "Nobody has accepted the steward role on the open vote. If it carries this way, nobody is seated, no power crosses, and an admin keeps the pay doors and hand minting.",
+    payLeftOut: (n, names) =>
+      n === 1
+        ? `The steward list leaves out one person who can set pay and keep the budget today: ${names}. Once somebody on the list is seated, they no longer can.`
+        : `The steward list leaves out ${n} people who can set pay and keep the budget today: ${names}. Once somebody on the list is seated, they no longer can.`,
     seasonNoNext: "No next season is on the calendar. The launch begins the next season, so add one, with an end date, before the vote.",
     seasonNoEnd: (name) => `${name} has no end date. A steward role ends with its season, so nobody can be seated as a steward until it has one.`,
     adminsLose: (n, names) =>
@@ -400,8 +406,8 @@ const ES: Words = {
     first: () => "Esta aldea no ha iniciado su Juego. Su votación de lanzamiento inicia la emisión y traspasa los poderes de la aldea, en una sola solicitud.",
     ratifying: (day) =>
       day
-        ? `Esta aldea emite desde el ${day} y nunca ha celebrado su votación de lanzamiento. La votación deja el lanzamiento en acta y traspasa los poderes de la aldea. La emisión no se reinicia.`
-        : "Esta aldea ya emitía antes de que existiera la votación de lanzamiento y nunca la ha celebrado. La votación deja el lanzamiento en acta y traspasa los poderes de la aldea. La emisión no se reinicia.",
+        ? `Esta aldea emite desde el ${day} y nunca ha celebrado su votación para iniciar el Juego. El día en que la votación se apruebe es el cumpleaños del Juego, y los poderes de la aldea se traspasan ese día. La emisión ya estaba abierta y no se reinicia.`
+        : "Esta aldea ya emitía antes de que existiera la votación de lanzamiento y nunca ha celebrado su votación para iniciar el Juego. El día en que la votación se apruebe es el cumpleaños del Juego, y los poderes de la aldea se traspasan ese día. La emisión ya estaba abierta y no se reinicia.",
     carried: (day) => (day ? `El lanzamiento se aprobó el ${day}. No queda nada por cambiar.` : "El lanzamiento ya se aprobó. No queda nada por cambiar."),
   },
   title: {
@@ -522,6 +528,10 @@ const ES: Words = {
     rollShort: (on, need) => `${on} en la lista del lanzamiento, y la votación necesita ${need}. Aún no puede abrirse.`,
     foundersAway: (names) => `${names}: con el rol de fundación y fuera de la lista del lanzamiento, porque la cuenta no ha iniciado sesión o se ha ido.`,
     nobodyAccepted: "Nadie ha aceptado el rol de custodia en la votación abierta. Si se aprueba así, nadie lo ocupa, ningún poder se traspasa, y una administración conserva las puertas de pago y la acuñación a mano.",
+    payLeftOut: (n, names) =>
+      n === 1
+        ? `La lista de custodia deja fuera a una persona que hoy puede fijar pagos y llevar el presupuesto: ${names}. Cuando alguien de la lista ocupe el rol, ya no podrá.`
+        : `La lista de custodia deja fuera a ${n} personas que hoy pueden fijar pagos y llevar el presupuesto: ${names}. Cuando alguien de la lista ocupe el rol, ya no podrán.`,
     seasonNoNext: "No hay una temporada siguiente en el calendario. El lanzamiento inicia la temporada siguiente, así que añada una, con fecha de fin, antes de la votación.",
     seasonNoEnd: (name) => `${name} no tiene fecha de fin. Un rol de custodia termina con su temporada, así que nadie puede ocuparlo hasta que la tenga.`,
     adminsLose: (n, names) =>
@@ -681,6 +691,20 @@ export function launchCarryChanges(facts: CarryFacts, lang: CarryLang = "en"): C
   }
   if (facts.slate && !somebodySeated && !facts.stewardTerm.problem) {
     attention.push({ id: "nobody-accepted", text: w.attention.nobodyAccepted, accounts: facts.slate.named });
+  }
+  /*
+   * WHOEVER RUNS PAY MUST BE ON THE LIST (Rye, 2026-11-28, on the first
+   * village's vote: the steward list "must include whoever runs pay"). The pay
+   * door passes an admin by account role today, and after the carry only a
+   * holder of the pay power once anybody is seated. So with a list in hand,
+   * anybody who sets pay today, is not named on it and does not hold the power
+   * already is said by name, whether or not anybody has accepted yet. The list
+   * is the proposer's choice. This is the warning, never a refusal.
+   */
+  if (facts.slate) {
+    const named = new Set(facts.slate.named.map((x) => x.id));
+    const leftOut = byRole.filter((a) => !named.has(a.id) && !facts.holders.pay.includes(a.id)).map((a) => ({ id: a.id, name: a.name }));
+    if (leftOut.length) attention.push({ id: "pay-left-out", text: w.attention.payLeftOut(leftOut.length, names(leftOut)), accounts: leftOut });
   }
   if (!turn.turned && turn.reason === "no_next_season") {
     attention.push({ id: "season", text: w.attention.seasonNoNext, accounts: [] });

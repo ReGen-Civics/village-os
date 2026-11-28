@@ -321,10 +321,11 @@ export default function GovernanceTreasury() {
         <div className="mx-auto max-w-4xl space-y-6 px-4 pb-6 pt-4 sm:space-y-8 sm:py-12 xl:max-w-[1200px]">
           <header className="space-y-2">
             <p className={EYEBROW}>
-              <Trans context="governance now: eyebrow">How the village decides</Trans>
+              <Trans context="governance now: eyebrow, the hub's name">Governance</Trans>
             </p>
+            {/* One name per page (27 Nov 2026): the heading says what the menu and the tab say. */}
             <h1 className={H1}>
-              <Trans context="governance now: h1">Governance</Trans>
+              <Trans context="governance treasury: h1">Treasury</Trans>
             </h1>
             <p className={LEDE}>
               <Trans context="governance treasury: lede">The village's money in one place: what it can pay this moon, and the desks that pay it.</Trans>

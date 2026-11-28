@@ -24,13 +24,13 @@
  * bg-muted, bg-primary), so it follows the Admin palette and its night look.
  */
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Check, Loader2, Send, X } from "lucide-react";
+import { ArrowRight, Check, Loader2, X } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { HelperAnswer, HelperProposal, HelperProvider, HelperStatus } from "@shared/adminHelper";
 import { guideNameAtSentenceStart, UNNAMED_GUIDE } from "@shared/guideName";
 import { guideLabelIn } from "@/lib/guideNameWords";
-import MicButton from "@/components/MicButton";
-import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 import type { NavGroup } from "./adminNavGroups";
 import { askHelper, fetchHelperStatus, tabsFromGroups, type HelperLine } from "./adminHelperApi";
 import { adminSearchHref } from "@shared/adminSearch";
@@ -80,7 +80,9 @@ export default function AdminHelperPanel({
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
   const [statusError, setStatusError] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [draft, setDraft] = useState("");
+  // Kept in this tab, so closing the helper and opening it again keeps a half-written question.
+  const [draft, setDraft] = useChatDraft("admin-helper");
+  const panel = useRef<HTMLElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const input = useRef<HTMLTextAreaElement>(null);
@@ -159,9 +161,11 @@ export default function AdminHelperPanel({
 
   return (
     <aside
+      ref={panel}
       aria-label={t({ message: `${guide}, your Admin helper`, context: "admin helper panel" })}
       data-testid="admin-helper"
-      style={{ top, bottom }}
+      // Above a phone's keyboard too (QA round 2 on #1885): --kb is set while a chat box is open (chat/keyboardInset.ts).
+      style={{ top, bottom: `max(${bottom}px, var(--kb, 0px))` }}
       className="fixed right-0 z-20 flex w-full flex-col border-l border-border bg-card text-card-foreground shadow-lg sm:w-[26rem]"
     >
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
@@ -254,35 +258,20 @@ export default function AdminHelperPanel({
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
             <div ref={end} />
           </div>
-          <form onSubmit={send} className="flex items-end gap-2 border-t border-border p-3">
-            <label className="sr-only" htmlFor="admin-helper-input">
-              <Trans context="admin helper panel">Your question</Trans>
-            </label>
-            <textarea
-              id="admin-helper-input"
-              ref={input}
-              rows={2}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send();
-                }
-              }}
-              placeholder={t({ message: "How do I…", context: "admin helper, question box placeholder" })}
-              className="min-h-11 flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <MicButton onText={(chunk) => setDraft((d) => appendSpoken(d, chunk))} disabled={busy} />
-            <button
-              type="submit"
-              disabled={busy || !draft.trim()}
-              aria-label={t({ message: "Send", context: "admin helper, sends the question" })}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <Send className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </form>
+          <ChatComposer
+            id="admin-helper-input"
+            className="border-t border-border p-3"
+            inputRef={input}
+            within={panel}
+            value={draft}
+            onChange={setDraft}
+            onSend={() => void send()}
+            busy={busy}
+            label={<Trans context="admin helper panel">Your question</Trans>}
+            placeholder={t({ message: "How do I…", context: "admin helper, question box placeholder" })}
+            sendLabel={t({ message: "Send", context: "admin helper, sends the question" })}
+            sendClassName="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
         </>
       )}
     </aside>

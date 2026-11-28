@@ -268,6 +268,8 @@ describe.skipIf(!DB_CONFIGURED)("with the vote open", () => {
     expect(change(out, "stewards").after).toContain("Named: Mara Fenn. Accepted so far: nobody.");
     expect(change(out, "stewards").holds).toEqual([]);
     expect(out?.attention.find((a: any) => a.id === "nobody-accepted")?.accounts).toEqual([{ id: founderId, name: "Mara Fenn" }]);
+    // The list names one founder. The other three set pay today as admins, and the read says so by name (Rye, 2026-11-28).
+    expect(ids(out?.attention.find((a: any) => a.id === "pay-left-out")?.accounts)).toEqual([anaId, qaId, wrenId].sort());
   });
 
   it("once the named founder accepts, they keep every door and the other three admins are named as losing them", async () => {

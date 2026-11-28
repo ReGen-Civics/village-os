@@ -13,7 +13,7 @@ This file is the map. `client/src/config/nav.ts` is the menu it describes, and `
 
 1. **Four groups, by what each holds.** **Village**: the place and its life (the maps, Quests, Places and homes, the Library, Village Health). **Community**: the people and the story (Our story with the team and the Love Letter, conversations, Gratitude, gatherings, welcoming). **Join**: the ways in. **Govern** (Governance until round 2; the routes are unchanged): how the village is run and how we work (deciding, Circles & Roles, this season, the guides, how we work).
 2. **Five rows at most in a group, five links at most in a folder.** A folder left with one link for a reader shows as that link (`client/src/config/navNest.ts`).
-3. **Join first for a newcomer,** a visitor or someone signed in but not admitted. A member meets Village, Community, Join, Govern.
+3. **Join first for every reader** (the lead, 27 Nov 2026, on the phone's More sheet: "Join should be first on the list"). Everyone meets Join, Village, Community, Govern, on the desktop bar and the phone alike.
 4. **The Module Library at the very bottom:** Govern is the last group for every reader, and the library is the last link of its last folder.
 5. **No catch-all folder.** "Shared things" is gone. The Wallet is the member's own, in the account menu.
 6. **A stranger sees only what a stranger needs:** what the village is, how to come and see, how to join, its story and team, and the Love Letter. No Wallet, Village Health, Library, Village Email, Village Tools or member tools.
@@ -69,6 +69,7 @@ Govern
     Training  `/training`
     Rights and agreements  `/rights`
     Leaving Well  `/rights#leaving-well`
+    Protocols  `/protocols`  (signed in only: the newcomer, never the visitor)
   How we work ▸
     How we work together  `/governance/how`
     How We Create  `/how-we-create`
@@ -78,37 +79,6 @@ Govern
 ### Member
 
 ```
-Village
-  Maps ▸
-    Living Map  `/map`
-    Hidden map  `/hidden-map`
-  Quests  `/quests`
-  Places and homes ▸
-    Housing  `/housing`
-    Stay  `/stay`
-    Good Neighbor Criteria  `/rights#good-neighbor`
-    Places  `/places`
-  Library  `/library`
-  Village Health  `/village-health`
-Community
-  Our story ▸
-    Our Team  `/team`
-    Master Plan  `/master-plan`
-    Sign the Love Letter  `/love-letter`
-    Village Network  `/network`
-  Conversations ▸
-    Feed  `/feed`
-    Forum  `/forum`
-    Village Tools  `/tools`
-    Share Feedback  `/feedback`
-  Gratitude  `/gratitude`
-  Gatherings ▸
-    Events  `/events`
-    Live Sessions  `/sessions`
-    Seasonal Festivals  `/seasonal-festivals`
-  Welcoming ▸
-    Rites  `/rites`
-    Introductions  `/introductions`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -125,6 +95,37 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
+Village
+  Maps ▸
+    Living Map  `/map`
+    Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
+    Housing  `/housing`
+    Stay  `/stay`
+    Good Neighbor Criteria  `/rights#good-neighbor`
+    Places  `/places`
+  Library  `/library`
+  Village Health  `/village-health`
+  Village Tools  `/tools`
+Community
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Share Feedback  `/feedback`
+  Gratitude  `/gratitude`
+  Gatherings ▸
+    Events  `/events`
+    Live Sessions  `/sessions`
+    Seasonal Festivals  `/seasonal-festivals`
+  Welcoming ▸
+    Rites  `/rites`
+    Introductions  `/introductions`
 Govern
   Decide ▸
     What's happening now  `/governance`
@@ -145,6 +146,7 @@ Govern
     Training  `/training`
     Rights and agreements  `/rights`
     Leaving Well  `/rights#leaving-well`
+    Protocols  `/protocols`
   How we work ▸
     How we work together  `/governance/how`
     Game Mechanics  `/governance/how#game-mechanics`
@@ -158,8 +160,8 @@ Account menu (your name)
   Your things ▸
     Waiting on you  `/governance/work`
     Wallet  `/wallet`
+    Pay  `/pay`
     Journal  `/journal`
-    Protocols  `/protocols`
     Badges  `/badges`
   Launch Plan  `/journey-to-launch`
 ```
@@ -167,37 +169,6 @@ Account menu (your name)
 ### Role holder with a treasury power
 
 ```
-Village
-  Maps ▸
-    Living Map  `/map`
-    Hidden map  `/hidden-map`
-  Quests  `/quests`
-  Places and homes ▸
-    Housing  `/housing`
-    Stay  `/stay`
-    Good Neighbor Criteria  `/rights#good-neighbor`
-    Places  `/places`
-  Library  `/library`
-  Village Health  `/village-health`
-Community
-  Our story ▸
-    Our Team  `/team`
-    Master Plan  `/master-plan`
-    Sign the Love Letter  `/love-letter`
-    Village Network  `/network`
-  Conversations ▸
-    Feed  `/feed`
-    Forum  `/forum`
-    Village Tools  `/tools`
-    Share Feedback  `/feedback`
-  Gratitude  `/gratitude`
-  Gatherings ▸
-    Events  `/events`
-    Live Sessions  `/sessions`
-    Seasonal Festivals  `/seasonal-festivals`
-  Welcoming ▸
-    Rites  `/rites`
-    Introductions  `/introductions`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -214,6 +185,37 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
+Village
+  Maps ▸
+    Living Map  `/map`
+    Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
+    Housing  `/housing`
+    Stay  `/stay`
+    Good Neighbor Criteria  `/rights#good-neighbor`
+    Places  `/places`
+  Library  `/library`
+  Village Health  `/village-health`
+  Village Tools  `/tools`
+Community
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Share Feedback  `/feedback`
+  Gratitude  `/gratitude`
+  Gatherings ▸
+    Events  `/events`
+    Live Sessions  `/sessions`
+    Seasonal Festivals  `/seasonal-festivals`
+  Welcoming ▸
+    Rites  `/rites`
+    Introductions  `/introductions`
 Govern
   Decide ▸
     What's happening now  `/governance`
@@ -234,6 +236,7 @@ Govern
     Training  `/training`
     Rights and agreements  `/rights`
     Leaving Well  `/rights#leaving-well`
+    Protocols  `/protocols`
   How we work ▸
     How we work together  `/governance/how`
     Game Mechanics  `/governance/how#game-mechanics`
@@ -247,48 +250,17 @@ Account menu (your name)
   Your things ▸
     Waiting on you  `/governance/work`
     Wallet  `/wallet`
+    Pay  `/pay`
     Journal  `/journal`
-    Protocols  `/protocols`
     Badges  `/badges`
   Running the village ▸
     Launch Plan  `/journey-to-launch`
-    Treasury desk  `/treasury`
+    Treasury desk  `/governance/treasury#desks`
 ```
 
 ### Admin or founder
 
 ```
-Village
-  Maps ▸
-    Living Map  `/map`
-    Hidden map  `/hidden-map`
-  Quests  `/quests`
-  Places and homes ▸
-    Housing  `/housing`
-    Stay  `/stay`
-    Good Neighbor Criteria  `/rights#good-neighbor`
-    Places  `/places`
-  Library  `/library`
-  Village Health  `/village-health`
-Community
-  Our story ▸
-    Our Team  `/team`
-    Master Plan  `/master-plan`
-    Sign the Love Letter  `/love-letter`
-    Village Network  `/network`
-  Conversations ▸
-    Feed  `/feed`
-    Forum  `/forum`
-    Village Tools  `/tools`
-    Share Feedback  `/feedback`
-  Gratitude  `/gratitude`
-  Gatherings ▸
-    Events  `/events`
-    Live Sessions  `/sessions`
-    Seasonal Festivals  `/seasonal-festivals`
-  Welcoming ▸
-    Rites  `/rites`
-    Introductions  `/introductions`
 Join
   Choose your path ▸
     Investor  `/investor`
@@ -305,6 +277,37 @@ Join
   Fund the village ▸
     Contribute  `/contribute`
     Crowd pooling  `/campaigns`
+Village
+  Maps ▸
+    Living Map  `/map`
+    Hidden map  `/hidden-map`
+  Quests  `/quests`
+  Places and homes ▸
+    Housing  `/housing`
+    Stay  `/stay`
+    Good Neighbor Criteria  `/rights#good-neighbor`
+    Places  `/places`
+  Library  `/library`
+  Village Health  `/village-health`
+  Village Tools  `/tools`
+Community
+  Our story ▸
+    Our Team  `/team`
+    Master Plan  `/master-plan`
+    Sign the Love Letter  `/love-letter`
+    Village Network  `/network`
+  Conversations ▸
+    Feed  `/feed`
+    Forum  `/forum`
+    Share Feedback  `/feedback`
+  Gratitude  `/gratitude`
+  Gatherings ▸
+    Events  `/events`
+    Live Sessions  `/sessions`
+    Seasonal Festivals  `/seasonal-festivals`
+  Welcoming ▸
+    Rites  `/rites`
+    Introductions  `/introductions`
 Govern
   Decide ▸
     What's happening now  `/governance`
@@ -325,6 +328,7 @@ Govern
     Training  `/training`
     Rights and agreements  `/rights`
     Leaving Well  `/rights#leaving-well`
+    Protocols  `/protocols`
   How we work ▸
     How we work together  `/governance/how`
     Game Mechanics  `/governance/how#game-mechanics`
@@ -338,12 +342,12 @@ Account menu (your name)
   Your things ▸
     Waiting on you  `/governance/work`
     Wallet  `/wallet`
+    Pay  `/pay`
     Journal  `/journal`
-    Protocols  `/protocols`
     Badges  `/badges`
   Running the village ▸
     Launch Plan  `/journey-to-launch`
-    Treasury desk  `/treasury`
+    Treasury desk  `/governance/treasury#desks`
     Command Centre  `/project-history`
     Review  `/admin/review`
     Village Settings  `/admin`
@@ -515,7 +519,7 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 | `/journal` | Journal | M R A | Account menu / Journal | Account menu / Your things / Journal | STAY |  |
 | `/protocols/practice/:protocolId` |  | M R A | - | - | STAY | reached from Protocols |
 | `/protocols/run/:id` |  | M R A | - | - | STAY | reached from Protocols |
-| `/protocols` | Protocols | M R A | Account menu / Protocols | Account menu / Your things / Protocols | STAY |  |
+| `/protocols` | Protocols | M R A | Account menu / Protocols | Govern / Guides / Protocols | STAY | signed in only, as in the account menu: a newcomer keeps it; it left Your things so Pay could sit by the Wallet |
 | `/hidden-map` | Hidden map | M R A | Village / Hidden map | Village / Maps / Hidden map | STAY | Village's Maps folder; no longer added to the phone sheet's Also yours |
 | `/funding-rounds` | Funding rounds | M R A | Governance / Funding Rounds | Govern / This season / Funding Rounds | STAY |  |
 | `/funding-rounds/:id` |  | M R A | - | - | STAY | reached from Funding Rounds |
