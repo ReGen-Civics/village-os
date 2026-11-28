@@ -454,6 +454,8 @@ describe.skipIf(!DB_CONFIGURED)("a village sets itself up alone, and can issue n
     // THE ROLL IS THE FOUNDERS (Rye, 2026-11-27). Wren is a member who holds a
     // voice on every ordinary vote, and she is not counted here.
     expect(status.json?.vote?.onTheRoll).toBe(1);
+    // The two counts are two facts: one founder is on the launch's roll, and two members hold a voice on every ordinary vote.
+    expect(status.json?.vote?.membersWithAVoice).toBe(2);
     expect(status.json?.vote?.founders).toEqual([{ id: founderId, name: "Launch" }]);
     expect(status.json?.vote?.yesNeeded).toBe(3);
     expect(String(status.json?.vote?.tooFew)).toContain("One founding member is on the roll today. 2 more founding members");
