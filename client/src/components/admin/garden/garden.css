@@ -1,0 +1,489 @@
+/*
+ * THE ADMIN GARDEN'S LOOK (Rye, 27 Nov 2026): night first and by default, a
+ * place you stand in. Imported by the garden's own components, so it ships in
+ * the admin chunk that imports them and never in the first page.
+ *
+ * ONE SCOPE. Everything here hangs on `.garden`, the class the <Garden>
+ * wrapper puts on its own element. Put it on an element of its own, inside
+ * the admin root: a nearer ancestor wins for its subtree, so the garden keeps
+ * its night whichever mode or look the page around it is in.
+ *
+ * NO NEW HUES. Every token below reads the night palette the rest of the site
+ * already measures (`--pal-night-*` in client/src/index.css), through the
+ * village's own night-* tokens where it has set them. A village that re-tints
+ * its night re-tints the garden with it. gardenTokens.test.ts resolves each
+ * one and measures every pair the garden draws.
+ *
+ * LIGHT COMES LAST. It is not built. When it is, it is a second block that
+ * sets these same names; no component changes.
+ *
+ * Only two forms are used for a token's value, `var(--name, fallback)` and
+ * `color-mix(in srgb, A n%, B)`, because those are the forms the test resolves.
+ */
+.garden {
+  /* The land and what stands on it. */
+  --garden-ground: var(--night-ground, var(--pal-night-ground));               /* the ground */
+  --garden-band: var(--night-band, var(--pal-night-band));                     /* the deeper ground: the status band, the land's own night */
+  --garden-surface: var(--night-panel, var(--pal-night-panel));                /* a panel */
+  --garden-raised: var(--night-panel-raised, var(--pal-night-panel-raised));   /* a tile on a panel */
+  --garden-ink: var(--night-ink, var(--pal-night-ink));                        /* text */
+  --garden-ink-soft: var(--night-ink-dim, var(--pal-night-ink-dim));           /* quiet text */
+  --garden-line: var(--night-edge, var(--pal-night-edge));                     /* edges, fields, the focus of a quiet thing */
+
+  /* The one gold, in shadow, plain and lit. */
+  --garden-gold: var(--night-accent, var(--pal-night-accent));
+  --garden-gold-lit: var(--night-accent-highlight, var(--pal-night-accent-highlight));
+  --garden-gold-deep: var(--night-accent-shadow, var(--pal-night-accent-shadow));
+  --garden-living: var(--night-living, var(--pal-night-living));
+  --garden-warn: var(--night-warn, var(--pal-night-warn));
+
+  /* A name plaque: the gold in shadow, taken down to dark wood. Words on the land always sit on one. */
+  --garden-wood: color-mix(in srgb, var(--garden-gold-deep) 22%, black);
+  /* The place you are in, or the stone you stand on: wood warmed by the gold. */
+  --garden-warm: color-mix(in srgb, var(--garden-gold) 10%, var(--garden-wood));
+
+  /* Lanterns: lit when something waits at a place, dark when it is quiet. */
+  --garden-lantern-lit: var(--garden-gold-lit);
+  --garden-lantern-dark: var(--garden-line);
+
+  /* Stepping stones: a walked stone is a gold ring, the stone you stand on is gold, a stone ahead waits. */
+  --garden-stone-walked: var(--garden-gold);
+  --garden-stone-current: var(--garden-gold);
+  --garden-stone-ahead: var(--garden-line);
+
+  /* Firefly light, around the one next step and nowhere else. */
+  --garden-firefly: var(--garden-gold-lit);
+
+  /* The page's own tokens, read off the garden's, so `bg-card`, `text-muted-foreground`, `text-notice`
+     and the class strings in components/journey/look.ts draw in the garden's night with no other edit. */
+  --background: var(--garden-ground);
+  --foreground: var(--garden-ink);
+  --card: var(--garden-surface);
+  --card-foreground: var(--garden-ink);
+  --popover: var(--garden-surface);
+  --popover-foreground: var(--garden-ink);
+  --muted: var(--garden-raised);
+  --muted-foreground: var(--garden-ink-soft);
+  --border: var(--garden-line);
+  --input: var(--garden-line);
+  --ring: var(--garden-gold);
+  --sheet-notice: var(--garden-gold);
+  --sheet-open: var(--garden-living);
+  --destructive: var(--garden-warn);
+  --destructive-foreground: var(--garden-ground);
+  --font-display: var(--sheet-font-display, var(--village-display));
+
+  /* Its own ground, always: the ink is the night's, so on a host page that is still light it would be cream on white. */
+  background-color: var(--garden-ground);
+  color: var(--garden-ink);
+  color-scheme: dark;
+  /* Firefly light reaches a little past the act it gathers around. Near the edge of the garden it is cut there,
+     so a decoration can never give the page a sideways scroll. `clip` makes no scroll container. */
+  overflow-x: clip;
+}
+
+/* The nature kit's lights and circles take the garden's gold. */
+.garden .nk {
+  --nk-firefly: var(--garden-firefly);
+  --nk-gold: var(--garden-stone-current);
+}
+
+/*
+ * THE DAY WORLD STAYS OUT. Under a light-mode sheet, index.css dresses three things by class: h1 and h2 take the
+ * day's heading ink, a panel takes a soft rule across its top, and `shadow-sm` takes the day's shadow. A garden
+ * inside such a page (the admin root in its Night look, for a visitor in light mode) names those classes too,
+ * through components/journey/look.ts, so each is answered here, one step more specific.
+ */
+:root[data-mode="light"] .sheet-night .garden :is(h1, h2):is(.text-foreground, .text-card-foreground) {
+  color: var(--garden-ink);
+}
+:root[data-mode="light"] .sheet-night .garden .rounded-2xl.border.bg-card:not(.border-2) {
+  border-top: 1px solid var(--border);
+}
+/* Depth, which the night ground eats: the same deepening `.sheet-night .shadow-sm` gives. */
+.garden .shadow-sm,
+:root[data-mode="light"] .sheet-night .garden .shadow-sm {
+  box-shadow: var(--pal-night-shadow);
+}
+
+/* ---------- Surfaces ---------- */
+.gd-panel {
+  background-color: var(--garden-surface);
+  border: 1px solid color-mix(in srgb, var(--garden-gold) 32%, var(--garden-surface));
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, black 60%, transparent);
+}
+.gd-tile {
+  background-color: var(--garden-raised);
+  border: 1px solid color-mix(in srgb, var(--garden-line) 55%, var(--garden-raised));
+}
+.gd-plaque {
+  background-color: var(--garden-wood);
+  border: 1px solid color-mix(in srgb, var(--garden-gold-deep) 80%, var(--garden-gold));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--garden-gold-lit) 25%, transparent),
+    0 6px 16px -4px color-mix(in srgb, black 55%, transparent);
+}
+
+/* ---------- The status band ---------- */
+.gd-band {
+  background-color: var(--garden-band);
+  border-bottom: 1px solid color-mix(in srgb, var(--garden-gold) 35%, var(--garden-band));
+}
+
+/* ---------- Lanterns ---------- */
+.gd-lantern {
+  display: inline-block;
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 999px;
+  border: 2px solid var(--garden-lantern-dark);
+  background-color: transparent;
+}
+.gd-lantern[data-lit="true"] {
+  border-color: var(--garden-lantern-lit);
+  background-color: var(--garden-lantern-lit);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--garden-lantern-lit) 18%, transparent),
+    0 0 12px 2px color-mix(in srgb, var(--garden-lantern-lit) 55%, transparent);
+}
+
+/* ---------- A place ---------- */
+.gd-place {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--garden-ink);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.gd-place:focus-visible {
+  outline: 2px solid var(--garden-gold-lit);
+  outline-offset: 3px;
+}
+.gd-place .gd-sprite {
+  flex: none;
+  width: 3.5rem;
+  height: 3rem;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px color-mix(in srgb, black 50%, transparent));
+}
+.gd-place[data-scaffolding="true"] .gd-sprite {
+  opacity: 0.92;
+}
+.gd-place .gd-plaque {
+  flex: 1 1 auto;
+  min-width: 0;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.gd-place-name {
+  display: block;
+  color: var(--garden-gold-lit);
+  line-height: 1.2;
+}
+.gd-place-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--garden-ink-soft);
+}
+/* The Desk: a quiet row, and the place you are in is warm. */
+.gd-place[data-lens="desk"]:hover {
+  border-color: color-mix(in srgb, var(--garden-gold) 35%, transparent);
+}
+.gd-place[data-lens="desk"][aria-current="page"] {
+  border-color: color-mix(in srgb, var(--garden-gold) 55%, var(--garden-warm));
+  background-color: var(--garden-warm);
+}
+/* The Grounds, stacked (a phone): each place is a plaque of its own, so its words never sit on the land. */
+.gd-place[data-lens="grounds"] {
+  background-color: var(--garden-wood);
+  border-color: color-mix(in srgb, var(--garden-gold-deep) 80%, var(--garden-gold));
+}
+.gd-place[data-lens="grounds"]:hover {
+  border-color: var(--garden-gold);
+}
+
+/* ---------- The Grounds ---------- */
+.gd-grounds {
+  container-type: inline-size;
+}
+/*
+ * The land. A village's own land image goes in `--gd-land-image` (the Grounds
+ * sets it inline); with none, the default is painted here from the tokens: a
+ * clearing lit by the fire, canopy on either side, and no geography at all.
+ * The night wash and the vignette lie over either one.
+ */
+.gd-land {
+  --gd-land-image:
+    radial-gradient(34% 28% at 50% 40%, color-mix(in srgb, var(--garden-gold) 20%, transparent), transparent 72%),
+    radial-gradient(58% 44% at 16% 18%, color-mix(in srgb, var(--garden-raised) 85%, transparent), transparent 70%),
+    radial-gradient(52% 40% at 86% 74%, color-mix(in srgb, var(--garden-raised) 75%, transparent), transparent 70%),
+    radial-gradient(40% 30% at 20% 82%, color-mix(in srgb, var(--garden-surface) 80%, transparent), transparent 70%),
+    linear-gradient(var(--garden-ground), var(--garden-ground));
+  position: relative;
+  background-color: var(--garden-band);
+  background-image:
+    radial-gradient(120% 90% at 50% 38%, color-mix(in srgb, var(--garden-band) 18%, transparent), color-mix(in srgb, var(--garden-band) 92%, transparent) 100%),
+    linear-gradient(color-mix(in srgb, var(--garden-ground) 50%, transparent), color-mix(in srgb, var(--garden-band) 62%, transparent)),
+    var(--gd-land-image);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid color-mix(in srgb, var(--garden-gold) 32%, var(--garden-band));
+}
+.gd-paths {
+  display: none;
+}
+.gd-paths path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--garden-gold) 55%, transparent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 9;
+  vector-effect: non-scaling-stroke;
+}
+.gd-places {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem;
+  list-style: none;
+}
+@container (min-width: 30rem) {
+  .gd-places {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Room for the map: each place stands where the table puts it, its building above its plaque. */
+@container (min-width: 38rem) {
+  .gd-land {
+    aspect-ratio: 10 / 9;
+    min-height: 44rem;
+    max-height: 58rem;
+  }
+  .gd-paths {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .gd-places {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+  }
+  /* Each place has a column of its own, centred on its spot. It is never wider than 26% of the land, and no
+     spot is nearer an edge than 13%, so a place and its plaque always stand on the land (gardenTokens.test.ts). */
+  .gd-places > li {
+    position: absolute;
+    left: calc(var(--gd-x) * 1%);
+    top: calc(var(--gd-y) * 1%);
+    display: flex;
+    justify-content: center;
+    width: min(12rem, 26cqw);
+    transform: translateX(-50%);
+  }
+  .gd-place[data-lens="grounds"] {
+    flex-direction: column;
+    gap: 0;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    padding: 0;
+    background-color: transparent;
+    border-color: transparent;
+    text-align: center;
+  }
+  .gd-place[data-lens="grounds"] .gd-sprite {
+    width: clamp(3rem, calc(var(--gd-w) * 1cqw), 13.5rem);
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 14px 12px color-mix(in srgb, black 60%, transparent));
+  }
+  .gd-place[data-lens="grounds"][data-lit="true"] .gd-sprite {
+    filter:
+      drop-shadow(0 0 22px color-mix(in srgb, var(--garden-lantern-lit) 50%, transparent))
+      drop-shadow(0 14px 12px color-mix(in srgb, black 60%, transparent));
+  }
+  .gd-place[data-lens="grounds"] .gd-plaque {
+    flex: none;
+    min-width: min(8rem, 100%);
+    max-width: 100%;
+    margin-top: -0.375rem;
+    padding: 0.375rem 0.75rem 0.4375rem;
+    border-radius: 0.625rem;
+    background-color: var(--garden-wood);
+    border-color: color-mix(in srgb, var(--garden-gold-deep) 80%, var(--garden-gold));
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--garden-gold-lit) 25%, transparent),
+      0 6px 16px -4px color-mix(in srgb, black 55%, transparent);
+  }
+  .gd-place[data-lens="grounds"]:hover .gd-plaque {
+    border-color: var(--garden-gold);
+  }
+  .gd-place[data-lens="grounds"] .gd-place-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gd-place[data-lens="grounds"] .gd-place-line {
+    justify-content: center;
+  }
+}
+
+/* ---------- Stepping stones ---------- */
+.gd-stone {
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-top: 0.0625rem;
+  border-radius: 999px;
+  border: 2px dashed var(--garden-stone-ahead);
+}
+[data-state="walked"] > .gd-stone {
+  position: relative;
+  border-style: solid;
+  border-color: var(--garden-stone-walked);
+  background-color: color-mix(in srgb, var(--garden-stone-walked) 28%, transparent);
+}
+/* The tick: two strokes in the walked gold, drawn, so a walked stone never reads as an empty box to tick. */
+[data-state="walked"] > .gd-stone::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0.3125rem;
+  height: 0.5625rem;
+  border: solid var(--garden-stone-walked);
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+[data-state="current"] > .gd-stone {
+  border-style: solid;
+  border-color: var(--garden-stone-current);
+  background-color: var(--garden-stone-current);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--garden-stone-current) 16%, transparent);
+}
+.gd-stone-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--garden-ink-soft);
+  text-align: left;
+  text-decoration: none;
+}
+.gd-stone-row[data-state="walked"],
+.gd-stone-row[data-state="current"] {
+  color: var(--garden-ink);
+}
+.gd-stone-row[data-state="current"] {
+  border-color: color-mix(in srgb, var(--garden-gold) 55%, var(--garden-warm));
+  background-color: var(--garden-warm);
+}
+a.gd-stone-row:hover,
+button.gd-stone-row:hover {
+  border-color: color-mix(in srgb, var(--garden-gold) 35%, transparent);
+}
+.gd-stone-row:focus-visible {
+  outline: 2px solid var(--garden-gold-lit);
+  outline-offset: 2px;
+}
+
+/* ---------- The circle ---------- */
+.gd-ring {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 2px;
+  border-radius: 999px;
+  background-image: conic-gradient(from 200deg, var(--garden-gold-deep), var(--garden-gold), var(--garden-gold-lit), var(--garden-gold), var(--garden-gold-deep));
+}
+.gd-ring > * {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  object-fit: cover;
+  background-color: var(--garden-raised);
+  color: var(--garden-gold-lit);
+}
+
+/* ---------- The lens toggle ---------- */
+.gd-lens {
+  background-color: var(--garden-band);
+  border: 1px solid color-mix(in srgb, var(--garden-gold) 35%, var(--garden-band));
+}
+.gd-lens button {
+  color: var(--garden-ink-soft);
+}
+.gd-lens button[aria-pressed="true"] {
+  background-color: var(--garden-gold);
+  color: var(--garden-ground);
+}
+.gd-lens button:focus-visible {
+  outline: 2px solid var(--garden-gold-lit);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gd-place .gd-sprite {
+    transition: transform 200ms ease-out;
+  }
+  .gd-place:hover .gd-sprite,
+  .gd-place:focus-visible .gd-sprite {
+    transform: translateY(-2px);
+  }
+}
+
+/* ---------- The frame: what you see, and the guide's dock ---------- */
+/* Narrow first: the dock is a block of its own above what you see, in both open states. */
+.gd-frame {
+  container-type: inline-size;
+}
+.gd-frame-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.gd-frame-main,
+.gd-frame-dock {
+  min-width: 0;
+}
+/* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. */
+@container (min-width: 64rem) {
+  .gd-frame[data-dock="docked"] .gd-frame-body {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+  }
+  /* First in the document, so it is first to a keyboard and a screen reader. Docked, it is drawn after what you see. */
+  .gd-frame[data-dock="docked"] .gd-frame-dock {
+    order: 1;
+  }
+  .gd-frame[data-dock="expanded"] .gd-frame-body {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+  .gd-frame-dock {
+    position: sticky;
+    top: var(--gd-frame-top, 0px);
+    align-self: start;
+  }
+}
+

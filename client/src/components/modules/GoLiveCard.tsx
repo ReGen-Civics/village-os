@@ -15,7 +15,7 @@
  * lifecycle map up to Admin() for the nav filter, so the rail and the card
  * ride one fetch.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { storedText, writeStored } from "@/lib/safeStorage";
 import type { ModuleLifecycle, ModuleReadiness } from "@shared/modules";
@@ -165,11 +165,15 @@ export function GoLiveCard({
 }
 
 export function AdminGoLive({
-  token, moduleId, onLifecycles,
+  token, moduleIds, onLifecycles,
 }: {
   token: string;
-  /** TAB_MODULE[activeTab]: the module whose tab is open, or null on platform tabs. */
-  moduleId: string | null;
+  /**
+   * tabModules(activeTab): the modules whose tab is open, none on a platform
+   * tab. A list because one tab can answer for two modules (the Reports queue
+   * holds the forum's reports and the messages'), and each gets its own card.
+   */
+  moduleIds: readonly string[];
   /** Feeds the nav filter: id -> configured lifecycle, one fetch for both. */
   onLifecycles?: (lifecycles: Record<string, string>) => void;
 }) {
@@ -211,20 +215,22 @@ export function AdminGoLive({
     };
   }, [load]);
 
-  const mod = useMemo(
-    () => (moduleId ? modules?.find((x) => x.id === moduleId) ?? null : null),
-    [modules, moduleId],
+  const openIds = moduleIds.join(",");
+  const mods = useMemo(
+    () => (openIds ? openIds.split(",") : []).map((id) => modules?.find((x) => x.id === id)).filter((m): m is AdminModule => !!m),
+    [modules, openIds],
   );
 
   // The readiness poll: only while a preview module's tab is open, so the
   // first save flips the card on within twenty seconds of happening.
+  const inPreview = mods.filter((m) => m.lifecycle === "preview").map((m) => m.id).join(",");
   useEffect(() => {
-    if (!mod || mod.lifecycle !== "preview") return;
+    if (!inPreview) return;
     const t = window.setInterval(load, 20_000);
     return () => window.clearInterval(t);
-  }, [mod?.id, mod?.lifecycle, load]);
+  }, [inPreview, load]);
 
-  if (!mod) return null;
+  if (mods.length === 0) return null;
   const lookup = Object.fromEntries(
     (modules ?? []).map((x) => [x.id, { name: x.name, lifecycle: x.lifecycle }]),
   );
@@ -239,16 +245,20 @@ export function AdminGoLive({
    */
   return (
     <>
-      <SetupNeeded
-        moduleId={mod.id}
-        setup={mod.setup}
-        ready={mod.ready}
-        lifecycle={mod.lifecycle}
-        className="mb-5"
-      />
-      {/* Keyed by the module, so Not-yet state and the rest reset per tab
-          while the fetcher above mounts exactly once. */}
-      <GoLiveCard key={mod.id} module={mod} lookup={lookup} token={token} onChanged={load} />
+      {mods.map((mod) => (
+        <Fragment key={mod.id}>
+          <SetupNeeded
+            moduleId={mod.id}
+            setup={mod.setup}
+            ready={mod.ready}
+            lifecycle={mod.lifecycle}
+            className="mb-5"
+          />
+          {/* Keyed by the module, so Not-yet state and the rest reset per tab
+              while the fetcher above mounts exactly once. */}
+          <GoLiveCard key={mod.id} module={mod} lookup={lookup} token={token} onChanged={load} />
+        </Fragment>
+      ))}
     </>
   );
 }

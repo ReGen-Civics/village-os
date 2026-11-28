@@ -389,7 +389,7 @@ export default function VillageMap() {
           the title down, so the hearths are not met after a light band. */}
       <section className="circle-lens py-6 sm:py-10 bg-background text-foreground">
         <div className="container text-center">
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3"><Trans context="VillageMap, h1">How Power Is Held</Trans></h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-2 sm:mb-3"><Trans context="VillageMap, h1">Circles</Trans></h1>
           <p className="hidden sm:block text-muted-foreground max-w-xl mx-auto">
             <Trans context="VillageMap, p">The village's shape, how each circle decides, who holds each role, and the roles waiting
             for someone like you.

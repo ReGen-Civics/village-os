@@ -40,6 +40,46 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.7 (2026-11-28)
+
+### What changed for your village
+
+- **Find anything.** One search for pages, roles, quests and people a reader may see: the icon in the header, Ctrl or Cmd K, and the first row of the phone's More sheet. When the words miss, the village's guide suggests where to look, from the reader's own list of places and nothing else. A wrong address offers "Search the village" too.
+- **A calmer menu.** Join comes first. The phone's More sheet shows one group at a time with its tabs in thumb's reach, a Recent row, and speed cards a member edits by holding a card or tapping "+". Village Tools, Pay and Protocols have their places, folders can carry the village's own names, a breadcrumb shows where a page sits, and a small count says what waits on you.
+- **The profile's My work and My roles.** One door to Quests replaces the quest board summary, and each role is one card. On a phone My moon comes first, with a line that jumps to each role. A link to a part of the profile lands on it and stays there, and a reload returns you to where you were.
+- **Chat boxes that grow, with voice.** Every chat with the guide or a companion grows with the message up to about two thirds of the screen, then scrolls inside. The mic fills the box and never sends by itself. Send stays above a phone's keyboard. A draft is kept for its writer only and cleared on sign-out.
+- **Where a village stands on its way to launch.** Journey to Launch and the admin strip say plainly where the village stands, and show only the buttons the village can use. A village that is already issuing is told so, with the way to change it by its highest vote.
+- **Renewal notices open the season plan.** "Your role carries on into the next moon" linked to an address with no page. It opens your plan now, and notices already sent do too.
+- **Under the hood.** The Admin Garden's look arrives as pieces nothing uses yet, with its paintings, and a test now records who may call each admin route.
+
+### What you must do
+
+Nothing. To use the guide in search, the village's AI key must be set as before; without it search works on its own.
+
+### Does it touch your data
+
+No migration. Speed cards and what a member has read stay in their own preferences. Going back to 1.4.6 is safe.
+
+---
+
+## 1.4.6 (2026-11-28)
+
+### What changed for your village
+
+- **Tooltips sit on the word.** An explained word now carries a quiet dotted underline and opens its note on a tap, a click or the keyboard. The small marks beside words are gone everywhere, and a paragraph no longer moves when a note opens. On a phone a tap opens the word under the finger, and links and buttons keep their own taps.
+- **Role types say what they mean.** On a role, each "Plays as" chip explains its type in the village's own words.
+- **The crowd pool counts days in the village's time zone,** so the days left match the closing date beside them.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.4.5 is safe.
+
+---
+
 ## 1.4.5 (2026-11-28)
 
 ### What changed for your village

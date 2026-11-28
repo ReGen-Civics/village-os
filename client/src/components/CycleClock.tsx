@@ -126,7 +126,6 @@ export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) 
   const [served, setSeason] = useState<{ current?: { id?: string; name?: string } | null } | null>(null);
   const season = useSeasonInLanguage(served)?.current?.name ?? ""; // in the reader's language where the village translated it
   const { t, i18n } = useLingui();
-  const allowanceWord = t({ message: "allowance", context: "glossary: the word a tip explains" });
   const [cycle, setCycle] = useState<ClockCycle | null>(null);
   const [timeZone, setTimeZone] = useState("UTC");
   const [villageHemisphere, setVillageHemisphere] = useState<Hemisphere>("north");
@@ -254,17 +253,16 @@ export default function CycleClock({ hemisphere }: { hemisphere?: Hemisphere }) 
             if (!refill) return t({ message: "Reading when allowances refill", context: "cycle clock: the clock has not answered yet" });
             const date = refill.date;
             const month = refill.moon;
-            const moonWord = t({ message: `${month} Moon`, context: "glossary: the moon's name a tip explains" });
-            // The words the village explains, each with its mark after the sentence (shared/glossary.ts).
+            // The words the village explains, each wearing its own tip (shared/glossary.ts).
             return (
               <>
                 {month ? (
                   <Trans context="cycle clock: the moon that turns and the day it turns">
-                    Allowances<GlossaryTip slot="allowance" word={allowanceWord} /> refill when the {month} Moon<GlossaryTip slot="moon" word={moonWord} /> turns, on {date}.
+                    <GlossaryTip slot="allowance">Allowances</GlossaryTip> refill when the <GlossaryTip slot="moon">{month} Moon</GlossaryTip> turns, on {date}.
                   </Trans>
                 ) : (
                   <Trans context="cycle clock: a village on calendar months, the day the month turns">
-                    Allowances<GlossaryTip slot="allowance" word={allowanceWord} /> refill when this calendar month turns, on {date}.
+                    <GlossaryTip slot="allowance">Allowances</GlossaryTip> refill when this calendar month turns, on {date}.
                   </Trans>
                 )}
               </>

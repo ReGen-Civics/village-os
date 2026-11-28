@@ -58,7 +58,8 @@ const countCalls = () => fetchMock.mock.calls.filter((c) => c[0] === TASKS_COUNT
 
 describe("My tasks in the menus", () => {
   it("sits in the avatar menu with the member's own count, read only once the menu opens", async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ waiting: 2, nextDue: null }), { status: 200 }));
+    // A fresh reply per read: the Govern and account dots read the inbox too (nav/WaitingCount.tsx).
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ waiting: 2, nextDue: null }), { status: 200 }));
     renderShell();
     await act(async () => {});
     expect(countCalls()).toBe(0);
@@ -69,7 +70,8 @@ describe("My tasks in the menus", () => {
   });
 
   it("sits in the mobile drawer's account block too", async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ waiting: 1, nextDue: null }), { status: 200 }));
+    // A fresh reply per read: the Govern and account dots read the inbox too (nav/WaitingCount.tsx).
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ waiting: 1, nextDue: null }), { status: 200 }));
     renderShell();
     fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
     const link = await screen.findByRole("link", { name: `${TASK_COPY.menu.label}, ${TASK_COPY.menu.waiting(1)}` });
@@ -77,7 +79,8 @@ describe("My tasks in the menus", () => {
   });
 
   it("shows no number when nothing waits", async () => {
-    fetchMock.mockResolvedValue(new Response(JSON.stringify({ waiting: 0, nextDue: null }), { status: 200 }));
+    // A fresh reply per read: the Govern and account dots read the inbox too (nav/WaitingCount.tsx).
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ waiting: 0, nextDue: null }), { status: 200 }));
     renderShell();
     fireEvent.click(screen.getByRole("button", { name: "Your account, Ada" }));
     await waitFor(() => expect(countCalls()).toBe(1));

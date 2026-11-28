@@ -19,7 +19,7 @@
  */
 export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/": "", // the home page is the village itself; no prefix
-  "/journey-to-launch": "Journey to launch",
+  "/journey-to-launch": "Launch plan", // one name per page: the menu's word (27 Nov 2026)
   "/canvas/workbook": "Canvas workbook",
   "/setup-game": "The Setup Game",
   "/project-history": "Command Centre",
@@ -50,16 +50,16 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/forum": "Forum",
   "/messages": "Messages",
   "/introductions": "Introductions",
-  "/feed": "Village feed",
-  "/map": "Village map",
-  "/map/circles": "Circles and roles",
-  "/events": "Village Calendar",
+  "/feed": "Feed",
+  "/map": "Living map",
+  "/map/circles": "Circles",
+  "/events": "Events",
   // Your First Walk is gone (27 Nov 2026); its old address redirects home, so a tab never reads blank there.
   "/first-walk": "Home",
-  "/stay": "Stays",
-  "/library": "Material library",
-  "/badges": "Badges & skills",
-  "/powers": "What this village looks after",
+  "/stay": "Stay",
+  "/library": "Library",
+  "/badges": "Badges",
+  "/powers": "What we look after",
   "/review": "Review",
   "/approvals": "Approvals",
   "/cash-payouts": "Cash to pay out", // redirects to /governance/treasury#cash (27 Nov 2026)
@@ -77,7 +77,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // own balances now also live in a Wallet section on their profile.
   "/tokens": "Wallet",
   "/wallet": "Wallet",
-  "/pay": "Pay and receive",
+  "/pay": "Pay", // one name per page: the menu's word (27 Nov 2026)
   "/profile": "My profile",
   "/path": "Your path",
   "/login": "Sign in",
@@ -91,7 +91,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // line each below, so a tab never reads blank for the moment a redirect takes.
   "/rights": "Rights and agreements",
   "/exit-policy": "Leaving well",
-  "/tools": "Tools",
+  "/tools": "Village tools",
   // One line covers the shelf and every detail page: keys match by longest
   // prefix, so /modules/stays reads as the library too.
   "/modules": "Module Library",
@@ -106,6 +106,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // /photographs only redirects there, and reads as the page it lands on.
   "/photographs": "Places",
   "/admin": "Village settings",
+  "/admin/review": "Review", // the menu's word for the admin's one review page
   "/journal": "Journal",
   "/protocols": "Protocols",
   "/hidden-map": "Hidden map",
@@ -115,10 +116,10 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   // The shopfront pages (shared/brochure.ts). They had no entry, so their
   // tabs and their link previews carried the village name alone.
   "/housing": "Housing",
-  "/opportunities": "Opportunities",
-  "/visit": "Visit",
+  "/opportunities": "Business opportunities",
+  "/visit": "Plan a visit",
   "/work-with-us": "Work with us",
-  "/team": "Team",
+  "/team": "Our team", // the menu's word (one name per page, 27 Nov 2026)
   "/master-plan": "Master plan",
   "/good-neighbor": "Good neighbor",
   "/co-creators-guide": "Co-creators guide",
@@ -132,15 +133,18 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/register": "Join",
   "/reserve": "Reserve your home",
   "/email": "Your email",
-  "/village-email": "How the village emails",
+  "/village-email": "Village email",
   "/training": "Training",
   "/training/steward": "Steward training",
   "/training/resident": "Resident training",
   "/governance": "Governance",
+  // Governance's views by the menu's words; the hub itself is named in EXACT_TITLES below.
+  "/governance/decisions": "Decisions",
+  "/governance/work": "Waiting on you",
   // One change request, a kind of decision since 27 Nov 2026; /changes above stays for links already sent.
   "/governance/decisions/changes": "Change request",
   "/decisions": "Decisions",
-  "/propose": "Start a proposal",
+  "/propose": "Make a proposal",
   "/propose-a-role": "Apply", // the founding application (QA P1-17); without it the prefix read "Start a proposal"
   "/role-applications": "Role proposal",
   "/open-proposals": "A proposed role", // somebody with no account proposed it (0305)
@@ -149,7 +153,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/admin/role-progress": "How roles are going", // admins see every circle, a circle's lead their own; counts and medians only
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
-  "/season": "The season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned
+  "/season": "Season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned
   "/season-plans": "The village's season",
   "/welcome": "Welcome",
   "/aboard": "Join",
@@ -171,11 +175,24 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * A name for one address alone, where its prefix names the pages under it: /governance is "What's happening now",
+ * the menu's word for it, while every Governance page below it keeps its own or "Governance" (one name per page,
+ * 27 Nov 2026).
+ */
+export const EXACT_TITLES: Readonly<Record<string, string>> = {
+  "/governance": "What's happening now",
+};
+
+/**
  * The page part of the title for a location, by longest matching prefix, so
  * /forum/123 still reads as the forum. `{commitment}` is the village's own
  * word for what a member signs. Empty means the location has no page name.
  */
-export function pageTitleFor(location: string, words: { commitment?: string } = {}): string {
+export function pageTitleFor(location: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
+  const bare = location.split(/[?#]/)[0]!.replace(/(.)\/$/, "$1");
+  // A story page the village names itself (Admin, Pages, Whole site) takes that name, as its menu entry does.
+  if (words.names?.[bare]?.trim()) return words.names[bare]!.trim();
+  if (EXACT_TITLES[bare]) return EXACT_TITLES[bare]!;
   const match = Object.keys(PAGE_TITLES)
     .filter((p) => (p === "/" ? location === "/" : location.startsWith(p)))
     .sort((a, b) => b.length - a.length)[0];
@@ -184,7 +201,7 @@ export function pageTitleFor(location: string, words: { commitment?: string } = 
 }
 
 /** "Page · Village", or the village alone where the page has no name. */
-export function documentTitle(location: string, village: string, words: { commitment?: string } = {}): string {
+export function documentTitle(location: string, village: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
   const page = pageTitleFor(location, words);
   return page ? `${page} · ${village}` : village;
 }

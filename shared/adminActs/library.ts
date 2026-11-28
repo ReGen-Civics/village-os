@@ -122,7 +122,8 @@ export const LIBRARY_ACTS = inPlace("library", [
     route: DELETE("/api/admin/faqs/:pathway/:id"),
   },
   {
-    id: "library.visit.save", tab: "visit-config", power: "admin", holder: "story.tell",
+    // The visit program is edited inside Pages since 27 Nov 2026; its old tab address lands there.
+    id: "library.visit.save", tab: "pages", parity: ["A30"], power: "admin", holder: "story.tell",
     title: "Change the visit program",
     help: "How a visit works, in this village's words.",
     synonyms: ["visit", "visit program", "come and see", "tour"],

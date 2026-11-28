@@ -192,7 +192,7 @@ export function EconomicsView({ headers }: { headers: (extra?: Record<string, st
         {/* Pending consents */}
         <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
           <h3 className="text-sm font-bold text-stone-700 uppercase tracking-wide mb-1"><Trans context="economics view heading">Waiting on consent</Trans></h3>
-          <p className="text-xs text-stone-400 mb-3"><Trans>Submitted work waiting for the human gate. Act in Admin → Quest Claims.</Trans></p>
+          <p className="text-xs text-stone-400 mb-3"><Trans>Submitted work waiting for the human gate. Act on the review list, under Finished work to witness.</Trans></p>
           {data.pendingConsents.length === 0 ? (
             <p className="text-sm text-stone-400 italic"><Trans context="consent queue empty">Nothing waiting.</Trans></p>
           ) : (

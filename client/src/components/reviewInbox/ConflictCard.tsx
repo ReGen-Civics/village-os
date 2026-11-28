@@ -80,7 +80,7 @@ export default function ConflictCard({ options, links, desk }: { options: Propos
               <ChangeBody face={face} kind={o.kind} before={o.live} after={body} labels={o.labels} zone={desk.zone} whole={whole} />
               {o.code ? (
                 <p className={HINT}>
-                  <Link href={`/admin/proposals?find=${encodeURIComponent(o.code)}`} className={LINK}>
+                  <Link href={`/admin/review?view=batches&find=${encodeURIComponent(o.code)}`} className={LINK}>
                     <Trans context="review inbox: a conflict card">Edit its words on its own page</Trans>
                   </Link>
                 </p>

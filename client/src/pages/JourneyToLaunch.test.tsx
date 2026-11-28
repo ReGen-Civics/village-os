@@ -589,3 +589,214 @@ describe("what is left, said without a score", () => {
     expect(container.querySelector("[style*='width']"), "no bar drawn to a width").toBeNull();
   });
 });
+
+/*
+ * WHO READS THE CHECKLIST, AND WHO ANSWERS ITS ROWS (27 Nov 2026).
+ *
+ * Two rules meet on this page. The page opens for whoever may use admin, and
+ * that includes a member whose admin access comes from a power group
+ * (`hasAdminAccess`, client/src/lib/adminAccess.ts): the server already lets
+ * them read `/api/admin/launch`. And Rye ruled "Founders only before launch.
+ * Tighten the server.", so `POST /api/admin/launch/confirm` now refuses
+ * everybody but a founder. A button the server refuses is not offered, so the
+ * row's two answers are drawn for a founder alone, while an admin and a group
+ * holder still read every row, and read ONE sentence where a founder has the
+ * buttons: never an empty gap, never a disabled button.
+ */
+describe("who reads the checklist, and who answers its rows", () => {
+  const DECLINABLE = {
+    ...STATUS.items[0],
+    id: "issuance-cap",
+    title: "Name what the village may issue in a moon",
+    detail: "Not answered yet",
+    checkKey: "issuance-cap",
+    declinable: true,
+  };
+  /** A row the server checks by itself: nobody answers it by hand, so it carries neither a button nor the sentence. */
+  const OBSERVED = { ...STATUS.items[0], id: "admin-identities", title: "Every admin signs in as themselves", checkKey: "admin-identities" };
+  const BOTH = { ...STATUS, items: [STATUS.items[0], DECLINABLE, OBSERVED] };
+  const FOUNDERS_ONLY = "Only a founder confirms or declines this before launch.";
+  const page = {
+    "/api/admin/launch": { status: 200, body: BOTH },
+    "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } },
+    "/api/admin/launch/confirm": { status: 200, body: { success: true, status: BOTH } },
+  };
+  const groupHolder = { id: "u3", name: "Gia", role: "member", adminAccess: true };
+  const admin = { id: "u1", name: "Rye", role: "admin", adminAccess: true };
+  const founder = { id: "u4", name: "Fen", role: "founder", adminAccess: true };
+
+  it("gives a member whose admin access comes from a power group the whole checklist", async () => {
+    auth.current = { user: groupHolder, loading: false };
+    answer(page);
+    draw();
+    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+    expect(calls[0].url).toBe("/api/admin/launch");
+    expect(screen.getByRole("button", { name: /run the test/i })).toBeTruthy();
+  });
+
+  it("still keeps a plain member off the checklist, whatever else their account carries", () => {
+    auth.current = { user: { id: "u2", name: "Wren", role: "member", adminAccess: false }, loading: false };
+    draw();
+    expect(screen.queryByText(/Take one backup/i)).toBeNull();
+    expect(calls.map((c) => c.url), "no admin read on a member's page").toEqual([]);
+  });
+
+  it("shows an admin and a group holder every row, with one sentence where a founder has the buttons", async () => {
+    for (const user of [admin, groupHolder]) {
+      auth.current = { user, loading: false };
+      answer(page);
+      const drawn = draw();
+      await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+      expect(screen.getByText(/Name what the village may issue/i), user.role).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Mark done" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Un-confirm" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Decline" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Undo" }), user.role).toBeNull();
+      // Told why, once on each row that has such a button for a founder, and on no other row.
+      const told = screen.getAllByText(FOUNDERS_ONLY);
+      expect(told.length, user.role).toBe(2);
+      expect(told.map((el) => el.closest("li")?.textContent?.includes("Every admin signs in")), user.role).toEqual([false, false]);
+      expect(screen.getByText(/Every admin signs in/i), user.role).toBeTruthy();
+      // The way to the place a row is fixed stays: reading and fixing are still theirs.
+      expect(screen.getAllByText("Open Data & backups").length, user.role).toBeGreaterThan(0);
+      drawn.unmount();
+    }
+  });
+
+  it("offers a founder both answers and no sentence, and sends each answer to the server", async () => {
+    auth.current = { user: founder, loading: false };
+    answer(page);
+    draw();
+    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+    const sent = () =>
+      calls.filter((c) => c.url === "/api/admin/launch/confirm").map((c) => JSON.parse(String(c.init?.body ?? "{}")));
+    // The buttons are theirs, so the sentence that stands in for them is not drawn.
+    expect(screen.queryByText(FOUNDERS_ONLY)).toBeNull();
+
+    // The first row is a manual one, so it carries the confirmation. The second may be declined.
+    fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
+    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }]));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
+    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
+  });
+});
+
+/*
+ * EACH CONTROL READS THE FACT ITS OWN SERVER DOOR READS (shared/launchFacts.ts).
+ *
+ * "Launched" was never one fact. A village migration 0112 recorded is issuing
+ * with no vote held and an open checklist, and this page read `launchedAt`
+ * alone, so it offered that village a button to open its vote and the server
+ * answered 409. Three villages below, and one where the facts cannot be read.
+ */
+describe("the page offers only what the server would allow", () => {
+  const founder = { id: "u1", role: "founder", name: "A founder" };
+  const FACTS = {
+    claimed: true,
+    issuing: false,
+    issuingSince: null,
+    voteCarried: false,
+    launchedByBallotId: null,
+    checklistFrozen: false,
+    launchedAt: null,
+    voteOpen: false,
+    openBallotId: null,
+    lastVote: null,
+    founderPowerStands: true,
+  };
+  const ready = {
+    ...STATUS,
+    readyToLaunch: true,
+    vote: { governanceOn: true, onTheRoll: 3, tooFew: null, unityPct: 100, quorumPct: 100, minElectorate: 3, why: "Every member is asked.", openBallot: null, past: [] },
+  };
+  const candidates = { "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } } };
+  const FACTS_URL = "/api/admin/launch/facts";
+
+  it("gives a village that is issuing with no vote held its plain name, its rows, and no button the server refuses", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({
+      "/api/admin/launch": { status: 200, body: ready },
+      ...candidates,
+      [FACTS_URL]: { status: 200, body: { facts: { ...FACTS, issuing: true, issuingSince: "2026-03-01T00:00:00.000Z", founderPowerStands: false }, label: "issuing-vote-not-held" } },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByTestId("start-already-issuing")).toBeTruthy());
+    expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Issuing and vote not held");
+    const told = screen.getByTestId("start-already-issuing");
+    // In the village's own word for its tokens (the generic word while no config names one), and with no promise of "yet".
+    expect(told.textContent).toContain("This village is already issuing tokens, and no launch vote has carried, so this page cannot open the vote.");
+    expect(told.textContent).not.toMatch(/\byet\b/);
+    // It does not end in a dead end: the village can change this by its own vote, and the sentence points to where.
+    expect(told.textContent).toContain("by its highest vote");
+    expect(screen.getByRole("link", { name: "Open the game mechanics" }).getAttribute("href")).toBe("/governance/how#game-mechanics");
+    // The dead button: Start the Game used to show here, and POST /launch/propose answered 409.
+    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+    // Its checklist is still open, so its rows can still be answered.
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(calls.find((c) => c.url === FACTS_URL)?.init?.headers?.Authorization, "the facts read carries the token").toBe("Bearer a-token");
+  });
+
+  it("offers the ask to a village still being built, as before", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 200, body: { facts: FACTS, label: "setup" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Setup"));
+    expect(screen.queryByTestId("start-already-issuing")).toBeNull();
+  });
+
+  it("offers no row answers once the checklist froze, because the server refuses them", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-12-30T18:00:00.000Z";
+    answer({
+      "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at } },
+      ...candidates,
+      [FACTS_URL]: {
+        status: 200,
+        body: { facts: { ...FACTS, issuing: true, founderPowerStands: false, voteCarried: true, launchedByBallotId: "bal-3", checklistFrozen: true, launchedAt: at }, label: "running" },
+      },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByText(/The village voted to start its Game on/)).toBeTruthy());
+    // The header says where a launched village stands, so the label steps back.
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
+    expect(screen.getByText(/Take one backup/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /mark done/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+  });
+
+  it("never says a village voted when it was only marked launched, and shows no label over a frozen checklist", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-02-01T12:00:00.000Z";
+    for (const marked of [
+      // A frozen checklist with no vote behind it, issuing (the label would read "Issuing and vote not held")...
+      { ...FACTS, issuing: true, founderPowerStands: false, checklistFrozen: true, launchedAt: at },
+      // ...and one that is not issuing either (the label would read "Setup", under a header that says "live").
+      { ...FACTS, checklistFrozen: true, launchedAt: at },
+    ]) {
+      answer({
+        "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at, launchedByBallotId: null } },
+        ...candidates,
+        [FACTS_URL]: { status: 200, body: { facts: marked, label: marked.issuing ? "issuing-vote-not-held" : "setup" } },
+      });
+      const page = draw();
+      await waitFor(() => expect(screen.getByText(/This village was marked launched on/)).toBeTruthy());
+      expect(screen.getByText(/No launch vote carried\./)).toBeTruthy();
+      expect(screen.queryByText(/The village voted to start its Game/)).toBeNull();
+      expect(screen.queryByTestId("journey-standing")).toBeNull();
+      page.unmount();
+    }
+  });
+
+  it("falls back to what it read before when the facts cannot be read", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 500, body: { error: "boom" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
+  });
+});

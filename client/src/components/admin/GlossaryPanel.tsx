@@ -1,8 +1,8 @@
 /**
  * Admin → Make This Yours → Identity → Words you explain (the lead, 25 Nov 2026).
  *
- * One plain sentence per word the village uses for itself (shared/glossary.ts), shown to a visitor behind a small
- * info mark beside the word. Blank draws no mark. Saved as the content section `app-glossary`, apart from the boxes
+ * One plain sentence per word the village uses for itself (shared/glossary.ts), opened from the word itself, which
+ * wears a thin dotted underline (the lead, 27 Nov 2026: tooltips on the word). Blank leaves the word plain. Saved as the content section `app-glossary`, apart from the boxes
  * above it, so saving one never writes over the other.
  */
 import { useCallback, useEffect, useState } from "react";
@@ -46,7 +46,7 @@ export default function GlossaryPanel({ password }: { password: string }) {
       </p>
       <p className="text-xs text-muted-foreground mb-3 max-w-prose">
         <Trans>
-          One plain sentence for each word a visitor may not know. It opens from a small info mark beside the word. Blank shows no mark.
+          One plain sentence for each word a visitor may not know. The word wears a thin dotted underline, and a tap or a hover on it opens the sentence. Blank leaves the word plain.
         </Trans>
       </p>
       <div className="grid gap-3">

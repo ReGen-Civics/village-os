@@ -8,6 +8,9 @@
  */
 import { DELETE, PATCH, POST, PUT, bool, date, list, long, num, person, text, inPlace } from "./types";
 
+/** The cash budget's section of the Treasury page. The same address as the search entry `page.budget` (shared/adminSearch.ts). */
+const CASH_BUDGET = "/governance/treasury#cash-budget";
+
 export const STORE_ACTS = inPlace("store", [
   // ── Tokens and the mint ──────────────────────────────────────────────────
   {
@@ -136,7 +139,7 @@ export const STORE_ACTS = inPlace("store", [
 
   // ── The cash budget ──────────────────────────────────────────────────────
   {
-    id: "store.budget.import", tab: "budgets", power: "role.pay",
+    id: "store.budget.import", path: CASH_BUDGET, parity: ["A54"], power: "role.pay",
     title: "Upload the cash budget",
     help: "Bring in the budget's lines from a sheet, with where it came from.",
     synonyms: ["budget", "upload budget", "import budget", "cash budget"],
@@ -144,7 +147,7 @@ export const STORE_ACTS = inPlace("store", [
     fields: [list("lines", "The budget's lines"), text("scope", "What it covers"), text("sourceLabel", "Where it came from"), text("sourceLink", "Link to the sheet")],
   },
   {
-    id: "store.budget.add-line", tab: "budgets", power: "role.pay",
+    id: "store.budget.add-line", path: CASH_BUDGET, parity: ["A54"], power: "role.pay",
     title: "Add a line to the cash budget",
     help: "Add one line of planned cash.",
     synonyms: ["budget line", "add line"],
@@ -152,7 +155,7 @@ export const STORE_ACTS = inPlace("store", [
     fields: [list("line", "The line")],
   },
   {
-    id: "store.budget.edit-line", tab: "budgets", power: "role.pay",
+    id: "store.budget.edit-line", path: CASH_BUDGET, parity: ["A54"], power: "role.pay",
     title: "Change a line of the cash budget",
     help: "Change one line of planned cash.",
     synonyms: ["edit budget line"],
@@ -160,14 +163,14 @@ export const STORE_ACTS = inPlace("store", [
     fields: [list("changes", "What changes")],
   },
   {
-    id: "store.budget.withdraw-line", tab: "budgets", power: "role.pay",
+    id: "store.budget.withdraw-line", path: CASH_BUDGET, parity: ["A54"], power: "role.pay",
     title: "Withdraw a line of the cash budget",
     help: "Take a line out of the budget. It can be restored.",
     synonyms: ["withdraw line", "remove budget line"],
     route: POST("/api/admin/budgets/lines/:id/withdraw"),
   },
   {
-    id: "store.budget.restore-line", tab: "budgets", power: "role.pay",
+    id: "store.budget.restore-line", path: CASH_BUDGET, parity: ["A54"], power: "role.pay",
     title: "Restore a withdrawn line of the cash budget",
     help: "Put a withdrawn line back.",
     synonyms: ["restore line"],

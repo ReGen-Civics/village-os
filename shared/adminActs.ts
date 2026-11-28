@@ -63,7 +63,7 @@
 import { proposalRefusal } from "./adminHelper";
 import { ALWAYS_A_PERSON } from "./agentAdmin";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, type AdminSearchEntry } from "./adminSearch";
-import { TAB_MODULE } from "./adminTabModules";
+import { TAB_MODULE, TAB_MODULES } from "./adminTabModules";
 import type { Capability } from "./capabilities";
 import { CAPABILITY_CONSEQUENCE } from "./draftKinds";
 import { VARIABLES_BY_KEY, type VariableDef } from "./gameVariables";
@@ -248,6 +248,12 @@ export function actModule(a: Pick<AdminAct, "module" | "tab">): string | undefin
   return a.module ?? (a.tab ? TAB_MODULE[a.tab] : undefined);
 }
 
+/** The modules any one of which shows an act: only for an act with no single module, on a tab that follows several. */
+export function actModulesAny(a: Pick<AdminAct, "module" | "modulesAny" | "tab">): readonly string[] | undefined {
+  if (actModule(a)) return undefined;
+  return a.modulesAny ?? (a.tab ? TAB_MODULES[a.tab] : undefined);
+}
+
 /**
  * An act as a search entry: words and an address. The key it names is the one its door hands the gate, so a
  * search never offers a control whose route would refuse the person. A door that asks only for an admin names none.
@@ -257,6 +263,7 @@ export function actSearchEntry(a: AdminAct): AdminSearchEntry {
   const shipped = SHIPPED.get(a.id);
   if (shipped) return shipped;
   const module = actModule(a);
+  const modulesAny = actModulesAny(a);
   return {
     id: a.id,
     kind: a.kind,
@@ -267,6 +274,7 @@ export function actSearchEntry(a: AdminAct): AdminSearchEntry {
     ...(a.path ? { path: a.path } : {}),
     ...(isCapability(a.power) ? { capability: a.power } : {}),
     ...(module ? { module } : {}),
+    ...(modulesAny ? { modulesAny } : {}),
   };
 }
 

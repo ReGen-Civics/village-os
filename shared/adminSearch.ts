@@ -66,6 +66,8 @@ export interface AdminSearchEntry {
   capability?: Capability;
   /** The module it needs on. Absent: always there. */
   module?: string;
+  /** Modules any ONE of which shows it: a tab that answers for more than one (shared/adminTabModules.ts). */
+  modulesAny?: readonly string[];
 }
 
 // ── Pages: synonyms for the Admin tabs ─────────────────────────────────────
@@ -77,7 +79,6 @@ export interface AdminSearchEntry {
 
 export const TAB_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
   "comms-settings": ["mail settings", "email settings", "comms settings", "email", "mail", "inbox", "sender", "send test", "test email", "resend", "domain", "postal address", "pause email"],
-  "email-settings": ["mail settings", "email settings"],
   "comms-letters": ["letter", "newsletter", "announcement", "broadcast", "write to everyone", "send a letter"],
   "comms-journeys": ["journey", "automation", "drip", "sequence", "reminders", "welcome emails"],
   "comms-words": ["email words", "template", "subject line", "mail words"],
@@ -85,9 +86,8 @@ export const TAB_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
   "comms-sent": ["sent mail", "bounced", "bounce", "delivery", "email log", "did it send"],
   "comms-overview": ["mail overview", "email overview", "queue", "run now"],
   submissions: ["forms", "requests", "applications", "visit request", "wish to join", "form submissions"],
-  "quest-claims": ["witness", "claims", "finished quests"],
-  "forum-moderation": ["forum reports", "moderation", "flagged posts", "reported post"],
-  "message-reports": ["reported message", "flagged message"],
+  // One queue since 27 Nov 2026: the words both old tabs were found by.
+  reports: ["forum reports", "moderation", "flagged posts", "reported post", "message reports", "reported message", "flagged message"],
   failures: ["what is failing", "errors", "failed", "broken", "retry"],
   players: ["members", "people", "players", "access", "make admin", "member list"],
   "org-chart": ["roles", "circles", "seats", "appoint", "role pay", "holders"],
@@ -118,13 +118,19 @@ export const TAB_SYNONYMS: Readonly<Record<string, readonly string[]>> = {
  */
 export const TAB_FIRST_CONTROL: Readonly<Record<string, string>> = {
   "comms-settings": "comms.test-email",
-  "email-settings": "comms.test-email",
 };
 
 // ── Controls: the buttons and fields a page lands on ───────────────────────
 
 /** The prefix every mail checklist control's id carries (`comms.<SetupKey>`). */
 export const COMMS_SETTING_PREFIX = "comms.";
+
+/**
+ * The visit program editor, on the Visit page inside Pages. The one editor of
+ * that document since 27 Nov 2026 (it had a tab of its own, `visit-config`,
+ * whose address now lands here: client/src/components/admin/adminTabAliases.ts).
+ */
+export const VISIT_PROGRAM_SETTING = "visit.program";
 
 export const CONTROL_ENTRIES: readonly AdminSearchEntry[] = [
   {
@@ -212,6 +218,12 @@ export const CONTROL_ENTRIES: readonly AdminSearchEntry[] = [
     synonyms: ["rehearsal", "preview mail", "test inbox"],
   },
   {
+    id: VISIT_PROGRAM_SETTING, kind: "control", tab: "pages",
+    title: "Visit program",
+    help: "How a visit works, in this village's words: the ways to visit and the logistics.",
+    synonyms: ["visit", "ways to visit", "visit types", "logistics", "visit page"],
+  },
+  {
     id: "season.timezone", kind: "control", tab: "season",
     title: "The village's timezone",
     help: "The timezone the village's days, moons and reminders run on.",
@@ -236,6 +248,8 @@ export const CONTROL_ENTRIES: readonly AdminSearchEntry[] = [
 export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
   { id: "page.modules", kind: "outside", path: "/modules", title: "Module library", help: "The parts of the village, and which are on.", synonyms: ["modules", "features", "turn on"] },
   { id: "page.review", kind: "outside", path: "/review", title: "Review queue", help: "Changes waiting for a steward to look at them.", synonyms: ["review", "queue", "structure review"] },
+  // Quest claims was an Admin tab holding one link (folded 27 Nov 2026). Its name still finds the work.
+  { id: "page.quest-claims", kind: "outside", path: "/admin/review?kind=claim", title: "Quest claims", help: "Finished quests waiting for a witness, on the review list.", synonyms: ["witness", "claims", "finished quests", "finished work"] },
   { id: "page.approvals", kind: "outside", path: "/governance/work#approvals", title: "Approvals", help: "Things waiting for your yes, in Your work.", synonyms: ["approve", "approval inbox"] },
   { id: "page.proposals", kind: "outside", path: "/admin/proposals", title: "What your agent proposed", help: "Changes an agent proposed, waiting for a person to accept.", synonyms: ["agent proposals", "proposed changes", "accept"] },
   { id: "page.mint", kind: "outside", path: "/admin/mint", title: "Mint desk", help: "Issue tokens, with every guard the mint has.", synonyms: ["mint", "issue tokens"], capability: "token.mint" },

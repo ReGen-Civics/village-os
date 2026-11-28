@@ -336,6 +336,15 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
           }}
           className={`fixed inset-x-0 top-0 z-[80] flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-none sm:inset-x-auto sm:left-1/2 sm:top-[10vh] sm:max-h-[75vh] sm:w-[40rem] sm:max-w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:rounded-2xl ${look.panel}`}
         >
+          {/*
+            * A SOLID SHEET UNDER EVERYTHING, in every mode. A paper may draw this dialog as a weathered page, with its
+            * foxing and its stains (client/src/seaChart.css), and a stain under the search field read as the page
+            * showing through (joint QA, round 1). This layer paints the panel's own colour over the paper's
+            * background and under every word: it sits at -z-10 inside the dialog's own stacking context, so the
+            * torn edge still holds and nothing of the page or the paper's art shows behind the field. In dark mode
+            * the panel's colour is the dialogue sand (index.css, "Dialogue is sand"), unchanged.
+            */}
+          <div aria-hidden="true" data-find-solid="" className="pointer-events-none absolute inset-0 -z-10 bg-popover" />
           <DialogPrimitive.Title className="sr-only"><Trans context="find anything: the dialog's name">Find anything</Trans></DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
             {people

@@ -5,15 +5,18 @@
  *
  * Adding an act adds a line. Nothing is ever taken off: an act that goes away keeps its line and gets a redirect.
  * Dials are not listed, because a dial's id is its key and the dial catalogue already keeps keys stable.
+ *
+ * BEFORE THIS LIST FIRST SHIPPED, six tabs were folded into other places (27 Nov 2026: quest claims, the two report
+ * queues, the visit program, the pricing desk, the cash budget). Their `tab.` ids never shipped, so they are not
+ * here. Their old addresses still land (client/src/components/admin/adminTabAliases.ts), and their work is found
+ * under `tab.reports`, `visit.program`, `page.quest-claims`, `page.pricing` and `page.budget`.
  */
 export const FROZEN_ACT_IDS: readonly string[] = [
   "tab.home",
   "tab.submissions",
   "tab.portal-visitors",
   "tab.feedback",
-  "tab.quest-claims",
-  "tab.forum-moderation",
-  "tab.message-reports",
+  "tab.reports",
   "tab.drafts",
   "tab.brain",
   "tab.failures",
@@ -37,7 +40,6 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "tab.work-with-us",
   "tab.faqs",
   "tab.milestones",
-  "tab.visit-config",
   "tab.investor-summary",
   "tab.modules",
   "tab.needs-admin",
@@ -60,8 +62,6 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "tab.tokens",
   "tab.ledger",
   "tab.cash-payouts",
-  "tab.pricing-desk",
-  "tab.budgets",
   "tab.cycles",
   "tab.products",
   "tab.resources-admin",
@@ -81,6 +81,7 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "tab.integrations",
   "page.modules",
   "page.review",
+  "page.quest-claims",
   "page.approvals",
   "page.proposals",
   "page.mint",
@@ -108,6 +109,7 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "comms.who-runs-comms",
   "comms.investor-words",
   "comms.rehearsal-inbox",
+  "visit.program",
   "season.timezone",
   "project.fiatCurrency",
   "exit.closing",

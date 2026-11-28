@@ -245,8 +245,10 @@ the whole frozen roll was notified when the ballot opened, the document named th
 - `client/src/components/ProfileJourney.tsx`. Held-capability chips, the three `firsts`, and the stage
   history with what each crossing unlocked. It runs raw capability keys through `capabilityLabel` before
   printing them.
-- `client/src/components/GameDashboard.tsx`. Reads `lastAdvance` off `/api/game/me` and celebrates a
-  crossing once, keyed on `stage:<toStage>:<at>`.
+- `client/src/components/profileDash/useClaimedAdvance.ts`. The profile reads `lastAdvance` off its one
+  `/api/game/me` read and celebrates a crossing once, keyed on `stage:<toStage>:<at>`. The standalone
+  `client/src/components/GameDashboard.tsx` keeps the same claim, and since 27 Nov 2026 the profile no
+  longer draws it (My work carries a door to Quests instead).
 - `client/src/pages/Admin.tsx`. The Players roster with the per-member "Grant" select.
 - `client/src/components/admin/GameRolesTab.tsx`. `GameRolesTab` for appointments, moved out of
   `Admin.tsx` unchanged.

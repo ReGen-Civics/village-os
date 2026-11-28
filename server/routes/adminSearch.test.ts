@@ -144,5 +144,9 @@ describe("visibleEntries", () => {
     const e: AdminSearchEntry = { id: "x", kind: "control", tab: "events-admin", title: "X", help: "", synonyms: [], module: "events" };
     expect(await visibleEntries([e], async () => true, () => "off")).toEqual([]);
     expect(await visibleEntries([e], async () => true, () => "public")).toEqual([e]);
+    // A tab that follows two modules shows while either is on, and hides only when both are off.
+    const two = { ...e, module: undefined, modulesAny: ["forum", "messaging"] };
+    expect(await visibleEntries([two], async () => true, () => "off")).toEqual([]);
+    expect(await visibleEntries([two], async () => true, (id) => (id === "messaging" ? "members" : "off"))).toEqual([two]);
   });
 });

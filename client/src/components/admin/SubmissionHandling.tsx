@@ -151,7 +151,7 @@ export default function SubmissionHandling({
   return (
     <div className="border-t border-gray-100 px-4 py-3">
       <div className="flex flex-wrap gap-2">
-        <button type="button" className={`${TAP} bg-teal-deep text-white`} disabled={busy} onClick={() => holdUndo("Marking this done.", () => { void finish("done"); })}><Trans context="SubmissionHandling, button">Done</Trans></button>
+        <button type="button" className={`${TAP} bg-teal-deep text-white`} disabled={busy} onClick={() => holdUndo("Marking this done.", () => { void finish("done"); }, `submission:${submission.id}`)}><Trans context="SubmissionHandling, button">Done</Trans></button>
         <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} aria-expanded={mode === "remove"} disabled={busy} onClick={() => { setMode(mode === "remove" ? null : "remove"); setReason("already_done"); }}><Trans context="SubmissionHandling, button">Remove</Trans></button>
         <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} aria-expanded={mode === "redirect"} disabled={busy} onClick={() => { setMode(mode === "redirect" ? null : "redirect"); setReason("better_for_someone_else"); }}><Trans context="SubmissionHandling, button">Redirect</Trans></button>
         <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} disabled={busy} onClick={() => { snoozeUntil(submission.id, tomorrow()); onChanged(); }}><Trans context="SubmissionHandling, button">Tomorrow</Trans></button>
@@ -208,7 +208,7 @@ export default function SubmissionHandling({
           </label>
           {problem && <p role="status" className="mt-2 text-sm text-gray-900">{problem}</p>}
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className={`${TAP} bg-teal-deep text-white disabled:opacity-40`} disabled={busy || !ready} onClick={() => holdUndo(mode === "remove" ? "Removing this request." : "Handing this on.", () => { void finish(mode); })}>
+            <button type="button" className={`${TAP} bg-teal-deep text-white disabled:opacity-40`} disabled={busy || !ready} onClick={() => holdUndo(mode === "remove" ? "Removing this request." : "Handing this on.", () => { void finish(mode); }, `submission:${submission.id}`)}>
               {mode === "remove" ? "Remove it" : "Hand it on"}
             </button>
             <button type="button" className={`${TAP} border border-gray-300 bg-white text-gray-900`} onClick={() => setMode(null)}><Trans context="SubmissionHandling, button">Cancel</Trans></button>

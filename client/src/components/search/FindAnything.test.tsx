@@ -356,4 +356,17 @@ describe("Find anything", () => {
     // One line at 320px: the words truncate, never wrap.
     expect(row.querySelector(".truncate")?.textContent).toBe("Find a page, a role, a quest");
   });
+
+  it("lays a solid sheet of the panel's own colour under the dialog's words, so no paper or page shows behind the field", async () => {
+    render(<FindAnything />);
+    await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
+    const d = await dialog();
+    const solid = d.querySelector("[data-find-solid]");
+    expect(solid).toBeTruthy();
+    expect(solid!.className).toContain("absolute inset-0 -z-10 bg-popover");
+    // Under the field, first in the dialog, and never in the way of a click or a screen reader.
+    expect(solid!.getAttribute("aria-hidden")).toBe("true");
+    expect(solid!.className).toContain("pointer-events-none");
+    expect(d.firstElementChild).toBe(solid);
+  });
 });

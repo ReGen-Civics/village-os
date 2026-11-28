@@ -66,6 +66,7 @@ export async function visibleEntries(
   const out: AdminSearchEntry[] = [];
   for (const e of entries) {
     if (e.module && lifecycle(e.module) === "off") continue;
+    if (e.modulesAny && e.modulesAny.every((id) => lifecycle(id) === "off")) continue;
     if (e.capability) {
       if (!asked.has(e.capability)) asked.set(e.capability, await may(e.capability));
       if (!asked.get(e.capability)) continue;
