@@ -10,3 +10,8 @@ msgstr ""
 msgctxt "Admin, h2"
 msgid "Reports"
 msgstr "Reportes"
+
+# needs-native-review: the Quest claims tab is folded; the queue is on the review list, 28 Nov 2026
+#: client/src/components/journey/EconomicsView.tsx
+msgid "Submitted work waiting for the human gate. Act on the review list, under Finished work to witness."
+msgstr "Trabajo entregado que espera la revisión de una persona. Atiéndalo en la lista de revisión, en Trabajo terminado por atestiguar."

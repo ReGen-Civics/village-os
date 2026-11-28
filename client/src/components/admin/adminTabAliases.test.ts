@@ -55,8 +55,20 @@ describe("an old admin address lands on its control", () => {
     expect(adminSearchHref(control)).toBe(`/admin${landing("/admin?tab=visit-config").search}`);
   });
 
-  it("org opens the org chart: a role-access notice already sent still lands", () => {
-    expect(landing("/admin?tab=org")).toEqual({ tab: "org-chart", search: "?tab=org-chart" });
+  it("org goes to the season page's plan, where the access task is done: a role-access notice already sent still lands", () => {
+    expect(landing("/admin?tab=org")).toEqual({ outside: "/season#plan" });
+  });
+
+  it("content opens the Confidentiality agreement tab: the notice that a role waits on the agreement still lands", () => {
+    expect(landing("/admin?tab=content")).toEqual({ tab: "confidentiality", search: "?tab=confidentiality" });
+  });
+
+  it("a key that is no tab and no alias is left alone, a word every object carries among them", () => {
+    for (const key of ["constructor", "toString", "hasOwnProperty", "__proto__"]) {
+      expect(settledSearch(`?tab=${key}`), key).toBeNull();
+      expect(leftAdminTarget(key), key).toBeNull();
+      expect(tabLanding(key), key).toEqual({ tab: key });
+    }
   });
 
   it("quest-claims lands on finished work in the review list", () => {
@@ -143,9 +155,7 @@ describe("every admin tab link the product ships lands", () => {
    * that added this test. Fixing one means deleting its line here: the case
    * below fails while a line names a link that has started to land.
    */
-  const KNOWN_BROKEN: Record<string, string> = {
-    content: "server/lib/seatApplicationCloser.ts tells admins the confidentiality agreement is unwritten and links to a tab that never existed. Reported 27 Nov 2026.",
-  };
+  const KNOWN_BROKEN: Record<string, string> = {};
 
   const links = new Map<string, string[]>();
   for (const dir of ["server", "shared", "client/src"]) {
@@ -159,7 +169,7 @@ describe("every admin tab link the product ships lands", () => {
   it("finds the links (a scan that found none would pass everything)", () => {
     expect(links.size).toBeGreaterThan(20);
     expect(links.has("forum-moderation")).toBe(true);
-    expect(links.has("org-chart")).toBe(true);
+    expect(links.has("confidentiality")).toBe(true);
   });
 
   it("each names a tab in the menu, or an alias that lands", () => {
@@ -172,8 +182,13 @@ describe("every admin tab link the product ships lands", () => {
     }
   });
 
-  it("the role-access notice names the org chart's real key", () => {
-    expect(ACCESS_TASKS_LINK).toBe("/admin?tab=org-chart");
-    expect(NAV_KEYS.has(new URLSearchParams(ACCESS_TASKS_LINK.split("?")[1]).get("tab")!)).toBe(true);
+  it("the role-access notice lands where the access task is done: the season page's plan, which draws the tasks", () => {
+    expect(ACCESS_TASKS_LINK).toBe("/season#plan");
+    const read = (file: string) => fs.readFileSync(path.join(ROOT, file), "utf8");
+    // /season is a page the app draws, its plan section carries the anchor, and the plan draws the access tasks.
+    expect(read("client/src/App.tsx")).toContain('<Route path="/season" component={Season} />');
+    expect(read("client/src/pages/Season.tsx")).toContain("<YourPlan");
+    expect(read("client/src/components/season/YourPlan.tsx")).toContain("<RoleCarryOn />");
+    expect(read("client/src/components/seasonPlans/RoleCarryOn.tsx")).toContain("/api/role-access-tasks");
   });
 });

@@ -36,8 +36,9 @@ export const MOVED_TABS: Readonly<Record<string, MovedTab>> = {
   "message-reports": { tab: "reports" },
   // One visit program editor, the one inside Pages (cut C6, 27 Nov 2026).
   "visit-config": { tab: "pages", params: { setting: VISIT_PROGRAM_SETTING } },
-  // Role-access notices were sent to `?tab=org`, a tab that never existed.
-  org: { tab: "org-chart" },
+  // The notice that a role waits on the confidentiality agreement was sent to `?tab=content`, a panel with nothing
+  // in it. The agreement is written on the Confidentiality agreement tab.
+  content: { tab: "confidentiality" },
 };
 
 export const LEFT_ADMIN: Readonly<Record<string, string>> = {
@@ -46,16 +47,24 @@ export const LEFT_ADMIN: Readonly<Record<string, string>> = {
   // One desk each, on the governance Treasury (cut C5).
   "pricing-desk": treasuryHref(TREASURY_SECTIONS.prices),
   budgets: treasuryHref(TREASURY_SECTIONS.budget),
+  // Role-access notices were sent to `?tab=org`, a tab that never existed. The task is done on the season page's
+  // plan, by the holder of the granting role, who is often not an admin (server/lib/roleAccess.ts).
+  org: "/season#plan",
 };
+
+/** A key's own entry only: `constructor` and the like are no tab, and must never read as an alias. */
+function own<T>(table: Readonly<Record<string, T>>, key: string): T | undefined {
+  return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined;
+}
 
 /** Where a tab key lands inside Admin: itself, unless it moved. */
 export function tabLanding(key: string): MovedTab {
-  return MOVED_TABS[key] ?? { tab: key };
+  return own(MOVED_TABS, key) ?? { tab: key };
 }
 
 /** The page outside Admin an old tab key lands on, or null when the key is still Admin's. */
 export function leftAdminTarget(key: string): string | null {
-  return LEFT_ADMIN[key] ?? null;
+  return own(LEFT_ADMIN, key) ?? null;
 }
 
 /**
@@ -64,7 +73,7 @@ export function leftAdminTarget(key: string): string | null {
  */
 export function settledSearch(search: string): string | null {
   const p = new URLSearchParams(search);
-  const moved = MOVED_TABS[p.get("tab") ?? ""];
+  const moved = own(MOVED_TABS, p.get("tab") ?? "");
   if (!moved) return null;
   p.set("tab", moved.tab);
   for (const [k, v] of Object.entries(moved.params ?? {})) p.set(k, v);
