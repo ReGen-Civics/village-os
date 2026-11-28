@@ -15,6 +15,7 @@
  */
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import { forgetLaunchReads } from "@/lib/launchReads";
 import VillageAnswers from "./VillageAnswers";
 
 const item = (id: string, state: string, over: Record<string, unknown> = {}) => ({
@@ -42,6 +43,8 @@ const launchAnswering = (items: unknown[], ok = true) =>
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.clearAllMocks();
+  // One read of the checklist is shared for a few seconds (lib/launchReads.ts). Each case here is its own page load.
+  forgetLaunchReads();
 });
 
 describe("VillageAnswers", () => {

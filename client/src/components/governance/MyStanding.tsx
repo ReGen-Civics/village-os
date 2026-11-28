@@ -56,11 +56,7 @@ export default function MyStanding({ standing }: { standing: Standing }) {
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
         <Trans context="MyStanding, h3"><Scale className="w-4 h-4 text-notice" aria-hidden="true" />
-        Your weight
-        <InfoTip
-          tip="Weight is how much a vote counts. It is read when a ballot opens and frozen there, so a later change never rewrites a vote in flight."
-          label="What voting weight is"
-        /></Trans>
+        <InfoTip tip="Weight is how much a vote counts. It is read when a ballot opens and frozen there, so a later change never rewrites a vote in flight.">Your weight</InfoTip></Trans>
       </h3>
 
       {!standing.eligible ? (

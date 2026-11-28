@@ -22,6 +22,7 @@ export default function NavFolder({
   listClassName,
   asListItem = false,
   gutter = null,
+  badge = null,
 }: {
   /** The folder's name, already in the reader's language. */
   label: string;
@@ -37,6 +38,8 @@ export default function NavFolder({
   asListItem?: boolean;
   /** The empty icon slot the surface's links have, so the folder's name starts where theirs do (QA, 27 Nov 2026). */
   gutter?: ReactNode;
+  /** Shown beside the name while the folder is shut: a count or a firefly for what is inside (MenuRows.tsx). */
+  badge?: ReactNode;
 }) {
   const listId = useId();
   const Root = asListItem ? "li" : "div";
@@ -52,7 +55,10 @@ export default function NavFolder({
       className={`${rowClassName} ${holdsHere ? "font-semibold" : ""}`}
     >
       {gutter}
-      <span className="min-w-0 flex-1 text-left">{label}</span>
+      <span className="min-w-0 flex-1 text-left">
+        {label}
+        {open ? null : badge}
+      </span>
       <ChevronDown aria-hidden="true" className={`size-3.5 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
     </button>
   );

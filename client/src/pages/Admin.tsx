@@ -97,6 +97,7 @@ import EventsAdminPanel from "@/components/EventsAdminPanel";
 import ResourcesAdminPanel from "@/components/power/ResourcesAdminPanel";
 import { CrowdpoolAdminTab, ForumCategoriesEditor, ToolsCategoriesEditor } from "@/components/admin/ModuleConfigPanels";
 import VillageAnswers from "@/components/admin/VillageAnswers";
+import { useLaunchBanner } from "@/components/admin/launchBanner";
 import VillageCurrencyField from "@/components/admin/VillageCurrencyField";
 import { BadgeDefinitionRow } from "@/components/admin/BadgeMultipliersEditor";
 import SeasonTimezoneField from "@/components/admin/SeasonTimezoneField";
@@ -7784,33 +7785,21 @@ function FeedbackAdminTab({ password }: { password: string }) { const { t } = us
 }
 
 /**
- * S64: a persistent strip above the admin header, gone the day the village
- * is marked launched. It reads the same /api/admin/launch the journey page
- * renders — one registry, no second opinion about what remains.
+ * S64: a persistent strip above the admin header, gone the day the launch
+ * checklist becomes a record. Its rule and words are components/admin/launchBanner.ts,
+ * which reads the launch facts and shares the journey's one read of the checklist.
  */
 function LaunchBanner({ password }: { password: string }) {
-  const [status, setStatus] = useState<any>(null);
-  useEffect(() => {
-    fetch(`${API_BASE}/admin/launch`, { headers: authHeaders(password) })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setStatus)
-      .catch(() => {});
-  }, [password]);
-
-  if (!status || status.launchedAt) return null;
-  // What is left, as the journey page says it. A "done of total" count here was a score (R55).
-  const recommended = Number(status.recommendedOpen ?? 0);
-  const blocking = `${status.blockingOpen} blocking item${status.blockingOpen === 1 ? "" : "s"} open`;
-  const short = status.blockingOpen > 0 ? `Launch · ${status.blockingOpen} open` : "Launch · nothing blocking";
-  const full = `Journey to Launch: ${status.blockingOpen > 0 ? blocking : "nothing blocking, ready when a founder asks the village"} · ${recommended} recommended remaining`;
+  const lines = useLaunchBanner(password);
+  if (!lines) return null;
   return (
     <a
       href="/journey-to-launch"
       className="flex items-center gap-2 bg-amber-400 px-3 py-2 text-sm font-medium text-teal-950 hover:bg-amber-300 sm:px-6"
     >
       <span className="min-w-0 flex-1 truncate">
-        <span className="sm:hidden">{short}</span>
-        <span className="hidden sm:inline">{full}</span>
+        <span className="sm:hidden">{lines.short}</span>
+        <span className="hidden sm:inline">{lines.full}</span>
       </span>
       <span className="shrink-0" aria-hidden="true">→</span>
     </a>

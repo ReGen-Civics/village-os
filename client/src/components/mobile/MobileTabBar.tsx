@@ -32,7 +32,10 @@ import { useGameConfig } from "@/lib/gameApi";
 import { usePathFields } from "@/hooks/usePathWords";
 import { GAME_CONFIG } from "@shared/gameConfig";
 import { routeIcon, useRouteIcons } from "@/config/routeIcons";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
+
+// The waiting-on-you dot on More, for a member (nav/WaitingCount.tsx, its own chunk).
+const WaitingCount = lazy(() => import("@/components/nav/WaitingCount"));
 
 /** The current route with query and trailing slash removed. */
 export function normalisePath(location: string): string {
@@ -340,11 +343,13 @@ export default function MobileTabBar({ inMenu = false }: { inMenu?: boolean } = 
               key={slot.label}
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(slot.event!))}
-              aria-label={slot.label}
+              // More is named by its visible word, so the waiting dot's hidden words join its name (the menu's QA, round 2).
+              aria-label={opensMenu ? undefined : slot.label}
               {...(opensMenu ? { "aria-expanded": menuOpen, "aria-controls": "mobile-menu", "aria-current": moreLit ? ("true" as const) : undefined } : {})}
               className={cls}
             >
               {inner}
+              {opensMenu && user && !newcomer ? <Suspense fallback={null}><WaitingCount who={String(user.id)} variant="dot" at="right-2 top-1" /></Suspense> : null}
             </button>
           );
         })}

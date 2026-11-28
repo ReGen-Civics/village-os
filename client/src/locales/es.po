@@ -834,9 +834,9 @@ msgstr "Las Sesiones en vivo están desactivadas, así que la objeción espera e
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/Events.tsx
-msgctxt "Events, label"
-msgid "How the seat fee works"
-msgstr "Cómo funciona la cuota del puesto"
+#~ msgctxt "Events, label"
+#~ msgid "How the seat fee works"
+#~ msgstr "Cómo funciona la cuota del puesto"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Your draft holds three. Take one off to draft another."
@@ -1515,9 +1515,9 @@ msgstr "Misiones"
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: ballot.myWeight
 #: client/src/components/governance/VoteWidget.tsx
-msgctxt "VoteWidget, span"
-msgid "weighs {0}<0/>"
-msgstr "pesa {0}<0/>"
+#~ msgctxt "VoteWidget, span"
+#~ msgid "weighs {0}<0/>"
+#~ msgstr "pesa {0}<0/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/CaptureForm.tsx
@@ -2773,9 +2773,9 @@ msgstr "Dificultad:"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/VoterRoll.tsx
-msgctxt "VoterRoll, h3"
-msgid "<0/>Who may vote<1/>"
-msgstr "<0/>Quién puede votar<1/>"
+#~ msgctxt "VoterRoll, h3"
+#~ msgid "<0/>Who may vote<1/>"
+#~ msgstr "<0/>Quién puede votar<1/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/HyphaModulePanel.tsx
@@ -2813,9 +2813,9 @@ msgstr "Puesto"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/VotingWeightsPanel.tsx
-msgctxt "VotingWeightsPanel, label"
-msgid "What the weight mode is"
-msgstr "Cuál es el modo de peso"
+#~ msgctxt "VotingWeightsPanel, label"
+#~ msgid "What the weight mode is"
+#~ msgstr "Cuál es el modo de peso"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/HiddenMap.tsx
@@ -5712,9 +5712,9 @@ msgstr "Todavía no hay conversaciones"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/WeightRecord.tsx
-msgctxt "WeightRecord, h3"
-msgid "<0/>The weight record<1/>"
-msgstr "<0/>El registro del peso<1/>"
+#~ msgctxt "WeightRecord, h3"
+#~ msgid "<0/>The weight record<1/>"
+#~ msgstr "<0/>El registro del peso<1/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: s.skipIf.join("; ")
@@ -6472,9 +6472,9 @@ msgstr "Aldeas que quieren responder las preguntas de dinero antes de que alguie
 #. placeholder {0}: ballot.electorateCount
 #. placeholder {1}: weightText(ballot.totalWeight)
 #: client/src/pages/Decision.tsx
-msgctxt "Decision, span"
-msgid "{0} on the roll, {1} weight between them<0/>"
-msgstr "{0} en la lista, {1} de peso entre todos<0/>"
+#~ msgctxt "Decision, span"
+#~ msgid "{0} on the roll, {1} weight between them<0/>"
+#~ msgstr "{0} en la lista, {1} de peso entre todos<0/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Treasury.tsx
@@ -11091,6 +11091,12 @@ msgctxt "SetupGame, aria-label"
 msgid "Forest layers"
 msgstr "Capas del bosque"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/modules/PoolStatement.tsx
+msgctxt "PoolStatement, h2"
+msgid "<0>The builders’ pool this cycle</0>"
+msgstr "<0>El fondo de constructores en este ciclo</0>"
+
 #: client/src/components/admin/QuestSafetyEditor.tsx
 #~ msgctxt "admin quest safety"
 #~ msgid "Physical work on site"
@@ -12619,9 +12625,9 @@ msgstr "Historial"
 
 # needs-native-review: fold of Game Mechanics into How we work together, QA round 1, 27 Nov 2026
 #: client/src/pages/GameMechanics.tsx
-msgctxt "GameMechanics, aria-label"
-msgid "Where the platform enforces this law"
-msgstr "Dónde hace cumplir la plataforma esta ley"
+#~ msgctxt "GameMechanics, aria-label"
+#~ msgid "Where the platform enforces this law"
+#~ msgstr "Dónde hace cumplir la plataforma esta ley"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with this role"
@@ -13561,9 +13567,9 @@ msgstr "Meta de la temporada"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/GlossaryTip.tsx
-msgctxt "glossary tip: the info mark beside a word the village explains"
-msgid "What \"{word}\" means"
-msgstr "Qué significa \"{word}\""
+#~ msgctxt "glossary tip: the info mark beside a word the village explains"
+#~ msgid "What \"{word}\" means"
+#~ msgstr "Qué significa \"{word}\""
 
 # needs-native-review: the neutral village welcome, 26 Nov 2026
 #: client/src/pages/VillageWelcome.tsx
@@ -13638,9 +13644,9 @@ msgid "nights"
 msgstr "noches"
 
 #: client/src/pages/GratitudeWall.tsx
-msgctxt "thanks composer: tooltip label"
-msgid "How the allowance works"
-msgstr "Cómo funciona la asignación"
+#~ msgctxt "thanks composer: tooltip label"
+#~ msgid "How the allowance works"
+#~ msgstr "Cómo funciona la asignación"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/openProposal/decideWords.ts
@@ -14036,6 +14042,14 @@ msgctxt "live sessions: placeLineFallback"
 msgid "Take a moment to feel where you are."
 msgstr "Tómese un momento para sentir dónde está."
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#. placeholder {0}: ballot.electorateCount
+#. placeholder {1}: weightText(ballot.totalWeight)
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, span"
+msgid "{0} on the roll, {1} <0>weight</0> between them"
+msgstr "{0} en la lista, {1} de <0>peso</0> entre todos"
+
 # needs-native-review: deciding on /admin/review, 25 Nov 2026
 #: client/src/components/reviewInbox/ConflictCard.tsx
 msgctxt "review inbox: a conflict card"
@@ -14409,6 +14423,12 @@ msgctxt "QuestActions, Link"
 msgid "Sign in to take this Quest"
 msgstr "Inicie sesión para tomar esta misión"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decisions.tsx
+msgctxt "Decisions, h3"
+msgid "<0/><1>How this works</1>"
+msgstr "<0/><1>Cómo funciona</1>"
+
 # needs-native-review: role card rows and the module builder's steps, 26 Nov 2026
 #: client/src/components/power/cardViewWords.ts
 msgctxt "role card rows: a label"
@@ -14445,6 +14465,12 @@ msgstr "Solicitud temprana, el rol aún no abría"
 msgctxt "pay page"
 msgid "No amount yet"
 msgstr "Todavía sin monto"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/roleDraft/ArchetypeStep.tsx
+msgctxt "roles page archetypes"
+msgid "Choose the <0>root</0> you grow from"
+msgstr "Elige la <0>raíz</0> de la que creces"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/LandTab.tsx
@@ -15534,6 +15560,12 @@ msgctxt "moon recap: MOON_WORDS: askSera"
 msgid "Ask Sera"
 msgstr "Preguntar a Sera"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team section lede"
+msgid "We're forming the founding roles who will hold critical <0>domains</0> from foundation building through to completion."
+msgstr "Estamos formando los roles fundadores que sostendrán los <0>dominios</0> esenciales, desde la construcción de los cimientos hasta el final."
+
 #. placeholder {0}: r.name
 #: client/src/components/fireflyPath/reviewExtras.ts
 #~ msgctxt "founding application review, one of several roles"
@@ -16137,6 +16169,11 @@ msgstr "Momentos clave"
 msgctxt "moon recap: LINE_BASIS_WORDS: per_moon"
 msgid "Fixed per moon"
 msgstr "Fijo por luna"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/admin/GlossaryPanel.tsx
+msgid "One plain sentence for each word a visitor may not know. The word wears a thin dotted underline, and a tap or a hover on it opens the sentence. Blank leaves the word plain."
+msgstr "Una frase sencilla para cada palabra que un visitante quizá no conozca. La palabra lleva un subrayado fino de puntos, y al tocarla o pasar el cursor por encima se abre la frase. En blanco, la palabra queda sin más."
 
 # needs-native-review: the speed cards, edit mode, 27 Nov 2026
 #: client/src/components/mobile/SpeedCards.tsx
@@ -20467,9 +20504,9 @@ msgstr "Envíe lo que se debe por transferencia bancaria y luego regístrelo aqu
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/roleCard/FoundingTeam.tsx
 #: client/src/pages/Circles.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "domain"
-msgstr "dominio"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "domain"
+#~ msgstr "dominio"
 
 # needs-native-review: Your work, the Approvals section's eyebrow, 27 Nov 2026
 #: client/src/components/governance/work/ApprovalsSection.tsx
@@ -21230,9 +21267,9 @@ msgstr "Número de WhatsApp (opcional)"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/pages/Events.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "moon"
-msgstr "luna"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "moon"
+#~ msgstr "luna"
 
 # needs-native-review: the circle card, 26 Nov 2026
 #: client/src/components/circleCard/circleWords.ts
@@ -21737,6 +21774,12 @@ msgstr "La misión que quiere hacer: lo que crearía y lo que le aporta a la ald
 msgctxt "Admin, toast"
 msgid "Added"
 msgstr "Agregado"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Quests.tsx
+msgctxt "Quests, p"
+msgid "Take a <0>Quest</0>, do the work, turn it in."
+msgstr "Tome una <0>misión</0>, haga el trabajo, entréguelo."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: dry.count
@@ -24616,9 +24659,9 @@ msgstr "Palabras cambiadas por {name}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/ObjectionPanel.tsx
-msgctxt "ObjectionPanel, h3"
-msgid "<0/>Objections<1/>"
-msgstr "<0/>Objeciones<1/>"
+#~ msgctxt "ObjectionPanel, h3"
+#~ msgid "<0/>Objections<1/>"
+#~ msgstr "<0/>Objeciones<1/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profile/PathFacts.tsx
@@ -24920,9 +24963,9 @@ msgstr "Dejarla a un lado"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/InfoTip.tsx
-msgctxt "InfoTip, aria-label"
-msgid "What is this?"
-msgstr "¿Qué es esto?"
+#~ msgctxt "InfoTip, aria-label"
+#~ msgid "What is this?"
+#~ msgstr "¿Qué es esto?"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/power/ResourcesAdminPanel.tsx
@@ -25865,9 +25908,9 @@ msgstr "Ocupado"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decision.tsx
-msgctxt "Decision, h2"
-msgid "<0/>How this serves the village's purpose<1/>"
-msgstr "<0/>Cómo sirve esto al propósito de la aldea<1/>"
+#~ msgctxt "Decision, h2"
+#~ msgid "<0/>How this serves the village's purpose<1/>"
+#~ msgstr "<0/>Cómo sirve esto al propósito de la aldea<1/>"
 
 # needs-native-review: the places fold, 26 Nov 2026
 #: client/src/pages/Places.tsx
@@ -26240,9 +26283,9 @@ msgstr "Grabación {0} de {VOICE_NOTES_MAX}"
 
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/components/CycleClock.tsx
-msgctxt "cycle clock: a village on calendar months, the day the month turns"
-msgid "Allowances<0/> refill when this calendar month turns, on {date}."
-msgstr "Las asignaciones<0/> se renuevan cuando cambia este mes del calendario, el {date}."
+#~ msgctxt "cycle clock: a village on calendar months, the day the month turns"
+#~ msgid "Allowances<0/> refill when this calendar month turns, on {date}."
+#~ msgstr "Las asignaciones<0/> se renuevan cuando cambia este mes del calendario, el {date}."
 
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/pages/OrgDraft.tsx
@@ -27763,6 +27806,12 @@ msgctxt "hidden map, logging a place"
 msgid "Which layer"
 msgstr "Qué capa"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Quests.tsx
+msgctxt "quests board: the line that names the two rewards"
+msgid "Quests pay in <0>{credits}</0> and <1>{voice}</1>."
+msgstr "Las misiones pagan en <0>{credits}</0> y <1>{voice}</1>."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor: role visibility"
@@ -28105,9 +28154,9 @@ msgstr "Enviado desde el depósito en garantía"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/pages/Quests.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "Quest"
-msgstr "Misión"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "Quest"
+#~ msgstr "Misión"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -30445,6 +30494,12 @@ msgstr "¿Qué necesita de {projectName}?"
 msgctxt "AI transcript refusal"
 msgid "The village has written down as many recordings as it may today. Try again tomorrow."
 msgstr "La aldea ya escribió todas las grabaciones que puede hoy. Inténtelo mañana."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/GratitudeWall.tsx
+msgctxt "thanks composer: the plain allowance line"
+msgid "Each cycle every member receives an <0>allowance</0> to send."
+msgstr "En cada ciclo, cada miembro recibe una <0>asignación</0> para enviar."
 
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
@@ -32907,9 +32962,9 @@ msgstr "Todas las metas"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "Formation"
-msgstr "Formación"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "Formation"
+#~ msgstr "Formación"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/budgets/BudgetEditor.tsx
@@ -34002,9 +34057,9 @@ msgstr "Días"
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/roleDraft/ArchetypeStep.tsx
 #: client/src/pages/Roles.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "root"
-msgstr "raíz"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "root"
+#~ msgstr "raíz"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/HiddenMap.tsx
@@ -34089,9 +34144,9 @@ msgstr "pesa {0}"
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/pages/Roles.tsx
-msgctxt "roles page, other ways to join: the game's door"
-msgid "Choose the root<0/> you grow from, see this season's goals, and pick the roles you play."
-msgstr "Elija la raíz<0/> de la que crece, mire las metas de esta temporada y escoja los roles que juega."
+#~ msgctxt "roles page, other ways to join: the game's door"
+#~ msgid "Choose the root<0/> you grow from, see this season's goals, and pick the roles you play."
+#~ msgstr "Elija la raíz<0/> de la que crece, mire las metas de esta temporada y escoja los roles que juega."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: view.pendingVendorDelete === 0 ? "none waiting." : `${count(view.pendingVendorDelete, "code-name")} kept, marked pending.`
@@ -34156,6 +34211,13 @@ msgstr "Cómo debería ser"
 msgctxt "about you"
 msgid "References (optional)"
 msgstr "Referencias (opcional)"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#. placeholder {0}: ballot.method
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, span"
+msgid "Decided by <0>{0}</0>"
+msgstr "Decidido por <0>{0}</0>"
 
 # needs-native-review: the circle card, 26 Nov 2026
 #: client/src/components/circleCard/circleWords.ts
@@ -36189,8 +36251,8 @@ msgid "One per line: start | end | title | workstream | what it feeds, with date
 msgstr "Uno por línea: inicio | fin | título | área de trabajo | qué alimenta, con fechas como año-mes-día. Un hito tiene una fecha, o la misma fecha dos veces; uno que comparten varios roles se dibuja como un hito compartido en la línea de tiempo del equipo. Qué alimenta, hasta 80 caracteres, se muestra al tocar la barra."
 
 #: client/src/components/admin/GlossaryPanel.tsx
-msgid "One plain sentence for each word a visitor may not know. It opens from a small info mark beside the word. Blank shows no mark."
-msgstr ""
+#~ msgid "One plain sentence for each word a visitor may not know. It opens from a small info mark beside the word. Blank shows no mark."
+#~ msgstr ""
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/rites/Door.tsx
@@ -41050,9 +41112,9 @@ msgstr "Economía de la aldea"
 
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/components/roleDraft/ArchetypeStep.tsx
-msgctxt "roles page archetypes"
-msgid "Choose the root<0/> you grow from"
-msgstr "Elige la raíz<0/> de la que creces"
+#~ msgctxt "roles page archetypes"
+#~ msgid "Choose the root<0/> you grow from"
+#~ msgstr "Elige la raíz<0/> de la que creces"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
@@ -47459,6 +47521,12 @@ msgctxt "valuation receipt"
 msgid "Medium range"
 msgstr "Rango medio"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/ObjectionPanel.tsx
+msgctxt "ObjectionPanel, h3"
+msgid "<0/><1>Objections</1>"
+msgstr "<0/><1>Objeciones</1>"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -47519,6 +47587,12 @@ msgstr "Aprobar"
 #~ msgctxt "roles page archetypes"
 #~ msgid "Choose the root you grow from"
 #~ msgstr "Elige la raíz de la que creces"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, h2"
+msgid "<0/><1>How this serves the village's purpose</1>"
+msgstr "<0/><1>Cómo sirve esto al propósito de la aldea</1>"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -47687,9 +47761,9 @@ msgstr "Retirado. Ya no se puede publicar."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/pages/GratitudeWall.tsx
-msgctxt "thanks composer: the plain allowance line"
-msgid "Each cycle every member receives an allowance to send."
-msgstr "En cada ciclo, cada miembro recibe una asignación para enviar."
+#~ msgctxt "thanks composer: the plain allowance line"
+#~ msgid "Each cycle every member receives an allowance to send."
+#~ msgstr "En cada ciclo, cada miembro recibe una asignación para enviar."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: new words, 20 Nov 2026
@@ -50431,9 +50505,9 @@ msgstr "Firmar también"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/governance/VoiceSpreadBand.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "quorum"
-msgstr "quórum"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "quorum"
+#~ msgstr "quórum"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: x.label
@@ -51948,9 +52022,9 @@ msgstr "La aldea"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/MyStanding.tsx
-msgctxt "MyStanding, h3"
-msgid "<0/>Your weight<1/>"
-msgstr "<0/>Su peso<1/>"
+#~ msgctxt "MyStanding, h3"
+#~ msgid "<0/>Your weight<1/>"
+#~ msgstr "<0/>Su peso<1/>"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/review/useSeraActs.ts
@@ -53052,9 +53126,9 @@ msgstr "Lo que es cierto en su lugar"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/CycleClock.tsx
-msgctxt "glossary: the moon's name a tip explains"
-msgid "{month} Moon"
-msgstr "Luna de {month}"
+#~ msgctxt "glossary: the moon's name a tip explains"
+#~ msgid "{month} Moon"
+#~ msgstr "Luna de {month}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/WeightRecord.tsx
@@ -53412,6 +53486,12 @@ msgstr "Este rol lo han ocupado: {0}."
 msgctxt "heading of the public canvas page"
 msgid "Our Canvas, Block by Block"
 msgstr "Nuestro lienzo, bloque por bloque"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/VoterRoll.tsx
+msgctxt "VoterRoll, h3"
+msgid "<0/><1>Who may vote</1>"
+msgstr "<0/><1>Quién puede votar</1>"
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -57519,9 +57599,9 @@ msgstr "Los miembros dicen con palabras sencillas lo que buscan, confirman las o
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/pages/Quests.tsx
-msgctxt "quests board: the line that names the two rewards"
-msgid "Quests pay in {credits}<0/> and {voice}<1/>."
-msgstr "Las misiones pagan en {credits}<0/> y {voice}<1/>."
+#~ msgctxt "quests board: the line that names the two rewards"
+#~ msgid "Quests pay in {credits}<0/> and {voice}<1/>."
+#~ msgstr "Las misiones pagan en {credits}<0/> y {voice}<1/>."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/journey/LaunchGuide.tsx
@@ -59890,9 +59970,9 @@ msgstr "Todavía no hay tipo de cambio del día para {resolved}, así que los mo
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/governance/VoiceSpreadBand.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "Voice"
-msgstr "Voz"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "Voice"
+#~ msgstr "Voz"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/EventsAdminPanel.tsx
@@ -61147,9 +61227,9 @@ msgstr "Intentar de nuevo"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Wallet.tsx
-msgctxt "Wallet, p"
-msgid "Hypha holdings<0/>"
-msgstr "Tenencias en Hypha<0/>"
+#~ msgctxt "Wallet, p"
+#~ msgid "Hypha holdings<0/>"
+#~ msgstr "Tenencias en Hypha<0/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: requireMessage === false ? " (optional)" : ""
@@ -63777,9 +63857,9 @@ msgstr "Enviamos un código de 6 dígitos a {sentTo}. Escríbalo aquí para segu
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Wallet.tsx
-msgctxt "Wallet, p"
-msgid "Buy tokens<0/>"
-msgstr "Comprar tokens<0/>"
+#~ msgctxt "Wallet, p"
+#~ msgid "Buy tokens<0/>"
+#~ msgstr "Comprar tokens<0/>"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/fireflyPath/applyWordsT.ts
@@ -65839,6 +65919,12 @@ msgstr "Soltada. El círculo escuchará su frase en la próxima revisión de acc
 msgid "For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this half in itself."
 msgstr "Para cada tipo de decisión, el lienzo pregunta quién la aprueba, a quién se consulta primero, a quién se informa y cómo se toma. Para las decisiones que maneja esta plataforma, las respuestas son reglas que ya aplica, así que llena esta mitad por sí misma."
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/MyStanding.tsx
+msgctxt "MyStanding, h3"
+msgid "<0/><1>Your weight</1>"
+msgstr "<0/><1>Su peso</1>"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor: how to write the onboarding steps"
@@ -66169,6 +66255,12 @@ msgctxt "Introductions, h2"
 msgid "My policy line"
 msgstr "Mi línea de política"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: a village on calendar months, the day the month turns"
+msgid "<0>Allowances</0> refill when this calendar month turns, on {date}."
+msgstr "<0>Las asignaciones</0> se renuevan cuando cambia este mes del calendario, el {date}."
+
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: offline"
@@ -66396,6 +66488,12 @@ msgstr "Más"
 msgctxt "landing, founding team card title"
 msgid "Founding team"
 msgstr "Equipo fundador"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Events.tsx
+msgctxt "calendar page lede"
+msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the <0>moons</0> the land turns by."
+msgstr "Elija un día para ver lo que hay. La aldea lleva dos relojes: los doce meses que todos compartimos y las <0>lunas</0> con que gira la tierra."
 
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
@@ -67350,6 +67448,13 @@ msgctxt "role card: screen reader, after a commitment"
 msgid ", set when someone takes the role"
 msgstr ", se fija cuando alguien asume el rol"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#. placeholder {0}: ballot.myWeight
+#: client/src/components/governance/VoteWidget.tsx
+msgctxt "VoteWidget, span"
+msgid "<0>weighs {0}</0>"
+msgstr "<0>pesa {0}</0>"
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Loading the conflict agreement…"
@@ -67532,6 +67637,12 @@ msgstr "El costo aproximado debe ser un número."
 msgctxt "role editor"
 msgid "Saving"
 msgstr "Guardando"
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Decision.tsx
+msgctxt "Decision, h2"
+msgid "<0/><1>What is being voted on</1>"
+msgstr "<0/><1>Qué se está votando</1>"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgentsPanel.tsx
@@ -68633,9 +68744,9 @@ msgstr "Solo se cuentan las visitas con sesión iniciada. Las visitas de un visi
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/PracticeVote.tsx
-msgctxt "PracticeVote, label"
-msgid "What a practice vote is"
-msgstr "Qué es una votación de práctica"
+#~ msgctxt "PracticeVote, label"
+#~ msgid "What a practice vote is"
+#~ msgstr "Qué es una votación de práctica"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/hiddenMap/CaptureForm.tsx
@@ -68925,9 +69036,9 @@ msgstr "{countedFrom} · {role}"
 
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/components/CycleClock.tsx
-msgctxt "cycle clock: the moon that turns and the day it turns"
-msgid "Allowances<0/> refill when the {month} Moon<1/> turns, on {date}."
-msgstr "Las asignaciones<0/> se renuevan cuando cambia la Luna de {month}<1/>, el {date}."
+#~ msgctxt "cycle clock: the moon that turns and the day it turns"
+#~ msgid "Allowances<0/> refill when the {month} Moon<1/> turns, on {date}."
+#~ msgstr "Las asignaciones<0/> se renuevan cuando cambia la Luna de {month}<1/>, el {date}."
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords3.ts
@@ -70618,9 +70729,9 @@ msgstr "Cuántas solicitudes de 'olvidé mi contraseña' puede hacer una direcci
 
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/components/roleCard/FoundingTeam.tsx
-msgctxt "founding team section lede"
-msgid "We're forming the founding roles who will hold critical domains<0/> from foundation building through to completion."
-msgstr "Estamos formando los roles fundadores que sostendrán los dominios esenciales<0/>, desde la construcción de los cimientos hasta el final."
+#~ msgctxt "founding team section lede"
+#~ msgid "We're forming the founding roles who will hold critical domains<0/> from foundation building through to completion."
+#~ msgstr "Estamos formando los roles fundadores que sostendrán los dominios esenciales<0/>, desde la construcción de los cimientos hasta el final."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: currentStageName ? ` ${memberName} is at ${currentStageName} today.` : ""
@@ -70878,9 +70989,9 @@ msgstr "Ahora no"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decision.tsx
-msgctxt "Decision, h2"
-msgid "<0/>What is being voted on<1/>"
-msgstr "<0/>Qué se está votando<1/>"
+#~ msgctxt "Decision, h2"
+#~ msgid "<0/>What is being voted on<1/>"
+#~ msgstr "<0/>Qué se está votando<1/>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/SuggestDial.tsx
@@ -71557,9 +71668,9 @@ msgstr "No se pudo completar. Recargue e inténtelo de nuevo."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Quests.tsx
-msgctxt "Quests, p"
-msgid "Take a Quest, do the work, turn it in."
-msgstr "Tome una misión, haga el trabajo, entréguelo."
+#~ msgctxt "Quests, p"
+#~ msgid "Take a Quest, do the work, turn it in."
+#~ msgstr "Tome una misión, haga el trabajo, entréguelo."
 
 # needs-native-review: village health metrics, 26 Nov 2026
 #: client/src/components/health/healthWords.ts
@@ -73673,6 +73784,11 @@ msgctxt "proposed changes: a field"
 msgid "New"
 msgstr "Nuevo"
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor"
+msgid "https://..."
+msgstr ""
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "a canvas block is loading"
@@ -74724,9 +74840,9 @@ msgstr "Propuesto el {day}"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/PoolStatement.tsx
-msgctxt "PoolStatement, h2"
-msgid "The builders’ pool this cycle <0/>"
-msgstr "El fondo de constructores en este ciclo <0/>"
+#~ msgctxt "PoolStatement, h2"
+#~ msgid "The builders’ pool this cycle <0/>"
+#~ msgstr "El fondo de constructores en este ciclo <0/>"
 
 # needs-native-review: the footer's columns are the menu's groups, 27 Nov 2026
 #: client/src/components/Layout.tsx
@@ -75987,6 +76103,12 @@ msgstr "Cuando esto se publique, un nuevo rol queda al lado de {liveName}, con e
 #~ msgid "Compare them"
 #~ msgstr ""
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Wallet.tsx
+msgctxt "Wallet, p"
+msgid "<0>Hypha holdings</0>"
+msgstr "<0>Tenencias en Hypha</0>"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: plural(a.lists.imported, "task")
 #. placeholder {1}: a.lists.importedOpen
@@ -76567,9 +76689,9 @@ msgstr "Emitido a la fecha"
 
 # needs-native-review: glossary tooltips, 25 Nov 2026
 #: client/src/components/CycleClock.tsx
-msgctxt "glossary: the word a tip explains"
-msgid "allowance"
-msgstr "asignación"
+#~ msgctxt "glossary: the word a tip explains"
+#~ msgid "allowance"
+#~ msgstr "asignación"
 
 # needs-native-review: new words, 23 Nov 2026
 #: client/src/components/ContributorRoutes.tsx
@@ -77076,9 +77198,9 @@ msgstr "Este mes tiene más pagos de los que muestra un tablero. Aquí están la
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: ballot.method
 #: client/src/pages/Decision.tsx
-msgctxt "Decision, span"
-msgid "Decided by {0}<0/>"
-msgstr "Decidido por {0}<0/>"
+#~ msgctxt "Decision, span"
+#~ msgid "Decided by {0}<0/>"
+#~ msgstr "Decidido por {0}<0/>"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/power/SeatAction.tsx
@@ -78548,9 +78670,9 @@ msgstr "Bajar esta pregunta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Decisions.tsx
-msgctxt "Decisions, h3"
-msgid "<0/>How this works<1/>"
-msgstr "<0/>Cómo funciona<1/>"
+#~ msgctxt "Decisions, h3"
+#~ msgid "<0/>How this works<1/>"
+#~ msgstr "<0/>Cómo funciona<1/>"
 
 # needs-native-review: the moon recap, 26 Nov 2026
 #: client/src/components/myMoon/moonWords.ts
@@ -85320,6 +85442,12 @@ msgctxt "role access state"
 msgid "Not needed"
 msgstr "No se necesita"
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Wallet.tsx
+msgctxt "Wallet, p"
+msgid "<0>Buy tokens</0>"
+msgstr "<0>Comprar tokens</0>"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/sessions/RhythmForm.tsx
 msgid "Optional. A name tells one of the circle's meetings from another."
@@ -86320,9 +86448,9 @@ msgstr "Un círculo liberó su lugar esta temporada. Su postulación sigue abier
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: glossary tooltips, the mark after its word, 25 Nov 2026
 #: client/src/pages/Events.tsx
-msgctxt "calendar page lede"
-msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<0/> the land turns by."
-msgstr "Elija un día para ver lo que hay. La aldea lleva dos relojes: los doce meses que todos compartimos y las lunas<0/> con que gira la tierra."
+#~ msgctxt "calendar page lede"
+#~ msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<0/> the land turns by."
+#~ msgstr "Elija un día para ver lo que hay. La aldea lleva dos relojes: los doce meses que todos compartimos y las lunas<0/> con que gira la tierra."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/VoiceTranscriptionPicker.tsx
@@ -88553,6 +88681,12 @@ msgctxt "conversation notes: who reads them"
 msgid "Private to the people who hold each conversation, the role that makes the final call, and the people who place roles. Never shown to the applicant. No AI reads them."
 msgstr "Privadas para quienes tienen cada conversación, el rol que toma la decisión final y quienes asignan los roles. Nunca se muestran a la persona que postula. Ninguna IA las lee."
 
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, other ways to join: the game's door"
+msgid "Choose the <0>root</0> you grow from, see this season's goals, and pick the roles you play."
+msgstr "Elija la <0>raíz</0> de la que crece, mire las metas de esta temporada y escoja los roles que juega."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profileDash/TreasuryPanel.tsx
 msgctxt "TreasuryPanel, p"
@@ -89994,6 +90128,12 @@ msgstr "Ningún servicio transcribe nada. Las personas que aplican escriben, o u
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "The newest decisions on {name}, with the note each was decided with, where one was written."
 msgstr "Las decisiones más recientes sobre {name}, con la nota con que se decidió cada una, cuando hay una escrita."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/CycleClock.tsx
+msgctxt "cycle clock: the moon that turns and the day it turns"
+msgid "<0>Allowances</0> refill when the <1>{month} Moon</1> turns, on {date}."
+msgstr "<0>Las asignaciones</0> se renuevan cuando cambia la <1>Luna de {month}</1>, el {date}."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/protocols/InstallCard.tsx
@@ -95757,6 +95897,12 @@ msgstr "Nombre de la capa"
 msgctxt "Forum, p"
 msgid "This thread is locked."
 msgstr "Esta conversación está cerrada."
+
+# needs-native-review: tooltips on the word, 27 Nov 2026
+#: client/src/components/governance/WeightRecord.tsx
+msgctxt "WeightRecord, h3"
+msgid "<0/><1>The weight record</1>"
+msgstr "<0/><1>El registro del peso</1>"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/HandOverPowers.tsx

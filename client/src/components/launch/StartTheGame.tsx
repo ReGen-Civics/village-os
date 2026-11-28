@@ -9,7 +9,9 @@ import { Link } from "wouter";
 import { SeedGlint } from "@/components/sacred/living";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
+import { useTokensWord } from "@/hooks/useTokenNames";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { launchDoors, type LaunchFacts } from "@shared/launchFacts";
 
 /** What `/api/admin/launch` says about the launch vote itself (R74). */
 export interface LaunchVote {
@@ -40,10 +42,14 @@ export interface LaunchVote {
 /**
  * STARTING THE GAME (R74). The card that used to mark a village launched.
  *
- * Four states and one of them is new, so each gets its own words and nothing
- * is inferred from a missing field:
+ * Five states, so each gets its own words and nothing is inferred from a
+ * missing field:
  *
  *   a vote is running     what it is waiting for, and where to go and vote
+ *   already issuing       tokens are issued here and no launch vote was held.
+ *                         The server refuses to open the vote for this village
+ *                         (`POST /api/admin/launch/propose` reads `game-start`),
+ *                         so the card says that plainly and offers no button
  *   the roll is short     how many hold a voice, and how many more
  *   ready to ask          the ask, with what carrying it needs
  *   items still open      how many, unchanged from before
@@ -56,6 +62,7 @@ export interface LaunchVote {
 export default function StartTheGame({
   status,
   vote,
+  facts,
   isFounder,
   busy,
   onAsk,
@@ -67,6 +74,12 @@ export default function StartTheGame({
 }: {
   status: any;
   vote: LaunchVote | null;
+  /**
+   * Where the village stands (`shared/launchFacts.ts`), or null when that read
+   * has not arrived. Null reads as "may be asked", which is what this card
+   * assumed before the facts existed; the server still answers for itself.
+   */
+  facts?: LaunchFacts | null;
   isFounder: boolean;
   busy: boolean;
   onAsk: () => void;
@@ -80,10 +93,14 @@ export default function StartTheGame({
   const { t } = useLingui();
   // The village may name its launch vote (gap G7); blank keeps the platform's name.
   const launchName = useAppWords()("launch", "name") ?? "Start the Game";
+  // What this village calls all its tokens together, so the sentence below is in its own words.
+  const tokens = useTokensWord();
   const running = vote?.openBallot ?? null;
   const shortOfPeople = !!vote?.tooFew;
   const governanceOff = vote?.governanceOn === false;
-  const canAsk = !!status.readyToLaunch && !shortOfPeople && !governanceOff && !running && isFounder;
+  // The door this button opens refuses a village that is already issuing, so the card reads the same fact.
+  const cannotBeAsked = !running && !!facts && !launchDoors(facts).voteCanBeAsked;
+  const canAsk = !!status.readyToLaunch && !shortOfPeople && !governanceOff && !running && isFounder && !cannotBeAsked;
 
   return (
     <section
@@ -96,15 +113,26 @@ export default function StartTheGame({
           <p className="font-semibold text-stone-900 flex items-center gap-2">
             <SeedGlint className="w-4 h-4 text-teal-deep" /> {launchName}
           </p>
-          {!running && governanceOff && (
-            <p className="text-xs text-stone-700 mt-1 max-w-md">
+          {/* One line, in one element: the village that cannot be asked gets its plain sentence where the governance line sits. */}
+          {!running && (cannotBeAsked || governanceOff) && (
+            <p data-testid={cannotBeAsked ? "start-already-issuing" : undefined} className="text-xs text-stone-700 mt-1 max-w-md">
+              {cannotBeAsked ? (
+                <>
+                  <Trans context="StartTheGame, p">This village is already issuing {tokens}, and no launch vote has carried, so this page cannot open the vote. Changing that is the village's own decision, by its highest vote.</Trans>{" "}
+                  {/* Where members propose a change to the rules and the village votes on it: GAME_MECHANICS_ANCHOR on pages/Governance.tsx. */}
+                  <Link href="/governance/how#game-mechanics" className="text-teal-deep underline">
+                    <Trans context="StartTheGame, Link">Open the game mechanics</Trans>
+                  </Link>
+                </>
+              ) : (
               <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
               <Link href="/modules/governance" className="text-teal-deep underline">
                 Turn it on for members first
               </Link>
               .
-            </Trans></p>
+            </Trans>)}</p>
           )}
+          {!cannotBeAsked && (<>
           {!running && !status.readyToLaunch && shortOfPeople && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">{vote?.tooFew}</p>
           )}
@@ -122,6 +150,7 @@ export default function StartTheGame({
               <Trans context="StartTheGame, p">{vote.onTheRoll} people are on its roll today, and the vote carries without waiting for its window to end.</Trans>
             </p>
           )}
+          </>)}
         </div>
         {running ? (
           <Link
@@ -130,7 +159,7 @@ export default function StartTheGame({
           >
             <Trans context="StartTheGame, Link">Open the vote
           </Trans></Link>
-        ) : (
+        ) : cannotBeAsked ? null : (
           <button
             onClick={onAsk}
             disabled={!canAsk || busy}
@@ -152,7 +181,7 @@ export default function StartTheGame({
           {refusal}
         </p>
       )}
-      {!running && isFounder && <StewardSlatePicker candidates={candidates} powerCount={powerCount} chosen={slate} onToggle={onToggleSlate} disabled={busy} />}
+      {!running && isFounder && !cannotBeAsked && <StewardSlatePicker candidates={candidates} powerCount={powerCount} chosen={slate} onToggle={onToggleSlate} disabled={busy} />}
 
       {/*
         * Every time this village has asked before. A vote that closed without
