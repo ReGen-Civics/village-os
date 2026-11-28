@@ -230,6 +230,8 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
           to: { email: p.email, ...(greetingName(p.name) ? { name: greetingName(p.name) as string } : {}) },
           subject: words.title,
           ...framed,
+          // `html` by name: the economics reader tells an email from a ledger posting by it.
+          html: framed.html,
         });
         if (!WENT.has(sent.status)) console.warn(`[open-proposals] the ${kind} update for ${ref} did not go by email: ${sent.status}`);
       }

@@ -102,6 +102,8 @@ async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: Stage
         to: { email: p.email, ...(name ? { name } : {}) },
         subject: words.subject,
         ...framed,
+        // `html` by name: the economics reader tells an email from a ledger posting by it.
+        html: framed.html,
       })
     ).status;
   } finally {
@@ -238,7 +240,7 @@ export async function tellReadyToSend(deps: TellDeps, ref: string): Promise<bool
     const name = greetingName(p.name);
     const framed = await framedLetter(deps, lang, { subject: w.subject, text }, null);
     const dressed = link ? await framedLetterWithButton(deps, lang, w.subject, text, { label: w.button, url: link }) : framed;
-    const sent = await deps.postEmail({ idempotencyKey: readyKey(ref), kind: "essential", origin: "open_proposal.stage", to: { email: p.email, ...(name ? { name } : {}) }, subject: w.subject, ...dressed });
+    const sent = await deps.postEmail({ idempotencyKey: readyKey(ref), kind: "essential", origin: "open_proposal.stage", to: { email: p.email, ...(name ? { name } : {}) }, subject: w.subject, ...dressed, html: dressed.html });
     return WENT_NOW.has(sent.status);
   } catch (e) {
     console.error(`[open-proposals] the ready letter for ${ref} was not sent`, e);
@@ -322,6 +324,7 @@ export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId:
       to: { email: p.email, ...(name ? { name } : {}) },
       subject: words.subject,
       ...framed,
+      html: framed.html,
     });
     return WENT_NOW.has(sent.status);
   } catch (e) {

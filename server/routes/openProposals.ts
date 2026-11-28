@@ -975,14 +975,17 @@ export function register(app: Express, deps: Deps): void {
         const promise = deadline ? (late ? wordsIn(lang).lateApplication(wordsIn(lang).day(deadline)) : wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline))) : wordsIn(lang).replyPromise(replyMoons);
         const text = [apply.statusText(mailedLink, promise), ...(accountHolder ? ["", apply.profileLine(`${site()}/profile`)] : []), "", next.join("\n")].join("\n");
         try {
+          // In the invitation's frame, with the status link as its button (QA: letters overflowed 375 px).
+          const framed = await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink, await openBookingLinks(getPool(), confirmed.proposal.id, lang));
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,
             kind: "essential",
             origin: "open_proposal.status",
             to: { email: confirmed.proposal.email },
             subject: apply.statusSubject,
-            // In the invitation's frame, with the status link as its button (QA: letters overflowed 375 px).
-            ...(await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink, await openBookingLinks(getPool(), confirmed.proposal.id, lang))),
+            ...framed,
+            // `html` by name: the economics reader tells an email from a ledger posting by it.
+            html: framed.html,
           });
         } catch (e) {
           console.error("[open-proposals] the status link could not be mailed", e);
