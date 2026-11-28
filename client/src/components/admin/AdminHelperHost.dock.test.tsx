@@ -5,6 +5,8 @@
  * it was. On, the guide's dock takes its place, with the same shortcut, the
  * same `?helper=open`, and the same one save bar.
  */
+import fs from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -101,6 +103,24 @@ describe("the dial on", () => {
     expect(within(dock).getByRole("button", { name: "Organizing" })).toBeTruthy();
     expect(statusReads()).toBe(1);
     expect(localStorage.getItem("guide-dock:on")).toBe("1");
+  });
+
+  it("in Admin she claims nothing about what waits: the host hands her no deadline, no all-clear and no first meeting", async () => {
+    render(<Host />);
+    const dock = await screen.findByTestId("guide-dock");
+    const first = within(dock).getByTestId("guide-first-line").textContent ?? "";
+    // A greeting by the part of the day, then what she can do. Nobody told her what waits, so she does not say.
+    expect(first).toMatch(/^(Morning|Afternoon|Evening)\. Ask me where something lives, or name a change and I'll prepare it for your yes\.$/);
+    expect(first).not.toMatch(/nothing (needs|waits|is waiting)|deadline|lapse|Welcome/i);
+    // Her second paragraph is true to what this build lets her read.
+    expect(within(dock).getByTestId("guide-reads").textContent).toBe(
+      "I read settings, help text and the shape of the org chart. I don't read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. I don't move money.",
+    );
+    // Under her name: who answers, as the status says it (no lent key here).
+    expect(within(dock).getByTestId("guide-who-answers").textContent).toBe("Sol is answering, on Claude with your village's own Anthropic key.");
+    // And the host's own source wires none of the three: the data for them is not at hand here without a new read.
+    const host = fs.readFileSync(path.join(process.cwd(), "client", "src", "components", "admin", "AdminHelperHost.tsx"), "utf8");
+    for (const prop of ["oneThing", "nothingWaits", "firstMeeting"]) expect(host, prop).not.toMatch(new RegExp(`\\b${prop}\\b`));
   });
 
   it("goes straight to the dock the next time, and the shortcut still toggles it", async () => {

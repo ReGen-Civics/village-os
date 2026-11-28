@@ -37,7 +37,10 @@
  * WHERE IT SITS IS THE HOST'S. `placement="fixed"` (the default, today's Admin
  * and road to launch) is the fixed right-hand column, started under the
  * sticky header and stopped above the foot of the window, as the helper panel
- * is. `placement="slot"` is a plain block that fills whatever its container
+ * is. On a window wide enough for both, the page ends where she begins
+ * (./dock.css), so nothing a person must press sits under her; on a narrower
+ * one she is a sheet across the page, and closing her gives the page back
+ * where it was. `placement="slot"` is a plain block that fills whatever its container
  * gives it: no fixed positioning, no top or bottom, no layer of its own. The
  * garden's frame is the intended host for the slot: the frame owns the place,
  * and the dock only draws inside it. Its inside lays itself out by its OWN
@@ -80,6 +83,7 @@ import { ConnectSteps, OpenLabel, proposalMarkOf, readPicked, rememberPicked, se
 import { ConsultedLine, FilingCard, GuideChoice, GuideFace, PreparedCard, type FilingState } from "./DockCards";
 import { dockDraftKey, dockSaidKey, personTag, readDockShape, rememberDockShape, type DockShape } from "./dockState";
 import { useDockWords, type OneThing } from "./dockWords";
+import "./dock.css";
 import { DOCKED_SUGGESTIONS, MAX_SUGGESTIONS, useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
 import { replyAsWords, ReplyText, useLinkNamer } from "./replyLinks";
 
@@ -100,9 +104,16 @@ const NO_PROPOSALS: readonly HelperProposal[] = [];
 
 const cssLength = (v: number | string): string => (typeof v === "number" ? `${v}px` : v);
 
-/** True from a tablet's width up, where the dock has two shapes. With no way to ask (a test, an old browser), wide. */
+/**
+ * The narrowest window where a fixed dock can stand BESIDE the page: the page yields her 26rem there (./dock.css),
+ * and at 80rem that still leaves Admin a 40rem column next to its rail. Narrower than this she is a sheet across
+ * the page's whole width, as on a phone, and closing her gives the page back.
+ */
+export const ROOMY_WINDOW = "(min-width: 80rem)";
+
+/** True where a fixed dock has two shapes, at the side or wide. With no way to ask (a test, an old browser), true. */
 function useWide(): boolean {
-  const query = "(min-width: 640px)";
+  const query = ROOMY_WINDOW;
   const [wide, setWide] = useState(() => {
     try {
       return typeof window.matchMedia === "function" ? window.matchMedia(query).matches : true;
@@ -306,7 +317,7 @@ export default function GuideDock({
   const slotted = placement === "slot";
   // Held by the host (the garden's frame), or remembered here in this browser.
   const controlled = state !== undefined || onStateChange !== undefined;
-  // A fixed dock has one shape on a phone, where it is the full width either way. In a slot the host decides.
+  // A fixed dock has one shape on a window too narrow to stand beside the page: the full width. In a slot the host decides.
   const windowWide = useWide();
   const wide = slotted || windowWide;
   const [ownShape, setOwnShape] = useState<DockShape>(() => initialShape ?? (controlled ? "docked" : readDockShape(defaultShape)));
@@ -353,7 +364,8 @@ export default function GuideDock({
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     return () => {
-      if (opener && opener.isConnected && opener !== document.body && typeof opener.focus === "function") opener.focus();
+      // Without moving the page: a person who scrolled on after opening her finds it where they left it.
+      if (opener && opener.isConnected && opener !== document.body && typeof opener.focus === "function") opener.focus({ preventScroll: true });
     };
   }, []);
   const ready = shown === "helper" ? status?.on === true : !gone[shown];
@@ -525,6 +537,18 @@ export default function GuideDock({
    */
   const roomy = preparedCount > 0 && threads.helper.length <= SHORT_TALK;
 
+  /*
+   * THE PAGE YIELDS HER ROOM (./dock.css). A fixed dock says on the root which shape she is in, and the page ends
+   * where she begins while she stands at the side. A dock in a slot says nothing: its container already placed it.
+   */
+  const standing = slotted ? null : !wide ? "sheet" : expanded ? "expanded" : "docked";
+  useEffect(() => {
+    if (!standing) return;
+    const root = document.documentElement;
+    root.setAttribute("data-guide-dock", standing);
+    return () => root.removeAttribute("data-guide-dock");
+  }, [standing]);
+
   // ── The frame ─────────────────────────────────────────────────────────────
   const cover = useKeyboardCover();
   // In a slot the container places the dock, so nothing here is measured or pinned.
@@ -540,7 +564,7 @@ export default function GuideDock({
    */
   const frame = slotted
     ? "relative h-full max-h-dvh min-h-0 w-full min-w-0"
-    : `fixed right-0 w-full border-l border-border shadow-lg ${surface === "journey" ? "z-[70]" : "z-20"} ${expanded ? "left-0" : "sm:w-[26rem]"}`;
+    : `fixed right-0 border-l border-border shadow-lg ${surface === "journey" ? "z-[70]" : "z-20"} ${standing === "docked" ? "w-[26rem]" : "left-0 w-full"}`;
   /*
    * The box grows to at most half of the column it sits in (ChatComposer's `within`), so however long the draft, the
    * box and Send stay inside the dock. A new object whenever the column's height can have changed makes the box fit

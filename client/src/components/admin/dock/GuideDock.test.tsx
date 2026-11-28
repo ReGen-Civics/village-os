@@ -37,7 +37,7 @@ import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
 import { GUIDE_SPEAKING as SERVER_SPEAKING } from "@shared/guideSpeaking";
 import { forgetPageCopy } from "../garden/gardenMemory";
 import { GUIDE_SPEAKING as GARDEN_SPEAKING } from "../garden/speaking";
-import GuideDock, { SHORT_TALK, type DockState, type GuideDockProps } from "./GuideDock";
+import GuideDock, { ROOMY_WINDOW, SHORT_TALK, type DockState, type GuideDockProps } from "./GuideDock";
 import { adminTabOf, splitReply } from "./replyLinks";
 import type { NavGroup } from "../adminNavGroups";
 
@@ -151,7 +151,7 @@ describe("docked and expanded", () => {
     expect(frame().getAttribute("data-shape")).toBe("docked");
   });
 
-  it("has one shape on a phone, full width, and no button for a second", () => {
+  it("has one shape on a window too narrow to stand beside the page, full width, and no button for a second", () => {
     vi.stubGlobal("matchMedia", (q: string) => ({ matches: false, media: q, addEventListener: () => {}, removeEventListener: () => {} }));
     localStorage.setItem("guide-dock:shape", "expanded");
     dock();
@@ -1125,5 +1125,142 @@ describe("her first words follow what the host told her", () => {
     expect(alert.textContent).not.toMatch(/\bI\b|boom/);
     await userEvent.click(toggle());
     expect(screen.getByRole("alert").textContent).toBe("Guide didn't load. Retry.");
+  });
+});
+
+/**
+ * SHE HOLDS ON EVERY PAGE WITHOUT COVERING A CONTROL (28 Nov 2026). Measured on the real Admin page before this: at
+ * 1440 wide its column reached 224px under her, at 1280 wide 384px, and the control at the end of every row on Game
+ * Mechanics sat where nobody could press it. A fixed dock now says on the root which shape she is in, and the page
+ * ends where she begins while she stands at the side (./dock.css). On a narrower window she is a sheet.
+ */
+describe("the page yields her room", () => {
+  const root = () => document.documentElement.getAttribute("data-guide-dock");
+  const narrow = () => vi.stubGlobal("matchMedia", (q: string) => ({ matches: false, media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+
+  it("says on the root which shape she stands in, follows the one button, and takes the word away when she closes", async () => {
+    expect(root()).toBeNull();
+    const view = dock();
+    expect(root()).toBe("docked");
+    // At the side she is her own width, and the page is told to end where she begins.
+    expect(frame().className.split(/\s+/)).toContain("w-[26rem]");
+    expect(frame().className.split(/\s+/)).not.toContain("left-0");
+    await userEvent.click(screen.getByRole("button", { name: "Open the guide wide" }));
+    expect(root()).toBe("expanded");
+    expect(frame().className.split(/\s+/)).toEqual(expect.arrayContaining(["left-0", "w-full"]));
+    expect(frame().className.split(/\s+/)).not.toContain("w-[26rem]");
+    // Wide, the way back is the same button, in her own header.
+    expect(within(frame()).getByRole("button", { name: "Bring the guide back to the side" })).toBeTruthy();
+    await userEvent.click(screen.getByRole("button", { name: "Bring the guide back to the side" }));
+    expect(root()).toBe("docked");
+    view.unmount();
+    // Closed, nothing of her is left on the page.
+    expect(root()).toBeNull();
+  });
+
+  it("is a sheet across the page on a window too narrow for both, and asks the page for no room", () => {
+    narrow();
+    localStorage.setItem("guide-dock:shape", "expanded");
+    const view = dock();
+    expect(root()).toBe("sheet");
+    expect(frame().className.split(/\s+/)).toEqual(expect.arrayContaining(["left-0", "w-full"]));
+    expect(frame().className.split(/\s+/)).not.toContain("w-[26rem]");
+    // One shape, so the only way out is closing her, and it is there.
+    expect(screen.queryByTestId("guide-dock-shape")).toBeNull();
+    expect(screen.getByRole("button", { name: "Close the guide" })).toBeTruthy();
+    view.unmount();
+    expect(root()).toBeNull();
+  });
+
+  it("asks the window the one question the stylesheet asks", () => {
+    const asked: string[] = [];
+    vi.stubGlobal("matchMedia", (q: string) => {
+      asked.push(q);
+      return { matches: true, media: q, addEventListener: () => {}, removeEventListener: () => {} };
+    });
+    dock();
+    expect(ROOMY_WINDOW).toBe("(min-width: 80rem)");
+    expect(asked).toContain(ROOMY_WINDOW);
+    expect(root()).toBe("docked");
+  });
+
+  it("in a slot she says nothing on the root: her container placed her, and the page owes her no room", () => {
+    const view = render(
+      <GuideDock surface="admin" placement="slot" modes={["helper"]} password="pw" groups={GROUPS} tab="home" initialStatus={ON} now={EVENING} state="docked" onStateChange={() => {}} />,
+    );
+    expect(root()).toBeNull();
+    view.unmount();
+    expect(root()).toBeNull();
+  });
+
+  it("gives the focus back to what opened her without moving the page", () => {
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
+    const focus = vi.spyOn(opener, "focus");
+    try {
+      const view = dock();
+      expect(focus).not.toHaveBeenCalled();
+      view.unmount();
+      expect(focus).toHaveBeenCalledTimes(1);
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    } finally {
+      opener.remove();
+    }
+  });
+});
+
+/**
+ * ON A PHONE, SEND STAYS ABOVE THE KEYBOARD. A keyboard shrinks what is visible of the window and leaves the window
+ * itself alone, so a frame fixed to the window would end under it. She ends where the visible part ends.
+ */
+describe("a phone's keyboard", () => {
+  function viewport(height: number, over: { offsetTop?: number; scale?: number } = {}) {
+    const listeners = new Set<() => void>();
+    const vv = { height, offsetTop: 0, scale: 1, ...over, addEventListener: (_: string, l: () => void) => void listeners.add(l), removeEventListener: (_: string, l: () => void) => void listeners.delete(l) };
+    vi.stubGlobal("visualViewport", vv);
+    return { vv, fire: () => act(() => listeners.forEach((l) => l())) };
+  }
+  /** An edge in px. The test's own DOM hands back `max(56px, 320px)` already worked out, as `calc(320px)`. */
+  const px = (edge: string) => Number(edge.replace(/^calc\(|\)$/g, "").replace(/px$/, ""));
+
+  it("ends above the keyboard while it is up, with Send inside her, and comes back down when it goes", () => {
+    const { vv, fire } = viewport(window.innerHeight);
+    dock({ bottom: 56 });
+    expect(px(frame().style.bottom)).toBe(56);
+    // The keyboard takes 320px of the window's foot: she ends above it, whichever of the two edges is higher.
+    vv.height = window.innerHeight - 320;
+    fire();
+    expect(px(frame().style.bottom)).toBe(320);
+    expect(within(frame()).getByRole("button", { name: "Send" })).toBeTruthy();
+    expect(within(frame()).getByRole("textbox", { name: "Your question" })).toBeTruthy();
+    vv.height = window.innerHeight;
+    fire();
+    expect(px(frame().style.bottom)).toBe(56);
+  });
+
+  it("follows the visible part when the browser slides the page up under the keyboard", () => {
+    const { vv, fire } = viewport(window.innerHeight);
+    dock({ bottom: 0 });
+    vv.height = window.innerHeight - 300;
+    vv.offsetTop = 40;
+    fire();
+    // Her top stays under the header she was handed, and her foot is what the keyboard covers of the window.
+    expect(px(frame().style.top)).toBe(88);
+    expect(px(frame().style.bottom)).toBe(260);
+  });
+
+  it("leaves a browser bar and a pinch zoom alone: neither is a keyboard", () => {
+    const { vv, fire } = viewport(window.innerHeight);
+    dock({ bottom: 56 });
+    // A toolbar sliding in moves the same numbers by far less than a keyboard does.
+    vv.height = window.innerHeight - 60;
+    fire();
+    expect(px(frame().style.bottom)).toBe(56);
+    // Zoomed in, the visible part is small because the person made it so.
+    vv.height = window.innerHeight / 2;
+    vv.scale = 2;
+    fire();
+    expect(px(frame().style.bottom)).toBe(56);
   });
 });
