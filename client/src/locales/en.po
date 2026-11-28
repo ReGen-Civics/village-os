@@ -6200,6 +6200,11 @@ msgctxt "GuidePanel, button"
 msgid "Yes"
 msgstr "Yes"
 
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{more, plural, one {And # more page nobody opened.} other {And # more pages nobody opened.}}"
+msgstr "{more, plural, one {And # more page nobody opened.} other {And # more pages nobody opened.}}"
+
 #: client/src/components/yourList/ErasePrepPanel.tsx
 msgctxt "ErasePrepPanel, h4"
 msgid "Before you erase a member"
@@ -7373,9 +7378,9 @@ msgid "Something went wrong"
 msgstr "Something went wrong"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
-msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
-msgstr "Counting began on {recordedSince}. This window counted {countedDays} days."
+#~ msgctxt "admin, how the menu is used"
+#~ msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
+#~ msgstr "Counting began on {recordedSince}. This window counted {countedDays} days."
 
 #. placeholder {0}: batch.by
 #. placeholder {1}: day(batch.at)
@@ -14348,9 +14353,9 @@ msgid "Set a meeting rhythm"
 msgstr "Set a meeting rhythm"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
-msgstr "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
+#~ msgstr "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
 
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: addNewRole"
@@ -15286,9 +15291,9 @@ msgid "Forget"
 msgstr "Forget"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "And {more} more pages nobody opened."
-msgstr "And {more} more pages nobody opened."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "And {more} more pages nobody opened."
+#~ msgstr "And {more} more pages nobody opened."
 
 #: client/src/components/followUps/FollowUps.tsx
 msgctxt "follow-ups: a read failed"
@@ -21213,6 +21218,11 @@ msgstr "{n} departure processes opened."
 msgctxt "register: the page heading"
 msgid "Join {villageName}"
 msgstr "Join {villageName}"
+
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} was opened {visits, plural, one {# time} other {# times}} and has no menu entry: consider giving it one."
+msgstr "{name} was opened {visits, plural, one {# time} other {# times}} and has no menu entry: consider giving it one."
 
 #. placeholder {0}: layers.length
 #: client/src/pages/SetupGame.tsx
@@ -39464,6 +39474,11 @@ msgctxt "module badges, benefit 1"
 msgid "Self-declared skills anyone can browse"
 msgstr "Self-declared skills anyone can browse"
 
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {visits, plural, one {the one visit} other {all # visits}} in {group} from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} draws {visits, plural, one {the one visit} other {all # visits}} in {group} from inside the {folder} folder: consider giving it a row of its own."
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "All checked"
@@ -41806,9 +41821,9 @@ msgid "No departures yet, and the policy is already published. Good."
 msgstr "No departures yet, and the policy is already published. Good."
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
-msgstr "{name} was opened {visits} times and has no menu entry: consider giving it one."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
+#~ msgstr "{name} was opened {visits} times and has no menu entry: consider giving it one."
 
 #: client/src/components/playerCard/playerCardHealthMessages.ts
 msgctxt "player card health, parts written, some missing"
@@ -44312,6 +44327,11 @@ msgstr "{n} people sent you appreciation."
 msgctxt "Admin, p"
 msgid "Roles and circles your guide proposes land here for you to read before they exist. She never creates anything herself."
 msgstr "Roles and circles your guide proposes land here for you to read before they exist. She never creates anything herself."
+
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {pct}% of the visits in {group} ({visits} of {groupVisits}) from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} draws {pct}% of the visits in {group} ({visits} of {groupVisits}) from inside the {folder} folder: consider giving it a row of its own."
 
 #: client/src/components/asks/AsksPanel.tsx
 msgctxt "AsksPanel, label"
@@ -50261,9 +50281,9 @@ msgid "Keep it"
 msgstr "Keep it"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
-msgid "{menuVisits} visits to pages in the menu."
-msgstr "{menuVisits} visits to pages in the menu."
+#~ msgctxt "admin, how the menu is used"
+#~ msgid "{menuVisits} visits to pages in the menu."
+#~ msgstr "{menuVisits} visits to pages in the menu."
 
 #: client/src/pages/Bootstrap.tsx
 msgctxt "Bootstrap, p"
@@ -54964,6 +54984,11 @@ msgctxt "member door choice"
 msgid "This moon"
 msgstr "This moon"
 
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Counting began on {recordedSince}. This window counted {countedDays, plural, one {# day} other {# days}}."
+msgstr "Counting began on {recordedSince}. This window counted {countedDays, plural, one {# day} other {# days}}."
+
 #: client/src/pages/ToolsHub.tsx
 msgctxt "ToolsHub, h1"
 msgid "Village Tools"
@@ -55370,9 +55395,9 @@ msgid "Open the full proposal"
 msgstr "Open the full proposal"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
-msgstr "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
+#~ msgstr "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript, who wrote it"
@@ -55544,6 +55569,11 @@ msgstr "Save my notes"
 msgctxt "admin venture accounts"
 msgid "Link"
 msgstr "Link"
+
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}} so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+msgstr "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}} so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
 
 #: client/src/components/tasks/taskWords.ts
 msgctxt "task board: sheets.let_go.toast"
@@ -70216,6 +70246,11 @@ msgctxt "moon recap: SPLIT_PAY_WORDS: scaled"
 msgid "After the split"
 msgstr "After the split"
 
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "{menuVisits, plural, one {# visit to pages in the menu.} other {# visits to pages in the menu.}}"
+msgstr "{menuVisits, plural, one {# visit to pages in the menu.} other {# visits to pages in the menu.}}"
+
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, p"
 msgid "This season has no posted goals yet."
@@ -71712,6 +71747,11 @@ msgstr "Post quest"
 msgctxt "game variable progression.multiplier.visitor, label"
 msgid "Sending-budget multiplier: Visitor"
 msgstr "Sending-budget multiplier: Visitor"
+
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} has a row of its own in {group} and {visits, plural, one {# visit} other {# visits}}, against {median} for a typical page there: consider moving it into a folder."
+msgstr "{name} has a row of its own in {group} and {visits, plural, one {# visit} other {# visits}}, against {median} for a typical page there: consider moving it into a folder."
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
@@ -73215,9 +73255,9 @@ msgid "The seed for this meeting: {0} of {SEED_CIRCLES} circles filled"
 msgstr "The seed for this meeting: {0} of {SEED_CIRCLES} circles filled"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
-msgstr "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
+#~ msgstr "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
 
 #: client/src/pages/FundingRounds.tsx
 msgid "Round name, such as the season it funds"
@@ -78818,9 +78858,9 @@ msgid "Delivery reports disconnected"
 msgstr "Delivery reports disconnected"
 
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
-msgstr "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+#~ msgstr "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -80267,6 +80307,11 @@ msgstr "Flexible: less can work"
 msgctxt "game variable quest.minimum_ages, description"
 msgid "Off, no quest asks anybody's age, and families are welcome on every one. On, a quest's editor can ask 16 or 18 of everyone who joins it, and a member says their age band once, never a birth date. Turning it off again lifts every minimum at once and keeps each quest's choice for the next time it is on."
 msgstr "Off, no quest asks anybody's age, and families are welcome on every one. On, a quest's editor can ask 16 or 18 of everyone who joins it, and a member says their age band once, never a birth date. Turning it off again lifts every minimum at once and keeps each quest's choice for the next time it is on."
+
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}}. Suggestions need {minDays} days and {minVisits} visits to read."
+msgstr "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}}. Suggestions need {minDays} days and {minVisits} visits to read."
 
 #: client/src/components/ContributionWord.tsx
 msgctxt "contribution token tip: a village with no name yet"

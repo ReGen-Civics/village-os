@@ -7344,6 +7344,12 @@ msgctxt "GuidePanel, button"
 msgid "Yes"
 msgstr "Sí"
 
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{more, plural, one {And # more page nobody opened.} other {And # more pages nobody opened.}}"
+msgstr "{more, plural, one {Y # página más que nadie abrió.} other {Y # páginas más que nadie abrió.}}"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/yourList/ErasePrepPanel.tsx
 msgctxt "ErasePrepPanel, h4"
@@ -8723,9 +8729,9 @@ msgstr "Algo salió mal"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
-msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
-msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays} días."
+#~ msgctxt "admin, how the menu is used"
+#~ msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
+#~ msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays} días."
 
 #. placeholder {0}: batch.by
 #. placeholder {1}: day(batch.at)
@@ -16975,9 +16981,9 @@ msgstr "Fijar un ritmo de reuniones"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
-msgstr "{name} tiene una fila propia en {group} y {visits} visitas, frente a {median} de una página típica allí: considere moverla a una carpeta."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
+#~ msgstr "{name} tiene una fila propia en {group} y {visits} visitas, frente a {median} de una página típica allí: considere moverla a una carpeta."
 
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
@@ -18092,9 +18098,9 @@ msgstr "Olvidar"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "And {more} more pages nobody opened."
-msgstr "Y {more} páginas más que nadie abrió."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "And {more} more pages nobody opened."
+#~ msgstr "Y {more} páginas más que nadie abrió."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
@@ -25107,6 +25113,12 @@ msgstr "Se abrieron {n} procesos de salida."
 msgctxt "register: the page heading"
 msgid "Join {villageName}"
 msgstr "Únase a {villageName}"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} was opened {visits, plural, one {# time} other {# times}} and has no menu entry: consider giving it one."
+msgstr "{name} se abrió {visits, plural, one {# vez} other {# veces}} y no tiene entrada en el menú: considere darle una."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: layers.length
@@ -46722,6 +46734,12 @@ msgctxt "module badges, benefit 1"
 msgid "Self-declared skills anyone can browse"
 msgstr "Habilidades que cada quien declara y que cualquiera puede consultar"
 
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {visits, plural, one {the one visit} other {all # visits}} in {group} from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} recibe {visits, plural, one {la única visita} other {las # visitas}} de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -49484,9 +49502,9 @@ msgstr "Todavía no hay salidas, y la política ya está publicada. Bien."
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
-msgstr "{name} se abrió {visits} veces y no tiene entrada en el menú: considere darle una."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
+#~ msgstr "{name} se abrió {visits} veces y no tiene entrada en el menú: considere darle una."
 
 # needs-native-review: player card health, 26 Nov 2026
 #: client/src/components/playerCard/playerCardHealthMessages.ts
@@ -52450,6 +52468,12 @@ msgstr "{n} personas le enviaron agradecimiento."
 msgctxt "Admin, p"
 msgid "Roles and circles your guide proposes land here for you to read before they exist. She never creates anything herself."
 msgstr "Los roles y círculos que propone su guía llegan aquí para que usted los lea antes de que existan. Ella nunca crea nada por su cuenta."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {pct}% of the visits in {group} ({visits} of {groupVisits}) from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} recibe el {pct}% de las visitas de {group} ({visits} de {groupVisits}) desde dentro de la carpeta {folder}: considere darle una fila propia."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/asks/AsksPanel.tsx
@@ -59514,9 +59538,9 @@ msgstr "Guardarlo"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
-msgid "{menuVisits} visits to pages in the menu."
-msgstr "{menuVisits} visitas a páginas del menú."
+#~ msgctxt "admin, how the menu is used"
+#~ msgid "{menuVisits} visits to pages in the menu."
+#~ msgstr "{menuVisits} visitas a páginas del menú."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Bootstrap.tsx
@@ -65107,6 +65131,12 @@ msgctxt "member door choice"
 msgid "This moon"
 msgstr "Esta luna"
 
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Counting began on {recordedSince}. This window counted {countedDays, plural, one {# day} other {# days}}."
+msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays, plural, one {# día} other {# días}}."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/ToolsHub.tsx
 msgctxt "ToolsHub, h1"
@@ -65588,9 +65618,9 @@ msgstr "Abrir la propuesta completa"
 
 # needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
-msgstr "Solo {visits} visitas en {days} días. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
+#~ msgstr "Solo {visits} visitas en {days} días. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript, who wrote it"
@@ -65791,6 +65821,12 @@ msgstr "Guardar mis notas"
 msgctxt "admin venture accounts"
 msgid "Link"
 msgstr "Enlace"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}} so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+msgstr "Por ahora solo {visits, plural, one {# visita} other {# visitas}} en {days, plural, one {# día} other {# días}}. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
 
 # needs-native-review: the task board, 26 Nov 2026
 #: client/src/components/tasks/taskWords.ts
@@ -83163,6 +83199,12 @@ msgctxt "moon recap: SPLIT_PAY_WORDS: scaled"
 msgid "After the split"
 msgstr "Después de la división"
 
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "{menuVisits, plural, one {# visit to pages in the menu.} other {# visits to pages in the menu.}}"
+msgstr "{menuVisits, plural, one {# visita a páginas del menú.} other {# visitas a páginas del menú.}}"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/VillageHealth.tsx
 msgctxt "VillageHealth, p"
@@ -84931,6 +84973,12 @@ msgstr "Publicar misión"
 msgctxt "game variable progression.multiplier.visitor, label"
 msgid "Sending-budget multiplier: Visitor"
 msgstr "Multiplicador del presupuesto de envío: Visitante"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} has a row of its own in {group} and {visits, plural, one {# visit} other {# visits}}, against {median} for a typical page there: consider moving it into a folder."
+msgstr "{name} tiene una fila propia en {group} y {visits, plural, one {# visita} other {# visitas}}, frente a {median} de una página típica allí: considere moverla a una carpeta."
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
@@ -86704,9 +86752,9 @@ msgstr "La semilla de esta reunión: {0} de {SEED_CIRCLES} círculos llenos"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
-msgstr "{name} recibe el {pct}% de las visitas de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
+#~ msgstr "{name} recibe el {pct}% de las visitas de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FundingRounds.tsx
@@ -93325,9 +93373,9 @@ msgstr "Informes de entrega desconectados"
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
-msgstr "Por ahora solo {visits} visitas en {days} días. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
+#~ msgctxt "admin, how the menu is used: suggestion"
+#~ msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+#~ msgstr "Por ahora solo {visits} visitas en {days} días. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/fireflyPath/applyWordsT.ts
@@ -95037,6 +95085,12 @@ msgstr "Flexible: con menos también funciona"
 msgctxt "game variable quest.minimum_ages, description"
 msgid "Off, no quest asks anybody's age, and families are welcome on every one. On, a quest's editor can ask 16 or 18 of everyone who joins it, and a member says their age band once, never a birth date. Turning it off again lifts every minimum at once and keeps each quest's choice for the next time it is on."
 msgstr "Apagado, ninguna misión le pregunta la edad a nadie, y las familias son bienvenidas en todas. Encendido, quien edita una misión puede pedir 16 o 18 a todas las personas que se unan, y un miembro indica su rango de edad una sola vez, nunca una fecha de nacimiento. Apagarlo de nuevo levanta todos los mínimos a la vez y guarda la elección de cada misión para la próxima vez que se encienda."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}}. Suggestions need {minDays} days and {minVisits} visits to read."
+msgstr "Solo {visits, plural, one {# visita} other {# visitas}} en {days, plural, one {# día} other {# días}}. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/ContributionWord.tsx
