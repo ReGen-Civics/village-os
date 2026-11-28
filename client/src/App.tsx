@@ -94,6 +94,8 @@ function PageTitle() {
   const config = useGameConfig();
   const village = config?.project?.name ?? "";
   const commitment = config?.project?.commitmentName ?? "";
+  // The village's own names for its menu entries (Admin, Menu, or chosen when a module was turned on): the tab says them too.
+  const ownNames = (config as { menu?: { labels?: Record<string, string> } } | null)?.menu?.labels;
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
   const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
@@ -127,14 +129,14 @@ function PageTitle() {
     let live = true;
     import("@shared/pageTitles").then(
       ({ documentTitle }) => {
-        if (live) document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment });
+        if (live) document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment, own: ownNames });
       },
       () => {},
     );
     return () => {
       live = false;
     };
-  }, [location, village, commitment, switches]);
+  }, [location, village, commitment, switches, ownNames]);
 
   return null;
 }

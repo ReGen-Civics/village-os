@@ -15,6 +15,8 @@
  * Pure: no React, no hooks, so it is tested on its own (navBearings.test.ts).
  */
 import { NAV, isGroup, type NavEntry, type NavGroup, type NavLink } from "./nav";
+// The menu as the village placed it (navPlaces.ts), which is the menu these bearings are read against.
+export { placedMenu } from "./navPlaces";
 
 export interface Bearings {
   /** The menu entry the page sits at or under. */

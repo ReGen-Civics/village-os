@@ -25,14 +25,18 @@
  * R55: this never sits on a shelf tile. Tiles are single links; this lives on
  * the module page and in the panels above the shelves.
  */
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import ConsentCard from "./ConsentCard";
 import { dryRunTurnOn, proposeTurnOn, proposalHref, switchInOrder, type DryRun } from "./switchModules";
 import { alsoNeedsLine, joinNames, turnOnPlan, type LibraryViewer, type PlanModule } from "@shared/moduleSwitch";
 import type { ModuleLifecycle } from "@shared/modules";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import type { MenuChoice } from "@shared/moduleMenu";
+import { saveMenuChoices } from "@/components/admin/moduleMenuApi";
+// The name and place each new menu entry takes (the lead, 27 Nov 2026), in its own chunk with the menu's rules.
+const MenuPlaceStep = lazy(() => import("@/components/admin/MenuPlaceStep"));
 
 const BUTTON = "min-h-[44px] px-5 rounded-lg bg-teal-deep text-white font-semibold text-sm disabled:opacity-40";
 const QUIET = "min-h-[44px] px-4 rounded-lg border border-border bg-background text-sm font-medium";
@@ -70,11 +74,20 @@ export default function TurnOnAction({
   const [dry, setDry] = useState<DryRun | null>(null);
   const [sent, setSent] = useState<{ id: string; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLingui();
+  const [menuChoices, setMenuChoices] = useState<MenuChoice[]>([]);
+  const [menuAllowed, setMenuAllowed] = useState(true);
+  const onMenuChoices = useCallback((c: MenuChoice[], allowed: boolean) => {
+    setMenuChoices(c);
+    setMenuAllowed(allowed);
+  }, []);
 
   const funds = plan.filter((m) => m.legalReview && (m.lifecycle ?? "off") === "off");
   const first = all.find((m) => m.id === ids[0]);
   const needs = ids.length === 1 && first ? alsoNeedsLine(first, plan) : null;
   const names = plan.map((m) => m.name);
+  // The modules this turns on from off: each brings its menu entry, named and placed before the press.
+  const arriving = plan.filter((m) => (m.lifecycle ?? "off") === "off").map((m) => m.id);
   const priced = (plan as Array<PlanModule & { priceLine?: string | null }>).filter(
     (m) => !!m.priceLine && m.priceLine !== "Free",
   );
@@ -101,6 +114,16 @@ export default function TurnOnAction({
       return;
     }
     toast.success(to === "preview" ? `${joinNames(names)} on, in preview` : `${joinNames(names)} on for members`);
+    // Then its menu name and place, the way the menu saves (moduleMenuApi.ts). Kept as they were, nothing is written.
+    if (menuChoices.length) {
+      const joined = joinNames(names);
+      const saved = await saveMenuChoices(menuChoices, t({ message: `Menu name and place for ${joined}`, context: "TurnOnAction: the proposal's summary for a menu name and place" }));
+      if (!saved.ok) {
+        const why = saved.message;
+        toast.error(t({ message: `It is on. Its menu name and place did not save: ${why}`, context: "TurnOnAction: the menu choice was refused" }));
+      }
+      else if (saved.how === "proposed") toast.message(t({ message: "Its menu name and place wait for review in Admin, Proposals.", context: "TurnOnAction: the menu choice was filed as a proposal" }));
+    }
     onDone?.();
   };
 
@@ -159,7 +182,12 @@ export default function TurnOnAction({
             Start with example content
           </label>
         )}
-        <button type="button" disabled={busy} onClick={press(turnOn)} className={BUTTON}>
+        {arriving.length > 0 && (
+          <Suspense fallback={null}>
+            <MenuPlaceStep ids={arriving} onChoices={onMenuChoices} on={(id) => (all.find((m) => m.id === id)?.lifecycle ?? "off") !== "off"} />
+          </Suspense>
+        )}
+        <button type="button" disabled={busy || !menuAllowed} onClick={press(turnOn)} className={BUTTON}>
           {busy ? "Turning on…" : plan.length > 1 ? `Turn on ${label ?? `all ${plan.length}`}` : "Turn on"}
         </button>
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
@@ -207,6 +235,11 @@ export default function TurnOnAction({
               className="mt-1 w-full rounded-lg border border-border bg-background p-2 text-base"
             />
           </label>
+          {arriving.length > 0 && (
+            <Suspense fallback={null}>
+              <MenuPlaceStep ids={arriving} readOnly on={(id) => (all.find((m) => m.id === id)?.lifecycle ?? "off") !== "off"} />
+            </Suspense>
+          )}
           {dry && (
             <div className="text-sm text-muted-foreground space-y-1">
               {plan.length > 1 && <p><Trans context="TurnOnAction, p">This asks for {joinNames(names)}, in that order.</Trans></p>}

@@ -197,8 +197,13 @@ export function pageTitleFor(location: string, words: { commitment?: string } = 
   return page.replace("{commitment}", words.commitment?.trim() || "Membership agreement");
 }
 
-/** "Page · Village", or the village alone where the page has no name. */
-export function documentTitle(location: string, village: string, words: { commitment?: string } = {}): string {
-  const page = pageTitleFor(location, words);
+/**
+ * "Page · Village", or the village alone where the page has no name. `own` is the village's own names for its menu
+ * entries, by address (shared/menuDoc.ts `labels`): one name per page means the village's chosen name once it chose
+ * one (the lead, 27 Nov 2026), so the tab says what the menu says. A page below an entry keeps its own title.
+ */
+export function documentTitle(location: string, village: string, words: { commitment?: string; own?: Readonly<Record<string, string>> } = {}): string {
+  const bare = location.split(/[?#]/)[0]!.replace(/(.)\/$/, "$1");
+  const page = words.own?.[bare]?.trim() || pageTitleFor(location, words);
   return page ? `${page} · ${village}` : village;
 }
