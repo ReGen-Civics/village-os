@@ -143,8 +143,8 @@
    "arrivals": "may be open",
    "total": 420,
    "open": {
-    "control: no path by the highest vote": 17,
-    "control: no who may change it, no path by the highest vote": 3,
+    "control: no path by the highest vote": 19,
+    "control: no who may change it, no path by the highest vote": 1,
     "dial: no path by the highest vote": 1,
     "key: no path by the highest vote": 25
    }

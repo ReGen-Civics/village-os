@@ -214,6 +214,8 @@ describe("Settings: the five answers", () => {
     const key = real("key.assistant_api_key");
     expect(Object.keys(actSettingFacts(key, "key").missing)).toEqual(["vote"]);
     expect(Object.keys(actSettingFacts(unread, "control").missing).sort()).toEqual(["vote", "who"]);
+    // Partial with a route: the door was read, and only its fields were not. Who may change it is answered.
+    expect(Object.keys(actSettingFacts({ ...unread, route: { method: "PUT", path: "/api/admin/comms/settings" } }, "control").missing)).toEqual(["vote"]);
   });
 
   it("counts dials, keys and controls together and reports each kind facet by facet", () => {

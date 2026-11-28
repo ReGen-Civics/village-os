@@ -542,7 +542,9 @@ export function actSettingFacts(a: AdminAct, kind: Exclude<SettingKind, "dial">)
   if (!a.title.trim()) missing.name = "It has no title.";
   const changes = kind === "key" ? actConsequence(a) : a.help;
   if (!changes.trim()) missing.changes = kind === "key" ? "Its seed holds no consequence line." : "It has no line saying what it is.";
-  if (a.partial) missing.who = "Its door was never read, so the power it names is the search entry's and is not confirmed.";
+  // A control with a route had its door read: the registry's own test proves the handler names the power, partial or
+  // not. What a partial control with a route still lacks is its fields, which is no part of who may change it.
+  if (a.partial && !a.route) missing.who = "Its door was never read, so the power it names is the search entry's and is not confirmed.";
   missing.vote = NO_VOTE_PATH;
   return { kind, name: `${a.id} ${a.title}`, missing };
 }
@@ -580,7 +582,7 @@ function settingsCount(i: ScoreInputs): Count {
       ? `Every dial carries the same place, ${dialPlaces[0]}: one tab holds them all. No dial is shown in the place it governs.`
       : `The dials sit in ${dialPlaces.length} places: ${dialPlaces.join(", ")}.`,
     "Keys and shipped controls cannot answer their path by the highest vote yet: nothing in the registry ties one to a kind of change a ballot can carry.",
-    "A shipped control marked partial cannot answer who may change it: its door was never read.",
+    "A shipped control with no route cannot answer who may change it: its door was never read. One with a route can, partial or not: the registry's test proves its handler names the power.",
   ];
 
   return {
