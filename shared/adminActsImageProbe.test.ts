@@ -22,11 +22,21 @@
  * THE RULE FOR A WORD LIST: no entry may END in the word import or export after a
  * space, because the closing quote and the next entry's opening quote then read as a
  * module name. Put the word first ("import a profile") or use it alone ("import").
+ *
+ * THE WORDS IN ANOTHER LANGUAGE ARE PROSE TOO (shared/adminActsWords.ts). The same scan
+ * reads every words table under shared/adminActs/<language>/, printed as its files
+ * write it and the three ways above, and every entry as `localizeEntry` returns it.
+ * That last one is an adjacency the English scan cannot see: the language's synonyms,
+ * then the English title, then the English synonyms, in one list. An English title
+ * ending in "import" would sit right before the English synonyms there.
  */
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { ADMIN_ACTS } from "./adminActs";
+import { ADMIN_ACTS, ADMIN_ACT_ENTRIES } from "./adminActs";
+import { ES_PLACE_WORDS, ES_SHIPPED_WORDS } from "./adminActs/es";
+import { ACT_WORD_LOCALES, ADMIN_ACT_WORDS, localizeEntry } from "./adminActsWords";
+import type { ActWords } from "./adminActs/types";
 
 const DOCKERFILE = path.resolve(__dirname, "..", "Dockerfile");
 
@@ -92,5 +102,63 @@ describe("the registry's words never read as an import to the image build's prob
       ...captures(JSON.stringify(ADMIN_ACTS, null, 2), patterns),
     ];
     expect(found, `These words read as an import to the image build's probe. Reword them (see this file's header):\n${found.join("\n")}`).toEqual([]);
+  });
+});
+
+/** A words table the way its file writes it and the bundler keeps it: `"id": words("Title", "Line.", ["a", "b"]),` a row to a line. */
+function printedAsWritten(table: Readonly<Record<string, ActWords>>): string {
+  return Object.entries(table)
+    .map(([id, w]) => `  ${printed(id)}: words(${printed(w.title)}, ${printed(w.help)}, ${printed(w.synonyms)}),`)
+    .join("\n");
+}
+
+/** One table, every way it may be printed. */
+const everyPrinting = (value: unknown): string[] => [printed(value), JSON.stringify(value), JSON.stringify(value, null, 2)];
+
+describe("the registry's words in another language never read as an import either", () => {
+  const patterns = probePatterns();
+
+  it("sees the adjacency only a served entry has: an English title or synonym right after the language's own words", () => {
+    // The language's synonyms, then the English title, then the English synonyms (`localizeEntry`).
+    const title = { title: "Importar un perfil", synonyms: ["importar perfil", "Profile import", "profile file"] };
+    expect(captures(printed(title), patterns).length).toBeGreaterThan(0);
+    // A sentence that holds " export" or " import" after a space, and a later English synonym ending in "from":
+    // everything between the two reads as one import statement. The patterns have no word boundary, so the
+    // Spanish "exportar" and "importar" in the middle of a sentence start it exactly as the English words do.
+    const sentence = { title: "Descargar la lista", help: "Una hoja para exportar los contactos.", synonyms: ["lista de contactos", "Sender name", "reply from", "from name"] };
+    expect(captures(printed(sentence), patterns).length).toBeGreaterThan(0);
+    expect(captures(JSON.stringify(sentence), patterns).length).toBeGreaterThan(0);
+    // The same words as Spanish writes them are safe: the word leads, or stands alone, and nothing ends in "from".
+    const safe = { title: "Importar un perfil", help: "Traiga un archivo para importar el perfil.", synonyms: ["importar", "importar perfil", "exportar visitantes", "import", "export"] };
+    for (const text of everyPrinting(safe)) expect(captures(text, patterns)).toEqual([]);
+    expect(captures(printedAsWritten({ "x.y.z": safe as ActWords }), patterns)).toEqual([]);
+  });
+
+  it("finds nothing in any words table, as its files write it and however it is printed", () => {
+    expect(ACT_WORD_LOCALES).toContain("es");
+    const found: string[] = [];
+    // Each file is one statement in the built server, so each file's table is read whole, as written.
+    for (const [file, table] of Object.entries({ shipped: ES_SHIPPED_WORDS, ...ES_PLACE_WORDS })) {
+      for (const c of captures(printedAsWritten(table), patterns)) found.push(`es/${file}.ts: ${c}`);
+      for (const text of everyPrinting(table)) for (const c of captures(text, patterns)) found.push(`es/${file}.ts: ${c}`);
+    }
+    for (const [locale, table] of Object.entries(ADMIN_ACT_WORDS)) {
+      // Every row alone, and the merged table whole.
+      for (const [id, w] of Object.entries(table)) for (const c of captures(printed(w), patterns)) found.push(`${locale} ${id}: ${c}`);
+      for (const text of [printedAsWritten(table), ...everyPrinting(table)]) for (const c of captures(text, patterns)) found.push(`${locale}, the whole table: ${c}`);
+    }
+    expect(found, `These words read as an import to the image build's probe. Reword them (see this file's header):\n${found.join("\n")}`).toEqual([]);
+  });
+
+  it("finds nothing in any entry as a reader of another language is served it", () => {
+    const found: string[] = [];
+    for (const locale of ACT_WORD_LOCALES) {
+      const served = ADMIN_ACT_ENTRIES.map((e) => localizeEntry(e, locale));
+      // The list really is in that language: the scan below is not reading the English a second time.
+      expect(served.filter((e, i) => e !== ADMIN_ACT_ENTRIES[i]).length).toBe(Object.keys(ADMIN_ACT_WORDS[locale]).length);
+      for (const e of served) for (const c of captures(printed(e), patterns)) found.push(`${locale} ${e.id}: ${c}`);
+      for (const text of everyPrinting(served)) for (const c of captures(text, patterns)) found.push(`${locale}, the whole served list: ${c}`);
+    }
+    expect(found, `These served words read as an import to the image build's probe. Reword them (see this file's header):\n${found.join("\n")}`).toEqual([]);
   });
 });
