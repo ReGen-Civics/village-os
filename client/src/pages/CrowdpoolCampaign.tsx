@@ -438,8 +438,7 @@ export default function CrowdpoolCampaign() {
                     <div key={p.partner} className="cp-plaque p-4">
                       <div className="flex items-center justify-between gap-3">
                         <h3 className="font-semibold text-sm" style={{ color: "#241a10" }}>
-                          {p.label}
-                          <InfoTip tip="Ordinary money travels through this partner, never through this page. The tally is the hub's cache of the partner's own numbers." label={`How ${p.label} fits in`} />
+                          <InfoTip tip="Ordinary money travels through this partner, never through this page. The tally is the hub's cache of the partner's own numbers.">{p.label}</InfoTip>
                         </h3>
                         <span className="text-xs font-bold" style={{ color: "#8a6a33" }}>{p.percent}%</span>
                       </div>

@@ -94,11 +94,7 @@ export default function PoolStatement() {
   return (
     <section className="mt-10 rounded-xl border border-border bg-card p-4 sm:p-6 min-w-0">
       <h2 className="text-lg font-semibold text-foreground">
-        <Trans context="PoolStatement, h2">The builders&rsquo; pool this cycle{" "}
-        <InfoTip
-          label="What this statement is"
-          tip="Every module earns a share of the $ReGen pool from how many members open it. A module somebody outside the platform built is owed its share. A module the platform built earns its share the same way, and that share goes back into the pool to be given out again next cycle."
-        /></Trans>
+        <Trans context="PoolStatement, h2"><InfoTip tip="Every module earns a share of the $ReGen pool from how many members open it. A module somebody outside the platform built is owed its share. A module the platform built earns its share the same way, and that share goes back into the pool to be given out again next cycle.">The builders&rsquo; pool this cycle</InfoTip></Trans>
       </h2>
       <p className="text-sm text-muted-foreground mt-1">
         <Trans context="PoolStatement, p">Cycle {data.cycle}. {num(data.activeMembers)} members opened a module.

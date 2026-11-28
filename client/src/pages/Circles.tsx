@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import GlossaryTip from "@/components/GlossaryTip";
+import { useGlossary } from "@/hooks/useGlossary";
 import { readerLanguage } from "@/lib/readerLanguage";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
@@ -10,7 +10,7 @@ import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { MushroomNetwork } from "@/components/sacred/living";
 import { iconFor } from "@/lib/circleIcons";
-import { Fragment, Suspense, lazy, useEffect, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useState, type ReactNode } from "react";
 import CircleScene from "@/components/CircleScene";
 import CirclesMiniMap from "@/components/CirclesMiniMap";
 import { cssColourForCircle } from "@shared/circleView";
@@ -23,8 +23,6 @@ import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/Se
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
 import SeatTradingCard from "@/components/power/SeatTradingCard";
-import { useIsAdmin } from "@/contexts/AuthContext";
-import { GROUP_BREAK } from "@/components/roleCard/groupLook";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
 import { useLingui } from "@lingui/react/macro";
@@ -41,8 +39,11 @@ import { Trans } from "@lingui/react/macro";
 
 // The living network behind the heading: lazy, and only once the circles have arrived (LIVING MOTION).
 
-/** How roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
-const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
+/**
+ * How roles are going has its own page since 27 Nov 2026 (/admin/role-progress, the lead: "take it away from the end
+ * of circles"). A link already sent to /circles#role-measures still lands there, on the page's title.
+ */
+export const MOVED_MEASURES = { hash: "#role-measures", to: "/admin/role-progress#role-measures" } as const;
 
 /** The link from a circle's panel to its own card (`/circles/:id`). */
 const OPEN_CARD = "Open this circle's card";
@@ -280,8 +281,12 @@ export default function Circles() {
   // card offers one only while this reader's catalog lists that module as on.
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
+  const glossary = useGlossary();
   const authUser = useUserOrVisitor();
-  const admin = useIsAdmin();
+  // The old anchor of the measures: send it on to their own page.
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === MOVED_MEASURES.hash) window.location.replace(MOVED_MEASURES.to);
+  }, []);
   const map = useModule("map");
   const raiseHand = !!map && map.lifecycle !== "off";
   // The map's room opens only to a reader the module serves: public to all, members to anyone signed in. Anyone else
@@ -420,6 +425,9 @@ export default function Circles() {
     );
   }
   const { hero, card, together, closing } = page;
+  // While the village's own intro still uses the word "domain", that word wears what the village wrote for it
+  // (shared/glossary.ts), found the way the intro's other tipped words are.
+  const domainWord = /\b(?:domains?|dominios?)\b/i.exec(hero.fields.intro ?? "")?.[0] ?? "";
   const groupToday = page.today;
   const groupFuture = page.future;
   // `{coordinator}` is the village's own top circle, filled here and never
@@ -457,10 +465,9 @@ export default function Circles() {
                 tips={[
                   { term: hero.fields.firstTerm, tip: hero.fields.firstTip },
                   { term: hero.fields.secondTerm, tip: hero.fields.secondTip },
+                  { term: domainWord, tip: glossary?.domain ?? "" },
                 ]}
               />
-              {/* While the village's own intro still uses the word, its mark (shared/glossary.ts). */}
-              {/\b(?:domain|dominio)/i.test(hero.fields.intro ?? "") && <GlossaryTip slot="domain" word={t({ message: "domain", context: "glossary: the word a tip explains" })} />}
             </p>
             <Link href="/roles" className={BTN_PRIMARY}>
               {hero.fields.rolesLabel}
@@ -632,16 +639,6 @@ export default function Circles() {
           </div>
           )}
 
-          {/* How roles are going, circle by circle (the fold of /role-measures, which redirects to #role-measures
-              here): the page's last chapter, for administrators only. It reads its own numbers, so a failed
-              /api/org read never hides it. */}
-          {admin ? (
-            <div className={`mx-auto mt-16 max-w-4xl ${GROUP_BREAK}`}>
-              <Suspense fallback={null}>
-                <RoleMeasuresPanel />
-              </Suspense>
-            </div>
-          ) : null}
         </div>
       </section>
       </div>
