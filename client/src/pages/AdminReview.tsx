@@ -19,6 +19,12 @@
  * nothing: a steward who is not an admin opens it.
  *
  * A failed read is never an empty one: a queue that did not load says so, by name, with a way to try again.
+ *
+ * THE HALL RELIEF (27 Nov 2026: the live list drew 185 rows with no paging, 159 of them Sera's). Sera's differences are
+ * ONE row that opens their list in place (SeraListRow). Each kind shows its first rows and asks the server for more
+ * (`showMore`). The order is said on the page: what lapses first, then oldest, then what carries no date. A row that
+ * cannot be applied as the village stands says Blocked and why. A queue that did not load reads "unknown", never zero,
+ * and the number at the top becomes "at least". No new act: nothing here decides more than it did.
  */
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
@@ -27,16 +33,18 @@ import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import type { InboxItem } from "@shared/reviewInbox";
-import { INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
+import { INBOX_PAGE, INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
 import { sourceText } from "@/components/reviewInbox/sourceWords";
 import { matchesFind } from "@shared/proposedChanges";
 import { DecidedCard } from "@/components/proposals/ChangeCard";
 import ConnectorWaiting from "@/components/reviewInbox/ConnectorWaiting";
 import HeldList from "@/components/reviewInbox/HeldList";
 import { useConnectorDesk } from "@/components/reviewInbox/useConnectorDesk";
-import InboxRow from "@/components/reviewInbox/InboxRow";
+import InboxRow, { CHIP_BLOCKED } from "@/components/reviewInbox/InboxRow";
 import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
-import { inboxHeaders as headers, kindOf, useReviewInbox } from "@/components/reviewInbox/useReviewInbox";
+import SeraListRow from "@/components/reviewInbox/SeraListRow";
+import DecisionsLine from "@/components/reviewInbox/DecisionsLine";
+import { inboxHeaders as headers, kindOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
 
 type View = "waiting" | "held" | "decided";
 const viewOf = (search: string): View => {
@@ -63,12 +71,15 @@ export default function AdminReview() {
 
   // Keyed on being signed in, never on the user object, which a context may hand out anew on every render.
   const signedIn = !!auth && !auth.loading && !!auth.user;
-  const { load, answer, groups, read } = useReviewInbox(signedIn);
+  const { load, answer, groups, counts, read, refresh, showMore, showAll } = useReviewInbox(signedIn);
   // What the last decision made on a row said, read out once: the row itself leaves the list when it is decided.
   const [notice, setNotice] = useState<string | null>(null);
+  // The kind whose next rows are being read, so its button says so and cannot be pressed twice.
+  const [reading, setReading] = useState<InboxSource | null>(null);
 
   // The connector's own read, made only when the inbox says this person may read it: the page never asks for more.
-  const desk = useConnectorDesk(() => void read());
+  // After a decision the list is read again BEHIND the page, so nothing a person has open is closed under them.
+  const desk = useConnectorDesk(() => void refresh());
   const connectorState = load.phase === "ready" ? load.answer.sections.find((s) => s.source === "connector")?.state : undefined;
   const mayDecide = connectorState === "ok" || connectorState === "failed";
   useEffect(() => {
@@ -109,7 +120,8 @@ export default function AdminReview() {
   const failed = (answer?.sections ?? []).filter((s) => s.state === "failed").map((s) => s.source);
   const readable = (answer?.sections ?? []).filter((s) => s.state === "ok" || s.state === "failed");
   const forbidden = !!answer && readable.length === 0;
-  const waiting = answer?.items.length ?? 0;
+  // Whether anything is listed at all. The number the page SAYS is the one count (DecisionsLine), the server's.
+  const waiting = counts.waiting;
   const heldCount = desk.heldState === "ok" ? desk.held.length : 0;
   const foundIds = useMemo(() => new Set((found?.items ?? []).filter((i) => i.source === "connector").map((i) => i.key.slice(i.key.lastIndexOf(":") + 1))), [found]);
   const foundCode = found?.code ?? null;
@@ -123,12 +135,23 @@ export default function AdminReview() {
         item={item}
         onDone={(said) => {
           setNotice(said);
-          void read();
+          void refresh();
         }}
       />
+    ) : item.source === "sera" && item.holds ? (
+      <SeraListRow key={item.key} item={item} onChanged={() => void refresh()} />
     ) : (
       <InboxRow key={item.key} item={item} />
     );
+
+  const more = async (source: InboxSource, all?: number) => {
+    setReading(source);
+    await (all ? showAll(source, all) : showMore(source));
+    setReading(null);
+  };
+  const unknownWord = t({ context: "review inbox: a queue that did not load has no number", message: "unknown" });
+  /** A kind's number as the page says it: the server's count, or "unknown" when its queue did not load. */
+  const countOf = (g: InboxGroup) => (g.count === null ? unknownWord : String(g.count));
 
   return (
     <Layout>
@@ -145,14 +168,8 @@ export default function AdminReview() {
               <Trans context="review inbox: lede">Everything waiting on you, from every queue, in one list. Decide what you can on its row. The rest opens where it is decided.</Trans>
             </p>
             {answer && !forbidden ? (
-              <p className={HINT} role="status" aria-live="polite">
-                <Plural value={waiting} one="# waiting on you." other="# waiting on you." />
-                {heldCount ? (
-                  <>
-                    {" "}
-                    <Plural context="review inbox: header" value={heldCount} one="# held." other="# held." />
-                  </>
-                ) : null}
+              <p className={HINT} role="status" aria-live="polite" data-testid="inbox-status">
+                <DecisionsLine counts={counts} held={heldCount} />
               </p>
             ) : null}
           </header>
@@ -298,7 +315,11 @@ export default function AdminReview() {
                 <p className={HINT}>
                   <Trans context="review inbox: empty">Nothing is waiting on you.</Trans>
                 </p>
-              ) : null}
+              ) : (
+                <p className={HINT} data-testid="inbox-order">
+                  <Trans context="review inbox: the order of the list">In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.</Trans>
+                </p>
+              )}
               {onlyKind ? (
                 <p className={HINT} data-testid="only-kind">
                   <OnlyKind title={titles[onlyKind]} />{" "}
@@ -311,7 +332,7 @@ export default function AdminReview() {
                 <nav aria-label={t({ context: "review inbox: kinds", message: "What is waiting, by kind" })} className="flex flex-wrap gap-2" data-testid="kinds">
                   {groups.map((g) => (
                     <a key={g.source} href={`#review-${g.source}`} className={`${CHIP_SOFT} min-h-9 px-3 text-sm`}>
-                      {titles[g.source]} <span aria-hidden="true">·</span> {g.count}
+                      {titles[g.source]} <span aria-hidden="true">·</span> {countOf(g)}
                     </a>
                   ))}
                 </nav>
@@ -321,20 +342,62 @@ export default function AdminReview() {
                   {notice}
                 </p>
               ) : null}
-              {groups.filter((g) => !onlyKind || g.source === onlyKind).map(({ source: s, items, count }) =>
-                s === "connector" && desk.state === "ok" ? (
-                  <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={count} found={foundIds} />
-                ) : (
-                <section key={s} className="space-y-3" aria-labelledby={`review-${s}`}>
-                  <h2 id={`review-${s}`} className={H2}>
-                    {titles[s]}
-                    {" "}
-                    <span className={`${CHIP_SOFT} ml-1 align-middle`}>{count}</span>
-                  </h2>
-                  <ul className="space-y-2">{items.map(row)}</ul>
-                </section>
-                ),
-              )}
+              {groups.filter((g) => !onlyKind || g.source === onlyKind).map((g) => {
+                const { source: s, items } = g;
+                // The connector's cards are its own read, whole: its number here is that read's when the list's is unknown.
+                if (s === "connector" && desk.state === "ok") return <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={g.count ?? desk.changes.length} found={foundIds} />;
+                return (
+                  <section key={s} className="space-y-3" aria-labelledby={`review-${s}`} data-testid={`kind-${s}`}>
+                    <h2 id={`review-${s}`} className={H2}>
+                      {titles[s]}
+                      {" "}
+                      <span className={`${CHIP_SOFT} ml-1 align-middle`} data-testid={`count-${s}`}>{countOf(g)}</span>
+                      {g.blocked ? (
+                        <>
+                          {" "}
+                          <span className={`${CHIP_BLOCKED} align-middle`}>
+                            <Plural context="review inbox: a kind's heading" value={g.blocked} one="# blocked" other="# blocked" />
+                          </span>
+                        </>
+                      ) : null}
+                    </h2>
+                    {g.count === null ? (
+                      <p className={HINT} role="status" data-testid={`unknown-${s}`}>
+                        {items.length ? (
+                          <Trans context="review inbox: a queue that did not load">This queue did not load in full, so how many wait here is unknown. What did load is listed.</Trans>
+                        ) : (
+                          <Trans context="review inbox: a queue that did not load">This queue did not load, so how many wait here is unknown. It may hold something.</Trans>
+                        )}
+                      </p>
+                    ) : null}
+                    {items.length ? <ul className="space-y-2">{items.map(row)}</ul> : null}
+                    {g.more ? (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button type="button" className={BTN_SECONDARY} disabled={reading !== null} onClick={() => void more(s)} data-testid={`more-${s}`}>
+                          {reading === s ? <Trans context="review inbox: more rows of one kind">Reading more</Trans> : <Trans context="review inbox: more rows of one kind">Show more</Trans>}
+                        </button>
+                        {g.count !== null && g.count - items.length > INBOX_PAGE ? (
+                          <button type="button" className={BTN_SECONDARY} disabled={reading !== null} onClick={() => void more(s, g.count!)} data-testid={`all-${s}`}>
+                            <ShowAll n={g.count} />
+                          </button>
+                        ) : null}
+                        <p className={HINT} data-testid={`showing-${s}`}>
+                          <Showing shown={items.length} of={g.count ?? g.atLeast} />
+                        </p>
+                      </div>
+                    ) : null}
+                    {g.capped && items[0] ? (
+                      <p className={HINT} data-testid={`capped-${s}`}>
+                        <Showing shown={items.length} of={g.count ?? g.atLeast} />{" "}
+                        <Trans context="review inbox: a queue too long to list here">This list stops here. The rest are on this queue's own page.</Trans>{" "}
+                        <Link href={items[0].decideAt} className={LINK}>
+                          {sourceText(s, i18n).door}
+                        </Link>
+                      </p>
+                    ) : null}
+                  </section>
+                );
+              })}
             </div>
           ) : null}
         </div>
@@ -350,6 +413,16 @@ function FoundDecided({ code, day }: { code: string; day: string | null }) {
   ) : (
     <Trans context="review inbox: find a decided code">{code} was decided. It is under Decided.</Trans>
   );
+}
+
+/** "Show all 238" */
+function ShowAll({ n }: { n: number }) {
+  return <Trans context="review inbox: more rows of one kind">Show all {n}</Trans>;
+}
+
+/** "Showing 10 of 23." */
+function Showing({ shown, of }: { shown: number; of: number }) {
+  return <Trans context="review inbox: more rows of one kind">Showing {shown} of {of}.</Trans>;
 }
 
 /** "Showing only Org chart drafts." */

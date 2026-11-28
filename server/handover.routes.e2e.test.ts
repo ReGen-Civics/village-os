@@ -546,7 +546,12 @@ describe.skipIf(!DB_CONFIGURED)("Q5: every member may READ the admin routes the 
     expect(JSON.stringify(inbox.json)).not.toContain("A draft only admins read");
     // Control: the admin who may decide it still reads it, on the route and on the list.
     expect(((await call("GET", "/api/admin/org/drafts")).json ?? []).some((d: any) => String(d.id) === id)).toBe(true);
-    expect(((await call("GET", "/api/admin/review/inbox")).json.items ?? []).some((i: any) => i.key === `structure:${id}`)).toBe(true);
+    // The list sends a page of each kind; ask for every draft, so this holds however many drafts the suite has open.
+    const mine = await call("GET", "/api/admin/review/inbox?rows=structure:200");
+    expect((mine.json.items ?? []).some((i: any) => i.key === `structure:${id}`)).toBe(true);
+    // The Blocked check ran against the real chart for the listed drafts and found nothing to say about this one.
+    expect(mine.json.counts.unknown).not.toContain("structure");
+    expect((mine.json.items ?? []).find((i: any) => i.key === `structure:${id}`)?.blocked ?? null).toBeNull();
     await call("POST", `/api/admin/org/drafts/${id}/revert`, {});
   });
 
