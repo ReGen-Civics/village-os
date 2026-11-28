@@ -62300,6 +62300,11 @@ msgctxt "proposed changes: a field"
 msgid "New"
 msgstr "New"
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor"
+msgid "https://..."
+msgstr "https://..."
+
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "a canvas block is loading"
 msgid "Opening {name}"

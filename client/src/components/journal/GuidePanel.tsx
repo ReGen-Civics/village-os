@@ -145,7 +145,7 @@ export default function GuidePanel({
         // It holds the bottom-right corner on every width, so the shortcuts
         // button steps out (index.css) instead of sitting reachable under it.
         data-hides-fab
-        className="fixed inset-x-0 bottom-[var(--kb,0px)] z-[70] flex max-h-[min(85vh,calc(var(--vvh,100vh)-1rem))] flex-col rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:border-l md:border-t-0"
+        className="fixed inset-x-0 bottom-[var(--kb,0px)] z-[70] flex max-h-[min(85vh,calc(var(--vvh,100vh)-1rem))] flex-col rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl md:top-0 md:bottom-[var(--kb,0px)] md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:border-l md:border-t-0"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <h2 className="font-display text-lg font-bold text-foreground"><Trans context="GuidePanel, h2">The guide</Trans></h2>
