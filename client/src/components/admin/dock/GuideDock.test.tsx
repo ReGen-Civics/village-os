@@ -791,13 +791,24 @@ describe("never a raw address in her words", () => {
     expect(bubble().textContent).not.toContain("/admin");
   });
 
-  it("uses the checklist's own words for a launch row's address when the page has them", async () => {
-    mockFetch({ "POST /api/admin/assistant/launch": () => ({ body: { reply: "Next, go to /admin?tab=season and say how a season ends." } }) });
-    dock({ surface: "journey", modes: ["launch"], groups: undefined, tab: undefined, onOpenTab: undefined, linkNames: { "/admin?tab=season": "Open Season" } });
+  it("names a launch row's Admin tab by the tab's name, and keeps the row's own label for an address nothing else names", async () => {
+    mockFetch({
+      "POST /api/admin/assistant/launch": () => ({ body: { reply: "Next, go to /admin?tab=season and say how a season ends. Then read /governance/how#game-mechanics with the others." } }),
+    });
+    dock({
+      surface: "journey", modes: ["launch"], groups: undefined, tab: undefined, onOpenTab: undefined,
+      // A launch row's label is written for a button, so it starts with a verb.
+      linkNames: { "/admin?tab=season": "Open Season", "/governance/how#game-mechanics": "Open the game mechanics" },
+    });
     await userEvent.type(box(), "what next?{Enter}");
-    expect((await talk().findByRole("link", { name: "Open Season" })).getAttribute("href")).toBe("/admin?tab=season");
-    expect(bubble().textContent).toContain("Next, go to Open Season and say how a season ends.");
+    // The tab's own name, a noun, reads as a place inside her sentence.
+    expect((await talk().findByRole("link", { name: "Season" })).getAttribute("href")).toBe("/admin?tab=season");
+    expect(bubble().textContent).toContain("Next, go to Season and say how a season ends.");
+    expect(bubble().textContent).not.toContain("Open Season");
+    // No tab and no known page names this one, so the row's label does.
+    expect(talk().getByRole("link", { name: "Open the game mechanics" }).getAttribute("href")).toBe("/governance/how#game-mechanics");
     expect(bubble().textContent).not.toContain("/admin");
+    expect(bubble().textContent).not.toContain("/governance");
   });
 
   it("names the pages it knows, and says Open the page for an address nothing names", async () => {

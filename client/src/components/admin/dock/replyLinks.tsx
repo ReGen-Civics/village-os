@@ -8,12 +8,17 @@
  * /admin?tab=season". Here the address is still a link, and its WORDS name the
  * page or the control:
  *
- *   1. what the host said that address is (a launch row's own `fixLabel`, where
- *      the checklist is at hand);
- *   2. the Admin tab's own name, from the map the dock was handed, then from
+ *   1. the Admin tab's own name, from the map the dock was handed, then from
  *      the admin's own table of tabs;
- *   3. a page this file knows by name (the review page, the road to launch);
+ *   2. a page this file knows by name (the review page, the road to launch);
+ *   3. what the host said that address is (a launch row's own `fixLabel`, where
+ *      the checklist is at hand);
  *   4. "Open the page", only when nothing names it.
+ *
+ * A NAME COMES BEFORE A BUTTON'S LABEL. A launch row's `fixLabel` is written
+ * for a button ("Open Season"), so inside her sentence it read "go to Open
+ * Season". A tab's name and a page's name are nouns in every language, so they
+ * go first and the row's label names only an address nothing else names.
  *
  * The address is never visible text, in the bubble or in the line read to a
  * screen reader (`replyAsWords`). An outside link (https://…) is left exactly
@@ -80,15 +85,16 @@ export function useLinkNamer(named: Readonly<Record<string, string>> | undefined
   const fallback = t({ message: "Open the page", context: "guide dock, a link's words when nothing names the page" });
   return {
     nameOf(href) {
-      const told = named?.[href]?.trim();
-      if (told) return told;
       const tab = adminTabOf(href);
       if (tab) {
         const mapped = groups.flatMap((g) => g.items).find((i) => i.key === tab)?.label ?? tabEntry(tab)?.name;
         if (mapped) return mapped;
       }
-      // A page known by name, whatever rides behind its path; an Admin tab nobody could name is still Admin.
-      return known[href.split(/[?#]/)[0]] ?? fallback;
+      // A page known by name, whatever rides behind its path.
+      const page = known[href.split(/[?#]/)[0]];
+      if (page && !tab) return page;
+      // What the host calls it, for an address no tab and no known page names. An Admin tab nobody could name is still Admin.
+      return named?.[href]?.trim() || page || fallback;
     },
   };
 }
