@@ -34,7 +34,7 @@ vi.mock("@/components/MicButton", () => ({
 }));
 
 import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
-import GuideDock, { type DockState, type GuideDockProps } from "./GuideDock";
+import GuideDock, { SHORT_TALK, type DockState, type GuideDockProps } from "./GuideDock";
 import { adminTabOf, splitReply } from "./replyLinks";
 import type { NavGroup } from "../adminNavGroups";
 
@@ -847,5 +847,44 @@ describe("never a raw address in her words", () => {
     expect(adminTabOf("/admin?tab=org-chart&x=1")).toBe("org-chart");
     expect(adminTabOf("/admin?tab=../x")).toBeNull();
     expect(adminTabOf("/journey-to-launch?tab=season")).toBeNull();
+  });
+});
+
+describe("Say yes has half the dock while there is little talk", () => {
+  const PROPOSAL = { key: "feed.show_birthdays", label: "Show birthdays", category: "Feed", from: "false", to: "true", why: "You asked for it.", applyPath: "/api/admin/variables/feed.show_birthdays" };
+  const list = () => screen.getByTestId("guide-say-yes");
+  const widths = () => list().className.split(/\s+/).filter((c) => /:w-/.test(c));
+
+  it("takes half the width with something prepared and one question and its answer, and the narrow column once the talk grows", async () => {
+    let n = 0;
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: n++ === 0 ? answer({ reply: "I can switch that for you.", proposal: PROPOSAL }) : answer({ reply: "Gladly." }) }) });
+    dock({ initialShape: "expanded" });
+    // Nothing prepared yet: the narrow column, quiet beside the conversation.
+    expect(list().hasAttribute("data-roomy")).toBe(false);
+    expect(widths()).toEqual(["@min-[44rem]:w-[19rem]", "@min-[64rem]:w-[24rem]"]);
+
+    await userEvent.type(box(), "show birthdays{Enter}");
+    await within(list()).findByTestId("helper-proposal");
+    // One question and its answer is a short talk.
+    expect(SHORT_TALK).toBe(2);
+    expect(list().getAttribute("data-roomy")).toBe("true");
+    expect(widths()).toEqual(["@min-[44rem]:w-1/2"]);
+
+    await userEvent.type(box(), "thank you{Enter}");
+    expect(await talk().findByText("Gladly.")).toBeTruthy();
+    // The talk has grown: the conversation has the room again, and the card is still listed.
+    expect(list().hasAttribute("data-roomy")).toBe(false);
+    expect(widths()).toEqual(["@min-[44rem]:w-[19rem]", "@min-[64rem]:w-[24rem]"]);
+    expect(within(list()).getByTestId("helper-proposal")).toBeTruthy();
+  });
+
+  it("holds for a change still on the save bar from an earlier visit, before anything is said", () => {
+    dock({ initialShape: "expanded", onBar: [PROPOSAL], waiting: ["feed.show_birthdays=true"] });
+    expect(list().getAttribute("data-roomy")).toBe("true");
+  });
+
+  it("is a rule of the wide view only: no numbered palette class comes with it", () => {
+    dock({ initialShape: "expanded", onBar: [PROPOSAL], waiting: ["feed.show_birthdays=true"] });
+    expect(list().className).not.toMatch(/(?:bg|text|border)-[a-z]+-\d{2,3}\b/);
   });
 });

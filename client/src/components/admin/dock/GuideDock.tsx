@@ -89,6 +89,9 @@ export type DockState = "closed" | DockShape;
 
 type Turn = HelperLine & { answer?: HelperAnswer; consulted?: GuideConsulted; applied?: "dropped"; filing?: FilingState };
 
+/** The most messages a conversation may hold and still count as short: one question and its answer. */
+export const SHORT_TALK = 2;
+
 const NO_GROUPS: readonly NavGroup[] = [];
 const NO_MARKS: readonly string[] = [];
 const NO_PROPOSALS: readonly HelperProposal[] = [];
@@ -467,6 +470,13 @@ export default function GuideDock({
   const inTalk = new Set(threads.helper.flatMap((turn) => (turn.answer?.proposal ? [proposalMarkOf(turn.answer.proposal)] : [])));
   const fromBar = onBar.filter((p) => !inTalk.has(proposalMarkOf(p)));
   const preparedCount = prepared.length + fromBar.length;
+  /*
+   * WHILE THERE IS LITTLE TALK, SAY YES HAS HALF THE DOCK. On a first evening one change is prepared beside a
+   * conversation of a question and its answer, and a narrow column beside a wide, mostly empty one reads as an
+   * afterthought. So with something prepared and no more than SHORT_TALK messages, the list takes half the
+   * width; once the talk grows, it is the narrow column again and the conversation has the room.
+   */
+  const roomy = preparedCount > 0 && threads.helper.length <= SHORT_TALK;
 
   // ── The frame ─────────────────────────────────────────────────────────────
   const cover = useKeyboardCover();
@@ -733,7 +743,8 @@ export default function GuideDock({
             <section
               aria-label={t({ message: "Say yes", context: "guide dock, the list of what the guide prepared" })}
               data-testid="guide-say-yes"
-              className={`order-first max-h-[35%] shrink-0 overflow-y-auto border-b border-border px-4 py-3 @min-[44rem]:order-none @min-[44rem]:max-h-none @min-[44rem]:w-[19rem] @min-[44rem]:border-b-0 @min-[44rem]:border-l @min-[64rem]:w-[24rem] ${preparedCount === 0 ? "hidden @min-[44rem]:block" : ""}`}
+              data-roomy={roomy ? "true" : undefined}
+              className={`order-first max-h-[35%] shrink-0 overflow-y-auto border-b border-border px-4 py-3 @min-[44rem]:order-none @min-[44rem]:max-h-none @min-[44rem]:border-b-0 @min-[44rem]:border-l ${roomy ? "@min-[44rem]:w-1/2" : "@min-[44rem]:w-[19rem] @min-[64rem]:w-[24rem]"} ${preparedCount === 0 ? "hidden @min-[44rem]:block" : ""}`}
             >
               <h3 className="font-display text-base font-semibold text-foreground"><Trans context="guide dock, the list of what the guide prepared">Say yes</Trans></h3>
               <p className="text-xs text-muted-foreground">
