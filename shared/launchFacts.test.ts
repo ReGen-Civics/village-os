@@ -6,7 +6,7 @@
  * shows up as a named village reading wrong.
  */
 import { describe, expect, it } from "vitest";
-import { LAUNCH_LABELS, launchDoors, launchLabel, type LaunchFacts, type LaunchLabel } from "./launchFacts";
+import { LAUNCH_LABELS, launchDoors, launchLabel, launchRecord, type LaunchFacts, type LaunchLabel } from "./launchFacts";
 
 /** A village that was claimed a moment ago and has done nothing else. */
 const CLAIMED: LaunchFacts = {
@@ -128,5 +128,32 @@ describe("launchDoors: what a screen may offer", () => {
       rowsOpen: false,
       voteCanBeAsked: false,
     });
+  });
+});
+
+describe("launchRecord: how the checklist became a record", () => {
+  it("says voted when the village's own vote carried", () => {
+    expect(launchRecord(facts({ voteCarried: true, launchedByBallotId: "bal-3", checklistFrozen: true, launchedAt: "2026-12-30T00:00:00.000Z" }))).toBe("voted");
+  });
+
+  it("says marked for a village that is issuing with a frozen checklist and no vote: the page must not say it voted", () => {
+    // QA's state S5a. The label reads "issuing-vote-not-held" here, which is true, and the header must agree with it.
+    const f = facts({ issuing: true, founderPowerStands: false, checklistFrozen: true, launchedAt: "2026-02-01T00:00:00.000Z" });
+    expect(launchRecord(f)).toBe("marked");
+    expect(launchLabel(f)).toBe("issuing-vote-not-held");
+  });
+
+  it("says marked for a village with a frozen checklist that is not issuing and never voted", () => {
+    // QA's state S5b. The label has no name for this village and reads "setup", so a page with a frozen checklist
+    // shows this and hides the label.
+    const f = facts({ checklistFrozen: true, launchedAt: "2026-02-01T00:00:00.000Z" });
+    expect(launchRecord(f)).toBe("marked");
+    expect(launchLabel(f)).toBe("setup");
+  });
+
+  it("says nothing while the checklist is open, whatever else is true", () => {
+    expect(launchRecord(CLAIMED)).toBeNull();
+    expect(launchRecord(facts({ issuing: true, founderPowerStands: false }))).toBeNull();
+    expect(launchRecord(facts({ voteOpen: true, openBallotId: "bal-1" }))).toBeNull();
   });
 });

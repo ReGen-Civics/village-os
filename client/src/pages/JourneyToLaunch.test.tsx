@@ -722,8 +722,14 @@ describe("the page offers only what the server would allow", () => {
     });
     draw();
     await waitFor(() => expect(screen.getByTestId("start-already-issuing")).toBeTruthy());
-    expect(screen.getByTestId("journey-standing").textContent).toBe("Issuing and vote not held");
-    expect(screen.getByTestId("start-already-issuing").textContent).toContain("no launch vote has carried");
+    expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Issuing and vote not held");
+    const told = screen.getByTestId("start-already-issuing");
+    // In the village's own word for its tokens (the generic word while no config names one), and with no promise of "yet".
+    expect(told.textContent).toContain("This village is already issuing tokens, and no launch vote has carried, so this page cannot open the vote.");
+    expect(told.textContent).not.toMatch(/\byet\b/);
+    // It does not end in a dead end: the village can change this by its own vote, and the sentence points to where.
+    expect(told.textContent).toContain("by its highest vote");
+    expect(screen.getByRole("link", { name: "Open the game mechanics" }).getAttribute("href")).toBe("/governance/how#game-mechanics");
     // The dead button: Start the Game used to show here, and POST /launch/propose answered 409.
     expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
     // Its checklist is still open, so its rows can still be answered.
@@ -737,7 +743,7 @@ describe("the page offers only what the server would allow", () => {
     draw();
     const ask = await screen.findByRole("button", { name: "Ask the village" });
     await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
-    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Setup"));
+    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Setup"));
     expect(screen.queryByTestId("start-already-issuing")).toBeNull();
   });
 
@@ -753,10 +759,35 @@ describe("the page offers only what the server would allow", () => {
       },
     });
     draw();
-    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Running"));
+    await waitFor(() => expect(screen.getByText(/The village voted to start its Game on/)).toBeTruthy());
+    // The header says where a launched village stands, so the label steps back.
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
     expect(screen.getByText(/Take one backup/i)).toBeTruthy();
     expect(screen.queryByRole("button", { name: /mark done/i })).toBeNull();
     expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+  });
+
+  it("never says a village voted when it was only marked launched, and shows no label over a frozen checklist", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-02-01T12:00:00.000Z";
+    for (const marked of [
+      // A frozen checklist with no vote behind it, issuing (the label would read "Issuing and vote not held")...
+      { ...FACTS, issuing: true, founderPowerStands: false, checklistFrozen: true, launchedAt: at },
+      // ...and one that is not issuing either (the label would read "Setup", under a header that says "live").
+      { ...FACTS, checklistFrozen: true, launchedAt: at },
+    ]) {
+      answer({
+        "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at, launchedByBallotId: null } },
+        ...candidates,
+        [FACTS_URL]: { status: 200, body: { facts: marked, label: marked.issuing ? "issuing-vote-not-held" : "setup" } },
+      });
+      const page = draw();
+      await waitFor(() => expect(screen.getByText(/This village was marked launched on/)).toBeTruthy());
+      expect(screen.getByText(/No launch vote carried\./)).toBeTruthy();
+      expect(screen.queryByText(/The village voted to start its Game/)).toBeNull();
+      expect(screen.queryByTestId("journey-standing")).toBeNull();
+      page.unmount();
+    }
   });
 
   it("falls back to what it read before when the facts cannot be read", async () => {

@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { plural } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
 import type { LaunchFacts } from "@shared/launchFacts";
+import { useTokensWord } from "@/hooks/useTokenNames";
 import { readLaunchFacts, readLaunchStatus, type LaunchStatusRead } from "@/lib/launchReads";
 
 export type LaunchBannerState =
@@ -60,6 +61,8 @@ export interface LaunchBannerLines {
 /** The strip's two lines for this admin, or null when it should not show. */
 export function useLaunchBanner(token: string): LaunchBannerLines | null {
   const { t } = useLingui();
+  // What this village calls all its tokens together.
+  const tokens = useTokensWord();
   const [state, setState] = useState<LaunchBannerState | null>(null);
   useEffect(() => {
     let live = true;
@@ -93,7 +96,7 @@ export function useLaunchBanner(token: string): LaunchBannerLines | null {
       : t({ message: "Launch · nothing blocking", context: "admin launch strip, phone" });
   const full = issuingUnvoted
     ? t({
-        message: `Journey to Launch: tokens are being issued and no launch vote has carried · ${what} · ${recommended} recommended remaining`,
+        message: `Journey to Launch: ${tokens} are being issued and no launch vote has carried · ${what} · ${recommended} recommended remaining`,
         context: "admin launch strip, a village issuing before its vote",
       })
     : t({ message: `Journey to Launch: ${what} · ${recommended} recommended remaining`, context: "admin launch strip" });
