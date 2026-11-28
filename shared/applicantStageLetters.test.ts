@@ -163,6 +163,10 @@ describe("the start day (the lead, 27 Nov 2026: accepted Friday, start Monday, a
     // A season starting on a Wednesday: the first Monday on or after it.
     expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: ["2026-12-23"], startNow: false }).iso).toBe("2026-12-28");
     expect(START_RULE_WORDS.next_season("Monday")).toBe("the first Monday on or after the next season begins");
+    // A MOON TERM (QA round 5): the first all-hands day within its own moon, never past its last day.
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: false, term: { startsOn: "2026-11-28", endsOn: "2026-12-26" } })).toEqual({ iso: "2026-11-30", rule: "moon_term" });
+    // A moon ending before the next Monday: its first day after acceptance, within it.
+    expect(startOf({ acceptedIso: "2026-12-01", weekday: 1, seasonStarts: seasons, startNow: false, term: { startsOn: "2026-11-28", endsOn: "2026-12-05" } })).toEqual({ iso: "2026-12-01", rule: "moon_term" });
   });
   it("reads the village's weekday and zone, in the applicant's language", () => {
     expect(weekdayIndex("Monday")).toBe(1);

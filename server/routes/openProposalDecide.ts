@@ -338,6 +338,24 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     return WENT.has(r.status) ? null : whyNotSent(r);
   }
 
+  /** The start day (ruling 8 and its moon-term case), once Ops's "start now" is known: shared/startDay.ts `startOf`. */
+  const startDayFor = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<string> =>
+    startOf({
+      acceptedIso: civilDateKey(adoptedAt, tz()),
+      weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)),
+      seasonStarts: (deps.seasonState().seasons ?? []).map((x: any) => String(x?.startsOn ?? "")),
+      startNow: await store.startNowOf(getPool(), p.id),
+      term: p.body.term ? { startsOn: p.body.term.startsOn, endsOn: p.body.term.endsOn } : null,
+    }).iso;
+  /** The same day, for a moon role's letter, without "start now" (which only brings it sooner, never past the term). */
+  const startDayIso = (p: store.StoredOpenProposal, adoptedAt: Date): string => {
+    const t = p.body.term!;
+    const accepted = civilDateKey(adoptedAt, tz());
+    const late = roleStartsOn(t.startsOn, accepted);
+    const day = startOf({ acceptedIso: accepted, weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)), seasonStarts: [], startNow: false, term: { startsOn: t.startsOn, endsOn: t.endsOn } }).iso;
+    return day > late ? day : late;
+  };
+
   /** What the letters say about the season the roles start in. */
   /** The letter's days. A moon role starts on the day it is adopted, never before the moon's first day (audit: "from 9 November" for a role adopted on the 11th). */
   const seasonWords = (p: store.StoredOpenProposal, adoptedAt: Date) => {
@@ -346,7 +364,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const lang = languageOf(p);
     const w = wordsIn(lang);
     const civilDayWords = w.day;
-    const from = t ? roleStartsOn(t.startsOn, civilDateKey(adoptedAt, tz())) : null;
+    // A moon role's seat starts on the start day (QA round 5), so its run is said from that day.
+    const from = t ? startDayIso(p, adoptedAt) : null;
     return {
       season: s?.name ? String(s.name) : null,
       startsOn: t && from ? civilDayWords(from) : s?.startsOn ? civilDayWords(String(s.startsOn)) : w.adopt.firstDay,
@@ -367,7 +386,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const accepted = civilDateKey(adoptedAt, tz());
     const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
     // Ruling 8: the next season's start in every term mode, unless the adoption chose "start now".
-    const day = startOf({ acceptedIso: accepted, weekday, seasonStarts: (deps.seasonState().seasons ?? []).map((x: any) => String(x?.startsOn ?? "")), startNow: await store.startNowOf(getPool(), p.id) }).iso;
+    const day = await startDayFor(p, adoptedAt);
     void s;
     void t;
     const dayName = weekdayName(weekday, lang);

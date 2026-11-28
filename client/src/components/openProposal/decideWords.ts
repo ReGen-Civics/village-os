@@ -110,7 +110,7 @@ export const DECIDE_MIRROR: WordMirror<typeof DECIDE_WORDS> = {
   adoptedEmailed: (days) => msg({ message: `Adopted. Their invitation went to them by email. It works once and lasts ${days} days. If it does not reach them, make a new one from this page.`, context: "open proposal decide: adoptedEmailed" }),
   adoptedNotEmailed: (why) => [msg({ message: "Adopted.", context: "open proposal decide: adoptedNotEmailed" }), " ", NOT_SENT[why], " ", msg({ message: "Copy their invitation below and send it to them yourself.", context: "open proposal decide: adoptedNotEmailed" })],
   adoptedAccount: msg({ message: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.", context: "open proposal decide: adoptedAccount" }),
-  adoptedAccountMoon: msg({ message: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon.", context: "open proposal decide: adoptedAccountMoon" }),
+  adoptedAccountMoon: msg({ message: "Adopted. That address already has an account here, so no invitation was needed: their roles start on their start day, within this moon.", context: "open proposal decide: adoptedAccountMoon" }),
   accountTold: msg({ message: "They were told by email as well.", context: "open proposal decide: accountTold" }),
   accountNotTold: (why) => [NOT_SENT[why], " ", msg({ message: "They see it in their notifications when they sign in.", context: "open proposal decide: accountNotTold" })],
   declinedEmailed: msg({ message: "Declined. A kind no went to them by email.", context: "open proposal decide: declinedEmailed" }),

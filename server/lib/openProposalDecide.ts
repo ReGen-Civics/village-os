@@ -41,7 +41,9 @@
  * vouch; the invitation's own arrival vouch is recorded as any invitation's is.
  *
  * No `recordEvent` and no `addActivity`: the rows are the record.
- */
+ */
+import { ALL_HANDS_VARIABLES, startOf as startOfDay, weekdayIndex } from "../../shared/startDay";
+import { startNowOf } from "../repos/openProposals";
 import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
 import { stampApplication } from "../repos/proposalStamps";
@@ -499,7 +501,20 @@ export async function placeOnRoles(
   const moonStart = term ? civilDateInstant(term.startsOn, tz) : null;
   // "Now" in whole seconds, the precision `starts_at` keeps (see startReached in seatApplicationCloser.ts).
   const nowSecond = wholeSecond(now);
-  const startsAt = term ? (moonStart && moonStart.getTime() > now.getTime() ? moonStart : nowSecond) : season ? civilDateInstant(season.startsOn, tz) : null;
+  // A moon role's seat starts on its start day (QA round 5: the letter said 21 December beside a term from 28 November):
+  // the first all-hands day within the moon, or at once when Ops directed "start now".
+  const startDay = term
+    ? startOfDay({
+        acceptedIso: civilDateKey(now, tz),
+        weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)),
+        seasonStarts: [],
+        startNow: await startNowOf(pool, p.proposal.id),
+        term: { startsOn: term.startsOn, endsOn: term.endsOn },
+      })
+    : null;
+  const dayStart = startDay && startDay.rule !== "start_now" ? civilDateInstant(startDay.iso, tz) : null;
+  const moonFloor = moonStart && moonStart.getTime() > now.getTime() ? moonStart : nowSecond;
+  const startsAt = term ? (dayStart && dayStart.getTime() > moonFloor.getTime() ? dayStart : moonFloor) : season ? civilDateInstant(season.startsOn, tz) : null;
   if (!season || !startsAt) return { ok: false, code: "cannot", error: "The season this proposal was for is no longer on the village's calendar, so nothing was changed." };
   if (term && civilDateKey(now, tz) > term.endsOn) {
     return { ok: false, code: "cannot", error: "The moon this proposal was for has ended, so nothing was changed. Ask them to propose again for this moon." };

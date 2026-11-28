@@ -326,3 +326,8 @@ msgstr "Ops eligió empezar ya: el próximo día de reunión general después de
 msgctxt "applicant onboarding: startNowDone"
 msgid "Start now is already chosen."
 msgstr "Empezar ya ya está elegido."
+
+# needs-native-review: QA round 5, 27 Nov 2026
+msgctxt "open proposal decide: adoptedAccountMoon"
+msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start on their start day, within this moon."
+msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan en su día de inicio, dentro de esta luna."
