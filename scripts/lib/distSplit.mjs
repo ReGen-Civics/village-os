@@ -177,8 +177,9 @@ export function classifyDist(o) {
     }
     const sharing = Object.keys(chunks.get(file).modules ?? {}).map(stripExt).filter((id) => memberPages.has(id));
     if (sharing.length) {
-      root.why = `it shares a chunk with ${sharing.join(", ")}`;
-      notes.push(`${r.path}: ${r.page} shares the chunk ${file} with a member route's page (${sharing.join(", ")}), so that chunk is a member chunk`);
+      const named = `${sharing.slice(0, 3).join(", ")}${sharing.length > 3 ? ` and ${sharing.length - 3} more` : ""}`;
+      root.why = `it shares a chunk with ${sharing.length} member page(s): ${named}`;
+      notes.push(`${r.path}: ${r.page} shares the chunk ${file} with ${sharing.length} member route page(s) (${named}), so that chunk is a member chunk`);
       continue;
     }
     // The one module-level fact: another module in the router's own chunk importing this page.

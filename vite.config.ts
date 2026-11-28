@@ -1171,7 +1171,9 @@ function writeChunkGraph(): Plugin {
   return {
     name: "write-chunk-graph",
     apply: "build",
-    writeBundle(_options, bundle) {
+    writeBundle(options, bundle) {
+      // Beside the folder the build wrote, whichever that is: dist/chunk-graph.json for dist/public.
+      const beside = path.resolve(options.dir ?? path.resolve(root, "dist", "public"), "..");
       const chunks = [];
       const assets: string[] = [];
       const lazy: Record<string, { importers: string[]; dynamicImporters: string[] }> = {};
@@ -1200,8 +1202,8 @@ function writeChunkGraph(): Plugin {
         }
       }
       chunks.sort((a, b) => a.file.localeCompare(b.file));
-      fs.mkdirSync(path.resolve(root, "dist"), { recursive: true });
-      fs.writeFileSync(path.resolve(root, "dist", "chunk-graph.json"), JSON.stringify({ version: 1, chunks, assets: assets.sort(), lazy }) + "\n");
+      fs.mkdirSync(beside, { recursive: true });
+      fs.writeFileSync(path.join(beside, "chunk-graph.json"), JSON.stringify({ version: 1, chunks, assets: assets.sort(), lazy }) + "\n");
     },
   };
 }

@@ -1,0 +1,542 @@
+/**
+ * The size gate's own test: the admin and member split, and the gate with and
+ * without the two new numbers.
+ *
+ * WHY IT EXISTS. scripts/check-dist-budget.mjs sat in the list of guards with
+ * no test that runs them, because it measures a built tree and a self-test has
+ * none. Since the founder's ruling of 28 Nov 2026 it also decides which built
+ * files only an admin page loads, and a rule like that is exactly the kind a
+ * gate can get quietly wrong in the direction that helps: call a member's
+ * chunk admin-only and the members' ceiling stops seeing it. So every rule is
+ * driven here, on small hand-made chunk graphs for the pure part
+ * (scripts/lib/distSplit.mjs) and on a small built-looking tree for the gate
+ * itself, through `--root`.
+ *
+ * WHAT IT HOLDS:
+ *   - a shared chunk is a member chunk; a chunk behind two admin roots is
+ *     admin-only; a lazy import from a member chunk into an admin file makes
+ *     that file a member chunk; a file both sides name is a member file; a
+ *     file nothing names is counted on the members' side;
+ *   - the planted import, on the fixture: one new import from a member page
+ *     into an admin-only chunk moves that chunk to the members' side and fails
+ *     a members' ceiling set just above the weight before the plant
+ *     (scripts/plant-admin-import.mjs does the same on the real build);
+ *   - with the two new numbers unset, the gate's exit code is the single
+ *     total's, and the split is only printed;
+ *   - the road to launch's paths, the one hand-written list, are still routes
+ *     in client/src/App.tsx, and the router has no route the reader cannot read.
+ *
+ * Run: node scripts/check-dist-budget.test.mjs
+ */
+import assert from "node:assert";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import {
+  GARDEN_DIR,
+  ROAD_TO_LAUNCH_PATHS,
+  charged,
+  classifyDist,
+  firstViewOf,
+  isAdminPath,
+  memberChunksHolding,
+  memberRoutesLoading,
+  routesFromApp,
+  splitTotals,
+  textNames,
+  unreadRoutes,
+} from "./lib/distSplit.mjs";
+
+const HERE = import.meta.dirname;
+const GATE = path.join(HERE, "check-dist-budget.mjs");
+
+let checks = 0;
+let failures = 0;
+function check(name, fn) {
+  checks += 1;
+  try {
+    fn();
+    console.log(`ok    ${name}`);
+  } catch (err) {
+    failures += 1;
+    console.log(`FAIL  ${name}\n      ${String(err.message).split("\n").join("\n      ")}`);
+  }
+}
+
+/* ------------------------------------------------------------------ the pure rule */
+
+/** A small router: two member pages, two admin pages, one page on the road to launch. */
+const APP = `
+const Quests = lazyPage(() => import("./pages/Quests"));
+const Profile = lazyPage(() => import("./pages/Profile"));
+const Admin = lazyPage(() => import("./pages/Admin"));
+const Mint = lazyPage(() => import("./pages/Mint"));
+const Road = lazyPage(() => import("./pages/JourneyToLaunch"));
+<Route path="/" component={LandingRoute} />
+<Route path="/quests" component={Quests} />
+<Route path="/profile" component={Profile} />
+<Route path="/admin" component={Admin} />
+<Route path="/admin/mint" component={Mint} />
+<Route path="/journey-to-launch" component={Road} />
+<Route path="/old">{() => <Redirect to="/quests" replace />}</Route>
+`;
+const ROUTES = routesFromApp(APP);
+const ROAD = ["/journey-to-launch"];
+
+const chunk = (file, o = {}) => ({ file, isEntry: false, isDynamicEntry: false, facade: null, imports: [], dynamicImports: [], css: [], assets: [], modules: {}, ...o });
+
+/**
+ * The graph every case starts from:
+ *   entry -> first-page (holds the router) -> lazily: quests, profile, admin, mint, road
+ *   quests, profile and admin all import `shared`; admin and mint both import `desk`;
+ *   admin lazily imports `tab`.
+ */
+function baseGraph() {
+  return {
+    chunks: [
+      chunk("assets/index.js", { isEntry: true, imports: ["assets/first-page.js"], modules: { "client/src/main.tsx": 10 } }),
+      chunk("assets/first-page.js", {
+        dynamicImports: ["assets/quests.js", "assets/profile.js", "assets/admin.js", "assets/mint.js", "assets/road.js"],
+        modules: { "client/src/App.tsx": 100 },
+      }),
+      chunk("assets/quests.js", { imports: ["assets/first-page.js", "assets/shared.js"], modules: { "client/src/pages/Quests.tsx": 50 } }),
+      chunk("assets/profile.js", { imports: ["assets/first-page.js", "assets/shared.js"], modules: { "client/src/pages/Profile.tsx": 50 } }),
+      chunk("assets/shared.js", { modules: { "client/src/lib/shared.ts": 20 } }),
+      chunk("assets/admin.js", { imports: ["assets/first-page.js", "assets/shared.js", "assets/desk.js"], dynamicImports: ["assets/tab.js"], css: ["assets/admin.css"], modules: { "client/src/pages/Admin.tsx": 500 } }),
+      chunk("assets/mint.js", { imports: ["assets/first-page.js", "assets/desk.js"], modules: { "client/src/pages/Mint.tsx": 60 } }),
+      chunk("assets/desk.js", { modules: { "client/src/components/admin/Desk.tsx": 40 } }),
+      chunk("assets/tab.js", { imports: ["assets/first-page.js"], modules: { "client/src/components/admin/AgentsTab.tsx": 80 } }),
+      chunk("assets/road.js", { imports: ["assets/first-page.js"], modules: { "client/src/pages/JourneyToLaunch.tsx": 70 } }),
+    ],
+    lazy: {},
+  };
+}
+const FILES = [
+  { path: "index.html", bytes: 900 },
+  { path: "assets/index.js", bytes: 1000 },
+  { path: "assets/first-page.js", bytes: 5000 },
+  { path: "assets/quests.js", bytes: 3000 },
+  { path: "assets/profile.js", bytes: 3000 },
+  { path: "assets/shared.js", bytes: 100 },
+  { path: "assets/admin.js", bytes: 9000 },
+  { path: "assets/mint.js", bytes: 2000 },
+  { path: "assets/desk.js", bytes: 600 },
+  { path: "assets/tab.js", bytes: 4097 },
+  { path: "assets/road.js", bytes: 2500 },
+  { path: "assets/admin.css", bytes: 300 },
+];
+const INDEX_REFS = ["assets/index.js", "assets/first-page.js"];
+const split = (graph = baseGraph(), extra = {}) => classifyDist({ graph, routes: ROUTES, files: FILES, indexRefs: INDEX_REFS, roadPaths: ROAD, ...extra });
+const sideOf = (s, file) => s.side.get(file);
+
+check("routesFromApp reads a lazy page, an eager one and a redirect, each as itself", () => {
+  assert.deepStrictEqual(ROUTES.map((r) => `${r.path}=${r.kind}`), ["/=eager", "/quests=lazy", "/profile=lazy", "/admin=lazy", "/admin/mint=lazy", "/journey-to-launch=lazy", "/old=redirect"]);
+  assert.strictEqual(ROUTES.find((r) => r.path === "/admin").page, "client/src/pages/Admin");
+  assert.deepStrictEqual(unreadRoutes(ROUTES), []);
+});
+
+check("routesFromApp follows a named loader and an inline route with props", () => {
+  const r = routesFromApp(`
+    const loadHome = () => import("./pages/Home");
+    const Home = lazy(loadHome);
+    const Training = lazyPage(() => import("./pages/Training"));
+    const Door = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Door })));
+    <Route path="/home" component={Home} />
+    <Route path="/training/steward">{() => <Training track="steward" />}</Route>
+    <Route path="/door/:code" component={Door} />
+    <Route path="/changes/:id">{(p) => <Redirect to={x(p.id)} replace />}</Route>`);
+  assert.deepStrictEqual(r.map((x) => `${x.path}=${x.kind}:${x.page}`), [
+    "/home=lazy:client/src/pages/Home",
+    "/training/steward=lazy:client/src/pages/Training",
+    "/door/:code=lazy:client/src/pages/rites/Door",
+    "/changes/:id=redirect:null",
+  ]);
+});
+
+check("a route in a shape the reader does not know is reported, never skipped", () => {
+  const r = routesFromApp(`<Route path="/admin/new" render={something} />`);
+  assert.deepStrictEqual(unreadRoutes(r), ["/admin/new"]);
+});
+
+check("an admin path is /admin, anything under it, or a road path, and nothing that only starts with the letters", () => {
+  assert.ok(isAdminPath("/admin") && isAdminPath("/admin/mint") && isAdminPath("/journey-to-launch", ROAD));
+  assert.ok(!isAdminPath("/administer") && !isAdminPath("/quests") && !isAdminPath("/journey-to-launch", []));
+});
+
+check("the admin pages' chunks and what only they reach are admin-only", () => {
+  const s = split();
+  for (const f of ["assets/admin.js", "assets/mint.js", "assets/road.js", "assets/tab.js", "assets/desk.js", "assets/admin.css"]) assert.strictEqual(sideOf(s, f), "admin", f);
+  for (const f of ["index.html", "assets/index.js", "assets/first-page.js", "assets/quests.js", "assets/profile.js"]) assert.strictEqual(sideOf(s, f), "member", f);
+});
+
+check("a shared chunk is a member chunk, though an admin page imports it too", () => {
+  assert.strictEqual(sideOf(split(), "assets/shared.js"), "member");
+});
+
+check("a chunk behind two admin roots is admin-only, and both own it", () => {
+  const s = split();
+  assert.strictEqual(sideOf(s, "assets/desk.js"), "admin");
+  assert.deepStrictEqual(s.adminFiles.find((f) => f.path === "assets/desk.js").owners, ["/admin", "/admin/mint"]);
+  assert.deepStrictEqual(s.adminFiles.find((f) => f.path === "assets/tab.js").owners, ["/admin"]);
+});
+
+check("a lazy import from a member chunk into an admin-looking file makes that file a member chunk", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/quests.js").dynamicImports.push("assets/tab.js");
+  const s = split(g);
+  assert.strictEqual(sideOf(s, "assets/tab.js"), "member");
+  assert.strictEqual(sideOf(s, "assets/admin.js"), "admin", "the admin page itself stays behind its route");
+});
+
+check("a static import from a member chunk does the same", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/profile.js").imports.push("assets/desk.js");
+  assert.strictEqual(sideOf(split(g), "assets/desk.js"), "member");
+});
+
+check("an admin page a member chunk imports is a member chunk, with everything it reaches", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/quests.js").dynamicImports.push("assets/admin.js");
+  const s = split(g);
+  for (const f of ["assets/admin.js", "assets/tab.js", "assets/desk.js", "assets/admin.css"]) assert.strictEqual(sideOf(s, f), "member", f);
+  assert.strictEqual(s.roots.find((r) => r.path === "/admin").heldBack, false);
+  assert.ok(s.notes.some((n) => n.includes("/admin") && n.includes("assets/quests.js")), "the note names the member chunk that imports it");
+  assert.strictEqual(sideOf(s, "assets/road.js"), "admin", "another admin root is untouched");
+});
+
+check("an admin page that shares its chunk with a member page is a member chunk", () => {
+  const g = baseGraph();
+  g.chunks = g.chunks.filter((c) => c.file !== "assets/mint.js");
+  g.chunks.find((c) => c.file === "assets/quests.js").modules["client/src/pages/Mint.tsx"] = 60;
+  g.chunks.find((c) => c.file === "assets/first-page.js").dynamicImports = ["assets/quests.js", "assets/profile.js", "assets/admin.js", "assets/road.js"];
+  const s = classifyDist({ graph: g, routes: ROUTES, files: FILES.filter((f) => f.path !== "assets/mint.js"), indexRefs: INDEX_REFS, roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "assets/quests.js"), "member");
+  const mint = s.roots.find((r) => r.path === "/admin/mint");
+  assert.strictEqual(mint.heldBack, false);
+  assert.match(mint.why, /shares a chunk with 1 member page/);
+});
+
+check("another module in the router's own chunk importing an admin page moves it to the members' side", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/first-page.js").modules["client/src/components/Layout.tsx"] = 30;
+  g.lazy = { "client/src/pages/Mint.tsx": { importers: [], dynamicImporters: ["client/src/App.tsx", "client/src/components/Layout.tsx"] } };
+  const s = split(g);
+  assert.strictEqual(sideOf(s, "assets/mint.js"), "member");
+  assert.strictEqual(sideOf(s, "assets/admin.js"), "admin");
+});
+
+check("an importer outside the router's chunk does not, on that fact alone: the chunk graph decides", () => {
+  const g = baseGraph();
+  g.lazy = { "client/src/pages/Mint.tsx": { importers: [], dynamicImporters: ["client/src/App.tsx", "client/src/pages/Admin.tsx"] } };
+  assert.strictEqual(sideOf(split(g), "assets/mint.js"), "admin");
+});
+
+check("a file both sides name is a member file; a file only an admin file names is admin-only", () => {
+  const files = [...FILES, { path: "assets/both.woff2", bytes: 10 }, { path: "assets/crest.webp", bytes: 10 }, { path: "assets/site.css", bytes: 10 }];
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/first-page.js").css.push("assets/site.css");
+  const textRefs = [
+    { from: "assets/admin.css", to: "assets/both.woff2" },
+    { from: "assets/site.css", to: "assets/both.woff2" },
+    { from: "assets/admin.css", to: "assets/crest.webp" },
+  ];
+  const s = classifyDist({ graph: g, routes: ROUTES, files, indexRefs: INDEX_REFS, textRefs, roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "assets/both.woff2"), "member");
+  assert.strictEqual(sideOf(s, "assets/crest.webp"), "admin");
+  assert.deepStrictEqual(s.adminFiles.find((f) => f.path === "assets/crest.webp").owners, ["/admin"], "a file is owned by the route that owns what names it");
+});
+
+check("a file index.html names is a member file, whoever else names it", () => {
+  const files = [...FILES, { path: "assets/face.woff2", bytes: 10 }];
+  const s = classifyDist({ graph: baseGraph(), routes: ROUTES, files, indexRefs: [...INDEX_REFS, "assets/face.woff2"], textRefs: [{ from: "assets/admin.css", to: "assets/face.woff2" }], roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "assets/face.woff2"), "member");
+});
+
+check("a file nothing names is reported apart and counted on the members' side", () => {
+  const files = [...FILES, { path: "stray.txt", bytes: 5000 }];
+  const s = classifyDist({ graph: baseGraph(), routes: ROUTES, files, indexRefs: INDEX_REFS, roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "stray.txt"), "unnamed");
+  assert.deepStrictEqual(s.unnamedFiles, ["stray.txt"]);
+  const before = splitTotals(split(), 8192);
+  const after = splitTotals(s, 8192);
+  assert.strictEqual(after.memberChargedBytes - before.memberChargedBytes, 8192, "its two blocks land on the members' side");
+  assert.strictEqual(after.adminChargedBytes, before.adminChargedBytes);
+});
+
+check("a chunk no route and no page reaches is counted on the members' side too", () => {
+  const g = baseGraph();
+  g.chunks.push(chunk("assets/orphan.js", { modules: { "client/src/lost.ts": 5 } }));
+  const s = classifyDist({ graph: g, routes: ROUTES, files: [...FILES, { path: "assets/orphan.js", bytes: 10 }], indexRefs: INDEX_REFS, roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "assets/orphan.js"), "unnamed");
+});
+
+check("the two sides add up to the tree, block for block, with the directories on the members' side", () => {
+  const s = split();
+  const t = splitTotals(s, 8192);
+  const all = FILES.reduce((n, f) => n + charged(f.bytes), 0) + 8192;
+  assert.strictEqual(t.memberChargedBytes + t.adminChargedBytes, all);
+  // admin.js 9000 -> 12288, mint 4096, desk 4096, tab 4097 -> 8192, road 4096, admin.css 4096
+  assert.strictEqual(t.adminChargedBytes, 12288 + 4096 + 4096 + 8192 + 4096 + 4096);
+  assert.strictEqual(t.adminFiles, 6);
+  assert.strictEqual(t.memberFiles, 6);
+});
+
+check("with no router chunk in the graph nothing is held back: every chunk counts as a member's", () => {
+  const g = baseGraph();
+  delete g.chunks.find((c) => c.file === "assets/first-page.js").modules["client/src/App.tsx"];
+  const s = split(g);
+  assert.strictEqual(s.admin.files, 0);
+  assert.ok(s.notes.some((n) => n.includes("client/src/App.tsx")));
+});
+
+check("a road path only counts while it is on the list", () => {
+  const s = classifyDist({ graph: baseGraph(), routes: ROUTES, files: FILES, indexRefs: INDEX_REFS, roadPaths: [] });
+  assert.strictEqual(sideOf(s, "assets/road.js"), "member");
+});
+
+check("a member chunk holding garden code is found from the graph's modules, and an admin-only one is not", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/admin.js").modules[`${GARDEN_DIR}Grounds.tsx`] = 90;
+  assert.deepStrictEqual(memberChunksHolding(g, split(g), (id) => id.startsWith(GARDEN_DIR)), []);
+  g.chunks.find((c) => c.file === "assets/shared.js").modules[`${GARDEN_DIR}Lantern.tsx`] = 12;
+  g.chunks.find((c) => c.file === "assets/shared.js").modules[`${GARDEN_DIR}shaken.ts`] = 0;
+  const found = memberChunksHolding(g, split(g), (id) => id.startsWith(GARDEN_DIR));
+  assert.deepStrictEqual(found.map((f) => f.chunk), ["assets/shared.js"]);
+  assert.deepStrictEqual(found[0].modules.map((m) => m.id), [`${GARDEN_DIR}Lantern.tsx`], "a module the bundler rendered nothing from is not code in the chunk");
+});
+
+check("a first view is the first page plus the page chunk and its static imports", () => {
+  assert.deepStrictEqual(firstViewOf(baseGraph(), INDEX_REFS, ["assets/admin.js"]), ["assets/admin.js", "assets/desk.js", "assets/first-page.js", "assets/index.js", "assets/shared.js"]);
+});
+
+check("the member routes that load a chunk are named nearest first", () => {
+  const g = baseGraph();
+  g.chunks.find((c) => c.file === "assets/quests.js").dynamicImports.push("assets/tab.js");
+  assert.deepStrictEqual(memberRoutesLoading(g, ROUTES, INDEX_REFS, "assets/shared.js", ROAD).firstView, ["/quests", "/profile"]);
+  assert.deepStrictEqual(memberRoutesLoading(g, ROUTES, INDEX_REFS, "assets/tab.js", ROAD).later, ["/quests"]);
+  assert.strictEqual(memberRoutesLoading(g, ROUTES, INDEX_REFS, "assets/first-page.js", ROAD).firstPage, true);
+});
+
+check("a text names a file only as a whole path", () => {
+  assert.ok(textNames(`navigator.serviceWorker.register("/sw.js")`, "sw.js"));
+  assert.ok(!textNames(`register("/hidden-map-sw.js")`, "sw.js"));
+  assert.ok(!textNames(`fetch("/sw.json")`, "sw.js"));
+  assert.ok(textNames(`src:url(/assets/face-AbC1.woff2)format("woff2")`, "assets/face-AbC1.woff2"));
+});
+
+/* ------------------------------------------------------------------ the real router */
+
+const realApp = fs.readFileSync(path.join(HERE, "..", "client", "src", "App.tsx"), "utf8");
+const realRoutes = routesFromApp(realApp);
+
+check("every route in client/src/App.tsx is read", () => {
+  const declared = (realApp.match(/<Route\s+path=/g) ?? []).length;
+  assert.ok(declared >= 100, `only ${declared} routes found in App.tsx, so the pattern stopped matching`);
+  assert.strictEqual(realRoutes.length, declared);
+  assert.deepStrictEqual(unreadRoutes(realRoutes), [], "a route the reader cannot read: teach routesFromApp the new shape");
+});
+
+check("each road to launch path is still a route the router draws from a lazy page", () => {
+  assert.ok(ROAD_TO_LAUNCH_PATHS.length > 0);
+  for (const p of ROAD_TO_LAUNCH_PATHS) {
+    const r = realRoutes.find((x) => x.path === p);
+    assert.ok(r, `${p} is in ROAD_TO_LAUNCH_PATHS (scripts/lib/distSplit.mjs) and is no longer a route in client/src/App.tsx. Take it off the list, or name the address the road moved to.`);
+    assert.notStrictEqual(r.kind, "unread", `${p} is drawn in a shape the reader does not know`);
+  }
+});
+
+check("/admin is a route with a lazy page of its own", () => {
+  const admin = realRoutes.find((r) => r.path === "/admin");
+  assert.ok(admin && admin.kind === "lazy" && admin.page, "the /admin route no longer renders a lazily imported page, so nothing would be counted as admin-only");
+});
+
+/* ------------------------------------------------------------------ the gate, on a small built tree */
+
+const pad = (text, bytes) => text + " ".repeat(bytes - Buffer.byteLength(text));
+
+/**
+ * A tree shaped like a build: 11 files, 68 KB block-charged with its two
+ * directories. Admin-only, 4 files: Admin 12, AdminTab 8, admin.css 4, crest
+ * 4 = 28 KB. Members, 7 files: 40 KB, of which 8 are the directories and 4
+ * the file nothing names.
+ */
+function tree(dir, o = {}) {
+  const put = (rel, text) => {
+    const full = path.join(dir, rel);
+    fs.mkdirSync(path.dirname(full), { recursive: true });
+    fs.writeFileSync(full, text);
+  };
+  put("client/src/App.tsx", `
+    const Quests = lazyPage(() => import("./pages/Quests"));
+    const Admin = lazyPage(() => import("./pages/Admin"));
+    <Route path="/quests" component={Quests} />
+    <Route path="/admin" component={Admin} />
+  `);
+  put("dist/public/index.html", pad(`<script type="module" src="/assets/index-a.js"></script><link rel="modulepreload" href="/assets/first-page-b.js"><link rel="preload" href="/assets/both-h.woff2">`, 900));
+  put("dist/public/assets/index-a.js", pad(`import"./first-page-b.js";`, 1000));
+  put("dist/public/assets/first-page-b.js", pad(`import("./Quests-c.js");import("./Admin-d.js");`, 5000));
+  put("dist/public/assets/Quests-c.js", pad(`import"./first-page-b.js";import"./shared-f.js";`, 3000));
+  put("dist/public/assets/shared-f.js", pad(`export{};`, 100));
+  put("dist/public/assets/Admin-d.js", pad(`import"./first-page-b.js";import"./shared-f.js";import("./AdminTab-e.js");const crest="/assets/crest-i.webp";`, 9000));
+  put("dist/public/assets/AdminTab-e.js", pad(`export{};`, 4097));
+  put("dist/public/assets/admin-g.css", pad(`@font-face{src:url(/assets/both-h.woff2)}`, 300));
+  put("dist/public/assets/both-h.woff2", pad("f", 10));
+  put("dist/public/assets/crest-i.webp", pad("i", 10));
+  put("dist/public/stray.txt", pad("s", 10));
+  const graph = {
+    version: 1,
+    chunks: [
+      chunk("assets/index-a.js", { isEntry: true, imports: ["assets/first-page-b.js"], modules: { "client/src/main.tsx": 10 } }),
+      chunk("assets/first-page-b.js", { dynamicImports: ["assets/Quests-c.js", "assets/Admin-d.js"], modules: { "client/src/App.tsx": 100 } }),
+      chunk("assets/Quests-c.js", { imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: o.plant ? ["assets/AdminTab-e.js"] : [], modules: { "client/src/pages/Quests.tsx": 50 } }),
+      chunk("assets/shared-f.js", { modules: { "client/src/lib/shared.ts": 20, ...(o.garden ? { [`${GARDEN_DIR}Lantern.tsx`]: 12 } : {}) } }),
+      chunk("assets/Admin-d.js", { imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: ["assets/AdminTab-e.js"], css: ["assets/admin-g.css"], modules: { "client/src/pages/Admin.tsx": 500 } }),
+      chunk("assets/AdminTab-e.js", { modules: { "client/src/components/admin/AgentsTab.tsx": 80 } }),
+    ],
+    assets: ["assets/admin-g.css", "assets/both-h.woff2", "assets/crest-i.webp"],
+    lazy: {},
+  };
+  if (o.graph !== false) put("dist/chunk-graph.json", JSON.stringify(o.staleGraph ? { ...graph, chunks: [...graph.chunks, chunk("assets/gone-z.js")] } : graph));
+}
+
+/** Run the gate over a fixture tree. The budgets come from `env`; nothing is inherited from the machine or from CI. */
+function gate(o = {}, env = {}, extra = []) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "distbudget-"));
+  try {
+    tree(dir, o);
+    const clean = { ...process.env };
+    for (const k of ["MAX_MAIN_JS_KB", "MAX_BOOT_JS_KB", "MAX_TOTAL_DIST_KB", "MAX_MEMBER_DIST_KB", "MAX_ADMIN_DIST_KB", "GITHUB_ACTIONS", "GITHUB_STEP_SUMMARY"]) delete clean[k];
+    const r = spawnSync(process.execPath, [GATE, "--root", dir, ...extra], {
+      encoding: "utf8",
+      env: { ...clean, MAX_MAIN_JS_KB: "400", MAX_BOOT_JS_KB: "750", MAX_TOTAL_DIST_KB: "200", ...env },
+    });
+    return { code: r.status, out: r.stdout, err: r.stderr };
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+check("with the two new numbers unset the gate passes a tree under the total, and prints both sides", () => {
+  const r = gate();
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Total dist\/public: 68 KB of 200 KB/);
+  assert.match(r.out, /Members' side: 40 KB, measured in BLOCK-CHARGED bytes across 7 files .*MAX_MEMBER_DIST_KB is not set/);
+  assert.match(r.out, /Admin-only: 28 KB, measured in BLOCK-CHARGED bytes across 4 files .*MAX_ADMIN_DIST_KB is not set/);
+  assert.match(r.out, /12 KB\s+9000 B on disk\s+assets\/Admin-d\.js\s+\/admin/);
+  assert.match(r.out, /nothing names, so counted on the members' side: stray\.txt/);
+  assert.match(r.out, /Garden code in member chunks: none/);
+  assert.strictEqual(r.err, "", "no error and no warning line");
+});
+
+check("unset, the total still fails a tree over it, exactly as before", () => {
+  const r = gate({}, { MAX_TOTAL_DIST_KB: "64" });
+  assert.strictEqual(r.code, 1);
+  assert.match(r.err, /::error::dist\/public is 68 KB block-charged .* over the 64 KB budget/);
+});
+
+check("unset, the total's safety margin still fails here and only warns on the runner", () => {
+  assert.strictEqual(gate({}, { MAX_TOTAL_DIST_KB: "72" }).code, 1);
+  const onRunner = gate({}, { MAX_TOTAL_DIST_KB: "72", GITHUB_ACTIONS: "true" });
+  assert.strictEqual(onRunner.code, 0);
+  assert.match(onRunner.err, /::warning::dist\/public is 68 KB/);
+});
+
+check("unset, a missing chunk graph changes nothing but one line of the report", () => {
+  const r = gate({ graph: false });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Members' side and admin-only: NOT MEASURED\. dist\/chunk-graph\.json is missing/);
+});
+
+check("both set and both under: the gate passes and prints each side against its own number", () => {
+  const r = gate({}, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "28" });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Members' side: 40 KB of 60 KB/);
+  assert.match(r.out, /Admin-only: 28 KB of 28 KB/);
+});
+
+check("the members' side over its ceiling fails, whatever room the admin allowance has", () => {
+  const r = gate({}, { MAX_MEMBER_DIST_KB: "36", MAX_ADMIN_DIST_KB: "1000" });
+  assert.strictEqual(r.code, 1);
+  assert.match(r.err, /::error::The members' side of dist\/public is 40 KB block-charged, over the members' ceiling of 36 KB \(MAX_MEMBER_DIST_KB\)/);
+});
+
+check("the admin-only side over its allowance fails, whatever room the members' ceiling has", () => {
+  const r = gate({}, { MAX_MEMBER_DIST_KB: "1000", MAX_ADMIN_DIST_KB: "24" });
+  assert.strictEqual(r.code, 1);
+  assert.match(r.err, /::error::The admin-only files in dist\/public are 28 KB block-charged, over the admin allowance of 24 KB \(MAX_ADMIN_DIST_KB\)/);
+});
+
+check("the members' ceiling has the total's safety margin: inside it fails here, warns on the runner, and --no-margin lifts it", () => {
+  const env = { MAX_MEMBER_DIST_KB: "48", MAX_ADMIN_DIST_KB: "28" };
+  assert.strictEqual(gate({}, env).code, 1, "40 KB is inside the last 12 KB below 48");
+  assert.strictEqual(gate({}, { ...env, MAX_MEMBER_DIST_KB: "52" }).code, 0, "and exactly at the edge of it passes");
+  const onRunner = gate({}, { ...env, GITHUB_ACTIONS: "true" });
+  assert.strictEqual(onRunner.code, 0);
+  assert.match(onRunner.err, /::warning::The members' side of dist\/public is 40 KB/);
+  assert.strictEqual(gate({}, env, ["--no-margin"]).code, 0);
+});
+
+check("THE PLANTED IMPORT: a member page importing an admin-only chunk moves it to the members' side and fails the members' ceiling", () => {
+  // The ceiling is the members' weight before the plant plus the safety margin: the lowest number today's tree passes.
+  const env = { MAX_MEMBER_DIST_KB: "52", MAX_ADMIN_DIST_KB: "28" };
+  const before = gate({}, env);
+  assert.strictEqual(before.code, 0, before.err);
+  const after = gate({ plant: true }, env);
+  assert.strictEqual(after.code, 1, "the same tree with one import from /quests into the admin tab must fail");
+  assert.match(after.out, /Members' side: 48 KB of 52 KB/, "the tab's 8 KB moved to the members' side");
+  assert.match(after.out, /Admin-only: 20 KB of 28 KB/, "and left the admin side, which now has room it cannot lend");
+  assert.ok(!/assets\/AdminTab-e\.js\s+\/admin/.test(after.out), "the tab is no longer listed as admin-only");
+  assert.match(after.err, /::error::The members' side of dist\/public is 48 KB/);
+  assert.strictEqual(gate({ plant: true }).code, 0, "and with the two numbers unset the planted tree passes, as it does today");
+});
+
+check("an admin allowance with no members' ceiling fails by name", () => {
+  const r = gate({}, { MAX_ADMIN_DIST_KB: "1000" });
+  assert.strictEqual(r.code, 1);
+  assert.match(r.err, /::error::MAX_ADMIN_DIST_KB is set and MAX_MEMBER_DIST_KB is not/);
+});
+
+check("a members' ceiling with no admin allowance gates nothing: the exit code is the total's, with a warning", () => {
+  const r = gate({}, { MAX_MEMBER_DIST_KB: "4" });
+  assert.strictEqual(r.code, 0);
+  assert.match(r.err, /::warning::MAX_MEMBER_DIST_KB is set and MAX_ADMIN_DIST_KB is not/);
+  assert.strictEqual(gate({}, { MAX_MEMBER_DIST_KB: "4", MAX_TOTAL_DIST_KB: "64" }).code, 1, "and the total still fails what it failed");
+});
+
+check("both set and no graph, or a graph from another build: the gate fails, since a side it cannot measure is a side nothing holds", () => {
+  const env = { MAX_MEMBER_DIST_KB: "1000", MAX_ADMIN_DIST_KB: "1000" };
+  const none = gate({ graph: false }, env);
+  assert.strictEqual(none.code, 1);
+  assert.match(none.err, /could not be measured\. dist\/chunk-graph\.json is missing/);
+  const stale = gate({ staleGraph: true }, env);
+  assert.strictEqual(stale.code, 1);
+  assert.match(stale.err, /is from another build: 1 of its 7 chunks are not in dist\/public \(assets\/gone-z\.js\)/);
+});
+
+check("garden code in a member chunk is said in one line, by the chunk", () => {
+  const r = gate({ garden: true });
+  assert.strictEqual(r.code, 0, "the line is a report, the two ceilings are the gate");
+  assert.match(r.out, /Garden code in member chunks: YES, 1 chunk\(s\)/);
+  assert.match(r.out, /assets\/shared-f\.js: client\/src\/components\/admin\/garden\/Lantern\.tsx/);
+});
+
+check("--report always exits 0, and --json prints one JSON document with the total's key on one line only", () => {
+  assert.strictEqual(gate({}, { MAX_MEMBER_DIST_KB: "4", MAX_ADMIN_DIST_KB: "4", MAX_TOTAL_DIST_KB: "4" }, ["--report"]).code, 0);
+  const r = gate({}, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "28" }, ["--json", "--report"]);
+  const doc = JSON.parse(r.out);
+  assert.strictEqual(doc.blockChargedKb, 68);
+  assert.deepStrictEqual([doc.split.memberKb, doc.split.adminKb, doc.split.maxMemberDistKb, doc.split.maxAdminDistKb, doc.split.gated], [40, 28, 60, 28, true]);
+  assert.strictEqual(doc.split.memberKb + doc.split.adminKb, doc.blockChargedKb);
+  // ci.yml reads the total with: sed -n 's/.*"blockChargedKb": *\([0-9]*\).*/\1/p'
+  assert.strictEqual(r.out.split("\n").filter((line) => /"blockChargedKb": *[0-9]+/.test(line)).length, 1);
+});
+
+check("--admin-top limits the list", () => {
+  const r = gate({}, {}, ["--admin-top", "1"]);
+  assert.match(r.out, /admin-only files, largest first \(1 of 4;/);
+  assert.ok(!r.out.includes("assets/AdminTab-e.js  /admin"));
+});
+
+console.log(`\n${checks - failures} of ${checks} checks passed`);
+if (failures) process.exit(1);

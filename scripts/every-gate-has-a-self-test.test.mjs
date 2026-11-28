@@ -33,8 +33,7 @@ const NOT_YET = {
   "check-capabilities-doc": "Regenerates docs/CAPABILITIES.md and compares; generate-capabilities-doc.test.mjs tests the generator, nothing yet drives the comparison red.",
   "check-modules-doc": "Regenerates docs/MODULES.md and compares; generate-modules-doc.test.mjs tests the generator, nothing yet drives the comparison red.",
   "check-variables-doc": "Regenerates docs/VARIABLES.md and compares; generate-variables-doc.test.mjs tests the generator, nothing yet drives the comparison red.",
-  // Budgets measured on a built tree, which a self-test does not have.
-  "check-dist-budget": "Measures dist/public after pnpm build. A self-test needs a built client, and CI builds one only in the verify job.",
+  // A budget measured on a built tree, which a self-test does not have.
   "check-artifact-budget": "Measures the living map artifact against a byte budget; it needs the shipped artifact as built, and no fixture of one exists yet.",
   // Static guards over the real tree that have no fixture self-test yet.
   "check-hook-order": "No React hook after an early return. No fixture test yet; a two-file fixture with a hook after a return is the shape it needs.",

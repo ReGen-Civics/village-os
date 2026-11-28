@@ -48,6 +48,32 @@
  *   node scripts/check-dist-budget.mjs           # the gate, plus the report
  *   node scripts/check-dist-budget.mjs --report  # measure only, always exit 0
  *   node scripts/check-dist-budget.mjs --json    # machine readable
+ *   node scripts/check-dist-budget.mjs --admin-top 25   # list more of the admin-only files (ten by default)
+ *   node scripts/check-dist-budget.mjs --root <dir>     # measure another tree; only the self-test uses it
+ *
+ * THE ADMIN AND MEMBER SPLIT (the founder's ruling, 28 Nov 2026). One total
+ * counted an admin-only page as though every member paid for it. The script
+ * now also says which files only an admin page loads and which a member can,
+ * decided from the routes and the build's own chunk graph, never from a file
+ * name or a kept list (scripts/lib/distSplit.mjs has the rule, and
+ * vite.config.ts writes the graph to dist/chunk-graph.json). It prints both
+ * sides under the three budget lines, the admin-only files with their sizes,
+ * and one line saying whether any member chunk holds the Admin Garden's code.
+ *
+ * Two more numbers gate them, read like the other three (the environment, then
+ * `.github/workflows/ci.yml`): MAX_MEMBER_DIST_KB, the members' ceiling, and
+ * MAX_ADMIN_DIST_KB, the admin allowance. WITH BOTH UNSET NOTHING IS GATED
+ * THAT WAS NOT GATED BEFORE: the single total decides alone, exactly as it
+ * did, and the split is only printed. With both set, each side is held to its
+ * own number as well as the total to its own. An admin allowance with no
+ * members' ceiling is a mistake and fails by name; a members' ceiling with no
+ * admin allowance gates nothing and says so in a warning, because with no
+ * admin allowance this script exits as it always did. The total keeps its own
+ * check either way, so MAX_TOTAL_DIST_KB has to be the two added together on
+ * the day they are set. The members' ceiling carries the same safety
+ * margin as the total, because the members' side carries the directories,
+ * which is where du and this model can part by a block; the admin side is a
+ * plain sum of file blocks and needs none.
  *
  * THE SAFETY MARGIN (26 Nov 2026, the coordinator's ruling, Option A). On a
  * lane's machine this fails inside the last SAFETY_MARGIN_KB of the ceiling, not
@@ -67,21 +93,26 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const DIST = path.join(ROOT, "dist", "public");
-const WORKFLOW = path.join(ROOT, ".github", "workflows", "ci.yml");
-
-/** ext4 allocates whole blocks of this size, and `du` counts what is allocated. */
-const BLOCK = 4096;
+import { BLOCK, GARDEN_DIR, charged, classifyDist, memberChunksHolding, routesFromApp, splitTotals, textNames, unreadRoutes } from "./lib/distSplit.mjs";
 
 const args = process.argv.slice(2);
+/** The value after a flag, or null: `--root <dir>`, `--admin-top <n>`. */
+const valueOf = (flag) => (args.includes(flag) ? (args[args.indexOf(flag) + 1] ?? null) : null);
+
+const ROOT = valueOf("--root") ? path.resolve(valueOf("--root")) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const DIST = path.join(ROOT, "dist", "public");
+const WORKFLOW = path.join(ROOT, ".github", "workflows", "ci.yml");
+/** The build's chunk graph, written beside dist/public by vite.config.ts (writeChunkGraph). */
+const GRAPH = path.join(ROOT, "dist", "chunk-graph.json");
+const ROUTER = path.join(ROOT, "client", "src", "App.tsx");
+
 const asJson = args.includes("--json");
 /** du's drift from this model seen on a runner (8 KB on ea9a3a1), plus a block. */
 const SAFETY_MARGIN_KB = 12;
 const onRunner = process.env.GITHUB_ACTIONS === "true";
 const marginApplies = !onRunner && !args.includes("--no-margin");
 const reportOnly = args.includes("--report");
+const adminTop = /^\d+$/.test(valueOf("--admin-top") ?? "") ? Number(valueOf("--admin-top")) : 10;
 
 /** Reads a budget off the workflow so this script and CI cannot disagree. */
 function budgetFromWorkflow(name, fallback) {
@@ -94,7 +125,7 @@ function budgetFromWorkflow(name, fallback) {
   } catch {
     /* falls through to the fallback below */
   }
-  return { value: fallback, source: "built-in fallback" };
+  return { value: fallback, source: fallback === null ? "not set" : "built-in fallback" };
 }
 
 /**
@@ -140,7 +171,6 @@ function walk(dir, out) {
   return out;
 }
 
-const charged = (bytes) => (bytes === 0 ? 0 : Math.ceil(bytes / BLOCK) * BLOCK);
 const kb = (bytes) => Math.floor(bytes / 1024);
 
 if (!fs.existsSync(DIST)) {
@@ -213,6 +243,64 @@ const bootKb = kb(bootBytes);
 const totalKb = kb(blockBytes);
 const realKb = kb(realBytes);
 
+/*
+ * THE ADMIN AND MEMBER SPLIT (see the header, and scripts/lib/distSplit.mjs
+ * for the rule). Both numbers are unset until the founder and the coordinator
+ * choose them, and unset means the single total gates alone, as before.
+ */
+const MAX_MEMBER = budgetFromWorkflow("MAX_MEMBER_DIST_KB", null);
+const MAX_ADMIN = budgetFromWorkflow("MAX_ADMIN_DIST_KB", null);
+const splitGated = MAX_MEMBER.value !== null && MAX_ADMIN.value !== null;
+const splitHalfSet = (MAX_MEMBER.value === null) !== (MAX_ADMIN.value === null);
+
+/**
+ * Reads the build's chunk graph and the router and puts every file on a side.
+ * Returns `{ measured: false, why }` whenever the split cannot be trusted: no
+ * graph, a graph from another build, or a route the reader cannot read. An
+ * unread route is refused because a member page nobody saw could let an admin
+ * page that shares its chunk count as admin-only, which is the unsafe way round.
+ */
+function measureSplit() {
+  if (!fs.existsSync(GRAPH)) return { measured: false, why: "dist/chunk-graph.json is missing. The build writes it (writeChunkGraph in vite.config.ts): run pnpm build." };
+  if (!fs.existsSync(ROUTER)) return { measured: false, why: "client/src/App.tsx is missing, and the admin routes are read from it." };
+  let graph;
+  try {
+    graph = JSON.parse(fs.readFileSync(GRAPH, "utf8"));
+  } catch (err) {
+    return { measured: false, why: `dist/chunk-graph.json does not parse (${err.message}). Run pnpm build.` };
+  }
+  if (!Array.isArray(graph.chunks) || graph.chunks.length === 0) return { measured: false, why: "dist/chunk-graph.json lists no chunks. Run pnpm build." };
+  const onDisk = new Set(files.map((f) => f.path));
+  const gone = graph.chunks.map((c) => c.file).filter((f) => !onDisk.has(f));
+  if (gone.length) {
+    return { measured: false, why: `dist/chunk-graph.json is from another build: ${gone.length} of its ${graph.chunks.length} chunks are not in dist/public (${gone.slice(0, 3).join(", ")}). Run pnpm build.` };
+  }
+  const routes = routesFromApp(fs.readFileSync(ROUTER, "utf8"));
+  const unread = unreadRoutes(routes);
+  if (routes.length === 0 || unread.length) {
+    return {
+      measured: false,
+      why: routes.length === 0
+        ? "no route was read from client/src/App.tsx, so no admin route is known. Teach routesFromApp in scripts/lib/distSplit.mjs the router's new shape."
+        : `client/src/App.tsx has ${unread.length} route(s) this cannot read (${unread.join(", ")}). Teach routesFromApp in scripts/lib/distSplit.mjs the new shape.`,
+    };
+  }
+  // What index.html names, and which built text names which other file (a stylesheet's fonts, a chunk's images).
+  const indexRefs = Array.from(new Set(Array.from(indexHtml.matchAll(/(?:src|href|content)="\/?([^"#?]+)"/g), (m) => m[1]).filter((f) => onDisk.has(f))));
+  const chunkFiles = new Set(graph.chunks.map((c) => c.file));
+  const texts = files.filter((f) => /\.(?:js|css|html|json|webmanifest|txt|xml|svg)$/.test(f.path)).map((f) => ({ path: f.path, text: fs.readFileSync(path.join(DIST, f.path), "utf8") }));
+  const textRefs = [];
+  for (const f of files) {
+    if (chunkFiles.has(f.path)) continue;
+    for (const t of texts) if (t.path !== f.path && textNames(t.text, f.path)) textRefs.push({ from: t.path, to: f.path });
+  }
+  const split = classifyDist({ graph, routes, files, indexRefs, textRefs });
+  return { measured: true, split, totals: splitTotals(split, scan.dirBytes), garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)) };
+}
+const sm = measureSplit();
+const memberKb = sm.measured ? kb(sm.totals.memberChargedBytes) : null;
+const adminKb = sm.measured ? kb(sm.totals.adminChargedBytes) : null;
+
 const result = {
   files: files.length,
   directories: scan.dirs,
@@ -231,6 +319,30 @@ const result = {
   maxTotalDistKb: MAX_TOTAL.value,
   histogram: histogram.map((h) => ({ label: h.label, count: h.count, paddingKb: kb(h.paddingBytes) })),
   worstPadding: worst.map((w) => ({ path: w.path, bytes: w.bytes, paddingBytes: w.padding })),
+  /*
+   * No key in here is spelled like the total's own: ci.yml reads that one out
+   * of this JSON with a line-by-line sed, and a second line with the same key
+   * would hand it two numbers.
+   */
+  split: sm.measured
+    ? {
+        measured: true,
+        memberKb,
+        memberRealKb: kb(sm.totals.memberRealBytes),
+        memberFiles: sm.totals.memberFiles,
+        maxMemberDistKb: MAX_MEMBER.value,
+        adminKb,
+        adminRealKb: kb(sm.totals.adminRealBytes),
+        adminFiles: sm.totals.adminFiles,
+        maxAdminDistKb: MAX_ADMIN.value,
+        gated: splitGated,
+        adminOnly: sm.split.adminFiles.map((f) => ({ path: f.path, bytes: f.bytes, chargedKb: kb(f.chargedBytes), owners: f.owners })),
+        adminRoots: sm.split.roots.map((r) => ({ path: r.path, page: r.page, chunk: r.chunk, adminOnly: r.heldBack, why: r.why })),
+        unnamedFiles: sm.split.unnamedFiles,
+        notes: sm.split.notes,
+        gardenInMemberChunks: sm.garden.map((g) => ({ chunk: g.chunk, modules: g.modules.map((m) => m.id) })),
+      }
+    : { measured: false, why: sm.why, gated: splitGated },
 };
 
 if (asJson) {
@@ -265,6 +377,32 @@ say(`First-page JS: ${bootKb} KB of ${MAX_BOOT.value} KB across the ${bootFiles.
 say(`Total dist/public: ${totalKb} KB of ${MAX_TOTAL.value} KB, measured in BLOCK-CHARGED bytes (${MAX_TOTAL.source})`);
 say(`  the same tree is ${realKb} KB in real bytes, so ${kb(overheadBytes)} KB of the ceiling pays for 4 KB block rounding`);
 say(`  headroom ${MAX_TOTAL.value - totalKb} KB; the last ${SAFETY_MARGIN_KB} KB below the ceiling is a safety margin, because du on the CI runner can read a couple of blocks above this model`);
+if (!sm.measured) {
+  say(`Members' side and admin-only: NOT MEASURED. ${sm.why}`);
+} else {
+  const t = sm.totals;
+  const of = (max) => (max.value === null ? "" : ` of ${max.value} KB`);
+  const from = (max, name) => (max.value === null ? `${name} is not set` : max.source);
+  say(`Members' side: ${memberKb} KB${of(MAX_MEMBER)}, measured in BLOCK-CHARGED bytes across ${t.memberFiles} files a member's page can load (${from(MAX_MEMBER, "MAX_MEMBER_DIST_KB")})`);
+  say(`Admin-only: ${adminKb} KB${of(MAX_ADMIN)}, measured in BLOCK-CHARGED bytes across ${t.adminFiles} files only an admin route loads (${from(MAX_ADMIN, "MAX_ADMIN_DIST_KB")})`);
+  say(`  in real bytes ${kb(t.memberRealBytes)} KB and ${kb(t.adminRealBytes)} KB; the two sides add up to the total, and the members' side carries the directories (${kb(scan.dirBytes)} KB) and the ${sm.split.unnamed.files} file(s) nothing names`);
+  if (!splitGated) say("  neither side is gated until both numbers are set; the total above decides alone, as it always has");
+  const shown = sm.split.adminFiles.slice(0, adminTop);
+  say(`  admin-only files, largest first (${shown.length} of ${sm.split.adminFiles.length}; --admin-top <n> for more)`);
+  for (const f of shown) say(`    ${String(kb(f.chargedBytes)).padStart(5)} KB  ${String(f.bytes).padStart(7)} B on disk  ${f.path}  ${f.owners.join(" ")}`);
+  const carried = sm.split.roots.filter((r) => !r.heldBack);
+  if (carried.length) {
+    say(`  ${carried.length} admin route(s) whose page is NOT admin-only, so its code counts on the members' side:`);
+    for (const r of carried) say(`    ${r.path}  ${r.page}  in ${r.chunk ?? "no chunk"}: ${r.why}`);
+  }
+  if (sm.split.unnamedFiles.length) say(`  nothing names, so counted on the members' side: ${sm.split.unnamedFiles.join(" ")}`);
+  if (sm.garden.length === 0) {
+    say(`Garden code in member chunks: none. No chunk a member's page can load holds a module from ${GARDEN_DIR}`);
+  } else {
+    say(`Garden code in member chunks: YES, ${sm.garden.length} chunk(s) a member's page can load hold modules from ${GARDEN_DIR}`);
+    for (const g of sm.garden) say(`    ${g.chunk}: ${g.modules.map((m) => m.id).join(" ")}`);
+  }
+}
 say("");
 say("Splitting a chunk lowers main JS and RAISES the block-charged total.");
 say("Merging small chunks lowers the total. Watch both numbers on any chunking change.");
@@ -309,6 +447,46 @@ if (totalKb <= MAX_TOTAL.value && totalKb > MAX_TOTAL.value - SAFETY_MARGIN_KB) 
     fail = 1;
   } else {
     console.error(`::warning::${why}`);
+  }
+}
+
+/*
+ * THE TWO SIDES, only once both numbers exist. Everything above this line is
+ * the gate as it was; with MAX_MEMBER_DIST_KB and MAX_ADMIN_DIST_KB unset none
+ * of the checks below can fire.
+ */
+if (splitHalfSet && MAX_ADMIN.value === null) {
+  // No admin allowance means the gate as it was, whatever else is set: said aloud, never a failure of its own.
+  console.error("::warning::MAX_MEMBER_DIST_KB is set and MAX_ADMIN_DIST_KB is not, so neither side is gated and the total decides alone. Set the admin allowance beside it to hold each side to its own number.");
+}
+if (splitHalfSet && MAX_MEMBER.value === null) {
+  console.error("::error::MAX_ADMIN_DIST_KB is set and MAX_MEMBER_DIST_KB is not. An admin allowance needs the members' ceiling beside it: without one, nothing says how much of dist/public a member's page may load.");
+  fail = 1;
+}
+if (splitGated && !sm.measured) {
+  console.error(`::error::MAX_MEMBER_DIST_KB and MAX_ADMIN_DIST_KB are set, and the two sides of dist/public could not be measured. ${sm.why}`);
+  fail = 1;
+}
+if (splitGated && sm.measured) {
+  if (memberKb > MAX_MEMBER.value) {
+    console.error(
+      `::error::The members' side of dist/public is ${memberKb} KB block-charged, over the members' ceiling of ${MAX_MEMBER.value} KB (MAX_MEMBER_DIST_KB). The admin allowance cannot pay for it: a file counts here when any member's page can load it. If a member page newly imports an admin module, that module's chunk moved to this side; load it from an admin route only, or lazily behind one. Otherwise merge sub-4 KB chunks into their parents or move art to the uploads volume.`,
+    );
+    fail = 1;
+  } else if (memberKb > MAX_MEMBER.value - SAFETY_MARGIN_KB) {
+    const why = `The members' side of dist/public is ${memberKb} KB block-charged, inside the ${SAFETY_MARGIN_KB} KB safety margin below the members' ceiling of ${MAX_MEMBER.value} KB. It carries the directories, which is where du on the CI runner can read a couple of blocks above this model, so this tree can pass here and fail there. Make room instead of hoping.`;
+    if (marginApplies) {
+      console.error(`::error::${why}`);
+      fail = 1;
+    } else {
+      console.error(`::warning::${why}`);
+    }
+  }
+  if (adminKb > MAX_ADMIN.value) {
+    console.error(
+      `::error::The admin-only files in dist/public are ${adminKb} KB block-charged, over the admin allowance of ${MAX_ADMIN.value} KB (MAX_ADMIN_DIST_KB). The report above lists them, largest first, with the admin route that owns each. Trim the largest, or share what two admin pages both carry.`,
+    );
+    fail = 1;
   }
 }
 process.exit(fail);

@@ -312,6 +312,19 @@ It prints real bytes, block-charged bytes, the overhead between them, a size his
 files paying the most padding. When the total is genuinely full of content, the fix is the
 uploads volume, never a bigger number here.
 
+**The same script splits the total into the members' side and admin-only** (the founder's ruling,
+28 Nov 2026: admin-only pages get a counted allowance of their own, and the build decides which
+pages those are from the routes, never from a kept list). A file is ADMIN-ONLY when only an admin
+route can load it: the routes at or under `/admin` plus the road to launch's two pages, read from
+`client/src/App.tsx`, then a walk of the build's own chunk graph (`dist/chunk-graph.json`, written
+by `vite.config.ts`) from what `index.html` loads. Anything a member's page can import, statically
+or lazily, is a member file, so importing an admin module from a member page MOVES its chunk to
+the members' side; the report lists the admin-only files and says whether any member chunk holds
+the Admin Garden's code. `MAX_MEMBER_DIST_KB` and `MAX_ADMIN_DIST_KB` gate the two sides once both
+are set beside the other three in `ci.yml`; unset, the single total gates alone as before. The
+rule is `scripts/lib/distSplit.mjs`, held by `scripts/check-dist-budget.test.mjs`;
+`node scripts/plant-admin-import.mjs` proves it on a real build (two client builds, minutes).
+
 Images are WebP. `scripts/check-image-budget.mjs` enforces it on `client/public`, and the
 exemptions are DERIVED, never typed: whatever `shared/gameConfig.ts` names as the favicon and
 whatever `client/index.html` declares as an icon or a social card, because those surfaces have
