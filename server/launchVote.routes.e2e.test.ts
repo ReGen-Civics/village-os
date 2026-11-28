@@ -1,22 +1,30 @@
 /**
  * THE BUTTON THAT STOPPED MARKING AND STARTED ASKING (R74), driven over HTTP.
  *
- * The founder's ruling: "the 'mark the village launched' button actually
- * generates the first proposal that requires 100% unity and 100% quorum to
- * launch and a minimum of 3 people." R67 says what the vote is FOR: "a game
- * needs 3 people minimum to play (to actually issue tokens) so they can do
- * everything else to set up the game on their own."
+ * The founder's ruling of September: "the 'mark the village launched' button
+ * actually generates the first proposal". R67 says what the vote is FOR: "a
+ * game needs 3 people minimum to play (to actually issue tokens) so they can
+ * do everything else to set up the game on their own."
+ *
+ * WHO ANSWERS IT, AND WHEN IT CARRIES, changed on 2026-11-27. Rye: the launch
+ * carries with "Not everyone, but at least 3 members holding the founder
+ * role", and it "doesn't need to wait 7 days". The details he accepted: only
+ * founders vote; it carries the moment a third founder says yes, unless a
+ * founder has said no; a no holds it until that founder withdraws it. This
+ * file used to pin 100% unity and 100% quorum over every member, closed by
+ * hand after the window. It now pins the new rule end to end.
  *
  * The harm metric for this file is one sentence, and every clause of it is
  * driven against the built server:
  *
- *   A village sets its whole Game up alone and can issue nothing; three
- *   members vote unanimously; issuance opens; and a vote one person did not
- *   answer never carries.
+ *   A village sets its whole Game up alone and can issue nothing; a member who
+ *   is not a founder is not asked; two founder yeses carry nothing; a
+ *   founder's no holds it; and the third founder's yes starts the Game in that
+ *   same request, with nobody choosing the moment.
  *
- * THE CASES RUN IN ORDER. One village walks the whole path: too few people,
- * then a vote that missed, then a vote that was answered no, then the one that
- * carried. Run the whole file, never a `-t` slice.
+ * THE CASES RUN IN ORDER. One village walks the whole path: too few founders,
+ * then a vote that ended on two yeses, then one that ended with a no standing,
+ * then the one that carried. Run the whole file, never a `-t` slice.
  *
  * Boots the BUILT `dist/index.js` against a throwaway schema, so run
  * `pnpm build` first or you are testing stale code. Skips loudly without
@@ -73,6 +81,9 @@ let wrenToken = "";
 let wrenId = "";
 let idaToken = "";
 let idaId = "";
+/** Tam stays an ordinary member throughout: the person this vote does not ask. */
+let tamToken = "";
+let tamId = "";
 /** Wren's claim on a quest, carried between the first case and the last. */
 let claimId = "";
 
@@ -103,6 +114,22 @@ async function register(name: string, slug: string): Promise<{ token: string; id
   expect(r.status, `${name} must register`).toBe(200);
   return { token: String(r.json?.token ?? ""), id: String(r.json?.user?.id ?? "") };
 }
+
+/**
+ * Give somebody the founder role, through the route an admin page calls. A
+ * founder is the only one who may before launch, and the address was never
+ * proved by a claim link, which the route asks the founder to say out loud.
+ */
+async function makeFounder(userId: string): Promise<void> {
+  const r = await call("PUT", `/api/admin/users/${userId}/role`, { body: { role: "founder", addressUnprovedOk: true } });
+  expect(r.status, JSON.stringify(r.json)).toBe(200);
+}
+
+/** Who a ballot froze onto its roll, read raw. */
+const rollOf = async (ballotId: string): Promise<string[]> => {
+  const [rows] = await pool.query<any[]>("SELECT user_id FROM ballot_electorate WHERE ballot_id = ? ORDER BY user_id", [ballotId]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+  return rows.map((r) => String(r.user_id)).sort();
+};
 
 /** Push a ballot's window into the past: the clock, never a status change. */
 const expire = async (ballotId: string) => {
@@ -260,7 +287,8 @@ beforeAll(async () => {
   wrenToken = wren.token; wrenId = wren.id;
 
   // Everybody reaches member, which is the rung `ballot.vote` unlocks at, so
-  // the roll is real. The founder is on it too: this vote asks EVERYONE.
+  // each holds a voice on an ordinary vote. The launch roll does not read it:
+  // that roll is the founders, and Wren is not one yet.
   for (const id of [founderId, wrenId]) {
     const r = await call("PUT", `/api/admin/players/${id}/stage`, { body: { stageId: "member" } });
     expect(r.status, `${id} reaches member`).toBe(200);
@@ -419,17 +447,73 @@ describe.skipIf(!DB_CONFIGURED)("a village sets itself up alone, and can issue n
     expect(await claimStatus(claimId)).toBe("submitted");
   });
 
-  it("will not open the vote with two people on the roll, and says how many more", async () => {
+  it("will not open the vote with one founder on the roll, and says how many more and who", async () => {
     const status = await call("GET", "/api/admin/launch");
     expect(status.status).toBe(200);
     expect(status.json?.blockingOpen, JSON.stringify(status.json?.items?.filter((i: any) => i.severity === "blocking" && i.state !== "ok"))).toBe(0);
-    expect(status.json?.vote?.onTheRoll).toBe(2);
-    expect(String(status.json?.vote?.tooFew)).toContain("One more member");
+    // THE ROLL IS THE FOUNDERS (Rye, 2026-11-27). Wren is a member who holds a
+    // voice on every ordinary vote, and she is not counted here.
+    expect(status.json?.vote?.onTheRoll).toBe(1);
+    // The two counts are two facts: one founder is on the launch's roll, and two members hold a voice on every ordinary vote.
+    expect(status.json?.vote?.membersWithAVoice).toBe(2);
+    expect(status.json?.vote?.founders).toEqual([{ id: founderId, name: "Launch" }]);
+    expect(status.json?.vote?.yesNeeded).toBe(3);
+    expect(String(status.json?.vote?.tooFew)).toContain("One founding member is on the roll today. 2 more founding members");
+    expect(String(status.json?.vote?.tooFew)).toContain("On the roll: Launch.");
+    // NO VILLAGE IS LEFT WITHOUT A PATH (Rye, 2026-11-06). Before the Game starts the path is a founder's.
+    expect(String(status.json?.vote?.tooFew)).toContain(
+      "The way through: a founder gives the Founder access to more people on their card in Admin, People, or sets the launch to ask every member in the governance settings.",
+    );
+    expect(status.json?.vote?.roll).toBe("founders");
 
     const early = await call("POST", "/api/admin/launch/propose");
     expect(early.status).toBe(409);
-    expect(String(early.json?.error)).toContain("One more member");
-    expect(early.json?.onTheRoll).toBe(2);
+    expect(String(early.json?.error)).toContain("2 more founding members");
+    expect(early.json?.onTheRoll).toBe(1);
+    expect(await launchBallots()).toEqual([]);
+  });
+
+  it("counts a second founder the moment the role is given, and still not a member", async () => {
+    await makeFounder(wrenId);
+    const two = await call("GET", "/api/admin/launch");
+    expect(two.json?.vote?.onTheRoll).toBe(2);
+    expect(String(two.json?.vote?.tooFew)).toContain("2 founding members are on the roll today. One more founding member");
+    // Named, in a stable order by account id, so only the membership is asserted here.
+    expect(String(two.json?.vote?.tooFew)).toMatch(/On the roll: (Launch and Wren|Wren and Launch)\./);
+    expect((two.json?.vote?.founders as Array<{ id: string }>).map((f) => f.id).sort()).toEqual([founderId, wrenId].sort());
+
+    // Tam joins, reaches member and holds a voice on every ordinary vote. The launch roll does not move.
+    const tam = await register("Tam Reyes", "tam");
+    tamToken = tam.token; tamId = tam.id;
+    expect((await call("PUT", `/api/admin/players/${tamId}/stage`, { body: { stageId: "member" } })).status).toBe(200);
+    const still = await call("GET", "/api/admin/launch");
+    expect(still.json?.vote?.onTheRoll, "a member is not a founder").toBe(2);
+    expect((await call("POST", "/api/admin/launch/propose")).status).toBe(409);
+    expect(await launchBallots()).toEqual([]);
+  });
+
+  it("who the launch asks is the village's own setting, so two founders and a member are not stuck (Rye, 2026-11-06)", async () => {
+    // Two founders and Tam, a member who holds a voice. On the rule as shipped the roll is the two founders.
+    const set = (value: string) => call("PUT", "/api/admin/variables/governance.launch_roll", { body: { value } });
+    expect((await set("everyone")).status, "only the two values the setting has").toBeGreaterThanOrEqual(400);
+    expect((await set("members")).status).toBe(200);
+    try {
+      const asked = await call("GET", "/api/admin/launch");
+      expect(asked.json?.vote?.roll).toBe("members");
+      // Every member who holds a voice: the two founders and Tam. Three is enough to be asked.
+      expect(asked.json?.vote?.onTheRoll).toBe(3);
+      expect((asked.json?.vote?.founders as Array<{ id: string }>).map((f) => f.id).sort()).toEqual([founderId, wrenId, tamId].sort());
+      expect(asked.json?.vote?.tooFew).toBeNull();
+      expect(String(asked.json?.vote?.why)).toContain("Every member who holds a voice votes on starting the Game, each counted once.");
+      expect(asked.json?.vote?.notOnTheRoll).toEqual([]);
+    } finally {
+      expect((await set("founders")).status).toBe(200);
+    }
+    // Control: back on the rule as shipped, the same village is one founder short again.
+    const shipped = await call("GET", "/api/admin/launch");
+    expect(shipped.json?.vote?.roll).toBe("founders");
+    expect(shipped.json?.vote?.onTheRoll).toBe(2);
+    expect(String(shipped.json?.vote?.tooFew)).toContain("One more founding member");
     expect(await launchBallots()).toEqual([]);
   });
 
@@ -440,7 +524,7 @@ describe.skipIf(!DB_CONFIGURED)("a village sets itself up alone, and can issue n
     try {
       const status = await call("GET", "/api/admin/launch");
       expect(status.json?.vote?.minElectorate, "LAUNCH_MIN_ELECTORATE_FLOOR holds the dial at three").toBe(3);
-      expect(String(status.json?.vote?.tooFew), "two on the roll is still one short").toContain("One more member");
+      expect(String(status.json?.vote?.tooFew), "two on the roll is still one short").toContain("One more founding member");
       const early = await call("POST", "/api/admin/launch/propose");
       expect(early.status).toBe(409);
     } finally {
@@ -449,12 +533,12 @@ describe.skipIf(!DB_CONFIGURED)("a village sets itself up alone, and can issue n
     // Control: back at the default, the same two are one short again.
     const again = await call("GET", "/api/admin/launch");
     expect(again.json?.vote?.minElectorate).toBe(3);
-    expect(String(again.json?.vote?.tooFew)).toContain("One more member");
+    expect(String(again.json?.vote?.tooFew)).toContain("One more founding member");
     expect(await launchBallots()).toEqual([]);
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be asked", () => {
+describe.skipIf(!DB_CONFIGURED)("the third founder arrives and the vote can be asked", () => {
   /*
    * THE BIRTHING IS A KEY MOMENT (plan 4.2, Wave 4). Switching governance on in
    * the setup above was one too, and it is the same moment in the same moon, so
@@ -466,11 +550,14 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
     await pool.query("DELETE FROM notifications WHERE type = 'canvas_revisit'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
   });
 
-  it("opens at 100 and 100, with the roll frozen at three", async () => {
+  it("opens at unity 100 and three of three as its participation, with the roll frozen to the three founders", async () => {
     const ida = await register("Ida Kestrel", "ida");
     idaToken = ida.token; idaId = ida.id;
-    const staged = await call("PUT", `/api/admin/players/${idaId}/stage`, { body: { stageId: "member" } });
-    expect(staged.status).toBe(200);
+    await makeFounder(idaId);
+    const ready = await call("GET", "/api/admin/launch");
+    expect(ready.json?.vote?.onTheRoll).toBe(3);
+    expect(ready.json?.vote?.tooFew).toBeNull();
+    expect(String(ready.json?.vote?.why)).toContain("Only founding members vote on starting the Game.");
 
     /*
      * THE SLATE IS PART OF THE PROPOSAL (0220). Rye, 2026-09-24: "whoever is
@@ -486,15 +573,24 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
     const rows = await launchBallots();
     expect(rows.length).toBe(1);
     expect(rows[0].status).toBe("open");
+    // "No founder has said no", and the village's number frozen as a share of this roll: three of three.
     expect(Number(rows[0].unity)).toBe(100);
     expect(Number(rows[0].quorum)).toBe(100);
+    // Four people hold a voice in this village. Three of them are founders, and the roll is those three.
     expect(rows[0].roll).toBe(3);
+    expect(await rollOf(rows[0].id)).toEqual([founderId, idaId, wrenId].sort());
+    expect(await rollOf(rows[0].id)).not.toContain(tamId);
+    // Each founder counts once, whatever the village's weight mode is.
+    const [frozen] = await pool.query<any[]>("SELECT weight_mode, total_weight FROM ballots WHERE id = ?", [rows[0].id]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect(String(frozen[0].weight_mode)).toBe("equal");
+    expect(Number(frozen[0].total_weight)).toBe(3);
   });
 
   it("asks the admins, before the vote: look at Power, Resourcing, Legal and Impact again", async () => {
     // The propose records `launch:proposed:<ballot>`, and the moment hangs off
     // that event (server/lib/canvasRevisit.ts). Fire and forget, so wait for
-    // four rows and a second read that agrees.
+    // the rows and a second read that agrees. Three founders are three admins
+    // now, so each of the four notices reaches each of them.
     const read = async () => {
       const [r] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
         "SELECT user_id, title, body, actor_user_id FROM notifications WHERE type = 'canvas_revisit' ORDER BY title",
@@ -502,25 +598,26 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
       return r;
     };
     const deadline = Date.now() + 20_000;
-    while ((await read()).length < 4 && Date.now() < deadline) await new Promise((r) => setTimeout(r, 150));
+    while ((await read()).length < 12 && Date.now() < deadline) await new Promise((r) => setTimeout(r, 150));
     await new Promise((r) => setTimeout(r, 600));
     const rows = await read();
-    expect(rows.map((r) => r.title)).toEqual([
+    expect([...new Set(rows.map((r) => r.title))]).toEqual([
       "Before you raise: look at Impact again.",
       "Before you raise: look at Legal again.",
       "Before you raise: look at Power again.",
       "Before you raise: look at Resourcing again.",
     ]);
-    // Before the handover, and with nobody holding the canvas pen, the admins alone.
-    expect(new Set(rows.map((r) => String(r.user_id)))).toEqual(new Set([founderId]));
+    // Before the handover, and with nobody holding the canvas pen, the admins alone: Tam hears nothing.
+    expect(new Set(rows.map((r) => String(r.user_id)))).toEqual(new Set([founderId, wrenId, idaId]));
+    expect(rows).toHaveLength(12);
     expect(rows.every((r) => r.actor_user_id === null && !/\d/.test(String(r.body)))).toBe(true);
   });
 
-  it("puts the slate IN the frozen document, so a member votes on it", async () => {
+  it("puts the slate AND the rule IN the frozen document, so a member reads what is being decided and by whom", async () => {
     // "so it's there in the proposal to be voted on" is a requirement about
     // `ballots.doc_markdown`, which is the string every member reads.
     const [running] = await launchBallots();
-    const read = await call("GET", `/api/governance/ballots/${running.id}`, { token: idaToken });
+    const read = await call("GET", `/api/governance/ballots/${running.id}`, { token: tamToken });
     expect(read.status, JSON.stringify(read.json)).toBe(200);
     const doc = String(read.json?.docMarkdown);
     expect(doc).toContain("Who carries the steward role");
@@ -528,14 +625,33 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
     expect(doc, "and what accepting costs is in it too").toContain(
       `all ${HANDOVER_SET.length} of the powers this village has to give`,
     );
+    // The rule of 2026-11-27, in the document a member opens a year later.
+    expect(doc).toContain("Only founding members vote on this. It carries the moment 3 of them have said yes, unless one of them has said no.");
+    expect(doc).toContain("3 founding members are on the roll today: ");
+    for (const name of ["Launch", "Wren", "Ida"]) expect(doc, `${name} is named on the roll`).toContain(name);
+    expect(doc).toContain("A member who is not a founding member is not asked on this one vote");
+    expect(doc).toContain("Each person on this roll counts once");
+    // And that this rule is the village's own to change (Rye, 2026-11-06).
+    expect(doc).toContain("How many must say yes, and who is asked, are this village's own settings.");
+    expect(doc, "the every-seat rule is gone").not.toContain("Everyone on the roll votes yes");
+  });
+
+  it("does not take a vote from a member who is not a founder, and says why in the launch's own words", async () => {
+    const [running] = await launchBallots();
+    const refused = await vote(running.id, tamToken, "yes");
+    expect(refused.status).toBe(409);
+    expect(String(refused.json?.error)).toContain("Only founding members vote on starting the Game");
+    // The known positive: a founder's vote on the same ballot is taken, two cases below.
+    const [votes] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM ballot_votes WHERE ballot_id = ?", [running.id]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect(Number(votes[0].n)).toBe(0);
   });
 
   it("shows a DECLINE to an ordinary member, which is what Rye asked for", async () => {
     /*
      * Rye, 2026-09-24: "founders only for this first season ... and show the
-     * declines". SHOWN means shown to the VILLAGE. Ida is an ordinary member
-     * who is not on the slate and did not choose it, and she is the reader
-     * this control is about.
+     * declines". SHOWN means shown to the VILLAGE. Tam is an ordinary member
+     * who is not on the slate, not on the roll and did not choose either, and
+     * he is the reader this control is about.
      */
     const [running] = await launchBallots();
     const declined = await call("POST", `/api/governance/ballots/${running.id}/steward-slate`, {
@@ -545,17 +661,18 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
     expect(declined.status, JSON.stringify(declined.json)).toBe(200);
     expect(declined.json?.answer).toBe("declined");
 
-    const seen = await call("GET", `/api/governance/ballots/${running.id}/steward-slate`, { token: idaToken });
+    const seen = await call("GET", `/api/governance/ballots/${running.id}/steward-slate`, { token: tamToken });
     expect(seen.status, JSON.stringify(seen.json)).toBe(200);
     expect(seen.json?.members?.length).toBe(1);
     expect(seen.json?.members?.[0]?.answer, "an ordinary member can see it").toBe("declined");
     expect(seen.json?.members?.[0]?.declinedAt, "with the time it was given").toBeTruthy();
-    expect(seen.json?.members?.[0]?.mine, "and it is not hers").toBe(false);
+    expect(seen.json?.members?.[0]?.mine, "and it is not his").toBe(false);
     expect(String(seen.json?.proposedBy), "the page can say whose list this was").toBeTruthy();
     expect(seen.json?.powerCount).toBe(HANDOVER_SET.length);
 
     // AND SOMEBODY THE PROPOSAL NEVER NAMED HAS NOTHING TO ANSWER. The known
-    // positive is the 200 four lines up, from the same route.
+    // positive is the 200 four lines up, from the same route. Ida is a founder
+    // on the roll, and the proposal still did not name her.
     const notNamed = await call("POST", `/api/governance/ballots/${running.id}/steward-slate`, {
       token: idaToken,
       body: { accept: true },
@@ -572,22 +689,34 @@ describe.skipIf(!DB_CONFIGURED)("the third member arrives and the vote can be as
   });
 
   it("is a founder's act to open, and nobody else's", async () => {
-    const notFounder = await call("POST", "/api/admin/launch/propose", { token: wrenToken });
+    const notFounder = await call("POST", "/api/admin/launch/propose", { token: tamToken });
     expect(notFounder.status).toBe(403);
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("a vote one person never answered does not carry", () => {
-  it("closes as no_quorum, and nothing about the village changed", async () => {
+describe.skipIf(!DB_CONFIGURED)("two founders say yes and the third never answers", () => {
+  it("does not carry on two, nobody can close it early by hand, and the clock closes it as no_quorum", async () => {
     const [running] = await launchBallots();
-    // Two of three answer. This is the whole engineering constraint of a 100%
-    // quorum: silence is not a no, and it is not a yes either.
-    expect((await vote(running.id, founderToken, "yes")).status).toBe(200);
-    expect((await vote(running.id, wrenToken, "yes")).status).toBe(200);
-    await expire(running.id);
+    const first = await vote(running.id, founderToken, "yes");
+    expect(first.status).toBe(200);
+    expect(first.json?.carried).toBe(false);
+    const second = await vote(running.id, wrenToken, "yes");
+    expect(second.status).toBe(200);
+    expect(second.json?.carried, "two yeses are not three").toBe(false);
+    expect((await launchBallots())[0].status).toBe("open");
 
+    // NOBODY CHOOSES THE MOMENT. The founder is an admin and may close an
+    // ordinary ballot early; this one is refused, because Ida can still answer.
+    const early = await call("POST", `/api/governance/ballots/${running.id}/close`, {
+      body: { outcomeNote: "Ida is away." },
+    });
+    expect(early.status, JSON.stringify(early.json)).toBe(400);
+    expect(String(early.json?.error)).toContain("stays open for its whole window");
+    expect((await launchBallots())[0].status).toBe("open");
+
+    await expire(running.id);
     const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
-      body: { outcomeNote: "Ida was away and this one asks for everybody." },
+      body: { outcomeNote: "Ida was away and the window ended on two yeses." },
     });
     expect(closed.status, JSON.stringify(closed.json)).toBe(200);
     expect(closed.json?.outcome).toBe("no_quorum");
@@ -602,11 +731,11 @@ describe.skipIf(!DB_CONFIGURED)("a vote one person never answered does not carry
 
   it("can be asked again the same hour, on a new freeze", async () => {
     /*
-     * FOUNDERS ONLY, FOR THIS FIRST SEASON, refused at the door. Wren is a
+     * FOUNDERS ONLY, FOR THIS FIRST SEASON, refused at the door. Tam is a
      * member, and the known positive is the proposal two lines below, which
      * opens with no slate at all.
      */
-    const badSlate = await call("POST", "/api/admin/launch/propose", { body: { slate: [wrenId] } });
+    const badSlate = await call("POST", "/api/admin/launch/propose", { body: { slate: [tamId] } });
     expect(badSlate.status, JSON.stringify(badSlate.json)).toBe(409);
     expect(String(badSlate.json?.error)).toContain("Only founding members");
     expect((await launchBallots()).length, "and it opened nothing on its way out").toBe(1);
@@ -619,6 +748,7 @@ describe.skipIf(!DB_CONFIGURED)("a vote one person never answered does not carry
     expect(rows[1].status).toBe("open");
     // The ballot that missed keeps its own frozen roll and its own dials.
     expect(rows[0].roll).toBe(3);
+    expect(Number(rows[1].unity)).toBe(100);
     expect(Number(rows[1].quorum)).toBe(100);
 
     // The journey page can say the village asked before.
@@ -629,15 +759,25 @@ describe.skipIf(!DB_CONFIGURED)("a vote one person never answered does not carry
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("everybody answers and one says no", () => {
-  it("does not carry, and the Game stays where it was", async () => {
+describe.skipIf(!DB_CONFIGURED)("a founder says no, and the no is still standing when the window ends", () => {
+  it("is held while it is open, and closes as failed with the Game where it was", async () => {
     const rows = await launchBallots();
     const running = rows[rows.length - 1];
     expect((await vote(running.id, founderToken, "yes")).status).toBe(200);
     expect((await vote(running.id, wrenToken, "yes")).status).toBe(200);
-    expect((await vote(running.id, idaToken, "no")).status).toBe(200);
-    await expire(running.id);
+    const no = await vote(running.id, idaToken, "no");
+    expect(no.status).toBe(200);
+    expect(no.json?.carried).toBe(false);
 
+    // HELD IS NOT FAILED. Ida may still withdraw her no, so nobody closes it over her head.
+    const early = await call("POST", `/api/governance/ballots/${running.id}/close`, {
+      body: { outcomeNote: "Ida said no." },
+    });
+    expect(early.status, JSON.stringify(early.json)).toBe(400);
+    expect(String(early.json?.error)).toContain("somebody who said no can still change their answer");
+    expect((await launchBallots()).at(-1)?.status).toBe("open");
+
+    await expire(running.id);
     const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
       body: { outcomeNote: "Ida wants the exit terms rewritten before we begin." },
     });
@@ -647,8 +787,8 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and one says no", () => {
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => {
-  it("carries, and that is the moment token issuance opens", async () => {
+describe.skipIf(!DB_CONFIGURED)("a no that holds, is withdrawn, and the third yes carries it", () => {
+  it("carries the moment the third founder says yes, and that is the moment token issuance opens", async () => {
     const opened = await call("POST", "/api/admin/launch/propose", { body: { slate: [founderId] } });
     expect(opened.status, JSON.stringify(opened.json)).toBe(200);
     const rows = await launchBallots();
@@ -660,10 +800,9 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
      * which is the whole of 0220 driven through the real door. Since the slate
      * exists, `standsForSteward` means "I accept the nomination this proposal
      * made of me", so Wren's is an answer to a question nobody asked her and
-     * the seating below has to ignore it. She is also not a founding member,
-     * so two separate rules would each stop her; the unit control that
-     * isolates the slate rule from the founder rule is in
-     * `server/stewardSlate.db.test.ts`.
+     * the seating below has to ignore it. She IS a founding member now, so the
+     * slate rule alone is what stops her; the unit control that isolates the
+     * slate rule from the founder rule is in `server/stewardSlate.db.test.ts`.
      */
     const stood = await vote(running.id, founderToken, "yes", true);
     expect(stood.status, JSON.stringify(stood.json)).toBe(200);
@@ -671,15 +810,40 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     const wrenStood = await vote(running.id, wrenToken, "yes", true);
     expect(wrenStood.status).toBe(200);
     expect(wrenStood.json?.standsForSteward, "anybody may set it; the seating is where it is weighed").toBe(true);
-    expect((await vote(running.id, idaToken, "yes")).status).toBe(200);
-    await expire(running.id);
-    const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
-      body: { outcomeNote: "All three of us agreed. Larksfield starts today." },
-    });
-    expect(closed.status, JSON.stringify(closed.json)).toBe(200);
-    expect(closed.json?.outcome).toBe("passed");
 
-    // The two facts, written by the close and by nothing else.
+    // IDA SAYS NO, AND THE NO HOLDS IT. Two yeses and a no, and nothing has started.
+    const held = await vote(running.id, idaToken, "no");
+    expect(held.status).toBe(200);
+    expect(held.json?.carried).toBe(false);
+    expect(await gameStartRow()).toBeNull();
+
+    // A FOUNDER MAY CHANGE YES TO NO UNTIL IT CARRIES, and back again.
+    expect((await vote(running.id, wrenToken, "no", true)).json?.carried).toBe(false);
+    expect((await vote(running.id, wrenToken, "yes", true)).json?.carried).toBe(false);
+
+    // IDA WITHDRAWS HER NO BY SAYING YES. That is the third yes with no no
+    // standing, so it carries in this request: nobody closes it, the window
+    // has days left, and the response says so.
+    const third = await vote(running.id, idaToken, "yes");
+    expect(third.status, JSON.stringify(third.json)).toBe(200);
+    expect(third.json?.carried).toBe(true);
+    expect(third.json?.ballot?.status).toBe("passed");
+
+    const [closedRow] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      "SELECT status, closed_by, outcome_note, closes_at > NOW() AS before_window_end FROM ballots WHERE id = ?",
+      [running.id],
+    );
+    expect(String(closedRow[0].status)).toBe("passed");
+    expect(String(closedRow[0].closed_by), "the rule closed it, and no person did").toBe("governance");
+    expect(String(closedRow[0].outcome_note)).toContain("Enough of the people on the roll had said yes and nobody on it had said no");
+    expect(Number(closedRow[0].before_window_end), "it did not wait for its window").toBe(1);
+
+    // ONCE IT HAS CARRIED, NO ANSWER MOVES.
+    const tooLate = await vote(running.id, idaToken, "no");
+    expect(tooLate.status).toBe(409);
+    expect(String(tooLate.json?.error)).toContain("Voting ended when it closed");
+
+    // The two facts, written by the carry and by nothing else.
     const started = await gameStartRow();
     expect(started?.ballotId).toBe(running.id);
     expect(String(started?.startedAt)).toBeTruthy();
@@ -695,31 +859,30 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     expect(now.json?.toBalance).toBe(500);
   });
 
-  it("seats the founder who STOOD for it, with a term, and leaves the members where they were", async () => {
+  it("seats the founder who was NAMED and accepted, with a term, and leaves the others where they were", async () => {
     /*
      * Rye, 2026-09-23: "Seat them at launch." Rye, 2026-09-24: for "whomever of
      * the founding members ... carry the inaugural role", who say so by "self
-     * signaling at founding". The close is the only thing that has run since
+     * signaling at founding". The carry is the only thing that has run since
      * the previous case, so a seat here was written by the closer and by
      * nothing else.
      *
-     * Larksfield's roll is a founder and two members, and BOTH the founder and
-     * Wren asked for the seat. So this drives both halves of the filter at
-     * once: the stored role `founder` and the signal on the vote, and neither
-     * on its own would produce this answer.
+     * Larksfield's roll is three founders, and BOTH the first founder and Wren
+     * asked for the seat. Only the first was named on the slate, so this
+     * drives the slate rule on a real founding member.
      */
     const rows = await launchBallots();
     const carried = rows[rows.length - 1];
     expect(carried.status).toBe("passed");
 
     const seats = await stewardSeats();
-    expect(seats.map((s) => s.userId), "the founder who stood, and nobody else").toEqual([founderId]);
+    expect(seats.map((s) => s.userId), "the founder who was named and accepted, and nobody else").toEqual([founderId]);
     expect(seats[0].endsAt, "no seat may enter with an indefinite time").not.toBeNull();
     expect(seats[0].endsAt!).toBeGreaterThan(Date.now());
     expect(seats[0].grantedBy, "the village put them here, not an administrator").toBe(carried.id);
 
-    // Wren asked and is not a founding member. The known positive for that
-    // empty answer is the seat above, written by the same call.
+    // Wren asked and was not named. The known positive for that empty answer
+    // is the seat above, written by the same call.
     const [wrenAsked] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       "SELECT stands_for_steward FROM ballot_votes WHERE ballot_id = ? AND user_id = ?",
       [carried.id, wrenId],
@@ -773,9 +936,40 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     ).toContain("steward");
   });
 
+  it("tells the founders on the roll that it carried, and puts one line on the pulse", async () => {
+    const rows = await launchBallots();
+    const carried = rows[rows.length - 1];
+    // The roll is rung without an await, so wait for it.
+    const read = async () => {
+      const [r] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+        "SELECT user_id, type, title, body FROM notifications WHERE dedupe_key LIKE ? ORDER BY user_id",
+        [`bal:${carried.id}:%`],
+      );
+      return r;
+    };
+    const deadline = Date.now() + 15_000;
+    while ((await read()).filter((r: any) => String(r.type) === "ballot_carried").length < 2 && Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    const told = await read();
+    // Whoever opened it hears it in the launch's own words; the other two founders hear the roll's line.
+    const opener = told.find((r: any) => String(r.user_id) === founderId && String(r.title).startsWith("The village started its Game"));
+    expect(opener, JSON.stringify(told)).toBeTruthy();
+    expect(String(opener.body)).toBe("Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.");
+    const rolled = told.filter((r: any) => String(r.type) === "ballot_carried").map((r: any) => String(r.user_id)).sort();
+    expect(rolled).toEqual([idaId, wrenId].sort());
+    // Tam was not on the roll and is not rung as if he had been asked.
+    expect(told.some((r: any) => String(r.user_id) === tamId)).toBe(false);
+
+    const [pulse] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      "SELECT COUNT(*) AS n FROM health_events WHERE kind = 'governance' AND text = 'The village started its Game: its launch vote carried.'",
+    );
+    expect(Number(pulse[0].n)).toBe(1);
+  });
+
   it("pays the work that was waiting, because the claim was never stranded", async () => {
-    // The other half of the guard three cases back. Wren's quest was submitted
-    // before the village started and is consented now, at full value.
+    // The other half of the guard in the first describe. Wren's quest was
+    // submitted before the village started and is consented now, at full value.
     const consent = await call("POST", `/api/admin/quest-claims/${claimId}/consent`, {
       body: { approve: true, amount: 10 },
     });
@@ -829,7 +1023,7 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     expect(JSON.stringify(waiting.json)).not.toContain(KEY);
     // The person who asked cannot be the second person, and a member who is not an admin cannot co-sign.
     expect((await call("POST", `/api/admin/planting-requests/${mine.id}/cosign`)).status).toBe(409);
-    expect((await call("POST", `/api/admin/planting-requests/${mine.id}/cosign`, { token: wrenToken })).status).toBe(403);
+    expect((await call("POST", `/api/admin/planting-requests/${mine.id}/cosign`, { token: tamToken })).status).toBe(403);
     // Clearing a key is never held: a leaked key can always be pulled at once.
     expect((await call("PUT", "/api/admin/integrations/stripe_secret_key", { body: { value: "" } })).status).toBe(200);
     // The asker withdraws, and the request leaves the list.
@@ -841,5 +1035,16 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     const again = await call("POST", "/api/admin/launch/propose");
     expect(again.status).toBe(409);
     expect(String(again.json?.error)).toContain("already started its Game");
+  });
+
+  it("closes the launch's two settings to the panel once the Game has started: only the village's vote moves them", async () => {
+    // Before the Game started the founder set both (two cases in the first
+    // describe). The same writes now are refused and pointed at a proposal.
+    for (const [key, value] of [["governance.launch_roll", "members"], ["governance.launch_min_electorate", "5"]] as const) {
+      const r = await call("PUT", `/api/admin/variables/${key}`, { body: { value } });
+      expect(r.status, `${key}: ${JSON.stringify(r.json)}`).toBe(409);
+      expect(r.json?.code, key).toBe("vote_rule_dial_closed_at_launch");
+      expect(r.json?.proposeInstead, key).toBe(true);
+    }
   });
 });

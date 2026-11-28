@@ -168,7 +168,8 @@ describe("pinned to the engine: change what the engine enforces and the row chan
     expect(row(m, "move:role_seat").method.kind).toBe("consent");
     // The Birthing and the vote-mode switch fix `custom` in SUBJECT_THRESHOLDS.
     expect(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].method).toBe("custom");
-    expect(row(m, `vote:${VILLAGE_LAUNCH}`).method).toMatchObject({ kind: "custom", unityPct: 100, quorumPct: 100 });
+    // Unity 100 and no quorum percent: its participation is three founder yeses (Rye, 2026-11-27).
+    expect(row(m, `vote:${VILLAGE_LAUNCH}`).method).toMatchObject({ kind: "custom", unityPct: 100, quorumPct: 0 });
     expect(row(m, `vote:${GOVERNANCE_MODE}`).method.kind).toBe("custom");
     expect(row(m, `vote:${VILLAGE_LAUNCH}`).consultation.join(" ")).not.toContain("objection");
   });
@@ -177,10 +178,34 @@ describe("pinned to the engine: change what the engine enforces and the row chan
     const t = SUBJECT_THRESHOLDS[VILLAGE_LAUNCH];
     const r = row(generateDecisionMatrix(inputs()), `vote:${VILLAGE_LAUNCH}`);
     expect(r.approval.who).toBe("roll");
-    expect(r.approval.text).toContain(`at least ${t.minElectorate} people on it`);
-    expect(r.approval.text).toContain("every role carrying weight");
-    expect(r.approval.text).toContain("every one of them voting yes");
+    // The roll is the founders, counted once each (Rye, 2026-11-27), and the row says so in people.
+    expect(t.roll).toBe("founders");
+    expect(r.approval.text).toContain("The roll: the founding members present when the ballot opens, each counted once");
+    expect(r.approval.text).toContain(`at least ${t.minElectorate} of them on it`);
+    expect(r.approval.text).toContain(`at least ${t.minYesHeads} of them voting yes`);
+    expect(r.approval.text).toContain("none of them voting no");
+    expect(r.approval.text, "the every-seat rule is gone").not.toContain("every one of them voting yes");
+    expect(r.method.lines[0]).toBe(
+      `Counted in founding members, each once: it carries the moment ${t.minYesHeads} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`,
+    );
+    expect(r.method.lines[1]).toBe(
+      "The village's unity and quorum dials never reach this one, and it does not wait for its window to end. How many must say yes, and who is asked, are settings the village's highest vote can change.",
+    );
+    expect(r.method.lines.join(" "), "no percentage is named for a rule counted in people").not.toMatch(/quorum \d|unity \d/);
     expect(r.detail).toBe(t.why);
+    // Control: a village whose own dials sit at 99 and 99 changes nothing about this row.
+    const strict = row(generateDecisionMatrix(inputs({ village: { unityPct: 99, quorumPct: 99 } })), `vote:${VILLAGE_LAUNCH}`);
+    expect(strict.method).toMatchObject({ unityPct: 100, quorumPct: 0 });
+    expect(strict.method.lines).toEqual(r.method.lines);
+    // And a village that changed the launch's own two settings reads ITS rule here (Rye, 2026-11-06).
+    const own = row(generateDecisionMatrix(inputs({ launch: { yesNeeded: 5, roll: "members" } })), `vote:${VILLAGE_LAUNCH}`);
+    expect(own.approval.text).toContain("The roll: every member who holds a voice when the ballot opens, each counted once, with at least 5 of them on it, at least 5 of them voting yes and none of them voting no.");
+    expect(own.method.lines[0]).toBe(
+      "Counted in members, each once: it carries the moment 5 of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.",
+    );
+    // A stored number below three is held at three.
+    const low = row(generateDecisionMatrix(inputs({ launch: { yesNeeded: 1, roll: "founders" } })), `vote:${VILLAGE_LAUNCH}`);
+    expect(low.approval.text).toContain(`at least ${t.minYesHeads} of them voting yes`);
   });
 });
 
@@ -541,9 +566,11 @@ describe("the Method column names what set the bar", () => {
     expect(structural.method.lines[1]).toBe(
       `The structural tier's floor raises it above the village's own dials, which are quorum ${VILLAGE.quorumPct} and unity ${VILLAGE.unityPct}. The village cannot lower that floor.`,
     );
-    for (const key of ["vote:mechanics:constitutional", `vote:${GOVERNANCE_MODE}`, `vote:${VILLAGE_LAUNCH}`, `vote:${MINT_RULE}`]) {
+    for (const key of ["vote:mechanics:constitutional", `vote:${GOVERNANCE_MODE}`, `vote:${MINT_RULE}`]) {
       expect(row(m, key).method.lines[0], key).toMatch(/^Counted on the numbers this vote freezes/);
     }
+    // The launch is counted in founders and names no percentage (Rye, 2026-11-27).
+    expect(row(m, `vote:${VILLAGE_LAUNCH}`).method.lines[0]).toMatch(/^Counted in founding members, each once/);
   });
 
   it("a raised routine tier is shown raising the routine bar, and the shipped routine tier as asking nothing more", () => {

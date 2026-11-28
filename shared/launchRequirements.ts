@@ -107,8 +107,10 @@ export interface LaunchRequirement {
    * without a vote path). A vote cannot set an environment variable, so a
    * village whose host never sets it would otherwise never be asked. Such a
    * row stays on the journey, open and counted, and stops holding the vote;
-   * the launch document names it. The launch vote is unanimous by its subject
-   * (`VILLAGE_LAUNCH`, 100/100), so it already sits at the highest tier.
+   * the launch document names it. When that was decided the launch vote asked
+   * a yes from every member. Since 2026-11-27 it asks three founders to say yes
+   * with no founder saying no (`VILLAGE_LAUNCH`), so a carried row rides on
+   * their yes: its unity is still 100, and any one founder's no stops it.
    *
    * Only for a row whose absence the platform survives. `session-secret` is
    * NOT one: no vote makes sessions survive a restart, so it stays a host-only

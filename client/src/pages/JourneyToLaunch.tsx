@@ -43,7 +43,7 @@ import StartTheGame, { type LaunchVote } from "@/components/launch/StartTheGame"
 import HandOverPowers from "@/components/governance/HandOverPowers";
 import { useBrochurePages } from "@/lib/brochure";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { launchDoors, launchRecord, type LaunchFactsAnswer } from "@shared/launchFacts";
 import { readLaunchFacts } from "@/lib/launchReads";
 import { useLaunchLabelWords } from "@/lib/launchWords";
@@ -176,6 +176,7 @@ function viewOfFixAt(fixAt: string): JourneyView | null {
 }
 
 export default function JourneyToLaunch() {
+  const { t } = useLingui();
   const brochureOn = useBrochurePages() === true;
   const { user, loading } = useAuth();
   const isAdmin = !!user && (user.role === "admin" || user.role === "founder");
@@ -293,7 +294,7 @@ export default function JourneyToLaunch() {
   const askTheVillage = () => {
     if (
       !window.confirm(
-        "Open the vote on starting the Game? Every member on the roll will be asked, and it needs all of them to answer and all of them to agree.",
+        t({ message: "Open the vote on starting the Game? It carries the moment enough of its roll have said yes, unless somebody on it has said no. It does not wait for its window to end.", context: "JourneyToLaunch, confirm before opening the launch vote" }),
       )
     ) {
       return;

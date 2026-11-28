@@ -213,6 +213,8 @@ import { runSeasonReminders } from "./lib/seasonReminders";
 import { crossOwedLaunchSelection, forgetStewardActs, holdingHasLapsed, recordTermStarted, runTermWatch, setVetoWindowCheck, STEWARD_ROLE_ID, STEWARD_VETO, stewardMailRefusal, termWatchLookaheadDays } from "./lib/stewardship";
 import { seatFoundersAtLaunch } from "./lib/launchSeating";
 import { launchProposalDoc, launchSlateProblem } from "./lib/launchProposal";
+import { FOUNDERS_COUNT_ONCE, launchRollNow, launchRollProblem } from "./lib/launchRoll"; // Rye, 2026-11-27: only founders vote on the launch
+import { carryAtOnceIfMet, carryEveryMetBallot, type CarryDeps } from "./lib/launchCarry";
 import { insertSlate } from "./repos/stewardSlate";
 import { freezeSeatTerm } from "./repos/ballotSeatTerms";
 import { roleHoldersNow } from "./repos/pathLadders";
@@ -543,8 +545,13 @@ import {
   type BallotOutcome,
 } from "../shared/governanceEngine";
 import {
+  carriesAtOnce,
   delegatedRowsCountOn,
   dialsForSubject,
+  launchQuorumPct,
+  launchRollKindFrom,
+  launchRuleSentence,
+  LAUNCH_ROLL_KEY,
   methodForSubject,
   overrideDials as highestTierBar,
   thresholdSettingsFrom,
@@ -5562,7 +5569,7 @@ async function startServer() {
       nudged += await notifyRoll(b, {
         type: "ballot_closing",
         title: `Your vote is still owed: ${b.title}`,
-        body: `Voting closes ${deadlineInVillage(b.closesAt)}. Quorum is counted against everyone on the roll, so an abstention is an answer too.`,
+        body: carriesAtOnce(b.subjectType) ? `Voting closes ${deadlineInVillage(b.closesAt)}. It carries once enough of its roll have said yes and nobody on it has said no, and your answer is not in yet.` : `Voting closes ${deadlineInVillage(b.closesAt)}. Quorum is counted against everyone on the roll, so an abstention is an answer too.`,
         keySuffix: "closing",
         roll: owing,
       });
@@ -5655,9 +5662,10 @@ async function startServer() {
   // return. A young village that switched its seeded mint rules off would
   // otherwise land nothing, forever, and be told nothing.
   registerJob("governance-landing", 5 * 60 * 1000, async () => {
+    const carried = await carryEveryMetBallot(carryDeps()); // a rule met while no process was there to close it
     const settled = await autoSettleExpired(landingDeps(), closeBallot);
     const landed = await applyDueGovernance(landingDeps());
-    return `${settled.closed} closed, ${landed.ran ? `${landed.due} due, ${landed.landed} landed` : landed.why}`;
+    return `${carried ? `${carried} carried at once, ` : ""}${settled.closed} closed, ${landed.ran ? `${landed.due} due, ${landed.landed} landed` : landed.why}`;
   });
 
   // Halfway through a veto window, and two hours out. All three moments dedupe.
@@ -12399,76 +12407,89 @@ async function startServer() {
   };
 
   /**
-   * HOW WEIGHT IS ASSIGNED RIGHT NOW, as one sentence or none.
-   *
-   * The launch card says what carrying the vote needs, and until this existed
-   * it said it in a vocabulary of PEOPLE ("100% of the roll has answered")
-   * while the engine counts weight. In `equal` mode those are the same
-   * sentence and the note is empty. In the other two they are not, and a
-   * founder about to open the one irreversible vote should be told which one
-   * they are looking at before they press it, not after.
-   *
-   * A fact, never a caution. Skewed weight is legitimate (R56) and this says
-   * what is in force, nothing about whether it is wise.
+   * The launch's rule as this village holds it (Rye, 2026-11-27, and 2026-11-06:
+   * the number and who counts are the village's own, changed by its highest
+   * vote). Read here and nowhere else, so the page, the refusal and the ballot
+   * that freezes it are one reading.
    */
-  function weightModeNote(): string {
-    const mode = stringVar("governance.weight_mode");
-    if (mode === "custom") {
-      return "Voting weight comes from the allocation table, so a member weighs what it says they weigh.";
-    }
-    if (mode === "token") {
-      const slug = stringVar("governance.weight_token").trim();
-      const name = (slug && tokenDef(slug)?.name) || slug || "the weight token";
-      return `Voting weight is each member's balance of ${name} at the moment the vote opens.`;
-    }
-    return "";
-  }
+  const launchRule = () => ({
+    roll: launchRollKindFrom(stringVar(LAUNCH_ROLL_KEY)),
+    yesNeeded: launchMinElectorate(numberVar("governance.launch_min_electorate")),
+  });
+  /** The launch roll as it stands: who the village's launch asks, present now (server/lib/launchRoll.ts). */
+  const launchRoll = () =>
+    launchRollNow({
+      members: () => members.all(),
+      isPresent: (u) => isPresentMember(u as any, AUTH_TOKEN_SECRET),
+      withoutFormer: (people) => withoutFormerMembers(getPool(), people as any),
+      shortName: firstName,
+      votingRoll: () => votingRoll(),
+    }, launchRule().roll);
+  /** What carrying a ballot at once needs (server/lib/launchCarry.ts). Read at call time, like `landingDeps`. */
+  const carryDeps = (): CarryDeps => ({
+    pool: getPool(),
+    landing: landingDeps(),
+    tellRoll: (b, routing) => {
+      void tellRollTheOutcome({ pool: getPool(), notify, link: ballotLink }, {
+        ballot: b, outcome: "passed", binds: ballotBinds(b.subjectType), outcomeNote: b.outcomeNote ?? null, routing, proposerId: b.openedBy,
+      });
+    },
+  });
+
 
   /**
    * THE LAUNCH VOTE'S OWN FACTS, beside the checklist that gates it (R74).
    *
    * Everything here is measured now and nothing is remembered, because all
-   * three answers move: members arrive, a vote opens, a vote closes. The page
+   * three answers move: founders arrive, a vote opens, a vote closes. The page
    * states them and offers the button when they allow it, which is the whole
-   * of R56 on this surface: a count is a fact, and a village of two reading
-   * "one more member" has been told something it could not otherwise see.
+   * of R56 on this surface: a count is a fact, and a village of two founders
+   * reading "one more founder" has been told something it could not otherwise
+   * see.
    *
-   * `onTheRoll` is the ELECTORATE and not the member list, because that is
-   * what a 100% quorum is measured against and what R67's floor of three has
-   * to mean. A village of five where two people hold a voice would otherwise
-   * be told it could start.
+   * `onTheRoll` is the LAUNCH ROLL and not the member list: the founders
+   * present now (Rye, 2026-11-27; server/lib/launchRoll.ts). `founders` names
+   * them, and `notOnTheRoll` names every founder account that is not on it
+   * with the reason, so a village short of three reads who is missing.
    *
-   * `tooFew` carries EVERY reason the roll is not ready to be asked, not only
-   * the head count, because that field is the one the card renders and the one
-   * that greys the button. A second reason returned on a second field would be
-   * a refusal the route makes and the page does not show.
+   * `tooFew` carries EVERY reason the roll is not ready to be asked, because
+   * that field is the one the card renders and the one that greys the button.
+   * A second reason returned on a second field would be a refusal the route
+   * makes and the page does not show.
    */
   async function launchVoteFacts() {
     const threshold = thresholdsForSubject(VILLAGE_LAUNCH);
     const openNow = await openBallotFor(getPool(), VILLAGE_LAUNCH, LAUNCH_SUBJECT_REF);
-    let onTheRoll: number | null = null;
-    let tooFew: string | null = null;
-    try {
-      const roll = await buildElectorate();
-      onTheRoll = roll.length;
-      tooFew = rollProblem(VILLAGE_LAUNCH, roll, numberVar("governance.launch_min_electorate"));
-    } catch (e: any) {
-      // Building the roll reads the weight mode, which can refuse (a weight
-      // token the engine may not conduct). That is a real answer about this
-      // village's settings and it belongs on the page, never as a count of
-      // zero that reads like an empty village.
-      tooFew = `The roll could not be read: ${String(e?.message ?? e).slice(0, 160)}`;
-    }
+    // The roll is whoever the village's launch asks, the founders as shipped
+    // (Rye, 2026-11-27), each counted once, so the village's weight mode is
+    // never read here and cannot refuse the read.
+    const rule = launchRule();
+    const roll = await launchRoll();
     return { governanceOn: LIFECYCLE_RANK[effectiveLifecycle("governance")] >= LIFECYCLE_RANK.members,
-      onTheRoll,
-      tooFew,
+      onTheRoll: roll.electorate.length,
+      // Short of its number: how many more, who is on it, who is not, and the way through.
+      tooFew: launchRollProblem(roll, { villageMin: rule.yesNeeded, founderPowerStands: await founderPowerStands(getPool()) }),
+      // Who the launch asks (`founders` as shipped, or `members`), and who that is by name.
+      roll: roll.kind,
+      founders: roll.founders,
+      notOnTheRoll: roll.notOnTheRoll,
+      /*
+       * HOW MANY MEMBERS HOLD A VOICE ON EVERY ORDINARY VOTE: the roll every
+       * other ballot freezes. `onTheRoll` was this number until 2026-11-27 and
+       * is the launch's own roll now, which is the founders as shipped. Both
+       * are stated, so a village reads that its launch asks three people while
+       * forty hold a voice, and so the suites that measure who holds a voice
+       * keep a count that means what it always meant.
+       */
+      membersWithAVoice: (await votingRoll()).length,
+      // How many yeses carry it. The page says this number.
+      yesNeeded: threshold ? rule.yesNeeded : null,
       unityPct: threshold?.minUnityPct ?? null,
-      quorumPct: threshold?.minQuorumPct ?? null,
-      minElectorate: threshold ? launchMinElectorate(numberVar("governance.launch_min_electorate")) : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
-      // The subject's own fact, then this village's. `why` is what the card
-      // renders in the ready-to-ask state, so a mode note appended here lands
-      // in front of the founder with no new field for a client to learn.
-      why: threshold ? [threshold.why, weightModeNote()].filter(Boolean).join(" ") : null,
+      // What a ballot opened on today's roll would freeze as its participation.
+      quorumPct: threshold ? launchQuorumPct(rule.yesNeeded, roll.electorate.length) : null,
+      minElectorate: threshold ? rule.yesNeeded : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
+      // The rule as this village holds it, then how an answer is counted on this one vote.
+      why: threshold ? `${launchRuleSentence(rule)} ${FOUNDERS_COUNT_ONCE}` : null,
       openBallot: openNow
         ? {
             id: openNow.id,
@@ -13663,26 +13684,20 @@ Send an empty drafts array when you are still listening. A role payload is {name
       });
     }
 
-    const snapshot = weightModeNow();
-    if (snapshot.mode === "token") {
-      const problem = weightTokenProblem(snapshot.token ?? "");
-      if (problem) return res.status(409).json({ error: problem });
-    }
-    const electorate = await buildElectorate();
-
     /*
-     * R67's floor of three, asked of the ELECTORATE and not the member list. A
-     * village of five where two people hold a voice would otherwise carry a
-     * 100% ballot with two, which is not a Game with three people in it.
-     *
-     * And the same question asked of the WEIGHTS, which is the half the head
-     * count cannot see: three heads on the roll with two of them at weight
-     * zero is one person carrying a 100/100 vote while the frozen document
-     * says the whole village agreed. `rollProblem` is both, in one sentence,
-     * and the reasoning is in `shared/ballotSubjects.ts`.
+     * THE ROLL IS THE FOUNDERS PRESENT NOW, EACH COUNTED ONCE (Rye, 2026-11-27),
+     * or every member if the village changed who its launch asks. Three of
+     * them at least, which is R67's floor asked of the people this vote
+     * actually asks, or the village's own number if it is higher. Short of
+     * that, the refusal names who is on the roll, which founder accounts are
+     * not and why, and the way through (server/lib/launchRoll.ts).
+     * `rollProblem` stays as the second question: no seat may weigh nothing.
      */
-    const rollNotReady = rollProblem(VILLAGE_LAUNCH, electorate, numberVar("governance.launch_min_electorate"));
-    if (rollNotReady) return res.status(409).json({ error: rollNotReady, onTheRoll: electorate.length });
+    const rule = launchRule();
+    const roll = await launchRoll();
+    const electorate = roll.electorate;
+    const rollNotReady = launchRollProblem(roll, { villageMin: rule.yesNeeded, founderPowerStands: await founderPowerStands(getPool()) }) ?? rollProblem(VILLAGE_LAUNCH, electorate, rule.yesNeeded, roll.kind);
+    if (rollNotReady) return res.status(409).json({ error: rollNotReady, onTheRoll: electorate.length, founders: roll.founders, notOnTheRoll: roll.notOnTheRoll });
 
     const villageMethod = villageBallotMethod(stringVar("governance.default_method"));
     const conducts = methodForSubject(VILLAGE_LAUNCH, villageMethod);
@@ -13693,10 +13708,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
       return res.status(409).json({ error: "This village decides on Hypha, and there is no chain leg for a village starting its own Game" });
     }
     const method: BallotMethod = conducts;
-    const dials = dialsForSubject(VILLAGE_LAUNCH, method, {
+    const subjectDials = dialsForSubject(VILLAGE_LAUNCH, method, {
       unityPct: Math.max(0, numberVar("governance.unity_pct")),
       quorumPct: Math.max(0, numberVar("governance.quorum_pct")),
     });
+    // THE VILLAGE'S NUMBER, FROZEN. Unity 100 is "nobody on the roll has said
+    // no", and the participation is the village's count of yeses over this
+    // roll (`launchQuorumPct`), so changing the dial later moves nothing here.
+    const dials = { unityPct: subjectDials.unityPct, quorumPct: launchQuorumPct(rule.yesNeeded, electorate.length) };
 
     // 0220: the proposal NAMES its founding stewards, founders only, and the
     // reasoning for every rule is in server/lib/launchProposal.ts.
@@ -13710,7 +13729,10 @@ Send an empty drafts array when you are still listening. A role payload is {name
       quorumPct: dials.quorumPct,
       unityPct: dials.unityPct,
       onTheRoll: electorate.length,
-      weightNote: weightModeNote(),
+      founders: roll.founders.map((f) => f.name),
+      yesNeeded: rule.yesNeeded,
+      rollKind: roll.kind,
+      weightNote: FOUNDERS_COUNT_ONCE,
       openedBy: firstName(user.name),
       openedOn: new Date().toISOString().slice(0, 10),
       slate: slate.members,
@@ -13725,8 +13747,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       title: `Start the Game in ${villageName}`,
       docMarkdown: doc,
       method,
-      weightMode: snapshot.mode,
-      weightToken: snapshot.token,
+      // One founder, one answer: never the village's weight mode (server/lib/launchRoll.ts).
+      weightMode: "equal",
+      weightToken: null,
       unityPct: dials.unityPct,
       quorumPct: dials.quorumPct,
       durationDays: Math.max(1, numberVar("governance.vote_days")),
@@ -13755,7 +13778,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     void notifyRoll(result.ballot, {
       type: "ballot_opened",
       title: `The village is deciding whether to start its Game`,
-      body: `Voting is open until ${deadlineInVillage(result.ballot.closesAt)}. This one asks everyone on the roll, so it needs your answer to reach its participation.`,
+      body: `${roll.kind === "founders" ? "Only founding members vote on this one" : "Every member who holds a voice votes on this one"}, and you are on its roll. It carries the moment ${rule.yesNeeded} of you have said yes, unless one of you has said no. It is open until ${deadlineInVillage(result.ballot.closesAt)}.`,
       keySuffix: "open",
       except: [user.id],
       roll: electorate.map((e) => e.userId),
@@ -21919,12 +21942,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * IGNORE or a read-then-skip on a row that already stands, so a run that
      * did reach here twice leaves the first instant and the first ballot.
      *
-     * A FAILURE TO REACH EVERYONE IS NOT A NO. At 100% participation, a
-     * village where one person never voted closes as `no_quorum`, and that
-     * branch says exactly that and leaves everything where it was. The vote
-     * can be asked again the same hour: `closeBallot` frees the open key, so a
-     * new ballot opens with a NEW freeze, and the one that missed stays closed
-     * and immutable with its own roll.
+     * A WINDOW THAT ENDS SHORT OF THREE YESES IS NOT A NO (Rye, 2026-11-27).
+     * It closes as `no_quorum`, and that branch says exactly that and leaves
+     * everything where it was. A founder's no still standing at the end closes
+     * it as `failed`. Either way the vote can be asked again the same hour:
+     * `closeBallot` frees the open key, so a new ballot opens with a NEW
+     * freeze, and the one that missed stays closed and immutable with its own
+     * roll. The pass itself does not wait for the window: it lands here the
+     * moment the third founder says yes (server/lib/launchCarry.ts).
      */
     [VILLAGE_LAUNCH]: twoPhase(async (b, outcome, outcomeNote, actorId) => {
       const out: CloseRouting = { applied: [], held: null, proposerTold: null };
@@ -21936,12 +21961,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
           type: "governance",
           title:
             outcome === "no_quorum"
-              ? "Not everyone answered, so the Game has not started yet"
+              ? "Too few on the roll said yes, so the Game has not started yet"
               : "The village did not start its Game",
           body:
             outcome === "no_quorum"
-              ? "This vote asks for everyone on the roll. Nothing has changed and nothing is lost, and it can be asked again whenever the village is more gathered."
-              : `${outcomeNote}\n\nEverything stays as it was, and the village can be asked again.`,
+              ? "The window ended before enough of the roll had said yes. Nothing has changed and nothing is lost, and it can be asked again whenever they are more gathered."
+              : `A no was still standing when the window ended. ${outcomeNote}\n\nEverything stays as it was, and the village can be asked again.`,
           link: ballotLink(b),
           actorUserId: actorId,
           // Keyed on the BALLOT: the same village can ask more than once, and
@@ -21998,7 +22023,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         userId: b.openedBy,
         type: "governance",
         title: `The village started its Game: ${b.title}`,
-        body: "Token issuance is open from today, by a vote every member on the roll took part in.",
+        body: "Token issuance is open from today. Enough of the roll said yes, and nobody on it said no.",
         link: ballotLink(b),
         actorUserId: actorId,
         dedupeKey: `bal:${b.id}:launch-carried`,
@@ -22008,7 +22033,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
        * about whoever closed the vote. This is the one line in the feed that a
        * village will still be reading in five years.
        */
-      await addActivity("governance", `The village started its Game, by a vote of everyone on the roll.`, {
+      await addActivity("governance", `The village started its Game: its launch vote carried.`, {
         actorUserId: actorId,
         entityType: "ballot",
         entityRef: b.id,
@@ -22944,12 +22969,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
       getPool(), req.params.id, user.id,
       String(req.body?.choice ?? ""),
       req.body?.reason === undefined ? undefined : String(req.body.reason),
-      { mayVoteNow: voteGate.allowed, deniedByWarning: voteGate.source === "denied by warning badge", leftTheVillage: await leftTheVillage(getPool(), user) },
+      { mayVoteNow: voteGate.allowed, deniedByWarning: voteGate.source === "denied by warning badge", leftTheVillage: await leftTheVillage(getPool(), user), notAFoundingMember: launchRule().roll === "founders" && user.role !== "founder" },
       req.body?.standsForSteward === true, // 0218: castVote honours it on the Birthing alone, and reports what it stored
     );
     if (!result.ok) return res.status(409).json({ error: result.error });
+    // The launch carries the moment a third founder says yes with no founder's no standing (Rye, 2026-11-27).
+    // A vote that is recorded is never failed by what the carry does afterwards: the five-minute job reads it again.
+    const carry = await carryAtOnceIfMet(carryDeps(), req.params.id).catch((e) => { console.error("[governance] carrying at once failed after a recorded vote", e); return { carried: false as const }; });
     const b = await ballotById(getPool(), req.params.id);
-    res.json({ success: true, choice: result.choice, standsForSteward: result.standsForSteward, ballot: b ? await serveBallot(b, user.id) : null });
+    res.json({ success: true, choice: result.choice, standsForSteward: result.standsForSteward, carried: carry.carried, ballot: b ? await serveBallot(b, user.id) : null });
   });
 
   /** File an objection on a consent ballot without voting no. */

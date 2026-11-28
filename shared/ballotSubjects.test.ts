@@ -9,8 +9,15 @@
  *    the whole reason a subject may fix its method.
  *
  * The last describe block adds a fourth: a roll of three HEADS is not the same
- * fact as a roll of three VOICES, and on a 100/100 subject only the second one
- * makes the frozen document true.
+ * fact as a roll of three VOICES, and a subject that asks every seat to weigh
+ * something refuses a roll with a seat at zero.
+ *
+ * THE LAUNCH CASES WERE REWRITTEN ON 2026-11-27. Rye: the launch carries with
+ * "Not everyone, but at least 3 members holding the founder role", and it
+ * "doesn't need to wait 7 days". Until then these cases pinned 100 unity and
+ * 100 quorum with a yes from every seat. They now pin: three founder yeses,
+ * no founder's no, numbers the village's dials never reach, and a vote that
+ * carries at once.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -18,6 +25,16 @@ import {
   criticalityOfItems,
   delegatedRowsCountOn,
   delegationRefusalSentence,
+  atOnceEvaluation,
+  carriesAtOnce,
+  rollIsFounders,
+  yesHeadsFrozenAs,
+  launchQuorumPct,
+  launchRollKindFrom,
+  launchRuleSentence,
+  LAUNCH_ROLL_KEY,
+  LAUNCH_ROLL_KINDS,
+  LAUNCH_YES_HEADS,
   dialsForSubject,
   electorateFloorProblem,
   launchMinElectorate,
@@ -66,6 +83,7 @@ import {
   TIER_FLOORS,
   type BallotMethod,
 } from "./governanceEngine";
+import { criticalityOf, VARIABLES_BY_KEY } from "./gameVariables";
 
 const village = { unityPct: 80, quorumPct: 20 };
 
@@ -81,16 +99,34 @@ describe("per-subject thresholds", () => {
     expect(electorateFloorProblem("mechanics", 1)).toBeNull();
   });
 
-  it("raises the launch ballot to 100 and 100", () => {
-    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", village)).toEqual({ unityPct: 100, quorumPct: 100 });
+  it("freezes the launch at unity 100 and quorum 0, which is its rule said in the engine's numbers", () => {
+    // Unity 100 on a roll where every founder counts once is "no founder has
+    // said no". The participation it asks is three yes heads, never a percent.
+    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", village)).toEqual({ unityPct: 100, quorumPct: 0 });
+    expect(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].minYesHeads).toBe(LAUNCH_YES_HEADS);
+    expect(LAUNCH_YES_HEADS).toBe(3);
+    expect(rollIsFounders(VILLAGE_LAUNCH)).toBe(true);
+    expect(carriesAtOnce(VILLAGE_LAUNCH)).toBe(true);
+    // Control: nothing else is a roll of founders, and nothing else carries at once.
+    for (const subject of Object.keys(SUBJECT_THRESHOLDS).filter((s) => s !== VILLAGE_LAUNCH)) {
+      expect(rollIsFounders(subject), subject).toBe(false);
+      expect(carriesAtOnce(subject), subject).toBe(false);
+    }
+    expect(carriesAtOnce("mechanics")).toBe(false);
+    expect(rollIsFounders("mechanics")).toBe(false);
   });
 
-  it("never lowers a village that asks for more than the floor", () => {
-    // A floor is a minimum. A village at 100/100 on everything keeps its own
-    // numbers, and a floor below them changes nothing.
+  it("keeps the village's own dials OFF the launch, and still never lowers a village anywhere else", () => {
+    // "Not everyone" (Rye, 2026-11-27). A village at 100 and 100 on everything
+    // would otherwise freeze a quorum of 100 here and ask every founder to
+    // answer, which is the rule this one replaced. `fixedDials` is that line.
     const strict = { unityPct: 100, quorumPct: 100 };
-    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", strict)).toEqual(strict);
+    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", strict)).toEqual({ unityPct: 100, quorumPct: 0 });
+    // Control: every other subject still takes the village's higher number.
     expect(dialsForSubject("mechanics", "custom", strict)).toEqual(strict);
+    expect(dialsForSubject(MINT_RULE, "custom", strict)).toEqual(strict);
+    // And in a bundle the launch's numbers go back to being a floor, the stricter reading.
+    expect(dialsForSubject([VILLAGE_LAUNCH, "mechanics"], "custom", strict)).toEqual(strict);
   });
 
   it("fixes the launch method, so the frozen numbers are the numbers that decide", () => {
@@ -104,47 +140,69 @@ describe("per-subject thresholds", () => {
 
     const method = methodForSubject(VILLAGE_LAUNCH, "majority") as BallotMethod;
     const dials = dialsForSubject(VILLAGE_LAUNCH, method, village);
-    // Three members, one silent: 2 of 3 weight voted, so quorum is 66.7.
-    expect(
+    const rules = evaluationRulesFor(VILLAGE_LAUNCH);
+    const read = (yes: number, no: number, abstain: number, roll: number) =>
       evaluateBallot({
         method,
         ...dials,
-        totalWeight: 3,
-        tallies: { yesW: 2, noW: 0, abstainW: 0 },
-      }),
-    ).toBe("no_quorum");
-    // Everybody voted, one against.
-    expect(
+        totalWeight: roll,
+        tallies: { yesW: yes, noW: no, abstainW: abstain },
+        abstainPolicy: rules.abstainPolicy,
+        minYesHeads: rules.minYesHeads,
+        heads: { yesHeads: yes, noHeads: no, abstainHeads: abstain, electorateCount: roll },
+      });
+    // Three founders, two said yes: short of the three it asks, and nobody refused.
+    expect(read(2, 0, 0, 3)).toBe("no_quorum");
+    // Two yes and one no: a refusal is standing.
+    expect(read(2, 1, 0, 3)).toBe("failed");
+    // The third yes carries it.
+    expect(read(3, 0, 0, 3)).toBe("passed");
+  });
+
+  it("carries on THREE founder yeses and never needs everyone (Rye, 2026-11-27)", () => {
+    const method = methodForSubject(VILLAGE_LAUNCH, "custom") as BallotMethod;
+    const dials = dialsForSubject(VILLAGE_LAUNCH, method, village);
+    const rules = evaluationRulesFor(VILLAGE_LAUNCH);
+    const read = (yes: number, no: number, abstain: number, roll: number) =>
       evaluateBallot({
         method,
         ...dials,
-        totalWeight: 3,
-        tallies: { yesW: 2, noW: 1, abstainW: 0 },
-      }),
+        totalWeight: roll,
+        tallies: { yesW: yes, noW: no, abstainW: abstain },
+        abstainPolicy: rules.abstainPolicy,
+        minYesHeads: rules.minYesHeads,
+        heads: { yesHeads: yes, noHeads: no, abstainHeads: abstain, electorateCount: roll },
+      });
+    // Seven founders on the roll and three have answered, all yes. It carries
+    // with four founders silent, which the every-seat rule refused.
+    expect(read(3, 0, 0, 7)).toBe("passed");
+    expect(read(3, 0, 0, 50)).toBe("passed");
+    // A NO HOLDS IT, however many say yes. Six yes and one no on a roll of seven.
+    expect(read(6, 1, 0, 7)).toBe("failed");
+    expect(read(3, 1, 0, 7)).toBe("failed");
+    // Withdrawn by changing the no to an abstention: the hold is off and it carries.
+    expect(read(3, 0, 1, 7)).toBe("passed");
+    // Withdrawn by changing the no to a yes.
+    expect(read(4, 0, 0, 7)).toBe("passed");
+    // Two yes is never three, with or without the rest of the roll answering.
+    expect(read(2, 0, 0, 7)).toBe("no_quorum");
+    expect(read(2, 0, 5, 7), "abstentions are not yeses").toBe("no_quorum");
+    // Control for the head floor itself: the same tallies with the heads left
+    // out fail closed, so the rule is conducted and never skipped.
+    expect(
+      evaluateBallot({ method, ...dials, totalWeight: 7, tallies: { yesW: 3, noW: 0, abstainW: 0 }, minYesHeads: rules.minYesHeads }),
     ).toBe("failed");
-    // Everybody voted, everybody agreed.
-    expect(
-      evaluateBallot({
-        method,
-        ...dials,
-        totalWeight: 3,
-        tallies: { yesW: 3, noW: 0, abstainW: 0 },
-      }),
-    ).toBe("passed");
   });
 
   /*
-   * REWRITTEN 2026-09-02. This case used to read "two yes and one abstain
-   * carries", and it pinned a documented decision: abstain is defined once in
-   * the engine and a subject floor does not get to redefine it, so a launch
-   * carried on two yes votes and one abstention.
-   *
-   * The founder's Q3 ruling makes that the wrong rule for THIS subject: "we
-   * need 100% saying yes as a collective Birthing moment". So the subject now
-   * carries its own abstain policy and its own yes-head floor, the engine
-   * still owns the arithmetic, and the case is rewritten to what the Birthing
-   * actually asks. Every other subject is unchanged and the case below proves
-   * it on the same numbers.
+   * REWRITTEN 2026-09-02, and its last clause again on 2026-11-27. This case
+   * used to read "two yes and one abstain carries". The founder's Q3 ruling
+   * made an abstention on THIS subject not a yes, and that still stands: the
+   * subject carries its own abstain policy and its own yes-head floor, and the
+   * engine still owns the arithmetic. What changed on 2026-11-27 is the count
+   * the yeses are held to: three founders, where it used to be every seat.
+   * Every other subject is unchanged and the case below proves it on the same
+   * numbers.
    */
   it("does NOT carry the Birthing on an abstention, because an abstention is not a yes", () => {
     const method = methodForSubject(VILLAGE_LAUNCH, "custom") as BallotMethod;
@@ -176,7 +234,7 @@ describe("per-subject thresholds", () => {
         heads: { yesHeads: 2, noHeads: 0, abstainHeads: 0, electorateCount: 3 },
       }),
     ).toBe("no_quorum");
-    // Every seat says yes and it carries, which is the whole of the ruling.
+    // Three founders say yes and it carries, which is the whole of the ruling.
     expect(
       evaluateBallot({
         method,
@@ -197,7 +255,7 @@ describe("per-subject thresholds", () => {
     const strict = { unityPct: 100, quorumPct: 100 };
     const dials = dialsForSubject("mechanics", "custom", strict);
     const rules = evaluationRulesFor("mechanics");
-    expect(rules).toEqual({ abstainPolicy: "counts_toward_quorum", minYesHeads: undefined });
+    expect(rules).toEqual({ abstainPolicy: "counts_toward_quorum", minYesHeads: undefined, carriesAtOnce: false });
     expect(
       evaluateBallot({
         method: "custom",
@@ -210,35 +268,51 @@ describe("per-subject thresholds", () => {
     ).toBe("passed");
   });
 
-  it("says how many more members before a launch vote can open", () => {
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0)).toContain("3 more members");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 1)).toBe(
-      "One member holds a voice in this village today. 2 more members and the village can vote to start its Game.",
+  it("says how many more FOUNDERS before a launch vote can open", () => {
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0)).toBe(
+      "No founding member is on the roll today. 3 more founding members and the village can vote to start its Game.",
     );
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2)).toContain("One more member");
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 1)).toBe(
+      "One founding member is on the roll today. 2 more founding members and the village can vote to start its Game.",
+    );
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2)).toBe(
+      "2 founding members are on the roll today. One more founding member and the village can vote to start its Game.",
+    );
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 3)).toBeNull();
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 40)).toBeNull();
   });
 
   it("reads the village's own head count for the launch, never below the floor, and only for the launch (Rye, 2026-11-06; D3)", () => {
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 5)).toContain("3 more members");
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 5)).toContain("3 more founding members");
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 5, 5)).toBeNull();
     // D3: a dial below LAUNCH_MIN_ELECTORATE_FLOOR is held at the floor.
     expect(LAUNCH_MIN_ELECTORATE_FLOOR).toBe(3);
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 2), "two is one short of the floor").toContain("One more member");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 1, 1), "one person cannot launch alone").toContain("2 more members");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0, 0)).toContain("3 more members");
+    // The floor and the yes count are one number: a roll that may open can always carry.
+    expect(LAUNCH_MIN_ELECTORATE_FLOOR).toBe(LAUNCH_YES_HEADS);
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 2), "two is one short of the floor").toContain("One more founding member");
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 1, 1), "one person cannot launch alone").toContain("2 more founding members");
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0, 0)).toContain("3 more founding members");
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 3, 1)).toBeNull();
-    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }], 2)).toContain("One more member");
+    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }], 2)).toContain("One more founding member");
     expect(launchMinElectorate(1)).toBe(3);
     expect(launchMinElectorate(7)).toBe(7);
     // Flipping the floor to 1 restores the dial's full range, never below one.
     expect(launchMinElectorate(2, 1)).toBe(2);
     expect(launchMinElectorate(0, 1), "a zero is read as one").toBe(1);
     // Control: with no village value the registry's three still holds.
-    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }])).toContain("One more member");
+    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }])).toContain("One more founding member");
     // Another subject never reads the launch's dial.
     expect(electorateFloorProblem("mechanics", 0, 9)).toBeNull();
+  });
+
+  it("says how many more MEMBERS when the village's launch asks every member", () => {
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 3, "members")).toBe(
+      "2 members hold a voice in this village today. One more member and the village can vote to start its Game.",
+    );
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 3, 3, "members")).toBeNull();
+    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }], 3, "members")).toContain("2 more members");
+    // Control: the same count on the roll as shipped is said in founding members.
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 3, "founders")).toContain("One more founding member");
   });
 
   it("keeps every registry entry sane, whatever a later lane adds", () => {
@@ -264,7 +338,143 @@ describe("per-subject thresholds", () => {
        * clause exists to stop is measured directly two describes down.
        */
       if (t.minQuorumPct >= 100) expect(t.everySeatWeighs, subject).toBe(true);
+      /*
+       * A subject that carries at once has no steward window to honour, so it
+       * must be one the landing engine gives none (NO_WINDOW_SUBJECTS), and it
+       * must say how many yes heads carry it, or "the moment its rule is met"
+       * would be the moment the first yes arrived.
+       */
+      if (t.carriesAtOnce) {
+        expect(typeof t.minYesHeads, subject).toBe("number");
+        expect(t.method, subject).toBe("custom");
+      }
+      // Numbers that are the whole rule need the one method that reads them.
+      if (t.fixedDials) expect(t.method, subject).toBe("custom");
     }
+  });
+});
+
+/**
+ * THE LAUNCH'S NUMBER AND ITS ROLL ARE THE VILLAGE'S OWN (Rye, 2026-11-06:
+ * "EVERYTHING can change with the highest village vote", and no action may be
+ * left without a vote path). The rule of 2026-11-27 is what they ship as.
+ */
+describe("the launch rule is the village's to change, and frozen on the ballot", () => {
+  /**
+   * The engine's reading of a launch ballot frozen for `need` yeses on a roll
+   * of `roll`, each seat at one, built the way `closeBallot` builds it: from
+   * the frozen share and the frozen roll size, through `atOnceEvaluation`.
+   */
+  const read = (need: number, roll: number, yes: number, no = 0, abstain = 0) => {
+    const rules = evaluationRulesFor(VILLAGE_LAUNCH);
+    const atOnce = atOnceEvaluation(VILLAGE_LAUNCH, { quorumPct: launchQuorumPct(need, roll), electorateCount: roll });
+    if (!atOnce) throw new Error("the launch is a subject that carries at once");
+    return evaluateBallot({
+      method: "custom",
+      unityPct: SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].minUnityPct,
+      quorumPct: atOnce.quorumPct,
+      totalWeight: roll,
+      tallies: { yesW: yes, noW: no, abstainW: abstain },
+      abstainPolicy: rules.abstainPolicy,
+      minYesHeads: atOnce.minYesHeads,
+      heads: { yesHeads: yes, noHeads: no, abstainHeads: abstain, electorateCount: roll },
+    });
+  };
+
+  it("freezes the count as a share of the roll and reads it back as EXACTLY that count, on every roll", () => {
+    // The whole claim, exhaustively: on a roll of r with n asked for, the
+    // stored share reads back as n, n yeses carry, and n minus one do not, for
+    // every r up to 400 and every n from the floor to the whole roll. The
+    // stored number is rounded down to the two decimals `ballots.quorum_pct`
+    // holds, which is what could break it.
+    let checked = 0;
+    for (let roll = LAUNCH_YES_HEADS; roll <= 400; roll++) {
+      for (let need = LAUNCH_YES_HEADS; need <= roll; need++) {
+        const stored = launchQuorumPct(need, roll);
+        if (Math.round(stored * 100) / 100 !== stored || stored > 100) throw new Error(`${need} of ${roll} does not fit the column: ${stored}`);
+        if (yesHeadsFrozenAs(stored, roll) !== need) throw new Error(`${need} of ${roll} read back as ${yesHeadsFrozenAs(stored, roll)}`);
+        if (read(need, roll, need) !== "passed") throw new Error(`${need} yeses did not carry a roll of ${roll} asking ${need}`);
+        if (read(need, roll, need - 1) !== "no_quorum") throw new Error(`${need - 1} yeses carried a roll of ${roll} asking ${need}`);
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(70_000);
+    // Larger rolls, sampled up to the bound the reading is exact for.
+    for (const roll of [999, 1000, 2500, 4096, 4999]) {
+      for (const need of [3, 4, 17, Math.floor(roll / 3), Math.floor(roll / 2), roll - 1, roll]) {
+        expect(yesHeadsFrozenAs(launchQuorumPct(need, roll), roll), `${need} of ${roll}`).toBe(need);
+      }
+    }
+    // The corners, by hand.
+    expect(launchQuorumPct(3, 3)).toBe(100);
+    expect(launchQuorumPct(3, 5)).toBe(60);
+    expect(launchQuorumPct(3, 7)).toBe(42.85);
+    expect(launchQuorumPct(9, 3), "more asked than the roll holds is the whole roll").toBe(100);
+    expect(launchQuorumPct(3, 0)).toBe(100);
+    /*
+     * THE CASE THAT MADE THIS A COUNT AND NEVER A COMPARED PERCENTAGE. 23 of 40
+     * is 57.5%, and the engine's own share for 23 answers is 57.49999999999999
+     * in floating point, so comparing percentages reads 23 yeses as short.
+     */
+    expect((23 / 40) * 100).toBeLessThan(57.5);
+    expect(read(23, 40, 23)).toBe("passed");
+    expect(read(23, 40, 22)).toBe("no_quorum");
+    // Control: every other subject is handed no such reading and keeps its frozen dials.
+    expect(atOnceEvaluation("mechanics", { quorumPct: 60, electorateCount: 5 })).toBeNull();
+    expect(atOnceEvaluation(MINT_RULE, { quorumPct: 60, electorateCount: 5 })).toBeNull();
+  });
+
+  it("a village that raised its number to five carries on the FIFTH yes, never the third", () => {
+    expect(read(5, 9, 3)).toBe("no_quorum");
+    expect(read(5, 9, 4)).toBe("no_quorum");
+    expect(read(5, 9, 5)).toBe("passed");
+    // A no still holds it, whatever the number is.
+    expect(read(5, 9, 8, 1)).toBe("failed");
+    // An abstention is not one of the five.
+    expect(read(5, 9, 4, 0, 5)).toBe("no_quorum");
+    // Control: the same roll at the shipped number carries on three.
+    expect(read(3, 9, 3)).toBe("passed");
+  });
+
+  it("can never be asked for fewer than three, whatever is stored", () => {
+    for (const stored of [0, 1, 2, -4, Number.NaN]) expect(launchMinElectorate(stored)).toBe(LAUNCH_YES_HEADS);
+    // And the engine holds the floor a second way: a ballot stamped for one
+    // yes still asks three heads, so a mis-stamped number carries nothing.
+    expect(read(1, 9, 1)).toBe("no_quorum");
+    expect(read(1, 9, 2)).toBe("no_quorum");
+    expect(read(1, 9, 3)).toBe("passed");
+  });
+
+  it("names who counts as a setting with two values, and an unreadable value is the rule as shipped", () => {
+    expect(LAUNCH_ROLL_KINDS).toEqual(["founders", "members"]);
+    expect(launchRollKindFrom("members")).toBe("members");
+    expect(launchRollKindFrom("founders")).toBe("founders");
+    for (const junk of ["", "everyone", "MEMBERS", null, undefined, 3]) {
+      expect(launchRollKindFrom(junk), String(junk)).toBe("founders");
+    }
+  });
+
+  it("both settings are real dials at the village's highest tier, so only its highest vote moves them after the Game starts", () => {
+    const roll = VARIABLES_BY_KEY[LAUNCH_ROLL_KEY];
+    expect(roll, "the key the route reads is the key the registry defines").toBeTruthy();
+    expect(LAUNCH_ROLL_KEY).toBe("governance.launch_roll");
+    expect(roll.type).toBe("choice");
+    expect(roll.default).toBe("founders");
+    expect((roll.choices ?? []).map((c) => c.value)).toEqual([...LAUNCH_ROLL_KINDS]);
+    expect(criticalityOf(roll)).toBe("constitutional");
+    expect(criticalityOf(VARIABLES_BY_KEY["governance.launch_min_electorate"])).toBe("constitutional");
+    expect(VARIABLES_BY_KEY["governance.launch_min_electorate"].default).toBe(String(LAUNCH_YES_HEADS));
+  });
+
+  it("says the rule in one sentence at the village's own number and roll, and the registry's is that sentence as shipped", () => {
+    expect(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].why).toBe(launchRuleSentence({ yesNeeded: LAUNCH_YES_HEADS, roll: "founders" }));
+    expect(launchRuleSentence({ yesNeeded: 5, roll: "founders" })).toBe(
+      "Only founding members vote on starting the Game. It carries the moment five of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.",
+    );
+    expect(launchRuleSentence({ yesNeeded: 3, roll: "members" })).toBe(
+      "Every member who holds a voice votes on starting the Game, each counted once. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.",
+    );
+    expect(launchRuleSentence({ yesNeeded: 40, roll: "members" })).toContain("the moment 40 of them have said yes");
   });
 });
 
@@ -288,7 +498,16 @@ describe("a roll of three heads is not a roll of three voices", () => {
     const tallies = { yesW: 1, noW: 0, abstainW: 0 }; // the founder alone
     expect(quorumPctOf(tallies, totalWeight)).toBe(100);
     expect(unityPctOf(tallies)).toBe(100);
+    // On weight alone one person still carries it, which is the bypass.
     expect(evaluateBallot({ method, ...dials, totalWeight, tallies })).toBe("passed");
+    // Since 2026-11-27 the head rule stops it a second way: one yes is not three.
+    expect(
+      evaluateBallot({
+        method, ...dials, totalWeight, tallies,
+        minYesHeads: evaluationRulesFor(VILLAGE_LAUNCH).minYesHeads,
+        heads: { yesHeads: 1, noHeads: 0, abstainHeads: 0, electorateCount: 3 },
+      }),
+    ).toBe("no_quorum");
 
     // And the one thing that now stands between that roll and this engine.
     expect(rollProblem(VILLAGE_LAUNCH, roll)).toContain("no voting weight");
@@ -310,31 +529,29 @@ describe("a roll of three heads is not a roll of three voices", () => {
     );
   });
 
-  it("does NOT flatten weight: skew is the village's business, zero is not", () => {
-    // R56. An allocation of 100/5/1 opens, because 100% quorum still needs all
-    // three to answer and 100% unity still needs none of them to object.
+  it("a skewed roll still decides in HEADS: the lightest founder's no holds it, the heaviest alone does not carry it", () => {
+    // The launch roll is frozen at one each since 2026-11-27 (server/lib/
+    // launchRoll.ts), so this roll cannot be built by the route. The rule is
+    // pinned on it anyway, so it holds for a roll built any other way.
     const roll = seats(100, 5, 1);
     expect(rollProblem(VILLAGE_LAUNCH, roll)).toBeNull();
     const method = methodForSubject(VILLAGE_LAUNCH, "custom") as BallotMethod;
     const dials = dialsForSubject(VILLAGE_LAUNCH, method, { unityPct: 80, quorumPct: 20 });
+    const rules = evaluationRulesFor(VILLAGE_LAUNCH);
     const totalWeight = 106;
-    // The heaviest member alone: 100 of 106 is not everybody.
-    expect(evaluateBallot({ method, ...dials, totalWeight, tallies: { yesW: 100, noW: 0, abstainW: 0 } })).toBe(
-      "no_quorum",
-    );
-    // Everybody answers, the lightest objects: 100/101 is not unanimous.
-    expect(evaluateBallot({ method, ...dials, totalWeight, tallies: { yesW: 105, noW: 1, abstainW: 0 } })).toBe(
-      "failed",
-    );
-    expect(evaluateBallot({ method, ...dials, totalWeight, tallies: { yesW: 106, noW: 0, abstainW: 0 } })).toBe(
-      "passed",
-    );
+    const read = (tallies: { yesW: number; noW: number; abstainW: number }, heads: { yesHeads: number; noHeads: number; abstainHeads: number }) =>
+      evaluateBallot({ method, ...dials, totalWeight, tallies, abstainPolicy: rules.abstainPolicy, minYesHeads: rules.minYesHeads, heads: { ...heads, electorateCount: 3 } });
+    // The heaviest founder alone: 100 of 106 of the weight and one head of three.
+    expect(read({ yesW: 100, noW: 0, abstainW: 0 }, { yesHeads: 1, noHeads: 0, abstainHeads: 0 })).toBe("no_quorum");
+    // Two say yes, the lightest says no: 105 against 1 is not unanimous.
+    expect(read({ yesW: 105, noW: 1, abstainW: 0 }, { yesHeads: 2, noHeads: 1, abstainHeads: 0 })).toBe("failed");
+    expect(read({ yesW: 106, noW: 0, abstainW: 0 }, { yesHeads: 3, noHeads: 0, abstainHeads: 0 })).toBe("passed");
   });
 
   it("asks the head count FIRST, so a young village hears the kinder fact", () => {
-    // Two members, neither allocated. Both things are true; "one more member"
-    // is the one that says what to do next.
-    expect(rollProblem(VILLAGE_LAUNCH, seats(0, 0))).toContain("One more member");
+    // Two founders, neither carrying weight. Both things are true; "one more
+    // founder" is the one that says what to do next.
+    expect(rollProblem(VILLAGE_LAUNCH, seats(0, 0))).toContain("One more founding member");
   });
 
   it("asks nothing of a subject that did not ask for it", () => {
@@ -393,10 +610,11 @@ describe("threshold settings, with the registry as floors", () => {
     expect(dialsForSubject(MINT_RULE, "custom", village, raised).quorumPct).toBe(90);
   });
 
-  it("prices the Birthing at 100 and 100 with no setting to move it", () => {
+  it("prices the Birthing at its own rule with no setting to move it", () => {
     expect(SUBJECT_SETTING_KEYS[VILLAGE_LAUNCH]).toBeUndefined();
     const raised = settingsOf({ [TIER_SETTING_KEYS.constitutional.quorum]: 99 });
-    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", village, raised)).toEqual({ unityPct: 100, quorumPct: 100 });
+    // A raised tier does not reach it either: unity 100, quorum 0, three yes heads.
+    expect(dialsForSubject(VILLAGE_LAUNCH, "custom", village, raised)).toEqual({ unityPct: 100, quorumPct: 0 });
   });
 
   it("names every threshold key exactly once, so no control edits two things", () => {
@@ -469,11 +687,15 @@ describe("a bundle is priced at its hardest part", () => {
   it("takes the strictest evaluation rules among the elements", () => {
     expect(evaluationRulesFor([VILLAGE_LAUNCH, "mechanics"])).toEqual({
       abstainPolicy: "no_answer",
-      minYesHeads: "all",
+      minYesHeads: LAUNCH_YES_HEADS,
+      // A bundle never carries at once: one of its parts may have a steward window.
+      carriesAtOnce: false,
     });
+    expect(evaluationRulesFor(VILLAGE_LAUNCH).carriesAtOnce).toBe(true);
     expect(evaluationRulesFor(["mechanics", MINT_RULE])).toEqual({
       abstainPolicy: "counts_toward_quorum",
       minYesHeads: undefined,
+      carriesAtOnce: false,
     });
   });
 });
@@ -496,9 +718,9 @@ describe("thresholdsFor, the one helper every surface reads", () => {
     expect(strict.warning).toContain("stalemate");
   });
 
-  it("EXEMPTS the Birthing, which is the one vote where everybody is present", () => {
+  it("EXEMPTS the Birthing, where one founder's no holding the vote is the rule", () => {
     const launch = thresholdsFor({ subjects: [VILLAGE_LAUNCH] }, "custom", village);
-    expect(launch).toMatchObject({ unityPct: 100, quorumPct: 100 });
+    expect(launch).toMatchObject({ unityPct: 100, quorumPct: 0 });
     expect(launch.warning).toBeNull();
   });
 
@@ -689,11 +911,11 @@ describe("a tier read in people", () => {
 
   it("reads a subject the same way, and exempts the Birthing from both warnings", () => {
     const launch = subjectInPeople(VILLAGE_LAUNCH, equalNine);
-    expect(launch.dials).toEqual({ unityPct: 100, quorumPct: 100 });
-    expect(launch.fewestForQuorum).toBe(9);
-    expect(launch.sentence).toContain("at least 9 of 9 people");
+    // Its weighted numbers ask no turnout: the three yes heads are the participation.
+    expect(launch.dials).toEqual({ unityPct: 100, quorumPct: 0 });
     expect(launch.rollWarning).toBeNull();
     expect(launch.ceilingWarning).toBeNull();
+    expect(launch.reachWarning).toBeNull();
   });
 });
 
