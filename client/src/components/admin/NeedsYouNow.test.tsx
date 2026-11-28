@@ -55,6 +55,23 @@ describe("Needs you now on Today", () => {
     expect(screen.getAllByRole("link", { name: /^See all/ })).toHaveLength(1);
   });
 
+  it("says the server's numbers, never a count of the rows it was sent, and unknown for a queue that did not load", async () => {
+    // The list is paged per kind (the hall relief, 27 Nov 2026): ten of 23 applications are sent, and one queue failed.
+    answer = {
+      sections: [
+        { source: "application", state: "ok", count: 23, atLeast: 23, blocked: 0, more: true },
+        { source: "open", state: "failed", count: null, atLeast: 1, blocked: 0, more: false },
+      ],
+      items: [...Array.from({ length: 10 }, (_, n) => item("application", n + 1)), item("open", 1)],
+      counts: { waiting: 24, unknown: ["open"], blocked: 0 },
+    };
+    show();
+    expect(await screen.findByText("24 things are waiting on you.")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Applications for a role (23)" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "See all 23" }).getAttribute("href")).toBe("/admin/review?kind=application");
+    expect(screen.getByRole("heading", { name: "Proposals from outside the village (unknown)" })).toBeTruthy();
+  });
+
   it("names a queue that failed, so it never reads as nothing waiting", async () => {
     show();
     expect(await screen.findByText(/Could not be read just now, so not counted: /)).toBeTruthy();

@@ -14,6 +14,12 @@ export const INBOX_SOURCES = [
 ] as const;
 export type InboxSource = (typeof INBOX_SOURCES)[number];
 
+/** How many rows of one queue a page of the list carries; the rest is asked for by source and offset. */
+export const INBOX_PAGE = 10;
+
+/** The one key of Sera's row: the whole list of differences, gone through together (shared/reviewInbox.ts). */
+export const SERA_ROW_KEY = "sera:differences";
+
 /**
  * The order sections read in: a person's own voice first (votes, consent, applications), then what was proposed,
  * then work and duties, then the desks. Every source has a place; a source with nothing waiting draws nothing.

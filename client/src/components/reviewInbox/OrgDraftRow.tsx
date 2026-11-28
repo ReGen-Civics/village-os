@@ -21,6 +21,7 @@ import { authToken } from "@/lib/gameApi";
 import type { InboxItem } from "@shared/reviewInbox";
 import { draftPageHref } from "@shared/orgDraftView";
 import { sourceText } from "./sourceWords";
+import { BlockedChip, BlockedWhy } from "./InboxRow";
 
 interface DecideAnswer {
   status: string;
@@ -100,6 +101,7 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
       <div className="space-y-1">
         <p className="flex flex-wrap items-center gap-2">
           <span className={CHIP_SOFT}>{words.what}</span>
+          {item.blocked || (answer && answer.blocked > 0) ? <BlockedChip /> : null}
           {answer ? (
             <span className={HINT}>
               <Plural context="review inbox: an org chart draft" value={n} one="# change" other="# changes" />
@@ -108,6 +110,8 @@ export default function OrgDraftRow({ item, onDone }: { item: InboxItem; onDone:
         </p>
         <p className="text-base text-foreground">{item.summary}</p>
         <p className="text-sm text-foreground">{words.does}</p>
+        {/* The server's reason, shown until the draft's own lines are read (they name every blocked change). */}
+        {item.blocked && !shown.some((l) => l.blocked) ? <BlockedWhy blocked={item.blocked} /> : null}
       </div>
 
       {shown.length ? (
