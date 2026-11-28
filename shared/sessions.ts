@@ -1451,7 +1451,7 @@ export const ROOM_COPY = {
   takeOverHint: "If the facilitator has stepped away, an admin can hold the room from here.",
 
   whoIsHere: "Who is here",
-  nobodyHere: "The room is quiet. Nobody has arrived yet.",
+  nobodyHere: "Nobody has arrived yet.",
   breathTitle: "Breathe together",
   breathIdle: "When the facilitator starts it, every screen breathes at the same pace.",
   breathDone: "Let the quiet sit for a moment.",

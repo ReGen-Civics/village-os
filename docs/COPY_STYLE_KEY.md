@@ -118,7 +118,7 @@ line: one line, and always last. Tooltips stay, and they now only define words
 |---|---|---|---|
 | **Trail** | The next step | Imperative, 3 to 10 words, with a counter where there is one. Always visible. | Next: Sign the Love Letter |
 | **Signal** | What just happened, or what is blocked and how to clear it | 1 to 3 words for a win. One sentence for a block, and it names the fix. | Quest complete! / Opens at Member. Sign the Love Letter to get there. |
-| **Guide** | The welcome, the why, the thanks | Warm, first person, 1 to 3 sentences. Only where the guide can answer back (her chat, the map). | Hi, I'm Maia. Got a Quest the board is missing? |
+| **Guide** | The welcome, the why, the thanks | Warm, first person, 1 to 3 sentences. Only where the guide can answer back (her chat, the map). | Hi, I'm Scarlet. Got a Quest the board is missing? |
 | **Lore** | The soul of it | One line, optional, always last | Naming what is good is how the village grows more of it. |
 
 The founder's voice lives most fully in the Guide, the Lore and the NAMES.
@@ -227,11 +227,12 @@ the role") for live display only, and the rest of that ruling stands:
 
 - Write every page for ONE reader: a visitor, a member or a founder. Lines
   meant for founders show only to founders.
-- The guide (Maia, or the name the village gives her) speaks only where she can
+- The guide (by the name the village gives her) speaks only where she can
   answer back: her chat, the map, Propose a Quest. Menus, buttons and alerts use
   the plain system voice, so she is never the one saying "this page didn't
   load". Her default lines are defaults a village rewrites (map ruling D2,
-  2026-10-02).
+  2026-10-02). Amora's guide is Scarlet, by the founder's ruling of 2026-11-27,
+  so the example lines in this key say Scarlet.
 - Platform copy uses world words that fit any land: village, path, Quest,
   season, moon, room. A village's own flavour comes from its settings and its
   brochure pages.
@@ -283,7 +284,7 @@ screen element that shows it.
 | Journal lede | C | Your journal. A few good questions wait inside, and only you can read your answers. |
 | Module Library lede | today's, his edit | Everything this platform can be, one tool at a time. |
 | Work With Us email | today's | (unchanged) |
-| Maia's voice | C | Speak as the village's guide from inside its world. Name the place and the people, then offer one next step. |
+| The guide's voice | C | Speak as the village's guide from inside its world. Name the place and the people, then offer one next step. |
 
 The session-closed line ships as picked. Asked whether "notes" should become
 "record" (Notes already names the note entries inside a session), the founder
@@ -295,3 +296,63 @@ same.
 The Sessions pilot, branch `wt/voice-sessions`: the list page, the room, the
 library of waiting items and the task board. Every other zone follows once
 the founder has seen the pilot live.
+
+---
+
+# R49 - one voice, written by kind of line (2026-11-28)
+
+R49 builds on R47 and R48. It keeps the four voices and the Ledger. It
+replaces three of R48's picks and names the kinds of line the picks point to,
+so the member side and the Admin Garden read as one voice.
+
+On 2026-11-28 the founder compared October's lines with a plainer rule, line
+by line, and picked each one: "I want a mixture of these." Then: "you can see
+the areas where I'm taking it and then upgrade them both to kind of align so
+we have one coherence between them both."
+
+## The kinds
+
+| Kind of line | Shape | The founder's pick |
+|---|---|---|
+| A finish | One to three warm words to the people. Then what is now true. Then what is left, as a number. | Beautiful work, circle. The session is closed, and the notes are saved for everyone who was here. |
+| The one great threshold (the Game starts) | One line of ceremony | The Game has begun. Happy birthday, Amora. |
+| Something is missing, and you can fill it | What is missing, then how to fill it | No Quests posted yet. Post the first one. |
+| Waiting on others | The plain fact, alone | Nobody has arrived yet. |
+| All clear (nothing needs you) | Name the place as quiet, then the plain fact | The Hall is quiet. No applications are waiting. |
+| The door to a personal or private place | Name it, then the invitation and the promise that matters | Your journal. A few good questions wait inside, and only you can read your answers. |
+| The door to a working place | What it holds, then what to do there | Every tool this platform has. Turn on the ones your village wants. |
+
+Thanks for a small act, blocks, frames, alerts and the Ledger keep the shapes
+R47 and R48 gave them.
+
+## The guide
+
+One character everywhere. With a member she speaks from inside the world, as
+R48 ruled: the place, the people, one next step. With a founder or an admin
+she carries the founder's own stance: this is a Game the players get to
+design, we co-create it, and a founder sets the first conditions and then
+hands the keys to the village. "Welcome. I'm Scarlet. You're starting a Game,
+and you get to design it. Tell me about the village you want to play in, and
+we'll set the first conditions together."
+
+An in-world phrase names a real fact. Money, pay, votes and deadlines stay
+Ledger-plain in her mouth too.
+
+## Picks R49 replaces
+
+| Line | R48 | R49 |
+|---|---|---|
+| Empty Quest Board | The board is quiet. Post the first Quest. | No Quests posted yet. Post the first one. |
+| Empty live room | The room is quiet. Nobody has arrived yet. | Nobody has arrived yet. |
+| Module Library lede | Everything this platform can be, one tool at a time. | Every tool this platform has. Turn on the ones your village wants. |
+
+## Where the three picks live
+
+| Line | Where | What R49 did |
+|---|---|---|
+| Empty Quest Board | `client/src/pages/Quests.tsx` | Nothing in code. The page already read the pick (since R47), and R48's row was never applied there. The door under the line, "Propose a Quest", is open to every reader, so the whole line stays for all of them. |
+| Empty live room | `shared/sessions.ts` and `client/src/components/sessions/roomWords.ts` | The line is now the pick. |
+| Module Library lede | `client/src/pages/Modules.tsx` | The page held "one card at a time", so R48's "one tool at a time" never reached it. The first sentence is the pick's and every reader sees it. The second sentence is drawn only where the catalog says the reader may turn a module on (`viewer.canSwitch`), because the page is public and a visitor or a member cannot. The rest of the lede is unchanged. |
+
+A line that tells the reader to act is shown only to a reader who can act. For
+anyone else it keeps the sentence that is true for every reader.
