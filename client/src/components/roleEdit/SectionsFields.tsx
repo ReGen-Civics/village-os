@@ -265,7 +265,7 @@ export default function SectionsFields({ value, start, onChange, roles = [] }: {
           maxLength={SECTION_LIMITS.companionUrlChars}
           onChange={(e) => set("companionUrl", e.target.value)}
           aria-label={SECTION_WORDS.companionUrlLabel}
-          placeholder="https://..."
+          placeholder={t({ message: "https://...", context: "role editor" })}
         />
         <p className="mt-1 text-xs text-muted-foreground">{SECTION_WORDS.companionUrlHint}</p>
       </Field>
