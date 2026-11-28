@@ -95,4 +95,20 @@ describe("MicButton", () => {
     });
     expect(heard).toEqual(["slept well"]);
   });
+
+  it("listens as the gold-edged button, never a second gold fill beside Send, and only its ring moves", async () => {
+    const MicButton = await loadButton();
+    render(<MicButton onText={() => {}} />);
+    fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing" }));
+    const stop = screen.getByRole("button", { name: "Stop voice input" });
+    expect(stop.className).toContain("border-notice");
+    expect(stop.className).not.toMatch(/(^|\s)bg-notice(\s|$)/);
+    expect(stop.className).not.toContain("animate-");
+    const ring = stop.querySelector("[data-mic-listening]") as HTMLElement;
+    expect(ring.className).toContain("motion-safe:animate-ping");
+    expect(ring.getAttribute("aria-hidden")).toBe("true");
+    // At rest it takes the bar's colours.
+    fireEvent.click(stop);
+    expect(screen.getByRole("button", { name: "Speak instead of typing" }).className).toContain("bg-muted");
+  });
 });
