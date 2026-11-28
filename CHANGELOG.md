@@ -50,6 +50,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **Chat boxes that grow, with voice.** Every chat with the guide or a companion grows with the message up to about two thirds of the screen, then scrolls inside. The mic fills the box and never sends by itself. Send stays above a phone's keyboard. A draft is kept for its writer only and cleared on sign-out.
 - **Where a village stands on its way to launch.** Journey to Launch and the admin strip say plainly where the village stands, and show only the buttons the village can use. A village that is already issuing is told so, with the way to change it by its highest vote.
 - **Renewal notices open the season plan.** "Your role carries on into the next moon" linked to an address with no page. It opens your plan now, and notices already sent do too.
+- **A role card can link to its companion.** A role card may carry an optional "Talk to this role's companion" link.
 - **Under the hood.** The Admin Garden's look arrives as pieces nothing uses yet, with its paintings.
 
 ### What you must do
