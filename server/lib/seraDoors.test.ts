@@ -10,7 +10,7 @@
  * deny-aware; this is display only. Before launch the admins hold the door too.
  */
 import { describe, expect, it } from "vitest";
-import { doorFrom, doorHolders } from "./seraDoors";
+import { doorFrom, doorHolders, doorsNow } from "./seraDoors";
 import { villagePowerRows } from "./villagePowers";
 
 const roles = [
@@ -79,5 +79,45 @@ describe("the door members are shown", () => {
     const held = many.map((r, i) => ({ roleId: r.id, userId: `u-${i}` }));
     const d = doorFrom({ roles: many, holdings: held, nameOf: () => "Pat Doe", orgRoleName: () => undefined, villageHolder: null, capability: "org.decide", launched: true });
     expect(d).toEqual({ by: "holders", labels: ["Role a (Pat)", "Role b (Pat)", "Role c (Pat)"], more: 2, stewards: false, others: 0, admins: false });
+  });
+});
+
+/*
+ * WHO SETS PAY IS WHOEVER THE PAY ROUTE LETS THROUGH. Setting what a role pays is `role.pay`
+ * (PUT /api/org/roles/:id/pay asks the holder door for it). `cash.pay` is another power: reading the cash the
+ * village owes and marking a payment made. The list named the holders of `cash.pay` as the people who set pay,
+ * so it could send a member to somebody the pay route refuses, and leave out the person it lets through.
+ */
+describe("who sets pay, as the list says it", () => {
+  const pool = { query: async () => [[], []] } as never;
+  const people = { all: async () => [{ id: "u-rye", name: "Rye Weaver" }, { id: "u-cy", name: "Cy Lane" }] };
+  const deciders = (asked: string[]) => ({
+    roles: () => [
+      { id: "ops-lead", name: "Ops lead", capabilities: ["org.decide"] },
+      { id: "treasurer", name: "Treasurer", capabilities: ["role.pay"] },
+      // Marks payments made. Does not set what a role pays.
+      { id: "bookkeeper", name: "Bookkeeper", capabilities: ["cash.pay"] },
+    ],
+    roleHolders: () => [{ roleId: "treasurer", userId: "u-rye" }, { roleId: "bookkeeper", userId: "u-cy" }],
+    orgRoles: async () => [],
+    villageHolder: async (capability: string) => {
+      asked.push(capability);
+      return null;
+    },
+  });
+
+  it("names the holders of role.pay, the power the pay route asks, and nobody for holding cash.pay", async () => {
+    const asked: string[] = [];
+    const doors = await doorsNow(pool, deciders(asked), people);
+    expect(doors.paySetBy).toEqual({ by: "holders", labels: ["Treasurer (Rye)"], more: 0, stewards: false, others: 0, admins: true });
+    expect(JSON.stringify(doors.paySetBy)).not.toContain("Bookkeeper");
+    // The village's own holder is asked about the same power.
+    expect(asked).toEqual(["org.decide", "role.pay"]);
+  });
+
+  it("with nobody holding role.pay it is the admins before launch, whoever holds cash.pay", async () => {
+    const d = deciders([]);
+    const doors = await doorsNow(pool, { ...d, roleHolders: () => [{ roleId: "bookkeeper", userId: "u-cy" }] }, people);
+    expect(doors.paySetBy).toEqual({ by: "admins" });
   });
 });
