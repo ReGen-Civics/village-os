@@ -93,7 +93,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { BLOCK, GARDEN_DIR, charged, classifyDist, memberChunksHolding, routesFromApp, splitTotals, textNames, unreadRoutes } from "./lib/distSplit.mjs";
+import { BLOCK, GARDEN_DIR, charged, classifyDist, memberChunksHolding, preloadFilesForMembers, readRoutePreloadTable, routesFromApp, splitTotals, textNames, unreadRoutes } from "./lib/distSplit.mjs";
 import { budgetInWorkflow, stepDownVerdict } from "./lib/adminShellStepDown.mjs";
 
 const args = process.argv.slice(2);
@@ -291,10 +291,16 @@ function measureSplit() {
   const indexRefs = Array.from(new Set(Array.from(indexHtml.matchAll(/(?:src|href|content)="\/?([^"#?]+)"/g), (m) => m[1]).filter((f) => onDisk.has(f))));
   const chunkFiles = new Set(graph.chunks.map((c) => c.file));
   const texts = files.filter((f) => /\.(?:js|css|html|json|webmanifest|txt|xml|svg)$/.test(f.path)).map((f) => ({ path: f.path, text: fs.readFileSync(path.join(DIST, f.path), "utf8") }));
+  const named = files.filter((f) => !chunkFiles.has(f.path));
   const textRefs = [];
-  for (const f of files) {
-    if (chunkFiles.has(f.path)) continue;
-    for (const t of texts) if (t.path !== f.path && textNames(t.text, f.path)) textRefs.push({ from: t.path, to: f.path });
+  for (const t of texts) {
+    // The route-preload table names a file for the routes its row serves, never for every page (scripts/lib/distSplit.mjs).
+    const table = t.path.endsWith(".js") && !chunkFiles.has(t.path) ? readRoutePreloadTable(t.text) : null;
+    if (table) {
+      for (const f of preloadFilesForMembers(table, routes)) if (onDisk.has(f)) textRefs.push({ from: t.path, to: f });
+      continue;
+    }
+    for (const f of named) if (t.path !== f.path && textNames(t.text, f.path)) textRefs.push({ from: t.path, to: f.path });
   }
   const split = classifyDist({ graph, routes, files, indexRefs, textRefs });
   return { measured: true, split, totals: splitTotals(split, scan.dirBytes), garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)), oldShell: oldShellIn(graph) };

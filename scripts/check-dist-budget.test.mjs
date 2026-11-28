@@ -33,6 +33,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import ts from "typescript";
 import {
   GARDEN_DIR,
   ROAD_TO_LAUNCH_PATHS,
@@ -42,6 +43,9 @@ import {
   isAdminPath,
   memberChunksHolding,
   memberRoutesLoading,
+  preloadFilesForMembers,
+  readRoutePreloadTable,
+  routePatternOf,
   routesFromApp,
   splitTotals,
   textNames,
@@ -253,6 +257,23 @@ check("a file index.html names is a member file, whoever else names it", () => {
   assert.strictEqual(sideOf(s, "assets/face.woff2"), "member");
 });
 
+check("a chunk's text spelling out a lazy import's stylesheet does not make it a member file: the graph places it", () => {
+  // Vite writes the preload list beside every lazy import, so the router's chunk names the Admin page's CSS in its text.
+  const s = split(baseGraph(), { textRefs: [{ from: "assets/first-page.js", to: "assets/admin.css" }] });
+  assert.strictEqual(sideOf(s, "assets/admin.css"), "admin");
+});
+
+check("a chunk's text does count for a file the graph places nowhere, such as one copied in from client/public", () => {
+  const files = [...FILES, { path: "images/seal.webp", bytes: 10 }, { path: "images/desk.webp", bytes: 10 }];
+  const textRefs = [
+    { from: "assets/quests.js", to: "images/seal.webp" },
+    { from: "assets/admin.js", to: "images/desk.webp" },
+  ];
+  const s = classifyDist({ graph: baseGraph(), routes: ROUTES, files, indexRefs: INDEX_REFS, textRefs, roadPaths: ROAD });
+  assert.strictEqual(sideOf(s, "images/seal.webp"), "member");
+  assert.strictEqual(sideOf(s, "images/desk.webp"), "admin");
+});
+
 check("a file nothing names is reported apart and counted on the members' side", () => {
   const files = [...FILES, { path: "stray.txt", bytes: 5000 }];
   const s = classifyDist({ graph: baseGraph(), routes: ROUTES, files, indexRefs: INDEX_REFS, roadPaths: ROAD });
@@ -325,6 +346,40 @@ check("a text names a file only as a whole path", () => {
   assert.ok(textNames(`src:url(/assets/face-AbC1.woff2)format("woff2")`, "assets/face-AbC1.woff2"));
 });
 
+/* ------------------------------------------------------------------ the route-preload table */
+
+check("the route-preload table names a file for members only through a row that serves a member route", () => {
+  const table = { files: ["assets/quests.js", "assets/site.css", "assets/admin.js", "assets/admin.css", "assets/gone.js"], rows: [["^/quests/?$", [0, 1]], ["^/admin/?$", [2, 3]], ["^/retired/?$", [4]]] };
+  assert.deepStrictEqual(preloadFilesForMembers(table, ROUTES, ROAD), ["assets/quests.js", "assets/site.css", "assets/gone.js"], "a row for a pattern the router no longer has counts for members, the careful way round");
+  assert.deepStrictEqual(preloadFilesForMembers(table, ROUTES, []), ["assets/quests.js", "assets/site.css", "assets/gone.js"]);
+  assert.deepStrictEqual(preloadFilesForMembers({ files: ["a"], rows: [["^/journey-to-launch/?$", [0]]] }, ROUTES, ROAD), []);
+  assert.deepStrictEqual(preloadFilesForMembers({ files: ["a"], rows: [["^/journey-to-launch/?$", [0]]] }, ROUTES, []), ["a"]);
+});
+
+check("text that is not the table is not read as one", () => {
+  assert.strictEqual(readRoutePreloadTable(`self.addEventListener("fetch", () => {});`), null);
+  assert.strictEqual(readRoutePreloadTable(`  var b = "/", f = ["a.js"], r = [["^/x/?$",[7]]];\n`), null, "an index past the end of the file list");
+  assert.deepStrictEqual(readRoutePreloadTable(`(function () {\n  var b = "/", f = ["a.js"], r = [["^/x/?$",[0]]];\n  var p = location.pathname;\n})();\n`), { files: ["a.js"], rows: [["^/x/?$", [0]]] });
+});
+
+/*
+ * The table is written by client/src/lib/routePreload.ts, at build time. That
+ * file imports nothing, so it is compiled here and its own functions are run:
+ * the reader must read back exactly what the writer writes, and spell a
+ * route's pattern exactly as the writer does, for every route in the router.
+ */
+const writer = await (async () => {
+  const source = fs.readFileSync(path.join(HERE, "..", "client", "src", "lib", "routePreload.ts"), "utf8");
+  const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+  return import(`data:text/javascript;base64,${Buffer.from(js).toString("base64")}`);
+})();
+
+check("the reader reads back the table the build's own writer writes", () => {
+  const table = { files: ["assets/Quests-AbC_1-x.js", "assets/site-9.css", "api/i18n/catalog/en/part/s5MJ_mISq62N", "assets/Admin-q.js"], routes: [["^/quests/[^/]+/?$", [0, 1, 2]], ["^/admin/?$", [3]]] };
+  const script = writer.routePreloadScript(table, "/");
+  assert.deepStrictEqual(readRoutePreloadTable(script), { files: table.files, rows: table.routes });
+});
+
 /* ------------------------------------------------------------------ the real router */
 
 const realApp = fs.readFileSync(path.join(HERE, "..", "client", "src", "App.tsx"), "utf8");
@@ -344,6 +399,11 @@ check("each road to launch path is still a route the router draws from a lazy pa
     assert.ok(r, `${p} is in ROAD_TO_LAUNCH_PATHS (scripts/lib/distSplit.mjs) and is no longer a route in client/src/App.tsx. Take it off the list, or name the address the road moved to.`);
     assert.notStrictEqual(r.kind, "unread", `${p} is drawn in a shape the reader does not know`);
   }
+});
+
+check("a route's pattern is spelled exactly as the route-preload writer spells it, for every route in the router", () => {
+  for (const r of realRoutes) assert.strictEqual(routePatternOf(r.path), writer.routePattern(r.path), r.path);
+  assert.strictEqual(routePatternOf("/a.b/:id/"), writer.routePattern("/a.b/:id/"));
 });
 
 check("/admin is a route with a lazy page of its own", () => {
@@ -373,9 +433,14 @@ function tree(dir, o = {}) {
     <Route path="/quests" component={Quests} />
     <Route path="/admin" component={Admin} />
   `);
-  put("dist/public/index.html", pad(`<script type="module" src="/assets/index-a.js"></script><link rel="modulepreload" href="/assets/first-page-b.js"><link rel="preload" href="/assets/both-h.woff2">`, 900));
+  const preloadTag = o.preload ? `<script async src="/assets/route-preload-r.js"></script>` : "";
+  put("dist/public/index.html", pad(`<script type="module" src="/assets/index-a.js"></script><link rel="modulepreload" href="/assets/first-page-b.js"><link rel="preload" href="/assets/both-h.woff2">${preloadTag}`, 900));
   put("dist/public/assets/index-a.js", pad(`import"./first-page-b.js";`, 1000));
-  put("dist/public/assets/first-page-b.js", pad(`import("./Quests-c.js");import("./Admin-d.js");`, 5000));
+  // o.mapDeps: the list Vite writes beside a lazy import, which spells out the target's stylesheet in the importer's text.
+  put("dist/public/assets/first-page-b.js", pad(`import("./Quests-c.js");import("./Admin-d.js");${o.mapDeps ? `const deps=["assets/Admin-d.js","assets/admin-g.css"];` : ""}`, 5000));
+  // o.preload: one more script index.html loads that is no chunk, 4 KB on the members' side: the route-preload table, or text that is not one.
+  if (o.preload === "table") put("dist/public/assets/route-preload-r.js", pad(`(function () {\n  var b = "/", f = ["assets/Quests-c.js","assets/Admin-d.js","assets/admin-g.css"], r = [["^/quests/?$",[0]],["^/admin/?$",[1,2]]];\n  var p = location.pathname;\n})();\n`, 500));
+  if (o.preload === "text") put("dist/public/assets/route-preload-r.js", pad(`var list = ["assets/Quests-c.js","assets/admin-g.css"];`, 500));
   put("dist/public/assets/Quests-c.js", pad(`import"./first-page-b.js";import"./shared-f.js";`, 3000));
   put("dist/public/assets/shared-f.js", pad(`export{};`, 100));
   put("dist/public/assets/Admin-d.js", pad(`import"./first-page-b.js";import"./shared-f.js";import("./AdminTab-e.js");const crest="/assets/crest-i.webp";`, 9000));
@@ -531,6 +596,21 @@ check("--report always exits 0, and --json prints one JSON document with the tot
   assert.strictEqual(doc.split.memberKb + doc.split.adminKb, doc.blockChargedKb);
   // ci.yml reads the total with: sed -n 's/.*"blockChargedKb": *\([0-9]*\).*/\1/p'
   assert.strictEqual(r.out.split("\n").filter((line) => /"blockChargedKb": *[0-9]+/.test(line)).length, 1);
+});
+
+check("the admin page's stylesheet stays admin-only though the route-preload table and the router's own preload list both spell it out", () => {
+  const r = gate({ preload: "table", mapDeps: true });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Members' side: 44 KB, measured in BLOCK-CHARGED bytes across 8 files/);
+  assert.match(r.out, /Admin-only: 28 KB, measured in BLOCK-CHARGED bytes across 4 files/);
+  assert.match(r.out, /4 KB\s+300 B on disk\s+assets\/admin-g\.css\s+\/admin/);
+});
+
+check("a script index.html loads that is not the table is read as text, and what it names counts on the members' side", () => {
+  const r = gate({ preload: "text" });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Members' side: 48 KB, measured in BLOCK-CHARGED bytes across 9 files/);
+  assert.match(r.out, /Admin-only: 24 KB, measured in BLOCK-CHARGED bytes across 3 files/);
 });
 
 /* The step down: the old admin shell, recorded in scripts/admin-shell-step-down.json (the rule's own cases are in admin-shell-step-down.test.mjs). */

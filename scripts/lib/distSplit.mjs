@@ -30,9 +30,15 @@
  *
  *   3. ADMIN-ONLY is what the admin roots reach that the walk did not.
  *
- *   4. STYLES, FONTS AND IMAGES follow the files that name them. A file named
- *      by index.html or by any member file is a member file; a file named only
- *      by admin-only files is admin-only.
+ *   4. STYLES, FONTS AND IMAGES follow the files that load them. A file
+ *      index.html or any member file loads is a member file; a file only
+ *      admin-only files load is admin-only. "Loads" is read off the graph
+ *      first (which chunk pulls in which stylesheet and built file), then off
+ *      a stylesheet's own text, and off a chunk's text only for files the
+ *      graph cannot know. A NAME IS NOT A LOAD: the router's chunk and the
+ *      route-preload table both spell out the Admin page's stylesheet without
+ *      loading it for a member, and the two notes beside `placedByGraph` and
+ *      `readRoutePreloadTable` below say how each is read.
  *
  *   5. A FILE NOTHING NAMES is reported apart and counted on the members'
  *      side, so nothing escapes the gate. The directories are counted there
@@ -228,7 +234,20 @@ export function classifyDist(o) {
     namedBy.get(to).add(from);
   };
   for (const c of o.graph.chunks) for (const f of [...(c.css ?? []), ...(c.assets ?? [])]) name(c.file, f);
-  for (const r of o.textRefs ?? []) if (!chunks.has(r.to)) name(r.from, r.to);
+  /*
+   * A CHUNK'S TEXT IS NOT ASKED ABOUT A FILE THE GRAPH ALREADY PLACES. Beside
+   * every lazy import Vite writes the list of files to preload with it, the
+   * target's stylesheet among them, so the router's chunk spells out the Admin
+   * page's CSS in its own text without ever loading it for a member. The graph
+   * says which chunk pulls a stylesheet or a built file in, and that is the
+   * authority. A chunk's text is read only for the files the graph cannot know:
+   * the ones copied in from client/public and named by a plain string.
+   */
+  const placedByGraph = new Set(o.graph.chunks.flatMap((c) => [...(c.css ?? []), ...(c.assets ?? [])]));
+  for (const r of o.textRefs ?? []) {
+    if (chunks.has(r.to) || (chunks.has(r.from) && placedByGraph.has(r.to))) continue;
+    name(r.from, r.to);
+  }
   const INDEX = "index.html";
   for (const f of o.indexRefs) name(INDEX, f);
 
@@ -389,4 +408,64 @@ export function textNames(text, relPath) {
     if (!/[\w.-]/.test(before) && !/[\w-]/.test(after)) return true;
   }
   return false;
+}
+
+/*
+ * THE ROUTE-PRELOAD TABLE IS A TABLE, NOT AN IMPORT.
+ *
+ * index.html loads one small script that is not a chunk: the route-preload
+ * table (client/src/lib/routePreload.ts writes it). It names, for every route
+ * that has a page chunk of its own, the files that route's first view needs,
+ * and at run time it asks only for the row the address matches. Read as plain
+ * text it "names" the old admin shell's stylesheet on every page, and on the
+ * first measured build (614b5d16) that put the Admin page's own CSS on the
+ * members' side though no member's page can load it. The Admin Garden's
+ * stylesheet would have followed it and failed the members' ceiling for
+ * nothing.
+ *
+ * So the table is read as what it is. A row for an admin route names its files
+ * for that route alone. A row for a member route, or for a pattern this router
+ * no longer has, names its files for members. Anything that does not parse as
+ * the table is read as plain text, which is the careful way round: everything
+ * it names counts on the members' side.
+ */
+
+/** A wouter pattern as the table spells it: `routePattern` in client/src/lib/routePreload.ts, to the character. */
+export function routePatternOf(routePath) {
+  const body = routePath
+    .split("/")
+    .map((seg) => (seg.startsWith(":") ? "[^/]+" : seg.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
+    .join("/")
+    .replace(/\/$/, "");
+  return `^${body}/?$`;
+}
+
+/** The table inside a built route-preload script, `{ files, rows }` with rows of [pattern, indexes into files], or null when the text is not one. */
+export function readRoutePreloadTable(text) {
+  const m = /^\s*var b = "(?:[^"\\]|\\.)*", f = (\[.*\]), r = (\[.*\]);\s*$/m.exec(text);
+  if (!m) return null;
+  try {
+    const files = JSON.parse(m[1]);
+    const rows = JSON.parse(m[2]);
+    const sound =
+      Array.isArray(files) &&
+      files.every((f) => typeof f === "string") &&
+      Array.isArray(rows) &&
+      rows.every((r) => Array.isArray(r) && typeof r[0] === "string" && Array.isArray(r[1]) && r[1].every((i) => Number.isInteger(i) && i >= 0 && i < files.length));
+    return sound ? { files, rows } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The files a route-preload table names for members: every row but the rows that serve admin routes only. */
+export function preloadFilesForMembers(table, routes, roadPaths = ROAD_TO_LAUNCH_PATHS) {
+  const admin = new Set(routes.filter((r) => isAdminPath(r.path, roadPaths)).map((r) => routePatternOf(r.path)));
+  const member = new Set(routes.filter((r) => !isAdminPath(r.path, roadPaths)).map((r) => routePatternOf(r.path)));
+  const out = new Set();
+  for (const [pattern, ids] of table.rows) {
+    if (admin.has(pattern) && !member.has(pattern)) continue;
+    for (const i of ids) out.add(table.files[i]);
+  }
+  return Array.from(out);
 }
