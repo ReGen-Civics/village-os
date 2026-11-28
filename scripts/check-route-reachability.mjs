@@ -138,6 +138,7 @@ const ALLOWLIST = {
   "/governance/decisions/changes/:id": "one change request's page, linked by changeRequestHref from Decisions, Now, Your work, Suggest and its notices",
   // The season fold (27 Nov 2026): three pages became /season. Each old address redirects to its tab, keeping the query; notifications already sent, old bookmarks and the term warning's ?renew= link are its doors.
   "/season-plans/mine": "a redirect to /season#plan, kept for notifications and term warnings already sent",
+  "/season-plan": "a redirect to /season#plan, kept for the renewal and role-access notices already sent to this address",
   "/season-plans": "a redirect to /season#everyone, kept for links already sent",
   "/season-places": "a redirect to /season#join, kept for crew notices already sent (?season= is kept)",
   "/aligned": "a redirect to /season#aligned, kept for alignment links already sent",

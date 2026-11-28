@@ -13,6 +13,7 @@
  */
 import { useLingui } from "@lingui/react/macro";
 import { useAuth } from "@/contexts/AuthContext";
+import { menuRolesAllow } from "@/lib/adminAccess";
 import { useModules } from "@/modules/ModuleProvider";
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { useGameConfig } from "@/lib/gameApi";
@@ -40,7 +41,6 @@ export function useMenuVisible(): MenuView {
   const cfg = useGameConfig();
   const { modules } = useModules();
   const moduleOn = (id?: string) => !id || modules.some((m) => m.id === id);
-  const role = user?.role;
   const treasuryOpen = anyTreasuryDoor(useTreasuryDoors(user ? token : null));
   const menu = useVillageMenu();
   const siteMenu = useSiteMenuWords(cfg?.site?.menu, cfg?.paths);
@@ -52,7 +52,7 @@ export function useMenuVisible(): MenuView {
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyPageShown(cfg, item.story ?? item.href)) &&
-    (!item.roles || (!!role && item.roles.includes(role))) &&
+    menuRolesAllow(item.roles, user) &&
     (item.signedIn === undefined || item.signedIn === !!user) &&
     (!item.door || (item.door === "treasury" && !!user && treasuryOpen));
   const label = (link: NavLink) => {

@@ -10,6 +10,9 @@
  *   labels  an entry's own word, by its address ("/forum": "Crew Talk")
  *   hidden  entries the village takes out of its menu, by address
  *   groups  a group's own name, by the platform's ("Community": "Aboard")
+ *   folders a folder's own name, by the platform's ("Places and homes": "Where we live"; the lead, 27 Nov
+ *           2026: "Yes" to village-named folders). Until a village names one, a folder is the platform's
+ *           word in the reader's language.
  *   tabs    the four phone tabs before More, by address
  *
  * ENTRIES KEEP THEIR ROUTES AND THEIR GATES. A label never changes where an
@@ -29,6 +32,8 @@ export interface MenuDoc {
   labels: Record<string, string>;
   hidden: string[];
   groups: Record<string, string>;
+  /** A folder's own name, keyed by the platform's folder name (NavLink.sub in client/src/config/nav.ts). */
+  folders: Record<string, string>;
   tabs: string[];
 }
 
@@ -49,9 +54,14 @@ export function menuDocOf(raw: unknown): MenuDoc {
     const w = word(v);
     if (word(k, 60) && w) groups[k] = w;
   }
+  const folders: Record<string, string> = {};
+  for (const [k, v] of Object.entries(d.folders && typeof d.folders === "object" ? (d.folders as Record<string, unknown>) : {})) {
+    const w = word(v);
+    if (word(k, 60) && w) folders[k] = w;
+  }
   const hidden = Array.isArray(d.hidden) ? Array.from(new Set(d.hidden.filter(isPath))) : [];
   const tabs = Array.isArray(d.tabs) ? d.tabs.filter(isPath).slice(0, MENU_TABS) : [];
-  return carriedOver({ labels, hidden, groups, tabs });
+  return carriedOver({ labels, hidden, groups, folders, tabs });
 }
 
 /**
@@ -83,17 +93,17 @@ function carriedOver(m: MenuDoc): MenuDoc {
     delete groups[from];
   }
   const hidden = Array.from(new Set(m.hidden.map((h) => MOVED_ENTRIES[h] ?? h)));
-  return { labels, hidden, groups, tabs: m.tabs };
+  return { labels, hidden, groups, folders: m.folders, tabs: m.tabs };
 }
 
 /** True when the village changed nothing, so the menu is the platform's. */
 export function menuDocIsEmpty(m: MenuDoc): boolean {
-  return !Object.keys(m.labels).length && !m.hidden.length && !Object.keys(m.groups).length && !m.tabs.length;
+  return !Object.keys(m.labels).length && !m.hidden.length && !Object.keys(m.groups).length && !Object.keys(m.folders).length && !m.tabs.length;
 }
 
 /** Why the content route must refuse this document, or null. */
 export function menuDocProblem(raw: unknown): string | null {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "Send the menu as { labels, hidden, groups, tabs }.";
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "Send the menu as { labels, hidden, groups, folders, tabs }.";
   const d = raw as Record<string, unknown>;
   for (const [k, v] of Object.entries((d.labels as Record<string, unknown>) ?? {})) {
     if (!isPath(k)) return `"${k}" is not an address in the menu.`;
@@ -101,6 +111,10 @@ export function menuDocProblem(raw: unknown): string | null {
   }
   for (const [k, v] of Object.entries((d.groups as Record<string, unknown>) ?? {})) {
     if (typeof v !== "string" || v.trim().length > MENU_LABEL_MAX) return `The name for the "${k}" group must be words, ${MENU_LABEL_MAX} characters at most.`;
+  }
+  if (d.folders !== undefined && (!d.folders || typeof d.folders !== "object" || Array.isArray(d.folders))) return "Folder names come as { platform name: your name }.";
+  for (const [k, v] of Object.entries((d.folders as Record<string, unknown>) ?? {})) {
+    if (typeof v !== "string" || v.trim().length > MENU_LABEL_MAX) return `The name for the "${k}" folder must be words, ${MENU_LABEL_MAX} characters at most.`;
   }
   if (d.hidden !== undefined && (!Array.isArray(d.hidden) || d.hidden.some((h) => !isPath(h)))) return "Hidden entries are named by their addresses.";
   if (d.tabs !== undefined && (!Array.isArray(d.tabs) || d.tabs.length > MENU_TABS || d.tabs.some((h) => !isPath(h)))) {

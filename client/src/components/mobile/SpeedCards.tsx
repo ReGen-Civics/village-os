@@ -5,10 +5,18 @@
  *
  *   A card      a door to a page the menu offers this member (lib/speedCards/registry.ts), or a registered card
  *               (lib/speedCards/registered.ts). Messages and My tasks carry the member's own counts.
- *   "+"         an open slot. A tap opens the picker (SpeedCardPicker.tsx): search, or browse by the menu's groups.
+ *   "+"         an open slot. A tap opens edit mode for every card and the picker for that slot (SpeedCardPicker.tsx):
+ *               search, or browse by the menu's groups (the lead, 27 Nov 2026: "when you click the 'add' card it will
+ *               also open the edit for them all so it helps users know they can edit any of them"). Picking a card or
+ *               closing the picker leaves the sheet in edit mode, so the member sees every card can move or go; Done
+ *               saves, and Escape leaves without saving. Focus is in the picker's search while it is open, then on the
+ *               slot it filled (or the "+" again), with Done one tab away.
  *   Edit        three ways in, so nobody depends on a long press: hold a card about half a second (a ring fills
  *               while you hold), right-click it, or press Edit beside the heading. The finger that ends a hold is
- *               swallowed, so lifting it never taps whatever edit mode drew under it.
+ *               swallowed, so lifting it never taps whatever edit mode drew under it. That Edit is a small quiet word
+ *               in the heading's own size, no border (the lead, 27 Nov 2026: "edit should be really small at the top
+ *               or not even there since a long press opens it"). It stays for keyboard and screen-reader members, keeps
+ *               a 44px tap area through its padding, and is where focus returns when edit mode ends.
  *   Edit mode   every card keeps its size and wears a dashed gold edge, with a remove badge in its corner. A tap
  *               picks a card; the strip under the grid moves the picked card left or right, and cards also drag to
  *               a new place. "+" slots stay. Done saves, Reset puts the defaults back, Escape leaves without
@@ -91,7 +99,7 @@ export interface SpeedCardsProps {
   who: string;
   entries: readonly NavEntry[];
   itemsOf: (group: NavGroup) => NavLink[];
-  account: readonly (NavLink & { count?: "tasks" | "messages" })[];
+  account: readonly NavLink[];
   /** The page being read, so its card is marked. */
   here?: string | null;
   onClose: () => void;
@@ -143,6 +151,8 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
   const editButton = useRef<HTMLButtonElement>(null);
   const doneButton = useRef<HTMLButtonElement>(null);
   const pickOpener = useRef<HTMLElement | null>(null);
+  // Edit mode opened by a "+": the picker takes focus, so edit mode does not move it to Done.
+  const openedByAdd = useRef(false);
 
   // Where focus goes after a change redraws the grid: the slot a card left, a card just added, or the strip's arrow.
   const refocus = useRef<Refocus | null>(null);
@@ -162,7 +172,8 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
   // Edit mode moves focus to Done as it opens and back to Edit as it closes, so the keyboard never falls to the page.
   const wasEditing = useRef(false);
   useEffect(() => {
-    if (editing && !wasEditing.current) doneButton.current?.focus();
+    if (editing && !wasEditing.current && !openedByAdd.current) doneButton.current?.focus();
+    openedByAdd.current = false;
     if (!editing && wasEditing.current && !refocus.current) editButton.current?.focus();
     wasEditing.current = editing;
   }, [editing]);
@@ -174,14 +185,25 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shownKey]);
 
-  const enterEdit = (from?: string, byHold = false) => {
+  const enterEdit = (from?: string, byHold = false, byAdd = false) => {
     if (editing) return;
-    if (byHold) swallowLift();
+    openedByAdd.current = byAdd;
+    if (byHold) {
+      swallowLift();
+      // After a hold or a right-click, focus goes to Done once the finger lifts, as the keyboard path does (QA, round 2).
+      const toDone = () => requestAnimationFrame(() => doneButton.current?.focus());
+      window.addEventListener("pointerup", toDone, { once: true, capture: true });
+      setTimeout(toDone, 0);
+    }
     const slots = sixSlots(base);
     setDraft(slots);
     setPicked(from ?? resolveSlots(slots, reg).find((c) => c)?.id ?? null);
     setEditing(true);
-    setSaid(t({ message: "Editing your cards. Drag a card, or use its arrows, to move it.", context: "the phone's More sheet: read aloud when edit mode opens" }));
+    setSaid(
+      byAdd
+        ? t({ message: "Editing your cards. Pick one to add, or drag a card to move it.", context: "the phone's More sheet: read aloud when a + opens edit mode and the picker" })
+        : t({ message: "Editing your cards. Drag a card, or use its arrows, to move it.", context: "the phone's More sheet: read aloud when edit mode opens" }),
+    );
     if (typeof navigator.vibrate === "function") navigator.vibrate(12);
   };
   // One short wiggle as edit mode opens, settled inside 600ms. Nothing moves with reduced motion.
@@ -218,6 +240,9 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
     if (!editing) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || live.current.pickOpen) return;
+      // An Escape meant for a dialog above the sheet (search) is not ours: an unsaved edit stays.
+      const at = document.activeElement instanceof Element ? document.activeElement : null;
+      if (at?.closest('[role="dialog"]') && !at.closest("[data-more-sheet]")) return;
       e.stopPropagation();
       live.current.cancel();
     };
@@ -323,7 +348,7 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
             </button>
           </span>
         ) : (
-          <button ref={editButton} type="button" onClick={() => enterEdit()} disabled={quiet} aria-label={t({ message: "Edit your cards", context: "the phone's More sheet: the Edit button, read aloud" })} className={BTN_SECONDARY}>
+          <button ref={editButton} type="button" onClick={() => enterEdit()} disabled={quiet} aria-label={t({ message: "Edit your cards", context: "the phone's More sheet: the Edit button, read aloud" })} data-speed-edit="" className="-my-3 -mr-2 inline-flex min-h-11 min-w-11 items-center justify-center px-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50">
             <Trans context="the phone's More sheet: open edit mode for the cards">Edit</Trans>
           </button>
         )}
@@ -359,6 +384,8 @@ export default function SpeedCards({ who, entries, itemsOf, account, here, onClo
                   data-speed-open={at}
                   onClick={(e) => {
                     pickOpener.current = e.currentTarget;
+                    // A "+" opens edit mode for every card as well as the picker for this slot.
+                    enterEdit(undefined, false, true);
                     setPickFor(at);
                   }}
                   aria-label={openSlotName(at + 1)}

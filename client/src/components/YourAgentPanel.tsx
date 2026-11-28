@@ -108,7 +108,8 @@ function CopyLine({ value }: { value: string }) {
 
 export default function YourAgentPanel({ person }: { person?: string } = {}) {
   const { t } = useLingui();
-  const isAdmin = useIsAdmin();
+  // `isAdmin` draws the connector switch, which saves a game variable: the account's own role.
+  const isAdmin = useIsAdmin("account-role");
   const [setup, setSetup] = useState<Setup | null>(null);
   const [error, setError] = useState("");
 
