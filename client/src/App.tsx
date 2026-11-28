@@ -353,6 +353,8 @@ function NavVisits() {
   return null;
 }
 
+const ArrivalHighlight = lazy(() => import("@/hooks/useArrivalHighlight"));
+
 function Router() {
   const [location] = useLocation();
   return (
@@ -360,6 +362,10 @@ function Router() {
     <ScrollToTop />
       <PageTitle />
       <NavVisits />
+      {/* A section an address lands on glows briefly, on every page (hooks/useArrivalHighlight.ts). Lazy: the first page pays only the door. */}
+      <Suspense fallback={null}>
+        <ArrivalHighlight />
+      </Suspense>
     <ErrorBoundary key={location}>
     <Suspense fallback={<PageLoading />}>
     <EntranceGate waiting={<PageLoading />}>
