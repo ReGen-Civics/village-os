@@ -228,8 +228,6 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
   const id = useId();
   // A hash that names a section on another tab opens that tab first.
   useEffect(() => {
-    // The browser's own scroll restoration as the profile found it, handed back as the profile goes.
-    const restoration = "scrollRestoration" in history ? history.scrollRestoration : null;
     let settling: (() => void) | null = null;
     // While a follow runs the page is ours, not the reader's: a scroll then is no place of theirs to keep.
     let following = false;
@@ -286,8 +284,10 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
       // A save still waiting would write into the entry the reader is leaving for.
       window.clearTimeout(saving);
       settling?.();
-      // By now the address is the next page's (a link inside the app): it gets the browser's restore back.
-      if (restoration) history.scrollRestoration = restoration;
+      // By now the address is the next page's (a link inside the app): it gets the browser's restore back. Always
+      // "auto", never what the profile found: on an entry the profile had already taken that was "manual", and
+      // handing it on left a reload or Back on every later page at the top (QA round 5).
+      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
     };
   }, [onTab]);
 

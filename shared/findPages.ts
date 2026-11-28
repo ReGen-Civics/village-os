@@ -115,16 +115,22 @@ export const FIND_PAGES: readonly FindPage[] = [
   { path: "/admin", audience: "admin", help: "Every setting of the village.", synonyms: ["village settings", "admin", "settings", "configure"] },
 ];
 
-/** A page as an entry, named the way its tab is. `commitment` is the village's own word for what a member signs. */
-export function pageEntry(p: FindPage, words: { commitment?: string } = {}): FindEntry {
+/**
+ * A page as an entry, named the way its tab is. `commitment` is the village's own word for what a member signs, and
+ * `names` the village's own names for its menu entries (shared/menuDoc.ts `labels`): a page the village renamed is
+ * found by its new name, and by the platform's word too, kept as a synonym.
+ */
+export function pageEntry(p: FindPage, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): FindEntry {
   const bare = p.path.split("#")[0] || "/";
+  const platform = pageTitleFor(bare, { commitment: words.commitment });
+  const title = p.title || pageTitleFor(bare, words) || p.path;
   return {
     id: `page:${p.path}`,
     kind: "page",
-    title: p.title || pageTitleFor(bare, words) || p.path,
+    title,
     help: p.help,
     path: p.path,
-    synonyms: p.synonyms,
+    synonyms: platform && platform !== title && !p.title ? [...p.synonyms, platform] : p.synonyms,
   };
 }
 
