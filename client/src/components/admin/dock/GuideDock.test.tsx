@@ -21,10 +21,10 @@ import type { HelperAnswer, HelperStatus } from "@shared/adminHelper";
 
 const mic = vi.hoisted(() => ({ onText: null as null | ((chunk: string) => void) }));
 /** Who is signed in. A chat draft is kept under the member's id, and a visitor's is kept nowhere (components/chat/chatDraft.ts). */
-const session = vi.hoisted(() => ({ userId: null as string | null }));
+const session = vi.hoisted(() => ({ userId: null as string | null, userName: "" }));
 vi.mock("@/contexts/AuthContext", async (importOriginal) => {
   const real = await importOriginal<typeof import("@/contexts/AuthContext")>();
-  return { ...real, useOptionalAuth: () => (session.userId ? { user: { id: session.userId } } : null) };
+  return { ...real, useOptionalAuth: () => (session.userId ? { user: { id: session.userId, name: session.userName } } : null) };
 });
 vi.mock("@/components/MicButton", () => ({
   default: ({ onText }: { onText: (chunk: string) => void }) => {
@@ -33,7 +33,9 @@ vi.mock("@/components/MicButton", () => ({
   },
 }));
 
+import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
 import GuideDock, { type DockState, type GuideDockProps } from "./GuideDock";
+import { adminTabOf, splitReply } from "./replyLinks";
 import type { NavGroup } from "../adminNavGroups";
 
 const GROUPS = [
@@ -78,6 +80,9 @@ beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
   mic.onText = null;
+  session.userId = null;
+  session.userName = "";
+  window.history.replaceState({}, "", "/admin?tab=home");
 });
 afterEach(() => {
   cleanup();
@@ -222,12 +227,20 @@ describe("the talk bar", () => {
     expect(screen.queryByTestId("guide-you-said")).toBeNull();
   });
 
-  it("SUGGESTIONS: up to four for where the person is, each fills the box and sends nothing", async () => {
+  it("SUGGESTIONS: three in the narrow side column and four when opened wide", async () => {
+    dock({ tab: "home" });
+    const offered = () => within(screen.getByRole("group", { name: "Suggested next steps" })).getAllByRole("button").map((b) => b.textContent);
+    expect(offered()).toEqual(["What needs me today?", "Where do I set the timezone?", "Which page changes the menu?"]);
+    await userEvent.click(screen.getByRole("button", { name: "Open the guide wide" }));
+    expect(offered()).toEqual(["What needs me today?", "Where do I set the timezone?", "Which page changes the menu?", "What can you help me with?"]);
+  });
+
+  it("SUGGESTIONS: for where the person is, each fills the box and sends nothing", async () => {
     const calls = mockFetch({});
     dock({ tab: "home" });
     const group = screen.getByRole("group", { name: "Suggested next steps" });
     const offered = within(group).getAllByRole("button").map((b) => b.textContent);
-    expect(offered).toEqual(["What needs me today?", "Where do I set the timezone?", "Which page changes the menu?", "What can you help me with?"]);
+    expect(offered).toEqual(["What needs me today?", "Where do I set the timezone?", "Which page changes the menu?"]);
     await userEvent.click(within(group).getByRole("button", { name: "Where do I set the timezone?" }));
     expect(box()).toHaveValue("Where do I set the timezone?");
     expect(document.activeElement).toBe(box());
@@ -306,8 +319,9 @@ describe("the launch and organizing guides", () => {
     expect(Object.keys(launchSent)).toEqual(["messages"]);
     expect(launchSent.messages.map((m: any) => m.role)).toEqual(["assistant", "user"]);
     expect(launchSent.messages[1]).toEqual({ role: "user", content: "what is blocking?" });
-    // A path she names is a link, as it was.
-    expect(screen.getByRole("link", { name: "/admin?tab=season" })).toBeTruthy();
+    // The address she was told to include is a link named for its page, never the address itself.
+    expect(talk().getByRole("link", { name: "Season" }).getAttribute("href")).toBe("/admin?tab=season");
+    expect(screen.getByTestId("guide-talk").textContent).not.toContain("/admin");
 
     await userEvent.click(screen.getByRole("button", { name: "Organizing" }));
     expect(screen.getByText(/Ask me about organizing/)).toBeTruthy();
@@ -651,5 +665,176 @@ describe("in a slot, with the host holding the state", () => {
     render(<Slot start="expanded" heard={vi.fn()} />);
     expect(frame().getAttribute("data-shape")).toBe("expanded");
     expect(screen.getByRole("button", { name: "Bring the guide back to the side" })).toBeTruthy();
+  });
+});
+
+describe("night first, a face, and a warm first line", () => {
+  it("carries the garden's scope on its own root in both placements, so it is night whatever the page is", () => {
+    const fixed = dock();
+    expect(frame().className.split(/\s+/)).toContain("garden");
+    fixed.unmount();
+    render(<GuideDock surface="admin" placement="slot" modes={["helper"]} password="pw" groups={GROUPS} tab="home" initialStatus={ON} state="docked" onStateChange={vi.fn()} />);
+    expect(frame().className.split(/\s+/)).toContain("garden");
+  });
+
+  it("holds itself to tokens in every state: no numbered palette class and no literal colour anywhere in it", async () => {
+    mockFetch({
+      "POST /api/admin/helper/ask": () => ({
+        body: answer({
+          reply: "Here.",
+          open: { key: "variables", label: "Game Mechanics" },
+          proposal: { key: "feed.x", label: "X", category: "Feed", from: "1", to: "2", why: "Asked.", applyPath: "/api/admin/variables/feed.x" },
+          refused: "A reason.",
+        }),
+      }),
+    });
+    dock({ initialStatus: { ...BOTH, lent: true }, initialShape: "expanded" });
+    await userEvent.type(box(), "x{Enter}");
+    await screen.findByTestId("helper-proposal");
+    const classes = [frame(), ...Array.from(frame().querySelectorAll("*"))].flatMap((el) => String(el.getAttribute("class") ?? "").split(/\s+/));
+    const numbered = classes.filter((c) => /(?:^|:)(?:bg|text|border|ring|from|to|via|fill|stroke|outline|decoration|placeholder|divide|shadow)-(?:[a-z]+-)?(?:50|[1-9]00|950)(?:\/\d+)?$/.test(c));
+    expect(numbered).toEqual([]);
+    expect(classes.filter((c) => /#[0-9a-f]{3,8}\b|\b(?:rgb|hsl|oklch)a?\(/i.test(c))).toEqual([]);
+  });
+
+  it("shows her portrait in a ring beside her name, as decoration, and a letter when the painting will not load", () => {
+    dock();
+    const face = screen.getByTestId("guide-face");
+    const img = face.querySelector("img")!;
+    expect(img.getAttribute("src")).toBe(GARDEN_GUIDE_URL);
+    // Her name is beside it, so the picture says nothing of its own.
+    expect(img.getAttribute("alt")).toBe("");
+    expect(face.className.split(/\s+/)).toContain("gd-ring");
+    expect(screen.getByRole("heading", { name: "Sol" })).toBeTruthy();
+    fireEvent.error(img);
+    expect(face.querySelector("img")).toBeNull();
+    expect(face.textContent).toBe("S");
+    expect(face.querySelector("[aria-hidden='true']")).toBeTruthy();
+  });
+
+  it("does not put the village guide's face on Sera", async () => {
+    dock({ initialStatus: BOTH });
+    await userEvent.click(screen.getByRole("radio", { name: "Sera" }));
+    const face = screen.getByTestId("guide-face");
+    expect(face.querySelector("img")).toBeNull();
+    expect(face.textContent).toBe("S");
+  });
+
+  it("says who is answering under her name, for the launch and organizing guides too", async () => {
+    dock({ initialStatus: { ...ON, lent: true } });
+    expect(screen.getByTestId("guide-who-answers").textContent).toBe("Sol is answering, on Claude with a key the platform lends for now.");
+    await userEvent.click(screen.getByRole("button", { name: "Organizing" }));
+    expect(screen.getByTestId("guide-who-answers").textContent).toBe("Sol is answering, on Claude with a key the platform lends for now.");
+    cleanup();
+    // With no key that can answer, nothing is claimed.
+    dock({ modes: ["organize"], initialStatus: { on: false, guide: "Sol", off: "key", provider: null, available: [], names: {}, dock: true } });
+    expect(screen.queryByTestId("guide-who-answers")).toBeNull();
+  });
+
+  it("opens with one warm line in her voice, by first name when the page knows it, then what she does and reads", () => {
+    const anonymous = dock();
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Hello. What are we tending today?");
+    anonymous.unmount();
+
+    session.userId = "u-rye";
+    session.userName = "Rye Ashby";
+    const signedIn = dock();
+    const line = screen.getByTestId("guide-first-line");
+    expect(line.textContent).toBe("Hello, Rye. What are we tending today?");
+    // One line, plain, and nothing that scores or ranks anybody.
+    expect(line.textContent).not.toMatch(/!|\b(best|top|score|rank|better than)\b/i);
+    // What she reads and never reads follows it, from its one place, word for word as before.
+    expect(line.nextElementSibling?.textContent).toMatch(/^Ask me how to do something in Admin/);
+    expect(screen.getByText(/never read applications, proposals, interviews, terms or pay/)).toBeTruthy();
+    signedIn.unmount();
+
+    // A host that knows the name better says so.
+    dock({ personName: "Ana Maria Soto" });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Hello, Ana. What are we tending today?");
+  });
+
+  it("drops the first line once the conversation has started", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer() }) });
+    dock();
+    await userEvent.type(box(), "hi{Enter}");
+    expect(await talk().findByText("Here you go.")).toBeTruthy();
+    expect(screen.queryByTestId("guide-first-line")).toBeNull();
+  });
+});
+
+describe("never a raw address in her words", () => {
+  const says = (reply: string) => mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ reply }) }) });
+  const bubble = () => screen.getByTestId("guide-talk");
+
+  it("she names the control and links it", async () => {
+    says("The season's dates live at /admin?tab=variables, under Village. Open /admin?tab=variables and I will show you.");
+    dock();
+    await userEvent.type(box(), "where are the dates?{Enter}");
+    const links = await talk().findAllByRole("link", { name: "Game Mechanics" });
+    // Named by the Admin map the dock was handed, and linked to the tab itself.
+    expect(links).toHaveLength(2);
+    expect(links[0].getAttribute("href")).toBe("/admin?tab=variables");
+    // The address is nowhere in what she is seen to say, or in what is read aloud.
+    expect(bubble().textContent).not.toContain("/admin");
+    expect(bubble().textContent).toContain("The season's dates live at Game Mechanics, under Village.");
+    expect(screen.getByTestId("guide-announce").textContent).toBe("Sol says: The season's dates live at Game Mechanics, under Village. Open Game Mechanics and I will show you.");
+    // Inside Admin the link is Admin's own navigation: the tab changes in place.
+    await userEvent.click(links[0]);
+    expect(window.location.search).toBe("?tab=variables");
+  });
+
+  it("names a tab the dock's map does not carry from Admin's own table of tabs", async () => {
+    says("Set the closing policy at /admin?tab=season.");
+    dock();
+    await userEvent.type(box(), "x{Enter}");
+    expect((await talk().findByRole("link", { name: "Season" })).getAttribute("href")).toBe("/admin?tab=season");
+    expect(bubble().textContent).not.toContain("/admin");
+  });
+
+  it("uses the checklist's own words for a launch row's address when the page has them", async () => {
+    mockFetch({ "POST /api/admin/assistant/launch": () => ({ body: { reply: "Next, go to /admin?tab=season and say how a season ends." } }) });
+    dock({ surface: "journey", modes: ["launch"], groups: undefined, tab: undefined, onOpenTab: undefined, linkNames: { "/admin?tab=season": "Open Season" } });
+    await userEvent.type(box(), "what next?{Enter}");
+    expect((await talk().findByRole("link", { name: "Open Season" })).getAttribute("href")).toBe("/admin?tab=season");
+    expect(bubble().textContent).toContain("Next, go to Open Season and say how a season ends.");
+    expect(bubble().textContent).not.toContain("/admin");
+  });
+
+  it("names the pages it knows, and says Open the page for an address nothing names", async () => {
+    says("It waits at /admin/proposals. The checklist is at /journey-to-launch, and there is more at /somewhere/new.");
+    dock();
+    await userEvent.type(box(), "x{Enter}");
+    expect((await talk().findByRole("link", { name: "the review page" })).getAttribute("href")).toBe("/admin/proposals");
+    expect(talk().getByRole("link", { name: "the road to launch" }).getAttribute("href")).toBe("/journey-to-launch");
+    expect(talk().getByRole("link", { name: "Open the page" }).getAttribute("href")).toBe("/somewhere/new");
+    expect(bubble().textContent).not.toMatch(/\/admin|\/journey|\/somewhere/);
+  });
+
+  it("leaves a reply with no address exactly as it was, and an outside link as plain text", async () => {
+    const plain = "Turn it on and/or leave it. See https://example.org/admin?tab=season for 3/4 of the detail.";
+    says(plain);
+    dock();
+    await userEvent.type(box(), "x{Enter}");
+    expect(await talk().findByText(plain)).toBeTruthy();
+    expect(talk().queryAllByRole("link")).toEqual([]);
+    expect(screen.getByTestId("guide-announce").textContent).toBe(`Sol says: ${plain}`);
+  });
+
+  it("cuts a reply into its words and its internal addresses, and nothing else", () => {
+    expect(splitReply("Open /admin?tab=season, then (see /journey-to-launch).")).toEqual([
+      { text: "Open " },
+      { href: "/admin?tab=season" },
+      { text: ", then (see " },
+      { href: "/journey-to-launch" },
+      { text: ")." },
+    ]);
+    expect(splitReply("/governance/how#mechanics is first")).toEqual([{ href: "/governance/how#mechanics" }, { text: " is first" }]);
+    for (const none of ["and/or", "3/4 done", "https://example.org/a/b", "a path like x/y/z", "mailto:someone", "//cdn.example/x"]) {
+      expect(splitReply(none), none).toEqual([{ text: none }]);
+    }
+    expect(splitReply("")).toEqual([]);
+    expect(adminTabOf("/admin?tab=org-chart&x=1")).toBe("org-chart");
+    expect(adminTabOf("/admin?tab=../x")).toBeNull();
+    expect(adminTabOf("/journey-to-launch?tab=season")).toBeNull();
   });
 });

@@ -599,7 +599,7 @@ export default function JourneyToLaunch() {
           )}
         </div>
       </div>
-      <JourneyGuide open={guideOpen} onClose={() => setGuideOpen(false)} launched={launched} admin={isAdmin} />
+      <JourneyGuide open={guideOpen} onClose={() => setGuideOpen(false)} launched={launched} admin={isAdmin} fixes={items} />
     </Layout>
   );
 }

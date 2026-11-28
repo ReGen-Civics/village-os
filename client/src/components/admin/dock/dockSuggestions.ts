@@ -2,7 +2,7 @@
  * SUGGESTED NEXT STEPS, so the talk box is never blank (the plan's "a blank
  * chat box tells people nothing about what is possible").
  *
- * Up to four short lines above the box, in words a founder would say. A press
+ * Up to four short lines above the box (three in the narrow side column), in words a founder would say. A press
  * puts the words into the box and stops there: nothing is asked until the
  * person presses Send. They depend on where the person is (the open Admin tab,
  * or the launch or organizing guide) and on whether the conversation has
@@ -42,6 +42,8 @@ export type SuggestedTab = (typeof SUGGESTED_TABS)[number];
 export type SuggestionPlace = { mode: "helper"; tab: string } | { mode: "launch" } | { mode: "organize" };
 
 export const MAX_SUGGESTIONS = 4;
+/** The side column is narrow, so docked it shows three; opened wide it has room for all four. */
+export const DOCKED_SUGGESTIONS = 3;
 
 const GENERAL: readonly MessageDescriptor[] = [
   msg({ message: "What needs me today?", context: "guide dock, a suggested question" }),
@@ -144,8 +146,8 @@ const ORGANIZE: readonly MessageDescriptor[] = [
 
 const isSuggestedTab = (tab: string): tab is SuggestedTab => (SUGGESTED_TABS as readonly string[]).includes(tab);
 
-/** The suggestions for a place, as descriptors. PURE. At most four. */
-export function suggestionsFor(place: SuggestionPlace, empty: boolean): readonly MessageDescriptor[] {
+/** The suggestions for a place, as descriptors. PURE. At most four, or fewer when the caller has room for fewer. */
+export function suggestionsFor(place: SuggestionPlace, empty: boolean, max: number = MAX_SUGGESTIONS): readonly MessageDescriptor[] {
   const pick =
     place.mode === "launch"
       ? empty ? LAUNCH : LAUNCH_GOING_ON
@@ -156,7 +158,7 @@ export function suggestionsFor(place: SuggestionPlace, empty: boolean): readonly
           : isSuggestedTab(place.tab)
             ? BY_TAB[place.tab]
             : GENERAL;
-  return pick.slice(0, MAX_SUGGESTIONS);
+  return pick.slice(0, Math.max(0, Math.min(MAX_SUGGESTIONS, max)));
 }
 
 /** Every suggestion there is, for the test that holds each one to the rules above. */
@@ -165,7 +167,7 @@ export function everySuggestion(): readonly MessageDescriptor[] {
 }
 
 /** The suggestions for a place, in the reader's language. */
-export function useDockSuggestions(place: SuggestionPlace, empty: boolean): string[] {
+export function useDockSuggestions(place: SuggestionPlace, empty: boolean, max: number = MAX_SUGGESTIONS): string[] {
   const { i18n } = useLingui();
-  return Array.from(new Set(suggestionsFor(place, empty).map((d) => i18n._(d))));
+  return Array.from(new Set(suggestionsFor(place, empty, max).map((d) => i18n._(d))));
 }

@@ -6,7 +6,7 @@
 import { setupI18n } from "@lingui/core";
 import { describe, expect, it } from "vitest";
 import { navGroups } from "../adminNavGroups";
-import { everySuggestion, MAX_SUGGESTIONS, SUGGESTED_TABS, suggestionsFor } from "./dockSuggestions";
+import { DOCKED_SUGGESTIONS, everySuggestion, MAX_SUGGESTIONS, SUGGESTED_TABS, suggestionsFor } from "./dockSuggestions";
 
 const EN = setupI18n({ locale: "en", messages: { en: {} } });
 const words = (list: ReturnType<typeof suggestionsFor>) => list.map((d) => EN._(d));
@@ -33,6 +33,14 @@ describe("the suggestions above the talk box", () => {
         expect(new Set(words(list)).size, "no line twice in one place").toBe(list.length);
       }
     }
+  });
+
+  it("are three in the narrow side column, the first three of the same four, and never more than four however many are asked for", () => {
+    expect(DOCKED_SUGGESTIONS).toBe(3);
+    const home = { mode: "helper" as const, tab: "home" };
+    expect(words(suggestionsFor(home, true, DOCKED_SUGGESTIONS))).toEqual(words(suggestionsFor(home, true)).slice(0, 3));
+    expect(suggestionsFor(home, true, 99)).toHaveLength(MAX_SUGGESTIONS);
+    expect(suggestionsFor(home, true, 0)).toHaveLength(0);
   });
 
   it("never name money, pay, a vote or a person, and never invite ranking or judging anybody", () => {

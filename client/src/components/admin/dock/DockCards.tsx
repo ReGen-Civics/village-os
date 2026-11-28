@@ -2,16 +2,17 @@
  * THE DOCK'S OWN PIECES (GuideDock.tsx draws them): the card for a change the
  * guide drafted for the review page, the line that says who is answering and
  * the choice between the village's guide and Sera, what the launch and
- * organizing guides say they read, and the paths in a reply turned into links.
+ * organizing guides say they read, and her face. (How an address in a reply is
+ * drawn is ./replyLinks.tsx.)
  *
  * The proposal card for a dial is the helper panel's own (../helperPieces).
  * Tokens only, so every piece follows the Admin palette and its night look.
  */
-import type { ReactNode } from "react";
+import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { HelperFiled, HelperFiling, HelperProvider } from "@shared/adminHelper";
+import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
 import type { GuideConsulted } from "../adminHelperApi";
 import { secondaryBtn } from "../helperPieces";
 
@@ -173,15 +174,24 @@ export function ConsultedLine({ consulted }: { consulted: GuideConsulted | undef
   );
 }
 
-/** A reply with any /admin?tab=… or /route path it names turned into a real link, as the launch guide's panel does. */
-export function replyParts(text: string): ReactNode[] {
-  return text.split(/(\/(?:admin\?tab=[a-z-]+|[a-z-]+(?:\/[a-z-]+)*))(?=[\s.,)]|$)/g).map((part, i) =>
-    part.startsWith("/") ? (
-      <Link key={i} href={part} className="font-medium text-foreground underline">
-        {part}
-      </Link>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
+/**
+ * HER FACE: the guide's portrait in a round frame with the garden's gold ring
+ * (`.gd-ring`, garden.css). Decoration, since her name stands beside it. Where
+ * the painting cannot be shown (it failed to load, or the one answering is not
+ * the village's own guide), the ring holds the first letter of the name.
+ */
+export function GuideFace({ name, portrait }: { name: string; portrait: boolean }) {
+  const [failed, setFailed] = useState(false);
+  const letter = name.trim().charAt(0).toUpperCase();
+  return (
+    <span className="gd-ring size-12 shrink-0" data-testid="guide-face">
+      {portrait && !failed ? (
+        <img src={GARDEN_GUIDE_URL} alt="" width={96} height={96} decoding="async" draggable={false} onError={() => setFailed(true)} />
+      ) : (
+        <span aria-hidden="true" className="font-display text-lg leading-none">
+          {letter}
+        </span>
+      )}
+    </span>
   );
 }

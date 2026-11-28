@@ -34,7 +34,7 @@ import { useChatDraft } from "@/components/chat/chatDraft";
 import type { NavGroup } from "./adminNavGroups";
 import { askHelper, fetchHelperStatus, tabsFromGroups, type HelperLine } from "./adminHelperApi";
 // The pieces the dock shares (dock/GuideDock.tsx grew from this panel): moved out whole, words and classes unchanged.
-import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf as mark, readPicked, rememberPicked, SwitchedOff } from "./helperPieces";
+import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf as mark, readPicked, rememberPicked, SwitchedOff, WhatTheGuideReads } from "./helperPieces";
 
 export { ConnectSteps, proposalHref } from "./helperPieces";
 
@@ -205,8 +205,7 @@ export default function AdminHelperPanel({
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">
             {turns.length === 0 && (
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p><Trans context="admin helper panel">Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide.</Trans></p>
-                <p><Trans context="admin helper panel">I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I can't help with choosing people for roles. Money stays with you too.</Trans></p>
+                <WhatTheGuideReads />
               </div>
             )}
             {turns.map((turn, i) => (

@@ -53,8 +53,14 @@
  * A finished reply is announced to a screen reader once, whole, from one
  * quiet status line; the conversation itself is not a live region.
  *
- * Tokens only (bg-card, text-foreground, border-border, bg-muted, bg-primary),
- * so it follows the Admin palette, its night look and the light pairing.
+ * NIGHT FIRST, ON THE GARDEN'S TOKENS (the founder, 27 Nov 2026). The dock's
+ * own root carries the garden's scope (`.garden`, ../garden/garden.css) in
+ * BOTH placements, so every token it names (bg-card, text-foreground,
+ * border-border, bg-muted, text-muted-foreground, text-notice) is the garden's
+ * night whatever the page around it is: the older admin tabs are still light,
+ * and the dock is night beside them. The main act (Send, Review and save, the
+ * chosen pill) is the garden's gold with the ground as its ink, the one pair
+ * the garden measures for it. No numbered palette class and no literal colour.
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from "react";
 import { ArrowRight, Loader2, Maximize2, Minimize2, X } from "lucide-react";
@@ -65,12 +71,15 @@ import { guideLabelIn } from "@/lib/guideNameWords";
 import ChatComposer from "@/components/chat/ChatComposer";
 import { useChatDraft } from "@/components/chat/chatDraft";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import { useOptionalAuth } from "@/contexts/AuthContext";
+import { GARDEN } from "../garden/Garden";
 import type { NavGroup } from "../adminNavGroups";
 import { askGuide, askHelper, fetchHelperStatus, fileForReview, tabsFromGroups, type GuideConsulted, type HelperLine } from "../adminHelperApi";
-import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, type ProposalState } from "../helperPieces";
-import { ConsultedLine, FilingCard, GuideChoice, replyParts, WhoAnswers, type FilingState } from "./DockCards";
+import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, WhatTheGuideReads, type ProposalState } from "../helperPieces";
+import { ConsultedLine, FilingCard, GuideChoice, GuideFace, WhoAnswers, type FilingState } from "./DockCards";
 import { dockDraftKey, dockSaidKey, readDockShape, rememberDockShape, type DockShape } from "./dockState";
-import { useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
+import { DOCKED_SUGGESTIONS, MAX_SUGGESTIONS, useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
+import { replyAsWords, ReplyText, useLinkNamer } from "./replyLinks";
 
 /** The dock's conversations: the helper inside Admin, the launch guide, the organizing guide. */
 export type DockMode = "helper" | "launch" | "organize";
@@ -180,6 +189,13 @@ export interface GuideDockProps {
   onUnreview?: (p: HelperProposal) => void;
   /** Told the status this dock read, so its host learns when the village turns the dock off again. */
   onStatus?: (s: HelperStatus) => void;
+  /**
+   * What the host knows an internal address to be, by the address: a launch row's `fixAt` and its `fixLabel`. A reply
+   * that carries one draws it as a link with these words (./replyLinks.tsx).
+   */
+  linkNames?: Readonly<Record<string, string>>;
+  /** The person's name, for her first line. Left out, the signed-in member's own. */
+  personName?: string;
 }
 
 export default function GuideDock({
@@ -204,8 +220,14 @@ export default function GuideDock({
   onReview,
   onUnreview,
   onStatus,
+  linkNames,
+  personName,
 }: GuideDockProps) {
   const { t, i18n } = useLingui();
+  // Her first line greets the person by their first name, when the page knows it.
+  const signedIn = useOptionalAuth()?.user?.name;
+  const firstName = String(personName ?? signedIn ?? "").trim().split(/\s+/)[0] ?? "";
+  const namer = useLinkNamer(linkNames, groups);
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
   const [statusError, setStatusError] = useState("");
   const [mode, setMode] = useState<DockMode>(modes[0] ?? "helper");
@@ -332,7 +354,7 @@ export default function GuideDock({
 
   // ── Talking ───────────────────────────────────────────────────────────────
   const place: SuggestionPlace = shown === "helper" ? { mode: "helper", tab } : { mode: shown };
-  const suggestions = useDockSuggestions(place, !started);
+  const suggestions = useDockSuggestions(place, !started, expanded ? MAX_SUGGESTIONS : DOCKED_SUGGESTIONS);
 
   const onDraft = useCallback(
     (next: string) => {
@@ -375,8 +397,10 @@ export default function GuideDock({
         }
         return;
       }
-      const reply = out.answer.reply;
-      append(at, { role: "assistant", content: reply, answer: out.answer });
+      const said = out.answer.reply;
+      append(at, { role: "assistant", content: said, answer: out.answer });
+      // Read aloud with each address said as the page it names, never as a path.
+      const reply = replyAsWords(said, namer);
       setAnnounce(t({ message: `${speaker} says: ${reply}`, context: "guide dock, a finished reply read to a screen reader" }));
       return;
     }
@@ -387,8 +411,9 @@ export default function GuideDock({
       else setErrors((e) => ({ ...e, [at]: out.error || t`Something hiccuped. Ask me that again?` }));
       return;
     }
-    const reply = out.reply || t`Something hiccuped. Ask me that again?`;
-    append(at, { role: "assistant", content: reply, consulted: out.consulted });
+    const said = out.reply || t`Something hiccuped. Ask me that again?`;
+    append(at, { role: "assistant", content: said, consulted: out.consulted });
+    const reply = replyAsWords(said, namer);
     setAnnounce(t({ message: `${speaker} says: ${reply}`, context: "guide dock, a finished reply read to a screen reader" }));
   };
 
@@ -478,6 +503,16 @@ export default function GuideDock({
   );
 
   const helperOff = shown === "helper" && status && !status.on;
+  /*
+   * Who is answering, under her name. The helper: whoever was picked. The launch and organizing guides are the
+   * village's own guide on the same key the helper would use, so the same line is true of them while a key can answer.
+   */
+  const whoAnswers =
+    shown === "helper" ? (
+      chosen && status?.on ? <WhoAnswers provider={chosen} name={names[chosen]} lent={status.lent === true} /> : null
+    ) : status?.available.includes("anthropic") ? (
+      <WhoAnswers provider="anthropic" name={names.anthropic} lent={status.lent === true} />
+    ) : null;
 
   return (
     <aside
@@ -488,11 +523,15 @@ export default function GuideDock({
       data-placement={placement}
       {...(surface === "journey" && !slotted ? { "data-hides-fab": "", "data-dialogue": "" } : {})}
       style={style}
-      className={`@container flex flex-col overflow-hidden bg-card text-card-foreground ${frame}`}
+      // The garden's scope, on the dock's own root: night in both placements. Gold is the main act's ground.
+      className={`${GARDEN} @container flex flex-col overflow-hidden [--primary:var(--garden-gold)] [--primary-foreground:var(--garden-ground)] ${frame}`}
     >
-      <div className="flex shrink-0 items-start justify-between gap-2 border-b border-border px-4 py-3">
+      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
+        {/* Her face: the village's own guide in her gold ring. Sera, or a painting that will not load, is a letter. */}
+        <GuideFace name={guide} portrait={!(shown === "helper" && chosen === "sera")} />
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-display text-lg font-semibold text-foreground">{guide}</h2>
+          <h2 className="truncate font-display text-xl font-semibold leading-tight text-foreground">{guide}</h2>
+          {whoAnswers}
           <p className="hidden text-xs text-muted-foreground @min-[25rem]:block">
             {shown === "helper" ? (
               <Trans context="admin helper panel">Helps you find things and proposes changes for you to approve.</Trans>
@@ -502,7 +541,6 @@ export default function GuideDock({
               <Trans context="guide dock, what the organizing guide does">Counsel on organizing, from your village's own brief first.</Trans>
             )}
           </p>
-          {shown === "helper" && chosen && status?.on && <WhoAnswers provider={chosen} name={names[chosen]} lent={status.lent === true} />}
           {/* The two choices sit side by side where the dock is wide, and stack in the side column. */}
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 empty:hidden">
           {shown === "helper" && status?.on && status.available.length > 1 && <GuideChoice available={status.available} names={names} chosen={chosen} onPick={pick} />}
@@ -567,14 +605,21 @@ export default function GuideDock({
       {helperOff && (status.off === "switch" ? <SwitchedOff /> : <ConnectSteps onOpenIntegrations={() => onOpenTab?.("integrations")} />)}
 
       {(shown !== "helper" || status?.on) && (
-        <div className={`flex min-h-0 flex-1 flex-col ${expanded ? "@min-[56rem]:flex-row" : ""}`}>
+        <div className={`flex min-h-0 flex-1 flex-col ${expanded ? "@min-[44rem]:flex-row" : ""}`}>
           <div ref={column} className="flex min-h-0 min-w-0 flex-1 flex-col">
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4" data-testid="guide-talk">
               <div className={`space-y-3 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
                 {shown === "helper" && turns.length === 0 && (
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p><Trans context="admin helper panel">Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide.</Trans></p>
-                    <p><Trans context="admin helper panel">I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I can't help with choosing people for roles. Money stays with you too.</Trans></p>
+                    {/* One warm line in her voice first; then what she does and reads, from its one place. */}
+                    <p className="font-display text-lg leading-snug text-foreground" data-testid="guide-first-line">
+                      {firstName ? (
+                        <Trans context="guide dock, the guide's first line before any question">Hello, {firstName}. What are we tending today?</Trans>
+                      ) : (
+                        <Trans context="guide dock, the guide's first line before any question">Hello. What are we tending today?</Trans>
+                      )}
+                    </p>
+                    <WhatTheGuideReads />
                   </div>
                 )}
                 {gone[shown] && (
@@ -597,11 +642,11 @@ export default function GuideDock({
                       <div
                         className={
                           turn.role === "user"
-                            ? "max-w-[85%] whitespace-pre-wrap break-words rounded-2xl bg-primary px-3 py-2 text-sm text-primary-foreground"
+                            ? "gd-plaque max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm text-foreground"
                             : "max-w-full whitespace-pre-wrap break-words rounded-2xl bg-muted px-3 py-2 text-sm text-foreground"
                         }
                       >
-                        {turn.role === "assistant" && shown !== "helper" ? replyParts(turn.content) : turn.content}
+                        {turn.role === "assistant" ? <ReplyText text={turn.content} namer={namer} inAdmin={surface === "admin"} /> : turn.content}
                         {turn.role === "assistant" && <ConsultedLine consulted={turn.consulted} />}
                       </div>
                       {turn.answer?.open && onOpenTab && (
@@ -686,7 +731,7 @@ export default function GuideDock({
             <section
               aria-label={t({ message: "Say yes", context: "guide dock, the list of what the guide prepared" })}
               data-testid="guide-say-yes"
-              className={`order-first max-h-[35%] shrink-0 overflow-y-auto border-b border-border px-4 py-3 @min-[56rem]:order-none @min-[56rem]:max-h-none @min-[56rem]:w-[24rem] @min-[56rem]:border-b-0 @min-[56rem]:border-l ${preparedCount === 0 ? "hidden @min-[56rem]:block" : ""}`}
+              className={`order-first max-h-[35%] shrink-0 overflow-y-auto border-b border-border px-4 py-3 @min-[44rem]:order-none @min-[44rem]:max-h-none @min-[44rem]:w-[19rem] @min-[44rem]:border-b-0 @min-[44rem]:border-l @min-[64rem]:w-[24rem] ${preparedCount === 0 ? "hidden @min-[44rem]:block" : ""}`}
             >
               <h3 className="font-display text-base font-semibold text-foreground"><Trans context="guide dock, the list of what the guide prepared">Say yes</Trans></h3>
               <p className="text-xs text-muted-foreground">

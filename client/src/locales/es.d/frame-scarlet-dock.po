@@ -392,3 +392,38 @@ msgstr "{name} está respondiendo, a través de la conexión de memoria organiza
 msgctxt "proposed changes, a change the village guide drafted for this person"
 msgid "{name}, drafted by the guide"
 msgstr "{name}, redactado por la guía"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, the guide's first line before any question"
+msgid "Hello, {firstName}. What are we tending today?"
+msgstr "Hola, {firstName}. ¿Qué cuidamos hoy?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, the guide's first line before any question"
+msgid "Hello. What are we tending today?"
+msgstr "Hola. ¿Qué cuidamos hoy?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, a link's words: the Admin page"
+msgid "Admin"
+msgstr "Administración"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, a link's words: the review page"
+msgid "the review page"
+msgstr "la página de revisión"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, a link's words: the launch checklist page"
+msgid "the road to launch"
+msgstr "el camino al lanzamiento"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, a link's words: the module library page"
+msgid "the Module Library"
+msgstr "la Biblioteca de Módulos"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+msgctxt "guide dock, a link's words when nothing names the page"
+msgid "Open the page"
+msgstr "Abrir la página"

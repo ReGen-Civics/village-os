@@ -21,6 +21,22 @@ export const proposalHref = (p: Pick<HelperProposal, "key">): string =>
 /** One proposal as a mark, so a card can tell whether this exact change is waiting or saved. */
 export const proposalMarkOf = (p: Pick<HelperProposal, "key" | "to">): string => `${p.key}=${p.to}`;
 
+/**
+ * WHAT THE GUIDE SAYS SHE DOES AND READS, before the first question. The ONE
+ * place these sentences live: the helper panel and the guide's dock both draw
+ * this. They are true to the code as it stands (the tool layer's two readers
+ * and its refusals, server/routes/adminHelper.ts). When what she may read
+ * changes, change them here, once.
+ */
+export function WhatTheGuideReads() {
+  return (
+    <>
+      <p><Trans context="admin helper panel">Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide.</Trans></p>
+      <p><Trans context="admin helper panel">I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I can't help with choosing people for roles. Money stays with you too.</Trans></p>
+    </>
+  );
+}
+
 /** Off by the village's own switch, which ships off. Turning it on is the village's decision. */
 export function SwitchedOff() {
   return (

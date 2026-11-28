@@ -19,7 +19,7 @@
  * dock. The dock reads the status too, so a village that turns the dial off
  * again gets its launch guide back the same way.
  */
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import type { HelperStatus } from "@shared/adminHelper";
 import { LaunchGuide } from "@/components/journey/LaunchGuide";
 import { authToken } from "@/lib/gameApi";
@@ -38,8 +38,37 @@ function headerBottom(): number {
   return el ? Math.max(0, Math.round(el.getBoundingClientRect().bottom)) : 0;
 }
 
-export function JourneyGuide({ open, onClose, launched = false, admin = false }: { open: boolean; onClose: () => void; launched?: boolean; admin?: boolean }) {
+/** A launch row as the page holds it: where it is fixed, and the checklist's own words for that place. */
+export interface LaunchFix {
+  fixAt?: unknown;
+  fixLabel?: unknown;
+}
+
+/** Each row's address and the checklist's own name for it, so a reply that carries the address is linked by that name. */
+export function fixNames(fixes: readonly LaunchFix[] | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const f of fixes ?? []) {
+    if (typeof f?.fixAt === "string" && f.fixAt.startsWith("/") && typeof f.fixLabel === "string" && f.fixLabel.trim()) out[f.fixAt] = f.fixLabel.trim();
+  }
+  return out;
+}
+
+export function JourneyGuide({
+  open,
+  onClose,
+  launched = false,
+  admin = false,
+  fixes,
+}: {
+  open: boolean;
+  onClose: () => void;
+  launched?: boolean;
+  admin?: boolean;
+  /** The checklist's rows, when the page has them. */
+  fixes?: readonly LaunchFix[];
+}) {
   const token = authToken() ?? "";
+  const linkNames = useMemo(() => fixNames(fixes), [fixes]);
   const [dockOn, setDockOn] = useState<boolean>(() => readDockHint());
   // The status the launch guide's side read, handed to the dock so it is read once.
   const [fresh, setFresh] = useState<HelperStatus | null>(null);
@@ -96,6 +125,7 @@ export function JourneyGuide({ open, onClose, launched = false, admin = false }:
         onClose={onClose}
         initialStatus={fresh ?? undefined}
         onStatus={heard}
+        linkNames={linkNames}
         // A village still on the road opens wide; a running one opens at the side. A remembered choice beats both.
         defaultShape={launched ? "docked" : "expanded"}
       />
