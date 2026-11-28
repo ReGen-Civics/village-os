@@ -437,3 +437,38 @@ button.gd-stone-row:hover {
     transform: translateY(-2px);
   }
 }
+
+/* ---------- The frame: what you see, and the guide's dock ---------- */
+/* Narrow first: the dock is a block of its own above what you see, in both open states. */
+.gd-frame {
+  container-type: inline-size;
+}
+.gd-frame-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+.gd-frame-main,
+.gd-frame-dock {
+  min-width: 0;
+}
+.gd-frame-dock {
+  order: -1;
+}
+/* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. */
+@container (min-width: 64rem) {
+  .gd-frame[data-dock="docked"] .gd-frame-body {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+  }
+  .gd-frame[data-dock="docked"] .gd-frame-dock {
+    order: 0;
+  }
+  .gd-frame[data-dock="expanded"] .gd-frame-body {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+  .gd-frame-dock {
+    position: sticky;
+    top: var(--gd-frame-top, 0px);
+    align-self: start;
+  }
+}

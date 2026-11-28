@@ -16,7 +16,7 @@ import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 import type { ReactElement } from "react";
 import { GARDEN_PLACE_KEYS, gardenSpriteUrl } from "@shared/gardenArt";
-import { Circle, Desk, Fireflies, Garden, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, type GardenPlaceState, type Stone } from "./index";
+import { Circle, Desk, Fireflies, Garden, GardenFrame, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, useGardenDock, type GardenPlaceState, type Stone } from "./index";
 import { cssUrl, groundsPaths } from "./Grounds";
 import { forgetPageCopy } from "./gardenMemory";
 import { GARDEN_PLACES } from "./places";
@@ -381,5 +381,121 @@ describe("Desk", () => {
     expect(rows.map((a) => a.getAttribute("data-place"))).toEqual([...GARDEN_PLACE_KEYS]);
     expect(within(desk).getByRole("link", { name: "The Hall, 3 waiting" }).getAttribute("aria-current")).toBe("page");
     expect(rows.filter((a) => a.getAttribute("aria-current") === "page")).toHaveLength(1);
+  });
+});
+
+describe("StatusBand: the season and the moon", () => {
+  it("says the season and the moon in the caller's words, with the moon drawing as decoration", () => {
+    show(<StatusBand label="Setup" season="Season of Foundations" moon="Moon 3, waxing" moonGlyph={<svg data-testid="moon" />} />);
+    const cycle = screen.getByTestId("garden-band-cycle");
+    expect(cycle.textContent).toBe("Season of Foundations · Moon 3, waxing");
+    expect(screen.getByTestId("moon").parentElement?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("says one of them alone, and draws nothing when given neither", () => {
+    const first = show(<StatusBand label="Setup" moon="Moon 3" />);
+    expect(screen.getByTestId("garden-band-cycle").textContent).toBe("Moon 3");
+    first.unmount();
+    show(<StatusBand label="Setup" season="  " />);
+    expect(screen.queryByTestId("garden-band-cycle")).toBeNull();
+  });
+});
+
+describe("GardenFrame: one place for the guide's dock", () => {
+  const frame = (state: "closed" | "docked" | "expanded" | undefined, dock: ReactElement | undefined = <p>the guide</p>) =>
+    show(
+      <GardenFrame band={<StatusBand label="Setup" />} dock={dock} dockState={state}>
+        <p>the grounds</p>
+      </GardenFrame>,
+    );
+
+  it("draws the dock in a named region beside what you see, and says which state it is in", () => {
+    const { container } = frame("docked");
+    expect(container.querySelector(".gd-frame")?.getAttribute("data-dock")).toBe("docked");
+    const dock = screen.getByRole("complementary", { name: "Your guide" });
+    expect(within(dock).getByText("the guide")).toBeTruthy();
+    expect(screen.getByText("the grounds")).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Where the village stands" })).toBeTruthy();
+  });
+
+  it("keeps what you see on the page when she is expanded: the conversation leads, the grounds stay", () => {
+    const { container } = frame("expanded");
+    expect(container.querySelector(".gd-frame")?.getAttribute("data-dock")).toBe("expanded");
+    expect(screen.getByText("the guide")).toBeTruthy();
+    expect(screen.getByText("the grounds")).toBeTruthy();
+  });
+
+  it("does not draw the dock at all when it is closed, or when no dock is given", () => {
+    const closed = frame("closed");
+    expect(screen.queryByRole("complementary")).toBeNull();
+    expect(screen.queryByText("the guide")).toBeNull();
+    expect(screen.getByText("the grounds")).toBeTruthy();
+    closed.unmount();
+    const { container } = show(
+      <GardenFrame dockState="docked">
+        <p>the grounds</p>
+      </GardenFrame>,
+    );
+    expect(container.querySelector(".gd-frame")?.getAttribute("data-dock")).toBe("closed");
+    expect(screen.queryByRole("complementary")).toBeNull();
+  });
+
+  it("takes the caller's own name for the dock", () => {
+    show(
+      <GardenFrame dock={<p>the guide</p>} dockLabel="Sol, your guide">
+        <p>the grounds</p>
+      </GardenFrame>,
+    );
+    expect(screen.getByRole("complementary", { name: "Sol, your guide" })).toBeTruthy();
+  });
+});
+
+function DockProbe({ firstEvening }: { firstEvening?: boolean }) {
+  const dock = useGardenDock({ firstEvening });
+  return (
+    <div>
+      <p data-testid="dock-state">{dock.state}</p>
+      <button type="button" onClick={() => dock.setState("expanded")}>
+        expand
+      </button>
+      <button type="button" onClick={() => dock.setState("closed")}>
+        close
+      </button>
+    </div>
+  );
+}
+
+function DockEcho() {
+  return <p data-testid="dock-echo">{useGardenDock().state}</p>;
+}
+
+describe("useGardenDock: where a person left the guide", () => {
+  it("opens docked for a running admin, and expanded on a new village's first evening", () => {
+    const running = show(<DockProbe />);
+    expect(screen.getByTestId("dock-state").textContent).toBe("docked");
+    running.unmount();
+    show(<DockProbe firstEvening />);
+    expect(screen.getByTestId("dock-state").textContent).toBe("expanded");
+  });
+
+  it("remembers the person's last choice over the default, in their own browser", () => {
+    const first = show(<DockProbe firstEvening />);
+    fireEvent.click(screen.getByRole("button", { name: "close" }));
+    expect(screen.getByTestId("dock-state").textContent).toBe("closed");
+    first.unmount();
+    forgetPageCopy();
+    show(<DockProbe firstEvening />);
+    expect(screen.getByTestId("dock-state").textContent).toBe("closed");
+  });
+
+  it("keeps two callers on one page in step", () => {
+    show(
+      <>
+        <DockProbe />
+        <DockEcho />
+      </>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "expand" }));
+    expect(screen.getByTestId("dock-echo").textContent).toBe("expanded");
   });
 });
