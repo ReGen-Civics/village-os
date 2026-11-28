@@ -22,6 +22,11 @@
  * first in the document too, so the reading order and the tab order match
  * what the eye meets; only the wide docked state draws her second.
  *
+ * THE SLOT HAS ITS SIZE AND ITS EDGE FROM THE FRAME (garden.css): it
+ * fills the window under the band in two columns and is a block of a bounded
+ * height in one, so what is passed as `dock` only has to fill it. A host whose
+ * band is taller says so with `--gd-frame-above`.
+ *
  * THE FRAME OWNS THE PLACE, NEVER THE DOCK. Pass any element as `dock`: the
  * guide's own component draws inside the slot and reads `useGardenDock` for
  * the state its expand and close buttons change. The frame fetches nothing.
