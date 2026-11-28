@@ -153,15 +153,20 @@ describe("the launch proposal's frozen document", () => {
     expect(members).not.toContain("founding members are on the roll");
   });
 
-  it("a RATIFYING vote says issuance does not restart, and carries no sentence that says it starts (Rye, 2026-11-27)", () => {
+  it("a village ALREADY ISSUING keeps the name Start the Game, is told what was already running, and is never told issuance starts", () => {
+    // Rye, 2026-11-27: the vote "does not restart issuance". Rye, 2026-11-28: "Let's stay with start the game and
+    // have it as the 'birthday of the game' going forward".
     const doc = launchProposalDoc({ ...BASE, slate: [{ id: "u1", name: "Wren" }], ratifying: { issuingSince: "2026-03-14T09:26:53Z" } });
-    expect(doc).toContain("# Ratify the launch");
-    expect(doc).toContain("Larksfield has been issuing tokens since 2026-03-14, from before the launch vote existed. This vote puts its launch on the record.");
-    expect(doc).toContain("## What does not change");
-    expect(doc).toContain("Token issuance does not restart, and the day it began stays 2026-03-14. Nothing already issued changes, and nobody's balance moves because of this vote.");
-    expect(doc).toContain("Voting yes is voting for this list as well as for ratifying the launch.");
-    // EVERY "ISSUANCE STARTS" SENTENCE IS REPLACED FOR THIS CASE.
-    for (const gone of ["# Start the Game", "This vote is what starts it", "Token issuance turns on", "nothing can be issued to anybody", "as well as for starting the Game"]) {
+    expect(doc).toContain("# Start the Game");
+    expect(doc).toContain(
+      "Larksfield has been issuing tokens since 2026-03-14, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.",
+    );
+    expect(doc).toContain("## What was already running");
+    expect(doc).toContain("Token issuance. It does not restart, and the day it began stays 2026-03-14. Nothing already issued changes, and nobody's balance moves because of this vote.");
+    expect(doc).toContain("That day is the Game's birthday, and Moon 1 is the moon it falls in.");
+    expect(doc).toContain("Voting yes is voting for this list as well as for starting the Game.");
+    // EVERY "ISSUANCE STARTS" SENTENCE IS REPLACED FOR THIS CASE, and the word Rye turned down is nowhere.
+    for (const gone of ["This vote is what starts it", "Token issuance turns on", "nothing can be issued to anybody", "Ratify", "ratif"]) {
       expect(doc, gone).not.toContain(gone);
     }
     // What the launch hands over and who it seats is the same act, so those sections are unchanged.
@@ -172,12 +177,12 @@ describe("the launch proposal's frozen document", () => {
     // With no readable date it still says the truth and names no day.
     const undated = launchProposalDoc({ ...BASE, ratifying: { issuingSince: null } });
     expect(undated).toContain("Larksfield was already issuing tokens before the launch vote existed.");
-    expect(undated).toContain("Token issuance does not restart, and the day it began does not move.");
+    expect(undated).toContain("Token issuance. It does not restart, and the day it began does not move.");
     // Control: a first launch reads exactly as it did.
     const first = launchProposalDoc(BASE);
     expect(first).toContain("# Start the Game");
     expect(first).toContain("Token issuance turns on.");
-    expect(first).not.toContain("Ratify");
+    expect(first).not.toContain("What was already running");
   });
 
   it("says which season the carry begins, in a section of its own, straight after what changes (Rye, 2026-11-27)", () => {

@@ -200,13 +200,6 @@ export interface LaunchSeatingDeps {
   audit(text: string): void;
   /** The admin bell, for the two things only an administrator can fix. */
   notifyAdmins(title: string, dedupeKey: string): Promise<void>;
-  /**
-   * The vote that carried was a RATIFYING one: the village was already
-   * issuing (Rye, 2026-11-27; server/lib/launchRatify.ts). Every sentence here
-   * then says the launch was ratified, never that the Game started. Absent
-   * reads as a first launch.
-   */
-  ratifying?: boolean;
 }
 
 export interface LaunchSeatingOutcome {
@@ -250,24 +243,6 @@ export interface LaunchSeatingOutcome {
 }
 
 /**
- * WHAT THE VILLAGE DID, IN THE WORDS OF THE VOTE IT HELD.
- *
- * A first launch started the Game. A ratifying vote, held by a village that
- * was already issuing (Rye, 2026-11-27; server/lib/launchRatify.ts), started
- * nothing: it put the launch on the record. Every sentence this file writes
- * about the moment opens with one of these two, so a ratifying village is
- * never told its Game started on the day of the vote.
- */
-function villageDid(ratifying: boolean): string {
-  return ratifying ? "The village ratified its launch" : "The village started its Game";
-}
-
-/** The same fact, as the opening of an admin notice. */
-function launchHappened(ratifying: boolean): string {
-  return ratifying ? "The launch was ratified" : "The Game started";
-}
-
-/**
  * What a village reads when its calendar could not give the seat a term.
  *
  * The refusal's own sentence is carried through rather than rewritten, because
@@ -275,9 +250,9 @@ function launchHappened(ratifying: boolean): string {
  * names the exact admin screen. This adds only what that sentence cannot know:
  * that the Game did start, and what the village can do next.
  */
-export function stewardsHeld(refusal: string, ratifying = false): string {
+export function stewardsHeld(refusal: string): string {
   return (
-    `${villageDid(ratifying)}, and nobody was seated as a ${STEWARD_ROLE_NAME}. ${refusal} ` +
+    `The village started its Game, and nobody was seated as a ${STEWARD_ROLE_NAME}. ${refusal} ` +
     `Until then the role stands empty, which stops nothing: decisions land at their landing time either way. ` +
     `The village can vote anybody into the role whenever it likes.`
   );
@@ -317,14 +292,13 @@ export function stewardsHeld(refusal: string, ratifying = false): string {
  * cannot reach. Read the crossing in `seatCatalystsAsStewards` for why the
  * last of those is true.
  */
-export function nobodyStood(named: number, declined: number, ratifying = false): string {
-  const did = villageDid(ratifying);
+export function nobodyStood(named: number, declined: number): string {
   const opening =
     named === 0
-      ? `${did}, and its proposal named nobody for the ${STEWARD_ROLE_NAME} role.`
+      ? `The village started its Game, and its proposal named nobody for the ${STEWARD_ROLE_NAME} role.`
       : declined >= named
-        ? `${did}, and everybody its proposal named for the ${STEWARD_ROLE_NAME} role declined it.`
-        : `${did}, and nobody its proposal named for the ${STEWARD_ROLE_NAME} role accepted it.`;
+        ? `The village started its Game, and everybody its proposal named for the ${STEWARD_ROLE_NAME} role declined it.`
+        : `The village started its Game, and nobody its proposal named for the ${STEWARD_ROLE_NAME} role accepted it.`;
   return (
     `${opening} ` +
     `The role stands empty, which stops nothing: decisions land at their landing time either way. ` +
@@ -354,10 +328,10 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
 
   const term = resolveSeatTerm({ calendar: deps.calendar, capAtSeasonEnd: true, now });
   if (!term.ok) {
-    const held = stewardsHeld(term.error, deps.ratifying === true);
+    const held = stewardsHeld(term.error);
     await deps.addActivity(held, STEWARD_ROLE_ID);
     await deps.notifyAdmins(
-      `${launchHappened(deps.ratifying === true)} with nobody in the ${STEWARD_ROLE_NAME} role`,
+      `The Game started with nobody in the ${STEWARD_ROLE_NAME} role`,
       `bal:${deps.ballotId}:launch-seating-held`,
     );
     return { ...nothing, held };
@@ -368,7 +342,6 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
       currentSeasonId: term.seasonId,
       seasonEndsAt: term.endsAt,
       now,
-      ratifying: deps.ratifying === true,
     });
     // Reload whether or not anything was seated: the role and its capability
     // can move on a run that seats nobody new.
@@ -383,10 +356,10 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
      * yes. Reported rather than swallowed, because the alternative is a
      * village that hears nothing about an empty seat.
      */
-    const held = stewardsHeld(String(report.error ?? ""), deps.ratifying === true);
+    const held = stewardsHeld(String(report.error ?? ""));
     await deps.addActivity(held, STEWARD_ROLE_ID);
     await deps.notifyAdmins(
-      `${launchHappened(deps.ratifying === true)} with nobody in the ${STEWARD_ROLE_NAME} role`,
+      `The Game started with nobody in the ${STEWARD_ROLE_NAME} role`,
       `bal:${deps.ballotId}:launch-seating-held`,
     );
     return { ...nothing, held, report };
@@ -423,7 +396,7 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
    * on the pulse, the same way it hears everything else about the launch.
    */
   if (!holdsTheSeat) {
-    const held = nobodyStood(report.slate.length, report.declined.length, deps.ratifying === true);
+    const held = nobodyStood(report.slate.length, report.declined.length);
     await deps.addActivity(held, STEWARD_ROLE_ID);
     return {
       ok: true,
@@ -459,9 +432,9 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
     await deps.notify({
       userId,
       type: "role_appointed",
-      title: `${villageDid(deps.ratifying === true)}, and you hold the ${STEWARD_ROLE_NAME} role`,
+      title: `The village started its Game, and you hold the ${STEWARD_ROLE_NAME} role`,
       body:
-        `The launch proposal named you for this role, you accepted, and ${deps.ratifying === true ? "the village ratified its launch" : "the village started its Game"}, so you hold it. ` +
+        `The launch proposal named you for this role, you accepted, and the village started its Game, so you hold it. ` +
         `You can stop a decision the village has already carried, inside the window before it lands, and you have to say why. ` +
         `The role also holds every power this village has to give, apart from any the stewards chose to hand to the village at launch, until it hands them on. ` +
         `The role ends on ${term.endsOn}, with the season, and after that the village votes on who holds it.`,

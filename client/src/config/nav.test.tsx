@@ -15,7 +15,7 @@
  * appearing for a member, and these tests would say so.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
 
 const authMock = vi.fn();
@@ -402,6 +402,25 @@ describe("the dropdowns' folders", () => {
     const footer = document.querySelector("footer")!;
     expect(Array.from(footer.querySelectorAll("h2")).map((h) => h.textContent)).toEqual(["Village", "Community", "Join", "Govern", "Connect"]);
     expect(footer.querySelector('a[href="/governance/work"]')).toBeNull();
+  });
+
+  /* The search lane's empty state opens the menu through one window event (27 Nov 2026). */
+  it("opens the menu on village:open-menu, and says it will while mounted", () => {
+    const ready = vi.fn();
+    window.addEventListener("village:open-menu-ready", ready);
+    shell(null);
+    expect((window as Window & { __openMenuReady?: boolean }).__openMenuReady).toBe(true);
+    expect(ready).toHaveBeenCalledTimes(1);
+    expect((ready.mock.calls[0]![0] as CustomEvent).detail).toBe(true);
+    expect(document.getElementById("mobile-menu")).toBeNull();
+    act(() => {
+      window.dispatchEvent(new Event("village:open-menu"));
+    });
+    expect(document.getElementById("mobile-menu")).toBeTruthy();
+    cleanup();
+    expect((window as Window & { __openMenuReady?: boolean }).__openMenuReady).toBeUndefined();
+    expect((ready.mock.calls.at(-1)![0] as CustomEvent).detail).toBe(false);
+    window.removeEventListener("village:open-menu-ready", ready);
   });
 
   it("heads each dropdown with what its group holds, in words", () => {

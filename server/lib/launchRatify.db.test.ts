@@ -83,37 +83,28 @@ describe("which ballot is a ratifying one, read from the fact", () => {
     expect(issuingSinceDay(null)).toBe("");
     expect(issuingSinceDay("soon")).toBe("");
   });
-  it("says ratify where a first launch says issuance starts, in every sentence it holds", () => {
-    const all = [
-      RATIFY_WORDS.title("Wealden"), RATIFY_WORDS.deciding, RATIFY_WORDS.carriedTitle("Ratify the launch of Wealden"),
-      RATIFY_WORDS.carriedBody(ISSUING_SINCE), RATIFY_WORDS.carriedBody(null), RATIFY_WORDS.carriedPulse,
-      RATIFY_WORDS.shortTitle, RATIFY_WORDS.shortBody, RATIFY_WORDS.notRatifiedTitle,
-    ];
+  it("tells a village already issuing what was already running, and never that issuance starts", () => {
+    const all = [RATIFY_WORDS.carriedBody("Wealden", ISSUING_SINCE), RATIFY_WORDS.carriedBody("Wealden", null), RATIFY_WORDS.shortBody];
     for (const s of all) {
-      expect(s, s).not.toMatch(/start(s|ed)? (its|the) Game/i);
       expect(s, s).not.toMatch(/issuance (is )?(open|opens|turns on|starts) from today/i);
       expect(s, s).not.toMatch(/[–—]/);
+      expect(s, s).not.toMatch(/ratif/i);
     }
-    expect(RATIFY_WORDS.carriedBody(ISSUING_SINCE)).toBe("The launch is on the record. Token issuance began on 2026-03-14, and that date has not moved.");
+    // One line of ceremony, then the fact (Rye, 2026-11-28: the day it carries is the birthday of the Game).
+    expect(RATIFY_WORDS.carriedBody("Wealden", ISSUING_SINCE)).toBe(
+      "The Game has begun. Happy birthday, Wealden. Token issuance was already open, since 2026-03-14, and that day has not moved.",
+    );
+    expect(RATIFY_WORDS.carriedBody("Wealden", null)).toBe(
+      "The Game has begun. Happy birthday, Wealden. Token issuance was already open, and nothing about it has moved.",
+    );
   });
 });
 
-describe("the steward seating, on a ratifying carry", () => {
-  it("says the launch was ratified in every sentence it writes, and never that the Game started", () => {
-    const ratified = [
-      stewardsHeld("The running season has no end date.", true),
-      nobodyStood(0, 0, true),
-      nobodyStood(2, 2, true),
-      nobodyStood(2, 0, true),
-    ];
-    for (const s of ratified) {
-      expect(s, s).toContain("The village ratified its launch");
-      expect(s, s).not.toContain("started its Game");
-    }
-    // Control: a first launch reads exactly as it did, and the default is a first launch.
+describe("the steward seating has one set of words", () => {
+  it("says the village started its Game whichever vote carried, because the vote keeps its name (Rye, 2026-11-28)", () => {
     for (const s of [stewardsHeld("The running season has no end date."), nobodyStood(0, 0), nobodyStood(2, 2), nobodyStood(2, 0)]) {
       expect(s, s).toContain("The village started its Game");
-      expect(s, s).not.toContain("ratified");
+      expect(s, s).not.toMatch(/ratif/i);
     }
   });
 });

@@ -95,7 +95,7 @@ export default function Propose() {
           </>
         ) : (
           <>
-            <h1 className="mt-3 font-display text-3xl font-bold text-foreground sm:text-4xl"><Trans context="Propose, h1">Start a proposal</Trans></h1>
+            <h1 className="mt-3 font-display text-3xl font-bold text-foreground sm:text-4xl"><Trans context="Propose, h1">Make a proposal</Trans></h1>
             <p className="mt-2 max-w-2xl text-muted-foreground leading-relaxed">
               <Trans context="Propose, p">Nothing you write here is public until you publish it, and you can leave at any point and come back to the same step on any device.
             </Trans></p>

@@ -44,9 +44,9 @@ export default function GovernanceTabs({ signedIn }: { signedIn: boolean }) {
   };
   return (
     <nav ref={navRef} aria-label={t({ context: "governance: the views, read aloud", message: "Governance views" })} className="-mx-1 flex gap-1 overflow-x-auto border-b border-border pb-2">
-      {tab("/governance", <Trans context="governance: a view">Now</Trans>)}
+      {tab("/governance", <Trans context="governance: a view">What's happening now</Trans>)}
       {tab("/governance/decisions", <Trans context="governance: a view">Decisions</Trans>)}
-      {signedIn ? tab("/governance/work", <Trans context="governance: a view">Your work</Trans>) : null}
+      {signedIn ? tab("/governance/work", <Trans context="governance: a view">Waiting on you</Trans>) : null}
       {signedIn ? tab("/governance/treasury", <Trans context="governance: a view">Treasury</Trans>) : null}
       {tab("/governance/how", <Trans context="governance: a view">How we work together</Trans>)}
     </nav>

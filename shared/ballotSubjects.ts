@@ -264,17 +264,10 @@ function countWord(n: number): string {
  * actually holds. The registry's own `why` is this sentence at the shipped
  * values, so the default and a village's own reading cannot drift apart.
  */
-export function launchRuleSentence(rule: {
-  yesNeeded: number;
-  roll: LaunchRollKind;
-  /**
-   * The village is already issuing, so this vote ratifies its launch and
-   * starts nothing (server/lib/launchRatify.ts). Absent reads as a first launch.
-   */
-  ratifying?: boolean;
-}): string {
+export function launchRuleSentence(rule: { yesNeeded: number; roll: LaunchRollKind }): string {
   const n = countWord(rule.yesNeeded);
-  const what = rule.ratifying ? "ratifying the launch" : "starting the Game";
+  // One name for every village, issuing or not (Rye, 2026-11-28: "Let's stay with start the game").
+  const what = "starting the Game";
   if (rule.roll === "members") {
     return `Every member who holds a voice votes on ${what}, each counted once. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`;
   }

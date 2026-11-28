@@ -50,7 +50,7 @@ describe("a circle page while the map runs", () => {
   it("keeps the trail on the page's own entry", () => {
     at("/circles/water");
     const trail = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles");
+    expect(trail.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles & Roles / Circles"); // the full trail names the folder (27 Nov 2026)
     expect(within(trail).getByRole("link", { name: "Circles" }).getAttribute("href")).toBe("/circles");
   });
 });
