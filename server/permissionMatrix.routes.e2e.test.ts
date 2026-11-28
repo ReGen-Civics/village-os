@@ -75,8 +75,10 @@
  *   3. When the walk is over, every person is asked again who they are
  *      (account role, admin access, the powers they hold). A probe that
  *      changed anybody fails here.
- *   4. The file's last block acts for real: it drives the one route a ruling
- *      has tightened with real rows. It runs after the snapshot is compared.
+ *   4. The file's last block acts for real: it drives the launch row route
+ *      (`POST /api/admin/launch/confirm`) with real rows, as everybody the
+ *      admin gate admits and everybody it refuses, and puts each row back.
+ *      It runs after the snapshot is compared.
  *
  * ── WHAT IT CANNOT SEE ─────────────────────────────────────────────────────
  *
@@ -764,6 +766,45 @@ describe.skipIf(!DB_CONFIGURED)("whoever the admin gate admits answers a launch 
     }
     // Three people answered, and each answer was attributed to the one who gave it.
     expect(names.size, `the three answers were attributed to three people: ${[...names].join(", ")}`).toBe(ADMITTED.length);
+  });
+
+  /**
+   * THE RULING, PINNED AS BEHAVIOUR. Rye, 27 Nov 2026, on marking a launch step done, taking that back and
+   * declining: "Admins can too". Opening the vote, the steward list and the hand-over stay a founder's.
+   *
+   * The snapshot above only says the server agrees with a table, and a table can agree with the wrong server:
+   * for a day it held 403 for an admin on this route and every check was green. So this says what the table
+   * must hold, in the ruling's own terms: an admin who is NOT a founder answers a launch row, and each door that
+   * stays a founder's refuses that same admin by name while it lets the founder through to its own checks.
+   */
+  it('"Admins can too": an admin who is not a founder marks a launch step done, and the founders\' doors still refuse that admin', async () => {
+    const admin = await whoIs("admin");
+    expect(admin.role, "the admin in this fixture is an admin by role, and not a founder").toBe("admin");
+    expect((await whoIs("founder")).role).toBe("founder");
+
+    // Marking a step done, and taking it back: 200 for an admin who is not a founder.
+    const done = await confirm({ id: MANUAL, done: true }, "admin");
+    expect(done.status, `an admin marks a launch step done: ${done.text.slice(0, 300)}`).toBe(200);
+    expect((await row(MANUAL)).state).toBe("ok");
+    const back = await confirm({ id: MANUAL, done: false }, "admin");
+    expect(back.status, `an admin takes it back: ${back.text.slice(0, 300)}`).toBe(200);
+    expect((await row(MANUAL)).confirmedBy).toBeNull();
+
+    // Opening the vote is a founder's act. The steward list is named in the same call (migration 0220), so it
+    // stands behind the same door: with a list or without one, the admin is refused before the body is read.
+    for (const body of [{}, { stewards: [] }, { stewards: ["someone"] }]) {
+      const asAdmin = await call("POST", "/api/admin/launch/propose", body, tokens.admin);
+      expect(asAdmin.status, `an admin opening the vote with ${JSON.stringify(body)}: ${asAdmin.text.slice(0, 200)}`).toBe(403);
+      expect(asAdmin.json?.error).toBe("Asking the village to start its Game is a founder's act");
+    }
+    const founderOpens = await call("POST", "/api/admin/launch/propose", {}, tokens.founder);
+    expect([401, 403], `the founder is let through that door to its own checks: ${founderOpens.status} ${founderOpens.text.slice(0, 200)}`).not.toContain(founderOpens.status);
+
+    // Handing a power to the village is a founder's act.
+    const adminHands = await call("POST", "/api/governance/powers/hand-to-village", {}, tokens.admin);
+    expect(adminHands.status, `an admin handing a power over: ${adminHands.text.slice(0, 200)}`).toBe(403);
+    const founderHands = await call("POST", "/api/governance/powers/hand-to-village", {}, tokens.founder);
+    expect([401, 403], `the founder is let through that door to its own checks: ${founderHands.status} ${founderHands.text.slice(0, 200)}`).not.toContain(founderHands.status);
   });
 
   it("an admin and a group holder read the same rows a founder does", async () => {
