@@ -1,5 +1,5 @@
 /**
- * EVERY GET ROUTE THE SERVER REGISTERS, READ FROM THE SOURCE, for tests only.
+ * EVERY ROUTE THE SERVER REGISTERS, READ FROM THE SOURCE, for tests only.
  *
  * The anonymous PII walker (server/anonymousPii.routes.e2e.test.ts) calls
  * every route a signed-out visitor can reach and reads what comes back. A
@@ -8,6 +8,10 @@
  * as private. So the list is derived: `server/index.ts` and every module in
  * `server/routes/` are parsed with the TypeScript compiler and each
  * `app.get(<path>, ...)` call is read.
+ *
+ * The permission matrix (server/permissionMatrix.routes.e2e.test.ts) needs
+ * the same list for every verb, so `deriveRoutes` reads `get`, `post`, `put`,
+ * `patch` and `delete`, and `deriveGetRoutes` is its GET half.
  *
  * WHAT THE PATH MAY BE. A string literal, a template literal, a constant that
  * holds one (in the same file or imported from a relative module, one hop at
@@ -144,41 +148,78 @@ function resolve(node: ts.Expression, abs: string, depth = 0): string[] | null {
   return null;
 }
 
+/** The verbs a route is registered under. `app.all` and `app.use` mount middleware and catch-alls, never one route. */
+export const ROUTE_METHODS = ["get", "post", "put", "patch", "delete"] as const;
+export type RouteMethod = Uppercase<(typeof ROUTE_METHODS)[number]>;
+
+export interface DerivedMethodRoute extends DerivedRoute {
+  method: RouteMethod;
+}
+
+export interface UnresolvedMethodRoute extends UnresolvedRoute {
+  method: RouteMethod;
+}
+
+/** Every route module, tests excluded: `server/index.ts`, then everything under `server/routes/`, at any depth. */
+function routeFiles(root: string): string[] {
+  const under = (dir: string, rel: string): string[] =>
+    fs
+      .readdirSync(dir, { withFileTypes: true })
+      .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+      .flatMap((e) =>
+        e.isDirectory()
+          ? under(path.join(dir, e.name), `${rel}/${e.name}`)
+          : e.name.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(e.name)
+            ? [`${rel}/${e.name}`]
+            : [],
+      );
+  return ["server/index.ts", ...under(path.join(root, "server", "routes"), "server/routes")];
+}
+
 /**
- * Every `app.get(path, handler)` in `server/index.ts` and `server/routes/*.ts`
- * (tests excluded), with the source line, plus every registration whose path
- * this reader could not read.
+ * Every `app.<verb>(path, handler)` in `server/index.ts` and under
+ * `server/routes/` (tests excluded), for the five verbs a route can be
+ * registered under, with the source line, plus every registration whose path
+ * this reader could not read. The permission matrix
+ * (server/permissionMatrix.routes.e2e.test.ts) is built from this list.
  */
-export function deriveGetRoutes(root: string): { routes: DerivedRoute[]; unresolved: UnresolvedRoute[] } {
-  const routeDir = path.join(root, "server", "routes");
-  const rels = [
-    "server/index.ts",
-    ...fs
-      .readdirSync(routeDir)
-      .filter((n) => n.endsWith(".ts") && !/\.(test|spec)\.ts$/.test(n))
-      .sort()
-      .map((n) => `server/routes/${n}`),
-  ];
-  const routes: DerivedRoute[] = [];
-  const unresolved: UnresolvedRoute[] = [];
-  for (const rel of rels) {
+export function deriveRoutes(root: string): { routes: DerivedMethodRoute[]; unresolved: UnresolvedMethodRoute[] } {
+  const verbs = new Set<string>(ROUTE_METHODS);
+  const routes: DerivedMethodRoute[] = [];
+  const unresolved: UnresolvedMethodRoute[] = [];
+  for (const rel of routeFiles(root)) {
     const abs = path.join(root, rel);
     const sf = sourceFile(abs);
     walk(sf, (n) => {
       if (!ts.isCallExpression(n)) return;
       const callee = n.expression;
-      if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== "get") return;
+      if (!ts.isPropertyAccessExpression(callee) || !verbs.has(callee.name.text)) return;
       if (!ts.isIdentifier(callee.expression) || callee.expression.text !== "app") return;
       // `app.get("setting")` with one argument reads an Express setting, never a route.
       if (n.arguments.length < 2) return;
+      const method = callee.name.text.toUpperCase() as RouteMethod;
       const line = sf.getLineAndCharacterOfPosition(n.getStart()).line + 1;
       const paths = resolve(n.arguments[0], abs);
       if (!paths) {
-        unresolved.push({ file: rel, line, text: n.arguments[0].getText().slice(0, 120) });
+        unresolved.push({ method, file: rel, line, text: n.arguments[0].getText().slice(0, 120) });
         return;
       }
-      for (const p of paths) routes.push({ path: p, file: rel, line });
+      for (const p of paths) routes.push({ method, path: p, file: rel, line });
     });
   }
   return { routes, unresolved };
+}
+
+/**
+ * Every `app.get(path, handler)` in `server/index.ts` and `server/routes/`
+ * (tests excluded), with the source line, plus every registration whose path
+ * this reader could not read.
+ */
+export function deriveGetRoutes(root: string): { routes: DerivedRoute[]; unresolved: UnresolvedRoute[] } {
+  const all = deriveRoutes(root);
+  const strip = <T extends { method: RouteMethod }>({ method: _method, ...rest }: T) => rest;
+  return {
+    routes: all.routes.filter((r) => r.method === "GET").map(strip),
+    unresolved: all.unresolved.filter((r) => r.method === "GET").map(strip),
+  };
 }
