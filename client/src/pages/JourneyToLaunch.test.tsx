@@ -621,7 +621,7 @@ describe("the page offers only what the server would allow", () => {
   const candidates = { "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } } };
   const FACTS_URL = "/api/admin/launch/facts";
 
-  it("gives a village that is issuing with no vote held its plain name, its rows, and no button the server refuses", async () => {
+  it("gives a village that is issuing with no vote held its plain name, its rows, and its Start the Game vote", async () => {
     auth.current = { user: founder, loading: false };
     answer({
       "/api/admin/launch": { status: 200, body: ready },
@@ -632,14 +632,17 @@ describe("the page offers only what the server would allow", () => {
     await waitFor(() => expect(screen.getByTestId("start-already-issuing")).toBeTruthy());
     expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Issuing and vote not held");
     const told = screen.getByTestId("start-already-issuing");
-    // In the village's own word for its tokens (the generic word while no config names one), and with no promise of "yet".
-    expect(told.textContent).toContain("This village is already issuing tokens, and no launch vote has carried, so this page cannot open the vote.");
-    expect(told.textContent).not.toMatch(/\byet\b/);
-    // It does not end in a dead end: the village can change this by its own vote, and the sentence points to where.
-    expect(told.textContent).toContain("by its highest vote");
-    expect(screen.getByRole("link", { name: "Open the game mechanics" }).getAttribute("href")).toBe("/governance/how#game-mechanics");
-    // The dead button: Start the Game used to show here, and POST /launch/propose answered 409.
-    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+    // In the village's own word for its tokens (the generic word while no config names one). It says what does
+    // not restart and what begins, and never that issuance starts.
+    expect(told.textContent).toContain("This village has been issuing tokens since");
+    expect(told.textContent).toContain("and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.");
+    expect(told.textContent).not.toMatch(/ratif/i);
+    expect(told.textContent).not.toMatch(/issuance (starts|turns on|opens)/i);
+    // The server lets this village hold its vote once (server/lib/launchRatify.ts), so the page offers the button
+    // it used to hide. The dead end is gone the other way: there is no "cannot open the vote" sentence left.
+    expect(told.textContent).not.toContain("cannot open the vote");
+    const ask = screen.getByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
     // Its checklist is still open, so its rows can still be answered.
     expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
     expect(calls.find((c) => c.url === FACTS_URL)?.init?.headers?.Authorization, "the facts read carries the token").toBe("Bearer a-token");

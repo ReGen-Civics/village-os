@@ -1,0 +1,66 @@
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#. placeholder {0}: vote.onTheRoll
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, p"
+msgid "{0} people are on its roll today, and the vote carries without waiting for its window to end."
+msgstr "Hoy hay {0} personas en su padrón, y la votación se aprueba sin esperar a que termine su plazo."
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, a past launch vote"
+msgid "too few on the roll said yes"
+msgstr "muy pocas personas del padrón dijeron que sí"
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, confirm before opening the launch vote"
+msgid "Open the vote on starting the Game? It carries the moment enough of its roll have said yes, unless somebody on it has said no. It does not wait for its window to end."
+msgstr "¿Abrir la votación para empezar el Juego? Se aprueba en el momento en que suficientes personas de su padrón hayan dicho que sí, salvo que alguna haya dicho que no. La votación se cierra entonces, antes de que termine su plazo."
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_min_electorate, label"
+msgid "Yeses it takes to launch"
+msgstr "Síes necesarios para el lanzamiento"
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_min_electorate, description"
+msgid "How many of the people the launch asks must say yes for the village to start its Game. The vote cannot open with fewer than this many on its roll, and it carries the moment this many have said yes, unless somebody on the roll has said no. The default is three, and it is never fewer. A founder sets it before the Game starts. After that it moves only by a vote at the highest tier your village works at."
+msgstr "Cuántas de las personas a quienes se consulta en el lanzamiento deben decir que sí para que la aldea empiece su Juego. La votación no se abre con menos personas que estas en su padrón, y se aprueba en el momento en que esta cantidad haya dicho que sí, salvo que alguien del padrón haya dicho que no. El valor por defecto es tres, y nunca es menor. Una persona fundadora lo fija antes de que empiece el Juego. Después solo cambia con una votación del nivel más alto con el que trabaja su aldea."
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, label"
+msgid "Who the launch vote asks"
+msgstr "A quién consulta la votación de lanzamiento"
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, description"
+msgid "Who is on the roll when the village votes to start its Game. Each person on it counts once, and a no from any one of them holds the vote until they change their answer. A founder sets this before the Game starts. After that it moves only by a vote at the highest tier your village works at, which every member answers."
+msgstr "Quién está en el padrón cuando la aldea vota para empezar su Juego. Cada persona cuenta una vez, y un no de cualquiera de ellas detiene la votación hasta que cambie su respuesta. Una persona fundadora lo fija antes de que empiece el Juego. Después solo cambia con una votación del nivel más alto con el que trabaja su aldea, que responde cada miembro."
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, choice founders, label"
+msgid "Founding members"
+msgstr "Miembros fundadores"
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, choice founders, hint"
+msgid "Only members who hold the founder role answer the launch vote."
+msgstr "Solo responden la votación de lanzamiento los miembros que tienen el rol de fundador."
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, choice members, label"
+msgid "Every member"
+msgstr "Cada miembro"
+
+# needs-native-review: the launch vote rule, 27 Nov 2026
+#: client/src/pages/gameMechanicsDialWords1.ts
+msgctxt "game variable governance.launch_roll, choice members, hint"
+msgid "Every member who holds a voice answers the launch vote."
+msgstr "Responde la votación de lanzamiento cada miembro que tiene voz."
