@@ -155,8 +155,8 @@ What it walks:
 2. The founder invites three people. Two are given the founder role and one stays a member.
 3. The calendar is written with a founding season that has no end date and the next season queued.
 4. By default the village is put in the state of one that was issuing before the launch vote
-   existed, so the vote it holds is the ratifying one, which never restarts issuance. `--first`
-   rehearses a first launch, where the vote starts issuance.
+   existed. Its vote keeps the name Start the Game and never restarts issuance: the day it carries
+   is the Game's birthday. `--first` rehearses a first launch, where the vote starts issuance.
 5. The list of what the carry will change is read before the vote
    (`GET /api/admin/launch/carry-changes`).
 6. A founder opens the vote and names who carries the steward role.

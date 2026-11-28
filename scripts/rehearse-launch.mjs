@@ -17,8 +17,9 @@
  *   3. The calendar is written the way the first village's is: a founding
  *      season with no end date, and the next season queued for a later day.
  *   4. By default the village is then put in the first village's state: it is
- *      ALREADY ISSUING and has never held its vote (what migration 0112 wrote),
- *      so the vote it holds is the RATIFYING one. `--first` skips this and
+ *      ALREADY ISSUING and has never held its vote (what migration 0112 wrote).
+ *      Its vote keeps the name Start the Game and never restarts issuance: the
+ *      day it carries is the Game's birthday. `--first` skips this and
  *      rehearses a first launch, where the vote starts issuance.
  *   5. The list of what the carry will change is read, before the vote.
  *   6. A founder opens the vote and names themselves for the steward role.
@@ -31,7 +32,7 @@
  *      from both sides.
  *
  * Options:
- *   --first          rehearse a first launch instead of a ratifying one
+ *   --first          rehearse a first launch instead of a village already issuing
  *   --out <file>     where the transcript is written (default .rehearsal/launch/<stamp>.md)
  *   --keep           leave the scratch schema in place afterwards, for looking around
  *
@@ -209,7 +210,7 @@ async function walk(pool) {
     f = await facts();
     check("the Game reads as started, with no ballot behind it", f?.gameStart?.started === true && f?.gameStart?.ballotId === null);
     check("no launch is on the record", f?.launchedAt === null && f?.launchedByBallotId === null);
-    check("the vote it may hold is a ratifying one", f?.vote?.ratifying === true, `issuing since ${String(f?.vote?.issuingSince ?? "").slice(0, 10)}`);
+    check("it may hold its Start the Game vote, once, and that vote will not restart issuance", f?.vote?.ratifying === true, `issuing since ${String(f?.vote?.issuingSince ?? "").slice(0, 10)}`);
     const mint = await call("POST", "/api/admin/tokens/credits/mint", { body: { toUserId: tam.id, amount: 5, reason: "Rehearsal: this village issues before its vote." } });
     check("it issues today, with no vote: a hand mint lands", mint.status === 200, String(mint.json?.error ?? ""));
   } else {
@@ -241,12 +242,21 @@ async function walk(pool) {
   const ballotId = String(ballot?.id ?? "");
   say(`\nThe ballot is titled "${ballot?.title}". It is frozen to ${ballot?.electorate_count} people.\n`);
   const text = String(ballot?.doc_markdown ?? "");
-  check(FIRST ? "the document says issuance turns on" : "the document says issuance does not restart", FIRST ? text.includes("Token issuance turns on.") : text.includes("Token issuance does not restart"));
-  check("the document carries no sentence of the other kind", FIRST ? !text.includes("does not restart") : !text.includes("Token issuance turns on"));
+  check("the vote keeps its name, Start the Game, whichever village holds it", String(ballot?.title) === "Start the Game in Wealden" && text.includes("# Start the Game") && !/ratif/i.test(text));
+  check(
+    FIRST ? "the document says issuance turns on" : "the document says issuance was already running and does not restart",
+    FIRST ? text.includes("Token issuance turns on.") : text.includes("## What was already running") && text.includes("It does not restart, and the day it began stays"),
+  );
+  check("the document carries no sentence of the other kind", FIRST ? !text.includes("What was already running") : !text.includes("Token issuance turns on"));
+  if (!FIRST) check("the document says the day it carries is the Game's birthday", text.includes("the day it carries is the Game's birthday"));
   check("the document says which season the carry begins", text.includes("Season of Rooting begins that day, taking over from Season of Foundations."));
   check("the document says how long a steward holds the role", text.includes(`for the whole of Season of Rooting, until ${rootingEnd}.`));
   check("the document states the rule", text.includes("It carries the moment 3 of them have said yes, unless one of them has said no."));
   check("Tam, a member, cannot answer it", (await vote(ballotId, tam, { choice: "yes" })).status !== 200);
+  // Whoever runs pay must be on the steward list (Rye, 2026-11-28). The list names one founder, so the read warns about the other two.
+  const withList = (await call("GET", "/api/admin/launch/carry-changes")).json;
+  const leftOut = (withList?.attention ?? []).find((a) => a.id === "pay-left-out");
+  check("the read warns that the steward list leaves out two people who set pay today", (leftOut?.accounts ?? []).length === 2, String(leftOut?.text ?? ""));
 
   heading("7. The vote: a yes, a no that holds it, and the no withdrawn");
   const first = await vote(ballotId, mara, { choice: "yes", standsForSteward: true });
@@ -295,8 +305,12 @@ async function walk(pool) {
   check("the season turn is on the admin record, with no role moved", audit.some((l) => l === `launch:season-turned:foundations->rooting:${today}:seats-moved:0`), audit.filter((l) => l.startsWith("launch:season")).join(" | "));
   check("the token.mint hand-over ran", audit.some((l) => l.startsWith("launch:token-mint:")), audit.filter((l) => l.startsWith("launch:token-mint")).join(" | "));
   const pulse = (await row("SELECT text FROM health_events WHERE kind IN ('governance','season')")).map((r) => String(r.text));
-  check("the village was told on its pulse", pulse.some((t) => t.includes(FIRST ? "started its Game" : "put its launch on the record")) && pulse.includes("The season has turned: Season of Rooting"));
-  if (!FIRST) check("no line says the Game started today", !pulse.some((t) => t.includes("started its Game")));
+  check("the village was told on its pulse", pulse.some((t) => t.includes("The village started its Game: its launch vote carried.")) && pulse.includes("The season has turned: Season of Rooting"));
+  const carried = await row("SELECT body FROM notifications WHERE dedupe_key = ?", [`bal:${ballotId}:launch-carried`]);
+  if (!FIRST) {
+    check("no line says issuance opens today", !pulse.some((t) => /issuance (is open|opens|turns on|starts)/i.test(t)));
+    check("whoever opened it was told: The Game has begun. Happy birthday, Wealden.", carried.some((n) => String(n.body).startsWith("The Game has begun. Happy birthday, Wealden. Token issuance was already open, since 2026-03-14")), String(carried[0]?.body ?? ""));
+  }
 
   say("\nOne door, tried from both sides, against what the list said before the vote:\n");
   const wrenTries = await call("PUT", "/api/admin/modules/events/lifecycle", { token: wren.token, body: { lifecycle: "members", examples: false } });
@@ -324,7 +338,7 @@ async function main() {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "village-rehearse-launch-"));
   const logFile = path.join(dataDir, "server.log");
 
-  say(`# Launch rehearsal, ${FIRST ? "a first launch" : "the ratifying vote of a village already issuing"}`);
+  say(`# Launch rehearsal, ${FIRST ? "a first launch" : "the Start the Game vote of a village already issuing"}`);
   say(`\nRun ${new Date().toISOString()} on a throwaway village: schema \`${SCHEMA}\` on this machine, server at ${BASE}. Nothing here reaches a real village.\n`);
 
   const admin = await mysql.createConnection(`${server}/mysql`);
