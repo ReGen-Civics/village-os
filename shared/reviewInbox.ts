@@ -625,8 +625,8 @@ export function rowsAsked(raw: unknown): Map<InboxSource, number> {
  *   decisions     every row waiting on this person that they can decide: one per item, one for a list that is gone
  *                 through as one (Sera's differences), across every queue that answered.
  *   applications  LISTED, NEVER COUNTED: a person's application for a role, and a proposal from outside the village
- *                 for one. Each is shown in arrival order on its own row and its own page. A number of people
- *                 waiting is a tally about people, and this list keeps none.
+ *                 for one. Each is shown in arrival order on its own row and its own page, and applicants are
+ *                 never added up. (A form to answer is a request, and is a decision like any other.)
  *   blocked       rows that cannot be applied as the village stands. They need a hand before anyone can decide them,
  *                 so they are said beside the count and are not in it.
  *   unknown       the queues that did not load. With any, `decisions` is a floor: say "at least".
