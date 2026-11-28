@@ -133,12 +133,12 @@ describe("the dial on", () => {
     await userEvent.click(await within(dock).findByRole("button", { name: "Review and save" }));
     expect(await screen.findByText("1 change not saved yet")).toBeTruthy();
     expect(calls.filter((c) => c.method === "PUT")).toEqual([]);
-    // Closing the dock keeps the waiting change, and opening it wide lists it under Say yes.
+    // Closing the dock keeps the waiting change, and opening it wide lists it under Ready for your yes.
     await userEvent.click(screen.getByRole("button", { name: "toggle guide" }));
     expect(screen.getByText("1 change not saved yet")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "toggle guide" }));
     await userEvent.click(await screen.findByRole("button", { name: "Open the guide wide" }));
-    expect(within(screen.getByRole("region", { name: "Say yes" })).getByText("Show birthdays")).toBeTruthy();
+    expect(within(screen.getByRole("region", { name: "Ready for your yes" })).getByText("Show birthdays")).toBeTruthy();
     await act(async () => {
       await userEvent.click(screen.getByRole("button", { name: "Save" }));
     });

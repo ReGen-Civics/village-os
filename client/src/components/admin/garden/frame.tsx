@@ -17,10 +17,19 @@
  *              Grounds there draws its compact map (garden.css), so on a
  *              laptop the land is still land, in two fifths of the width.
  *
+ * The band carries the switch between the last two ("Guide first" and
+ * "Dashboard", ./view.tsx), and the dock's own corner arrows are a second way:
+ * both set the one `useGardenDock` value.
+ *
  * On a narrow screen the dock is a block of its own ABOVE what you see, in
  * both open states: she comes first, and nothing scrolls sideways. She is
  * first in the document too, so the reading order and the tab order match
  * what the eye meets; only the wide docked state draws her second.
+ *
+ * THE SLOT HAS ITS SIZE AND ITS EDGE FROM THE FRAME (garden.css): it
+ * fills the window under the band in two columns and is a block of a bounded
+ * height in one, so what is passed as `dock` only has to fill it. A host whose
+ * band is taller says so with `--gd-frame-above`.
  *
  * THE FRAME OWNS THE PLACE, NEVER THE DOCK. Pass any element as `dock`: the
  * guide's own component draws inside the slot and reads `useGardenDock` for

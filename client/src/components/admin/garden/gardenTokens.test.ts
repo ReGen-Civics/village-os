@@ -310,4 +310,47 @@ describe("what the garden's stylesheet promises a host page", () => {
       expect(block).toMatch(/\.gd-place\[data-lens="grounds"\] \{[^}]*min-height: 2\.75rem;/);
     });
   });
+
+  /**
+   * THE DOCK'S PLACE AND THE MAP'S SIZE ARE THE FRAME'S (the overseer's review of the first photographs: the slot
+   * gave the dock no height, so a host had to wrap it; and docked at 1440 by 900 the map's last row fell under the
+   * fold).
+   */
+  describe("the dock's slot and the map's size", () => {
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    const wide = flat.slice(flat.indexOf("@container (min-width: 64rem)"));
+
+    it("gives the dock's slot a bounded height in one column, so the places below it stay within reach", () => {
+      expect(flat).toMatch(/\n\.gd-frame-dock \{\s*height: min\(36rem, 78dvh\);/);
+    });
+
+    it("fills the window under the band in two columns, never too short for the talk box, and stays put", () => {
+      expect(wide).toMatch(
+        /\.gd-frame-dock \{\s*position: sticky;\s*top: calc\(var\(--gd-frame-top, 0px\) \+ 0\.75rem\);\s*align-self: start;\s*height: max\(24rem, calc\(100dvh - var\(--gd-frame-top, 0px\) - var\(--gd-frame-above, 4\.5rem\) - 1\.5rem\)\);/,
+      );
+      // The allowance is a band of one row WITH its switches (72px): measured, a 56px one left the slot 3px under the fold.
+    });
+
+    it("gives the slot its own edge, so what is passed as the dock only has to fill it", () => {
+      expect(flat).toMatch(/\n\.gd-frame-dock \{[^}]*overflow: hidden;[^}]*border-radius: 1rem;/);
+    });
+
+    it("bounds the map's WIDTH by the height the window has left, so the land keeps its shape and the whole map scales together", () => {
+      expect(flat).toMatch(/\.gd-grounds \{\s*container-type: inline-size;\s*max-width: max\(44rem, calc\(\(100dvh - var\(--gd-grounds-above, 10rem\)\) \* 10 \/ 9\)\);\s*margin-inline: auto;/);
+      // The land's own shape and the pictures' sizing are untouched: nothing is squeezed by height.
+      expect(flat).toMatch(/\.gd-land \{\s*aspect-ratio: 10 \/ 9;\s*min-height: 44rem;/);
+      expect(flat).toContain("calc(var(--gd-w) * 1cqw)");
+    });
+
+    it("draws the view switch only where the frame has two columns: nothing to switch where she is first and the places follow", () => {
+      // Hidden by its own rule, and drawn inside the frame's two-column container rule, never by the window's width.
+      expect(flat).toMatch(/\n\.gd-view \{\s*display: none;\s*\}/);
+      expect(wide).toMatch(/\.gd-view \{\s*display: flex;\s*\}/);
+      expect(flat.slice(0, flat.indexOf("@container (min-width: 64rem)"))).not.toMatch(/\.gd-view \{\s*display: flex;/);
+    });
+
+    it("does all of it with the window's own units and container rules: still one @media, the reduced-motion guard", () => {
+      expect(gardenCss.match(/@media/g)).toHaveLength(1);
+    });
+  });
 });

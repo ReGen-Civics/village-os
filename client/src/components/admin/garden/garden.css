@@ -215,6 +215,14 @@
 /* ---------- The Grounds ---------- */
 .gd-grounds {
   container-type: inline-size;
+  /*
+   * THE WHOLE MAP ON ONE SCREEN, where the window allows. The land keeps its shape, so it is the WIDTH that is
+   * bound: by the height the window has left under what stands above the map (`--gd-grounds-above`; by default
+   * the band and a heading). The pictures and the plaques are sized off this width, so the whole map scales
+   * together and nothing crowds. Never narrower than the map's own least width, and centred in its room.
+   */
+  max-width: max(44rem, calc((100dvh - var(--gd-grounds-above, 10rem)) * 10 / 9));
+  margin-inline: auto;
 }
 /*
  * The land. A village's own land image goes in `--gd-land-image` (the Grounds
@@ -544,6 +552,12 @@ button.gd-stone-row:hover {
   outline: 2px solid var(--garden-gold-lit);
   outline-offset: 2px;
 }
+/* The view switch (the guide first, or the dashboard) has the lens toggle's look. In one column she is first and the
+   places follow in both states, so there is nothing to switch: it is drawn only from the frame's two-column width up
+   (the rule is with the frame's, below). */
+.gd-view {
+  display: none;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .gd-place .gd-sprite {
@@ -569,6 +583,19 @@ button.gd-stone-row:hover {
 .gd-frame-dock {
   min-width: 0;
 }
+/*
+ * THE DOCK'S PLACE IS THE FRAME'S, its size and its edge included, so whatever is passed as the dock only has
+ * to fill it. In one column she is a block of a bounded height with a little air around her, and the places
+ * below stay within reach. In two columns (below) she fills the window under the band and stays put while what
+ * you see scrolls.
+ */
+.gd-frame-dock {
+  height: min(36rem, 78dvh);
+  margin: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--garden-gold) 32%, var(--garden-surface));
+  border-radius: 1rem;
+}
 /* With room for two columns: docked puts her beside what you see, expanded lets the conversation lead. */
 @container (min-width: 64rem) {
   .gd-frame[data-dock="docked"] .gd-frame-body {
@@ -577,14 +604,25 @@ button.gd-stone-row:hover {
   /* First in the document, so it is first to a keyboard and a screen reader. Docked, it is drawn after what you see. */
   .gd-frame[data-dock="docked"] .gd-frame-dock {
     order: 1;
+    margin-left: 0;
   }
   .gd-frame[data-dock="expanded"] .gd-frame-body {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
+  .gd-frame[data-dock="expanded"] .gd-frame-dock {
+    margin-right: 0;
+  }
+  /* Two columns: there are two ways to lay the page out, so the view switch is drawn. */
+  .gd-view {
+    display: flex;
+  }
+  /* The window, less what stands above the frame's body (the band: `--gd-frame-above`, for a host whose band is
+     taller than one row with its switches) and the air around her. Never so short that the talk box has no room. */
   .gd-frame-dock {
     position: sticky;
-    top: var(--gd-frame-top, 0px);
+    top: calc(var(--gd-frame-top, 0px) + 0.75rem);
     align-self: start;
+    height: max(24rem, calc(100dvh - var(--gd-frame-top, 0px) - var(--gd-frame-above, 4.5rem) - 1.5rem));
   }
 }
 

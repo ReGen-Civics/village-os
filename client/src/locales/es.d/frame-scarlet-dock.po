@@ -3,427 +3,822 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Language: es\n"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "game variable platform.admin_guide_dock, description"
 msgid "Shows the village guide as one dock beside every Admin screen and on the road to launch, in place of the helper panel and the launch guide. The dock opens wide to talk a change through and closes back to the side, takes speech, offers next steps, and can send a change it drafted to the review page for a person to accept. While this is on, the guide in Admin also answers on a key the platform lends when the village has no key of its own, inside the platform's daily limit. Off keeps the helper panel and the launch guide as they are."
 msgstr "Muestra a la guía de la aldea como un solo panel junto a cada pantalla de Administración y en el camino al lanzamiento, en lugar del panel del asistente y de la guía de lanzamiento. El panel se abre a lo ancho para conversar un cambio y vuelve a un lado, acepta la voz, ofrece próximos pasos y puede enviar un cambio que redactó a la página de revisión para que una persona lo acepte. Mientras esto está activado, la guía en Administración también responde con una clave que presta la plataforma cuando la aldea no tiene clave propia, dentro del límite diario de la plataforma. Desactivado, el panel del asistente y la guía de lanzamiento quedan como están."
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "game variable platform.admin_guide_dock, label"
 msgid "The guide's dock in Admin"
 msgstr "El panel de la guía en Administración"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a change drafted for the review page"
-msgid "Drafted for review"
-msgstr "Redactado para revisión"
+msgid "A change I drafted for review"
+msgstr "Un cambio que redacté para revisión"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a change drafted for the review page, brief"
+msgid "Draft"
+msgstr "Borrador"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a drafted change was held before review"
 msgid "Held before review. It waits under Held on the review page."
 msgstr "Retenido antes de la revisión. Espera en Retenidos, en la página de revisión."
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a drafted change was held before review, brief"
+msgid "Held before review."
+msgstr "Retenido antes de la revisión."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a drafted change was sent to review"
 msgid "Sent to review as {code}. Nothing changes until a person accepts it there."
 msgstr "Enviado a revisión como {code}. Nada cambia hasta que una persona lo acepte ahí."
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a drafted change was sent to review"
 msgid "Sent to review. Nothing changes until a person accepts it there."
 msgstr "Enviado a revisión. Nada cambia hasta que una persona lo acepte ahí."
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a drafted change was sent to review, brief"
+msgid "Sent as {code}."
+msgstr "Enviado como {code}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a drafted change was sent to review, brief"
+msgid "Sent."
+msgstr "Enviado."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a finished reply read to a screen reader"
 msgid "{speaker} says: {reply}"
 msgstr "{speaker} dice: {reply}"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up on the road to launch"
-msgid "What comes next?"
-msgstr "¿Qué sigue?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up on the road to launch"
-msgid "Where do I do that?"
-msgstr "¿Dónde hago eso?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up on the road to launch"
-msgid "Why does that matter?"
-msgstr "¿Por qué importa eso?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up"
-msgid "Say that in plainer words."
-msgstr "Dígalo con palabras más sencillas."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up"
-msgid "Tell me more."
-msgstr "Cuénteme más."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up"
-msgid "What should I do first?"
-msgstr "¿Qué debo hacer primero?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested follow-up"
-msgid "Where is that page?"
-msgstr "¿Dónde está esa página?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question about organizing"
-msgid "How do we decide things well together?"
-msgstr "¿Cómo decidimos bien las cosas en conjunto?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question about organizing"
-msgid "How do we handle a disagreement?"
-msgstr "¿Cómo manejamos un desacuerdo?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question about organizing"
-msgid "How should we welcome new members?"
-msgstr "¿Cómo debemos recibir a los nuevos miembros?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question about organizing"
-msgid "What does our brief say about this?"
-msgstr "¿Qué dice nuestro resumen sobre esto?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question on the road to launch"
-msgid "What does this step mean?"
-msgstr "¿Qué significa este paso?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question on the road to launch"
-msgid "What is blocking the launch?"
-msgstr "¿Qué está frenando el lanzamiento?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Find a setting for me."
-msgstr "Búsqueme un ajuste."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "How do I add a gathering?"
-msgstr "¿Cómo agrego un encuentro?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "How do quests work here?"
-msgstr "¿Cómo funcionan las misiones aquí?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "How many roles are still open?"
-msgstr "¿Cuántos roles siguen abiertos?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What can this village run?"
-msgstr "¿Qué puede usar esta aldea?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What can you help me with?"
-msgstr "¿En qué puede ayudarme?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What does preview mean for a module?"
-msgstr "¿Qué significa vista previa en un módulo?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What does this page control?"
-msgstr "¿Qué controla esta página?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What does this page show?"
-msgstr "¿Qué muestra esta página?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What is a season here?"
-msgstr "¿Qué es una temporada aquí?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What is still not set up?"
-msgstr "¿Qué falta por configurar?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What is this page for?"
-msgstr "¿Para qué sirve esta página?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What needs me today?"
-msgstr "¿Qué me necesita hoy?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What should I connect first?"
-msgstr "¿Qué debo conectar primero?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "What should I turn on first?"
-msgstr "¿Qué debo activar primero?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I add a quest?"
-msgstr "¿Dónde agrego una misión?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I add a role?"
-msgstr "¿Dónde agrego un rol?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I add our logo?"
-msgstr "¿Dónde agrego nuestro logotipo?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I change the village's name?"
-msgstr "¿Dónde cambio el nombre de la aldea?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I connect email?"
-msgstr "¿Dónde conecto el correo?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I name the season?"
-msgstr "¿Dónde le pongo nombre a la temporada?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I set the season's dates?"
-msgstr "¿Dónde fijo las fechas de la temporada?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do I set the timezone?"
-msgstr "¿Dónde fijo la zona horaria?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do members see the calendar?"
-msgstr "¿Dónde ven el calendario los miembros?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where do visitors read these?"
-msgstr "¿Dónde las leen los visitantes?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Where does the guide's own key go?"
-msgstr "¿Dónde va la clave propia de la guía?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Which circles do we have?"
-msgstr "¿Qué círculos tenemos?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Which page changes the menu?"
-msgstr "¿Qué página cambia el menú?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested question"
-msgid "Which settings should I look at first?"
-msgstr "¿Qué ajustes debo mirar primero?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested request on the road to launch"
-msgid "Walk me through what is left."
-msgstr "Acompáñeme por lo que falta."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested request"
-msgid "Draft an FAQ for residents."
-msgstr "Redacte una pregunta frecuente para residentes."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a suggested request"
-msgid "Put the Library in preview."
-msgstr "Ponga la Biblioteca en vista previa."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, closes the dock"
-msgid "Close the guide"
-msgstr "Cerrar la guía"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, contracts the dock"
-msgid "Bring the guide back to the side"
-msgstr "Volver a poner la guía a un lado"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, expands the dock"
-msgid "Open the guide wide"
-msgstr "Abrir la guía a lo ancho"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, files the drafted change into the review queue"
-msgid "Send to review"
-msgstr "Enviar a revisión"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, labels the words that were heard by voice"
-msgid "You said"
-msgstr "Usted dijo"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, opens the review page"
-msgid "Open the review page"
-msgstr "Abrir la página de revisión"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, points from the conversation to the Say yes list"
-msgid "Prepared for you. It waits under Say yes."
-msgstr "Preparado para usted. Espera en Diga sí."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the Say yes list is empty"
-msgid "Nothing is waiting on you."
-msgstr "Nada espera por usted."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the choice between the village's guide and Sera"
-msgid "Who you're talking to"
-msgstr "Con quién está hablando"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the choice of conversation"
-msgid "What to talk about"
-msgstr "De qué quiere hablar"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the conversation that helps inside Admin"
-msgid "Admin"
-msgstr "Administración"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the day's answers are used up"
-msgid "The guide has answered all it can for today. It starts again tomorrow."
-msgstr "La guía ya respondió todo lo que puede por hoy. Vuelve a empezar mañana."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the dock's own name"
-msgid "{guide}, your guide"
-msgstr "{guide}, su guía"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the guide cannot answer"
-msgid "The guide cannot answer just now. It needs an AI key, or it has answered all it can for today. Everything here still works by hand."
-msgstr "La guía no puede responder en este momento. Le hace falta una clave de IA, o ya respondió todo lo que puede por hoy. Todo aquí sigue funcionando a mano."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the list of what the guide prepared"
-msgid "Say yes"
-msgstr "Diga sí"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the same drafted change already waits"
-msgid "The same change already waits on the review page, as {code}."
-msgstr "El mismo cambio ya espera en la página de revisión, como {code}."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the same drafted change already waits"
-msgid "The same change already waits on the review page."
-msgstr "El mismo cambio ya espera en la página de revisión."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the suggestions above the talk box"
-msgid "Suggested next steps"
-msgstr "Próximos pasos sugeridos"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, under the Say yes heading"
-msgid "What {guide} has prepared. Each one waits on you, and nothing changes until you say so."
-msgstr "Lo que {guide} ha preparado. Cada cosa espera por usted, y nada cambia hasta que usted lo diga."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, what Send to review does"
-msgid "This goes to the review page. Nothing changes until a person accepts it there."
-msgstr "Esto va a la página de revisión. Nada cambia hasta que una persona lo acepte ahí."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, what the launch guide does"
-msgid "Walks you through what is left before the launch."
-msgstr "Le acompaña por lo que falta antes del lanzamiento."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, what the organizing guide does"
-msgid "Counsel on organizing, from your village's own brief first."
-msgstr "Consejo para organizarse, primero desde el resumen propio de su aldea."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, who answers"
-msgid "{name} is answering, on Claude with a key the platform lends for now."
-msgstr "{name} está respondiendo, en Claude con una clave que la plataforma presta por ahora."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, who answers"
-msgid "{name} is answering, on Claude with your village's own Anthropic key."
-msgstr "{name} está respondiendo, en Claude con la propia clave de Anthropic de su aldea."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, who answers"
-msgid "{name} is answering, through your village's org memory connection."
-msgstr "{name} está respondiendo, a través de la conexión de memoria organizativa de su aldea."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "proposed changes, a change the village guide drafted for this person"
-msgid "{name}, drafted by the guide"
-msgstr "{name}, redactado por la guía"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the guide's first line before any question"
-msgid "Hello, {firstName}. What are we tending today?"
-msgstr "Hola, {firstName}. ¿Qué cuidamos hoy?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, the guide's first line before any question"
-msgid "Hello. What are we tending today?"
-msgstr "Hola. ¿Qué cuidamos hoy?"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a link's words when nothing names the page"
+msgid "Open the page"
+msgstr "Abrir la página"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a link's words: the Admin page"
 msgid "Admin"
 msgstr "Administración"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a link's words: the review page"
-msgid "the review page"
-msgstr "la página de revisión"
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a link's words: the launch checklist page"
 msgid "the road to launch"
 msgstr "el camino al lanzamiento"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a link's words: the module library page"
 msgid "the Module Library"
 msgstr "la Biblioteca de Módulos"
 
-# needs-native-review: the guide's dock in Admin and on the road to launch, 27 Nov 2026
-msgctxt "guide dock, a link's words when nothing names the page"
-msgid "Open the page"
-msgstr "Abrir la página"
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a link's words: the review page"
+msgid "the review page"
+msgstr "la página de revisión"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change waits to be saved"
+msgid "Waiting for your Save at the bottom of the page. Nothing is saved until you press it."
+msgstr "Espera a que usted pulse Guardar al pie de la página. Nada se guarda hasta que lo pulse."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change waits to be saved, brief"
+msgid "Waiting for Save."
+msgstr "Espera su Guardar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change was declined"
+msgid "Left as it was."
+msgstr "Quedó como estaba."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change was declined, brief"
+msgid "Left."
+msgstr "Sin cambio."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change was saved by a person"
+msgid "Saved."
+msgstr "Guardado."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change"
+msgid "A change I prepared"
+msgstr "Un cambio que preparé"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change, brief"
+msgid "Change"
+msgstr "Cambio"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: an empty value"
+msgid "(blank)"
+msgstr "(vacío)"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: declines it"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: declines it, brief"
+msgid "Skip"
+msgstr "Omitir"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: opens the setting's own place"
+msgid "Take me there"
+msgstr "Lléveme ahí"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: opens the setting's own place, brief"
+msgid "Open"
+msgstr "Abrir"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: puts it ready to save"
+msgid "Review and save"
+msgstr "Revisar y guardar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: puts it ready to save, brief"
+msgid "Save"
+msgstr "Guardar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: takes it back from waiting to be saved"
+msgid "Set it aside"
+msgstr "Dejarlo aparte"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: takes it back from waiting to be saved, brief"
+msgid "Remove"
+msgstr "Quitar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: the value it would have"
+msgid "Becomes"
+msgstr "Pasa a ser"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a prepared change: the value today"
+msgid "Now"
+msgstr "Ahora"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a question did not send"
+msgid "Your question didn't send. Try again."
+msgstr "Su pregunta no se envió. Inténtelo de nuevo."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a question did not send, brief"
+msgid "Not sent. Retry."
+msgstr "No se envió. Reintente."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a reply is on its way"
+msgid "{guide} is thinking"
+msgstr "{guide} está pensando"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a reply is on its way, brief"
+msgid "Thinking"
+msgstr "Pensando"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up on the road to launch"
+msgid "What comes next?"
+msgstr "¿Qué sigue?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up on the road to launch"
+msgid "Where do I do that?"
+msgstr "¿Dónde hago eso?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up on the road to launch"
+msgid "Why does that matter?"
+msgstr "¿Por qué importa eso?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up"
+msgid "Say that in plainer words."
+msgstr "Dígalo con palabras más sencillas."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up"
+msgid "Tell me more."
+msgstr "Cuénteme más."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up"
+msgid "What should I do first?"
+msgstr "¿Qué debo hacer primero?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested follow-up"
+msgid "Where is that page?"
+msgstr "¿Dónde está esa página?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question about organizing"
+msgid "How do we decide things well together?"
+msgstr "¿Cómo decidimos bien las cosas en conjunto?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question about organizing"
+msgid "How do we handle a disagreement?"
+msgstr "¿Cómo manejamos un desacuerdo?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question about organizing"
+msgid "How should we welcome new members?"
+msgstr "¿Cómo debemos recibir a los nuevos miembros?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question about organizing"
+msgid "What does our brief say about this?"
+msgstr "¿Qué dice nuestro resumen sobre esto?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question on the road to launch"
+msgid "What does this step mean?"
+msgstr "¿Qué significa este paso?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question on the road to launch"
+msgid "What is blocking the launch?"
+msgstr "¿Qué está frenando el lanzamiento?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Find a setting for me."
+msgstr "Búsqueme un ajuste."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "How do I add a gathering?"
+msgstr "¿Cómo agrego un encuentro?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "How do quests work here?"
+msgstr "¿Cómo funcionan las misiones aquí?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "How many roles are still open?"
+msgstr "¿Cuántos roles siguen abiertos?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What can this village run?"
+msgstr "¿Qué puede usar esta aldea?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What can you help me with?"
+msgstr "¿En qué puede ayudarme?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What does preview mean for a module?"
+msgstr "¿Qué significa vista previa en un módulo?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What does this page control?"
+msgstr "¿Qué controla esta página?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What does this page show?"
+msgstr "¿Qué muestra esta página?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What is a season here?"
+msgstr "¿Qué es una temporada aquí?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What is still not set up?"
+msgstr "¿Qué falta por configurar?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What is this page for?"
+msgstr "¿Para qué sirve esta página?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What needs me today?"
+msgstr "¿Qué me necesita hoy?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What should I connect first?"
+msgstr "¿Qué debo conectar primero?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "What should I turn on first?"
+msgstr "¿Qué debo activar primero?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I add a quest?"
+msgstr "¿Dónde agrego una misión?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I add a role?"
+msgstr "¿Dónde agrego un rol?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I add our logo?"
+msgstr "¿Dónde agrego nuestro logotipo?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I change the village's name?"
+msgstr "¿Dónde cambio el nombre de la aldea?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I connect email?"
+msgstr "¿Dónde conecto el correo?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I name the season?"
+msgstr "¿Dónde le pongo nombre a la temporada?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I set the season's dates?"
+msgstr "¿Dónde fijo las fechas de la temporada?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do I set the timezone?"
+msgstr "¿Dónde fijo la zona horaria?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do members see the calendar?"
+msgstr "¿Dónde ven el calendario los miembros?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where do visitors read these?"
+msgstr "¿Dónde las leen los visitantes?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Where does the guide's own key go?"
+msgstr "¿Dónde va la clave propia de la guía?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Which circles do we have?"
+msgstr "¿Qué círculos tenemos?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Which page changes the menu?"
+msgstr "¿Qué página cambia el menú?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question"
+msgid "Which settings should I look at first?"
+msgstr "¿Qué ajustes debo mirar primero?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested request on the road to launch"
+msgid "Walk me through what is left."
+msgstr "Acompáñeme por lo que falta."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested request"
+msgid "Draft an FAQ for residents."
+msgstr "Redacte una pregunta frecuente para residentes."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested request"
+msgid "Put the Library in preview."
+msgstr "Ponga la Biblioteca en vista previa."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting in the organizing conversation"
+msgid "Ask me about organizing: how you decide, a disagreement, new members, the legal shell. I read your village's brief first, then its own calls, and both come before the books."
+msgstr "Pregúnteme sobre cómo organizarse: cómo deciden, un desacuerdo, nuevos miembros, la figura legal. Leo primero el resumen de su aldea, luego sus propias decisiones, y ambos van antes que los libros."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting in the organizing conversation, brief"
+msgid "Ask about organizing. Your brief first, then your calls, then the books."
+msgstr "Pregunte sobre cómo organizarse. Primero su resumen, luego sus decisiones, luego los libros."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, nothing blocks"
+msgid "Nothing blocks the launch. Ask me about any step that is left."
+msgstr "Nada bloquea el lanzamiento. Pregúnteme por cualquier paso que falte."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, nothing blocks, brief"
+msgid "Nothing blocks the launch."
+msgstr "Nada bloquea el lanzamiento."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, one thing blocks"
+msgid "One thing blocks the launch. Shall we take it now?"
+msgstr "Una cosa bloquea el lanzamiento. ¿La vemos ahora?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, one thing blocks, brief"
+msgid "1 blocks the launch. Start?"
+msgstr "1 bloquea el lanzamiento. ¿Empezamos?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, several things block"
+msgid "{count} things block the launch. Shall we take the first one?"
+msgstr "{count} cosas bloquean el lanzamiento. ¿Empezamos por la primera?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, several things block, brief"
+msgid "{blocking} block the launch. Start?"
+msgstr "{blocking} bloquean el lanzamiento. ¿Empezamos?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, the count is not known"
+msgid "Ask me what blocks the launch, or about any step that is left."
+msgstr "Pregúnteme qué bloquea el lanzamiento, o por cualquier paso que falte."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting on the road to launch, the count is not known, brief"
+msgid "Ask what blocks the launch."
+msgstr "Pregunte qué bloquea el lanzamiento."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, one change is ready"
+msgid "One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save."
+msgstr "Un cambio está listo para su sí. Espera al pie de la página, y nada se guarda hasta que usted pulse Guardar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, one change is ready, brief"
+msgid "1 to approve."
+msgstr "1 por aprobar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, several changes are ready"
+msgid "{count} changes are ready for your yes. They wait at the bottom of the page, and nothing is saved until you press Save."
+msgstr "{count} cambios están listos para su sí. Esperan al pie de la página, y nada se guarda hasta que usted pulse Guardar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, several changes are ready, brief"
+msgid "{ready} to approve."
+msgstr "{ready} por aprobar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, what she can do"
+msgid "Ask me where something lives, or name a change and I'll prepare it for your yes."
+msgstr "Pregúnteme dónde está algo, o nombre un cambio y lo preparo para su sí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, what she can do, brief"
+msgid "Ask, or name a change."
+msgstr "Pregunte, o nombre un cambio."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, closes the dock"
+msgid "Close the guide"
+msgstr "Cerrar la guía"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, contracts the dock"
+msgid "Bring the guide back to the side"
+msgstr "Volver a poner la guía a un lado"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, expands the dock"
+msgid "Open the guide wide"
+msgstr "Abrir la guía a lo ancho"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, files the drafted change into the review queue"
+msgid "Send to review"
+msgstr "Enviar a revisión"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, files the drafted change into the review queue, brief"
+msgid "Send"
+msgstr "Enviar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words at a first meeting"
+msgid "Welcome. I'm {guide}. You're starting a Game, and you get to design it. Tell me about the village you want to play in, and we'll set the first conditions together."
+msgstr "Le doy la bienvenida. Soy {guide}. Usted está empezando un Juego, y le toca diseñarlo. Cuénteme de la aldea en la que quiere jugar, y fijaremos juntos las primeras condiciones."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words at a first meeting, brief"
+msgid "I'm {guide}. What Game are you starting?"
+msgstr "Soy {guide}. ¿Qué Juego está empezando?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you this afternoon. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta tarde. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you this morning. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta mañana. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you tonight. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta noche. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits, brief"
+msgid "Nothing needs you."
+msgstr "Nada le necesita."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting to someone whose name the page does not have"
+msgid "Afternoon."
+msgstr "Buenas tardes."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting to someone whose name the page does not have"
+msgid "Evening."
+msgstr "Buenas noches."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting to someone whose name the page does not have"
+msgid "Morning."
+msgstr "Buenos días."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting to someone whose name the page does not have, brief"
+msgid "Hi."
+msgstr "Hola."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting"
+msgid "Afternoon, {firstName}."
+msgstr "Buenas tardes, {firstName}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting"
+msgid "Evening, {firstName}."
+msgstr "Buenas noches, {firstName}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting"
+msgid "Morning, {firstName}."
+msgstr "Buenos días, {firstName}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her greeting, brief"
+msgid "Hi {firstName}."
+msgstr "Hola, {firstName}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, labels the words that were heard by voice"
+msgid "You said"
+msgstr "Usted dijo"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, loading"
+msgid "Opening the guide"
+msgstr "Abriendo la guía"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, loading, brief"
+msgid "Opening"
+msgstr "Abriendo"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, opens the review page"
+msgid "Open the review page"
+msgstr "Abrir la página de revisión"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, opens the review page, brief"
+msgid "Review page"
+msgstr "Página de revisión"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the choice between the village's guide and Sera"
+msgid "Who you're talking to"
+msgstr "Con quién está hablando"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the choice of conversation"
+msgid "What to talk about"
+msgstr "De qué quiere hablar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the conversation that helps inside Admin"
+msgid "Admin"
+msgstr "Administración"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the day's answers are used up"
+msgid "The guide has answered all it can for today. It starts again tomorrow."
+msgstr "La guía ya respondió todo lo que puede por hoy. Vuelve a empezar mañana."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the day's answers are used up, brief"
+msgid "No answers left today. Back tomorrow."
+msgstr "Sin respuestas por hoy. Vuelve mañana."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the dock's own name"
+msgid "{guide}, your guide"
+msgstr "{guide}, su guía"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide cannot answer"
+msgid "The guide can't answer right now. Add a key under Integrations, or try again tomorrow."
+msgstr "La guía no puede responder en este momento. Añada una clave en Integraciones, o inténtelo de nuevo mañana."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide cannot answer, brief"
+msgid "Guide unavailable. Add a key, or try tomorrow."
+msgstr "La guía no está disponible. Añada una clave, o pruebe mañana."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide did not load"
+msgid "The guide didn't load. Reload to try again."
+msgstr "La guía no cargó. Recargue para intentarlo de nuevo."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide did not load, brief"
+msgid "Guide didn't load. Retry."
+msgstr "La guía no cargó. Reintente."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the list of what the guide prepared is empty"
+msgid "Nothing waits for your yes."
+msgstr "Nada espera su sí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the list of what the guide prepared is empty, brief"
+msgid "All clear."
+msgstr "Todo en orden."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the list of what the guide prepared"
+msgid "Ready for your yes"
+msgstr "Listo para su sí"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the list of what the guide prepared, brief"
+msgid "To approve"
+msgstr "Por aprobar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the same drafted change already waits"
+msgid "The same change already waits on the review page, as {code}."
+msgstr "El mismo cambio ya espera en la página de revisión, como {code}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the same drafted change already waits"
+msgid "The same change already waits on the review page."
+msgstr "El mismo cambio ya espera en la página de revisión."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the same drafted change already waits, brief"
+msgid "Already waiting as {code}."
+msgstr "Ya espera como {code}."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the same drafted change already waits, brief"
+msgid "Already waiting."
+msgstr "Ya espera."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the suggestions above the talk box"
+msgid "Suggested next steps"
+msgstr "Próximos pasos sugeridos"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the toggle for the speaking dial's quiet setting"
+msgid "Brief and quiet"
+msgstr "Breve y discreta"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, under a reply: where what she prepared is"
+msgid "I prepared this. It waits under Ready for your yes."
+msgstr "Esto lo preparé yo. Espera en Listo para su sí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, under a reply: where what she prepared is, brief"
+msgid "Under To approve."
+msgstr "En Por aprobar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, under the list of what the guide prepared"
+msgid "Each change waits here until you say yes. Nothing is saved before that."
+msgstr "Cada cambio espera aquí hasta que usted diga que sí. Nada se guarda antes."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, under the list of what the guide prepared, brief"
+msgid "Nothing is saved until you approve."
+msgstr "Nada se guarda hasta que usted apruebe."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what sending a draft to review does"
+msgid "It goes to the review page. Nothing changes until a person accepts it there."
+msgstr "Va a la página de revisión. Nada cambia hasta que una persona lo acepte ahí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what sending a draft to review does, brief"
+msgid "Goes to review. No change until accepted."
+msgstr "Va a revisión. Sin cambios hasta que se acepte."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what she reads and never reads"
+msgid "I read settings, help text and the shape of the org chart. I don't read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. I don't move money."
+msgstr "Leo los ajustes, los textos de ayuda y la forma del organigrama. No leo solicitudes, propuestas, entrevistas, términos ni pagos, y no tomo parte en elegir personas para los roles. No muevo dinero."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what she reads and never reads, brief"
+msgid "Reads settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people for roles. Moves no money."
+msgstr "Lee ajustes, textos de ayuda y la forma del organigrama. Nunca solicitudes, propuestas, entrevistas, términos ni pagos. No toma parte en elegir personas para los roles. No mueve dinero."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the helper conversation is for"
+msgid "Finds a page or a setting, and prepares changes for your yes."
+msgstr "Encuentra una página o un ajuste, y prepara cambios para su sí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the helper conversation is for, brief"
+msgid "Finds things. Prepares changes."
+msgstr "Encuentra cosas. Prepara cambios."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the launch conversation is for"
+msgid "Shows what is left before the launch, one step at a time."
+msgstr "Muestra lo que falta antes del lanzamiento, paso a paso."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the launch conversation is for, brief"
+msgid "What is left before launch."
+msgstr "Lo que falta antes del lanzamiento."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the organizing conversation is for"
+msgid "Answers on organizing, from your village's own brief first."
+msgstr "Responde sobre cómo organizarse, primero desde el resumen propio de su aldea."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, what the organizing conversation is for, brief"
+msgid "Organizing, from your brief."
+msgstr "Organizarse, desde su resumen."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers"
+msgid "{name} is answering, on Claude with a key the platform lends for now."
+msgstr "{name} está respondiendo, en Claude con una clave que la plataforma presta por ahora."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers"
+msgid "{name} is answering, on Claude with your village's own Anthropic key."
+msgstr "{name} está respondiendo, en Claude con la propia clave de Anthropic de su aldea."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers"
+msgid "{name} is answering, through your village's org memory connection."
+msgstr "{name} está respondiendo, a través de la conexión de memoria organizativa de su aldea."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers, brief"
+msgid "{name}, on a lent key."
+msgstr "{name}, con una clave prestada."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers, brief"
+msgid "{name}, on your own key."
+msgstr "{name}, con su propia clave."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, who answers, brief"
+msgid "{name}, through org memory."
+msgstr "{name}, por la memoria organizativa."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "proposed changes, a change the village guide drafted for this person"
+msgid "{name}, drafted by the guide"
+msgstr "{name}, redactado por la guía"

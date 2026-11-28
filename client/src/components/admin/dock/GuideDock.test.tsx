@@ -35,7 +35,10 @@ vi.mock("@/components/MicButton", () => ({
 }));
 
 import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
-import GuideDock, { type DockState, type GuideDockProps } from "./GuideDock";
+import { GUIDE_SPEAKING as SERVER_SPEAKING } from "@shared/guideSpeaking";
+import { forgetPageCopy } from "../garden/gardenMemory";
+import { GUIDE_SPEAKING as GARDEN_SPEAKING } from "../garden/speaking";
+import GuideDock, { SHORT_TALK, type DockState, type GuideDockProps } from "./GuideDock";
 import { adminTabOf, splitReply } from "./replyLinks";
 import type { NavGroup } from "../adminNavGroups";
 
@@ -47,11 +50,14 @@ const GROUPS = [
 const ON: HelperStatus = { on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true };
 const BOTH: HelperStatus = { ...ON, available: ["anthropic", "sera"], names: { anthropic: "Sol", sera: "Sera" } };
 
+/** Half past seven in the evening, so her greeting is the same on any clock a test runs by. */
+const EVENING = new Date(2026, 10, 28, 19, 30);
+
 function dock(over: Partial<GuideDockProps> = {}) {
   const onClose = vi.fn();
   const onOpenTab = vi.fn();
   const view = render(
-    <GuideDock surface="admin" modes={["helper", "organize"]} password="pw" groups={GROUPS} tab="home" top={88} onClose={onClose} onOpenTab={onOpenTab} initialStatus={ON} {...over} />,
+    <GuideDock surface="admin" modes={["helper", "organize"]} password="pw" groups={GROUPS} tab="home" top={88} onClose={onClose} onOpenTab={onOpenTab} initialStatus={ON} now={EVENING} {...over} />,
   );
   return { onClose, onOpenTab, ...view };
 }
@@ -80,6 +86,8 @@ const posts = (calls: Array<{ url: string; init: any }>) => calls.filter((c) => 
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
+  // The garden keeps a page copy of what it remembers: each test starts as a browser just opened.
+  forgetPageCopy();
   mic.onText = null;
   session.userId = null;
   session.userName = "";
@@ -97,8 +105,8 @@ describe("docked and expanded", () => {
     expect(frame().style.top).toBe("88px");
     expect(screen.getByRole("heading", { name: "Sol" })).toBeTruthy();
     // What she says she reads stays as the helper always said it.
-    expect(screen.getByText(/never read applications, proposals, interviews, terms or pay/)).toBeTruthy();
-    expect(screen.getByText(/can't help with choosing people for roles/)).toBeTruthy();
+    expect(screen.getByText(/don't read applications, proposals, interviews, terms or pay/)).toBeTruthy();
+    expect(screen.getByText(/take no part in choosing people for roles/)).toBeTruthy();
     expect(screen.queryByTestId("guide-say-yes")).toBeNull();
   });
 
@@ -110,8 +118,8 @@ describe("docked and expanded", () => {
     expect(frame().getAttribute("data-shape")).toBe("expanded");
     expect(localStorage.getItem("guide-dock:shape")).toBe("expanded");
     // Expanded: what she has prepared is listed beside the conversation.
-    expect(screen.getByRole("region", { name: "Say yes" })).toBeTruthy();
-    expect(screen.getByText("Nothing is waiting on you.")).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Ready for your yes" })).toBeTruthy();
+    expect(screen.getByText("Nothing waits for your yes.")).toBeTruthy();
     // The same button, now named for what it does next, and focus stays on it.
     const back = screen.getByRole("button", { name: "Bring the guide back to the side" });
     expect(back).toBe(toggle);
@@ -309,9 +317,9 @@ describe("the launch and organizing guides", () => {
       "POST /api/admin/assistant/organize": () => ({ body: { reply: "Consent first.", consulted: { brief: ["How we decide"], ownRecord: [], readers: ["Decisions"], references: ["Sociocracy 3.0"] } } }),
     });
     journey();
-    // Launch is open first, on the greeting the launch guide's own panel opens on.
+    // Launch is open first, on her first words: a greeting, then what blocks.
     expect(screen.getByRole("button", { name: "Launch" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByText(/I can see exactly where your launch stands/)).toBeTruthy();
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening. Ask me what blocks the launch, or about any step that is left.");
     await userEvent.type(box(), "what is blocking?{Enter}");
     expect(await talk().findByText(/Start with the closing policy/)).toBeTruthy();
     expect(calls[0].url).toBe("/api/admin/assistant/launch");
@@ -319,6 +327,8 @@ describe("the launch and organizing guides", () => {
     const launchSent = JSON.parse(calls[0].init.body);
     expect(Object.keys(launchSent)).toEqual(["messages"]);
     expect(launchSent.messages.map((m: any) => m.role)).toEqual(["assistant", "user"]);
+    // Her first words are the first turn, as the launch guide's own greeting always was; what is sent is what was read.
+    expect(launchSent.messages[0]).toEqual({ role: "assistant", content: "Evening. Ask me what blocks the launch, or about any step that is left." });
     expect(launchSent.messages[1]).toEqual({ role: "user", content: "what is blocking?" });
     // The address she was told to include is a link named for its page, never the address itself.
     expect(talk().getByRole("link", { name: "Season" }).getAttribute("href")).toBe("/admin?tab=season");
@@ -357,7 +367,8 @@ describe("the launch and organizing guides", () => {
     mockFetch({ "POST /api/admin/assistant/launch": () => ({ status: 503, body: { error: "assistant-unavailable" } }) });
     journey();
     await userEvent.type(box(), "hi{Enter}");
-    expect(await screen.findByText(/The guide cannot answer just now/)).toBeTruthy();
+    // An alert, never in her voice: what happened, then the fix.
+    expect((await screen.findByRole("alert")).textContent).toBe("The guide can't answer right now. Add a key under Integrations, or try again tomorrow.");
     expect(screen.getByRole("link", { name: "Open Integrations" }).getAttribute("href")).toBe("/admin?tab=integrations");
     expect(screen.queryByRole("textbox")).toBeNull();
     // Organizing is its own conversation and still has its box.
@@ -492,16 +503,16 @@ describe("what she prepared", () => {
     expect(calls.filter((c) => c.init.method === "PUT")).toEqual([]);
   });
 
-  it("expanded: the card is listed under Say yes, and the conversation points to it", async () => {
+  it("expanded: the change is listed under Ready for your yes, and the conversation points to it", async () => {
     mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ reply: "I can switch that for you.", proposal: PROPOSAL }) }) });
     const onReview = vi.fn();
     dock({ onReview, initialShape: "expanded" });
     await userEvent.type(box(), "show birthdays{Enter}");
-    const list = screen.getByRole("region", { name: "Say yes" });
+    const list = screen.getByRole("region", { name: "Ready for your yes" });
     expect(await within(list).findByTestId("helper-proposal")).toBeTruthy();
     // One card, in one place.
     expect(screen.getAllByTestId("helper-proposal")).toHaveLength(1);
-    expect(within(screen.getByTestId("guide-talk")).getByTestId("guide-prepared-pointer").textContent).toBe("Prepared for you. It waits under Say yes.");
+    expect(within(screen.getByTestId("guide-talk")).getByTestId("guide-prepared-pointer").textContent).toBe("I prepared this. It waits under Ready for your yes.");
     await userEvent.click(within(list).getByRole("button", { name: "Review and save" }));
     expect(onReview).toHaveBeenCalledWith(PROPOSAL);
   });
@@ -509,9 +520,9 @@ describe("what she prepared", () => {
   it("expanded: a change still on the save bar from an earlier visit is listed too", async () => {
     const onUnreview = vi.fn();
     dock({ initialShape: "expanded", onBar: [PROPOSAL], waiting: ["feed.show_birthdays=true"], onUnreview });
-    const list = screen.getByRole("region", { name: "Say yes" });
-    expect(within(list).getByText(/Waiting on the save bar at the bottom\./)).toBeTruthy();
-    await userEvent.click(within(list).getByRole("button", { name: "Take it off the bar" }));
+    const list = screen.getByRole("region", { name: "Ready for your yes" });
+    expect(within(list).getByText("Waiting for your Save at the bottom of the page. Nothing is saved until you press it.")).toBeTruthy();
+    await userEvent.click(within(list).getByRole("button", { name: "Set it aside" }));
     expect(onUnreview).toHaveBeenCalledWith(PROPOSAL);
   });
 
@@ -519,7 +530,7 @@ describe("what she prepared", () => {
     mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ proposal: PROPOSAL }) }) });
     const view = dock({ waiting: ["feed.show_birthdays=true"] });
     await userEvent.type(box(), "x{Enter}");
-    expect(await screen.findByText(/Waiting on the save bar at the bottom\./)).toBeTruthy();
+    expect(await screen.findByText(/Waiting for your Save at the bottom of the page\./)).toBeTruthy();
     view.rerender(<GuideDock surface="admin" modes={["helper", "organize"]} password="pw" groups={GROUPS} tab="home" top={88} onClose={vi.fn()} initialStatus={ON} saved={["feed.show_birthdays=true"]} />);
     expect(await screen.findByText("Saved.")).toBeTruthy();
   });
@@ -532,11 +543,11 @@ describe("what she prepared", () => {
     dock();
     await userEvent.type(box(), "add an FAQ about parking{Enter}");
     const card = await screen.findByTestId("guide-filing");
-    expect(card.textContent).toContain("Drafted for review");
+    expect(card.textContent).toContain("A change I drafted for review");
     expect(card.textContent).toContain("Add an FAQ on parking.");
     expect(card.textContent).toContain("Resident page");
     expect(card.textContent).toContain("Where do I park?");
-    expect(card.textContent).toContain("This goes to the review page. Nothing changes until a person accepts it there.");
+    expect(card.textContent).toContain("It goes to the review page. Nothing changes until a person accepts it there.");
     // Drawn, and nothing filed yet.
     expect(posts(calls).map((c) => c.url)).toEqual(["/api/admin/helper/ask"]);
 
@@ -732,26 +743,60 @@ describe("night first, a face, and a warm first line", () => {
     expect(screen.queryByTestId("guide-who-answers")).toBeNull();
   });
 
-  it("opens with one warm line in her voice, by first name when the page knows it, then what she does and reads", () => {
+  it("greets by the part of the day and the first name, then says what she can do when nothing waits, then what she reads", () => {
     const anonymous = dock();
-    expect(screen.getByTestId("guide-first-line").textContent).toBe("Hello. What are we tending today?");
+    // Nobody told her what waits: she says what she can do, and claims nothing either way.
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening. Ask me where something lives, or name a change and I'll prepare it for your yes.");
+    expect(screen.getByTestId("guide-first-line").textContent).not.toMatch(/nothing (is )?(waiting|needs)/i);
     anonymous.unmount();
 
     session.userId = "u-rye";
     session.userName = "Rye Ashby";
     const signedIn = dock();
     const line = screen.getByTestId("guide-first-line");
-    expect(line.textContent).toBe("Hello, Rye. What are we tending today?");
-    // One line, plain, and nothing that scores or ranks anybody.
-    expect(line.textContent).not.toMatch(/!|\b(best|top|score|rank|better than)\b/i);
-    // What she reads and never reads follows it, from its one place, word for word as before.
-    expect(line.nextElementSibling?.textContent).toMatch(/^Ask me how to do something in Admin/);
-    expect(screen.getByText(/never read applications, proposals, interviews, terms or pay/)).toBeTruthy();
+    expect(line.textContent).toBe("Evening, Rye. Ask me where something lives, or name a change and I'll prepare it for your yes.");
+    // Warm and plain: three sentences at most, no figure of speech from the garden, nothing that scores or ranks anybody.
+    expect(line.textContent!.split(/(?<=[.?])\s+/)).toHaveLength(2);
+    expect(line.textContent).not.toMatch(/!|\b(tending|lantern|stone|best|top|score|rank|better than)\b/i);
+    // What she reads and never reads follows, true to the code as it stands.
+    expect(screen.getByTestId("guide-reads").textContent).toBe(
+      "I read settings, help text and the shape of the org chart. I don't read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. I don't move money.",
+    );
+    expect(line.nextElementSibling).toBe(screen.getByTestId("guide-reads"));
     signedIn.unmount();
 
-    // A host that knows the name better says so.
-    dock({ personName: "Ana Maria Soto" });
-    expect(screen.getByTestId("guide-first-line").textContent).toBe("Hello, Ana. What are we tending today?");
+    // A host that knows the name better says so, and the greeting follows the clock.
+    const morning = dock({ personName: "Ana Maria Soto", now: new Date(2026, 10, 28, 8, 0) });
+    expect(screen.getByTestId("guide-first-line").textContent).toMatch(/^Morning, Ana\. /);
+    morning.unmount();
+    dock({ personName: "Ana Maria Soto", now: new Date(2026, 10, 28, 14, 0) });
+    expect(screen.getByTestId("guide-first-line").textContent).toMatch(/^Afternoon, Ana\. /);
+  });
+
+  it("leads with what is ready for a yes, says what she did and what she left, and never claims the save", () => {
+    const PROPOSAL = { key: "feed.x", label: "X", category: "Feed", from: "1", to: "2", why: "", applyPath: "/api/admin/variables/feed.x" };
+    const one = dock({ personName: "Rye", onBar: [PROPOSAL], waiting: ["feed.x=2"] });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save.");
+    one.unmount();
+    dock({ personName: "Rye", onBar: [PROPOSAL, { ...PROPOSAL, key: "feed.y" }, { ...PROPOSAL, key: "feed.z" }], waiting: [] });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. Three changes are ready for your yes. They wait at the bottom of the page, and nothing is saved until you press Save.");
+  });
+
+  it("on the road to launch she leads with what blocks, as a number the page gave her, and invents none", () => {
+    const base = { surface: "journey" as const, modes: ["launch"] as const, groups: undefined, tab: undefined, onOpenTab: undefined, personName: "Rye" };
+    const three = dock({ ...base, blocking: 3 });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. Three things block the launch. Shall we take the first one?");
+    three.unmount();
+    const one = dock({ ...base, blocking: 1 });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. One thing blocks the launch. Shall we take it now?");
+    one.unmount();
+    const none = dock({ ...base, blocking: 0 });
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. Nothing blocks the launch. Ask me about any step that is left.");
+    none.unmount();
+    // The page did not say: she asks, and names no number and no deadline.
+    dock(base);
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. Ask me what blocks the launch, or about any step that is left.");
+    expect(screen.getByTestId("guide-first-line").textContent).not.toMatch(/\d|Monday|deadline/);
   });
 
   it("drops the first line once the conversation has started", async () => {
@@ -792,13 +837,24 @@ describe("never a raw address in her words", () => {
     expect(bubble().textContent).not.toContain("/admin");
   });
 
-  it("uses the checklist's own words for a launch row's address when the page has them", async () => {
-    mockFetch({ "POST /api/admin/assistant/launch": () => ({ body: { reply: "Next, go to /admin?tab=season and say how a season ends." } }) });
-    dock({ surface: "journey", modes: ["launch"], groups: undefined, tab: undefined, onOpenTab: undefined, linkNames: { "/admin?tab=season": "Open Season" } });
+  it("names a launch row's Admin tab by the tab's name, and keeps the row's own label for an address nothing else names", async () => {
+    mockFetch({
+      "POST /api/admin/assistant/launch": () => ({ body: { reply: "Next, go to /admin?tab=season and say how a season ends. Then read /governance/how#game-mechanics with the others." } }),
+    });
+    dock({
+      surface: "journey", modes: ["launch"], groups: undefined, tab: undefined, onOpenTab: undefined,
+      // A launch row's label is written for a button, so it starts with a verb.
+      linkNames: { "/admin?tab=season": "Open Season", "/governance/how#game-mechanics": "Open the game mechanics" },
+    });
     await userEvent.type(box(), "what next?{Enter}");
-    expect((await talk().findByRole("link", { name: "Open Season" })).getAttribute("href")).toBe("/admin?tab=season");
-    expect(bubble().textContent).toContain("Next, go to Open Season and say how a season ends.");
+    // The tab's own name, a noun, reads as a place inside her sentence.
+    expect((await talk().findByRole("link", { name: "Season" })).getAttribute("href")).toBe("/admin?tab=season");
+    expect(bubble().textContent).toContain("Next, go to Season and say how a season ends.");
+    expect(bubble().textContent).not.toContain("Open Season");
+    // No tab and no known page names this one, so the row's label does.
+    expect(talk().getByRole("link", { name: "Open the game mechanics" }).getAttribute("href")).toBe("/governance/how#game-mechanics");
     expect(bubble().textContent).not.toContain("/admin");
+    expect(bubble().textContent).not.toContain("/governance");
   });
 
   it("names the pages it knows, and says Open the page for an address nothing names", async () => {
@@ -840,39 +896,261 @@ describe("never a raw address in her words", () => {
   });
 });
 
+describe("what is ready has half the dock while there is little talk", () => {
+  const PROPOSAL = { key: "feed.show_birthdays", label: "Show birthdays", category: "Feed", from: "false", to: "true", why: "You asked for it.", applyPath: "/api/admin/variables/feed.show_birthdays" };
+  const list = () => screen.getByTestId("guide-say-yes");
+  const widths = () => list().className.split(/\s+/).filter((c) => /:w-/.test(c));
+
+  it("takes half the width with something prepared and one question and its answer, and the narrow column once the talk grows", async () => {
+    let n = 0;
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: n++ === 0 ? answer({ reply: "I can switch that for you.", proposal: PROPOSAL }) : answer({ reply: "Gladly." }) }) });
+    dock({ initialShape: "expanded" });
+    // Nothing prepared yet: the narrow column, quiet beside the conversation.
+    expect(list().hasAttribute("data-roomy")).toBe(false);
+    expect(widths()).toEqual(["@min-[44rem]:w-[19rem]", "@min-[64rem]:w-[24rem]"]);
+
+    await userEvent.type(box(), "show birthdays{Enter}");
+    await within(list()).findByTestId("helper-proposal");
+    // One question and its answer is a short talk.
+    expect(SHORT_TALK).toBe(2);
+    expect(list().getAttribute("data-roomy")).toBe("true");
+    expect(widths()).toEqual(["@min-[44rem]:w-1/2"]);
+
+    await userEvent.type(box(), "thank you{Enter}");
+    expect(await talk().findByText("Gladly.")).toBeTruthy();
+    // The talk has grown: the conversation has the room again, and the card is still listed.
+    expect(list().hasAttribute("data-roomy")).toBe(false);
+    expect(widths()).toEqual(["@min-[44rem]:w-[19rem]", "@min-[64rem]:w-[24rem]"]);
+    expect(within(list()).getByTestId("helper-proposal")).toBeTruthy();
+  });
+
+  it("holds for a change still on the save bar from an earlier visit, before anything is said", () => {
+    dock({ initialShape: "expanded", onBar: [PROPOSAL], waiting: ["feed.show_birthdays=true"] });
+    expect(list().getAttribute("data-roomy")).toBe("true");
+  });
+
+  it("is a rule of the wide view only: no numbered palette class comes with it", () => {
+    dock({ initialShape: "expanded", onBar: [PROPOSAL], waiting: ["feed.show_birthdays=true"] });
+    expect(list().className).not.toMatch(/(?:bg|text|border)-[a-z]+-\d{2,3}\b/);
+  });
+});
+
+/**
+ * BRIEF AND QUIET (the founder, 28 Nov 2026): one toggle in the dock, the quiet setting of the person's speaking
+ * dial. On, every fixed line says the same facts in the fewest words, and the setting rides with each ask.
+ */
+describe("brief and quiet: the one toggle for the speaking dial", () => {
+  const PROPOSAL = { key: "feed.show_birthdays", label: "Show birthdays", category: "Feed", from: "false", to: "true", why: "You asked for it.", applyPath: "/api/admin/variables/feed.show_birthdays" };
+  const toggle = () => screen.getByRole("button", { name: "Brief and quiet" });
+
+  it("is a real labelled control in the dock's header, a finger tall, that says whether it is on", () => {
+    dock();
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+    expect(toggle().className.split(/\s+/)).toContain("min-h-11");
+    // The other two settings are not offered: nothing follows from them yet.
+    expect(screen.queryByRole("button", { name: /walk with me|at decisions/i })).toBeNull();
+  });
+
+  it("switches every fixed line between its two forms, and back", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ reply: "I can switch that for you.", proposal: PROPOSAL }) }) });
+    dock({ personName: "Rye Ashby", initialShape: "expanded", initialStatus: { ...ON, lent: true } });
+    const list = () => screen.getByTestId("guide-say-yes");
+    // Warm and plain.
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Evening, Rye. Ask me where something lives, or name a change and I'll prepare it for your yes.");
+    expect(screen.getByTestId("guide-who-answers").textContent).toBe("Sol is answering, on Claude with a key the platform lends for now.");
+    expect(within(list()).getByRole("heading", { name: "Ready for your yes" })).toBeTruthy();
+    expect(within(list()).getByText("Nothing waits for your yes.")).toBeTruthy();
+
+    await userEvent.click(toggle());
+    expect(toggle().getAttribute("aria-pressed")).toBe("true");
+    // Brief and quiet: the same facts, the fewest words. No greeting, and no sentence about herself.
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Ask, or name a change.");
+    expect(screen.getByTestId("guide-reads").textContent).toBe("Reads settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people for roles. Moves no money.");
+    expect(screen.getByTestId("guide-reads").textContent).not.toMatch(/\bI\b/);
+    expect(screen.getByTestId("guide-who-answers").textContent).toBe("Sol, on a lent key.");
+    expect(within(list()).getByRole("heading", { name: "To approve" })).toBeTruthy();
+    expect(within(list()).getByText("All clear.")).toBeTruthy();
+
+    // What she prepared, in the brief form: the sheet's three labels.
+    await userEvent.type(box(), "show birthdays{Enter}");
+    const card = await within(list()).findByTestId("helper-proposal");
+    expect(card.textContent).toContain("Change");
+    expect(card.textContent).not.toContain("A change I prepared");
+    expect(within(card).getByRole("button", { name: "Save" })).toBeTruthy();
+    expect(within(card).getByRole("button", { name: "Skip" })).toBeTruthy();
+    expect(screen.getByTestId("guide-prepared-pointer").textContent).toBe("Under To approve.");
+
+    await userEvent.click(toggle());
+    expect(within(list()).getByRole("heading", { name: "Ready for your yes" })).toBeTruthy();
+    expect(within(card).getByText("A change I prepared")).toBeTruthy();
+    expect(within(card).getByRole("button", { name: "Review and save" })).toBeTruthy();
+    expect(screen.getByTestId("guide-prepared-pointer").textContent).toBe("I prepared this. It waits under Ready for your yes.");
+  });
+
+  it("says an alert in its brief form too, and still never in her voice", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ status: 503, body: { error: "assistant-unavailable" } }) });
+    dock();
+    await userEvent.click(toggle());
+    await userEvent.type(box(), "hi{Enter}");
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("No answers left today. Back tomorrow.");
+    expect(alert.textContent).not.toMatch(/\bI\b/);
+  });
+
+  it("is remembered for this person in their own browser, and a person who never chose leaves no trace", async () => {
+    const first = dock();
+    expect(Object.keys(localStorage).filter((k) => k.startsWith("garden.speaking"))).toEqual([]);
+    await userEvent.click(toggle());
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith("garden.speaking"));
+    expect(keys).toHaveLength(1);
+    expect(localStorage.getItem(keys[0])).toBe("quiet");
+    // Kept under a tag of the session, never the token itself.
+    expect(keys[0]).not.toContain("pw");
+    first.unmount();
+
+    // Opened again in a browser that only has what was stored, it is as this person left it.
+    forgetPageCopy();
+    const again = dock();
+    expect(toggle().getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Ask, or name a change.");
+    again.unmount();
+
+    // The next person on the same browser has their own.
+    dock({ password: "another-session" });
+    expect(toggle().getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("sends the person's setting with each ask, as one of the dial's closed values", async () => {
+    const calls = mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer() }) });
+    dock();
+    await userEvent.type(box(), "one{Enter}");
+    await talk().findAllByText("Here you go.");
+    expect(JSON.parse(calls[0].init.body).speaking).toBe("decisions");
+    await userEvent.click(toggle());
+    await userEvent.type(box(), "two{Enter}");
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(JSON.parse(calls[1].init.body).speaking).toBe("quiet");
+    expect(GARDEN_SPEAKING).toEqual(SERVER_SPEAKING);
+  });
+
+  it("greets briefly on the road to launch too, with what blocks", async () => {
+    dock({ surface: "journey", modes: ["launch", "organize"], groups: undefined, tab: undefined, onOpenTab: undefined, personName: "Rye", blocking: 3 });
+    await userEvent.click(toggle());
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Hi Rye. 3 block the launch. Start?");
+    await userEvent.click(screen.getByRole("button", { name: "Organizing" }));
+    // Nothing waits there that she knows of: no greeting, and no sentence about herself.
+    expect(screen.getByTestId("guide-first-line").textContent).toBe("Ask about organizing. Your brief first, then your calls, then the books.");
+  });
+});
+
+/**
+ * WHAT THE HOST TELLS HER (the voice sheet, version 3). The dock knows what she prepared and nothing else about what
+ * waits on a person, so a deadline, "nothing is waiting" and a first meeting each arrive from the host by a prop.
+ */
+describe("her first words follow what the host told her", () => {
+  const ONE_THING = { full: "One thing has a deadline: the Team page words lapse Monday. Shall I open them?", brief: "One approval lapses Monday. Open it?" };
+  const first = () => screen.getByTestId("guide-first-line").textContent;
+  const toggle = () => screen.getByRole("button", { name: "Brief and quiet" });
+
+  it("a first meeting: the welcome and the stance, under the guide's own name, and brief keeps only her name and the question", async () => {
+    dock({ personName: "Rye Ashby", firstMeeting: true });
+    expect(first()).toBe("Welcome. I'm Sol. You're starting a Game, and you get to design it. Tell me about the village you want to play in, and we'll set the first conditions together.");
+    // What she reads still follows, true to the build.
+    expect(screen.getByTestId("guide-reads").textContent).toMatch(/^I read settings, help text and the shape of the org chart\./);
+    await userEvent.click(toggle());
+    expect(first()).toBe("I'm Sol. What Game are you starting?");
+  });
+
+  it("something waits: she greets by first name and goes straight to the one thing the host handed her, word for word", async () => {
+    dock({ personName: "Rye Ashby", oneThing: ONE_THING });
+    expect(first()).toBe("Evening, Rye. One thing has a deadline: the Team page words lapse Monday. Shall I open them?");
+    await userEvent.click(toggle());
+    // Brief keeps the deadline.
+    expect(first()).toBe("Hi Rye. One approval lapses Monday. Open it?");
+  });
+
+  it("the host's one thing comes before what she prepared, and what she prepared before the host's all-clear", () => {
+    const PROPOSAL = { key: "feed.x", label: "X", category: "Feed", from: "1", to: "2", why: "", applyPath: "/api/admin/variables/feed.x" };
+    const both = dock({ personName: "Rye", oneThing: ONE_THING, nothingWaits: true, onBar: [PROPOSAL], waiting: ["feed.x=2"] });
+    expect(first()).toBe("Evening, Rye. One thing has a deadline: the Team page words lapse Monday. Shall I open them?");
+    both.unmount();
+    // The host said nothing waits, and she knows of a change she prepared: she never says "nothing needs you" over it.
+    dock({ personName: "Rye", nothingWaits: true, onBar: [PROPOSAL], waiting: ["feed.x=2"] });
+    expect(first()).toBe("Evening, Rye. One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save.");
+  });
+
+  it("nothing waits, on the host's word only: the stance line by the part of the day, and three words when brief", async () => {
+    const evening = dock({ personName: "Rye Ashby", nothingWaits: true });
+    expect(first()).toBe("Evening, Rye. Nothing needs you tonight. The Game is running without you, which is the point.");
+    evening.unmount();
+    const morning = dock({ personName: "Rye Ashby", nothingWaits: true, now: new Date(2026, 10, 28, 8, 0) });
+    expect(first()).toBe("Morning, Rye. Nothing needs you this morning. The Game is running without you, which is the point.");
+    morning.unmount();
+    dock({ personName: "Rye Ashby", nothingWaits: true });
+    await userEvent.click(toggle());
+    expect(first()).toBe("Nothing needs you.");
+  });
+
+  it("an empty one thing is no one thing: she falls back to what she can do", () => {
+    dock({ personName: "Rye", oneThing: { full: "  ", brief: "" } });
+    expect(first()).toBe("Evening, Rye. Ask me where something lives, or name a change and I'll prepare it for your yes.");
+  });
+
+  it("a guide that did not load is the system's line, never hers, in both forms", async () => {
+    mockFetch({ "GET /api/admin/helper": () => ({ status: 500, body: { error: "boom" } }) });
+    dock({ initialStatus: undefined });
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toBe("The guide didn't load. Reload to try again.");
+    expect(alert.textContent).not.toMatch(/\bI\b|boom/);
+    await userEvent.click(toggle());
+    expect(screen.getByRole("alert").textContent).toBe("Guide didn't load. Retry.");
+  });
+});
+
 /**
  * THE GUIDE'S RULES IN THE DOCK (the founder, 27 Nov 2026). What she says she reads is true of the rules the status
- * names, and her advice on a setting is a card with one button that takes the person there: no apply, no save,
- * nothing for the save bar.
+ * names, and her advice on a setting is a card with one control that takes the person there: no apply, no save,
+ * nothing waiting. Every fixed line has its brief form, and the facts are the same in both.
  */
 describe("her rules and her advice", () => {
   const WIDE: HelperStatus = { ...ON, rules: { wide: true, moneyDials: true } };
   const ADVISING: HelperStatus = { ...ON, rules: { wide: true, moneyDials: false } };
   const ADVICE = { key: "ledger.cycle_cap", label: "Issuance cap per cycle", category: "Ledger", now: "10000", suggested: "8000", why: "Issuance ran well under the cap for three cycles." };
+  const toggle = () => screen.getByRole("button", { name: "Brief and quiet" });
+  const reads = () => screen.getByTestId("guide-reads").textContent;
+  const money = () => screen.queryByTestId("guide-money")?.textContent ?? null;
 
-  it("says what she reads as it always was when the status names no rules", () => {
+  it("says what she reads as the dock always said it when the status names no rules", () => {
     dock();
-    expect(screen.getByText(/I read settings, help text and the shape of the org chart\./)).toBeTruthy();
-    expect(screen.getByText(/Money stays with you too\./)).toBeTruthy();
-    expect(screen.queryByText(/the money ones/)).toBeNull();
+    expect(reads()).toMatch(/^I read settings, help text and the shape of the org chart\./);
+    expect(money()).toBeNull();
   });
 
-  it("under the wide rules says she reads money and selection settings, still never applications or pay, and may prepare a money setting", () => {
+  it("under the wide rules says she reads money and selection settings, still no application or pay, and may prepare a money setting", async () => {
     dock({ initialStatus: WIDE });
-    expect(screen.getByText(/Ask me how to do something in Admin/)).toBeTruthy();
-    expect(screen.getByText(/I read your settings, the money ones and the ones about choosing people among them, the help text and the shape of the org chart\./)).toBeTruthy();
-    expect(screen.getByText(/I never read applications, proposals, interviews, or a role's terms or pay, and I never score, rank or recommend a person\./)).toBeTruthy();
-    expect(screen.getByText(/I can also prepare a change to a village-wide money setting, and nothing changes until you save it\. A person makes every change\./)).toBeTruthy();
-    // The old sentences would no longer be true, so they are gone.
-    expect(screen.queryByText(/Money stays with you too\./)).toBeNull();
-    expect(screen.queryByText(/can't help with choosing people for roles/)).toBeNull();
+    expect(reads()).toBe(
+      "I read settings, the money ones and the ones about choosing people among them, help text and the shape of the org chart. I don't read applications, proposals, interviews, or a role's terms or pay, and I take no part in choosing people for roles.",
+    );
+    expect(money()).toBe(
+      "On money, pay, votes and signatures I can say what I would do and why. I can also prepare a change to a village-wide money setting, and nothing changes until you save it. A person makes every change.",
+    );
+    // Brief and quiet: the same facts, and no sentence about herself.
+    await userEvent.click(toggle());
+    expect(reads()).toBe(
+      "Reads settings, money and selection ones included, help text and the org chart's shape. Never applications, proposals, interviews, or a role's terms or pay. No part in choosing people for roles.",
+    );
+    expect(money()).toBe("Advises on money, pay, votes and signatures. Prepares village-wide money settings, and nothing changes until you save. A person makes every change.");
+    for (const line of [reads(), money()]) expect(line).not.toMatch(/\bI\b/);
   });
 
-  it("with the village's money dial closed says she suggests on money and prepares no money setting", () => {
+  it("with the village's money dial closed says she advises on money and prepares no money setting, in both forms", async () => {
     dock({ initialStatus: ADVISING });
-    expect(screen.getByText(/On money, pay, votes and signatures I can say what I would do and why\. Your village keeps money settings for people to set, so I prepare none of them\. A person makes every change\./)).toBeTruthy();
-    expect(screen.queryByText(/I can also prepare a change/)).toBeNull();
-    expect(screen.getByText(/the money ones and the ones about choosing people among them/)).toBeTruthy();
+    expect(money()).toBe(
+      "On money, pay, votes and signatures I can say what I would do and why. Your village keeps money settings for people to set, so I prepare none of them. A person makes every change.",
+    );
+    expect(reads()).toMatch(/the money ones and the ones about choosing people among them/);
+    await userEvent.click(toggle());
+    expect(money()).toBe("Advises on money, pay, votes and signatures. Prepares no money setting: your village keeps those for people. A person makes every change.");
   });
 
   it("reads the rules off the status route, and nothing of them from a village with the dock off", async () => {
@@ -885,11 +1163,12 @@ describe("her rules and her advice", () => {
     mockFetch({ "GET /api/admin/helper": () => ({ body: { on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, rules: { wide: true, moneyDials: true } } }) });
     const off: HelperStatus[] = [];
     dock({ initialStatus: undefined, onStatus: (s) => off.push(s) });
-    await screen.findByText(/Money stays with you too\./);
+    await screen.findByTestId("guide-reads");
     expect("rules" in off[0]).toBe(false);
+    expect(money()).toBeNull();
   });
 
-  it("ADVICE: the setting, what it holds now, what she would set and why, and ONE button that takes the person there", async () => {
+  it("ADVICE: the setting, what it holds now, what she would set and why, and ONE control that takes the person there", async () => {
     const calls = mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ reply: "I would lower it.", refused: "Issuance cap per cycle is about money, and money settings stay in your own hands.", filing: null, advice: ADVICE }) }) });
     const onReview = vi.fn();
     dock({ initialStatus: ADVISING, onReview });
@@ -917,6 +1196,27 @@ describe("her rules and her advice", () => {
     expect(posts(calls).map((c) => c.url)).toEqual(["/api/admin/helper/ask"]);
   });
 
+  it("ADVICE: brief and quiet says the same facts in the fewest words, with no sentence about herself", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: ADVICE }) }) });
+    dock({ initialStatus: WIDE });
+    await userEvent.click(toggle());
+    await userEvent.type(box(), "what about the cap{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    expect(card.textContent).toContain("Advice");
+    expect(card.textContent).not.toContain("My advice");
+    expect(card.textContent).toContain("Now10000");
+    expect(card.textContent).toContain("Suggested8000");
+    expect(card.textContent).toContain("Nothing prepared. Yours to change.");
+    expect(card.textContent).not.toMatch(/\bI (would|have)\b/);
+    // Her reason is her own words to this person and is not cut. The control keeps its place, by the dock's brief name for it.
+    expect(card.textContent).toContain("Issuance ran well under the cap for three cycles.");
+    const links = within(card).getAllByRole("link");
+    expect(links.map((a) => `${a.textContent} ${a.getAttribute("href")}`)).toEqual(["Open /admin?tab=variables&variable=ledger.cycle_cap"]);
+    // Back to warm and plain: the same card, the full words.
+    await userEvent.click(toggle());
+    expect(screen.getByTestId("guide-advice").textContent).toContain("I would set8000");
+  });
+
   it("ADVICE: with no value to suggest it shows what the setting holds and her reason, and a blank value is said as blank", async () => {
     mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...ADVICE, now: "", suggested: null, why: "It reads right as it is." } }) }) });
     dock({ initialStatus: WIDE });
@@ -929,11 +1229,15 @@ describe("her rules and her advice", () => {
   });
 
   it("ADVICE: her reason is plain words, never a link, whatever it holds", async () => {
-    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...ADVICE, why: "Go to /admin?tab=tokens and https://elsewhere.example/collect now." } }) }) });
+    const hostile = "Go to /admin?tab=tokens and https://elsewhere.example/collect now, or 0x00000000000000000000000000000000000000Aa.";
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...ADVICE, why: hostile } }) }) });
     dock({ initialStatus: WIDE });
     await userEvent.type(box(), "x{Enter}");
     const card = await screen.findByTestId("guide-advice");
+    // Shown, whole, as text: the one link on the card is still the setting's own place.
+    expect(card.textContent).toContain(hostile);
     expect(within(card).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["/admin?tab=variables&variable=ledger.cycle_cap"]);
+    expect(card.querySelectorAll("a, button, [href], [onclick]")).toHaveLength(1);
   });
 
   it("ADVICE: expanded, it stays with her words and is never listed among what waits on a yes", async () => {
@@ -942,8 +1246,9 @@ describe("her rules and her advice", () => {
     await userEvent.type(box(), "x{Enter}");
     expect(await talk().findByTestId("guide-advice")).toBeTruthy();
     expect(screen.getAllByTestId("guide-advice")).toHaveLength(1);
-    expect(within(screen.getByTestId("guide-say-yes")).queryByTestId("guide-advice")).toBeNull();
-    expect(screen.getByText("Nothing is waiting on you.")).toBeTruthy();
+    const list = screen.getByTestId("guide-say-yes");
+    expect(within(list).queryByTestId("guide-advice")).toBeNull();
+    expect(within(list).getByText("Nothing waits for your yes.")).toBeTruthy();
     expect(screen.queryByTestId("guide-prepared-pointer")).toBeNull();
   });
 

@@ -3,42 +3,72 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Language: es\n"
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
 msgctxt "game variable platform.admin_guide_money, description"
 msgid "With the guide's dock on, the guide can prepare a change to a village-wide money setting, and nothing changes until a person saves it. A setting that names where value goes or who holds it is set by a person alone, and so are pay, payments and anything about one person. Turn this off and the guide still says what it would do about money, and prepares no money setting. This does nothing while the guide's dock is off."
 msgstr "Con el panel de la guía activado, la guía puede preparar un cambio en un ajuste de dinero de toda la aldea, y nada cambia hasta que una persona lo guarde. Un ajuste que nombra adónde va el valor o quién lo tiene lo fija solo una persona, y lo mismo vale para la paga, los pagos y cualquier cosa sobre una sola persona. Desactive esto y la guía todavía dice qué haría con el dinero, y no prepara ningún ajuste de dinero. Esto no hace nada mientras el panel de la guía esté desactivado."
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
 msgctxt "game variable platform.admin_guide_money, label"
 msgid "The guide prepares money settings"
 msgstr "La guía prepara ajustes de dinero"
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, what the guide reads under the wide rules"
-msgid "I read your settings, the money ones and the ones about choosing people among them, the help text and the shape of the org chart. I never read applications, proposals, interviews, or a role's terms or pay, and I never score, rank or recommend a person."
-msgstr "Leo sus ajustes, entre ellos los de dinero y los de elegir personas, el texto de ayuda y la forma del organigrama. Nunca leo solicitudes, propuestas, entrevistas, ni los términos o la paga de un rol, y nunca puntúo, ordeno ni recomiendo a una persona."
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she reads and never reads under the wide rules"
+msgid "I read settings, the money ones and the ones about choosing people among them, help text and the shape of the org chart. I don't read applications, proposals, interviews, or a role's terms or pay, and I take no part in choosing people for roles."
+msgstr "Leo los ajustes, entre ellos los de dinero y los de elegir personas, los textos de ayuda y la forma del organigrama. No leo solicitudes, propuestas, entrevistas, ni los términos o la paga de un rol, y no tomo parte en elegir personas para los roles."
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, what the guide may do about money, with the village's money dial on"
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she reads and never reads under the wide rules, brief"
+msgid "Reads settings, money and selection ones included, help text and the org chart's shape. Never applications, proposals, interviews, or a role's terms or pay. No part in choosing people for roles."
+msgstr "Lee ajustes, incluidos los de dinero y los de selección, textos de ayuda y la forma del organigrama. Nunca solicitudes, propuestas, entrevistas, ni los términos o la paga de un rol. No toma parte en elegir personas para los roles."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she may do about money, the village's money dial on"
 msgid "On money, pay, votes and signatures I can say what I would do and why. I can also prepare a change to a village-wide money setting, and nothing changes until you save it. A person makes every change."
 msgstr "Sobre dinero, paga, votos y firmas puedo decir qué haría y por qué. También puedo preparar un cambio en un ajuste de dinero de toda la aldea, y nada cambia hasta que usted lo guarde. Cada cambio lo hace una persona."
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, what the guide may do about money, with the village's money dial off"
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she may do about money, the village's money dial on, brief"
+msgid "Advises on money, pay, votes and signatures. Prepares village-wide money settings, and nothing changes until you save. A person makes every change."
+msgstr "Aconseja sobre dinero, paga, votos y firmas. Prepara ajustes de dinero de toda la aldea, y nada cambia hasta que usted guarde. Cada cambio lo hace una persona."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she may do about money, the village's money dial off"
 msgid "On money, pay, votes and signatures I can say what I would do and why. Your village keeps money settings for people to set, so I prepare none of them. A person makes every change."
 msgstr "Sobre dinero, paga, votos y firmas puedo decir qué haría y por qué. Su aldea deja los ajustes de dinero para que los fijen las personas, así que no preparo ninguno. Cada cambio lo hace una persona."
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, the guide's advice on a setting a person changes"
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, what she may do about money, the village's money dial off, brief"
+msgid "Advises on money, pay, votes and signatures. Prepares no money setting: your village keeps those for people. A person makes every change."
+msgstr "Aconseja sobre dinero, paga, votos y firmas. No prepara ningún ajuste de dinero: su aldea los deja para las personas. Cada cambio lo hace una persona."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice on a setting a person changes"
 msgid "My advice"
 msgstr "Mi consejo"
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, advice: the value the guide would set"
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice on a setting a person changes, brief"
+msgid "Advice"
+msgstr "Consejo"
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the value she would set"
 msgid "I would set"
 msgstr "Yo pondría"
 
-# needs-native-review: the guide's rules, her advice and the money dial, 27 Nov 2026
-msgctxt "guide dock, advice: nothing was prepared and the person makes the change"
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the value she would set, brief"
+msgid "Suggested"
+msgstr "Sugerido"
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: nothing was prepared and the person makes the change"
 msgid "I have prepared nothing here, and nothing has changed. If you agree, you make this change yourself."
 msgstr "No he preparado nada aquí, y nada ha cambiado. Si está de acuerdo, este cambio lo hace usted."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: nothing was prepared and the person makes the change, brief"
+msgid "Nothing prepared. Yours to change."
+msgstr "Nada preparado. El cambio es suyo."

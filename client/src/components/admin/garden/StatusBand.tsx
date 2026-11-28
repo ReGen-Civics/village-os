@@ -36,10 +36,17 @@ export interface StatusBandProps {
   moon?: string;
   /** A drawing of the moon, from the glyphs that already ship. Decoration beside the words. */
   moonGlyph?: ReactNode;
+  /**
+   * The page's switches, side by side: the view switch (the guide first, or the dashboard) and the lens toggle (the
+   * Grounds, the Desk). Drawn in the band on every garden screen and in every dock state, so a person always sees
+   * where they are and where else they can go; they wrap to a row of their own when the band is narrow. Left out,
+   * the band draws none and a caller places its lens toggle where it always did.
+   */
+  switches?: ReactNode;
   className?: string;
 }
 
-export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, className = "" }: StatusBandProps) {
+export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, switches, className = "" }: StatusBandProps) {
   const cycle = [season, moon].filter((w): w is string => typeof w === "string" && w.trim() !== "");
   const { t } = useLingui();
   return (
@@ -53,6 +60,12 @@ export default function StatusBand({ label, sentence, action, season, moon, moon
           {moonGlyph ? <span aria-hidden="true" className="inline-flex">{moonGlyph}</span> : null}
           <span>{cycle.join(" · ")}</span>
         </p>
+      ) : null}
+      {switches ? (
+        // `contents`: each switch is the band's own item, so one that has stepped back (a narrow screen) leaves no gap.
+        <div className="contents" data-testid="garden-band-switches">
+          {switches}
+        </div>
       ) : null}
       {action ? (
         action.href ? (
