@@ -613,7 +613,7 @@ export const ONBOARDING_WORDS = {
 
 /** The notices this stage sends. Bell only; none carries a name, a contact or a note. */
 export const ONBOARDING_NOTICES = {
-  referencesIn: (roles: readonly string[]) => `References arrived for an application for ${roles.join(", ") || "a role"}. Pick who follows up with each.`,
+  referencesIn: (roles: readonly string[]) => `References arrived for an application for ${roles.join(", ") || "a role"}. Claim the ones you will follow up.`,
   ownerTitle: (roles: readonly string[]) => `You follow up with a reference for an application for ${roles.join(", ") || "a role"}`,
   ownerBody: "Open the application to read how to reach them, then write your follow-up notes on the reference.",
   /** To the member, on their own application for a first long-term role. No name or contact rides on it. */

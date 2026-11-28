@@ -303,6 +303,18 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
     inApplicationTransaction(pool, (conn) => alignSigning(conn, { letter: currentLetter(LETTER_SOURCE), signingId: `sg-${userId}`, userId, now: new Date() }));
   const seatedIn = (userId: string) => q("SELECT org_role_id FROM org_role_assignments WHERE user_id = ? AND ended_at IS NULL", [userId]);
   const appOf = async (userId: string) => (await q("SELECT id, status FROM seat_applications WHERE candidate_user_id = ? ORDER BY created_at DESC", [userId]))[0];
+  /*
+   * THE NEXT TURN AFTER THE ROLE'S START. A moon role's seat starts on its start day, the first all-hands day within
+   * the moon, and no longer at adoption (QA round 5, 27 Nov 2026: the letter named a start day the seat did not
+   * keep). So the turn that can start it is the first one after that day. The day is read from the application the
+   * adoption wrote, never worked out here, so the day the suite runs on does not decide the result: on a day with no
+   * all-hands left in the moon the seat starts at once, and this is then a minute from now, as before.
+   */
+  const afterStart = async (userId: string): Promise<Date> => {
+    const row = (await q("SELECT starts_at FROM seat_applications WHERE candidate_user_id = ? ORDER BY created_at DESC", [userId]))[0];
+    const at = row?.starts_at ? new Date(row.starts_at).getTime() : 0;
+    return new Date(Math.max(at, Date.now()) + 60_000);
+  };
   const turn = (at: Date, seasonId = "s-now") =>
     runSeasonTurn({
       getPool: () => pool,
@@ -337,7 +349,7 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
     }
   };
 
-  describe("moon mode: the role starts at adoption, once the agreements exist", () => {
+  describe("moon mode: the role starts on its start day, once the agreements exist", () => {
     it("holds the start until both alignments, says the two steps, and starts at the next turn after", async () => {
       dialsOn(true);
       await moonMode(async () => {
@@ -358,26 +370,28 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
 
         // One of two: still nobody seated, and the shorter list is said once.
         await alignAgreement(who.id);
-        await turn(soon());
+        await turn(await afterStart(who.id));
         expect(await seatedIn(who.id)).toEqual([]);
         expect(state.notices.filter((x) => x.userId === who.id && x.title === START_WORDS.title(1))).toHaveLength(1);
         // An hourly retry says nothing new: the same key, which notify (unique dedupe_key) writes once.
-        await turn(soon());
+        await turn(await afterStart(who.id));
         const keys = new Set(state.notices.filter((x) => x.userId === who.id && x.title === START_WORDS.title(1)).map((x) => x.dedupeKey));
         expect(keys.size).toBe(1);
 
         // Both: the next turn starts the role.
         await alignLetter(who.id);
-        await turn(soon());
+        await turn(await afterStart(who.id));
         expect(await seatedIn(who.id)).toEqual([{ org_role_id: gate }]);
       });
     });
 
-    it("CONTROL: with the switches off the same adoption seats at once, as it does today", async () => {
+    it("CONTROL: with the switches off the same adoption seats on its start day, with no step asked", async () => {
       await moonMode(async () => {
         const who = await newAccount("moonoff");
         const id = await proposeAndConfirm(who.email);
         expect((await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id)).status).toBe(200);
+        // At once when no all-hands day is left in the moon; else at the first turn after the start day.
+        await turn(await afterStart(who.id));
         expect(await seatedIn(who.id)).toEqual([{ org_role_id: gate }]);
         expect(state.notices.some((x) => x.title.endsWith("before your role starts"))).toBe(false);
       });
@@ -451,7 +465,7 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
 
         await alignAgreement(who.id);
         expect((await call("GET", "/api/confidentiality", undefined, who.id)).body.you).toMatchObject({ holds: true });
-        await turn(soon());
+        await turn(await afterStart(who.id));
         expect(await seatedIn(who.id)).toEqual([{ org_role_id: gate }]);
       });
       // The first text was superseded by the second: one in force, never two.
@@ -754,7 +768,7 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
         await alignLetter(who.id);
         // Nothing waits on them now: the card goes, and the next turn seats them.
         expect((await call("GET", "/api/profile/role-start-steps", undefined, who.id)).body.waiting).toEqual([]);
-        await turn(soon());
+        await turn(await afterStart(who.id));
         expect(await seatedIn(who.id)).toEqual([{ org_role_id: gate }]);
         expect((await call("GET", "/api/profile/role-start-steps", undefined, who.id)).body.waiting).toEqual([]);
       });

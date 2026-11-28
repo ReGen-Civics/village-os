@@ -359,11 +359,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
-  application_reference_owner: {
-    group: "decisions",
-    celebrate: false,
-    waits: true,
-  },
   // A conversation's notes were added (0444). To the other interviewers only, never the applicant; no note words ride on it.
   application_conversation_notes: {
     group: "decisions",

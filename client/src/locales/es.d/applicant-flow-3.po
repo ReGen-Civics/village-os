@@ -333,3 +333,13 @@ msgstr "Llamadas escritas (de las reservadas)"
 msgctxt "role measures, holding chain"
 msgid "Seated now (current holders)"
 msgstr "Con rol ahora (quienes lo ocupan)"
+
+# needs-native-review: QA round 5, references are claimed and no longer assigned
+msgctxt "the bell: why a notice of this kind matters, kind application_references_in"
+msgid "An applicant sent their references. Claim the ones you will follow up."
+msgstr "Una persona solicitante envió sus referencias. Tome las que usted va a seguir."
+
+# needs-native-review: QA round 5, references are claimed and no longer assigned
+msgctxt "the bell: several notices of one kind batched into a line, kind application_references_in"
+msgid "{n} applications have references waiting to be claimed."
+msgstr "{n} solicitudes tienen referencias esperando a que alguien las tome."
