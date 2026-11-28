@@ -209,11 +209,11 @@ msgctxt "role pay"
 msgid "Pay was set here on {setDay}, after {agent} last edited the suggestion on {editedDay}. Check the figure still applies before you set it."
 msgstr "El pago se fijó aquí el {setDay}, después de que {agent} editara la sugerencia por última vez el {editedDay}. Revise que la cifra siga vigente antes de fijarla."
 
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+# needs-native-review: the pay setter, opened from Sera's list, offers her figure as a choice, 28 Nov 2026
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
-msgid "{agent} suggests {hersMoney} a month, used as this moon's pay"
-msgstr "{agent} sugiere {hersMoney} al mes, usado como el pago de esta luna"
+msgid "Use the figure {agent} lists, {hers} a month, as this moon's pay"
+msgstr "Usar la cifra que indica {agent}, {hers} al mes, como el pago de esta luna"
 
 # needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
 #: client/src/components/valuation/RolePayWithEngine.tsx

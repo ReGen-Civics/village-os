@@ -21,9 +21,10 @@
  *     pay it replaces said beside it. The person accepts it as it stands, or
  *     edits it, which makes it their own figure, and accepts. Steps 2 and 4
  *     above do not apply: no own number first, and the figure is prefilled;
- *   - on her monthly figure, Rye the same day: "As listed". It is written with
- *     no conversion, and the choice says a month's figure is used as this
- *     moon's pay (`seraFigure`, lib/seraPay.ts). It is written as the figure
+ *   - Rye, 28 Nov 2026, asked whether to prefill her monthly figure as a moon's
+ *     share or as listed: "As listed". It is written with no conversion, and
+ *     the choice keeps its existing sentence, that a month's figure is used as
+ *     this moon's pay (`seraFigure`, lib/seraPay.ts). It is written as the figure
  *     only where the village sets pay in US dollars, the money she lists in;
  *     elsewhere her words show and the rule above holds;
  *   - the estimate kept with the role's last pay setting arrives filled in,
@@ -166,19 +167,19 @@ export default function RolePayWithEngine({
   const s = suggestion?.ok ? suggestion.payee : null;
   const agent = sera?.agent ?? "";
   // Her figure and how it is said, from one place. `hersMinor` is null where the village sets pay in another currency.
-  const hers = seraFigure(sera, currency);
-  const hersMinor = hers?.minor ?? null;
-  const usd = hers?.usd ?? "";
+  const herListing = seraFigure(sera, currency);
+  const hersMinor = herListing?.minor ?? null;
+  const usd = herListing?.usd ?? "";
   /** The ruled exception is in force: opened from her row, with a figure of hers to write. */
   const herFigure = hersMinor !== null;
-  const hersMoney = hersMinor !== null ? wholeMoney(hersMinor, currency) : "";
+  const hers = hersMinor !== null ? wholeMoney(hersMinor, currency) : "";
   const chosen = choice ?? (herFigure ? "sera" : null);
   const figure = chosen === "suggestion" && s ? s.expected.totalMinor : chosen === "own" ? toMinor(own, currency) : chosen === "sera" ? hersMinor : null;
   const outside = s && figure !== null ? figure < s.band.lowMinor || figure > s.band.highMinor : false;
   const tokenName = (slug: string) => read.tokenNames[slug] ?? slug;
 
   // Outside the band, her figure arrives with its reason written: one true sentence, the person's to edit.
-  const herWords = hers ? t({ message: `${agent} lists this role at ${usd} a month.`, context: "role pay" }) : "";
+  const herWords = herListing ? t({ message: `${agent} lists this role at ${usd} a month.`, context: "role pay" }) : "";
   const reasonWritten = chosen === "sera" && outside && !reasonTouched;
   const reasonNow = reasonWritten ? "Other" : reason;
   const noteNow = noteTouched ? note : reasonWritten ? herWords : "";
@@ -204,7 +205,7 @@ export default function RolePayWithEngine({
     // From her row, the record keeps what she listed, what it replaces and what was saved.
     const record = !sera
       ? ""
-      : hers
+      : herListing
         ? t({ message: `Opened from the pay ${agent} lists: ${usd} a month. Before: ${before}. Saved: ${saved}.`, context: "role pay" })
         : t({ message: `Opened from a pay suggestion ${agent} lists. Before: ${before}. Saved: ${saved}.`, context: "role pay" });
     const typed = noteTouched ? note.trim() : "";
@@ -317,7 +318,7 @@ export default function RolePayWithEngine({
               <Trans context="role pay">Pay was set here on {setDay}, after {agent} last edited the suggestion on {editedDay}. Check the figure still applies before you set it.</Trans>
             </p>
           )}
-          {hers && !herFigure && (
+          {herListing && !herFigure && (
             <p className="text-sm text-muted-foreground"><Trans context="role pay">{agent} lists a figure in US dollars. This village sets pay in {currency}, so choose the suggestion or type your own figure.</Trans></p>
           )}
           <fieldset className="space-y-2">
@@ -325,7 +326,7 @@ export default function RolePayWithEngine({
             {herFigure && (
               <label className="flex min-h-[44px] items-center gap-2">
                 <input type="radio" name={`pay-${role.id}`} checked={chosen === "sera"} onChange={() => setChoice("sera")} />
-                <span><Trans context="role pay">{agent} suggests {hersMoney} a month, used as this moon's pay</Trans></span>
+                <span><Trans context="role pay">Use the figure {agent} lists, {hers} a month, as this moon's pay</Trans></span>
               </label>
             )}
             <label className="flex min-h-[44px] items-center gap-2">

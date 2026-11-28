@@ -133,7 +133,8 @@ describe("opened from one of Sera's pay rows: her figure arrives written, to acc
   });
   const STORED = { band: "general", estimatedHours: 40, estimateLow: null as number | null, estimateHigh: null as number | null, responsibility: "none" as string | null, setAt: "2026-10-30T12:00:00.000Z" };
   const money = (usd: number) => `$${usd.toLocaleString("en-US")}`;
-  const HERS = (usd: number) => `Sera suggests ${money(usd)} a month, used as this moon's pay`;
+  // The choice keeps its existing sentence: a month's figure, used as this moon's pay (Rye, 28 Nov 2026: "As listed").
+  const HERS = (usd: number) => `Use the figure Sera lists, ${money(usd)} a month, as this moon's pay`;
 
   const open = (props: { sera?: ReturnType<typeof sera> | null; stored?: typeof STORED | null; current?: { minor: number; currency: string; setAt: string | null } | null; model?: any }, put: (body: any) => any = () => ({ state: "set" })) => {
     const calls: Array<{ path: string; body: any; method?: string }> = [];
@@ -258,7 +259,7 @@ describe("opened from one of Sera's pay rows: her figure arrives written, to acc
     expect(screen.queryByText(sera(1200).sentence)).toBeNull();
     await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
     expect(screen.getByText(sera(1200).sentence)).toBeTruthy();
-    expect(screen.queryByLabelText(/^Sera suggests/)).toBeNull();
+    expect(screen.queryByLabelText(/^Use the figure Sera lists/)).toBeNull();
     expect(screen.getByText("Sera lists a figure in US dollars. This village sets pay in CRC, so choose the suggestion or type your own figure.")).toBeTruthy();
     expect((screen.getByRole("button", { name: "Set this role's pay" }) as HTMLButtonElement).disabled).toBe(true);
   });
@@ -269,7 +270,7 @@ describe("opened from one of Sera's pay rows: her figure arrives written, to acc
     await screen.findByText("Kind of work");
     await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
     expect(screen.getByText("Sera lists pay for Cook.")).toBeTruthy();
-    expect(screen.queryByLabelText(/^Sera suggests/)).toBeNull();
+    expect(screen.queryByLabelText(/^Use the figure Sera lists/)).toBeNull();
     expect(screen.queryByText(/lists a figure in US dollars/)).toBeNull();
   });
 
