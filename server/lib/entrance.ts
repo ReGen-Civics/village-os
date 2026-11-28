@@ -215,6 +215,23 @@ export function pickKeys(body: unknown, keep: readonly string[]): Record<string,
   return out;
 }
 
+/**
+ * The gate's own answer for one request, for a WRITE that hands a stranger the village's data (the gate itself
+ * lets every write through, see the header). True when the entrance is off, or the caller carries our own pass,
+ * is signed in, is an agent, or has entered and is in or inside its short look; the same order the gate reads.
+ * Find anything's guide asks it (server/routes/search.ts).
+ */
+export function entrancePasses(deps: EntranceGateDeps, entered: (req: Request) => Promise<EntryState | false>) {
+  return async (req: Request): Promise<boolean> => {
+    if (!deps.boolVar("entrance.required")) return true;
+    if (deps.passToken && carriesPass(req, deps.passToken())) return true;
+    if (await deps.authedUser(req)) return true;
+    if (deps.isAgent && (await deps.isAgent(req))) return true;
+    const entry = await entered(req);
+    return entry === "in" || entry === "look";
+  };
+}
+
 /** The gate. See the header. */
 export function entranceMiddleware(deps: EntranceGateDeps, entered: (req: Request) => Promise<EntryState | false>) {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {

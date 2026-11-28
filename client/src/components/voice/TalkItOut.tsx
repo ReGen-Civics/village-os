@@ -8,11 +8,11 @@
  * who is answering and can switch.
  */
 import { useState, type FormEvent } from "react";
-import { Send, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { FieldGuideAnswer } from "@shared/fieldGuide";
-import MicButton from "@/components/MicButton";
-import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 import MyGuide, { useGuideState } from "@/components/guide/MyGuide";
 import { gameFetch } from "@/lib/gameApi";
 import type { TalkTarget } from "./VoiceArea";
@@ -36,7 +36,8 @@ export default function TalkItOut({
   const { t } = useLingui();
   const [guide, setGuide] = useGuideState();
   const [lines, setLines] = useState<Line[]>([]);
-  const [draft, setDraft] = useState("");
+  // Kept per field in this tab (components/chat/chatDraft.ts), so closing Talk it out keeps a half-said thought.
+  const [draft, setDraft] = useChatDraft(`talk-it-out:${target.label}`);
   const [offer, setOffer] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -156,33 +157,18 @@ export default function TalkItOut({
         </div>
       )}
 
-      <form onSubmit={send} className="flex items-end gap-2">
-        <label className="sr-only" htmlFor={`talk-${target.label}`}>
-          {t({ message: "Your words to the guide", context: "talk it out: input label" })}
-        </label>
-        <textarea
-          id={`talk-${target.label}`}
-          rows={2}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              void send();
-            }
-          }}
-          className="min-h-11 flex-1 resize-none rounded-xl border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <MicButton onText={(chunk) => setDraft((d) => appendSpoken(d, chunk))} disabled={busy} />
-        <button
-          type="submit"
-          disabled={busy || !draft.trim()}
-          aria-label={t({ message: "Send", context: "talk it out: sends your words" })}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Send className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </form>
+      <ChatComposer
+        id={`talk-${target.label}`}
+        value={draft}
+        onChange={setDraft}
+        onSend={() => void send()}
+        busy={busy}
+        label={t({ message: "Your words to the guide", context: "talk it out: input label" })}
+        minRows={2}
+        // A reply or a draft landed above: Send stays in sight while the box keeps focus.
+        follow={`${lines.length}:${offer ? 1 : 0}`}
+        sendLabel={t({ message: "Send", context: "talk it out: sends your words" })}
+      />
     </section>
   );
 }

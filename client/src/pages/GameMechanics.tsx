@@ -54,6 +54,7 @@ import { ballotReturn } from "./gameMechanicsBallotCopy";
 import { dialLabel, localizeDials } from "./gameMechanicsDialWords";
 import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdoption";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { focusTargetId, useFocusTarget } from "@/lib/useFocusTarget";
 import { dialFromSearch } from "@shared/comms/memberView";
 import { localizeConstitution } from "./gameMechanicsConstitutionWords";
@@ -766,7 +767,7 @@ export default function GameMechanics() {
   const allCategoryCount = new Set(allDials.map((v) => v.category)).size;
   const tunedCount = allDials.filter((v) => !v.isDefault).length;
   const backedIds = new Set((standing?.backed ?? []).filter((b) => b.kind === "support").map((b) => b.proposalId));
-  const isAdminViewer = user?.role === "admin" || user?.role === "founder";
+  const isAdminViewer = hasAdminAccess(user);
   const gov = snapshot?.governance ?? null;
   const onSite = gov?.decidesBy === "onsite";
   // The public answer, with the signed-in one as the fallback before the snapshot lands.

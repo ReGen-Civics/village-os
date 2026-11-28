@@ -24,6 +24,7 @@ import { CanvasView } from "@/components/canvas/CanvasView";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { authToken, fetchGameMe } from "@/lib/gameApi";
 import {
   Check,
@@ -44,6 +45,9 @@ import HandOverPowers from "@/components/governance/HandOverPowers";
 import { useBrochurePages } from "@/lib/brochure";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { Trans } from "@lingui/react/macro";
+import { launchDoors, launchRecord, type LaunchFactsAnswer } from "@shared/launchFacts";
+import { readLaunchFacts } from "@/lib/launchReads";
+import { useLaunchLabelWords } from "@/lib/launchWords";
 
 /**
  * THE SECTION EACH REQUIREMENT SITS IN.
@@ -175,8 +179,17 @@ function viewOfFixAt(fixAt: string): JourneyView | null {
 export default function JourneyToLaunch() {
   const brochureOn = useBrochurePages() === true;
   const { user, loading } = useAuth();
-  const isAdmin = !!user && (user.role === "admin" || user.role === "founder");
+  const isAdmin = hasAdminAccess(user);
   const [status, setStatus] = useState<any>(null);
+  /**
+   * Where the village stands, as facts (`shared/launchFacts.ts`). The checklist
+   * payload carries `launchedAt` and nothing else about it, and the doors behind
+   * this page read three different facts, so each control below reads its own.
+   * Null until the read arrives, and null if it fails: the page then falls back
+   * to `launchedAt`, which is what it read before.
+   */
+  const [standing, setStanding] = useState<LaunchFactsAnswer | null>(null);
+  const standingWords = useLaunchLabelWords();
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState("");
   const [view, setViewState] = useState<JourneyView>(viewFromAddress);
@@ -238,6 +251,9 @@ export default function JourneyToLaunch() {
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((d) => { setStatus(d); setFailed(false); })
       .catch(() => setFailed(true));
+    // Asked fresh beside the checklist, so the two never describe different moments.
+    const token = authToken();
+    if (token) void readLaunchFacts(token, { fresh: true }).then(setStanding);
   }, []);
   useEffect(() => { if (isAdmin) load(); }, [isAdmin, load]);
   useEffect(() => {
@@ -379,6 +395,14 @@ export default function JourneyToLaunch() {
   const items: any[] = status?.items ?? [];
   const launched = !!status?.launchedAt;
   const vote: LaunchVote | null = status?.vote ?? null;
+  const facts = standing?.facts ?? null;
+  // The row buttons' door (`POST /api/admin/launch/confirm`) refuses once the checklist froze.
+  const rowsOpen = facts ? launchDoors(facts).rowsOpen : !launched;
+  // Whether the village VOTED, or was only marked launched by the old one-press act. The checklist payload carries
+  // the ballot too, so the header says the right one even when the facts could not be read.
+  const record = facts ? launchRecord(facts) : launched ? (status?.launchedByBallotId ? "voted" : "marked") : null;
+  const launchedOn = launched ? new Date(status.launchedAt).toLocaleDateString() : "";
+  const standingWord = standing ? standingWords(standing.label) : "";
 
   return (
     <Layout>
@@ -395,8 +419,10 @@ export default function JourneyToLaunch() {
             {launched ? "This village is live" : "Everything between here and open doors"}
           </h1>
           <p className="text-white text-sm max-w-2xl mb-6">
-            {launched
-              ? `The village voted to start its Game on ${new Date(status.launchedAt).toLocaleDateString()}. This checklist stays as the record of what that took.`
+            {launched && record === "marked" ? (
+              <Trans context="JourneyToLaunch, p">This village was marked launched on {launchedOn}. No launch vote carried. This checklist stays as the record of what that took.</Trans>
+            ) : launched
+              ? `The village voted to start its Game on ${launchedOn}. This checklist stays as the record of what that took.`
               : "Live status, not a to-do list someone forgot to update: every item below is either observed by the server right now, or confirmed by a named admin."}
           </p>
           <p className="text-sm mb-6">
@@ -412,6 +438,12 @@ export default function JourneyToLaunch() {
             * the handover is a journey, never a grade. The two counts say what
             * a founder can act on, and the rows below say which.
             */}
+          {/* Once the checklist froze the header above says where the village stands, so the label steps back. */}
+          {standing && !standing.facts.checklistFrozen && (
+            <p data-testid="journey-standing" className={`text-white text-xs mb-1 ${shownView === "canvas" ? "hidden" : ""}`}>
+              <Trans context="JourneyToLaunch, p">Where the village stands: {standingWord}</Trans>
+            </p>
+          )}
           {status && !launched && (
             <p data-testid="journey-remaining" className={`text-white text-xs ${shownView === "canvas" ? "hidden" : ""}`}>
               <Trans context="JourneyToLaunch, p">{status.blockingOpen} blocking · {status.recommendedOpen} recommended remaining
@@ -521,7 +553,7 @@ export default function JourneyToLaunch() {
                                   {i.fixLabel} <ChevronRight className="w-3 h-3" />
                                 </Link>
                               )}
-                              {i.checkKey.startsWith("manual:") && (
+                              {rowsOpen && user?.role === "founder" && i.checkKey.startsWith("manual:") && (
                                 <button
                                   onClick={() => confirm(i.id, i.state !== "ok")}
                                   disabled={busy === i.id}
@@ -547,7 +579,7 @@ export default function JourneyToLaunch() {
                                 * this is where naming none is recorded, with
                                 * a name and an instant on it.
                                 */}
-                              {i.declinable && (
+                              {rowsOpen && user?.role === "founder" && i.declinable && (
                                 <button
                                   onClick={() => confirm(i.id, i.declinedBy ? false : "declined")}
                                   disabled={busy === i.id}
@@ -559,6 +591,11 @@ export default function JourneyToLaunch() {
                                 >
                                   {i.declinedBy ? "Undo" : "Decline"}
                                 </button>
+                              )}
+                              {/* A founder's act (Rye, 27 Nov 2026): the server refuses everybody else, so the two buttons above
+                                  are a founder's alone, and anybody else reading the row is told why in their place. */}
+                              {rowsOpen && user?.role !== "founder" && (i.checkKey.startsWith("manual:") || i.declinable) && (
+                                <span data-testid="founder-answers" className="text-xs text-muted-foreground"><Trans context="JourneyToLaunch, span">Only a founder confirms or declines this before launch.</Trans></span>
                               )}
                             </div>
                           </div>
@@ -585,6 +622,7 @@ export default function JourneyToLaunch() {
                 <StartTheGame
                   status={status}
                   vote={vote}
+                  facts={facts}
                   isFounder={user?.role === "founder"}
                   busy={busy === "launch"}
                   onAsk={askTheVillage}

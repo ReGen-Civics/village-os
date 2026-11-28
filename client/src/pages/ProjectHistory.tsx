@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { useVillageName } from "@/hooks/useVillageName";
 import { authToken, useCatalyst } from "@/lib/gameApi";
 import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage";
@@ -265,7 +266,7 @@ interface DiscussionTopic {
  */
 function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
   const { user, loading } = useAuth();
-  const isAdmin = !!user && (user.role === "admin" || user.role === "founder");
+  const isAdmin = hasAdminAccess(user);
 
   useEffect(() => {
     if (isAdmin) {

@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
-import GameDashboard from "@/components/GameDashboard";
+import QuestsDoor, { QuestsReadFailed } from "@/components/profileDash/QuestsDoor";
 import YourQuests from "@/components/profileDash/YourQuests";
 import ProfileJourney from "@/components/ProfileJourney";
 import NeedCard from "@/components/NeedCard";
@@ -26,9 +26,8 @@ import InventoryCard from "@/components/profile/InventoryCard";
 import QuietSection from "@/components/profile/QuietSection";
 import { SHEET_SECTIONS } from "@/components/profile/sheetSections";
 import SeasonPlanSection from "@/components/profile/SeasonPlanSection";
-import YourRolesSection from "@/components/profile/YourRolesSection";
-import PlayerRoleCard from "@/components/playerCard/PlayerRoleCard";
-import { FirstDaysContext } from "@/components/playerCard/CardLower";
+import MyRoleCards, { RoleJumpLine } from "@/components/profileDash/MyRoleCards";
+import { useClaimedAdvance } from "@/components/profileDash/useClaimedAdvance";
 import MyMoonMount, { holdsReviewPower } from "@/components/myMoon/MyMoonMount";
 import RolesBand from "@/components/profileDash/RolesBand";
 import ProposeBanner from "@/components/roleProposal/ProposeBanner";
@@ -158,7 +157,7 @@ export default function Profile() {
   const config = useGameConfig();
   /** The phone's tab (profileDash/ProfileTabs.tsx). A desktop shows every section whatever this holds. */
   const [tab, setTab] = useState<ProfileTab>("today");
-  /** A crossing GameDashboard claimed, played as the full-screen moment. */
+  /** A crossing the profile claimed off /api/game/me (useClaimedAdvance), played as the full-screen moment. */
   const [advance, setAdvance] = useState<StageAdvance | null>(null);
   /** Every read the dashboard takes, once for the page. */
   const dash = useDashData(user?.id ?? null);
@@ -181,6 +180,8 @@ export default function Profile() {
    * until there is something true to draw, and never render a zero standing in
    * for an answer that has not arrived.
    */
+  /** The progression read failed: the Quests door then says the general words, and My work keeps its link. */
+  const [progFailed, setProgFailed] = useState(false);
   const [prog, setProg] = useState<{
     stageIndex: number;
     consentedQuests: number;
@@ -222,6 +223,7 @@ export default function Profile() {
       .catch(() => setMeFailed(true));
   };
   useEffect(reloadMe, []);
+  useClaimedAdvance(me, setAdvance);
   /**
    * THE PATH (the Root): the one next step, from the conductor the server runs
    * (`me.path`, shared/yourPath.ts). The card, the strip and the whole-path
@@ -278,8 +280,9 @@ export default function Profile() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (live && d) setProg(d);
+        else if (live) setProgFailed(true);
       })
-      .catch(() => {});
+      .catch(() => live && setProgFailed(true));
     return () => {
       live = false;
     };
@@ -460,7 +463,7 @@ export default function Profile() {
         measures. MoonDock is `fixed` and placed last for source order: a
         keyboard reaches the member's own page before it reaches an ornament.
       */}
-      <div className="relative sheet-night min-h-screen bg-background pb-32 pt-4 sm:py-10 md:pb-28">
+      <div className="relative sheet-night min-h-screen bg-background pb-32 pt-4 sm:py-10 md:pb-28 [&_[id]]:scroll-mt-28 max-sm:[&_[id]]:scroll-mt-40">
         <NightMotes />
         <div className="relative mx-auto max-w-[1300px] px-4 sm:px-10">
           <ProfileTabs tab={tab} onTab={setTab} />
@@ -668,8 +671,9 @@ export default function Profile() {
                   </div>
                 )}
                 <div className={tabOf("quests")}>
-                  {me && <YourQuests claims={me.quests ?? []} />}{/* in full: doing, and suited to your roles (the lead, 27 Nov 2026) */}
-                  <GameDashboard me={me} meFailed={meFailed} showNextStep={false} onAdvance={setAdvance} />
+                  {me ? <YourQuests claims={me.quests ?? []} /> : meFailed && <QuestsReadFailed onRetry={reloadMe} />}{/* in full: doing, done, suited */}
+                  {/* The village's board is one door now (the portal's next moves, 27 Nov 2026), last for a role holder. */}
+                  <QuestsDoor holdsRole={prog ? (prog.roles ?? []).length > 0 : progFailed ? false : undefined} />
                 </div>
                 {/* Deeds: stage turns, firsts, recognition flows, the ledger. */}
                 <div id="ledger" className={`scroll-mt-28 ${tabOf("treasury")}`}>
@@ -697,16 +701,12 @@ export default function Profile() {
                 In the narrow character column the headings wrapped a word at
                 a time and the applications card left a blank field beside it.
                 The proposal door itself stays at the top. */}
-            {/* On a phone, My moon draws above the player card (RolesBand); a desktop keeps this order. */}
+            {/* One card per role (MyRoleCards: Your roles and the player card, merged) in the card slot, so a phone still draws My moon first (batch 157). */}
             <RolesBand
               id="roles"
               className={`scroll-mt-28 ${tabOf("roles")}`}
-              roles={<YourRolesSection />}
-              card={
-                <FirstDaysContext.Provider value={firstDays}>
-                  <PlayerRoleCard />
-                </FirstDaysContext.Provider>
-              }
+              roles={<RoleJumpLine />}
+              card={<MyRoleCards firstDays={firstDays} />}
               moon={<MyMoonMount reviewer={holdsReviewPower(prog?.capabilityCatalogue)} />}
               season={!firstDays ? <SeasonPlanSection /> : null}
             />

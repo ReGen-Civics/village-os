@@ -234,15 +234,48 @@ describe("the picker", () => {
     expect(Array.from(first.querySelectorAll("[data-speed-pick]")).map((b) => b.getAttribute("data-speed-pick"))).toEqual(["/library"]);
   });
 
-  it("adds the tapped page into the slot, saves it, and puts focus on the new card", async () => {
+  /*
+   * The lead, 27 Nov 2026: "when you click the 'add' card it will also open the edit for them all so it helps users
+   * know they can edit any of them". A "+" opens edit mode and the picker together, and edit mode stays on after.
+   */
+  it("opens edit mode and the picker together from a +, with the words for both", async () => {
+    const { container } = await draw();
+    fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[1]);
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Remove Journal" })).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: "Add a card" })).toBeInTheDocument();
+    expect(screen.getByText("Editing your cards. Pick one to add, or drag a card to move it.")).toBeInTheDocument();
+    // Focus is in the picker (its search), not pulled away to Done.
+    await settle();
+    expect(screen.getByRole("dialog", { name: "Add a card" }).contains(document.activeElement)).toBe(true);
+  });
+
+  it("keeps edit mode on when the picker closes, with focus back on the +", async () => {
+    const { container } = await draw();
+    const plus = screen.getAllByRole("button", { name: /^Add a card, place / })[1]!;
+    fireEvent.click(plus);
+    const picker = await screen.findByRole("dialog", { name: "Add a card" });
+    fireEvent.keyDown(picker, { key: "Escape" });
+    await settle();
+    expect(screen.queryByRole("dialog", { name: "Add a card" })).toBeNull();
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: /^Add a card, place / })[1]).toHaveFocus();
+  });
+
+  it("adds the tapped page into the slot, stays in edit mode with focus on the new card, and Done saves", async () => {
     const { container } = await draw();
     fireEvent.click(screen.getAllByRole("button", { name: /^Add a card, place / })[1]);
     const picker = await screen.findByRole("dialog", { name: "Add a card" });
     fireEvent.click(within(picker).getByRole("button", { name: /Living Map/ }));
     await settle();
     expect(slots(container)).toEqual(["/profile", "/messages", TASK_BOARD_PATH, "/journal", "+", "/map"]);
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    expect(session.puts).toEqual([]);
+    expect(document.activeElement?.closest("[data-speed-card]")?.getAttribute("data-speed-card")).toBe("/map");
+    fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    await settle();
+    expect(container.querySelector("[data-editing]")).toBeNull();
     expect(session.puts.at(-1)).toEqual({ who: "u1", body: { slots: ["/profile", "/messages", TASK_BOARD_PATH, "/journal", null, "/map"] } });
-    expect(screen.getByRole("link", { name: /Living Map/ })).toHaveFocus();
   });
 });
 
@@ -267,11 +300,12 @@ describe("edit mode", () => {
     // The held card is the one picked for the strip.
     expect(screen.getByRole("button", { name: "Journal" })).toHaveAttribute("aria-pressed", "true");
     expect(nav).not.toHaveBeenCalled();
-    // The finger lifts; the swallow lets go a moment later.
+    // The finger lifts; the swallow lets go a moment later, and focus is still on Done (the menu's QA, round 2).
     fireEvent.pointerUp(document.body, { pointerId: 1 });
     act(() => {
       vi.advanceTimersByTime(100);
     });
+    expect(screen.getByRole("button", { name: "Done" })).toHaveFocus();
   });
 
   it("swallows the finger lifting after a hold (a touch), so it never taps what edit mode drew under it", async () => {
@@ -414,6 +448,21 @@ describe("edit mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     await settle();
     expect(session.puts.at(-1)?.body.slots).toEqual(["/profile", null, TASK_BOARD_PATH, "/journal", null, null]);
+  });
+
+  /* The menu's QA, round 2: an Escape meant for a dialog above the sheet (search) threw an unsaved edit away. */
+  it("keeps an unsaved edit when Escape belongs to a dialog above the sheet", async () => {
+    const { container } = await draw();
+    fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
+    const other = document.createElement("div");
+    other.setAttribute("role", "dialog");
+    const field = document.createElement("input");
+    other.appendChild(field);
+    document.body.appendChild(other);
+    field.focus();
+    fireEvent.keyDown(field, { key: "Escape" });
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    other.remove();
   });
 
   it("leaves without saving on Escape wherever focus is, and Reset puts the defaults back", async () => {

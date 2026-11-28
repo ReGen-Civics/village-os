@@ -70,10 +70,11 @@ export default function GovernanceNow() {
         <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:py-12 xl:max-w-[1200px]">
           <header className="space-y-2">
             <p className={EYEBROW}>
-              <Trans context="governance now: eyebrow">How the village decides</Trans>
+              <Trans context="governance now: eyebrow, the hub's name">Governance</Trans>
             </p>
+            {/* One name per page (27 Nov 2026): the heading says what the menu and the tab say. */}
             <h1 className={H1}>
-              <Trans context="governance now: h1">Governance</Trans>
+              <Trans context="governance now: h1">What's happening now</Trans>
             </h1>
             <p className={LEDE}>
               <Trans context="governance now: lede">What the village is deciding, what your voice is here, and what waits on you.</Trans>

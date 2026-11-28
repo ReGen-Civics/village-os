@@ -40,6 +40,8 @@ export const NAV_WORDS: Readonly<Record<string, MessageDescriptor>> = {
   "Library": msg({ message: "Library", context: "site menu" }),
   "Tools": msg({ message: "Tools", context: "site menu" }),
   "Wallet": msg({ message: "Wallet", context: "site menu" }),
+  // The member's own row for sending and receiving credits (27 Nov 2026).
+  "Pay": msg({ message: "Pay", context: "site menu" }),
   "Health": msg({ message: "Health", context: "site menu" }),
   "Governance": msg({ message: "Governance", context: "site menu" }),
   "Decisions": msg({ message: "Decisions", context: "site menu" }),
