@@ -53,7 +53,7 @@ export const ROOM_MIRROR: WordMirror<typeof ROOM_COPY> = {
   takeOver: msg({ message: "Take over facilitating", context: "live session room: takeOver" }),
   takeOverHint: msg({ message: "If the facilitator has stepped away, an admin can hold the room from here.", context: "live session room: takeOverHint" }),
   whoIsHere: msg({ message: "Who is here", context: "live session room: whoIsHere" }),
-  nobodyHere: msg({ message: "The room is quiet. Nobody has arrived yet.", context: "live session room: nobodyHere" }),
+  nobodyHere: msg({ message: "Nobody has arrived yet.", context: "live session room: nobodyHere" }),
   breathTitle: msg({ message: "Breathe together", context: "live session room: breathTitle" }),
   breathIdle: msg({ message: "When the facilitator starts it, every screen breathes at the same pace.", context: "live session room: breathIdle" }),
   breathDone: msg({ message: "Let the quiet sit for a moment.", context: "live session room: breathDone" }),
