@@ -34,7 +34,7 @@ import { alsoNeedsLine, joinNames, turnOnPlan, type LibraryViewer, type PlanModu
 import type { ModuleLifecycle } from "@shared/modules";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { MenuChoice } from "@shared/moduleMenu";
-import { saveMenuChoices } from "@/components/admin/moduleMenuApi";
+import { saveMenuChoices } from "@/lib/moduleMenuApi";
 // The name and place each new menu entry takes (the lead, 27 Nov 2026), in its own chunk with the menu's rules.
 const MenuPlaceStep = lazy(() => import("@/components/admin/MenuPlaceStep"));
 
@@ -114,7 +114,7 @@ export default function TurnOnAction({
       return;
     }
     toast.success(to === "preview" ? `${joinNames(names)} on, in preview` : `${joinNames(names)} on for members`);
-    // Then its menu name and place, the way the menu saves (moduleMenuApi.ts). Kept as they were, nothing is written.
+    // Then its menu name and place, the way the menu saves (lib/moduleMenuApi.ts). Kept as they were, nothing is written.
     if (menuChoices.length) {
       const joined = joinNames(names);
       const saved = await saveMenuChoices(menuChoices, t({ message: `Menu name and place for ${joined}`, context: "TurnOnAction: the proposal's summary for a menu name and place" }));
@@ -184,7 +184,7 @@ export default function TurnOnAction({
         )}
         {arriving.length > 0 && (
           <Suspense fallback={null}>
-            <MenuPlaceStep ids={arriving} onChoices={onMenuChoices} on={(id) => (all.find((m) => m.id === id)?.lifecycle ?? "off") !== "off"} />
+            <MenuPlaceStep ids={arriving} onChoices={onMenuChoices} />
           </Suspense>
         )}
         <button type="button" disabled={busy || !menuAllowed} onClick={press(turnOn)} className={BUTTON}>
@@ -237,7 +237,7 @@ export default function TurnOnAction({
           </label>
           {arriving.length > 0 && (
             <Suspense fallback={null}>
-              <MenuPlaceStep ids={arriving} readOnly on={(id) => (all.find((m) => m.id === id)?.lifecycle ?? "off") !== "off"} />
+              <MenuPlaceStep ids={arriving} readOnly />
             </Suspense>
           )}
           {dry && (

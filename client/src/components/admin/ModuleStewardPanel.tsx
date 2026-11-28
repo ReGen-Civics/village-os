@@ -46,7 +46,7 @@ import SetupNeeded from "@/components/modules/SetupNeeded";
 import ConsentCard from "@/components/modules/ConsentCard";
 import { switchInOrder } from "@/components/modules/switchModules";
 import { moduleMenuFor, type MenuChoice } from "@shared/moduleMenu";
-import { saveMenuChoices } from "@/components/admin/moduleMenuApi";
+import { saveMenuChoices } from "@/lib/moduleMenuApi";
 // "In the menu as" and "Where" while a module is turned on (the lead, 27 Nov 2026), with the menu's rules, in its own chunk.
 const MenuPlaceStep = lazy(() => import("@/components/admin/MenuPlaceStep"));
 import { POOL_REASON_COPY, TIER_PILL } from "@shared/moduleCatalog";
@@ -130,7 +130,7 @@ export default function ModuleStewardPanel({
       toast.error(out.refused.id === m.id ? out.refused.message : `${out.refused.name}: ${out.refused.message}`);
     } else {
       toast.success(`${m.name} is now ${LIFECYCLE_LABEL[to].toLowerCase()}`);
-      // Its menu name and place, saved the way the menu saves (moduleMenuApi.ts); kept as they were, nothing is written.
+      // Its menu name and place, saved the way the menu saves (lib/moduleMenuApi.ts); kept as they were, nothing is written.
       if (lifecycle === "off" && menuChoices.length) {
         const name = m.name;
         const saved = await saveMenuChoices(menuChoices, t({ message: `Menu name and place for ${name}`, context: "ModuleStewardPanel: the proposal's summary for a menu name and place" }));
@@ -312,7 +312,7 @@ export default function ModuleStewardPanel({
       {placing && (
         <div className="mt-3 space-y-3" data-testid="turn-on-menu-step">
           <Suspense fallback={null}>
-            <MenuPlaceStep ids={arriving(placing)} onChoices={onMenuChoices} on={(id) => (all.find((x: any) => x.id === id)?.lifecycle ?? "off") !== "off"} />
+            <MenuPlaceStep ids={arriving(placing)} onChoices={onMenuChoices} />
           </Suspense>
           {!pending && <div className="flex flex-wrap gap-2">
             <button type="button" disabled={busy || !menuAllowed} onClick={() => consentOr(placing)} className="min-h-[44px] rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white disabled:opacity-40">

@@ -140,4 +140,12 @@ describe("Admin, Menu, Module entries", () => {
     // A module entry has one name field on the page: it left the plain list of entries.
     expect(screen.queryByLabelText("Your word for Forum")).toBeNull();
   });
+
+  it("is where admin search lands for moving a module's entry", async () => {
+    window.history.replaceState({}, "", "/admin?tab=setup&setting=menu.module-place");
+    wrap(<MenuPanel password="pw" />);
+    const heading = await screen.findByText("Module entries");
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(window.location.search).toBe("?tab=setup");
+  });
 });

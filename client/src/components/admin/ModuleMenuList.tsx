@@ -13,6 +13,7 @@ import { useModules } from "@/modules/ModuleProvider";
 import type { MenuDoc } from "@shared/menuDoc";
 import { MODULE_MENU, choiceOf, withChoices, type MenuChoice } from "@shared/moduleMenu";
 import ModuleMenuFields from "./ModuleMenuFields";
+import { useSettingFocus } from "./settingFocus";
 
 export default function ModuleMenuList({ doc, setDoc }: { doc: MenuDoc; setDoc: (d: MenuDoc) => void }) {
   const { t, i18n } = useLingui();
@@ -26,11 +27,14 @@ export default function ModuleMenuList({ doc, setDoc }: { doc: MenuDoc; setDoc: 
     else delete labels[c.href];
     setDoc({ ...next, labels });
   };
+  // Admin search lands here for both acts (shared/adminSearch.ts: menu.module-name, menu.module-place).
+  useSettingFocus("menu.module-name", "module-menu-entries", true);
+  useSettingFocus("menu.module-place", "module-menu-entries", true);
   const toggleHidden = (href: string, hide: boolean) => setDoc({ ...doc, hidden: hide ? [...doc.hidden, href] : doc.hidden.filter((h) => h !== href) });
 
   return (
     <section aria-labelledby="module-menu-entries" className="mb-4">
-      <p id="module-menu-entries" className="text-sm font-medium text-foreground mb-1">
+      <p id="module-menu-entries" tabIndex={-1} className="text-sm font-medium text-foreground mb-1">
         {t({ message: "Module entries", context: "admin menu: the modules' own menu entries" })}
       </p>
       <p className="text-xs text-muted-foreground mb-3 max-w-prose">

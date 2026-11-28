@@ -17,12 +17,15 @@ import { navRows } from "@/config/navNest";
 import { placedMenu } from "@/config/navPlaces";
 import { useGameConfig } from "@/lib/gameApi";
 import { storyPageShown } from "@/lib/brochure";
-import { MENU_ACCOUNT, rowStarts, type MenuPlace } from "@shared/menuPlace";
+import { MENU_ACCOUNT, type MenuPlace } from "@shared/menuPlace";
 import { MENU_LABEL_MAX, type MenuDoc } from "@shared/menuDoc";
-import { FOLDER_MAX, MENU_SHAPE, foldersOf, placeProblems, withChoices, type MenuChoice, type ModuleMenuEntry } from "@shared/moduleMenu";
+import { FOLDER_MAX, MENU_SHAPE, foldersOf, positionSlots, problemsFor, withChoices, type MenuChoice, type ModuleMenuEntry } from "@shared/moduleMenu";
 
 const GROUP_KEYS = [...NAV.filter(isGroup).map((g) => g.label), MENU_ACCOUNT];
 const SEP = "::";
+// The page's own tokens, in Admin and on the module page alike: Admin keeps them light unless its night is chosen.
+const LABEL = "block text-sm font-medium text-foreground";
+const INPUT = "mt-1 block w-full min-h-11 rounded-lg border border-border bg-background px-2.5 py-2 text-sm text-foreground";
 
 export interface ModuleMenuFieldsProps {
   entry: ModuleMenuEntry;
@@ -37,8 +40,6 @@ export interface ModuleMenuFieldsProps {
 export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: ModuleMenuFieldsProps) {
   const { t, i18n } = useLingui();
   const cfg = useGameConfig();
-  // The page's own tokens, in Admin and on the module page alike: Admin keeps them light unless its night is chosen.
-  const look = { label: "text-sm font-medium text-foreground", input: "mt-1 block w-full min-h-11 rounded-lg border border-border bg-background px-2.5 py-2 text-sm text-foreground", box: "rounded-lg border border-border bg-muted p-3 text-sm text-foreground", quiet: "text-xs text-muted-foreground", here: "font-semibold text-foreground underline decoration-2 underline-offset-4", warn: "text-sm text-destructive" };
 
   const platformName = navWord(entry.label, i18n);
   const groupName = (g: string) => (g === MENU_ACCOUNT ? t({ message: "Your account menu", context: "module menu place: the account menu as a place" }) : doc.groups[g] || navWord(g, i18n));
@@ -55,29 +56,9 @@ export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: M
   const targetItems: readonly NavLink[] = choice.place.group === MENU_ACCOUNT ? placed.account : placedGroup && isGroup(placedGroup) ? placedGroup.items : [];
   const rows = navRows(targetItems.filter(shows));
 
-  // Positions: before each of the group's other rows (or the folder's other entries), and never below the Module Library.
-  const others = targetItems.filter((l) => l.href !== entry.href);
-  const inFolder = choice.place.sub ? others.filter((l) => l.sub === choice.place.sub) : [];
-  const slots: { at: number; after: string | null }[] = [];
-  if (inFolder.length) {
-    const stop = inFolder.findIndex((l) => l.href === "/modules");
-    const n = stop === -1 ? inFolder.length : stop;
-    for (let i = 0; i <= n; i++) slots.push({ at: i, after: i === 0 ? null : nameOf(inFolder[i - 1]!) });
-  } else {
-    const starts = rowStarts(others);
-    const pin = others.findIndex((l) => l.href === "/modules");
-    const pinRow = pin === -1 ? -1 : starts.findIndex((s, i) => s <= pin && (starts[i + 1] ?? Infinity) > pin);
-    const n = pinRow === -1 ? starts.length : pinRow;
-    for (let i = 0; i <= n; i++) {
-      const prev = i === 0 ? null : others[starts[i - 1]!]!;
-      slots.push({ at: i, after: prev ? (prev.sub ? folderName(prev.sub) : nameOf(prev)) : null });
-    }
-  }
+  const slots = positionSlots(targetItems, entry.href, choice.place.sub).map((s) => ({ at: s.at, after: s.after ? (s.after.sub && !choice.place.sub ? folderName(s.after.sub) : nameOf(s.after as NavLink)) : null }));
   const at = choice.place.at ?? slots[slots.length - 1]?.at ?? 0;
-
-  const problems = placeProblems(next.places ?? {}, next.hidden).filter(
-    (p) => p.href === entry.href || ((p.code === "rows" || p.code === "folder-full") && p.group === choice.place.group && (!p.folder || p.folder === choice.place.sub)),
-  );
+  const problems = problemsFor(next, entry.href, choice.place);
   const said = problems.map((p) => {
     if (p.code === "rows") {
       const group = groupName(p.group!);
@@ -95,22 +76,28 @@ export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: M
   });
 
   const shownGroup = groupName(choice.place.group);
+  // One preview line; this entry is marked.
+  const here = (l: NavLink) => l.href === entry.href;
+  const line = (l: NavLink) => (
+    <li key={l.href} className={here(l) ? "font-semibold underline decoration-2 underline-offset-4" : undefined} data-here={here(l) ? "" : undefined}>
+      {nameOf(l)}
+    </li>
+  );
   const setPlace = (place: MenuPlace) => onChange({ ...choice, place });
-  const id = `menu-place-${entry.href.replace(/[^a-z0-9]+/gi, "-")}`;
 
   return (
     <fieldset className="space-y-3" data-menu-place={entry.href}>
-      <label className={`block ${look.label}`}>
+      <label className={LABEL}>
         {t({ message: "In the menu as", context: "module menu place: the entry's name field" })}
         <input
           value={choice.label}
           onChange={(e) => onChange({ ...choice, label: e.target.value.slice(0, MENU_LABEL_MAX) })}
           placeholder={doc.labels[entry.href] || platformName}
-          className={look.input}
+          className={INPUT}
         />
       </label>
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className={`block ${look.label}`}>
+        <label className={LABEL}>
           {t({ message: "Where", context: "module menu place: the group or folder picker" })}
           <select
             value={`${choice.place.group}${SEP}${choice.place.sub ?? ""}`}
@@ -118,7 +105,7 @@ export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: M
               const [group, sub] = e.target.value.split(SEP) as [string, string];
               setPlace({ group, ...(sub ? { sub } : {}) });
             }}
-            className={look.input}
+            className={INPUT}
           >
             {GROUP_KEYS.map((g) => {
               const group = groupName(g);
@@ -133,9 +120,9 @@ export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: M
             })}
           </select>
         </label>
-        <label className={`block ${look.label}`}>
+        <label className={LABEL}>
           {t({ message: "Position", context: "module menu place: the position picker" })}
-          <select value={String(at)} onChange={(e) => setPlace({ ...choice.place, at: Number(e.target.value) })} className={look.input}>
+          <select value={String(at)} onChange={(e) => setPlace({ ...choice.place, at: Number(e.target.value) })} className={INPUT}>
             {slots.map((s) => {
               const after = s.after;
               return (
@@ -147,42 +134,28 @@ export default function ModuleMenuFields({ entry, doc, choice, onChange, on }: M
           </select>
         </label>
       </div>
-      <div className={look.box} aria-labelledby={`${id}-preview`}>
-        <p id={`${id}-preview`} className={look.quiet}>
+      <div className="rounded-lg border border-border bg-muted p-3 text-sm text-foreground">
+        <p className="text-xs text-muted-foreground">
           {t({ message: `${shownGroup} will read`, context: "module menu place: the preview's heading" })}
         </p>
         <ol className="mt-1 space-y-0.5 list-none p-0 m-0" data-menu-preview={choice.place.group}>
           {rows.map((r) =>
             r.kind === "link" ? (
-              <li key={r.link.href} className={r.link.href === entry.href ? look.here : undefined} data-here={r.link.href === entry.href ? "" : undefined}>
-                {nameOf(r.link)}
-              </li>
+              line(r.link)
             ) : (
               <li key={`f-${r.label}`}>
                 {folderName(r.label)}
-                <ul className="ml-4 list-none p-0">
-                  {r.links.map((l) => (
-                    <li key={l.href} className={l.href === entry.href ? look.here : undefined} data-here={l.href === entry.href ? "" : undefined}>
-                      {nameOf(l)}
-                    </li>
-                  ))}
-                </ul>
+                <ul className="ml-4 list-none p-0">{r.links.map(line)}</ul>
               </li>
             ),
           )}
         </ol>
       </div>
       {said.length > 0 && (
-        <p role="alert" className={look.warn}>
+        <p role="alert" className="text-sm text-destructive">
           {said[0]}
         </p>
       )}
     </fieldset>
   );
-}
-
-/** True when a set of choices breaks none of the menu's rules, for an editor's confirm button. */
-export function choicesAllowed(doc: MenuDoc, choices: readonly MenuChoice[]): boolean {
-  const next = withChoices(doc, choices);
-  return placeProblems(next.places ?? {}, next.hidden).length === 0;
 }

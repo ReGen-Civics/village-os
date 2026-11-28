@@ -312,6 +312,33 @@ export function menuDocumentProblem(raw: unknown): string | null {
   return placesProblem(d.places, hidden);
 }
 
+/**
+ * The positions an editor offers for an entry in a group (or in one of its folders): before each of the other rows
+ * (or the folder's other entries), never below the Module Library. `after` is the row's first entry, or the entry,
+ * that the position follows; null for the first.
+ */
+export function positionSlots<T extends { href: string; sub?: string }>(items: readonly T[], href: string, sub?: string): { at: number; after: T | null }[] {
+  const others = items.filter((l) => l.href !== href);
+  const inFolder = sub ? others.filter((l) => l.sub === sub) : [];
+  const list = inFolder.length ? inFolder : rowStarts(others).map((i) => others[i]!);
+  const stop = list.findIndex((l) => l.href === MENU_PINNED_LAST || (!inFolder.length && !!l.sub && others.some((o) => o.sub === l.sub && o.href === MENU_PINNED_LAST)));
+  const n = stop === -1 ? list.length : stop;
+  return Array.from({ length: n + 1 }, (_, i) => ({ at: i, after: i === 0 ? null : list[i - 1]! }));
+}
+
+/** The problems an editor shows for one entry's place: its own, and those of the group or folder it lands in. */
+export function problemsFor(doc: { hidden: readonly string[]; places?: Record<string, MenuPlace> }, href: string, place: MenuPlace): PlaceProblem[] {
+  return placeProblems(doc.places ?? {}, doc.hidden).filter(
+    (p) => p.href === href || ((p.code === "rows" || p.code === "folder-full") && p.group === place.group && (!p.folder || p.folder === place.sub)),
+  );
+}
+
+/** True when a set of choices breaks none of the menu's rules, for an editor's confirm button. */
+export function choicesAllowed(doc: { labels: Record<string, string>; hidden: readonly string[]; places?: Record<string, MenuPlace> }, choices: readonly MenuChoice[]): boolean {
+  const next = withChoices(doc, choices);
+  return placeProblems(next.places ?? {}, next.hidden).length === 0;
+}
+
 /** A name and a place for one module entry, as an editor holds it. */
 export interface MenuChoice {
   href: string;

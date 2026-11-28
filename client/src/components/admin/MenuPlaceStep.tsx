@@ -4,7 +4,7 @@
  *
  * For each module the plan turns on that brings a menu entry (shared/moduleMenu.ts), the entry's name and place as
  * they stand (the default, or what the village already chose), editable before the person confirms. The caller saves
- * them after the module is on (moduleMenuApi.ts); kept as they are, nothing is written.
+ * them after the module is on (lib/moduleMenuApi.ts); kept as they are, nothing is written.
  *
  * `readOnly` is for a turn-on the village votes on: the proposer reads where the entry will appear, and the village
  * renames or moves it afterwards in Admin, Menu.
@@ -14,24 +14,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { navWord } from "@/config/nav";
+import { useModules } from "@/modules/ModuleProvider";
 import { MENU_ACCOUNT } from "@shared/menuPlace";
 import type { MenuDoc } from "@shared/menuDoc";
-import { choiceOf, moduleMenuFor, withChoices, type MenuChoice } from "@shared/moduleMenu";
-import ModuleMenuFields, { choicesAllowed } from "./ModuleMenuFields";
-import { loadMenuDoc } from "./moduleMenuApi";
+import { choiceOf, choicesAllowed, moduleMenuFor, withChoices, type MenuChoice } from "@shared/moduleMenu";
+import ModuleMenuFields from "./ModuleMenuFields";
+import { loadMenuDoc } from "@/lib/moduleMenuApi";
 
 export interface MenuPlaceStepProps {
   /** The modules being turned on. Only those with a menu entry draw anything. */
   ids: readonly string[];
   /** The choices as they stand, and whether the menu's rules allow them, whenever either changes. */
   onChoices?: (choices: MenuChoice[], allowed: boolean) => void;
-  /** Whether a module is on now, for the preview. */
-  on?: (moduleId: string) => boolean;
   readOnly?: boolean;
 }
 
-export default function MenuPlaceStep({ ids, onChoices, on, readOnly = false }: MenuPlaceStepProps) {
+export default function MenuPlaceStep({ ids, onChoices, readOnly = false }: MenuPlaceStepProps) {
   const { t, i18n } = useLingui();
+  // The preview counts what is on now (ModuleProvider), and these modules as on.
+  const { modules } = useModules();
   const key = ids.join(",");
   const entries = useMemo(() => key.split(",").filter(Boolean).flatMap((id) => moduleMenuFor(id)), [key]);
   const [doc, setDoc] = useState<MenuDoc | null>(null);
@@ -94,7 +95,7 @@ export default function MenuPlaceStep({ ids, onChoices, on, readOnly = false }: 
             doc={withOthers}
             choice={c}
             onChange={(next) => setChoices((all) => all.map((x) => (x.href === next.href ? next : x)))}
-            on={(m) => ids.includes(m) || (on ? on(m) : true)}
+            on={(m) => ids.includes(m) || modules.some((x) => x.id === m)}
           />
         );
       })}
