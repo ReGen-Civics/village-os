@@ -25,6 +25,7 @@ import { GREENHOUSE_WORDS_ES } from "./greenhouse";
 import { GUIDE_WORDS_ES } from "./guide";
 import { HALL_WORDS_ES } from "./hall";
 import { LIBRARY_WORDS_ES } from "./library";
+import { SHIPPED_WORDS_ES } from "./shipped";
 import { SPRING_WORDS_ES } from "./spring";
 import { STAGE_WORDS_ES } from "./stage";
 import { STORE_WORDS_ES } from "./store";
@@ -33,8 +34,8 @@ import { TOWER_WORDS_ES } from "./tower";
 /** No native reader has read this table yet. It turns false, by a person's hand, the day one has. */
 export const ES_AWAITING_NATIVE_READ = true;
 
-/** The written acts' Spanish, place by place. A place with no file yet holds none. */
-export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record<string, ActWords>>>>> = {
+/** The written acts' Spanish, place by place. Keyed by the place, so a thirteenth place fails the compiler here. */
+export const ES_PLACE_WORDS: Readonly<Record<AdminPlace, Readonly<Record<string, ActWords>>>> = {
   fire: FIRE_WORDS_ES,
   hall: HALL_WORDS_ES,
   gate: GATE_WORDS_ES,
@@ -42,15 +43,15 @@ export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record
   greenhouse: GREENHOUSE_WORDS_ES,
   store: STORE_WORDS_ES,
   tower: TOWER_WORDS_ES,
+  spring: SPRING_WORDS_ES,
   stage: STAGE_WORDS_ES,
   ceiba: CEIBA_WORDS_ES,
   guide: GUIDE_WORDS_ES,
   frame: FRAME_WORDS_ES,
-  spring: SPRING_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
-export const ES_SHIPPED_WORDS: Readonly<Record<string, ActWords>> = {};
+export const ES_SHIPPED_WORDS: Readonly<Record<string, ActWords>> = SHIPPED_WORDS_ES;
 
 /** Every act's Spanish words, by act id. */
 export const ADMIN_ACT_WORDS_ES: Readonly<Record<string, ActWords>> = Object.assign({}, ES_SHIPPED_WORDS, ...Object.values(ES_PLACE_WORDS));
