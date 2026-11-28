@@ -75,6 +75,8 @@
  *   3. When the walk is over, every person is asked again who they are
  *      (account role, admin access, the powers they hold). A probe that
  *      changed anybody fails here.
+ *   4. The file's last block acts for real: it drives the one route a ruling
+ *      has tightened with real rows. It runs after the snapshot is compared.
  *
  * ── WHAT IT CANNOT SEE ─────────────────────────────────────────────────────
  *
@@ -211,14 +213,16 @@ const IN_SCOPE: ReadonlyArray<{ name: string; why: string; holds: (routePath: st
 /** A floor on what was read. Reading no routes would find nothing to compare and pass. 517 were read on 2026-11-27. */
 const ROUTE_FLOOR = 400;
 
+const NOTHING_DUE = "a job that ran and found nothing to do in a fresh village";
+const NOTHING_THERE = "aimed at the placeholder, or at something this village does not have yet; it changed no row and answered success";
+
 /**
  * WRITES THAT ANSWER AN EMPTY BODY WITH A SUCCESS, each with what it did and
  * why no cell can read the difference. They are probed last. A write that
  * succeeds and is not here fails this file by name: read its handler, then
- * either add it with the reason or change the probe so it does not act.
+ * either add it with the reason or change the probe so it does not act
+ * (`PROBE_WITH`, below).
  */
-const NOTHING_DUE = "a job that ran and found nothing to do in a fresh village";
-const NOTHING_THERE = "aimed at the placeholder, or at something this village does not have yet; it changed no row and answered success";
 const ANSWERS_AN_EMPTY_WRITE: Readonly<Record<string, string>> = {
   // Jobs and sweeps a person can start by hand.
   "POST /api/admin/badges/evaluate": `${NOTHING_DUE}: it weighed the badges and awarded none, and the people are asked again after the walk`,
@@ -658,5 +662,90 @@ describe.skipIf(!DB_CONFIGURED)("the permission matrix, against the built server
     }
     expect(moved, `These cells of the permission matrix moved. ${HOW_TO_UPDATE}`).toEqual([]);
     expect(modulesLeftOff, `The modules the fixture could not switch on changed, so their routes read 404 for everybody (or stopped doing so). ${HOW_TO_UPDATE}`).toEqual(snapshot!.modulesLeftOff);
+  });
+});
+
+// ── The one ruled change, driven with a real row ────────────────────────────
+
+/**
+ * FOUNDERS ONLY ANSWER LAUNCH ROWS (Rye, 27 Nov 2026: "Founders only before
+ * launch. Tighten the server.").
+ *
+ * `POST /api/admin/launch/confirm` marks a launch row done, takes that back,
+ * or declines it. It asked the admin gate, so an admin's account and a member
+ * with admin access through a power group could answer a row. Now only an
+ * account whose role is founder may, by the test `POST /api/admin/launch/propose`
+ * makes. The matrix above pins the six codes on an empty body, and its
+ * snapshot diff shows the two cells that moved. This drives the route with
+ * real rows, because a refusal is only worth pinning beside the same call
+ * from a founder seen to work.
+ *
+ * It runs LAST and after every cell is compared: it changes the launch record.
+ */
+describe.skipIf(!DB_CONFIGURED)("only a founder answers a launch row", () => {
+  /** A row somebody confirms by hand, and the one row that may be declined. */
+  const MANUAL = "backups-drilled";
+  const DECLINABLE = "issuance-cap";
+  const answers = [{ id: MANUAL, done: true }, { id: MANUAL, done: false }, { id: DECLINABLE, done: "declined" }, { id: DECLINABLE, done: false }];
+  const confirm = (body: unknown, who: Identity) => call("POST", "/api/admin/launch/confirm", body, tokens[who]);
+
+  /** One row as the checklist reads it, asked as `who`. */
+  async function row(id: string, who: Identity = "founder"): Promise<{ state: string; confirmedBy: string | null; declinedBy: string | null }> {
+    const r = await call("GET", "/api/admin/launch", undefined, tokens[who]);
+    expect(r.status, `${who} reads the checklist: ${r.text.slice(0, 200)}`).toBe(200);
+    const found = (r.json?.items ?? []).find((i: any) => i.id === id);
+    expect(found, `the checklist ${who} reads has a row ${id}`).toBeTruthy();
+    return { state: String(found.state), confirmedBy: found.confirmedBy ?? null, declinedBy: found.declinedBy ?? null };
+  }
+
+  it("refuses everybody but a founder, and no refused answer changes a row", async () => {
+    const before = { manual: await row(MANUAL), declinable: await row(DECLINABLE) };
+    expect(before.manual.confirmedBy, "the fixture starts with the row unconfirmed").toBeNull();
+    expect(before.declinable.declinedBy, "the fixture starts with the row undeclined").toBeNull();
+
+    // Signed out, a member and a power holder never pass the admin gate: 401, as before the ruling.
+    // An admin and a group holder pass it and are refused by name: 403, where they were let in.
+    const refusal: Record<Exclude<Identity, "founder">, number> = { signedOut: 401, member: 401, powerHolder: 401, adminGroup: 403, admin: 403 };
+    for (const who of IDENTITIES) {
+      if (who === "founder") continue;
+      for (const body of answers) {
+        const r = await confirm(body, who);
+        expect(r.status, `${who} sending ${JSON.stringify(body)}: ${r.text.slice(0, 200)}`).toBe(refusal[who]);
+      }
+    }
+    for (const who of ["adminGroup", "admin"] as const) {
+      const told = await confirm({ id: MANUAL, done: true }, who);
+      expect(told.json?.error, `${who} is told why, in one sentence`).toBe("Confirming or declining a launch step is a founder's act");
+    }
+    expect({ manual: await row(MANUAL), declinable: await row(DECLINABLE) }).toEqual(before);
+  });
+
+  it("lets a founder mark a row done, take it back, decline a row, and take that back", async () => {
+    const done = await confirm({ id: MANUAL, done: true }, "founder");
+    expect(done.status, done.text.slice(0, 300)).toBe(200);
+    expect((await row(MANUAL)).confirmedBy, "the confirmation carries the founder's name").toBeTruthy();
+    expect((await row(MANUAL)).state).toBe("ok");
+
+    const back = await confirm({ id: MANUAL, done: false }, "founder");
+    expect(back.status, back.text.slice(0, 300)).toBe(200);
+    expect((await row(MANUAL)).confirmedBy).toBeNull();
+
+    const declined = await confirm({ id: DECLINABLE, done: "declined" }, "founder");
+    expect(declined.status, declined.text.slice(0, 300)).toBe(200);
+    expect((await row(DECLINABLE)).declinedBy, "the decline carries the founder's name").toBeTruthy();
+
+    const undone = await confirm({ id: DECLINABLE, done: false }, "founder");
+    expect(undone.status, undone.text.slice(0, 300)).toBe(200);
+    expect((await row(DECLINABLE)).declinedBy).toBeNull();
+  });
+
+  it("an admin and a group holder still read every row", async () => {
+    const asFounderReads = (await call("GET", "/api/admin/launch", undefined, tokens.founder)).json?.items ?? [];
+    expect(asFounderReads.length, "the checklist has rows").toBeGreaterThan(5);
+    for (const who of ["adminGroup", "admin"] as const) {
+      const r = await call("GET", "/api/admin/launch", undefined, tokens[who]);
+      expect(r.status, `${who} reads the checklist`).toBe(200);
+      expect((r.json?.items ?? []).map((i: any) => i.id), `${who} reads the same rows a founder does`).toEqual(asFounderReads.map((i: any) => i.id));
+    }
   });
 });

@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: Journey to Launch, the line a reader who is not a founder sees where a founder has the row's buttons (Rye, 27 Nov 2026: "Founders only before launch")
+msgctxt "JourneyToLaunch, span"
+msgid "Only a founder confirms or declines this before launch."
+msgstr "Solo una persona fundadora confirma o declina esto antes del lanzamiento."

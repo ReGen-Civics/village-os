@@ -589,3 +589,95 @@ describe("what is left, said without a score", () => {
     expect(container.querySelector("[style*='width']"), "no bar drawn to a width").toBeNull();
   });
 });
+
+/*
+ * WHO READS THE CHECKLIST, AND WHO ANSWERS ITS ROWS (27 Nov 2026).
+ *
+ * Two rules meet on this page. The page opens for whoever may use admin, and
+ * that includes a member whose admin access comes from a power group
+ * (`hasAdminAccess`, client/src/lib/adminAccess.ts): the server already lets
+ * them read `/api/admin/launch`. And Rye ruled "Founders only before launch.
+ * Tighten the server.", so `POST /api/admin/launch/confirm` now refuses
+ * everybody but a founder. A button the server refuses is not offered, so the
+ * row's two answers are drawn for a founder alone, while an admin and a group
+ * holder still read every row, and read ONE sentence where a founder has the
+ * buttons: never an empty gap, never a disabled button.
+ */
+describe("who reads the checklist, and who answers its rows", () => {
+  const DECLINABLE = {
+    ...STATUS.items[0],
+    id: "issuance-cap",
+    title: "Name what the village may issue in a moon",
+    detail: "Not answered yet",
+    checkKey: "issuance-cap",
+    declinable: true,
+  };
+  /** A row the server checks by itself: nobody answers it by hand, so it carries neither a button nor the sentence. */
+  const OBSERVED = { ...STATUS.items[0], id: "admin-identities", title: "Every admin signs in as themselves", checkKey: "admin-identities" };
+  const BOTH = { ...STATUS, items: [STATUS.items[0], DECLINABLE, OBSERVED] };
+  const FOUNDERS_ONLY = "Only a founder confirms or declines this before launch.";
+  const page = {
+    "/api/admin/launch": { status: 200, body: BOTH },
+    "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } },
+    "/api/admin/launch/confirm": { status: 200, body: { success: true, status: BOTH } },
+  };
+  const groupHolder = { id: "u3", name: "Gia", role: "member", adminAccess: true };
+  const admin = { id: "u1", name: "Rye", role: "admin", adminAccess: true };
+  const founder = { id: "u4", name: "Fen", role: "founder", adminAccess: true };
+
+  it("gives a member whose admin access comes from a power group the whole checklist", async () => {
+    auth.current = { user: groupHolder, loading: false };
+    answer(page);
+    draw();
+    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+    expect(calls[0].url).toBe("/api/admin/launch");
+    expect(screen.getByRole("button", { name: /run the test/i })).toBeTruthy();
+  });
+
+  it("still keeps a plain member off the checklist, whatever else their account carries", () => {
+    auth.current = { user: { id: "u2", name: "Wren", role: "member", adminAccess: false }, loading: false };
+    draw();
+    expect(screen.queryByText(/Take one backup/i)).toBeNull();
+    expect(calls.map((c) => c.url), "no admin read on a member's page").toEqual([]);
+  });
+
+  it("shows an admin and a group holder every row, with one sentence where a founder has the buttons", async () => {
+    for (const user of [admin, groupHolder]) {
+      auth.current = { user, loading: false };
+      answer(page);
+      const drawn = draw();
+      await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+      expect(screen.getByText(/Name what the village may issue/i), user.role).toBeTruthy();
+      expect(screen.queryByRole("button", { name: "Mark done" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Un-confirm" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Decline" }), user.role).toBeNull();
+      expect(screen.queryByRole("button", { name: "Undo" }), user.role).toBeNull();
+      // Told why, once on each row that has such a button for a founder, and on no other row.
+      const told = screen.getAllByText(FOUNDERS_ONLY);
+      expect(told.length, user.role).toBe(2);
+      expect(told.map((el) => el.closest("li")?.textContent?.includes("Every admin signs in")), user.role).toEqual([false, false]);
+      expect(screen.getByText(/Every admin signs in/i), user.role).toBeTruthy();
+      // The way to the place a row is fixed stays: reading and fixing are still theirs.
+      expect(screen.getAllByText("Open Data & backups").length, user.role).toBeGreaterThan(0);
+      drawn.unmount();
+    }
+  });
+
+  it("offers a founder both answers and no sentence, and sends each answer to the server", async () => {
+    auth.current = { user: founder, loading: false };
+    answer(page);
+    draw();
+    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+    const sent = () =>
+      calls.filter((c) => c.url === "/api/admin/launch/confirm").map((c) => JSON.parse(String(c.init?.body ?? "{}")));
+    // The buttons are theirs, so the sentence that stands in for them is not drawn.
+    expect(screen.queryByText(FOUNDERS_ONLY)).toBeNull();
+
+    // The first row is a manual one, so it carries the confirmation. The second may be declined.
+    fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
+    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }]));
+
+    fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
+    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
+  });
+});

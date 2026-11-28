@@ -12492,11 +12492,11 @@ async function startServer() {
     res.json({ ...status, gameStart: await readGameStart(getPool()), vote: await launchVoteFacts() });
   });
 
-  /** Confirm a manual (real-world) item, attributed to the admin who did it. */
+  /** Confirm a manual (real-world) item, attributed to the founder who did it. Founders only before launch (Rye, 27 Nov 2026). */
   app.post("/api/admin/launch/confirm", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
-    const actor = (await authedUser(req))?.id ?? adminActor(req)?.id ?? null;
-    if (!actor) return res.status(401).json({ error: "auth_required", message: "Confirming a launch step needs a named admin" });
+    const actor = await authedUser(req).then((u) => (u?.role === "founder" ? String(u.id) : null)); // the test POST /api/admin/launch/propose makes
+    if (!actor) return res.status(403).json({ error: "Confirming or declining a launch step is a founder's act" });
     const r = await confirmManual(getPool(), String(req.body?.id ?? ""), actor, req.body?.done);
     if (!r.ok) return res.status(400).json({ error: r.error });
     void recordEvent(getPool(), {
