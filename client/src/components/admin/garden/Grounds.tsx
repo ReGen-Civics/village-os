@@ -13,6 +13,13 @@
  * garden.css from the garden's own tokens and shows no geography: one
  * village's land is never drawn under another village.
  *
+ * COMPACT: the same map, small, for a narrow column: every place on its own
+ * spot, each plaque its lantern and its name and nothing more. Ask for it with
+ * `compact`; the frame asks for it by itself while the guide's dock is
+ * expanded (garden.css), so on a laptop the land is still seen as land beside
+ * the conversation. What a plaque no longer shows is still in the place's
+ * spoken name ("The Hall, 3 waiting").
+ *
  * DESK (lens B): the same places as a dense list.
  *
  * A place the caller leaves out is not drawn: a new village starts as bare
@@ -47,6 +54,8 @@ export interface GroundsProps {
   landImageUrl?: string;
   /** What the map is, for a screen reader. Left out: "The grounds". */
   label?: string;
+  /** The small map: each plaque its lantern and its name only. Left out, the frame still asks for it while the dock is expanded. */
+  compact?: boolean;
   className?: string;
 }
 
@@ -89,12 +98,12 @@ export function groundsPaths(places: readonly GardenPlaceKey[]): string[] {
     });
 }
 
-export function Grounds({ places, landImageUrl, label, className = "" }: GroundsProps) {
+export function Grounds({ places, landImageUrl, label, compact = false, className = "" }: GroundsProps) {
   const { t } = useLingui();
   const shown = once(places);
   const land = landImageUrl ? ({ "--gd-land-image": cssUrl(landImageUrl) } as CSSProperties) : undefined;
   return (
-    <nav aria-label={label ?? t({ message: "The grounds", context: "garden lens" })} className={`gd-grounds ${className}`.trim()}>
+    <nav aria-label={label ?? t({ message: "The grounds", context: "garden lens" })} className={`gd-grounds ${className}`.trim()} data-compact={compact ? "true" : undefined}>
       <div className="gd-land rounded-2xl" data-land={landImageUrl ? "own" : "painted"} style={land}>
         <svg className="gd-paths" aria-hidden="true" focusable="false" viewBox="0 0 100 100" preserveAspectRatio="none">
           {groundsPaths(shown.map((p) => p.place)).map((d) => (
