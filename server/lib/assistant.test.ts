@@ -234,7 +234,7 @@ describe("budgets are per mode", () => {
   it("an exhausted admin mode does not close the public one", async () => {
     const h = harness({ villageKey: "k", limited: (b) => b.startsWith("assistant-day:studio:") });
     const studio = await callAssistant(req({ mode: "studio" }));
-    expect(studio).toEqual({ ok: false, status: 503, error: "assistant-unavailable" });
+    expect(studio).toEqual({ ok: false, status: 503, error: "assistant-unavailable", reason: "day" });
     const proposal = await callAssistant(req({ mode: "proposal" }));
     expect(proposal.ok).toBe(true);
     expect(h.buckets.filter((b) => b.startsWith("assistant-day:")).length).toBe(2);
