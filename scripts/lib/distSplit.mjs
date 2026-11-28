@@ -104,7 +104,15 @@ export function routesFromApp(appSource) {
     if (importers.has(m[2])) loaders.set(m[1], importers.get(m[2]));
   }
   const routes = [];
-  for (const m of appSource.matchAll(/<Route\s+path=["']([^"']+)["']([^>]*)>/g)) {
+  const tag = /<Route\s+path=["']([^"']+)["']([^>]*)>/y;
+  for (const open of appSource.matchAll(/<Route\s+path=/g)) {
+    tag.lastIndex = open.index;
+    const m = tag.exec(appSource);
+    if (!m) {
+      // A path that is not a plain string (`path={...}`): named by its own text, so it is seen and never skipped.
+      routes.push({ path: appSource.slice(open.index, open.index + 60).split("\n")[0], component: null, kind: "unread", page: null });
+      continue;
+    }
     const routePath = m[1];
     let component = /component=\{(\w+)\}/.exec(m[2])?.[1] ?? null;
     if (!component) {

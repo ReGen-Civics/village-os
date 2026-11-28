@@ -161,6 +161,9 @@ check("routesFromApp follows a named loader and an inline route with props", () 
 check("a route in a shape the reader does not know is reported, never skipped", () => {
   const r = routesFromApp(`<Route path="/admin/new" render={something} />`);
   assert.deepStrictEqual(unreadRoutes(r), ["/admin/new"]);
+  const computed = routesFromApp(`<Route path="/quests" component={Quests} />\n<Route path={ADMIN_BASE} component={Admin} />`);
+  assert.strictEqual(computed.length, 2, "a path that is not a plain string still counts as a route");
+  assert.deepStrictEqual(unreadRoutes(computed), ["<Route path={ADMIN_BASE} component={Admin} />"]);
 });
 
 check("an admin path is /admin, anything under it, or a road path, and nothing that only starts with the letters", () => {
