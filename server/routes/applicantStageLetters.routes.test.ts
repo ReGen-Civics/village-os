@@ -372,9 +372,12 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(statusLinkDays()).toBeGreaterThanOrEqual(120);
     const id = await confirmed("link-life@example.test");
     expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).status).toBe(200);
-    // Closed and its details removed: the same link is refused.
+    // Closed and its details removed: the same link shows nothing of it, and says it closed (QA round 5: it said
+    // "that link does not match a proposal"). A wrong token still answers the plain 404, so a ref cannot be probed.
     await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3), name = NULL, email = NULL, email_key = NULL, anonymised_at = NOW(3) WHERE id = ?", [id]);
-    expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).status).toBe(404);
+    const closed = await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`);
+    expect([closed.status, closed.body]).toEqual([410, { error: "closed" }]);
+    expect((await call("GET", `/api/application-status/${id}?token=nope`)).status).toBe(404);
   });
 
   it("WITHDRAW (the lead): the applicant's own quiet act, by their link; no letter goes, and it closes once", async () => {

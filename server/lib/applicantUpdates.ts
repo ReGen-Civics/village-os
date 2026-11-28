@@ -182,7 +182,13 @@ export async function statusLinkFor(deps: Pick<TellDeps, "siteUrl"> & { getPool?
   const origin = deps.siteUrl?.().replace(/\/+$/, "");
   if (!origin) return null;
   const now = new Date();
-  const opens = deps.getPool ? review.reviewWindowOpensAt(await review.applicationDeadline(deps.getPool(), ref).catch(() => null)) : null;
+  // A link is never lost to a deadline that cannot be read: it then lives the plain days.
+  let opens: Date | null = null;
+  try {
+    opens = deps.getPool ? review.reviewWindowOpensAt(await review.applicationDeadline(deps.getPool(), ref)) : null;
+  } catch {
+    opens = null;
+  }
   return `${origin}/application-status/${encodeURIComponent(ref)}?token=${encodeURIComponent(signLink("application_status", { ref }, statusLinkDays(opens, now)))}`;
 }
 

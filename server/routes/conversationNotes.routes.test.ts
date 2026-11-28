@@ -345,7 +345,10 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
       const heard = await call("GET", href, undefined, IB.id);
       expect([heard.status, heard.text]).toEqual([200, "AUDIO-FROM-OPS"]);
       expect(w.text).not.toContain("TEXT-ONLY-FOR-OPS-READERS");
-      // The later holder records too; the earlier holder, without the power, does not hear it.
+      // A conversation not yet opened takes no note (QA round 5); once it opens, the later holder records too, and
+      // the earlier holder, without the power, does not hear it.
+      expect((await sendFile(`${app(id)}/interviews/${second}/notes`, "recording", "too-early.mp3", "EARLY", IB.id)).status).toBe(409);
+      await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ?", [second]);
       const later = await sendFile(`${app(id)}/interviews/${second}/notes`, "recording", "data-reflection.mp3", "AUDIO-FROM-DATA", IB.id);
       expect(later.status).toBe(200);
       const [dataNote] = await q("SELECT id FROM application_conversation_notes WHERE application_ref = ? AND interview_id = ?", [id, second]);
@@ -360,6 +363,9 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
       // Nor set a booked date from the team's side ("I've booked it"): the stranger's 404.
       expect((await call("POST", `${app(id)}/interviews/${first}/booked`, { at: new Date(Date.now() + 86_400_000).toISOString() }, APPLICANT_HOLDER.id)).status).toBe(404);
       const own = await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id);
+      // A decided application takes no new note (QA round 5).
+      await q("INSERT IGNORE INTO application_steps (application_ref, kind, subject, stamped_at, detail_json) VALUES (?, 'decided', '', NOW(3), ?)", [id, JSON.stringify({ how: "declined" })]);
+      expect((await call("POST", `${app(id)}/interviews/${first}/notes`, { body: "After the decision." }, IA.id)).status).toBe(409);
       for (const leak of ["AUDIO-FROM", "reflection.mp3", "conversation-notes"]) expect(own.text).not.toContain(leak);
     } finally {
       await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);

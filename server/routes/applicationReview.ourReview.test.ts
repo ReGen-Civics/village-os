@@ -304,6 +304,19 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     expect(st.body.status.path.slice(0, 4).map((p: any) => p.state)).toEqual(["done", "done", "done", "now"]);
   });
 
+  it("REVIEWED FIRST (QA round 5): the second conversation opens only on a shortlist yes, so its link never goes out during Our review", async () => {
+    const { id } = await confirmed("second-waits@example.test");
+    expect((await call("POST", `/api/governance/open-proposals/${id}/invite`, {}, FOUNDER.id)).status).toBe(200);
+    const [first] = await interviews(id);
+    state.sent.length = 0;
+    expect((await score(id, Number(first.id), IA.id)).status).toBe(200);
+    // Written up, not yet shortlisted: the second stays waiting, and no letter about it goes.
+    expect((await interviews(id)).map((i: any) => i.state).slice(0, 2)).toEqual(["scored", "waiting"]);
+    expect(state.sent.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`))).toEqual([]);
+    expect((await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await interviews(id)).map((i: any) => i.state).slice(0, 2)).toEqual(["scored", "open"]);
+  });
+
   it("the not-invited letter is warm, points to the village's way to stay close, quests and events, and closes the application", async () => {
     const { id } = await confirmed("not-invited@example.test");
     const out = await call("POST", `/api/governance/open-proposals/${id}/not-invited`, {}, FOUNDER.id);
