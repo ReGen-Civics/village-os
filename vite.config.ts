@@ -379,13 +379,15 @@ function guardRouteFirstViews(): Plugin {
       const listFile = path.resolve(root, "scripts", "admin-on-member.json");
       const listed = new Set<string>(fs.existsSync(listFile) ? (JSON.parse(fs.readFileSync(listFile, "utf8")).modules as string[]) : []);
       const added = onMember.filter((m) => !listed.has(m));
+      // A listed file this tree does not have is held for a branch in flight (a release train): kept, never called gone.
+      const held = Array.from(listed).filter((m) => !fs.existsSync(path.resolve(root, m)));
       if (process.env.ADMIN_ON_MEMBER_WRITE) {
         if (listed.size > 0 && added.length) failures.push(`ADMIN_ON_MEMBER_WRITE refuses to add to scripts/admin-on-member.json: ${added.join(", ")}`);
-        else fs.writeFileSync(listFile, JSON.stringify({ modules: onMember }, null, 2) + "\n");
+        else fs.writeFileSync(listFile, JSON.stringify({ modules: [...onMember, ...held].sort() }, null, 2) + "\n");
       } else if (added.length) {
         failures.push(`guard-admin-chunks: ${added.length} module(s) from client/src/components/admin/ now ride a file a member's browser can fetch, and scripts/admin-on-member.json does not list them: ${added.join(", ")}. A member page (or something it imports) imports them. Make that import lazy behind the page or role that draws them, or move the small piece a member page uses out of the admin folder. The list only shrinks.`);
       }
-      const gone = Array.from(listed).filter((m) => !onMember.includes(m));
+      const gone = Array.from(listed).filter((m) => !onMember.includes(m) && !held.includes(m));
       if (gone.length && !process.env.ADMIN_ON_MEMBER_WRITE) this.warn(`scripts/admin-on-member.json lists ${gone.length} module(s) no member file carries any more. Shrink it with ADMIN_ON_MEMBER_WRITE=1 pnpm build: ${gone.join(", ")}`);
       if (process.env.ROUTE_VIEW_REPORT) console.log(`\n[admin-chunks] ${adminOnly.size} module(s) only an admin route reaches, from ${adminRootIds.size} admin root page(s); ${leaks.length} member file(s) carrying any; ${onMember.length} admin-folder module(s) on members' files`);
       if (failures.length) this.error(failures.join("\n\n"));
