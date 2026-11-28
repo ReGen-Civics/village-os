@@ -19,6 +19,7 @@ import type { AdminPlace } from "../../adminTabs";
 import type { ActWords } from "../types";
 import { FIRE_WORDS_ES } from "./fire";
 import { GATE_WORDS_ES } from "./gate";
+import { GREENHOUSE_WORDS_ES } from "./greenhouse";
 import { HALL_WORDS_ES } from "./hall";
 import { LIBRARY_WORDS_ES } from "./library";
 
@@ -31,6 +32,7 @@ export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record
   hall: HALL_WORDS_ES,
   gate: GATE_WORDS_ES,
   library: LIBRARY_WORDS_ES,
+  greenhouse: GREENHOUSE_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
