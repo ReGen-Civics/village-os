@@ -16,6 +16,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
+import { plural } from "@lingui/core/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import { navWord, type NavLink } from "@/config/nav";
 import { menuPages } from "@/lib/nearestPages";
@@ -117,10 +118,18 @@ export default function MenuUseTab({ password }: { password: string }) {
   const unopenedCount = usage?.unopened.length ?? 0;
   // A page by the row the menu shows for it: its own row ("Rights and agreements", not its chapters too) when that is
   // shown, else the first shown row (/circles with the map on reads "How roles are going"), else its first row.
-  const nameOf = (p: UsagePage) => {
+  const rowName = (p: UsagePage) => {
     const rows = p.shown.length ? p.shown : p.links;
     const own = rows.find((l) => l.href === p.path) ?? rows[0];
     return menu.labels[own.href] || navWord(own.label, i18n);
+  };
+  // Two pages the menu calls by one name (/circles and /map/circles are both "Circles") are told apart by address
+  // (QA round 2), so a judged page and a hidden one never read as the same.
+  const nameUses = new Map<string, number>();
+  for (const p of usage?.pages ?? []) nameUses.set(rowName(p), (nameUses.get(rowName(p)) ?? 0) + 1);
+  const nameOf = (p: UsagePage) => {
+    const name = rowName(p);
+    return (nameUses.get(name) ?? 0) > 1 ? `${name} (${p.path})` : name;
   };
   const placeWord = (w: string | null) => (w ? menu.groups[w] || navWord(w, i18n) : t({ message: "Your account", context: "admin, how the menu is used: the account menu" }));
   const placeLine = usePlaceLine((w) => menu.groups[w] || navWord(w, i18n));
@@ -130,26 +139,51 @@ export default function MenuUseTab({ password }: { password: string }) {
   const notJudged = usage ? usage.notInMenu.map((p) => nameOf(p)).join(", ") : "";
 
   const say = (s: Suggestion): string => {
-    const { visits, days, minDays, minVisits, more, pct, median } = s.values;
+    // Numbers, for the plurals ("1 day", "5 days"): QA round 2.
+    const visits = Number(s.values.visits ?? 0);
+    const days = Number(s.values.days ?? 0);
+    const minDays = Number(s.values.minDays ?? 0);
+    const minVisits = Number(s.values.minVisits ?? 0);
+    const more = Number(s.values.more ?? 0);
+    const groupVisits = Number(s.values.groupVisits ?? 0);
+    const { pct, median } = s.values;
     const name = s.path ? pageName(s.path) : "";
     const group = placeWord(String(s.values.group ?? ""));
     const folder = navWord(String(s.values.folder ?? ""), i18n);
     switch (s.rule) {
       case "too-few":
         return ended
-          ? t({ message: `Only ${visits} visits over ${days} days. Suggestions need ${minDays} days and ${minVisits} visits to read.`, context: "admin, how the menu is used: suggestion" })
-          : t({ message: `Only ${visits} visits over ${days} days so far. Suggestions start once there are ${minDays} days and ${minVisits} visits to read.`, context: "admin, how the menu is used: suggestion" });
+          ? t({
+              message: `Only ${plural(visits, { one: "# visit", other: "# visits" })} over ${plural(days, { one: "# day", other: "# days" })}. Suggestions need ${minDays} days and ${minVisits} visits to read.`,
+              context: "admin, how the menu is used: suggestion",
+            })
+          : t({
+              message: `Only ${plural(visits, { one: "# visit", other: "# visits" })} over ${plural(days, { one: "# day", other: "# days" })} so far. Suggestions start once there are ${minDays} days and ${minVisits} visits to read.`,
+              context: "admin, how the menu is used: suggestion",
+            });
       case "unopened":
-        if (!s.path) return t({ message: `And ${more} more pages nobody opened.`, context: "admin, how the menu is used: suggestion" });
+        if (!s.path) return t({ message: plural(more, { one: "And # more page nobody opened.", other: "And # more pages nobody opened." }), context: "admin, how the menu is used: suggestion" });
         if (span.kind === "current") return t({ message: `No one opened ${name} this season: consider folding it.`, context: "admin, how the menu is used: suggestion" });
         if (span.kind === "past") return t({ message: `No one opened ${name} in ${seasonName}: consider folding it.`, context: "admin, how the menu is used: suggestion" });
         return t({ message: `No one opened ${name} in the last 90 days: consider folding it.`, context: "admin, how the menu is used: suggestion" });
       case "lift-out":
-        return t({ message: `${name} draws ${pct}% of the visits in ${group} from inside the ${folder} folder: consider giving it a row of its own.`, context: "admin, how the menu is used: suggestion" });
+        // The count beside the share, so 100% of a handful reads as a handful (QA round 2).
+        return visits === groupVisits
+          ? t({
+              message: `${name} draws ${plural(visits, { one: "the one visit", other: "all # visits" })} in ${group} from inside the ${folder} folder: consider giving it a row of its own.`,
+              context: "admin, how the menu is used: suggestion",
+            })
+          : t({
+              message: `${name} draws ${pct}% of the visits in ${group} (${visits} of ${groupVisits}) from inside the ${folder} folder: consider giving it a row of its own.`,
+              context: "admin, how the menu is used: suggestion",
+            });
       case "fold-in":
-        return t({ message: `${name} has a row of its own in ${group} and ${visits} visits, against ${median} for a typical page there: consider moving it into a folder.`, context: "admin, how the menu is used: suggestion" });
+        return t({
+          message: `${name} has a row of its own in ${group} and ${plural(visits, { one: "# visit", other: "# visits" })}, against ${median} for a typical page there: consider moving it into a folder.`,
+          context: "admin, how the menu is used: suggestion",
+        });
       case "add-entry":
-        return t({ message: `${name} was opened ${visits} times and has no menu entry: consider giving it one.`, context: "admin, how the menu is used: suggestion" });
+        return t({ message: `${name} was opened ${plural(visits, { one: "# time", other: "# times" })} and has no menu entry: consider giving it one.`, context: "admin, how the menu is used: suggestion" });
     }
   };
 
@@ -214,7 +248,7 @@ export default function MenuUseTab({ password }: { password: string }) {
           {answer && (
             <li>
               {answer.recordedSince
-                ? t({ message: `Counting began on ${recordedSince}. This window counted ${countedDays} days.`, context: "admin, how the menu is used" })
+                ? t({ message: `Counting began on ${recordedSince}. This window counted ${plural(countedDays, { one: "# day", other: "# days" })}.`, context: "admin, how the menu is used" })
                 : t({ message: "Nothing has been counted yet.", context: "admin, how the menu is used" })}
             </li>
           )}
@@ -245,7 +279,7 @@ export default function MenuUseTab({ password }: { password: string }) {
           <div className="grid gap-6 lg:grid-cols-2">
             <div className={`${BOX} min-w-0`}>
               <h3 className={H3}>{t({ message: "Most visited", context: "admin, how the menu is used: h3" })}</h3>
-              <p className={`mt-1 ${NOTE}`}>{t({ message: `${menuVisits} visits to pages in the menu.`, context: "admin, how the menu is used" })}</p>
+              <p className={`mt-1 ${NOTE}`}>{t({ message: plural(menuVisits, { one: "# visit to pages in the menu.", other: "# visits to pages in the menu." }), context: "admin, how the menu is used" })}</p>
               {usage.most.length ? table(usage.most, t({ message: "Most visited", context: "admin, how the menu is used: h3" })) : <p className={`mt-2 ${NOTE}`}>{t({ message: "No page in the menu was opened.", context: "admin, how the menu is used" })}</p>}
             </div>
             <div className={`${BOX} min-w-0`}>

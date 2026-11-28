@@ -13,7 +13,7 @@ import { Component, useEffect, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Link, useLocation } from "wouter";
 import { ArrowRight } from "lucide-react";
-import { BTN_SECONDARY, DOOR, HINT } from "@/components/journey/look";
+import { BTN_SECONDARY, DOOR, EYEBROW, HINT } from "@/components/journey/look";
 import { nearestPages } from "@/lib/nearestPages";
 import { useMenuVisible } from "@/lib/menuVisible";
 import { useOptionalAuth } from "@/contexts/AuthContext";
@@ -51,7 +51,8 @@ function NearestList() {
   if (!near.length) return null;
   return (
     <nav aria-labelledby="nearest-pages-title" className="w-full max-w-md" data-testid="nearest-pages">
-      <h2 id="nearest-pages-title" className="text-sm font-semibold text-foreground">
+      {/* The menu bar's gold kicker (NavDropdown's eyebrow, look.ts EYEBROW). */}
+      <h2 id="nearest-pages-title" className={EYEBROW}>
         {t({ message: "Perhaps you were looking for", context: "404 page: the nearest real pages" })}
       </h2>
       <ul className="mt-2 space-y-2 sm:mt-3">
@@ -60,7 +61,10 @@ function NearestList() {
             <Link href={p.href} className={DOOR} data-nearest={p.href}>
               <span className="flex min-w-0 flex-col text-left">
                 <span className="truncate">{label(p.link)}</span>
-                <span className={`${HINT} font-normal`}>{placeLine(p.places)}</span>
+                {/* One line on a phone, so three suggestions keep the gold door on the first screen (QA round 2). */}
+                <span className={`${HINT} font-normal max-sm:truncate`} title={placeLine(p.places)}>
+                  {placeLine(p.places)}
+                </span>
               </span>
               <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-notice" />
             </Link>

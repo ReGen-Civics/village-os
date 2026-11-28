@@ -68,12 +68,6 @@ msgstr "La cifra es de la página. Abrirla desde el menú, un enlace o una direc
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
 msgctxt "admin, how the menu is used"
-msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
-msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays} días."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
 msgid "Nothing has been counted yet."
 msgstr "Todavía no se ha contado nada."
 
@@ -98,12 +92,6 @@ msgstr "Lo que esto sugiere"
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
 msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
-msgstr "Por ahora solo {visits} visitas en {days} días. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
 msgid "No one opened {name} this season: consider folding it."
 msgstr "Nadie abrió {name} esta temporada: considere plegarla."
 
@@ -112,30 +100,6 @@ msgstr "Nadie abrió {name} esta temporada: considere plegarla."
 msgctxt "admin, how the menu is used: suggestion"
 msgid "No one opened {name} in the last 90 days: consider folding it."
 msgstr "Nadie abrió {name} en los últimos 90 días: considere plegarla."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "And {more} more pages nobody opened."
-msgstr "Y {more} páginas más que nadie abrió."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
-msgstr "{name} recibe el {pct}% de las visitas de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
-msgstr "{name} tiene una fila propia en {group} y {visits} visitas, frente a {median} de una página típica allí: considere moverla a una carpeta."
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
-msgstr "{name} se abrió {visits} veces y no tiene entrada en el menú: considere darle una."
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
@@ -148,12 +112,6 @@ msgstr "Nada destaca: se abrió cada página del menú y ninguna desentona con s
 msgctxt "admin, how the menu is used: h3"
 msgid "Most visited"
 msgstr "Más visitadas"
-
-# needs-native-review: how the menu is used (admin), 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used"
-msgid "{menuVisits} visits to pages in the menu."
-msgstr "{menuVisits} visitas a páginas del menú."
 
 # needs-native-review: how the menu is used (admin), 27 Nov 2026
 #: client/src/components/admin/MenuUseTab.tsx
@@ -274,9 +232,3 @@ msgstr "Nadie abrió estas en {seasonName} ({unopenedCount})"
 msgctxt "admin, how the menu is used: the window's dates"
 msgid "{windowFrom} to {windowTo}, counted in UTC days"
 msgstr "Del {windowFrom} al {windowTo}, contado en días UTC"
-
-# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
-#: client/src/components/admin/MenuUseTab.tsx
-msgctxt "admin, how the menu is used: suggestion"
-msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
-msgstr "Solo {visits} visitas en {days} días. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
