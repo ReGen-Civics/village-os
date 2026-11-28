@@ -59,6 +59,7 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("setup", "village", "Make this yours", "The village name, colours and pictures."),
   entry("pages", "village", "Pages", "The words on the public pages."),
   entry("paths-stages", "village", "Paths and stages", "The paths a newcomer can take, and the stages they climb."),
+  entry("menu-use", "village", "How the menu is used", "How often each page in the menu was opened this season, and what that suggests."),
   entry("legal", "village", "Legal notices", "The legal words this village publishes."),
   entry("covenant", "village", "Covenant", "The two covenant paragraphs that are this village's own."),
   entry("money", "village", "Money claims", "The money figures this village publishes."),
