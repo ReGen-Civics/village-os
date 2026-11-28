@@ -43,6 +43,7 @@ import { useConnectorDesk } from "@/components/reviewInbox/useConnectorDesk";
 import InboxRow, { CHIP_BLOCKED } from "@/components/reviewInbox/InboxRow";
 import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
 import SeraListRow from "@/components/reviewInbox/SeraListRow";
+import DecisionsLine from "@/components/reviewInbox/DecisionsLine";
 import { inboxHeaders as headers, kindOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
 
 type View = "waiting" | "held" | "decided";
@@ -119,10 +120,8 @@ export default function AdminReview() {
   const failed = (answer?.sections ?? []).filter((s) => s.state === "failed").map((s) => s.source);
   const readable = (answer?.sections ?? []).filter((s) => s.state === "ok" || s.state === "failed");
   const forbidden = !!answer && readable.length === 0;
-  // The server's numbers, never a count of the rows sent: a kind shows its first rows only.
+  // Whether anything is listed at all. The number the page SAYS is the one count (DecisionsLine), the server's.
   const waiting = counts.waiting;
-  const unknown = counts.unknown.length;
-  const blocked = counts.blocked;
   const heldCount = desk.heldState === "ok" ? desk.held.length : 0;
   const foundIds = useMemo(() => new Set((found?.items ?? []).filter((i) => i.source === "connector").map((i) => i.key.slice(i.key.lastIndexOf(":") + 1))), [found]);
   const foundCode = found?.code ?? null;
@@ -170,29 +169,7 @@ export default function AdminReview() {
             </p>
             {answer && !forbidden ? (
               <p className={HINT} role="status" aria-live="polite" data-testid="inbox-status">
-                {unknown ? (
-                  <Plural context="review inbox: header, while a queue did not load" value={waiting} one="At least # waiting on you." other="At least # waiting on you." />
-                ) : (
-                  <Plural value={waiting} one="# waiting on you." other="# waiting on you." />
-                )}
-                {blocked ? (
-                  <>
-                    {" "}
-                    <Plural context="review inbox: header" value={blocked} one="# blocked." other="# blocked." />
-                  </>
-                ) : null}
-                {heldCount ? (
-                  <>
-                    {" "}
-                    <Plural context="review inbox: header" value={heldCount} one="# held." other="# held." />
-                  </>
-                ) : null}
-                {unknown ? (
-                  <>
-                    {" "}
-                    <Plural context="review inbox: header" value={unknown} one="# queue did not load, so its number is unknown." other="# queues did not load, so their numbers are unknown." />
-                  </>
-                ) : null}
+                <DecisionsLine counts={counts} held={heldCount} />
               </p>
             ) : null}
           </header>

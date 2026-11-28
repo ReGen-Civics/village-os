@@ -59,6 +59,19 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
     "/api/approval-inbox": { status: 200, body: { waiting: [{ id: "ap_1", kind: "setting", title: "Change a dial", at: "2026-11-26T00:00:00.000Z" }] } },
     "/api/review/queue": { status: 500, body: { error: "boom" } },
   },
+  // THE ONE COUNT (27 Nov 2026). A greeter with forms to answer, finished work, and applications that are listed.
+  greeter: {
+    "/api/admin/submissions": { status: 200, body: [
+      { id: "s1", type: "membership-request", name: "Ana Applicant", status: "new", submittedAt: "2026-11-20T10:00:00.000Z" },
+      { id: "s2", type: "visit", name: "Ben Visitor", submittedAt: "2026-11-21T10:00:00.000Z" },
+      { id: "s3", type: "visit", name: "Cy Done", status: "accepted", submittedAt: "2026-11-01T10:00:00.000Z" },
+    ] },
+    "/api/admin/quest-claims": { status: 200, body: [{ id: "g1", status: "submitted", questTitle: "Sweep the hall", submittedAt: "2026-11-22T00:00:00.000Z" }] },
+    "/api/governance/waiting-on-me": { status: 200, body: {
+      applications: [{ id: "a1", seats: [{ name: "Water Steward" }], appliedOn: "2026-11-18T00:00:00.000Z" }, { id: "a2", seats: [{ name: "Kitchen Host" }], appliedOn: "2026-11-19T00:00:00.000Z" }],
+      openProposals: [{ id: "o1", roles: [{ name: "Finance Scribe" }], ask: "consent", confirmedOn: "2026-11-17T00:00:00.000Z" }],
+    } },
+  },
   // A member who decides nothing.
   member: Object.fromEntries(
     ["/api/admin/proposals", "/api/review/queue", "/api/admin/quest-claims", "/api/approval-inbox", "/api/agent-proposals/waiting", "/api/saberra/differences"].map((p) => [p, REFUSED]),
@@ -134,7 +147,7 @@ describe("the deciders' read shows each person exactly what their own queues sho
 
   const get = async (path: string, who: string | null) => {
     const res = await fetch(`${base}${path}`, { headers: who ? { authorization: `Bearer ${who}` } : {} }); // module-review-ok: a test calling its own local server
-    return { status: res.status, body: (await res.json()) as any };
+    return { status: res.status, body: (await res.json()) as any, cache: res.headers.get("cache-control") };
   };
 
   it("a steward sees the intake and the finished work, nothing from the queues that refuse them, and Sera as off", async () => {
@@ -235,6 +248,34 @@ describe("the deciders' read shows each person exactly what their own queues sho
     askedDrafts.length = 0;
     await get("/api/admin/review/inbox", "steward");
     expect(askedDrafts).toEqual([]);
+  });
+
+  it("THE ONE COUNT: decisions waiting on the person asking, forms among them, applications listed and never counted", async () => {
+    const r = await get("/api/admin/review/inbox", "greeter");
+    // Two forms nobody has answered and one finished Quest are decisions; two applications and a proposal from
+    // outside are listed and stay out of the count.
+    expect(r.body.counts).toEqual({ decisions: 3, applications: 3, blocked: 0, unknown: [], waiting: 6 });
+    expect(r.body.items.filter((i: any) => i.source === "form").map((i: any) => [i.key, i.summary])).toEqual([["form:s1", "Membership request"], ["form:s2", "Visit"]]);
+    // A form is named by its kind, never by who sent it.
+    expect(JSON.stringify(r.body)).not.toMatch(/Ana Applicant|Ben Visitor|Cy Done/);
+    // The applications are still listed, in arrival order, each on its own row.
+    expect(r.body.items.filter((i: any) => i.source === "application" || i.source === "open").map((i: any) => i.key)).toEqual(["open:o1", "application:a1", "application:a2"]);
+    // Blocked rows are beside the count, not in it; a queue that did not load makes it a floor that names the queue.
+    expect((await get("/api/admin/review/inbox", "teller")).body.counts).toEqual({ decisions: 3, applications: 0, blocked: 1, unknown: ["sera"], waiting: 4 });
+    expect((await get("/api/admin/review/inbox", "moderator")).body.counts).toMatchObject({ decisions: 25, unknown: ["intake", "quest"] });
+  });
+
+  it("THE COUNT IS NEVER CARRIED ACROSS PEOPLE: each answer is this person's, worked out on this read, and may not be stored", async () => {
+    // Asked one after another, and again in the other order: nobody is ever answered with somebody else's number.
+    const order = ["greeter", "member", "moderator", "greeter", "teller", "member"];
+    const want: Record<string, number> = { greeter: 3, member: 0, moderator: 25, teller: 3 };
+    for (const who of order) {
+      const r = await get("/api/admin/review/inbox", who);
+      expect(r.body.counts.decisions, who).toBe(want[who]);
+      expect(r.cache, who).toBe("no-store");
+    }
+    const together = await Promise.all(order.map((who) => get("/api/admin/review/inbox", who)));
+    expect(together.map((r) => r.body.counts.decisions)).toEqual(order.map((who) => want[who]));
   });
 
   it("finds B-71 for the one who may see it, and answers a code they may not see exactly as one that does not exist", async () => {

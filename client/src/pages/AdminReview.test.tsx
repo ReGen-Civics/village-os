@@ -15,6 +15,7 @@ vi.mock("@/lib/gameApi", () => ({ authToken: () => "t" }));
 vi.mock("@/components/reviewInbox/SeraSheet", () => ({ default: ({ onChanged }: { onChanged: () => void }) => <button type="button" data-testid="stub-sheet" onClick={onChanged}>the list</button> }));
 
 import AdminReview from "./AdminReview";
+import { decisionCounts, type InboxItem } from "@shared/reviewInbox";
 
 const base = { draft: null, status: "proposed", error: null, by: "Sera Companion", byKind: "agent", labels: { "words.aim": "Aim" }, target: { roleId: "fin" } };
 const role = (id: string, aim: string, at: string, extra: Record<string, unknown> = {}) => ({
@@ -78,7 +79,10 @@ function inboxAnswer(items: { source: string; blocked?: unknown }[], over: Recor
     return { source, state: "ok", count: n, atLeast: n, blocked: items.filter((i) => i.source === source && i.blocked).length, more: false, ...(over[source] ?? {}) };
   });
   const waiting = sections.reduce((sum, s) => sum + Number((s.count as number | null) ?? s.atLeast), 0);
-  return { sections, items, counts: { waiting, unknown: sections.filter((s) => s.state === "failed").map((s) => s.source), blocked: items.filter((i) => i.blocked).length } };
+  // The one count, by the server's own definition, over the rows this answer lists (a kind that says it holds more
+  // than it lists adds those to the decisions, as the server's count of every row would).
+  const counts = decisionCounts(items as unknown as InboxItem[], sections as never);
+  return { sections, items, counts: { ...counts, decisions: counts.decisions + (waiting - items.length), waiting } };
 }
 
 function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: { status: number; body: unknown }; extra?: unknown[]; decide?: Record<string, unknown>; preview?: number; inbox?: (url: string) => unknown } = {}) {
@@ -168,7 +172,7 @@ describe("deciding on /admin/review", () => {
     window.history.replaceState(null, "", "/admin/review?view=held");
     render(<AdminReview />);
     const first = await screen.findByTestId("held-sg_1");
-    expect(screen.getByRole("status").textContent).toBe("3 waiting on you. 2 held.");
+    expect(screen.getByRole("status").textContent).toBe("3 decisions waiting on you. 2 held.");
     expect(screen.getByTestId("tab-held").textContent).toBe("Held 2");
     expect(first.textContent).toContain("Sent again after B-9.1 was discarded, with a reason. Let it through to be read, or clear it.");
     expect(first.textContent).toContain("From an agent · Waiting 3 days");
@@ -335,7 +339,7 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     // The row says what a take together leaves out: the list's own exclusions, which stay as they are.
     expect(row.textContent).toContain("Pay, anything marked Check first, and a new role apart from its circle are left out of that");
     // One row counts once at the top and in its kind, whatever it holds.
-    expect(screen.getByTestId("inbox-status").textContent).toBe("1 waiting on you.");
+    expect(screen.getByTestId("inbox-status").textContent).toBe("1 decision waiting on you.");
     expect(screen.getByTestId("count-sera").textContent).toBe("1");
     expect(screen.queryByTestId("sera-list")).toBeNull();
     fireEvent.click(within(row).getByTestId("sera-open"));
@@ -362,7 +366,7 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     await screen.findByTestId("row-claim:c0");
     expect(screen.getAllByTestId(/^row-claim:/)).toHaveLength(10);
     // 23 wait: the number is the server's, never a count of the ten rows sent.
-    expect(screen.getByTestId("inbox-status").textContent).toBe("23 waiting on you.");
+    expect(screen.getByTestId("inbox-status").textContent).toBe("23 decisions waiting on you.");
     expect(screen.getByTestId("count-claim").textContent).toBe("23");
     expect(screen.getByTestId("showing-claim").textContent).toBe("Showing 10 of 23.");
     fireEvent.click(screen.getByTestId("more-claim"));
@@ -383,7 +387,7 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     stub({ changes: [], inbox: () => inboxAnswer([claimRow(1)], { quest: { state: "failed", count: null, atLeast: 0 } }) });
     render(<AdminReview />);
     await screen.findByTestId("row-claim:c1");
-    expect(screen.getByTestId("inbox-status").textContent).toBe("At least 1 waiting on you. 1 queue did not load, so its number is unknown.");
+    expect(screen.getByTestId("inbox-status").textContent).toBe("At least 1 decision waiting on you. 1 queue did not load, so its number is unknown.");
     expect(screen.getByTestId("count-quest").textContent).toBe("unknown");
     expect(screen.getByTestId("unknown-quest").textContent).toBe("This queue did not load, so how many wait here is unknown. It may hold something.");
     expect(within(screen.getByTestId("kinds")).getAllByRole("link").map((a) => a.textContent)).toEqual(["Quest ideas · unknown", "Finished work to witness · 1"]);
@@ -399,7 +403,8 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     const row = await screen.findByTestId("row-structure:dr_9");
     expect(within(row).getByTestId("blocked-chip").textContent).toBe("Blocked");
     expect(within(row).getByTestId("blocked-why").textContent).toBe("It cannot be applied as the village stands. Retire the Water Steward: That role no longer exists. 1 more of its changes is blocked.");
-    expect(screen.getByTestId("inbox-status").textContent).toBe("2 waiting on you. 2 blocked.");
+    // Blocked rows are said beside the count and are not in it.
+    expect(screen.getByTestId("inbox-status").textContent).toBe("0 decisions waiting on you. 2 blocked.");
     expect(screen.getByRole("heading", { name: "Org chart drafts 1 1 blocked" })).toBeTruthy();
     // The draft's own row carries the chip too, before its lines are read.
     expect(within(screen.getByTestId("row-structure:dr_1")).getByTestId("blocked-chip")).toBeTruthy();

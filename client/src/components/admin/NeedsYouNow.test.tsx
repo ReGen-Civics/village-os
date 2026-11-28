@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import NeedsYouNow, { ROWS_PER_KIND } from "./NeedsYouNow";
+import { NeedsYouNowAlone as NeedsYouNow, ROWS_PER_KIND } from "./NeedsYouNow";
 
 const item = (source: string, n: number) => ({
   key: `${source}:${n}`, source, kind: source, code: null, summary: `${source} number ${n}`,
@@ -42,8 +42,9 @@ const show = () => render(<I18nProvider i18n={i18n}><NeedsYouNow /></I18nProvide
 describe("Needs you now on Today", () => {
   it("reads the review list: every kind, its count, the first rows, and See all", async () => {
     show();
-    expect(await screen.findByText("6 things are waiting on you.")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Needs you now" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Needs you now" })).toBeTruthy();
+    // No second total here: Home's card says the one count, and this list is what it counts.
+    expect(screen.queryByText(/things? (is|are) waiting on you/)).toBeNull();
     // Each item is a row on the list's own terms: its own words and a door to where it is decided.
     expect(screen.getByText("vote number 1")).toBeTruthy();
     const apps = screen.getAllByText(/^application number /);
@@ -66,8 +67,7 @@ describe("Needs you now on Today", () => {
       counts: { waiting: 24, unknown: ["open"], blocked: 0 },
     };
     show();
-    expect(await screen.findByText("24 things are waiting on you.")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Applications for a role (23)" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Applications for a role (23)" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "See all 23" }).getAttribute("href")).toBe("/admin/review?kind=application");
     expect(screen.getByRole("heading", { name: "Proposals from outside the village (unknown)" })).toBeTruthy();
   });

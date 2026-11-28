@@ -1,0 +1,54 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the one count on Admin Home and the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/DecisionsLine.tsx
+msgctxt "the one count"
+msgid "{decisions, plural, one {# decision waiting on you.} other {# decisions waiting on you.}}"
+msgstr "{decisions, plural, one {# decisión espera por usted.} other {# decisiones esperan por usted.}}"
+
+# needs-native-review: the one count on Admin Home and the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/DecisionsLine.tsx
+msgctxt "the one count, while a queue did not load"
+msgid "{decisions, plural, one {At least # decision waiting on you.} other {At least # decisions waiting on you.}}"
+msgstr "{decisions, plural, one {Al menos # decisión espera por usted.} other {Al menos # decisiones esperan por usted.}}"
+
+# needs-native-review: the one count on Admin Home and the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/DecisionsLine.tsx
+msgctxt "the one count: applications are listed and never counted"
+msgid "{applications, plural, one {# application is listed, and is not counted.} other {# applications are listed, and are not counted.}}"
+msgstr "{applications, plural, one {# solicitud está en la lista, y no se cuenta.} other {# solicitudes están en la lista, y no se cuentan.}}"
+
+# needs-native-review: the one count on Admin Home and the review list, 27 Nov 2026
+#: client/src/components/admin/HomeBase.tsx
+msgctxt "HomeBase, the one count did not load"
+msgid "The count of what is waiting on you did not load."
+msgstr "No cargó la cuenta de lo que espera por usted."
+
+# needs-native-review: forms on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Forms to answer"
+msgstr "Formularios por responder"
+
+# needs-native-review: forms on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A form somebody sent"
+msgstr "Un formulario que alguien envió"
+
+# needs-native-review: forms on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it accepts or declines what they asked."
+msgstr "Responderlo acepta o rechaza lo que pidieron."
+
+# needs-native-review: forms on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the form"
+msgstr "Abrir el formulario"

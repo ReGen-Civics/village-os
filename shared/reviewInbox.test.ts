@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { decisionCounts, fromForms, LISTED_NOT_COUNTED } from "./reviewInbox";
 import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromOrgDrafts, fromReviewQueue, fromSeraDifferences, INBOX_PAGE, INBOX_ROWS_MAX, mergeSections, orderInbox, pageInbox, rowsAsked, searchedCode, SERA_ROW_KEY, stateOfStatus } from "./reviewInbox";
 import type { InboxItem } from "./reviewInbox";
 
@@ -162,6 +163,52 @@ describe("one list", () => {
       { source: "quest", state: "refused", count: 0, atLeast: 0, blocked: 0, more: false },
     ]);
     expect(paged.items.map((i) => i.key)).toEqual(["open:o1"]);
+  });
+
+  it("THE ONE COUNT: decisions waiting on you, with applications listed and never counted, blocked rows beside it", () => {
+    const items = [
+      row("vote:v1"),
+      row("connector:c1"),
+      // Sera's whole list is one row, so it is one decision to open, whatever it holds.
+      row("sera:differences", { holds: 159 }),
+      row("form:f1", { touchesPerson: true }),
+      // A person's application, and a proposal from outside for a role: listed, never counted.
+      row("application:a1", { touchesPerson: true }),
+      row("application:a2", { touchesPerson: true }),
+      row("open:o1", { touchesPerson: true }),
+      // Blocked: it needs a hand before anyone can decide it, so it is beside the count.
+      row("structure:d1", { blocked: { count: 1, reads: null, why: "That role no longer exists" } }),
+    ];
+    const sections = [
+      { source: "vote" as const, state: "ok" as const },
+      { source: "quest" as const, state: "failed" as const },
+      { source: "mint" as const, state: "refused" as const },
+    ];
+    expect(decisionCounts(items, sections)).toEqual({ decisions: 4, applications: 3, blocked: 1, unknown: ["quest"] });
+    expect(LISTED_NOT_COUNTED).toEqual(["application", "open"]);
+    // Nothing waiting is a real zero, and a paged list carries the same count as the whole one.
+    expect(decisionCounts([], [])).toEqual({ decisions: 0, applications: 0, blocked: 0, unknown: [] });
+    const paged = pageInbox([{ source: "form", state: "ok", items: Array.from({ length: 23 }, (_, n) => row(`form:f${n}`)) }, { source: "application", state: "ok", items: [row("application:a1")] }]);
+    expect(paged.items.filter((i) => i.source === "form")).toHaveLength(INBOX_PAGE);
+    expect(paged.counts).toEqual({ decisions: 23, applications: 1, blocked: 0, unknown: [] });
+  });
+
+  it("forms: only those nobody has answered, named by the kind of form and its day, never by who sent it", () => {
+    const items = fromForms([
+      { id: "s1", type: "membership-request", name: "Ana Applicant", email: "ana@example.org", status: "new", submittedAt: "2026-11-20T10:00:00.000Z" },
+      { id: "s2", type: "visit", name: "Ben Visitor", submittedAt: "2026-11-21T10:00:00.000Z" },
+      { id: "s3", type: "visit", name: "Cy Done", status: "accepted" },
+      { id: "s4", type: "visit", name: "Di Declined", status: "Declined" },
+      { id: "s5", name: "No Type", status: "reviewing" },
+    ]);
+    expect(items.map((i) => [i.key, i.summary, i.filedAt])).toEqual([
+      ["form:s1", "Membership request", "2026-11-20T10:00:00.000Z"],
+      ["form:s2", "Visit", "2026-11-21T10:00:00.000Z"],
+      ["form:s5", "Request", null],
+    ]);
+    expect(items.every((i) => i.source === "form" && i.touchesPerson && i.decideAt === "/admin?tab=submissions")).toBe(true);
+    expect(JSON.stringify(items)).not.toMatch(/Ana|Ben|No Type|example\.org/);
+    for (const bad of [null, 5, "x", {}, { submissions: [] }]) expect(fromForms(bad)).toEqual([]);
   });
 
   it("BLOCKED rows are counted per queue and in all, and stay in their place in the order", () => {

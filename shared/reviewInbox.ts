@@ -20,6 +20,7 @@ import { draftPageHref } from "./orgDraftView";
 import { APPROVALS_HREF, expiresAt } from "./approvalInbox";
 import { changeRequestHref } from "./changeRequestAddress";
 import { waitingKind } from "./seraWaiting";
+import { formKindWords, needsAction } from "./formsWaiting";
 
 import { INBOX_ORDER, INBOX_PAGE, INBOX_SOURCES, SERA_ROW_KEY, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_PAGE, INBOX_SOURCES, SERA_ROW_KEY, type InboxSource };
@@ -495,6 +496,22 @@ export function fromOrgDrafts(body: unknown): InboxItem[] {
   });
 }
 
+/**
+ * `GET /api/admin/submissions` (an admin's read): the forms people sent that nobody has answered yet, by the rule the
+ * admin's own lists use (shared/formsWaiting.ts). Each is named by the KIND of form and the day it came, never by
+ * who sent it: the form's own page, behind its own gate, is where a person reads that. Until the one count (27 Nov
+ * 2026) Home counted these as "requests" beside this list, so the two never added up.
+ */
+export function fromForms(body: unknown): InboxItem[] {
+  return list(body).flatMap((x) => {
+    const f = obj(x);
+    const id = str(f?.id);
+    if (!f || !id || !needsAction(typeof f.status === "string" ? f.status : null)) return [];
+    const kind = typeof f.type === "string" && f.type.trim() ? f.type : "request";
+    return [{ key: `form:${id}`, source: "form" as const, kind: `form_${kind}`, code: null, summary: line(formKindWords(kind), "A form to answer"), filedAt: str(f.submittedAt), batch: null, decideAt: "/admin?tab=submissions", touchesPerson: true }];
+  });
+}
+
 export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/admin/proposals", sources: ["connector"], read: fromConnector },
   { path: "/api/review/queue", sources: ["intake", "quest"], read: (b) => { const r = fromReviewQueue(b); return [...r.intake, ...r.quest]; } },
@@ -521,6 +538,7 @@ export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/hidden-map/vouch-queue", sources: ["vouch"], read: fromVouches },
   { path: "/api/review/erasure", sources: ["erasure"], read: fromErasure },
   { path: "/api/admin/open-proposals", sources: ["open"], read: fromOpenProposalDesk },
+  { path: "/api/admin/submissions", sources: ["form"], read: fromForms },
 ];
 
 // ── One list ────────────────────────────────────────────────────────────────
@@ -597,13 +615,56 @@ export function rowsAsked(raw: unknown): Map<InboxSource, number> {
   return out;
 }
 
+/**
+ * THE ONE COUNT: DECISIONS WAITING ON YOU (the Admin Garden plan, 27 Nov 2026: "One count, defined once. Applications
+ * are listed and never counted.").
+ *
+ * Defined here and nowhere else. The server works it out per person, on every read, from that person's own queues
+ * (server/routes/reviewInbox.ts), and every page that says a number says this one: Admin Home, and /admin/review.
+ *
+ *   decisions     every row waiting on this person that they can decide: one per item, one for a list that is gone
+ *                 through as one (Sera's differences), across every queue that answered.
+ *   applications  LISTED, NEVER COUNTED: a person's application for a role, and a proposal from outside the village
+ *                 for one. Each is shown in arrival order on its own row and its own page. A number of people
+ *                 waiting is a tally about people, and this list keeps none.
+ *   blocked       rows that cannot be applied as the village stands. They need a hand before anyone can decide them,
+ *                 so they are said beside the count and are not in it.
+ *   unknown       the queues that did not load. With any, `decisions` is a floor: say "at least".
+ *
+ * NEVER CACHED ACROSS PEOPLE: nothing here or in the route keeps a count between requests. The answer is `no-store`,
+ * and a page that remembers a count on a device remembers whose it was (client/src/components/admin/todayGlance.ts).
+ */
+export interface DecisionCounts {
+  decisions: number;
+  applications: number;
+  blocked: number;
+  unknown: InboxSource[];
+}
+
+/** The queues that are applications: listed on the page, in arrival order, and left out of the count. */
+export const LISTED_NOT_COUNTED: readonly InboxSource[] = ["application", "open"];
+
+/** The one count, from every item waiting on a person (one row per item) and each queue's state. */
+export function decisionCounts(all: readonly InboxItem[], sections: readonly Pick<InboxSection, "source" | "state">[]): DecisionCounts {
+  const listed = all.filter((i) => LISTED_NOT_COUNTED.includes(i.source));
+  const counted = all.filter((i) => !LISTED_NOT_COUNTED.includes(i.source));
+  return {
+    decisions: counted.filter((i) => !i.blocked).length,
+    applications: listed.length,
+    blocked: counted.filter((i) => i.blocked).length,
+    unknown: sections.filter((s) => s.state === "failed").map((s) => s.source),
+  };
+}
+
 export interface InboxPaged {
   sections: InboxSectionAnswer[];
   /** The rows sent: each queue's first page, or as many as were asked for, in the list's one order. */
   items: InboxItem[];
-  /** How many items wait across every queue that answered: the number, where `items` is only what was sent. */
+  /** How many rows wait across every queue that answered, applications and blocked rows among them. */
   waiting: number;
   blocked: number;
+  /** The one count a page says (`decisionCounts`). */
+  counts: DecisionCounts;
 }
 
 /**
@@ -629,7 +690,7 @@ export function pageInbox(sections: readonly InboxSection[], rows: ReadonlyMap<I
       more: queue.length > show,
     };
   });
-  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length };
+  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length, counts: decisionCounts(all, sections) };
 }
 
 /**
