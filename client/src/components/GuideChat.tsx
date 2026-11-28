@@ -3,11 +3,12 @@
 // /api/assistant/proposal with a `kind`, so the two flows stay in step.
 import { useEffect, useRef, useState } from "react";
 import { useLingui, Trans } from "@lingui/react/macro";
-import { CheckCircle2, ArrowRight, Send } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 import { SeedGlint } from "@/components/sacred/living";
 import { sendProposal, ProposalKind } from "@/lib/proposals";
 import type { IdeaReceipt } from "@shared/questIdeas";
-import MicButton from "@/components/MicButton";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { fillGuideName, guideNameAtSentenceStart } from "@shared/guideName";
 import BreathingLoader from "@/components/natural/BreathingLoader";
@@ -69,7 +70,8 @@ export default function GuideChat({
       content: venture ? ventureGreeting : greeting ? fillGuideName(greeting, assistantName) : defaultGreeting,
     },
   ]);
-  const [input, setInput] = useState("");
+  // The draft outlives the page for this tab (components/chat/chatDraft.ts), one per kind of conversation.
+  const [input, setInput] = useChatDraft(`guide-chat:${kind}${venture ? ":venture" : ""}`);
   const [thinking, setThinking] = useState(false);
   const [proposal, setProposal] = useState<Record<string, any> | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -185,21 +187,17 @@ export default function GuideChat({
         )}
       </div>
 
-      <div className="border-t border-border p-3 flex items-end gap-2">
-        <MicButton onText={(t) => setInput((v) => (v ? v.replace(/\s*$/, " ") : "") + t)} disabled={thinking} />
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder={t({ message: `Tell ${assistantName} about your idea…`, context: "GuideChat, placeholder" })}
-          aria-label={t({ message: `Message to ${assistantName}`, context: "guide chat: the message box, for a screen reader" })}
-          rows={1}
-          className="flex-1 resize-none px-3 py-2 text-sm border border-border bg-background text-foreground rounded-xl outline-none focus:border-ring focus-visible:ring-2 focus-visible:ring-ring max-h-32"
-        />
-        <button onClick={send} aria-label={t({ message: "Send message", context: "GuideChat, aria-label" })} disabled={thinking || !input.trim()} className="shrink-0 w-10 h-10 rounded-xl bg-notice text-background flex items-center justify-center hover:bg-notice/90 disabled:opacity-50 pointer-coarse:min-h-11 pointer-coarse:min-w-11">
-          <Send className="w-4 h-4" />
-        </button>
-      </div>
+      <ChatComposer
+        id={`guide-chat-${kind}`}
+        className="border-t border-border p-3"
+        value={input}
+        onChange={setInput}
+        onSend={() => void send()}
+        busy={thinking}
+        label={t({ message: `Message to ${assistantName}`, context: "guide chat: the message box, for a screen reader" })}
+        placeholder={t({ message: `Tell ${assistantName} about your idea…`, context: "GuideChat, placeholder" })}
+        sendLabel={t({ message: "Send message", context: "GuideChat, aria-label" })}
+      />
     </div>
   );
 }

@@ -99,17 +99,20 @@ export type SeedRisk = "ordinary" | "keystone";
 /**
  * Before or after launch, for planting.
  *
- * THE ONE SIGNAL is `founderPowerStands` in `server/lib/gameStart.ts`, read
- * through `plantingPhase` there: founder power stands means `before-launch`.
- * Chosen over `launch-state.launchedAt` (`server/lib/launch.ts`) on purpose.
- * The launch ballot writes both in the same moment, so for a new village they
- * agree. They disagree for every village that was already live before the
- * ballot existed: migration 0112 recorded those as started, because the
- * ledger proves they were issuing, and left `launchedAt` empty, because no
- * vote was ever held. Keyed on `launchedAt`, every one of those live villages
- * would read as pre-launch and let one founder plant production keys with no
- * co-sign. `founderPowerStands` is also already the rule for "what may one
- * founder do alone" (R90), which is exactly this question.
+ * THE ONE SIGNAL is `cosignPhase` in `server/lib/plantingRequests.ts`: the
+ * village's own launch ballot has carried (`launchBallotCarried` in
+ * `server/lib/launch.ts`, which reads `launch-state.launchedByBallotId`). The
+ * key co-sign, the signing-key rotation and the setup game's map all ask that
+ * one function, so the game never shows a co-sign the door does not ask for.
+ *
+ * It is NOT game start (`founderPowerStands`, `server/lib/gameStart.ts`), which
+ * this comment named until 2026-10-31. Game start reads as live for every
+ * village migration 0112 recorded as already issuing, and for every village
+ * the test harness provisions, and none of those has held its launch vote. A
+ * village in that state is still being set up, by Rye's "any founder should
+ * have full ability to do a task before they go live", so keyed on game start
+ * its keys would wait for a second person it was never asked to find.
+ * `shared/launchFacts.ts` lists every launch fact and which door reads it.
  */
 export type PlantingPhase = "before-launch" | "after-launch";
 
