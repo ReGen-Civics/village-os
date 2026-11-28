@@ -446,7 +446,7 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 | `/team` | Team | V N M R I A | About / Our Team | Community / Our story / Our Team | STAY |  |
 | `/admin` | Village settings | A | Account menu / Village Settings | Account menu / Running the village / Village Settings | STAY |  |
 | `/admin/mint` |  | R A | - | - | STAY | reached from the Treasury desk |
-| `/admin/proposals` |  | A | - | - | FOLDING | the Governance lane folds it into /admin/review |
+| `/admin/proposals` |  | A | - | - | FOLDED | lands on /admin/review?view=batches, which draws its desk (27 Nov 2026) |
 | `/admin/review` |  | A | - | Account menu / Running the village / Review | STAY | new menu door (27 Nov 2026): the admin's one review page |
 | `/profile` | My profile | N M R I A | Account menu / My Profile | Account menu / My Profile | STAY |  |
 | `/profile/characters` |  | M R A | - | - | STAY | reached from the profile |

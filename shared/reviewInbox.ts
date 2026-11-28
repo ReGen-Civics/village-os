@@ -120,7 +120,7 @@ export function fromConnector(body: unknown): InboxItem[] {
       summary: line(c.summary, "A proposed change"),
       filedAt: str(c.at),
       batch: c.batchId ? { key: `connector:${c.batchId}`, code: str(c.batchCode), title: str(batch?.title) } : null,
-      decideAt: "/admin/proposals",
+      decideAt: "/admin/review",
       touchesPerson: false,
     }];
   });

@@ -3,7 +3,9 @@
  * on /admin/proposals, and every set of changes that write the same thing gathered into one conflict card.
  */
 import { useMemo } from "react";
-import { CHIP_SOFT, H2 } from "@/components/journey/look";
+import { Link } from "wouter";
+import { Trans } from "@lingui/react/macro";
+import { CHIP_SOFT, H2, HINT, LINK } from "@/components/journey/look";
 import ChangeCard from "@/components/proposals/ChangeCard";
 import type { Proposal } from "@/components/proposals/reviewTypes";
 import { conflictGroups, oldestFirst, waitingConflicts, type ConflictInput } from "@shared/proposalConflicts";
@@ -11,6 +13,11 @@ import ConflictCard from "./ConflictCard";
 import type { ConnectorDesk } from "./useConnectorDesk";
 
 type Slot = { kind: "one"; change: Proposal } | { kind: "choose"; options: Proposal[] };
+
+/** "Part of batch B-71." */
+function BatchOf({ code }: { code: string }) {
+  return <Trans context="review inbox: a change's batch">Part of batch {code}.</Trans>;
+}
 
 export default function ConnectorWaiting({ desk, title, count, found }: { desk: ConnectorDesk; title: string; count: number; found: ReadonlySet<string> }) {
   const { slots, links } = useMemo(() => {
@@ -56,8 +63,18 @@ export default function ConnectorWaiting({ desk, title, count, found }: { desk: 
           s.kind === "choose" ? (
             <ConflictCard key={`choose-${s.options[0]!.id}`} options={s.options} links={links} desk={desk} />
           ) : (
+            <div key={s.change.id} className="space-y-1">
+              {/* The same change is also in the Batches view, inside its batch: say which, and give the door (27 Nov 2026).
+                  It is one decision wherever it is drawn: the count is the server's, over the list's one row for it. */}
+              {s.change.batchCode ? (
+                <p className={HINT} data-testid={`batch-of-${s.change.id}`}>
+                  <BatchOf code={s.change.batchCode} />{" "}
+                  <Link href={`/admin/review?view=batches&find=${encodeURIComponent(s.change.batchCode)}`} className={LINK}>
+                    <Trans context="review inbox: a change's batch">See the whole batch</Trans>
+                  </Link>
+                </p>
+              ) : null}
             <ChangeCard
-              key={s.change.id}
               change={s.change}
               found={found.has(s.change.id)}
               body={desk.edits[s.change.id] ?? s.change.body}
@@ -73,6 +90,7 @@ export default function ConnectorWaiting({ desk, title, count, found }: { desk: 
               seenLive={desk.seenNow(s.change)}
               onSeeLive={() => void desk.seeLive(s.change.id)}
             />
+            </div>
           ),
         )}
       </div>

@@ -11,6 +11,8 @@ import type { ReactNode } from "react";
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => ({ loading: false, user: { id: "u1" } }) }));
 vi.mock("@/lib/gameApi", () => ({ authToken: () => "t" }));
+// The old proposals page's desk is a chunk of its own with its own reads (client/src/pages/ProposedChanges.test.tsx holds it); here a stand-in.
+vi.mock("@/pages/ProposedChanges", () => ({ ProposalsDesk: ({ embedded, onDecided }: { embedded?: boolean; onDecided?: () => void }) => <button type="button" data-testid="stub-desk" data-embedded={embedded ? "yes" : "no"} onClick={onDecided}>the desk</button> }));
 // The list Sera's row opens is its own chunk with its own reads (client/src/components/review); here it is a stand-in.
 vi.mock("@/components/reviewInbox/SeraSheet", () => ({ default: ({ onChanged }: { onChanged: () => void }) => <button type="button" data-testid="stub-sheet" onClick={onChanged}>the list</button> }));
 
@@ -409,5 +411,45 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     expect(screen.getByRole("heading", { name: "Org chart drafts 1 1 blocked" })).toBeTruthy();
     // The draft's own row carries the chip too, before its lines are read.
     expect(within(screen.getByTestId("row-structure:dr_1")).getByTestId("blocked-chip")).toBeTruthy();
+  });
+});
+
+describe("the Batches view: /admin/proposals folded into this page (the accepted cut C8, 27 Nov 2026)", () => {
+  it("a person who may read the connector gets a Batches view that draws the old page's desk, and a decision there re-reads the list behind it", async () => {
+    const calls = stub();
+    window.history.replaceState(null, "", "/admin/review?view=batches");
+    render(<AdminReview />);
+    const view = await screen.findByTestId("batches-view");
+    expect(screen.getByTestId("tab-batches").getAttribute("aria-current")).toBe("page");
+    const desk = await within(view).findByTestId("stub-desk");
+    // The desk is drawn inside this page: no second page frame, no second header.
+    expect(desk.getAttribute("data-embedded")).toBe("yes");
+    // Waiting's own cards are not drawn on this view.
+    expect(screen.queryByTestId("conflict-card-pc_1")).toBeNull();
+    const before = calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length;
+    fireEvent.click(desk);
+    await waitFor(() => expect(calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length).toBe(before + 1));
+    expect(screen.getByTestId("batches-view")).toBeTruthy();
+  });
+
+  it("a person who may not read the connector gets no Batches view, even by its address", async () => {
+    stub({ connector: "refused" });
+    window.history.replaceState(null, "", "/admin/review?view=batches");
+    render(<AdminReview />);
+    await screen.findByText("Nothing is waiting on you.");
+    expect(screen.queryByTestId("tab-batches")).toBeNull();
+    expect(screen.queryByTestId("batches-view")).toBeNull();
+  });
+});
+
+describe("a change under Waiting names its batch and links to it in the Batches view", () => {
+  it("says which batch it is part of, with a door to that batch, and stays one decision", async () => {
+    stub({ changes: [PAGE] });
+    render(<AdminReview />);
+    const line = await screen.findByTestId("batch-of-pc_3");
+    expect(line.textContent).toBe("Part of batch B-3. See the whole batch");
+    expect(within(line).getByRole("link").getAttribute("href")).toBe("/admin/review?view=batches&find=B-3");
+    // The change is drawn here and in the Batches view; the count is the server's one row for it, said once.
+    expect(screen.getByTestId("inbox-status").textContent).toContain("1 decision waiting on you.");
   });
 });
