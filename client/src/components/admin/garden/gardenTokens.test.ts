@@ -265,4 +265,49 @@ describe("what the garden's stylesheet promises a host page", () => {
     expect(rule('[data-state="walked"] > .gd-stone')["background-color"]).toContain("var(--garden-stone-walked)");
     expect(rule('[data-state="walked"] > .gd-stone::after')["border-width"]).toBe("0 2px 2px 0");
   });
+
+  /**
+   * THE COMPACT GROUNDS (the overseer, for the founder: on a new village's first evening the land has to be seen as
+   * land on a laptop). With the dock expanded what you see sits in two fifths of the width, where the full map has
+   * no room; the compact one does.
+   */
+  describe("the compact grounds", () => {
+    const COMPACT = ':is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds)';
+    // One line ending, whichever the checkout has.
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    const open = flat.indexOf("@container (min-width: 28rem)");
+    const block = flat.slice(open, flat.indexOf("\n}\n", open));
+
+    it("is asked for by hand or by the frame's expanded dock, and by a container query, never the window's width", () => {
+      expect(open).toBeGreaterThan(0);
+      // Every rule in the block is for the compact map and nothing else.
+      const selectors = block.split("\n").filter((l) => /\{\s*$/.test(l) && !l.startsWith("@container"));
+      expect(selectors.length).toBeGreaterThan(8);
+      for (const line of selectors) expect(line.trim().startsWith(COMPACT), line).toBe(true);
+      // Smaller than the full map's own threshold, so it draws where the full one cannot.
+      expect(gardenCss.indexOf("@container (min-width: 38rem)")).toBeGreaterThan(0);
+      expect(gardenCss.match(/@media/g)).toHaveLength(1);
+    });
+
+    it("puts each place on its own spot by the same percentages, in the same column of 26% of the land", () => {
+      expect(block).toContain("left: calc(var(--gd-x) * 1%);");
+      expect(block).toContain("top: calc(var(--gd-y) * 1%);");
+      expect(block).toContain("width: min(12rem, 26cqw);");
+      // The full map is tall by rule; the compact one takes the height its width gives it.
+      expect(block).toMatch(/\.gd-land \{\s*aspect-ratio: 10 \/ 9;\s*min-height: 0;\s*max-height: none;/);
+    });
+
+    it("shows the name and the lantern on one line and nothing more, on the plaque's wood", () => {
+      // The lantern keeps its own size while the words beside it take none; they are in the place's spoken name.
+      expect(block).toMatch(/\.gd-place-line \{[^}]*font-size: 0;/);
+      expect(block).toMatch(/\.gd-plaque > span:not\(\.gd-place-name, \.gd-place-line\) \{\s*display: none;/);
+      expect(block).toMatch(/\.gd-plaque \{[^}]*flex-direction: row-reverse;[^}]*background-color: var\(--garden-wood\);/);
+      // Never pulled ahead by order: the plaque's own direction puts the lantern first.
+      expect(block).not.toMatch(/(?:^|[\s;{])order:/);
+    });
+
+    it("keeps a place a full finger tall", () => {
+      expect(block).toMatch(/\.gd-place\[data-lens="grounds"\] \{[^}]*min-height: 2\.75rem;/);
+    });
+  });
 });

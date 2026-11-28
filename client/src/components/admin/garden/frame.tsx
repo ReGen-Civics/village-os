@@ -13,7 +13,9 @@
  *
  *   closed     what you see takes the whole width. The dock is not drawn.
  *   docked     what you see, with the dock in a column beside it.
- *   expanded   the conversation leads and what you see sits beside it.
+ *   expanded   the conversation leads and what you see sits beside it. A
+ *              Grounds there draws its compact map (garden.css), so on a
+ *              laptop the land is still land, in two fifths of the width.
  *
  * On a narrow screen the dock is a block of its own ABOVE what you see, in
  * both open states: she comes first, and nothing scrolls sideways. She is

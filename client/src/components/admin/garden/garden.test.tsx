@@ -369,6 +369,44 @@ describe("Grounds", () => {
   it("keeps a land image's URL inside its own quotes", () => {
     expect(cssUrl('/a"b\\c\nd.webp')).toBe('url("/a%22b%5Cc%0Ad.webp")');
   });
+
+  it("COMPACT: the same places on the same spots, asked for by hand, and a plain map when it is not", () => {
+    const plain = show(<Grounds places={ALL} />);
+    expect(screen.getByRole("navigation", { name: "The grounds" }).hasAttribute("data-compact")).toBe(false);
+    plain.unmount();
+
+    show(<Grounds places={ALL} compact />);
+    const map = screen.getByRole("navigation", { name: "The grounds" });
+    expect(map.getAttribute("data-compact")).toBe("true");
+    const items = within(map).getAllByRole("listitem");
+    expect(items).toHaveLength(10);
+    for (const li of items) {
+      const place = li.querySelector(".gd-place")?.getAttribute("data-place") as keyof typeof GARDEN_PLACES;
+      expect(li.style.getPropertyValue("--gd-x")).toBe(String(GARDEN_PLACES[place].x));
+      expect(li.style.getPropertyValue("--gd-y")).toBe(String(GARDEN_PLACES[place].y));
+    }
+    // The plaque shows less, and the place still says all of it: what waits, and that a place is not built yet.
+    expect(within(map).getByRole("link", { name: "The Hall, 3 waiting" })).toBeTruthy();
+    const unbuilt = within(map).getByRole("link", { name: "The Stage, not built yet" });
+    expect(unbuilt.getAttribute("data-scaffolding")).toBe("true");
+    expect(unbuilt.querySelector("img")?.getAttribute("src")).toBe(gardenSpriteUrl("stage", true));
+    expect(unbuilt.querySelector(".gd-lantern")).toBeNull();
+    // A lit place keeps its lantern, which is all the compact plaque shows beside the name.
+    expect(within(map).getByRole("link", { name: "The Hall, 3 waiting" }).querySelector('.gd-lantern[data-lit="true"]')).toBeTruthy();
+  });
+
+  it("COMPACT: inside the frame with the dock expanded, the Grounds needs no prop: the frame's own state asks", () => {
+    show(
+      <GardenFrame dock={<p>the conversation</p>} dockState="expanded">
+        <Grounds places={ALL} />
+      </GardenFrame>,
+    );
+    const map = screen.getByRole("navigation", { name: "The grounds" });
+    // Nothing is set on the Grounds: the stylesheet reads the frame (gardenTokens.test.ts holds the rule).
+    expect(map.hasAttribute("data-compact")).toBe(false);
+    expect(map.closest(".gd-frame")?.getAttribute("data-dock")).toBe("expanded");
+    expect(map.closest(".gd-frame-main")).toBeTruthy();
+  });
 });
 
 describe("Desk", () => {
