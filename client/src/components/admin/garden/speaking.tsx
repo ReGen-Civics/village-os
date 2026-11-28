@@ -147,10 +147,10 @@ export function useGardenWords(opts: { personKey?: string; now?: Date } = {}): G
     if (n === 0) {
       return say(
         dayPart === "morning"
-          ? t({ message: "Nothing needs you this morning. The village is steady.", context: "garden band, nothing waits" })
+          ? t({ message: "The village is quiet this morning. Nothing needs you.", context: "garden band, nothing waits" })
           : dayPart === "afternoon"
-            ? t({ message: "Nothing needs you this afternoon. The village is steady.", context: "garden band, nothing waits" })
-            : t({ message: "Nothing needs you tonight. The village is steady.", context: "garden band, nothing waits" }),
+            ? t({ message: "The village is quiet this afternoon. Nothing needs you.", context: "garden band, nothing waits" })
+            : t({ message: "The village is quiet tonight. Nothing needs you.", context: "garden band, nothing waits" }),
         t({ message: "All clear.", context: "garden band, nothing waits, brief" }),
       );
     }

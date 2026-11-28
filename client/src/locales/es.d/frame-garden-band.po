@@ -5,18 +5,18 @@ msgstr ""
 
 # needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
 msgctxt "garden band, nothing waits"
-msgid "Nothing needs you this afternoon. The village is steady."
-msgstr "Nada le necesita esta tarde. La aldea está en calma."
+msgid "The village is quiet this afternoon. Nothing needs you."
+msgstr "La aldea está tranquila esta tarde. Nada le necesita."
 
 # needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
 msgctxt "garden band, nothing waits"
-msgid "Nothing needs you this morning. The village is steady."
-msgstr "Nada le necesita esta mañana. La aldea está en calma."
+msgid "The village is quiet this morning. Nothing needs you."
+msgstr "La aldea está tranquila esta mañana. Nada le necesita."
 
 # needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
 msgctxt "garden band, nothing waits"
-msgid "Nothing needs you tonight. The village is steady."
-msgstr "Nada le necesita esta noche. La aldea está en calma."
+msgid "The village is quiet tonight. Nothing needs you."
+msgstr "La aldea está tranquila esta noche. Nada le necesita."
 
 # needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
 msgctxt "garden band, nothing waits, brief"
