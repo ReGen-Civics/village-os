@@ -109,6 +109,23 @@ export function launchLabel(f: LaunchFacts): LaunchLabel {
   return "setup";
 }
 
+/**
+ * HOW THE CHECKLIST BECAME A RECORD, for the sentence a page writes over it.
+ *
+ *   voted    the village's own launch vote carried.
+ *   marked   the checklist froze with no vote behind it: the old one-press act, from before the vote existed.
+ *   null     the checklist is still open.
+ *
+ * A page must not say "the village voted" over a village that was only marked. The label above has no name for a
+ * marked village (it reads by its other facts), so a page that shows a frozen checklist says this and hides the label.
+ */
+export type LaunchRecord = "voted" | "marked" | null;
+
+export function launchRecord(f: Pick<LaunchFacts, "voteCarried" | "checklistFrozen">): LaunchRecord {
+  if (f.voteCarried) return "voted";
+  return f.checklistFrozen ? "marked" : null;
+}
+
 /** What `GET /api/admin/launch/facts` answers. */
 export interface LaunchFactsAnswer {
   facts: LaunchFacts;

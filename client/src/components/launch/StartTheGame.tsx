@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { SeedGlint } from "@/components/sacred/living";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
+import { useTokensWord } from "@/hooks/useTokenNames";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { launchDoors, type LaunchFacts } from "@shared/launchFacts";
 
@@ -87,6 +88,8 @@ export default function StartTheGame({
   const { t } = useLingui();
   // The village may name its launch vote (gap G7); blank keeps the platform's name.
   const launchName = useAppWords()("launch", "name") ?? "Start the Game";
+  // What this village calls all its tokens together, so the sentence below is in its own words.
+  const tokens = useTokensWord();
   const running = vote?.openBallot ?? null;
   const shortOfPeople = !!vote?.tooFew;
   const governanceOff = vote?.governanceOn === false;
@@ -109,7 +112,13 @@ export default function StartTheGame({
           {!running && (cannotBeAsked || governanceOff) && (
             <p data-testid={cannotBeAsked ? "start-already-issuing" : undefined} className="text-xs text-stone-700 mt-1 max-w-md">
               {cannotBeAsked ? (
-                <Trans context="StartTheGame, p">Tokens are already being issued in this village, and no launch vote has carried. The vote cannot be opened from this page yet.</Trans>
+                <>
+                  <Trans context="StartTheGame, p">This village is already issuing {tokens}, and no launch vote has carried, so this page cannot open the vote. Changing that is the village's own decision, by its highest vote.</Trans>{" "}
+                  {/* Where members propose a change to the rules and the village votes on it: GAME_MECHANICS_ANCHOR on pages/Governance.tsx. */}
+                  <Link href="/governance/how#game-mechanics" className="text-teal-deep underline">
+                    <Trans context="StartTheGame, Link">Open the game mechanics</Trans>
+                  </Link>
+                </>
               ) : (
               <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
               <Link href="/modules/governance" className="text-teal-deep underline">

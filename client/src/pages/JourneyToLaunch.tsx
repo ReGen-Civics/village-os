@@ -44,7 +44,7 @@ import HandOverPowers from "@/components/governance/HandOverPowers";
 import { useBrochurePages } from "@/lib/brochure";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { Trans } from "@lingui/react/macro";
-import { launchDoors, type LaunchFactsAnswer } from "@shared/launchFacts";
+import { launchDoors, launchRecord, type LaunchFactsAnswer } from "@shared/launchFacts";
 import { readLaunchFacts } from "@/lib/launchReads";
 import { useLaunchLabelWords } from "@/lib/launchWords";
 
@@ -397,6 +397,11 @@ export default function JourneyToLaunch() {
   const facts = standing?.facts ?? null;
   // The row buttons' door (`POST /api/admin/launch/confirm`) refuses once the checklist froze.
   const rowsOpen = facts ? launchDoors(facts).rowsOpen : !launched;
+  // Whether the village VOTED, or was only marked launched by the old one-press act. The checklist payload carries
+  // the ballot too, so the header says the right one even when the facts could not be read.
+  const record = facts ? launchRecord(facts) : launched ? (status?.launchedByBallotId ? "voted" : "marked") : null;
+  const launchedOn = launched ? new Date(status.launchedAt).toLocaleDateString() : "";
+  const standingWord = standing ? standingWords(standing.label) : "";
 
   return (
     <Layout>
@@ -413,8 +418,10 @@ export default function JourneyToLaunch() {
             {launched ? "This village is live" : "Everything between here and open doors"}
           </h1>
           <p className="text-white text-sm max-w-2xl mb-6">
-            {launched
-              ? `The village voted to start its Game on ${new Date(status.launchedAt).toLocaleDateString()}. This checklist stays as the record of what that took.`
+            {launched && record === "marked" ? (
+              <Trans context="JourneyToLaunch, p">This village was marked launched on {launchedOn}. No launch vote carried. This checklist stays as the record of what that took.</Trans>
+            ) : launched
+              ? `The village voted to start its Game on ${launchedOn}. This checklist stays as the record of what that took.`
               : "Live status, not a to-do list someone forgot to update: every item below is either observed by the server right now, or confirmed by a named admin."}
           </p>
           <p className="text-sm mb-6">
@@ -430,9 +437,10 @@ export default function JourneyToLaunch() {
             * the handover is a journey, never a grade. The two counts say what
             * a founder can act on, and the rows below say which.
             */}
-          {standing && (
+          {/* Once the checklist froze the header above says where the village stands, so the label steps back. */}
+          {standing && !standing.facts.checklistFrozen && (
             <p data-testid="journey-standing" className={`text-white text-xs mb-1 ${shownView === "canvas" ? "hidden" : ""}`}>
-              {standingWords(standing.label)}
+              <Trans context="JourneyToLaunch, p">Where the village stands: {standingWord}</Trans>
             </p>
           )}
           {status && !launched && (

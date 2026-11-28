@@ -85,8 +85,8 @@ msgstr "Lanzamiento · nada bloquea"
 # needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
 #: client/src/components/admin/launchBanner.ts
 msgctxt "admin launch strip, a village issuing before its vote"
-msgid "Journey to Launch: tokens are being issued and no launch vote has carried · {what} · {recommended} recommended remaining"
-msgstr "Camino al lanzamiento: ya se emiten tokens y ninguna votación de lanzamiento ha prosperado · {what} · {recommended} recomendados pendientes"
+msgid "Journey to Launch: {tokens} are being issued and no launch vote has carried · {what} · {recommended} recommended remaining"
+msgstr "Camino al lanzamiento: ya se emiten {tokens} y ninguna votación de lanzamiento ha prosperado · {what} · {recommended} recomendados pendientes"
 
 # needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
 #: client/src/components/admin/launchBanner.ts
@@ -97,5 +97,23 @@ msgstr "Camino al lanzamiento: {what} · {recommended} recomendados pendientes"
 # needs-native-review: launch facts, the Start the Game card, 27 Nov 2026
 #: client/src/components/launch/StartTheGame.tsx
 msgctxt "StartTheGame, p"
-msgid "Tokens are already being issued in this village, and no launch vote has carried. The vote cannot be opened from this page yet."
-msgstr "En esta aldea ya se emiten tokens, y ninguna votación de lanzamiento ha prosperado. La votación todavía no puede abrirse desde esta página."
+msgid "This village is already issuing {tokens}, and no launch vote has carried, so this page cannot open the vote. Changing that is the village's own decision, by its highest vote."
+msgstr "Esta aldea ya emite {tokens}, y ninguna votación de lanzamiento ha prosperado, así que esta página no puede abrir la votación. Cambiar eso lo decide la aldea misma, con su votación más alta."
+
+# needs-native-review: launch facts, the Start the Game card, 28 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, Link"
+msgid "Open the game mechanics"
+msgstr "Abrir las mecánicas del juego"
+
+# needs-native-review: launch facts, Journey to Launch, 28 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, p"
+msgid "Where the village stands: {standingWord}"
+msgstr "Dónde está la aldea: {standingWord}"
+
+# needs-native-review: launch facts, Journey to Launch, 28 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, p"
+msgid "This village was marked launched on {launchedOn}. No launch vote carried. This checklist stays as the record of what that took."
+msgstr "Esta aldea se marcó como lanzada el {launchedOn}. Ninguna votación de lanzamiento prosperó. Esta lista queda como registro de lo que hizo falta."
