@@ -1060,6 +1060,28 @@ describe("her first words follow what the host told her", () => {
     expect(first()).toBe("I'm Sol. What Game are you starting?");
   });
 
+  it("a first meeting offers its own three suggestions, docked and wide; each fills the box and sends nothing", async () => {
+    const FIRST = ["What should I set up first?", "What does starting a Game mean here?", "Can I change this later?"];
+    const calls = mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer() }) });
+    const offered = () => within(screen.getByRole("group", { name: "Suggested next steps" })).getAllByRole("button").map((b) => b.textContent);
+    const docked = dock({ tab: "home", firstMeeting: true });
+    expect(offered()).toEqual(FIRST);
+    docked.unmount();
+    dock({ tab: "home", firstMeeting: true, initialShape: "expanded" });
+    expect(offered()).toEqual(FIRST);
+    // A press puts the words in the box and stops there.
+    await userEvent.click(screen.getByRole("button", { name: "What does starting a Game mean here?" }));
+    expect(box()).toHaveValue("What does starting a Game mean here?");
+    expect(document.activeElement).toBe(box());
+    expect(calls).toEqual([]);
+    // Sent by the person, it is a conversation like any other: the everyday ways to go on.
+    await userEvent.type(box(), "{Enter}");
+    await talk().findAllByText("Here you go.");
+    expect(calls).toHaveLength(1);
+    expect(offered()).toContain("Tell me more.");
+    expect(offered()).not.toContain("Can I change this later?");
+  });
+
   it("something waits: she greets by first name and goes straight to the one thing the host handed her, word for word", async () => {
     dock({ personName: "Rye Ashby", oneThing: ONE_THING });
     expect(first()).toBe("Evening, Rye. One thing has a deadline: the Team page words lapse Monday. Shall I open them?");

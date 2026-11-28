@@ -249,6 +249,21 @@ msgid "What does our brief say about this?"
 msgstr "¿Qué dice nuestro resumen sobre esto?"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question at a first meeting"
+msgid "Can I change this later?"
+msgstr "¿Puedo cambiar esto después?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question at a first meeting"
+msgid "What does starting a Game mean here?"
+msgstr "¿Qué significa aquí empezar un Juego?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, a suggested question at a first meeting"
+msgid "What should I set up first?"
+msgstr "¿Qué debo preparar primero?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a suggested question on the road to launch"
 msgid "What does this step mean?"
 msgstr "¿Qué significa este paso?"
@@ -270,8 +285,8 @@ msgstr "¿Cómo agrego un encuentro?"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a suggested question"
-msgid "How do quests work here?"
-msgstr "¿Cómo funcionan las misiones aquí?"
+msgid "How do Quests work here?"
+msgstr "¿Cómo funcionan las Misiones aquí?"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a suggested question"
@@ -335,8 +350,8 @@ msgstr "¿Qué debo activar primero?"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a suggested question"
-msgid "Where do I add a quest?"
-msgstr "¿Dónde agrego una misión?"
+msgid "Where do I add a Quest?"
+msgstr "¿Dónde agrego una Misión?"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a suggested question"

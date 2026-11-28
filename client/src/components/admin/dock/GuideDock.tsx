@@ -394,7 +394,7 @@ export default function GuideDock({
   const guide = guideNameAtSentenceStart(shown === "helper" && chosen === "sera" ? seraName : villageGuide);
 
   // ── Talking ───────────────────────────────────────────────────────────────
-  const place: SuggestionPlace = shown === "helper" ? { mode: "helper", tab } : { mode: shown };
+  const place: SuggestionPlace = shown === "helper" ? { mode: "helper", tab, firstMeeting } : { mode: shown };
   const suggestions = useDockSuggestions(place, !started, expanded ? MAX_SUGGESTIONS : DOCKED_SUGGESTIONS);
 
   const onDraft = useCallback(
