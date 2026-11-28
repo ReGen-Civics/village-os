@@ -309,7 +309,11 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
 
   it("A TEAM NUDGE NEVER REACHES THE APPLICANT (QA pass 3), even when they hold the role up next; its other holders hear it", async () => {
     const { nudgeTick } = await import("../lib/applicantNudges");
+    state.notices.length = 0;
     const id = await confirmed(APPLICANT_HOLDER.email);
+    // At confirm, the first conversation's "your turn" reaches its other holder, never the applicant (QA round 5).
+    expect(state.notices.filter((n) => n.type === "application_interview_turn").map((n) => n.userId)).toContain(IA.id);
+    expect(state.notices.filter((n) => n.userId === APPLICANT_HOLDER.id && n.type !== "applicant_update").map((n) => n.type)).toEqual([]);
     const [first] = await q("SELECT id FROM application_interviews WHERE application_ref = ? ORDER BY position", [id]);
     await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 4 * 86_400_000), first.id]);
     try {

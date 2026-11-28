@@ -203,7 +203,7 @@ export async function beginReview(
 }
 
 /** After commit: the first interviewer's holders hear it waits on them. A retry writes nothing twice (stable keys). Reviewed first, nobody hears until the invitation. */
-export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, start: ReviewStart, applicantFirstName: string | null): Promise<void> {
+export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant"> & Partial<Pick<ReviewDeps, "liveHoldersOf" | "members">>, start: ReviewStart, applicantFirstName: string | null): Promise<void> {
   const first = start.interviews[0];
   if (!first || start.reviewFirst) return;
   await tellInterviewers(deps, start.ref, 1, first.roleId, first.minutes, applicantFirstName);
@@ -232,7 +232,7 @@ export async function stepBookingOf(db: Db, ref: string, roleId: string): Promis
   return roleBookingFor(label, people, roleUrl);
 }
 
-export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
+export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant"> & Partial<Pick<ReviewDeps, "liveHoldersOf" | "members">>, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
   const pool = deps.getPool();
   // The person who proposed hears the next conversation is asked for, once each (stable part). The first opens as they confirm, and their status email covers it.
   if (kindOfRef(ref) === "open" && deps.tellApplicant && position > 1) {
@@ -246,8 +246,15 @@ export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notif
     }
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
+  // Never the applicant's own account, even when they hold the role (QA round 5); nobody else holds it: the placers.
+  const holders: string[] = [];
   for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
-    if (recused.has(userId)) continue;
+    if (recused.has(userId) || (await isTheApplicant(deps, ref, userId))) continue;
+    holders.push(userId);
+  }
+  const told = holders.length ? holders : (await (deps as ReviewDeps).liveHoldersOf?.(ADOPTING_POWER).catch(() => [] as string[])) ?? [];
+  for (const userId of told) {
+    if (recused.has(userId) || (await isTheApplicant(deps, ref, userId))) continue;
     await deps.notify({
       userId,
       type: "application_interview_turn",
@@ -281,6 +288,16 @@ async function confirmedDetail(db: Db, ref: string): Promise<{ roleIds: string[]
 }
 
 /** Whether this account is the applicant. By stored account, or for an open proposal by its address's account. */
+/**
+ * Whether a team notice would reach the applicant's own account (QA round 5): the account stamped at confirm, or the
+ * account the application is trusted to be. A notice is never sent there, whatever role they hold.
+ */
+async function isTheApplicant(deps: Pick<ReviewDeps, "getPool"> & Partial<Pick<ReviewDeps, "members">>, ref: string, userId: string): Promise<boolean> {
+  if ((await confirmedDetail(deps.getPool(), ref))?.applicantUserId === userId) return true;
+  if (!deps.members) return false;
+  return isApplicant(deps as ReviewDeps, ref, userId).catch(() => false);
+}
+
 export async function isApplicant(deps: ReviewDeps, ref: string, userId: string): Promise<boolean> {
   const pool = deps.getPool();
   if (kindOfRef(ref) !== "open") {
@@ -864,9 +881,12 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
   const roleId = (deps.onboardingRole?.() ?? "").trim();
   const onboarding = roleId ? await repo.liveHoldersOfRole(pool, roleId) : [];
   const tell = async (kind: "application_first_reply_due" | "application_stale", title: string, key: string, ref: string) => {
-    if (onboarding.length) {
+    // Never the applicant's own account, even when they hold the welcoming role (QA round 5).
+    const team: string[] = [];
+    for (const userId of onboarding) if (!(await isTheApplicant(deps, ref, userId))) team.push(userId);
+    if (team.length) {
       // The type is spelled out in the call, so the notification catalogue's producer scan sees both kinds.
-      for (const userId of onboarding) await deps.notify({ userId, type: kind === "application_stale" ? "application_stale" : "application_first_reply_due", title, link: scorecardHref(ref), actorUserId: null, dedupeKey: `${key}:${userId}` });
+      for (const userId of team) await deps.notify({ userId, type: kind === "application_stale" ? "application_stale" : "application_first_reply_due", title, link: scorecardHref(ref), actorUserId: null, dedupeKey: `${key}:${userId}` });
     } else {
       await deps.notifyAdmins("governance", title, key, scorecardHref(ref));
     }

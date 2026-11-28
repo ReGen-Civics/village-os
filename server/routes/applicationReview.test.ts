@@ -635,6 +635,9 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(early.status).toBe(409);
       expect(early.body.error).toBe("interviews_not_done");
       await scoreAll(id);
+      // Ruling 23 (QA round 5): every card in is not enough; the proposal is sent to the Anchor Circle first.
+      expect((await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id)).body.error).toBe("send_first");
+      await sendOn(id);
       const done = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
       expect(done.status, JSON.stringify(done.body)).toBe(200);
       expect(await stepKinds(id)).toContain("decided");
