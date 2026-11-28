@@ -104,7 +104,15 @@
  *
  * That rewrites the snapshot from the built server and asserts nothing about
  * the cells (the fixture's own controls still run). Commit the snapshot with
- * the change that moved it. Never edit the file by hand.
+ * the change that moved it.
+ *
+ * A NEW ROUTE WITHOUT A LOCAL BUILD. A pull request that adds a route fails
+ * this file until the snapshot holds its line. The run that fails also prints
+ * that line, with the six codes the built server answered, in the test shard's
+ * log. Read the codes, check they are the ones the route was meant to have,
+ * and add the line in sorted order. That is the one edit made by hand. A
+ * CHANGED line is never edited by hand: it is regenerated, so the diff is what
+ * the server did and never what somebody typed.
  *
  * `PERMISSION_MATRIX_SURVEY=<file>` writes every probe's status and the first
  * line of its answer to a JSON file, for reading why a cell says what it says.
@@ -652,14 +660,25 @@ describe.skipIf(!DB_CONFIGURED)("the permission matrix, against the built server
     const snapshot = readSnapshot();
     expect(snapshot, `server/permissionMatrix.snapshot.json is missing. ${HOW_TO_UPDATE}`).not.toBeNull();
     const moved: string[] = [];
+    const unheld: string[] = [];
     for (const key of Object.keys(routes)) {
       const was = snapshot!.routes[key];
-      if (!was) continue; // a route the snapshot does not hold is reported, by name, by the route-list test above
+      if (!was) {
+        // The route-list test above fails by name for this route. Here is its line, as the built server answered.
+        unheld.push(`    ${JSON.stringify(key)}: [${routes[key].map((c) => JSON.stringify(c)).join(", ")}],`);
+        continue;
+      }
       const cells = routes[key]
         .map((c, i) => (c === was[i] ? null : `${IDENTITIES[i]} ${JSON.stringify(was[i])} -> ${JSON.stringify(c)}`))
         .filter((c): c is string => c !== null);
       if (cells.length) moved.push(`${key}: ${cells.join(", ")}`);
     }
+    // Said as a FAILURE, so the lines reach the log: this suite's console is shown only for a test that failed.
+    expect(
+      unheld.length,
+      `${unheld.length} route(s) the snapshot does not hold yet. Below is each one's line, as the built server answered just now. ` +
+        `Read the six codes, then add each line to "routes" in ${path.relative(ROOT, SNAPSHOT).split(path.sep).join("/")}, in sorted order:\n${unheld.join("\n")}\n`,
+    ).toBe(0);
     expect(moved, `These cells of the permission matrix moved. ${HOW_TO_UPDATE}`).toEqual([]);
     expect(modulesLeftOff, `The modules the fixture could not switch on changed, so their routes read 404 for everybody (or stopped doing so). ${HOW_TO_UPDATE}`).toEqual(snapshot!.modulesLeftOff);
   });

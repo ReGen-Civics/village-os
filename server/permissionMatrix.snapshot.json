@@ -225,6 +225,7 @@
     "DELETE /api/admin/land/parcel": [401, 401, 400, 401, 400, 400],
     "GET /api/admin/launch": [401, 401, 401, 200, 200, 200],
     "POST /api/admin/launch/confirm": [401, 401, 401, 403, 403, 400],
+    "GET /api/admin/launch/facts": [401, 401, 401, 200, 200, 200],
     "POST /api/admin/launch/propose": [403, 403, 403, 403, 403, 409],
     "GET /api/admin/launch/steward-candidates": [401, 401, 401, 200, 200, 200],
     "GET /api/admin/ledger/reconciliation": [401, 401, 401, 200, 200, 200],

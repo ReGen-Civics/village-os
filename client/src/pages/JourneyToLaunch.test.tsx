@@ -679,6 +679,10 @@ describe("who reads the checklist, and who answers its rows", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
     await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
+  });
+});
+
+/*
  * EACH CONTROL READS THE FACT ITS OWN SERVER DOOR READS (shared/launchFacts.ts).
  *
  * "Launched" was never one fact. A village migration 0112 recorded is issuing
