@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { TOKEN_KEY, authToken, clearAuthToken } from "@/lib/gameApi";
 import { forgetExamplesCache } from "@/components/ExamplesBanner";
+import { forgetChatDrafts } from "@/components/chat/draftStore";
 import { writeStored } from "@/lib/safeStorage";
 import { SIGN_IN_STORAGE_BLOCKED, canKeepSignedIn, sessionWriteRefused } from "@/lib/signInStorage";
 
@@ -85,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthToken();
         setToken(null);
         forgetExamplesCache();
+        // An expired session is a sign-out too: its half-written chat messages leave with it.
+        forgetChatDrafts();
       }
     } catch (err) {
       // A dropped connection says nothing about whether the token is valid.
@@ -176,6 +179,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     forgetExamplesCache();
+    // Half-written chat messages stay with the person who wrote them (components/chat/draftStore.ts).
+    forgetChatDrafts();
   }
 
   async function updateProfile(updates: Partial<Omit<User, "id" | "email" | "joinedAt">>) {

@@ -211,7 +211,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
       aria-label={name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}
       data-testid="companion-panel"
       data-hides-fab
-      className="fixed bottom-[calc(var(--tabbar-h)+0.5rem)] md:bottom-4 right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[70vh] wrap-anywhere"
+      className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)-1rem))] wrap-anywhere"
     >
       <header className="px-4 py-3 border-b border-stone-100 flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-stone-900">{name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}</p>
@@ -269,7 +269,6 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
         label={t({ message: "Your question", context: "guide question field" })}
         placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
         sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
-        sendClassName="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-teal-deep text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <p className="px-4 pb-3 text-xs text-stone-600">
         <Trans>

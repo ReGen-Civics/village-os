@@ -164,8 +164,8 @@ export default function TalkItOut({
         onSend={() => void send()}
         busy={busy}
         label={t({ message: "Your words to the guide", context: "talk it out: input label" })}
+        minRows={2}
         sendLabel={t({ message: "Send", context: "talk it out: sends your words" })}
-        sendClassName="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </section>
   );
