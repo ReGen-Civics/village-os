@@ -223,8 +223,7 @@ function BallotReturnChip({ proposal }: { proposal: Proposal }) {
   if (!proposal.ballotId || !back?.chip) return null;
   return (
     <span className={chipCls(back.cls || CHIP_QUIET)}>
-      {back.chip}
-      {back.tip && <InfoTip tip={back.tip} label={`What ${back.chip} means`} />}
+      {back.tip ? <InfoTip tip={back.tip}>{back.chip}</InfoTip> : back.chip}
     </span>
   );
 }
@@ -829,9 +828,8 @@ export default function GameMechanics() {
               {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                 <li key={law.title} className={TILE}>
                   <h4 className="mb-1.5 font-semibold text-foreground">
-                    {law.title}
-                    {/* Where the platform holds it, for whoever wants to check: behind a tip, out of the reading line. */}
-                    <InfoTip tip={law.enforcedBy} label={t({ message: "Where the platform enforces this law", context: "GameMechanics, aria-label" })} tapBox className="ml-1 font-normal text-muted-foreground" />
+                    {/* Where the platform holds it, for whoever wants to check: on the law's own name, out of the reading line. */}
+                    <InfoTip tip={law.enforcedBy}>{law.title}</InfoTip>
                   </h4>
                   <p className="text-sm leading-relaxed text-muted-foreground">{law.plain}</p>
                 </li>

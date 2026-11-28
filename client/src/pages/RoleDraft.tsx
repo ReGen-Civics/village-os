@@ -546,7 +546,7 @@ export default function RoleDraft() {
                       <dl className="grid grid-cols-2 border-b border-border text-center text-sm">
                         <div className="border-r border-border px-2 py-2">
                           <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                            <InfoTip triggerClassName="inline-flex min-h-11 items-center px-1" tip={t`We don't track time. Rewards follow the work you contract for and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks.`}>
+                            <InfoTip tip={t`We don't track time. Rewards follow the work you contract for and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks.`}>
                               {t({ message: "Commitment", context: "role draft stat" })}
                             </InfoTip>
                           </dt>

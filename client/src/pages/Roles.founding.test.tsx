@@ -12,6 +12,7 @@
  *   - VERIFY 2.2: a steward the server sends unlisted roles to sees what a
  *     visitor sees, and the rest behind one switch.
  */
+import { forgetGlossary } from "@/hooks/useGlossary";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
@@ -107,10 +108,14 @@ const VILLAGE_PAY = {
 let org: any;
 let founding: any;
 let roleCard: (id: string) => any;
+/** The village's explained words (shared/glossary.ts), or null for a village that wrote none. */
+let glossary: Record<string, string> | null = null;
 const asked: string[] = [];
 
 beforeEach(() => {
   asked.length = 0;
+  glossary = null;
+  forgetGlossary();
   window.history.replaceState(null, "", "/roles");
   session.token = null;
   session.user = null;
@@ -135,6 +140,7 @@ beforeEach(() => {
       if (u === "/api/org/founding-team") return reply(founding);
       if (u.startsWith("/api/org/role-card/")) return reply(roleCard(decodeURIComponent(u.split("/").pop() ?? "")));
       if (u === "/api/season") return reply({ current: null });
+      if (u === "/api/content/app-glossary") return glossary ? reply(glossary) : reply({ error: "Section not found" }, 404);
       // A village serving its story pages, unless a test says otherwise (`brochure`).
       if (u === "/api/game/config") return reply({ project: { name: "Willowbrook" }, brochurePages: brochure.on, brochureHidden: brochure.hidden });
       return reply([], 404);
@@ -814,6 +820,32 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     // Choosing a lead opens its card below, piece by piece.
     fireEvent.click(within(formation).getByRole("button", { name: /Lead Finance Steward/ }));
     await waitFor(() => expect(section.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
+  });
+  it("says what Formation means as a line under the switch while that view is chosen, and names it on the button (QA round 1, 27 Nov 2026)", async () => {
+    glossary = { formation: "Formation draws the founding team as rings around the village." };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const button = within(section).getByRole("button", { name: "Formation" });
+    // On the team sheet the line is not drawn, and the button names nothing.
+    expect(section.querySelector("[data-formation-meaning]")).toBeNull();
+    expect(button.getAttribute("aria-describedby")).toBeNull();
+    // No hover title: it reached nobody on touch.
+    expect(button.getAttribute("title")).toBeNull();
+    fireEvent.click(button);
+    const line = await waitFor(() => {
+      const el = section.querySelector("[data-formation-meaning]");
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(line.textContent).toBe("Formation draws the founding team as rings around the village.");
+    expect(within(section).getByRole("button", { name: "Formation" })).toHaveAccessibleDescription("Formation draws the founding team as rings around the village.");
+  });
+  it("draws no Formation line for a village that has written no meaning for it", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    await within(section).findByTestId("formation");
+    expect(section.querySelector("[data-formation-meaning]")).toBeNull();
   });
   it("remembers the reader's choice of view on this device, and opens on the team sheet otherwise", async () => {
     renderRoles();

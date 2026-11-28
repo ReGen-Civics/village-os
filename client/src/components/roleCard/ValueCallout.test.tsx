@@ -16,14 +16,21 @@ describe("the value callout on the Rewards piece", () => {
   it("renders the callout with a closed explainer and a labelled control", () => {
     render(<ValueCallout />);
     expect(screen.getByTestId("value-callout").textContent).toContain("Value in equals value out.");
-    const control = screen.getByRole("button", { name: "How rewards are set" });
+    const control = screen.getByRole("button", { name: "Value in equals value out." });
     expect(control.getAttribute("aria-expanded")).toBe("false");
     expect(screen.queryByTestId("value-explainer")).toBeNull();
+    // The callout's own words are the control (the lead, 27 Nov 2026), described by what it opens, with no icon beside them.
+    expect(control).toHaveAccessibleDescription("How rewards are set");
+    expect(control.querySelector("svg")).toBeNull();
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+    // The whole line is the control, 44px tall like the round button it replaced (QA round 2).
+    expect(control.className).toMatch(/min-h-11/);
+    expect(control.className).toMatch(/w-full/);
   });
 
   it("opens the explainer on activation, with the three parts, and Escape closes it and returns focus", () => {
     render(<ValueCallout />);
-    const control = screen.getByRole("button", { name: "How rewards are set" });
+    const control = screen.getByRole("button", { name: "Value in equals value out." });
     fireEvent.click(control);
     expect(control.getAttribute("aria-expanded")).toBe("true");
     const panel = screen.getByTestId("value-explainer");
@@ -48,7 +55,7 @@ describe("the value callout on the Rewards piece", () => {
         <p data-testid="outside">elsewhere</p>
       </div>,
     );
-    const control = screen.getByRole("button", { name: "How rewards are set" });
+    const control = screen.getByRole("button", { name: "Value in equals value out." });
     fireEvent.click(control);
     fireEvent.click(screen.getByTestId("value-explainer-close"));
     expect(screen.queryByTestId("value-explainer")).toBeNull();

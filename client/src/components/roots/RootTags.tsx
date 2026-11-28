@@ -22,6 +22,7 @@
  * Still by design: a tag is a label beside words, so nothing here moves.
  */
 import { useMemo } from "react";
+import InfoTip from "@/components/InfoTip";
 import { useLingui } from "@lingui/react/macro";
 import { shortRootName } from "@shared/archetypeRoots";
 import { rootGlyph } from "./rootGlyph";
@@ -65,9 +66,20 @@ export default function RootTags({ roots, size = "sm", className = "" }: RootTag
         const root = cast.find((c) => c.key === k);
         const name = shortRootName(root?.name ?? k);
         return (
-          <li key={k} className="inline-flex min-w-0 items-center gap-1.5" title={root?.blurb || undefined}>
-            <RootGlyph rootKey={k} className={md ? "size-6" : "size-5"} />
-            <span className="font-medium text-foreground">{name}</span>
+          <li key={k} className="inline-flex min-h-11 min-w-0 items-center gap-1.5">
+            {root?.blurb ? (
+              // The drawing and the name are one trigger, so a tap on the drawing opens the meaning too; only the name is
+              // underlined (QA round 3, 27 Nov 2026: a tap on the icon opened nothing).
+              <InfoTip tip={root.blurb} className="info-word-group inline-flex items-center gap-1.5">
+                <RootGlyph rootKey={k} className={md ? "size-6" : "size-5"} />
+                <span className="info-word-label font-medium text-foreground">{name}</span>
+              </InfoTip>
+            ) : (
+              <>
+                <RootGlyph rootKey={k} className={md ? "size-6" : "size-5"} />
+                <span className="font-medium text-foreground">{name}</span>
+              </>
+            )}
             {md && root?.subtitle ? <span className="hidden text-muted-foreground lg:inline">{root.subtitle}</span> : null}
           </li>
         );

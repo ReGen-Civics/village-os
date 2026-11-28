@@ -71,13 +71,34 @@ describe("rootGlyph", () => {
   });
 });
 
+/** What a reader sees of an item: its text without a closed tip, which stays in the DOM hidden (InfoTip.tsx). */
+const seen = (el: HTMLElement): string => {
+  const copy = el.cloneNode(true) as HTMLElement;
+  copy.querySelectorAll("[hidden]").forEach((n) => n.remove());
+  return copy.textContent ?? "";
+};
+
 describe("RootTags", () => {
   it("names the list 'Grows from' and says each root by the village's own name, without 'The'", async () => {
     render(<RootTags roots={["catalyzing", "researching"]} />, { wrapper: wrap });
     const list = screen.getByRole("list", { name: "Grows from" });
-    await waitFor(() => expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Connector + Catalyst", "Architect"]));
+    await waitFor(() => expect(within(list).getAllByRole("listitem").map(seen)).toEqual(["Connector + Catalyst", "Architect"]));
     // The drawing is decoration.
     expect(list.querySelector("svg")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("puts each root's meaning on its name, a tap target a whole row tall (QA round 2, 27 Nov 2026)", async () => {
+    render(<RootTags roots={["catalyzing"]} />, { wrapper: wrap });
+    const word = await screen.findByRole("button", { name: "Connector + Catalyst" });
+    const tip = document.getElementById(word.getAttribute("aria-describedby") ?? "");
+    expect(tip?.textContent?.trim()).toBeTruthy();
+    expect(word).toHaveAccessibleDescription(tip?.textContent ?? "");
+    // The drawing is inside the trigger, so a tap on it opens the meaning too; only the name wears the underline.
+    expect(word.querySelector("svg[data-root-glyph]")).not.toBeNull();
+    expect(word.querySelector(".info-word-label")?.textContent).toBe("Connector + Catalyst");
+    // No hover-only title anywhere in the row.
+    expect(screen.getByRole("list", { name: "Grows from" }).querySelector("[title]")).toBeNull();
+    expect(screen.getByRole("listitem").className).toMatch(/\bmin-h-11\b/);
   });
 
   it("draws nothing for work with no roots", () => {
