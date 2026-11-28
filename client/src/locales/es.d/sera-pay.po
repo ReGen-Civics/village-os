@@ -41,11 +41,101 @@ msgctxt "role pay"
 msgid "{0} hours"
 msgstr "{0} horas"
 
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Filled in from the last time this role's pay was set: {lastKind}, {lastHours} for the moon."
+msgstr "Completado con lo de la última vez que se fijó el pago de este rol: {lastKind}, {lastHours} para la luna."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as little as {lastLow} or as much as {lastHigh}."
+msgstr "Podría ser tan poco como {lastLow} o tanto como {lastHigh}."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as little as {lastLow}."
+msgstr "Podría ser tan poco como {lastLow}."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "It could be as much as {lastHigh}."
+msgstr "Podría ser tanto como {lastHigh}."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Change anything that is different now."
+msgstr "Cambie lo que ahora sea distinto."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Give this role's effort for the moon first. The figure {agent} lists is ready below once you do."
+msgstr "Primero indique el esfuerzo de este rol para la luna. La cifra que indica {agent} queda lista abajo en cuanto lo haga."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "This role's pay is {was} now."
+msgstr "El pago de este rol es {was} ahora."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "This role has no pay set now."
+msgstr "Este rol no tiene pago fijado ahora."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Pay was set here on {setDay}, after {agent} last edited the suggestion on {editedDay}. Check the figure still applies before you set it."
+msgstr "El pago se fijó aquí el {setDay}, después de que {agent} editara la sugerencia por última vez el {editedDay}. Revise que la cifra siga vigente antes de fijarla."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "The figure to set"
+msgstr "La cifra a fijar"
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "{agent} lists this role at {usd} a month."
+msgstr "{agent} indica este rol en {usd} al mes."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "no pay set"
+msgstr "sin pago fijado"
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Opened from the pay {agent} lists: {usd} a month. Before: {before}. Saved: {saved}."
+msgstr "Abierto desde el pago que indica {agent}: {usd} al mes. Antes: {before}. Guardado: {saved}."
+
+# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Opened from a pay suggestion {agent} lists. Before: {before}. Saved: {saved}."
+msgstr "Abierto desde una sugerencia de pago que indica {agent}. Antes: {before}. Guardado: {saved}."
+
 # needs-native-review: the pay setter, opened from Sera's list, where the village does not set pay in US dollars, 28 Nov 2026
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
 msgid "{agent} lists a figure in US dollars. This village sets pay in {currency}, so choose the suggestion or type your own figure."
 msgstr "{agent} indica una cifra en dólares estadounidenses. Esta aldea fija el pago en {currency}, así que elija la sugerencia o escriba su propia cifra."
+
+# needs-native-review: the pay setter, opened from Sera's list, offers her figure as a choice, 28 Nov 2026
+#: client/src/components/valuation/RolePayWithEngine.tsx
+msgctxt "role pay"
+msgid "Use the figure {agent} lists, {hers} a month, as this moon's pay"
+msgstr "Usar la cifra que indica {agent}, {hers} al mes, como el pago de esta luna"
 
 # needs-native-review: Sera's row, now that a pay row opens the role's own pay setter, 28 Nov 2026
 #: client/src/components/reviewInbox/SeraListRow.tsx
@@ -154,93 +244,3 @@ msgstr "{who}: nadie más puede firmar esta cifra, así que pasa a la aldea."
 msgctxt "sera pay"
 msgid "{who}: skipped. Nothing was sent."
 msgstr "{who}: saltado. No se envió nada."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Filled in from the last time this role's pay was set: {lastKind}, {lastHours} for the moon."
-msgstr "Completado con lo de la última vez que se fijó el pago de este rol: {lastKind}, {lastHours} para la luna."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "It could be as little as {lastLow} or as much as {lastHigh}."
-msgstr "Podría ser tan poco como {lastLow} o tanto como {lastHigh}."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "It could be as little as {lastLow}."
-msgstr "Podría ser tan poco como {lastLow}."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "It could be as much as {lastHigh}."
-msgstr "Podría ser tanto como {lastHigh}."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Change anything that is different now."
-msgstr "Cambie lo que ahora sea distinto."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Give this role's effort for the moon first. The figure {agent} lists is ready below once you do."
-msgstr "Primero indique el esfuerzo de este rol para la luna. La cifra que indica {agent} queda lista abajo en cuanto lo haga."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "This role's pay is {was} now."
-msgstr "El pago de este rol es {was} ahora."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "This role has no pay set now."
-msgstr "Este rol no tiene pago fijado ahora."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Pay was set here on {setDay}, after {agent} last edited the suggestion on {editedDay}. Check the figure still applies before you set it."
-msgstr "El pago se fijó aquí el {setDay}, después de que {agent} editara la sugerencia por última vez el {editedDay}. Revise que la cifra siga vigente antes de fijarla."
-
-# needs-native-review: the pay setter, opened from Sera's list, offers her figure as a choice, 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Use the figure {agent} lists, {hers} a month, as this moon's pay"
-msgstr "Usar la cifra que indica {agent}, {hers} al mes, como el pago de esta luna"
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "The figure to set"
-msgstr "La cifra a fijar"
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "{agent} lists this role at {usd} a month."
-msgstr "{agent} indica este rol en {usd} al mes."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "no pay set"
-msgstr "sin pago fijado"
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Opened from the pay {agent} lists: {usd} a month. Before: {before}. Saved: {saved}."
-msgstr "Abierto desde el pago que indica {agent}: {usd} al mes. Antes: {before}. Guardado: {saved}."
-
-# needs-native-review: the pay control opened from one of Sera's pay rows arrives ready (Rye, 28 Nov 2026), 28 Nov 2026
-#: client/src/components/valuation/RolePayWithEngine.tsx
-msgctxt "role pay"
-msgid "Opened from a pay suggestion {agent} lists. Before: {before}. Saved: {saved}."
-msgstr "Abierto desde una sugerencia de pago que indica {agent}. Antes: {before}. Guardado: {saved}."
