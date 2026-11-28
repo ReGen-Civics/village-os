@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_ACTS, ADMIN_ACT_ENTRIES, WRITTEN_ACTS } from "./adminActs";
 import { ADMIN_ACT_WORDS_ES, ES_AWAITING_NATIVE_READ, ES_PLACE_WORDS, ES_SHIPPED_WORDS } from "./adminActs/es";
 import { ACT_WORD_LOCALES, ADMIN_ACT_WORDS, hasActWords, localizeEntry } from "./adminActsWords";
-import { rankAdminSearch, type AdminSearchEntry } from "./adminSearch";
+import { EXACT_PAGE, rankAdminSearch, scoreEntry, type AdminSearchEntry } from "./adminSearch";
 import { ADMIN_PLACES } from "./adminTabs";
 import { rankFind, type FindEntry } from "./findAnything";
 
@@ -223,5 +223,12 @@ describe("a reader of Spanish finds it", () => {
     expect(ids("configuracion del correo")).toContain("tab.comms-settings");
     expect(ids("cerrar sesion")).toContain("frame.account.sign-out");
     expect(ids("send me a test")[0]).toBe("comms.test-email");
+    // One word, its accent left off: an accent that became a space cut "sesión" in two, and "sesion" found nothing.
+    expect(ids("sesion")).toContain("frame.account.sign-out");
+    expect(ids("etapa")).toContain("gate.players.set-stage");
+    // Typed with or without its accents, a name is the same name: the same score, to the point.
+    const mail = spanishEntries.find((e) => e.id === "tab.comms-settings")!;
+    expect(scoreEntry("configuracion del correo", mail)).toBe(scoreEntry("Configuración del correo", mail));
+    expect(scoreEntry("configuracion del correo", mail)).toBeGreaterThanOrEqual(EXACT_PAGE);
   });
 });
