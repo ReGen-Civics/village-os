@@ -248,7 +248,7 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     stub({ changes: [PAGE], extra: [claim, draft] });
     render(<AdminReview />);
     const kinds = await screen.findByTestId("kinds");
-    expect(within(kinds).getAllByRole("link").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
+    expect(within(kinds).getAllByRole("button").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
     expect(screen.getByRole("heading", { name: "Org chart drafts 1" })).toBeTruthy();
   });
 
@@ -321,10 +321,12 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     stub({ changes: [PAGE], extra: [claim, draft] });
     window.history.replaceState(null, "", "/admin/review?kind=structure");
     render(<AdminReview />);
-    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. Show everything");
+    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. The count above is of everything, whatever is shown. Show everything");
     expect(screen.getByTestId("row-structure:dr_1")).toBeTruthy();
     expect(screen.queryByTestId("row-claim:c1")).toBeNull();
-    expect(screen.queryByTestId("kinds")).toBeNull();
+    // The tags stay in reach, so the filter can be changed where it is.
+    expect(screen.getByTestId("tag-structure").getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("tag-claim").getAttribute("aria-pressed")).toBe("false");
   });
 });
 
@@ -393,7 +395,7 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     expect(screen.getByTestId("inbox-status").textContent).toBe("At least 1 decision waiting on you. 1 queue did not load, so its number is unknown.");
     expect(screen.getByTestId("count-quest").textContent).toBe("unknown");
     expect(screen.getByTestId("unknown-quest").textContent).toBe("This queue did not load, so how many wait here is unknown. It may hold something.");
-    expect(within(screen.getByTestId("kinds")).getAllByRole("link").map((a) => a.textContent)).toEqual(["Quest ideas · unknown", "Finished work to witness · 1"]);
+    expect(within(screen.getByTestId("kinds")).getAllByRole("button").map((a) => a.textContent)).toEqual(["Quest ideas · unknown", "Finished work to witness · 1"]);
     // And it is still named in the alert, with a way to try again.
     expect(screen.getByRole("alert").textContent).toContain("Some of what waits did not load: Quest ideas.");
   });
@@ -448,6 +450,8 @@ describe("a change under Waiting names its batch and links to it in the Batches 
     render(<AdminReview />);
     const line = await screen.findByTestId("batch-of-pc_3");
     expect(line.textContent).toBe("Part of batch B-3. See the whole batch");
+    // And it carries its tag, as every row does: where it came from.
+    expect(screen.getByTestId("tag-of-pc_3").textContent).toBe("A proposed change");
     expect(within(line).getByRole("link").getAttribute("href")).toBe("/admin/review?view=batches&find=B-3");
     // The change is drawn here and in the Batches view; the count is the server's one row for it, said once.
     expect(screen.getByTestId("inbox-status").textContent).toContain("1 decision waiting on you.");

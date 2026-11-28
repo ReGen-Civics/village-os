@@ -28,7 +28,7 @@
  */
 import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { Link, useSearch } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
@@ -44,7 +44,7 @@ import InboxRow, { CHIP_BLOCKED } from "@/components/reviewInbox/InboxRow";
 import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
 import SeraListRow from "@/components/reviewInbox/SeraListRow";
 import DecisionsLine from "@/components/reviewInbox/DecisionsLine";
-import { inboxHeaders as headers, kindOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
+import { inboxHeaders as headers, searchWithTags, tagsOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
 
 /**
  * THE BATCHES VIEW (the accepted cut C8, 27 Nov 2026): /admin/proposals is folded into this page. Its whole desk is
@@ -63,6 +63,8 @@ const viewOf = (search: string): View => {
 const TAB = "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium";
 const TAB_ON = `${TAB} bg-notice text-background`;
 const TAB_OFF = `${TAB} border border-border bg-card text-foreground hover:bg-muted`;
+/** A tag that is on: the chip filled, with `aria-pressed` saying so in words. */
+const TAG_ON = "inline-flex items-center gap-1 rounded-full border border-notice bg-notice py-0.5 font-semibold text-background";
 
 
 export default function AdminReview() {
@@ -73,8 +75,13 @@ export default function AdminReview() {
   const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null; decided?: { code: string; at: string | null } } | null>(null);
   const search = useSearch();
   const view = viewOf(search);
-  // `?kind=structure` shows one kind: the door a count elsewhere (Admin's Today) lands through.
-  const onlyKind = kindOf(search);
+  // THE TAG FILTER (Rye, 28 Nov 2026: "With different tags for the source for filtering"). A row's tag is where it
+  // came from. `?tags=form,invite` shows only those; `?kind=structure`, the door a count elsewhere (Admin's Today)
+  // lands through, is one tag. Filtering changes what is shown and never what is counted: the count is the server's.
+  const tags = tagsOf(search);
+  const [, navigate] = useLocation();
+  const setTags = (next: readonly InboxSource[]) => navigate(`/admin/review${searchWithTags(search, next)}`, { replace: true });
+  const toggleTag = (s: InboxSource) => setTags(tags.includes(s) ? tags.filter((x) => x !== s) : [...tags, s]);
 
   const titles = Object.fromEntries(INBOX_SOURCES.map((s) => [s, sourceText(s, i18n).title])) as Record<InboxSource, string>;
 
@@ -346,29 +353,38 @@ export default function AdminReview() {
                   <Trans context="review inbox: the order of the list">In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.</Trans>
                 </p>
               )}
-              {onlyKind ? (
-                <p className={HINT} data-testid="only-kind">
-                  <OnlyKind title={titles[onlyKind]} />{" "}
-                  <Link href="/admin/review" className={LINK}>
+              {groups.length > 1 || tags.length ? (
+                <div role="group" aria-label={t({ context: "review inbox: tags", message: "Show only where it came from" })} className="flex flex-wrap gap-2" data-testid="kinds">
+                  {groups.map((g) => {
+                    const on = tags.includes(g.source);
+                    return (
+                      <button key={g.source} type="button" aria-pressed={on} onClick={() => toggleTag(g.source)} className={`${on ? TAG_ON : CHIP_SOFT} min-h-11 px-3 text-sm`} data-testid={`tag-${g.source}`}>
+                        {titles[g.source]} <span aria-hidden="true">·</span> {countOf(g)}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+              {tags.length ? (
+                <p className={HINT} data-testid="only-kind" role="status">
+                  <OnlyKind title={tags.map((s) => titles[s]).join(", ")} />{" "}
+                  <Trans context="review inbox: tags">The count above is of everything, whatever is shown.</Trans>{" "}
+                  <button type="button" className={LINK} onClick={() => setTags([])} data-testid="tags-clear">
                     <Trans context="review inbox: one kind">Show everything</Trans>
-                  </Link>
+                  </button>
                 </p>
               ) : null}
-              {!onlyKind && groups.length > 1 ? (
-                <nav aria-label={t({ context: "review inbox: kinds", message: "What is waiting, by kind" })} className="flex flex-wrap gap-2" data-testid="kinds">
-                  {groups.map((g) => (
-                    <a key={g.source} href={`#review-${g.source}`} className={`${CHIP_SOFT} min-h-9 px-3 text-sm`}>
-                      {titles[g.source]} <span aria-hidden="true">·</span> {countOf(g)}
-                    </a>
-                  ))}
-                </nav>
+              {tags.length && !groups.some((g) => tags.includes(g.source)) ? (
+                <p className={HINT} data-testid="tags-empty">
+                  <Trans context="review inbox: tags">Nothing of that kind is waiting on you.</Trans>
+                </p>
               ) : null}
               {notice ? (
                 <p className="text-sm text-foreground" role="status" data-testid="row-notice">
                   {notice}
                 </p>
               ) : null}
-              {groups.filter((g) => !onlyKind || g.source === onlyKind).map((g) => {
+              {groups.filter((g) => !tags.length || tags.includes(g.source)).map((g) => {
                 const { source: s, items } = g;
                 // The connector's cards are its own read, whole: its number here is that read's when the list's is unknown.
                 if (s === "connector" && desk.state === "ok") return <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={g.count ?? desk.changes.length} found={foundIds} />;
