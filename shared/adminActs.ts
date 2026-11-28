@@ -30,6 +30,9 @@
  *                    Change a list and the class changes with it; nothing here can disagree with the lists.
  *                    The helper's list is asked under the guide's rules (`GuideRules`, shared/adminHelper.ts):
  *                    the rules as they always were unless a caller hands in the ones a village's dials set.
+ *                    ONE THING ON THE ENTRY IS READ: `personPresses`, for an act that is itself the press (a
+ *                    publish). The guide may prepare what it acts on, and she never performs it, so it is
+ *                    "person-only" by that field, reported by name.
  *   its consequence  `actConsequence`: the line the catalogs already hold. A key reads its seed's line
  *                    (shared/guilds.ts); everything else reads the line of the power it needs
  *                    (CAPABILITY_CONSEQUENCE, shared/draftKinds.ts). Where no catalog holds a line it is empty.
@@ -162,10 +165,14 @@ export const PERSON_ONLY_LISTS: PersonOnlyLists = { always: ALWAYS_A_PERSON, nev
 
 /** Which list made an act a person's alone, by which rule, in that rule's own words. */
 export interface ActReason {
-  list: "never_proposed" | "always_a_person" | "helper_money";
+  list: "never_proposed" | "always_a_person" | "helper_money" | "person_presses";
   key: string;
   words: string;
 }
+
+/** The key and the words an act that is itself a person's press is recorded under (`personPresses`, shared/adminActs/types.ts). */
+export const PERSON_PRESSES_KEY = "a_person_presses";
+export const PERSON_PRESSES_WORDS = "The guide may prepare what this acts on. A person presses it, and the guide never does.";
 
 /** The key the helper's refusal is recorded under: the helper's list is one rule, with its own sentence for each dial. */
 export const HELPER_RULE_KEY = "may_not_propose";
@@ -173,7 +180,7 @@ export const HELPER_RULE_KEY = "may_not_propose";
 /** The connector's rule about money (ALWAYS_A_PERSON, shared/agentAdmin.ts), by its key. */
 export const CONNECTOR_MONEY_RULE = "money";
 
-type Routed = Pick<AdminAct, "route">;
+type Routed = Pick<AdminAct, "route" | "personPresses">;
 
 /** A call's path as a list reads it: the act's own values where it fixes them, and a plain letter for every other `:name` part. */
 const filled = (path: string) => path.replace(/:[A-Za-z][A-Za-z0-9]*/g, "x");
@@ -215,6 +222,11 @@ export function actAlwaysRules(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_L
  * a person's alone. Under the rules as they always were nothing is opened, and every reason is what it was. No
  * other rule is set aside, and no act that is not a dial is touched: an act that moves value or sets a person's
  * pay reads the same under every rule set.
+ *
+ *   4. The act says a person presses it (`personPresses`): a publish. The connector's `tier_c` rule names such acts
+ *      with mode "writes", which by its own words leaves them to be prepared; the act itself is the press, so there
+ *      is nothing of it to prepare, and the field says what the list cannot. Asked last: a list that names the act
+ *      gives the reason first.
  */
 export function actReason(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS, rules: GuideRules = TODAYS_RULES): ActReason | null {
   if (!isWrite(a)) return null;
@@ -227,6 +239,7 @@ export function actReason(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS,
   const always = actAlwaysRules(a, lists).find((r) => r.mode === "always" && !(opened && r.key === CONNECTOR_MONEY_RULE));
   if (always) return { list: "always_a_person", key: always.key, words: always.words };
   if (refused) return { list: "helper_money", key: HELPER_RULE_KEY, words: refused };
+  if (a.personPresses) return { list: "person_presses", key: PERSON_PRESSES_KEY, words: PERSON_PRESSES_WORDS };
   return null;
 }
 
@@ -308,9 +321,11 @@ export interface ActCard {
   /** Every rule of the connector's list that names it, whatever its mode. */
   alwaysRules: Array<Pick<AlwaysRule, "key" | "words" | "mode">>;
   consequence: string;
+  /** Who is told when it goes out, in the act's own line read from its handler; empty where the act says none. */
+  tells: string;
 }
 
 /** One act with everything computed for it, under the guide's rules: the rules as they always were unless handed others. */
 export function actCard(a: AdminAct, lists: PersonOnlyLists = PERSON_ONLY_LISTS, rules: GuideRules = TODAYS_RULES): ActCard {
-  return { act: a, href: actHref(a), actClass: actClass(a, lists, rules), reason: actReason(a, lists, rules), alwaysRules: actAlwaysRules(a, lists), consequence: actConsequence(a) };
+  return { act: a, href: actHref(a), actClass: actClass(a, lists, rules), reason: actReason(a, lists, rules), alwaysRules: actAlwaysRules(a, lists), consequence: actConsequence(a), tells: a.tells?.line ?? "" };
 }

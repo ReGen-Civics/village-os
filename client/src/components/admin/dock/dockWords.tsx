@@ -129,6 +129,13 @@ export interface DockWords {
     eyebrow: string;
     /** Beside the value she would set, when she named one the setting would take. */
     wouldSet: string;
+    /**
+     * Where the server kept every value of hers off the card because the setting is free text about money
+     * (`HelperAdvice.yours`): one plain line, so the empty place does not look broken. `address` where the setting
+     * holds an address, `text` for any other free text (an account, a token name, a currency list).
+     */
+    address: string;
+    text: string;
     /** What she did and what she left: she prepared nothing, and the change is the person's. */
     nothing: string;
   };
@@ -400,6 +407,14 @@ export function useDockWords(quiet: boolean): DockWords {
     advice: {
       eyebrow: say(t({ message: "My advice", context: "guide dock, her advice on a setting a person changes" }), t({ message: "Advice", context: "guide dock, her advice on a setting a person changes, brief" })),
       wouldSet: say(t({ message: "I would set", context: "guide dock, her advice: the value she would set" }), t({ message: "Suggested", context: "guide dock, her advice: the value she would set, brief" })),
+      address: say(
+        t({ message: "An address is yours to type.", context: "guide dock, her advice: the setting holds an address, and no value of hers is shown" }),
+        t({ message: "Yours to type.", context: "guide dock, her advice: the setting holds an address, and no value of hers is shown, brief" }),
+      ),
+      text: say(
+        t({ message: "This one is yours to type.", context: "guide dock, her advice: the setting holds free text about money, and no value of hers is shown" }),
+        t({ message: "Yours to type.", context: "guide dock, her advice: the setting holds free text about money, and no value of hers is shown, brief" }),
+      ),
       nothing: say(
         t({ message: "I have prepared nothing here, and nothing has changed. If you agree, you make this change yourself.", context: "guide dock, her advice: nothing was prepared and the person makes the change" }),
         t({ message: "Nothing prepared. Yours to change.", context: "guide dock, her advice: nothing was prepared and the person makes the change, brief" }),

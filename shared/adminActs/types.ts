@@ -70,6 +70,19 @@ export interface AdminAct extends Omit<AdminSearchEntry, "capability"> {
   parity?: readonly string[];
   /** Real and registered, with its route or its fields still to finish. */
   partial?: true;
+  /**
+   * A PERSON PRESSES THIS, AND THE GUIDE NEVER DOES. The act is the press itself (a publish), so there is nothing of
+   * it to prepare: the guide may prepare what it acts on (the draft, the write-up), through that thing's own act, and
+   * she never performs this one. `actReason` (shared/adminActs.ts) reads it and reports it by name, so the act is a
+   * person's alone whatever the lists say about its path.
+   */
+  personPresses?: true;
+  /**
+   * WHO IS TOLD WHEN IT GOES OUT, read from the act's own handler: the notices it sends, by their type, and one line
+   * that says who gets them and what is posted. The test holds `notices` to the handler's source, so a notice added
+   * there fails until this line is read again. Written only for an act a person presses.
+   */
+  tells?: { notices: readonly string[]; line: string };
 }
 
 // ── Small builders, so a row of the registry stays one readable line ───────

@@ -521,6 +521,12 @@ export const GREENHOUSE_ACTS = inPlace("greenhouse", [
     help: "Put a call's write-up where members can read it.",
     synonyms: ["publish summary", "share call notes"],
     route: POST("/api/admin/syntheses/:id/publish"),
+    // The write-up is drafted for a person to read. Publishing it is a person's press (the handler in server/index.ts).
+    personPresses: true,
+    tells: {
+      notices: ["call_task_suggested", "mention"],
+      line: "It goes out as a forum thread under the publisher's own name, and the village Pulse shows that the notes were published. Each member the write-up mentions gets a notice, and so does each holder of a role a suggested task names. Nobody else gets a notice.",
+    },
   },
   {
     id: "greenhouse.calls.task", tab: "calls-admin", power: "admin", holder: "intake.moderate",

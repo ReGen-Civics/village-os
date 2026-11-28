@@ -90,6 +90,12 @@ export const HALL_ACTS = inPlace("hall", [
     help: "Put a drafted change to circles and roles straight onto the chart.",
     synonyms: ["publish draft", "org draft", "chart draft", "apply draft"],
     route: POST("/api/admin/org/drafts/:id/publish"),
+    // She may help with the draft. Publishing it is a person's press (server/lib/orgDraftDecide.ts, `publishOrgDraft`).
+    personPresses: true,
+    tells: {
+      notices: ["role_appointed"],
+      line: "Each person seated by the draft gets a notice that they took up the role. Nobody else gets a notice.",
+    },
   },
   {
     id: "hall.org-drafts.withdraw", parity: ["B4"], path: REVIEW, power: "admin", holder: "org.decide",

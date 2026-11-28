@@ -18,7 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import type { HelperAnswer, HelperStatus } from "@shared/adminHelper";
+import type { HelperAdvice, HelperAnswer, HelperStatus } from "@shared/adminHelper";
 
 const mic = vi.hoisted(() => ({ onText: null as null | ((chunk: string) => void) }));
 /** Who is signed in. A chat draft is kept under the member's id, and a visitor's is kept nowhere (components/chat/chatDraft.ts). */
@@ -1137,7 +1137,7 @@ describe("her first words follow what the host told her", () => {
 describe("her rules and her advice", () => {
   const WIDE: HelperStatus = { ...ON, rules: { wide: true, moneyDials: true } };
   const ADVISING: HelperStatus = { ...ON, rules: { wide: true, moneyDials: false } };
-  const ADVICE = { key: "ledger.cycle_cap", label: "Issuance cap per cycle", category: "Ledger", now: "10000", suggested: "8000", why: "Issuance ran well under the cap for three cycles." };
+  const ADVICE: HelperAdvice = { key: "ledger.cycle_cap", label: "Issuance cap per cycle", category: "Ledger", now: "10000", suggested: "8000", yours: null, why: "Issuance ran well under the cap for three cycles." };
   const toggle = () => screen.getByRole("button", { name: "Brief and quiet" });
   const reads = () => screen.getByTestId("guide-reads").textContent;
   const money = () => screen.queryByTestId("guide-money")?.textContent ?? null;
@@ -1248,6 +1248,46 @@ describe("her rules and her advice", () => {
     expect(card.textContent).not.toContain("I would set");
     expect(card.textContent).toContain("It reads right as it is.");
     expect(within(card).getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("ADVICE: free text about money shows what it holds and no value of hers, and says the value is yours to type", async () => {
+    const yoursLine = () => screen.queryByTestId("guide-advice-yours")?.textContent ?? null;
+    const address: HelperAdvice = { key: "hypha.treasury_address", label: "DAO treasury address on Base", category: "Hypha", now: "0x1111111111111111111111111111111111111111", suggested: null, yours: "address", why: "The old one is retired." };
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: address }) }) });
+    const first = dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    expect(card.textContent).toContain("Now0x1111111111111111111111111111111111111111");
+    expect(card.textContent).not.toContain("I would set");
+    expect(yoursLine()).toBe("An address is yours to type.");
+    expect(card.textContent).toContain("The old one is retired.");
+    expect(within(card).getAllByRole("link")).toHaveLength(1);
+    // Brief and quiet: the same fact, the fewest words.
+    await userEvent.click(toggle());
+    expect(yoursLine()).toBe("Yours to type.");
+    expect(screen.getByTestId("guide-advice").textContent).not.toContain("Suggested");
+    // The dial is this person's and is remembered, so it is turned back before the next dock opens.
+    await userEvent.click(toggle());
+    expect(yoursLine()).toBe("An address is yours to type.");
+    first.unmount();
+
+    // Any other free text about money: a token name, a currency list, a line about pay.
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...address, key: "gratitude.pool_token", label: "Which token the pool pays", category: "Gratitude", now: "credits", yours: "text" } }) }) });
+    const second = dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    await screen.findByTestId("guide-advice");
+    expect(yoursLine()).toBe("This one is yours to type.");
+    second.unmount();
+
+    // Her own switches and the agents' settings: no value of hers and no added line. The card's own words say the change is the person's.
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...address, key: "agents.lead_approved_writes", label: "Our agent may make the changes we approve in the chat", category: "Connector", now: "true", yours: "own" } }) }) });
+    dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    const own = await screen.findByTestId("guide-advice");
+    expect(yoursLine()).toBeNull();
+    expect(own.textContent).toContain("Nowtrue");
+    expect(own.textContent).not.toContain("I would set");
+    expect(own.textContent).toContain("If you agree, you make this change yourself.");
   });
 
   it("ADVICE: her reason is plain words, never a link, whatever it holds", async () => {

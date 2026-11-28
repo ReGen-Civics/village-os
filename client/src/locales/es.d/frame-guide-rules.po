@@ -64,6 +64,26 @@ msgid "Suggested"
 msgstr "Sugerido"
 
 # needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the setting holds an address, and no value of hers is shown"
+msgid "An address is yours to type."
+msgstr "Una dirección la escribe usted."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the setting holds an address, and no value of hers is shown, brief"
+msgid "Yours to type."
+msgstr "La escribe usted."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the setting holds free text about money, and no value of hers is shown"
+msgid "This one is yours to type."
+msgstr "Este lo escribe usted."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
+msgctxt "guide dock, her advice: the setting holds free text about money, and no value of hers is shown, brief"
+msgid "Yours to type."
+msgstr "Lo escribe usted."
+
+# needs-native-review: the guide's rules, her advice and the money dial, 28 Nov 2026
 msgctxt "guide dock, her advice: nothing was prepared and the person makes the change"
 msgid "I have prepared nothing here, and nothing has changed. If you agree, you make this change yourself."
 msgstr "No he preparado nada aquí, y nada ha cambiado. Si está de acuerdo, este cambio lo hace usted."

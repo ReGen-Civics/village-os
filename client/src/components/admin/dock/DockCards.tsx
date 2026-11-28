@@ -197,6 +197,13 @@ export function FilingCard({
  * the reason and the value was read by the server from the setting itself
  * (shared/adminHelper.ts, `buildAdvice`). The reason is the model's text, so
  * it is drawn as plain words and never as a link.
+ *
+ * NO VALUE OF HERS FOR SOME SETTINGS, and the server decides which
+ * (`advice.yours`): her own switches, the agents' settings and free text about
+ * money. For free text the card says in one line that the value is the
+ * person's to type, so the place a value would stand does not look broken.
+ * For her own switches and the agents' settings the closing line already says
+ * the change is the person's, and nothing is added.
  */
 export function AdviceCard({
   advice,
@@ -224,6 +231,11 @@ export function AdviceCard({
           </>
         )}
       </dl>
+      {(advice.yours === "address" || advice.yours === "text") && (
+        <p className="mt-2 text-foreground" data-testid="guide-advice-yours">
+          {advice.yours === "address" ? words.address : words.text}
+        </p>
+      )}
       {advice.why && <p className="mt-2 whitespace-pre-wrap break-words text-muted-foreground">{advice.why}</p>}
       <p className="mt-2 text-foreground">{words.nothing}</p>
       <div className="mt-3 flex flex-wrap gap-2">

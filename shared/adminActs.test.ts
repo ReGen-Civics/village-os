@@ -22,6 +22,8 @@ import {
   CONNECTOR_MONEY_RULE,
   HELPER_RULE_KEY,
   PERSON_ONLY_LISTS,
+  PERSON_PRESSES_KEY,
+  PERSON_PRESSES_WORDS,
   WRITTEN_ACTS,
   actAlwaysRules,
   actCard,
@@ -438,7 +440,8 @@ describe("the class is computed from the lists", () => {
     // Free text that names where value goes says so, where the helper's list is what holds it.
     const textMoney = kinds[0][1].filter((v) => !sealed(v));
     expect(textMoney.some((v) => actReason(dial(v.key), PERSON_ONLY_LISTS, OPEN)?.words.includes("names where value goes or who holds it"))).toBe(true);
-    for (const v of textMoney) expect(proposalRefusal(v, OPEN), v.key).toContain("names where value goes or who holds it");
+    // In a money category the sentence says what the free text names. Money by its key alone is told only what is true of it.
+    for (const v of textMoney) expect(proposalRefusal(v, OPEN), v.key).toMatch(/names where value goes or who holds it|stays in your own hands: open /);
   });
 
   it("the registry and the save bar agree under every rule set: a dial reads prepare exactly where a change to it would be drawn", () => {
@@ -475,18 +478,26 @@ describe("the class is computed from the lists", () => {
     }
 
     /*
-     * The connector's `tier_c` rule has mode "writes": by its own words a connector proposes those acts and a person
-     * does them, which is what "prepare" means. Two acts it names put words in front of people and move no value.
-     * They are named here, so a third cannot join them unseen.
+     * THE WALK'S TWO NAMED EXCEPTIONS, explained by a field on the act and no longer by a comment. The connector's
+     * `tier_c` rule has mode "writes": by its own words a connector proposes those acts and a person does them, so
+     * the lists leave them to be prepared. Two acts it names are a publish, where the act IS the person's press.
+     * Each says so as data (`personPresses`), the class reads it, and they are named here so a third cannot join
+     * them unseen. No walked act reads "prepare" any more.
      */
     const PUBLISHES = ["greenhouse.calls.publish", "hall.org-drafts.publish"];
-    expect(walked.filter((a) => actClass(a) === "prepare").map((a) => a.id).sort()).toEqual(PUBLISHES);
+    expect(walked.filter((a) => actReason(a)?.list === "person_presses").map((a) => a.id).sort()).toEqual(PUBLISHES);
+    expect(walked.filter((a) => actClass(a) === "prepare").map((a) => a.id)).toEqual([]);
+    for (const id of PUBLISHES) {
+      expect(adminAct(id)!.personPresses, id).toBe(true);
+      expect(actReason(adminAct(id)!), id).toEqual({ list: "person_presses", key: PERSON_PRESSES_KEY, words: PERSON_PRESSES_WORDS });
+      expect(actClass({ ...adminAct(id)!, personPresses: undefined }), `${id}: the lists alone`).toBe("prepare");
+    }
 
     for (const [name, rules] of RULE_SETS) {
       for (const a of walked) {
         const where = `${name}: ${a.id}`;
         // The rules move no act that is not a dial: its class and its reason are what they were.
-        expect(actClass(a, PERSON_ONLY_LISTS, rules), where).toBe(PUBLISHES.includes(a.id) ? "prepare" : "person-only");
+        expect(actClass(a, PERSON_ONLY_LISTS, rules), where).toBe("person-only");
         expect(actReason(a, PERSON_ONLY_LISTS, rules), where).toEqual(actReason(a));
 
         // The save bar's road and the advice beside it know only a dial, by its key. Named every way this act could be, it is not one.
@@ -697,5 +708,106 @@ describe("the lists that own the rules are read, never copied", () => {
     const agents = VARIABLES.find((v) => v.key.startsWith("agents."))!;
     expect(actReason(adminAct(`dial.${agents.key}`)!)).toMatchObject({ list: "never_proposed", key: "agents" });
     expect(VARIABLES_BY_KEY[agents.key]).toBeTruthy();
+  });
+});
+
+/**
+ * AN ACT A PERSON PRESSES (the overseer, 28 Nov 2026: she prepares the draft and a person publishes). The act says so
+ * as data, the class reads it, and the act says who is told when it goes out, held here to its handler's own source.
+ */
+describe("an act a person presses", () => {
+  const pressed = ADMIN_ACTS.filter((a) => a.personPresses);
+
+  /** One function of a server file, as written, by its name. */
+  function functionText(file: string, name: string): string {
+    const text = fs.readFileSync(path.join(ROOT, file), "utf8");
+    const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+    let found = "";
+    const visit = (node: ts.Node) => {
+      if (ts.isFunctionDeclaration(node) && node.name?.text === name) found = node.getText(sf);
+      else ts.forEachChild(node, visit);
+    };
+    visit(sf);
+    return found;
+  }
+
+  /**
+   * Where each act's telling is written beyond its own handler: the functions the handler hands that work to, in the
+   * order it reaches them. The test checks each is called by the text before it, so this only says where to look.
+   */
+  const TOLD_IN: Readonly<Record<string, ReadonlyArray<[file: string, name: string]>>> = {
+    "hall.org-drafts.publish": [["server/lib/orgDraftDecide.ts", "publishOrgDraft"]],
+    "greenhouse.calls.publish": [
+      ["server/lib/forum.ts", "onThreadCreated"],
+      ["server/lib/forum.ts", "processMentions"],
+    ],
+  };
+
+  /** The handler and everything it hands the telling to, as one text. */
+  function tellingOf(a: AdminAct): string {
+    let text = ROUTES.get(routeKey(a))!.text;
+    for (const [file, name] of TOLD_IN[a.id] ?? []) {
+      expect(text.includes(`${name}(`), `${a.id}: ${name} is called by what was read before it`).toBe(true);
+      const body = functionText(file, name);
+      expect(body.length, `${a.id}: ${file} declares ${name}`).toBeGreaterThan(50);
+      text += `\n${body}`;
+    }
+    return text;
+  }
+
+  it("is said as data on the entry, survives a JSON round trip, and every such act says who is told", () => {
+    expect(pressed.map((a) => a.id).sort()).toEqual(["greenhouse.calls.publish", "hall.org-drafts.publish"]);
+    for (const a of pressed) {
+      expect(a.personPresses, a.id).toBe(true);
+      expect(JSON.parse(JSON.stringify(a)), a.id).toEqual(a);
+      expect(a.tells?.line.length ?? 0, a.id).toBeGreaterThan(20);
+      expect(actCard(a).tells, a.id).toBe(a.tells!.line);
+      expect(Object.keys(TOLD_IN), a.id).toContain(a.id);
+    }
+    // No other act carries the line, and a card for one has none.
+    expect(ADMIN_ACTS.filter((a) => a.tells && !a.personPresses).map((a) => a.id)).toEqual([]);
+    expect(actCard(adminAct("library.faqs.add")!).tells).toBe("");
+  });
+
+  it("is a person's alone by its own field under every rule set, and one to prepare without it", () => {
+    for (const a of pressed) {
+      for (const rules of [undefined, { wide: true, moneyDials: true }, { wide: true, moneyDials: false }]) {
+        expect(actClass(a, PERSON_ONLY_LISTS, rules), a.id).toBe("person-only");
+        expect(actReason(a, PERSON_ONLY_LISTS, rules), a.id).toEqual({ list: "person_presses", key: PERSON_PRESSES_KEY, words: PERSON_PRESSES_WORDS });
+      }
+      // The field is what holds it: the lists leave the same route to be prepared.
+      expect(actClass({ ...a, personPresses: undefined }), a.id).toBe("prepare");
+      expect(actCard(a).actClass, a.id).toBe("person-only");
+    }
+    // A list that names an act gives the reason first: the field never renames a stronger refusal.
+    const minted = adminAct("store.mint.approve")!;
+    expect(actReason({ ...minted, personPresses: true })).toEqual(actReason(minted));
+    // And it follows the lists like every other reason: with every list empty it is still a person's press.
+    const empty: PersonOnlyLists = { always: [], neverProposed: () => null, variableNever: () => null, proposalRefusal: () => null };
+    for (const a of pressed) expect(actReason(a, empty)?.list, a.id).toBe("person_presses");
+  });
+
+  it("names exactly the notices its handler sends, read from the handler's own source", () => {
+    for (const a of pressed) {
+      const text = tellingOf(a);
+      const sent = Array.from(new Set(Array.from(text.matchAll(/\btype: "([a-z_]+)"/g), (m) => m[1]))).sort();
+      expect(sent, `${a.id}: a notice the handler sends and the line does not name, or one it names and the handler does not send`).toEqual([...a.tells!.notices].sort());
+    }
+  });
+
+  it("says nothing about a post the handler does not make, and names the ones it does", () => {
+    const org = tellingOf(adminAct("hall.org-drafts.publish")!);
+    const call = tellingOf(adminAct("greenhouse.calls.publish")!);
+    // The org chart draft: the people it seats are told, and nothing is posted anywhere.
+    expect(org).toContain("for (const st of r.seated)");
+    expect(org).not.toMatch(/forum_threads|moduleActivity\(|sendEmail|sendMail/);
+    expect(adminAct("hall.org-drafts.publish")!.tells!.line).toBe("Each person seated by the draft gets a notice that they took up the role. Nobody else gets a notice.");
+    // The call's write-up: a forum thread under the publisher's own name, one Pulse line, and the two notices.
+    expect(call).toContain("INSERT INTO forum_threads");
+    expect(call).toContain("authorId: admin.id");
+    expect(call).toContain('moduleActivity("automation"');
+    expect(call).not.toMatch(/sendEmail|sendMail/);
+    const line = adminAct("greenhouse.calls.publish")!.tells!.line;
+    for (const said of ["forum thread under the publisher's own name", "the village Pulse shows", "Each member the write-up mentions gets a notice", "each holder of a role a suggested task names", "Nobody else gets a notice."]) expect(line).toContain(said);
   });
 });

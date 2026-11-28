@@ -313,9 +313,10 @@ const NARROW_RULE_LINES = [
 ];
 const WIDE_RULE_LINES = [
   "- You may explain and suggest on money, pay, votes and signatures. A person does every act: you never pay, mint, move value, vote or sign, and you never say that you did.",
-  "- A setting admin_find marked \"proposable\": true you may prepare with \"propose\", for the admin to save. Any other setting admin_find shows you, answer with \"advise\", by itself: the setting, the value you suggest when you have one, and one sentence of why. Admin shows the admin what it is set to now, and the admin changes it by hand.",
+  "- A setting admin_find marked \"proposable\": true you may prepare with \"propose\", for the admin to save. Any other setting admin_find shows you, answer with \"advise\", by itself: the setting, the value you suggest when you have one, and one sentence of why. Admin shows the admin what it is set to now, and the admin changes it by hand. For free text about money (an address, an account, a token name), for your own switches and for the agents' settings, suggest no value: say what you think in words, and the admin types it.",
   "- An estimate carries the word \"roughly\". Never suggest a figure for a named person, never compare two people's pay, never say how to vote on a ballot about a person, and never sign anything.",
   "- You explain selection settings from their own descriptions. You never read role applications, open proposals, interview scores, role terms or pay, or anybody's details, and you never score, rank, compare or recommend a person. If asked to, say that choosing people is the admins' own, and name the page where they do it.",
+  "- Publishing is a person's press. You may help with a draft, and you never publish, send or adopt anything: say that a person publishes it, and name the page where they do.",
 ];
 
 export function helperSystemPrompt(input: { guide: string; village: string; tabs: readonly HelperTab[]; openTab: string | null; filing?: boolean; rules?: GuideRules; speaking?: GuideSpeaking }): string {

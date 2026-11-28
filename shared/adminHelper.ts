@@ -41,6 +41,13 @@
  * people, a sealed or withheld dial, a dial under `agents.`, or one of her own
  * three switches. Pay, payments and anything about one person are not dials,
  * and nothing here reaches them.
+ *
+ * AN ADVICE CARD NEVER CARRIES A VALUE SHE SUGGESTED for three kinds of dial
+ * (`adviceYours`): her own three switches and any dial under `agents.`, and a
+ * money dial in free text. Hostile text that fools the model cannot put "turn
+ * the agents' writes on", or an address, onto a card a person reads: the card
+ * says what the setting is and what it holds now, and for free text it says
+ * the value is the person's to type.
  */
 import { VARIABLES_BY_KEY, validateVariable, withheldFromPublic, type VariableDef } from "./gameVariables";
 
@@ -94,10 +101,19 @@ export interface HelperAdvice {
   label: string;
   category: string;
   now: string;
-  /** The value she suggests, when the dial would take it and it changes something; else null. */
+  /** The value she suggests, when the dial would take it and it changes something; else null. Always null where `yours` is set. */
   suggested: string | null;
+  /**
+   * Set where a rule keeps every suggested value off this card, whatever the model sent (`adviceYours`): the value is
+   * the person's alone to give. "address": free text that holds an address. "text": any other free text the money rule
+   * holds (an account, a token name, a currency list). "own": one of her own switches, or the agents' settings.
+   */
+  yours: AdviceYours | null;
   why: string;
 }
+
+/** Why an advice card carries no value she suggested. */
+export type AdviceYours = "address" | "text" | "own";
 
 /**
  * A change the guide drafted for the review page (the dock, 27 Nov 2026;
@@ -273,6 +289,40 @@ const aboutMoney = (def: Named) => HANDS_OFF_CATEGORIES.includes(def.category) |
 const aboutChoosing = (def: Named) => SELECTION.test(def.key) || SELECTION.test(def.label);
 
 /**
+ * A MONEY DIAL IN FREE TEXT. One rule, read twice: `proposalRefusal` keeps it off the save bar under every rule set,
+ * and `adviceYours` keeps any value she suggested off its advice card. Free text is where an address, an account or
+ * a token name is typed, so it is where hostile text would aim.
+ */
+function isFreeTextMoney(def: Named & Pick<VariableDef, "type">): boolean {
+  if (def.type === "text" || def.type === "longtext") {
+    return aboutMoney(def);
+  }
+  return false;
+}
+
+/** One of her own three switches, or a dial under `agents.`: what she may do, and what the agent accounts may do. */
+function isOwnOrAgents(def: Pick<VariableDef, "key">): boolean {
+  if (def.key === HELPER_SWITCH || def.key === DOCK_SWITCH || def.key === MONEY_SWITCH || def.key.startsWith("agents.")) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * WHY AN ADVICE CARD FOR THIS DIAL MAY CARRY NO VALUE SHE SUGGESTED, or null when it may carry one. A rule about the
+ * dial, the same under every rule set and whatever the model sent:
+ *
+ *   "own"      one of her own switches or the agents' settings: the village's decision, and a card never argues for it
+ *   "address"  a money dial in free text whose key names an address (`_address`): where value goes
+ *   "text"     any other money dial in free text: an account, a token name, a currency list, a line about pay
+ */
+export function adviceYours(def: VariableDef): AdviceYours | null {
+  if (isOwnOrAgents(def)) return "own";
+  if (isFreeTextMoney(def)) return /_address$/.test(def.key) ? "address" : "text";
+  return null;
+}
+
+/**
  * Whether the guide may see this dial at all. Under the rules as they always
  * were: never money, never selection, never a dial whose value moved into the
  * sealed secrets. Under the wide rules: every dial but a sealed one, which is
@@ -297,8 +347,11 @@ export function guideMaySee(def: (Named & Pick<VariableDef, "movedToSecret" | "w
  * Asked in this order. These hold under every rule set: a dial Admin does not
  * know, a sealed one, a withheld one, her own three switches, and any dial
  * under `agents.`. A money dial is refused unless the rules open money dials,
- * and then only free text is: it names where value goes or who holds it. A
- * dial about choosing people is refused under every rule set, a money dial
+ * and then only free text is. A free-text dial in a money category names where
+ * value goes or who holds it, and the sentence says so. One the money pattern
+ * names by its key alone (the pattern's "fee" is inside "feed") is told only
+ * what is true of it: it stays in the person's hands, and where to change it.
+ * A dial about choosing people is refused under every rule set, a money dial
  * that is also about choosing people among them.
  */
 export function proposalRefusal(def: VariableDef | undefined, rules: GuideRules = TODAYS_RULES): string | null {
@@ -312,8 +365,11 @@ export function proposalRefusal(def: VariableDef | undefined, rules: GuideRules 
   if (aboutMoney(def)) {
     // Money dials open only with the wide rules: a rule set that names one without the other opens nothing.
     if (!(rules.wide && rules.moneyDials)) return `${def.label} is about money, and money settings stay in your own hands. Open ${def.category} under Game Mechanics to change it.`;
-    if (def.type === "text" || def.type === "longtext") {
-      return `${def.label} names where value goes or who holds it, so only a person changes it: open ${def.category} under Game Mechanics to set it.`;
+    if (isFreeTextMoney(def)) {
+      if (HANDS_OFF_CATEGORIES.includes(def.category)) {
+        return `${def.label} names where value goes or who holds it, so only a person changes it: open ${def.category} under Game Mechanics to set it.`;
+      }
+      return `${def.label} stays in your own hands: open ${def.category} under Game Mechanics to change it.`;
     }
     // An open money dial is still asked the next question: one that is also about choosing people stays a person's.
   }
@@ -381,7 +437,9 @@ export const ADVISE_ANSWER_SHAPE = '"advise": null or {"key": "<setting key>", "
  * and `why` is read from the dial's own definition and its current value, and
  * nothing else the model sent is kept: no route, address, path, tab or label
  * of its own. `suggested` is kept only when the dial would take it and it
- * changes something.
+ * changes something, and never for a dial `adviceYours` names: her own
+ * switches, the agents' settings and free-text money show what they hold now
+ * and no value of hers.
  */
 export function buildAdvice(raw: unknown, current: (key: string) => string | undefined, rules: GuideRules = TODAYS_RULES): HelperAdvice | null {
   if (!rules.wide || !raw || typeof raw !== "object" || Array.isArray(raw)) return null;
@@ -389,9 +447,10 @@ export function buildAdvice(raw: unknown, current: (key: string) => string | und
   const def = key ? dialOf(key) : undefined;
   if (!def || !guideMaySee(def, rules)) return null;
   const now = current(key) ?? def.default;
+  const yours = adviceYours(def);
   const said = saidValue((raw as any).value);
-  const suggested = said !== null && said !== now && validateVariable(def, said) === null ? said : null;
-  return { key, label: def.label, category: def.category, now, suggested, why: clip((raw as any).why, 400) };
+  const suggested = yours === null && said !== null && said !== now && validateVariable(def, said) === null ? said : null;
+  return { key, label: def.label, category: def.category, now, suggested, yours, why: clip((raw as any).why, 400) };
 }
 
 // ── Finding things ──────────────────────────────────────────────────────────

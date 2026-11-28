@@ -6,6 +6,7 @@ import {
   HELPER_SWITCH,
   MONEY_SWITCH,
   TODAYS_RULES,
+  adviceYours,
   buildAdvice,
   buildProposal,
   cleanTabs,
@@ -169,6 +170,26 @@ describe("the guide's rules", () => {
     }
   });
 
+  it("free text that is money by its key alone is refused with a sentence that is true of it", () => {
+    // The money pattern's "fee" is inside "feed", and other keys name pay or a treasury from outside the money
+    // categories. Each is still refused, as it always was, and none is told it "names where value goes".
+    const byKeyAlone = VARIABLES.filter((v) => (proposalRefusal(v) ?? "").includes("is about money") && !HANDS_OFF_CATEGORIES.includes(v.category) && !BOUNDED.includes(v.type));
+    expect(byKeyAlone.length).toBeGreaterThan(3);
+    expect(byKeyAlone.some((v) => v.key.startsWith("feed."))).toBe(true);
+    for (const v of byKeyAlone) {
+      expect(proposalRefusal(v, OPEN), v.key).toBe(`${v.label} stays in your own hands: open ${v.category} under Game Mechanics to change it.`);
+      expect(mayPropose(v, OPEN), v.key).toBe(false);
+      // Nothing about what she may prepare moved: refused under the old rules, refused with the money dial closed.
+      expect(proposalRefusal(v, ADVISING), v.key).toBe(proposalRefusal(v));
+    }
+    // In a money category the sentence stays, for every free-text dial there.
+    const inCategory = VARIABLES.filter((v) => inMoney(v) && !BOUNDED.includes(v.type));
+    for (const v of inCategory) expect(proposalRefusal(v, OPEN), v.key).toContain("names where value goes or who holds it");
+    // The two sides are the whole of free-text money, and no dial is on both.
+    const all = VARIABLES.filter((v) => (proposalRefusal(v) ?? "").includes("is about money") && !BOUNDED.includes(v.type));
+    expect([...byKeyAlone, ...inCategory].map((v) => v.key).sort()).toEqual(all.map((v) => v.key).sort());
+  });
+
   it("a money dial that is also about choosing people stays a person's when money dials open", () => {
     // No dial is both today, so one is made up here: a fee, which the money pattern names, for an interview, which the selection pattern names.
     const both: VariableDef = { key: "org.interview_fee", category: "The founding team", label: "Interview fee", description: "A made-up dial.", type: "integer", default: "0", min: 0, max: 100 };
@@ -230,13 +251,47 @@ describe("the guide's rules", () => {
       for (const v of VARIABLES.filter(sealed)) expect(buildAdvice({ key: v.key, value: v.default }, current, OPEN), v.key).toBeNull();
     });
 
-    it("keeps six fields, all but the value and the reason read from the dial, and nothing else the model sent", () => {
+    it("keeps seven fields, all but the value and the reason read from the dial, and nothing else the model sent", () => {
       const out = buildAdvice(
-        { key: safe.key, value: to, why: "  It  suits you.  ", label: "Press here", category: "Trusted", now: "x", suggested: "y", href: "https://elsewhere.example", path: "/api/admin/tokens/mint", tab: "secrets", applyPath: "/api/admin/users/u-9/role" },
+        { key: safe.key, value: to, why: "  It  suits you.  ", label: "Press here", category: "Trusted", now: "x", suggested: "y", yours: "address", href: "https://elsewhere.example", path: "/api/admin/tokens/mint", tab: "secrets", applyPath: "/api/admin/users/u-9/role" },
         current,
         OPEN,
       );
-      expect(out).toEqual({ key: safe.key, label: safe.label, category: safe.category, now: safe.default, suggested: to, why: "It suits you." });
+      expect(out).toEqual({ key: safe.key, label: safe.label, category: safe.category, now: safe.default, suggested: to, yours: null, why: "It suits you." });
+    });
+
+    it("never carries a value she suggested for her own switches, the agents' settings or free-text money, whatever was sent", () => {
+      const own = VARIABLES.filter((v) => [HELPER_SWITCH, DOCK_SWITCH, MONEY_SWITCH].includes(v.key) || v.key.startsWith("agents."));
+      const freeText = VARIABLES.filter((v) => (proposalRefusal(v) ?? "").includes("is about money") && !BOUNDED.includes(v.type) && !sealed(v));
+      const addresses = freeText.filter((v) => v.key.endsWith("_address"));
+      expect(own.length).toBeGreaterThanOrEqual(4);
+      expect(addresses.length).toBeGreaterThan(0);
+      expect(freeText.length).toBeGreaterThan(addresses.length);
+      for (const rules of [OPEN, ADVISING]) {
+        for (const v of own) {
+          const flipped = v.default === "true" ? "false" : "true";
+          expect(adviceYours(v), v.key).toBe("own");
+          // A value the dial would take, and that changes something: kept off the card all the same.
+          expect(buildAdvice({ key: v.key, value: flipped, why: "routine" }, current, rules), v.key).toEqual({ key: v.key, label: v.label, category: v.category, now: v.default, suggested: null, yours: "own", why: "routine" });
+        }
+        for (const v of freeText) {
+          const yours = v.key.endsWith("_address") ? "address" : "text";
+          expect(adviceYours(v), v.key).toBe(yours);
+          for (const value of ["0x00000000000000000000000000000000000000Aa", "anything", "USD", ""]) {
+            const out = buildAdvice({ key: v.key, value, why: "routine" }, current, rules);
+            expect(out?.suggested, `${v.key} = ${value}`).toBeNull();
+            expect(out?.yours, v.key).toBe(yours);
+          }
+        }
+      }
+      // Every other dial she may see may carry a value, and says so.
+      const free = VARIABLES.filter((v) => !sealed(v) && !own.includes(v) && !freeText.includes(v));
+      expect(free.length).toBeGreaterThan(200);
+      for (const v of free) expect(adviceYours(v), v.key).toBeNull();
+      // A money dial with bounds carries one whichever way the village's money dial stands.
+      const bounded = VARIABLES.find((v) => inMoney(v) && v.type === "integer")!;
+      const next = String(Number(bounded.default) + 1);
+      for (const rules of [OPEN, ADVISING]) expect(buildAdvice({ key: bounded.key, value: next }, current, rules)).toMatchObject({ suggested: next, yours: null });
     });
 
     it("suggests only a value the dial would take and that changes something, read against the value as it stands", () => {
@@ -254,7 +309,7 @@ describe("the guide's rules", () => {
         for (const v of VARIABLES) {
           const out = buildAdvice({ key: v.key, why: "asked" }, current, rules);
           if (sealed(v)) expect(out, v.key).toBeNull();
-          else expect(out, v.key).toEqual({ key: v.key, label: v.label, category: v.category, now: v.default, suggested: null, why: "asked" });
+          else expect(out, v.key).toEqual({ key: v.key, label: v.label, category: v.category, now: v.default, suggested: null, yours: adviceYours(v), why: "asked" });
         }
       }
     });

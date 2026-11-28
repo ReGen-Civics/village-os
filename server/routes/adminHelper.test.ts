@@ -599,7 +599,7 @@ describe("the guide's dock", () => {
       expect(money.body.proposal).toBeNull();
       expect(money.body.refused).toContain("money settings stay in your own hands");
       // The refused change is said as advice: the same dial, what it holds now, and nothing to apply.
-      expect(money.body.advice).toEqual({ key: MONEY.key, label: MONEY.label, category: MONEY.category, now: MONEY.default, suggested: null, why: "Change the ledger." });
+      expect(money.body.advice).toEqual({ key: MONEY.key, label: MONEY.label, category: MONEY.category, now: MONEY.default, suggested: null, yours: null, why: "Change the ledger." });
     });
 
     it("keeps to one change an answer: a dial that made a card wins over a draft sent beside it", async () => {
@@ -771,17 +771,21 @@ describe("the rules the guide answers under", () => {
       expect(gone[0]).toContain("You cannot help with selection");
       expect(gone[1]).toContain("Money stays in the admin's hands");
       expect(gone[2]).toContain('{"reply"');
-      expect(came).toHaveLength(5);
+      expect(came).toHaveLength(6);
       expect(came[0]).toContain("You may explain and suggest on money, pay, votes and signatures");
       expect(came[0]).toContain("A person does every act");
       expect(came[1]).toContain('marked "proposable": true you may prepare with "propose"');
       expect(came[1]).toContain('answer with "advise"');
+      expect(came[1]).toContain("For free text about money (an address, an account, a token name), for your own switches and for the agents' settings, suggest no value");
       expect(came[2]).toContain('An estimate carries the word "roughly"');
       expect(came[2]).toContain("Never suggest a figure for a named person, never compare two people's pay, never say how to vote on a ballot about a person, and never sign anything.");
       expect(came[3]).toContain("You explain selection settings");
       expect(came[3]).toContain("you never score, rank, compare or recommend a person");
       expect(came[3]).toContain("You never read role applications, open proposals, interview scores, role terms or pay, or anybody's details");
-      expect(came[4]).toBe(gone[2].replace(', "file": null or', ', "advise": null or {"key": "<setting key>", "value": "<the value you suggest, as text, or leave it out>", "why": "<one sentence>"}, "file": null or'));
+      expect(came[4]).toBe("- Publishing is a person's press. You may help with a draft, and you never publish, send or adopt anything: say that a person publishes it, and name the page where they do.");
+      // The rules say what she may do. How she speaks is said once, by the voice lines, and never here.
+      for (const line of came.slice(0, 5)) expect(line).not.toMatch(/neighbour|figure of speech|raw address/);
+      expect(came[5]).toBe(gone[2].replace(', "file": null or', ', "advise": null or {"key": "<setting key>", "value": "<the value you suggest, as text, or leave it out>", "why": "<one sentence>"}, "file": null or'));
       // The prompt says the rules, and the server holds them: it reads the same whichever way the money dial stands.
       expect(helperSystemPrompt({ ...base, filing: true, rules: ADVISING })).toBe(helperSystemPrompt({ ...base, filing: true, rules: OPEN }));
     });
@@ -797,6 +801,8 @@ describe("the rules the guide answers under", () => {
       expect(asked[0]).toContain("never compare two people's pay");
       expect(asked[0]).toContain("you never score, rank, compare or recommend a person");
       expect(asked[0]).toContain('"advise": null or');
+      expect(asked[0]).toContain("suggest no value");
+      expect(asked[0]).toContain("Publishing is a person's press: you may help with a draft, and you never publish, send or adopt anything.");
       expect(asked[0]).not.toContain("never propose one");
     });
   });
@@ -851,7 +857,7 @@ describe("the rules the guide answers under", () => {
       const out = await setup({ dock: true, moneyDials: false }).call("POST", "/api/admin/helper/ask", ask("change it"));
       expect(out.body.proposal).toBeNull();
       expect(out.body.refused).toContain("money settings stay in your own hands");
-      expect(out.body.advice).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now: NUMBER.default, suggested: next, why: "You asked." });
+      expect(out.body.advice).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now: NUMBER.default, suggested: next, yours: null, why: "You asked." });
     });
 
     it("draws no advice for a refusal that is about the value, and none beside a card that was prepared or drafted", async () => {
@@ -898,7 +904,7 @@ describe("the rules the guide answers under", () => {
       // The same as it stands: nothing to suggest. A value the dial would refuse: nothing to suggest. No value: advice in words.
       expect(await asking({ key: NUMBER.key, value: now, why: "x" })).toMatchObject({ now, suggested: null });
       expect(await asking({ key: NUMBER.key, value: "a great deal", why: "x" })).toMatchObject({ now, suggested: null });
-      expect(await asking({ key: NUMBER.key, why: "It looks right as it is." })).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now, suggested: null, why: "It looks right as it is." });
+      expect(await asking({ key: NUMBER.key, why: "It looks right as it is." })).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now, suggested: null, yours: null, why: "It looks right as it is." });
       // A long reason is clipped the way a proposal's is.
       expect((await asking({ key: NUMBER.key, value: next, why: "y".repeat(900) })).why).toHaveLength(400);
     });
