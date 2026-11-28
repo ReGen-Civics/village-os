@@ -503,9 +503,11 @@ export default function GuideDock({
             )}
           </p>
           {shown === "helper" && chosen && status?.on && <WhoAnswers provider={chosen} name={names[chosen]} lent={status.lent === true} />}
+          {/* The two choices sit side by side where the dock is wide, and stack in the side column. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 empty:hidden">
           {shown === "helper" && status?.on && status.available.length > 1 && <GuideChoice available={status.available} names={names} chosen={chosen} onPick={pick} />}
           {modes.length > 1 && (
-            <div role="group" aria-label={t({ message: "What to talk about", context: "guide dock, the choice of conversation" })} className="mt-2 flex max-w-full flex-wrap gap-1">
+            <div role="group" aria-label={t({ message: "What to talk about", context: "guide dock, the choice of conversation" })} className="flex max-w-full flex-wrap gap-1">
               {modes.map((m) => (
                 <button
                   key={m}
@@ -525,6 +527,7 @@ export default function GuideDock({
               ))}
             </div>
           )}
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {wide && (

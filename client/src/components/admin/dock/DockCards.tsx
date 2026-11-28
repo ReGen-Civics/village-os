@@ -139,7 +139,7 @@ export function GuideChoice({
     <div
       role="radiogroup"
       aria-label={t({ message: "Who you're talking to", context: "guide dock, the choice between the village's guide and Sera" })}
-      className="mt-2 inline-flex max-w-full flex-wrap rounded-3xl border border-border p-0.5"
+      className="inline-flex max-w-full flex-wrap rounded-3xl border border-border p-0.5"
     >
       {available.map((p) => (
         <button
