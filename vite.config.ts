@@ -14,7 +14,7 @@ import {
   copyPartsIn,
 } from "./client/src/lib/routePreload";
 import { pointAtUnhintedFonts } from "./client/src/lib/unhintedFonts";
-import { mayJoinSharedGroup } from "./client/src/lib/privilegedChunks";
+import { adminCodeOnMemberFiles, adminFolderOnMemberFiles, adminOnlyModules, adminRootPages, mayJoinSharedGroup, memberFiles } from "./client/src/lib/privilegedChunks";
 import { allLazyInBoot, bootIntrudersMessage, judgeRoute, kb, lazyModulesInBoot, pageChunk, routeVerdictMessage, shortId, type BootChunkFacts, type RouteChunkFacts } from "./client/src/lib/bootSet";
 import { CopyCollector, copyPartRead, partsBesideFiles, splitLongCopy } from "./client/src/i18n/copySplit";
 import { splitArtifact, type SplitResult } from "./server/lib/groundsSplit";
@@ -362,6 +362,32 @@ function guardRouteFirstViews(): Plugin {
         const msg = routeVerdictMessage(v, root);
         if (msg) failures.push(msg);
       }
+      /*
+       * GUARD-ADMIN-CHUNKS: no file a member's browser can fetch carries code
+       * only an admin route reaches (size pass, 28 Nov 2026). Checked here, on
+       * the finished bundle, for every file any route can pull in, now or
+       * later. The rule is client/src/lib/privilegedChunks.ts.
+       */
+      const adminOnly = adminOnlySet(this.getModuleInfo, () => this.getModuleIds());
+      const built = Object.values(bundle).flatMap((out) => (out.type === "chunk" ? [out] : []));
+      // The router's lazy import of a root is held back only while nothing else imports that root.
+      const routerOnly = (root: string): boolean => (this.getModuleInfo(root)?.dynamicImporters ?? []).every((by) => by.replace(/\\/g, "/") === ROUTER) && (this.getModuleInfo(root)?.importers.length ?? 0) === 0;
+      const leaks = adminCodeOnMemberFiles(built, adminOnly, adminRootIds, ROUTER, routerOnly);
+      for (const c of leaks) failures.push(`guard-admin-chunks: ${c.fileName} is a file a member's browser can fetch, and it carries ${c.admin.length} module(s) only an admin route reaches (${c.admin.slice(0, 5).map(name).join(", ")}${c.admin.length > 5 ? ", ..." : ""}). A group rule in vite.config.ts put them beside member code: keep admin-only modules out of it (adminOnlySet).`);
+      // And the admin folder's modules on members' files, held to scripts/admin-on-member.json, a list that only shrinks (privilegedChunks.ts, ADMIN_FOLDER).
+      const onMember = adminFolderOnMemberFiles(built, memberFiles(built, adminRootIds, ROUTER, routerOnly), name);
+      const listFile = path.resolve(root, "scripts", "admin-on-member.json");
+      const listed = new Set<string>(fs.existsSync(listFile) ? (JSON.parse(fs.readFileSync(listFile, "utf8")).modules as string[]) : []);
+      const added = onMember.filter((m) => !listed.has(m));
+      if (process.env.ADMIN_ON_MEMBER_WRITE) {
+        if (listed.size > 0 && added.length) failures.push(`ADMIN_ON_MEMBER_WRITE refuses to add to scripts/admin-on-member.json: ${added.join(", ")}`);
+        else fs.writeFileSync(listFile, JSON.stringify({ modules: onMember }, null, 2) + "\n");
+      } else if (added.length) {
+        failures.push(`guard-admin-chunks: ${added.length} module(s) from client/src/components/admin/ now ride a file a member's browser can fetch, and scripts/admin-on-member.json does not list them: ${added.join(", ")}. A member page (or something it imports) imports them. Make that import lazy behind the page or role that draws them, or move the small piece a member page uses out of the admin folder. The list only shrinks.`);
+      }
+      const gone = Array.from(listed).filter((m) => !onMember.includes(m));
+      if (gone.length && !process.env.ADMIN_ON_MEMBER_WRITE) this.warn(`scripts/admin-on-member.json lists ${gone.length} module(s) no member file carries any more. Shrink it with ADMIN_ON_MEMBER_WRITE=1 pnpm build: ${gone.join(", ")}`);
+      if (process.env.ROUTE_VIEW_REPORT) console.log(`\n[admin-chunks] ${adminOnly.size} module(s) only an admin route reaches, from ${adminRootIds.size} admin root page(s); ${leaks.length} member file(s) carrying any; ${onMember.length} admin-folder module(s) on members' files`);
       if (failures.length) this.error(failures.join("\n\n"));
     },
   };
@@ -535,7 +561,7 @@ function bigPageGroupOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: 
       return Array.from(own).reduce((n, m) => n + shippedBytes(getModuleInfo(m)?.code ?? ""), 0);
     };
     const big = Array.from(getModuleIds())
-      .filter((m) => SMALL_PAGE.test(m) && !SHOPFRONT_PAGES.test(m) && !OWN_FILE_PAGE.test(m) && !eager.has(m) && !key.has(m) && mayJoinSharedGroup(m))
+      .filter((m) => SMALL_PAGE.test(m) && !SHOPFRONT_PAGES.test(m) && !OWN_FILE_PAGE.test(m) && !eager.has(m) && !key.has(m) && !adminOnlyIds?.has(m) && mayJoinSharedGroup(m))
       .filter((m) => (getModuleInfo(m)?.dynamicImporters.length ?? 0) > 0 && (getModuleInfo(m)?.code?.length ?? 0) >= MID_PAGE_BYTES)
       .sort((a, b) => path.basename(a).localeCompare(path.basename(b)));
     let n = 1;
@@ -658,6 +684,7 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
     !key.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
     mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
+    !adminOnlyIds?.has(id) && // nor any module only an admin route reaches (adminOnlySet below)
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
@@ -968,7 +995,7 @@ function lazyGroupPlan(g: {
     }
   };
   // A piece's weight: its own source and that of every module only it reaches, which would ride with it (rule 2).
-  const weightOf = (id: string): number => {
+  const ownOf = (id: string): Set<string> => {
     const own = new Set([id]);
     for (let grew = true; grew; ) {
       grew = false;
@@ -981,7 +1008,24 @@ function lazyGroupPlan(g: {
         }
       }
     }
-    return Array.from(own).reduce((n, m) => n + (info(m)?.code?.length ?? 0), 0);
+    return own;
+  };
+  const weightOf = (id: string): number => Array.from(ownOf(id)).reduce((n, m) => n + (info(m)?.code?.length ?? 0), 0);
+  /*
+   * A lazy piece joins its page group only when it brings the group nothing
+   * to load but itself and what only it reaches (size pass, 28 Nov 2026). The
+   * steward's panel on a module's page is lazy; in "midpages" it became a
+   * static part of the group, and with it the shared chunk of every module's
+   * settings form, about 63 KB on the first view of 55 member routes that never
+   * draw it. Otherwise it is seeded like any lazy piece below.
+   */
+  const groupReach = new Map<string, Set<string>>();
+  const addsNoReach = (id: string, group: string): boolean => {
+    let reach = groupReach.get(group);
+    if (!reach) groupReach.set(group, (reach = closureOf(Array.from(base).filter(([, g]) => g === group).map(([m]) => m))));
+    const own = ownOf(id);
+    const has = reach;
+    return Array.from(closureOf([id])).every((m) => own.has(m) || has.has(m));
   };
   // Rule 1: the seeds.
   for (const id of all) {
@@ -997,10 +1041,13 @@ function lazyGroupPlan(g: {
     const owner = owners.size === 1 ? Array.from(owners)[0] : undefined;
     if (owner && PAGE_GROUPS.has(owner)) {
       // Into a group that already reaches every first-page module this piece does, or not at all.
-      if (unfit([id]).length === 0) extra.set(id, owner);
-      continue;
+      if (addsNoReach(id, owner)) {
+        if (unfit([id]).length === 0) extra.set(id, owner);
+        continue;
+      }
     }
-    extra.set(id, `lazy-${Array.from(new Set(m.dynamicImporters.flatMap((by) => areaOf(by)))).sort().join("-")}`);
+    // An admin-only piece shares a file only with other admin-only pieces (adminOnlySet below).
+    extra.set(id, `lazy-${adminOnlyIds?.has(id) ? "admin-" : ""}${Array.from(new Set(m.dynamicImporters.flatMap((by) => areaOf(by)))).sort().join("-")}`);
   }
 
   // Each "lazy-" group takes its smallest pieces first and stops at LAZY_GROUP_BYTES; the rest go to the pool below.
@@ -1052,16 +1099,19 @@ function lazyGroupPlan(g: {
   // Not a piece the shell itself imports lazily: pooled, its import grows the first page's files.
   const pool = Array.from(leftOver).filter((id) => !extra.has(id) && !(info(id)?.dynamicImporters ?? []).some((by) => eager.has(by)));
   const poolWeight = new Map(pool.map((id) => [id, weightOf(id)]));
-  let poolNo = 1;
-  let poolTotal = 0;
-  for (const id of pool.sort((a, b) => (poolWeight.get(a) ?? 0) - (poolWeight.get(b) ?? 0) || a.localeCompare(b))) {
-    const w = poolWeight.get(id) ?? 0;
-    if (poolTotal > 0 && poolTotal + w > LAZY_GROUP_BYTES) {
-      poolNo += 1;
-      poolTotal = 0;
+  // Admin-only pieces fill pools of their own, "lazy-adminpool1" and on (adminOnlySet below).
+  for (const admin of [false, true]) {
+    let poolNo = 1;
+    let poolTotal = 0;
+    for (const id of pool.filter((x) => !!adminOnlyIds?.has(x) === admin).sort((a, b) => (poolWeight.get(a) ?? 0) - (poolWeight.get(b) ?? 0) || a.localeCompare(b))) {
+      const w = poolWeight.get(id) ?? 0;
+      if (poolTotal > 0 && poolTotal + w > LAZY_GROUP_BYTES) {
+        poolNo += 1;
+        poolTotal = 0;
+      }
+      extra.set(id, `lazy-${admin ? "admin" : ""}pool${poolNo}`);
+      poolTotal += w;
     }
-    extra.set(id, `lazy-pool${poolNo}`);
-    poolTotal += w;
   }
   /*
    * THE SHELL'S OWN LAZY PIECES SHARE ONE FILE (headroom pass 2, 26 Nov 2026).
@@ -1172,6 +1222,35 @@ function eagerSet(getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIter
   return eagerModules;
 }
 
+/**
+ * The modules only an admin route reaches, worked out once per build like
+ * `eagerModules`: the rule is in client/src/lib/privilegedChunks.ts. None of
+ * them joins a member group ("smalls", "tables", "smallui", a page group), and
+ * the "lazy-" groups and pools hold them apart, so a member's browser never
+ * fetches a file of admin code. guard-admin-chunks checks the finished bundle.
+ */
+let adminOnlyIds: Set<string> | null = null;
+let adminRootIds: Set<string> = new Set();
+const ROUTER = path.resolve(import.meta.dirname, "client", "src", "App.tsx").replace(/\\/g, "/");
+function adminOnlySet(getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): Set<string> {
+  if (adminOnlyIds) return adminOnlyIds;
+  const ids = Array.from(getModuleIds());
+  const byPath = new Map(ids.map((id) => [id.split("?")[0].replace(/\\/g, "/"), id]));
+  const app = fs.readFileSync(ROUTER, "utf8");
+  const roots = new Set<string>();
+  for (const page of adminRootPages(lazyRoutesFromApp(app))) {
+    const base = path.resolve(import.meta.dirname, "client", "src", page).replace(/\\/g, "/");
+    const id = byPath.get(`${base}.tsx`) ?? byPath.get(`${base}.ts`);
+    if (!id) throw new Error(`adminOnlySet: the router draws ${page} on an admin route, and no module of the build is that page`);
+    roots.add(id);
+  }
+  if (roots.size === 0) throw new Error("adminOnlySet: no admin route read from client/src/App.tsx, so nothing could be kept off the members' pages");
+  const router = byPath.get(ROUTER) ?? ROUTER;
+  adminRootIds = roots;
+  adminOnlyIds = adminOnlyModules(ids, (id) => getModuleInfo(id) ?? null, roots, router);
+  return adminOnlyIds;
+}
+
 /*
  * FIRST_PAGE: EVERY FIRST-PAGE MODULE OF OURS IN ONE NAMED CHUNK (headroom pass
  * 3, 27 Nov 2026). On 0067ce5 the total stood at 7944 KB of 8000 and the 1.3.87
@@ -1225,6 +1304,7 @@ function isFirstPageSource(id: string, getModuleInfo: GetModuleInfo, getModuleId
 
 function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): string | undefined {
   if (isFirstPageSource(id, getModuleInfo, getModuleIds)) return "first-page";
+  const adminOnly = adminOnlySet(getModuleInfo, getModuleIds);
   if (id.includes("lucide-react")) return "icons";
   /*
    * THE SHELL'S LIBRARIES, ONE NAMED CHUNK (role journey PR-B, 2026-11-09).
@@ -1312,7 +1392,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    */
   // A privileged page (Treasury, Admin*, Mint*, Cash*) keeps its own lazy chunk at any size, so its
   // code never ships to a member who opens a neighbour in a group (client/src/lib/privilegedChunks.ts).
-  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) {
+  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && !adminOnly.has(id) && mayJoinSharedGroup(id)) {
     const code = getModuleInfo(id)?.code;
     if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
     if (SHOPFRONT_PAGES.test(id)) return "shopfront";
@@ -1320,7 +1400,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
     const grouped = bigPageGroupOf(id, getModuleInfo, getModuleIds, eagerModules, key);
     if (grouped) return grouped;
   }
-  if (RITES_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) return "rites";
+  if (RITES_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && !adminOnly.has(id) && mayJoinSharedGroup(id)) return "rites";
   return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
 }
 
