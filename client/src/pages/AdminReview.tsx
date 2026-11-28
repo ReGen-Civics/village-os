@@ -33,7 +33,7 @@ import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
 import type { InboxItem } from "@shared/reviewInbox";
-import { INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
+import { INBOX_PAGE, INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
 import { sourceText } from "@/components/reviewInbox/sourceWords";
 import { matchesFind } from "@shared/proposedChanges";
 import { DecidedCard } from "@/components/proposals/ChangeCard";
@@ -71,7 +71,7 @@ export default function AdminReview() {
 
   // Keyed on being signed in, never on the user object, which a context may hand out anew on every render.
   const signedIn = !!auth && !auth.loading && !!auth.user;
-  const { load, answer, groups, counts, read, refresh, showMore } = useReviewInbox(signedIn);
+  const { load, answer, groups, counts, read, refresh, showMore, showAll } = useReviewInbox(signedIn);
   // What the last decision made on a row said, read out once: the row itself leaves the list when it is decided.
   const [notice, setNotice] = useState<string | null>(null);
   // The kind whose next rows are being read, so its button says so and cannot be pressed twice.
@@ -144,9 +144,9 @@ export default function AdminReview() {
       <InboxRow key={item.key} item={item} />
     );
 
-  const more = async (source: InboxSource) => {
+  const more = async (source: InboxSource, all?: number) => {
     setReading(source);
-    await showMore(source);
+    await (all ? showAll(source, all) : showMore(source));
     setReading(null);
   };
   const unknownWord = t({ context: "review inbox: a queue that did not load has no number", message: "unknown" });
@@ -317,7 +317,7 @@ export default function AdminReview() {
                 </p>
               ) : (
                 <p className={HINT} data-testid="inbox-order">
-                  <Trans context="review inbox: the order of the list">In each kind: what lapses soonest comes first, then the oldest. What carries no date comes last, in the order its own queue keeps.</Trans>
+                  <Trans context="review inbox: the order of the list">In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.</Trans>
                 </p>
               )}
               {onlyKind ? (
@@ -376,10 +376,24 @@ export default function AdminReview() {
                         <button type="button" className={BTN_SECONDARY} disabled={reading !== null} onClick={() => void more(s)} data-testid={`more-${s}`}>
                           {reading === s ? <Trans context="review inbox: more rows of one kind">Reading more</Trans> : <Trans context="review inbox: more rows of one kind">Show more</Trans>}
                         </button>
+                        {g.count !== null && g.count - items.length > INBOX_PAGE ? (
+                          <button type="button" className={BTN_SECONDARY} disabled={reading !== null} onClick={() => void more(s, g.count!)} data-testid={`all-${s}`}>
+                            <ShowAll n={g.count} />
+                          </button>
+                        ) : null}
                         <p className={HINT} data-testid={`showing-${s}`}>
                           <Showing shown={items.length} of={g.count ?? g.atLeast} />
                         </p>
                       </div>
+                    ) : null}
+                    {g.capped && items[0] ? (
+                      <p className={HINT} data-testid={`capped-${s}`}>
+                        <Showing shown={items.length} of={g.count ?? g.atLeast} />{" "}
+                        <Trans context="review inbox: a queue too long to list here">This list stops here. The rest are on this queue's own page.</Trans>{" "}
+                        <Link href={items[0].decideAt} className={LINK}>
+                          {sourceText(s, i18n).door}
+                        </Link>
+                      </p>
                     ) : null}
                   </section>
                 );
@@ -399,6 +413,11 @@ function FoundDecided({ code, day }: { code: string; day: string | null }) {
   ) : (
     <Trans context="review inbox: find a decided code">{code} was decided. It is under Decided.</Trans>
   );
+}
+
+/** "Show all 238" */
+function ShowAll({ n }: { n: number }) {
+  return <Trans context="review inbox: more rows of one kind">Show all {n}</Trans>;
 }
 
 /** "Showing 10 of 23." */

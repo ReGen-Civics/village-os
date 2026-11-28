@@ -13,7 +13,7 @@
  *   - `listsApplications` is off on Home, which lists role applications itself right under the count, from its own
  *     read: saying a second number for them there could disagree with that list.
  */
-import { Plural } from "@lingui/react/macro";
+import { Plural, Trans } from "@lingui/react/macro";
 import type { InboxCounts } from "./useReviewInbox";
 
 export default function DecisionsLine({ counts, held = 0, listsApplications = true }: { counts: InboxCounts; held?: number; listsApplications?: boolean }) {
@@ -23,7 +23,10 @@ export default function DecisionsLine({ counts, held = 0, listsApplications = tr
   const unknown = counts.unknown.length;
   return (
     <>
-      {unknown ? (
+      {unknown && decisions === 0 ? (
+        // No queue that answered holds a decision, and some did not answer: "at least 0" says nothing. Say it is unknown.
+        <Trans context="the one count, when no queue that loaded holds any and some did not load">How many decisions wait on you is unknown.</Trans>
+      ) : unknown ? (
         <Plural context="the one count, while a queue did not load" value={decisions} one="At least # decision waiting on you." other="At least # decisions waiting on you." />
       ) : (
         <Plural context="the one count" value={decisions} one="# decision waiting on you." other="# decisions waiting on you." />

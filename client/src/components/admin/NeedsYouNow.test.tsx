@@ -84,6 +84,13 @@ describe("Needs you now on Today", () => {
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 
+  it("never says nothing is waiting while a queue did not load: it may hold something", async () => {
+    answer = { sections: [{ source: "recap", state: "failed", count: null, atLeast: 0, blocked: 0, more: false }], items: [], counts: { decisions: 0, applications: 0, blocked: 0, unknown: ["recap"], waiting: 0 } };
+    show();
+    expect(await screen.findByText(/Could not be read just now, so not counted: /)).toBeTruthy();
+    expect(screen.queryByText("Nothing on the review list is waiting on you.")).toBeNull();
+  });
+
   it("says nothing is waiting when the list is empty", async () => {
     answer = { sections: [{ source: "vote", state: "ok", count: 0 }], items: [] };
     show();
