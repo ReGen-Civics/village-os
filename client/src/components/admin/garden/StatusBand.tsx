@@ -36,10 +36,23 @@ export interface StatusBandProps {
   moon?: string;
   /** A drawing of the moon, from the glyphs that already ship. Decoration beside the words. */
   moonGlyph?: ReactNode;
+  /**
+   * The page's switches, side by side: the view switch (the guide first, or the dashboard) and the lens toggle (the
+   * Grounds, the Desk). Drawn in the band on every garden screen and in every dock state, so a person always sees
+   * where they are and where else they can go; they wrap to a row of their own when the band is narrow. Left out,
+   * the band draws none and a caller places its lens toggle where it always did.
+   */
+  switches?: ReactNode;
+  /**
+   * The way out, for now: the door to the old admin dashboard (SeeOldAdmin, ./oldAdmin.tsx). Drawn at the far end of
+   * the band, after the switches and the band's own door, and under them when the band is narrow. Unlike the view
+   * switch it is drawn at every width: a person on a phone must be able to reach the old admin too.
+   */
+  exit?: ReactNode;
   className?: string;
 }
 
-export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, className = "" }: StatusBandProps) {
+export default function StatusBand({ label, sentence, action, season, moon, moonGlyph, switches, exit, className = "" }: StatusBandProps) {
   const cycle = [season, moon].filter((w): w is string => typeof w === "string" && w.trim() !== "");
   const { t } = useLingui();
   return (
@@ -54,6 +67,12 @@ export default function StatusBand({ label, sentence, action, season, moon, moon
           <span>{cycle.join(" · ")}</span>
         </p>
       ) : null}
+      {switches ? (
+        // `contents`: each switch is the band's own item, so one that has stepped back (a narrow screen) leaves no gap.
+        <div className="contents" data-testid="garden-band-switches">
+          {switches}
+        </div>
+      ) : null}
       {action ? (
         action.href ? (
           <Link href={action.href} className={BTN_NOTICE}>
@@ -64,6 +83,12 @@ export default function StatusBand({ label, sentence, action, season, moon, moon
             {action.label}
           </button>
         )
+      ) : null}
+      {exit ? (
+        // Last in the band and last in the document. No rule hides it at any width: it is the one way to the old admin.
+        <div className="flex items-center" data-testid="garden-band-exit">
+          {exit}
+        </div>
       ) : null}
     </section>
   );

@@ -14,6 +14,10 @@
  * percent of the land's width. They follow the approved Grounds frame.
  */
 import { msg } from "@lingui/core/macro";
+// The runtime as a value the build keeps: precompileEnglish compiles the messages of a file that imports it
+// (client/src/i18n/precompileEnglish.ts), and a type-only import is erased before it looks. Without this line the
+// ten names and lines below reach the bundle uncompiled, and the first build that mounts the garden fails.
+export { i18n as gardenPlacesRuntime } from "@lingui/core";
 import type { MessageDescriptor } from "@lingui/core";
 import { GARDEN_PLACE_KEYS, type GardenPlaceKey } from "@shared/gardenArt";
 
