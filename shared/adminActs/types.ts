@@ -72,6 +72,19 @@ export interface AdminAct extends Omit<AdminSearchEntry, "capability"> {
   partial?: true;
 }
 
+/**
+ * The words of one act in another language: what a reader of that language sees and would type to find it. The
+ * tables are under shared/adminActs/<language>/, keyed by the act's id; shared/adminActsWords.ts lays them over an entry.
+ */
+export interface ActWords {
+  title: string;
+  help: string;
+  synonyms: readonly string[];
+}
+
+/** One row of a words table, so a row stays one readable line. */
+export const words = (title: string, help: string, synonyms: readonly string[]): ActWords => ({ title, help, synonyms });
+
 // ── Small builders, so a row of the registry stays one readable line ───────
 
 const route = (method: ActMethod) => (path: string, params?: Readonly<Record<string, string>>): ActRoute => (params ? { method, path, params } : { method, path });

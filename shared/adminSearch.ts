@@ -282,8 +282,19 @@ export function dialEntry(d: { key: string; label: string; description?: string;
 
 const STOP = new Set(["the", "a", "an", "to", "of", "my", "me", "i", "how", "do", "where", "is", "for", "in", "on", "and", "can"]);
 
+/**
+ * Lower case, accents off, anything that is not a letter or a digit a space. Find anything folds accents the same
+ * way (`normFind`, shared/findAnything.ts): the registry has Spanish words (shared/adminActsWords.ts), and
+ * "configuracion" typed without its accent is still "configuración". An accent used to become a space, which cut
+ * the word in two and matched only a query typed with the same accent.
+ */
 function norm(s: string): string {
-  return String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return String(s ?? "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function words(s: string): string[] {
