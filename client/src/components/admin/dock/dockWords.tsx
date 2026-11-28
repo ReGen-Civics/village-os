@@ -1,6 +1,6 @@
 /**
  * THE DOCK'S FIXED LINES, IN BOTH FORMS (the founder, 28 Nov 2026: "Go with
- * warm and plain with the brief and quiet toggle").
+ * warm and plain with the brief and quiet toggle"; the voice sheet, version 3).
  *
  * Every line the dock itself says is here, each as a PAIR: warm and plain
  * first, brief and quiet second, the same facts in the fewest words. `say`
@@ -8,21 +8,31 @@
  * own translation. A reply the model writes is not here: its voice is told to
  * the model (server/lib/guideSpeaking.ts).
  *
- * WHOSE VOICE (the copy style key's four voices, as the voice sheet applies
- * them to the garden):
- *   - The GUIDE speaks only where she can answer back: her greeting, the line
- *     after it, what she reads, and the words on what she prepared ("A change
- *     I prepared"). Warm and plain, one to three sentences. She says what she
+ * WRITTEN BY KIND OF LINE (the sheet's first table):
+ *   - The GUIDE speaks only where she can answer back: her first words, what
+ *     she reads, and the words on what she prepared ("A change I prepared").
+ *     With a founder or an admin she carries the stance: this is a Game, the
+ *     players design it, "we" for the village's shared work. The big welcome
+ *     is for a first meeting. Day to day she greets by first name with the
+ *     part of the day and goes straight to the one thing. She says what she
  *     did and what she left, and never claims an act a person has to press.
- *   - An alert is never hers. A load that failed, a send that failed, a day's
- *     answers used up: one plain sentence that names the fix.
+ *   - She claims nothing about what waits unless somebody who knows said so:
+ *     the dock knows what she prepared; a deadline, or "nothing is waiting",
+ *     comes from the host (GuideDock's `oneThing` and `nothingWaits`).
+ *   - An ALERT is the system's, never hers: what failed, then what to do.
+ *   - BRIEF AND QUIET drops the greeting, the reasons, the warm words and her
+ *     "I" sentences. It keeps what waits, what follows and what she left for
+ *     the person. A greeting by name stays only where the sheet's own brief
+ *     line keeps one: when something waits.
  *   - Names (the conversations, the two answerers, "You said") have one form.
  *     So do the suggestions: they are the person's own words on their way to
  *     the box, and a shorter question would be a different question.
  *
- * WHAT SHE SAYS SHE READS is one line here (`reads`), true to the code as it
- * stands (the helper's two readers and its refusals, server/routes/
- * adminHelper.ts). When what she may read changes, it changes here, once.
+ * ONE PLACE EACH, easy to swap: her "nothing needs you" is `nothingNeeds`
+ * below (the band's own all-clear is the garden's, ../garden/speaking.tsx).
+ * WHAT SHE SAYS SHE READS is `reads`, true to the code as it stands (the
+ * helper's readers and its refusals, server/routes/adminHelper.ts). When what
+ * she may read changes, it changes here, once.
  *
  * The off states (no key yet, switched off) are the helper panel's own steps
  * (../helperPieces.tsx) and are not rewritten here: they are setup steps for
@@ -32,6 +42,31 @@ import { useLingui } from "@lingui/react/macro";
 import type { HelperProvider } from "@shared/adminHelper";
 import { useNumberWord, type DayPart } from "../garden/speaking";
 
+/**
+ * THE ONE THING that waits on this person, handed to her by the host that
+ * knows it (a deadline, a vote closing): its whole sentence, and its brief
+ * form. Both already in the reader's language. She says it after her greeting
+ * and adds nothing to it.
+ */
+export interface OneThing {
+  full: string;
+  brief: string;
+}
+
+export interface FirstWordsInput {
+  dayPart: DayPart;
+  firstName: string;
+  /** The name she answers under. */
+  guide: string;
+  /** A new village's first evening: the welcome, once. */
+  firstMeeting?: boolean;
+  oneThing?: OneThing | null;
+  /** The host says nothing is waiting. Never assumed. */
+  nothingWaits?: boolean;
+  /** How many changes she prepared that wait for a yes: the dock's own knowledge. */
+  ready: number;
+}
+
 export interface DockWords {
   quiet: boolean;
   /** The one toggle a person is shown for the speaking dial. One form: it is the control's name. */
@@ -40,17 +75,16 @@ export interface DockWords {
   /** Under her name, where the dock is wide: what this conversation is for. */
   about: (mode: "helper" | "launch" | "organize") => string;
   whoAnswers: (provider: HelperProvider, name: string, lent: boolean) => string;
-  /** Her greeting: the part of the day and the person's first name. */
-  greeting: (dayPart: DayPart, firstName: string) => string;
-  /** After the greeting, in Admin: what is ready for a yes, or what she can do. */
-  helperLead: (ready: number) => string;
+  /** Her first words in Admin, before anything is said back. */
+  helperFirst: (input: FirstWordsInput) => string;
   /** What she reads and never reads. */
   reads: string;
-  /** After the greeting, on the road to launch: what blocks. Null when the page has not said. */
-  launchLead: (blocking: number | null) => string;
-  organizeLead: string;
+  /** Her first words on the road to launch: what blocks. `blocking` is null when the page has not said. */
+  launchFirst: (input: { dayPart: DayPart; firstName: string; blocking: number | null }) => string;
+  organizeFirst: (input: { dayPart: DayPart; firstName: string }) => string;
   thinking: (guide: string) => string;
-  /** Alerts, never hers. */
+  /** Alerts: the system's, never hers. */
+  notLoaded: string;
   spent: string;
   notSent: string;
   gone: string;
@@ -92,6 +126,34 @@ export function useDockWords(quiet: boolean): DockWords {
   /** Warm and plain, or brief and quiet: the pair is written together and the dial picks. */
   const say = (full: string, brief: string) => (quiet ? brief : full);
 
+  /** Day to day: the part of the day and the first name. */
+  const greeting = (dayPart: DayPart, firstName: string): string =>
+    firstName
+      ? dayPart === "morning"
+        ? t({ message: `Morning, ${firstName}.`, context: "guide dock, her greeting" })
+        : dayPart === "afternoon"
+          ? t({ message: `Afternoon, ${firstName}.`, context: "guide dock, her greeting" })
+          : t({ message: `Evening, ${firstName}.`, context: "guide dock, her greeting" })
+      : dayPart === "morning"
+        ? t({ message: "Morning.", context: "guide dock, her greeting to someone whose name the page does not have" })
+        : dayPart === "afternoon"
+          ? t({ message: "Afternoon.", context: "guide dock, her greeting to someone whose name the page does not have" })
+          : t({ message: "Evening.", context: "guide dock, her greeting to someone whose name the page does not have" });
+  /** Brief and quiet keeps a greeting only in front of something that waits. */
+  const hi = (firstName: string): string =>
+    firstName ? t({ message: `Hi ${firstName}.`, context: "guide dock, her greeting, brief" }) : t({ message: "Hi.", context: "guide dock, her greeting to someone whose name the page does not have, brief" });
+
+  /** THE ONE PLACE her "nothing needs you" is written. Said only when the host told her nothing waits. */
+  const nothingNeeds = (dayPart: DayPart): string =>
+    say(
+      dayPart === "morning"
+        ? t({ message: "Nothing needs you this morning. The Game is running without you, which is the point.", context: "guide dock, her first words when the host says nothing waits" })
+        : dayPart === "afternoon"
+          ? t({ message: "Nothing needs you this afternoon. The Game is running without you, which is the point.", context: "guide dock, her first words when the host says nothing waits" })
+          : t({ message: "Nothing needs you tonight. The Game is running without you, which is the point.", context: "guide dock, her first words when the host says nothing waits" }),
+      t({ message: "Nothing needs you.", context: "guide dock, her first words when the host says nothing waits, brief" }),
+    );
+
   return {
     quiet,
     briefToggle: t({ message: "Brief and quiet", context: "guide dock, the toggle for the speaking dial's quiet setting" }),
@@ -129,102 +191,100 @@ export function useDockWords(quiet: boolean): DockWords {
               t({ message: `${name}, on your own key.`, context: "guide dock, who answers, brief" }),
             ),
 
-    greeting: (dayPart, firstName) =>
-      firstName
-        ? say(
-            dayPart === "morning"
-              ? t({ message: `Morning, ${firstName}.`, context: "guide dock, her greeting" })
-              : dayPart === "afternoon"
-                ? t({ message: `Afternoon, ${firstName}.`, context: "guide dock, her greeting" })
-                : t({ message: `Evening, ${firstName}.`, context: "guide dock, her greeting" }),
-            t({ message: `Hi ${firstName}.`, context: "guide dock, her greeting, brief" }),
-          )
-        : say(
-            dayPart === "morning"
-              ? t({ message: "Morning.", context: "guide dock, her greeting to someone whose name the page does not have" })
-              : dayPart === "afternoon"
-                ? t({ message: "Afternoon.", context: "guide dock, her greeting to someone whose name the page does not have" })
-                : t({ message: "Evening.", context: "guide dock, her greeting to someone whose name the page does not have" }),
-            t({ message: "Hi.", context: "guide dock, her greeting to someone whose name the page does not have, brief" }),
-          ),
-
-    // She leads with what waits. She prepared it; saving it is the person's press, and she says so.
-    helperLead: (ready) => {
-      if (ready <= 0) {
+    helperFirst: ({ dayPart, firstName, guide, firstMeeting, oneThing, nothingWaits, ready }) => {
+      // A FIRST MEETING: the welcome, and the stance. The same words whoever she is meeting.
+      if (firstMeeting) {
         return say(
-          t({ message: "Nothing is waiting on you here. Ask me where something lives, or name a change and I will prepare it for your yes.", context: "guide dock, after her greeting, nothing is ready" }),
-          t({ message: "Nothing waiting. Ask, or name a change.", context: "guide dock, after her greeting, nothing is ready, brief" }),
+          t({
+            message: `Welcome. I'm ${guide}. You're starting a Game, and you get to design it. Tell me about the village you want to play in, and we'll set the first conditions together.`,
+            context: "guide dock, her first words at a first meeting",
+          }),
+          t({ message: `I'm ${guide}. What Game are you starting?`, context: "guide dock, her first words at a first meeting, brief" }),
         );
       }
+      // SOMETHING WAITS, and the host that knows it said what: she goes straight to it and adds nothing.
+      if (oneThing && oneThing.full.trim()) return say(`${greeting(dayPart, firstName)} ${oneThing.full.trim()}`, `${hi(firstName)} ${(oneThing.brief || oneThing.full).trim()}`);
+      // What she prepared is the one thing the dock knows by itself. She prepared it; the save is the person's press.
       if (ready === 1) {
         return say(
-          t({ message: "One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save.", context: "guide dock, after her greeting, one change is ready" }),
-          t({ message: "1 to approve.", context: "guide dock, after her greeting, one change is ready, brief" }),
+          `${greeting(dayPart, firstName)} ${t({ message: "One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save.", context: "guide dock, after her greeting, one change is ready" })}`,
+          `${hi(firstName)} ${t({ message: "1 to approve.", context: "guide dock, after her greeting, one change is ready, brief" })}`,
         );
       }
-      // The count opens the sentence, so its word takes a capital.
-      const count = capital(word(ready));
+      if (ready > 1) {
+        // The count opens the sentence, so its word takes a capital.
+        const count = capital(word(ready));
+        return say(
+          `${greeting(dayPart, firstName)} ${t({ message: `${count} changes are ready for your yes. They wait at the bottom of the page, and nothing is saved until you press Save.`, context: "guide dock, after her greeting, several changes are ready" })}`,
+          `${hi(firstName)} ${t({ message: `${ready} to approve.`, context: "guide dock, after her greeting, several changes are ready, brief" })}`,
+        );
+      }
+      // NOTHING WAITS, on the host's word only.
+      if (nothingWaits) return quiet ? nothingNeeds(dayPart) : `${greeting(dayPart, firstName)} ${nothingNeeds(dayPart)}`;
+      // Nobody said what waits: one plain sentence about what she can do, and no claim either way.
       return say(
-        t({ message: `${count} changes are ready for your yes. They wait at the bottom of the page, and nothing is saved until you press Save.`, context: "guide dock, after her greeting, several changes are ready" }),
-        t({ message: `${ready} to approve.`, context: "guide dock, after her greeting, several changes are ready, brief" }),
+        `${greeting(dayPart, firstName)} ${t({ message: "Ask me where something lives, or name a change and I'll prepare it for your yes.", context: "guide dock, after her greeting, what she can do" })}`,
+        t({ message: "Ask, or name a change.", context: "guide dock, after her greeting, what she can do, brief" }),
       );
     },
 
     reads: say(
       t({
-        message: "I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. Money stays in your hands.",
+        message: "I read settings, help text and the shape of the org chart. I don't read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. I don't move money.",
         context: "guide dock, what she reads and never reads",
       }),
       t({
-        message: "I read settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people. Money is yours.",
+        message: "Reads settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people for roles. Moves no money.",
         context: "guide dock, what she reads and never reads, brief",
       }),
     ),
 
-    launchLead: (blocking) => {
+    launchFirst: ({ dayPart, firstName, blocking }) => {
       if (blocking === null) {
         return say(
-          t({ message: "Ask me what blocks the launch, or about any step that is left.", context: "guide dock, after her greeting on the road to launch, the count is not known" }),
+          `${greeting(dayPart, firstName)} ${t({ message: "Ask me what blocks the launch, or about any step that is left.", context: "guide dock, after her greeting on the road to launch, the count is not known" })}`,
           t({ message: "Ask what blocks the launch.", context: "guide dock, after her greeting on the road to launch, the count is not known, brief" }),
         );
       }
       if (blocking <= 0) {
         return say(
-          t({ message: "Nothing blocks the launch. Ask me about any step that is left.", context: "guide dock, after her greeting on the road to launch, nothing blocks" }),
+          `${greeting(dayPart, firstName)} ${t({ message: "Nothing blocks the launch. Ask me about any step that is left.", context: "guide dock, after her greeting on the road to launch, nothing blocks" })}`,
           t({ message: "Nothing blocks the launch.", context: "guide dock, after her greeting on the road to launch, nothing blocks, brief" }),
         );
       }
       if (blocking === 1) {
         return say(
-          t({ message: "One thing blocks the launch. Shall we take it now?", context: "guide dock, after her greeting on the road to launch, one thing blocks" }),
-          t({ message: "1 blocks the launch. Start?", context: "guide dock, after her greeting on the road to launch, one thing blocks, brief" }),
+          `${greeting(dayPart, firstName)} ${t({ message: "One thing blocks the launch. Shall we take it now?", context: "guide dock, after her greeting on the road to launch, one thing blocks" })}`,
+          `${hi(firstName)} ${t({ message: "1 blocks the launch. Start?", context: "guide dock, after her greeting on the road to launch, one thing blocks, brief" })}`,
         );
       }
       const count = capital(word(blocking));
       return say(
-        t({ message: `${count} things block the launch. Shall we take the first one?`, context: "guide dock, after her greeting on the road to launch, several things block" }),
-        t({ message: `${blocking} block the launch. Start?`, context: "guide dock, after her greeting on the road to launch, several things block, brief" }),
+        `${greeting(dayPart, firstName)} ${t({ message: `${count} things block the launch. Shall we take the first one?`, context: "guide dock, after her greeting on the road to launch, several things block" })}`,
+        `${hi(firstName)} ${t({ message: `${blocking} block the launch. Start?`, context: "guide dock, after her greeting on the road to launch, several things block, brief" })}`,
       );
     },
 
-    organizeLead: say(
-      t({
-        message: "Ask me about organizing: how you decide, a disagreement, new members, the legal shell. I read your village's brief first, then its own calls, and both come before the books.",
-        context: "guide dock, after her greeting in the organizing conversation",
-      }),
-      t({ message: "Ask about organizing. I read your brief, then your calls, then the books.", context: "guide dock, after her greeting in the organizing conversation, brief" }),
-    ),
+    organizeFirst: ({ dayPart, firstName }) =>
+      say(
+        `${greeting(dayPart, firstName)} ${t({
+          message: "Ask me about organizing: how you decide, a disagreement, new members, the legal shell. I read your village's brief first, then its own calls, and both come before the books.",
+          context: "guide dock, after her greeting in the organizing conversation",
+        })}`,
+        t({ message: "Ask about organizing. Your brief first, then your calls, then the books.", context: "guide dock, after her greeting in the organizing conversation, brief" }),
+      ),
 
     thinking: (guide) => say(t({ message: `${guide} is thinking`, context: "guide dock, a reply is on its way" }), t({ message: "Thinking", context: "guide dock, a reply is on its way, brief" })),
 
-    // Alerts: what happened, then the fix. Never in her voice.
+    // ALERTS: what failed, then what to do. The system's line, never hers.
+    notLoaded: say(t({ message: "The guide didn't load. Reload to try again.", context: "guide dock, the guide did not load" }), t({ message: "Guide didn't load. Retry.", context: "guide dock, the guide did not load, brief" })),
     spent: say(
       t({ message: "The guide has answered all it can for today. It starts again tomorrow.", context: "guide dock, the day's answers are used up" }),
       t({ message: "No answers left today. Back tomorrow.", context: "guide dock, the day's answers are used up, brief" }),
     ),
-    notSent: say(t({ message: "That did not send. Try again.", context: "guide dock, a question did not send" }), t({ message: "Not sent. Retry.", context: "guide dock, a question did not send, brief" })),
+    notSent: say(t({ message: "Your question didn't send. Try again.", context: "guide dock, a question did not send" }), t({ message: "Not sent. Retry.", context: "guide dock, a question did not send, brief" })),
     gone: say(
-      t({ message: "The guide cannot answer right now. Add a key under Integrations, or try again tomorrow.", context: "guide dock, the guide cannot answer" }),
+      t({ message: "The guide can't answer right now. Add a key under Integrations, or try again tomorrow.", context: "guide dock, the guide cannot answer" }),
       t({ message: "Guide unavailable. Add a key, or try tomorrow.", context: "guide dock, the guide cannot answer, brief" }),
     ),
 

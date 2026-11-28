@@ -79,7 +79,7 @@ import { askGuide, askHelper, fetchHelperStatus, fileForReview, tabsFromGroups, 
 import { ConnectSteps, OpenLabel, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, type ProposalState } from "../helperPieces";
 import { ConsultedLine, FilingCard, GuideChoice, GuideFace, PreparedCard, type FilingState } from "./DockCards";
 import { dockDraftKey, dockSaidKey, personTag, readDockShape, rememberDockShape, type DockShape } from "./dockState";
-import { useDockWords } from "./dockWords";
+import { useDockWords, type OneThing } from "./dockWords";
 import { DOCKED_SUGGESTIONS, MAX_SUGGESTIONS, useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
 import { replyAsWords, ReplyText, useLinkNamer } from "./replyLinks";
 
@@ -203,6 +203,22 @@ export interface GuideDockProps {
   personName?: string;
   /** On the road to launch: how many things block it, when the page knows. She leads with it. */
   blocking?: number | null;
+  /**
+   * A FIRST MEETING: a new village's first evening. Her first words in Admin are the welcome, once, in place of the
+   * day-to-day greeting. The host says so; the dock never guesses it.
+   */
+  firstMeeting?: boolean;
+  /**
+   * THE ONE THING that waits on this person, from the host that knows it (a deadline, a vote closing): its whole
+   * sentence and its brief form, already in the reader's language. She greets by first name and goes straight to it.
+   * The dock cannot know a deadline by itself and never invents one.
+   */
+  oneThing?: OneThing | null;
+  /**
+   * The host says NOTHING IS WAITING. Only then does she say so. Left out, she claims nothing about what waits and
+   * says what she can do.
+   */
+  nothingWaits?: boolean;
   /** For tests and photographs: the moment her greeting is said at. Left out, now. */
   now?: Date;
 }
@@ -232,6 +248,9 @@ export default function GuideDock({
   linkNames,
   personName,
   blocking = null,
+  firstMeeting = false,
+  oneThing = null,
+  nothingWaits = false,
   now,
 }: GuideDockProps) {
   const { t, i18n } = useLingui();
@@ -262,10 +281,9 @@ export default function GuideDock({
    * panel opened on its greeting, and they are sent as the conversation's first turn as that panel sent its own, so
    * the two routes are handed the same shape they always were.
    */
-  const greeting = words.greeting(dayPart, firstName);
   const firstWords: Record<"launch" | "organize", string> = {
-    launch: `${greeting} ${words.launchLead(blocking)}`,
-    organize: `${greeting} ${words.organizeLead}`,
+    launch: words.launchFirst({ dayPart, firstName, blocking }),
+    organize: words.organizeFirst({ dayPart, firstName }),
   };
   const started = turns.some((turn) => turn.role === "user");
 
@@ -644,7 +662,8 @@ export default function GuideDock({
           {words.opening}
         </div>
       )}
-      {shown === "helper" && statusError && <p role="alert" className="p-4 text-sm text-destructive">{statusError}</p>}
+      {/* A load that failed is the system's line, never hers: what failed, then what to do. */}
+      {shown === "helper" && statusError && <p role="alert" className="p-4 text-sm text-destructive">{words.notLoaded}</p>}
       {helperOff && (status.off === "switch" ? <SwitchedOff /> : <ConnectSteps onOpenIntegrations={() => onOpenTab?.("integrations")} />)}
 
       {(shown !== "helper" || status?.on) && (
@@ -654,9 +673,9 @@ export default function GuideDock({
               <div className={`space-y-3 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
                 {shown === "helper" && turns.length === 0 && (
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    {/* Her greeting, then what waits (or, with nothing waiting, what she can do); then what she reads. */}
+                    {/* Her first words: the welcome at a first meeting; day to day, the one thing that waits, or what she can do. Then what she reads. */}
                     <p className="font-display text-lg leading-snug text-foreground" data-testid="guide-first-line">
-                      {greeting} {words.helperLead(preparedCount)}
+                      {words.helperFirst({ dayPart, firstName, guide, firstMeeting, oneThing, nothingWaits, ready: preparedCount })}
                     </p>
                     <p data-testid="guide-reads">{words.reads}</p>
                   </div>

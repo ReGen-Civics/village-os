@@ -175,8 +175,8 @@ msgstr "Ahora"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a question did not send"
-msgid "That did not send. Try again."
-msgstr "Eso no se envió. Inténtelo de nuevo."
+msgid "Your question didn't send. Try again."
+msgstr "Su pregunta no se envió. Inténtelo de nuevo."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, a question did not send, brief"
@@ -425,8 +425,8 @@ msgstr "Pregúnteme sobre cómo organizarse: cómo deciden, un desacuerdo, nuevo
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, after her greeting in the organizing conversation, brief"
-msgid "Ask about organizing. I read your brief, then your calls, then the books."
-msgstr "Pregunte sobre cómo organizarse. Leo su resumen, luego sus decisiones, luego los libros."
+msgid "Ask about organizing. Your brief first, then your calls, then the books."
+msgstr "Pregunte sobre cómo organizarse. Primero su resumen, luego sus decisiones, luego los libros."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, after her greeting on the road to launch, nothing blocks"
@@ -469,16 +469,6 @@ msgid "Ask what blocks the launch."
 msgstr "Pregunte qué bloquea el lanzamiento."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
-msgctxt "guide dock, after her greeting, nothing is ready"
-msgid "Nothing is waiting on you here. Ask me where something lives, or name a change and I will prepare it for your yes."
-msgstr "Aquí nada le espera. Pregúnteme dónde está algo, o nombre un cambio y lo preparo para su sí."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
-msgctxt "guide dock, after her greeting, nothing is ready, brief"
-msgid "Nothing waiting. Ask, or name a change."
-msgstr "Nada pendiente. Pregunte, o nombre un cambio."
-
-# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, after her greeting, one change is ready"
 msgid "One change is ready for your yes. It waits at the bottom of the page, and nothing is saved until you press Save."
 msgstr "Un cambio está listo para su sí. Espera al pie de la página, y nada se guarda hasta que usted pulse Guardar."
@@ -497,6 +487,16 @@ msgstr "{count} cambios están listos para su sí. Esperan al pie de la página,
 msgctxt "guide dock, after her greeting, several changes are ready, brief"
 msgid "{ready} to approve."
 msgstr "{ready} por aprobar."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, what she can do"
+msgid "Ask me where something lives, or name a change and I'll prepare it for your yes."
+msgstr "Pregúnteme dónde está algo, o nombre un cambio y lo preparo para su sí."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, after her greeting, what she can do, brief"
+msgid "Ask, or name a change."
+msgstr "Pregunte, o nombre un cambio."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, closes the dock"
@@ -522,6 +522,36 @@ msgstr "Enviar a revisión"
 msgctxt "guide dock, files the drafted change into the review queue, brief"
 msgid "Send"
 msgstr "Enviar"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words at a first meeting"
+msgid "Welcome. I'm {guide}. You're starting a Game, and you get to design it. Tell me about the village you want to play in, and we'll set the first conditions together."
+msgstr "Le doy la bienvenida. Soy {guide}. Usted está empezando un Juego, y le toca diseñarlo. Cuénteme de la aldea en la que quiere jugar, y fijaremos juntos las primeras condiciones."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words at a first meeting, brief"
+msgid "I'm {guide}. What Game are you starting?"
+msgstr "Soy {guide}. ¿Qué Juego está empezando?"
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you this afternoon. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta tarde. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you this morning. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta mañana. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits"
+msgid "Nothing needs you tonight. The Game is running without you, which is the point."
+msgstr "Nada le necesita esta noche. El Juego sigue en marcha sin usted, y de eso se trata."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, her first words when the host says nothing waits, brief"
+msgid "Nothing needs you."
+msgstr "Nada le necesita."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, her greeting to someone whose name the page does not have"
@@ -620,13 +650,23 @@ msgstr "{guide}, su guía"
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, the guide cannot answer"
-msgid "The guide cannot answer right now. Add a key under Integrations, or try again tomorrow."
+msgid "The guide can't answer right now. Add a key under Integrations, or try again tomorrow."
 msgstr "La guía no puede responder en este momento. Añada una clave en Integraciones, o inténtelo de nuevo mañana."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, the guide cannot answer, brief"
 msgid "Guide unavailable. Add a key, or try tomorrow."
 msgstr "La guía no está disponible. Añada una clave, o pruebe mañana."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide did not load"
+msgid "The guide didn't load. Reload to try again."
+msgstr "La guía no cargó. Recargue para intentarlo de nuevo."
+
+# needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
+msgctxt "guide dock, the guide did not load, brief"
+msgid "Guide didn't load. Retry."
+msgstr "La guía no cargó. Reintente."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, the list of what the guide prepared is empty"
@@ -710,13 +750,13 @@ msgstr "Va a revisión. Sin cambios hasta que se acepte."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, what she reads and never reads"
-msgid "I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. Money stays in your hands."
-msgstr "Leo los ajustes, los textos de ayuda y la forma del organigrama. Nunca leo solicitudes, propuestas, entrevistas, términos ni pagos, y no tomo parte en elegir personas para los roles. El dinero queda en sus manos."
+msgid "I read settings, help text and the shape of the org chart. I don't read applications, proposals, interviews, terms or pay, and I take no part in choosing people for roles. I don't move money."
+msgstr "Leo los ajustes, los textos de ayuda y la forma del organigrama. No leo solicitudes, propuestas, entrevistas, términos ni pagos, y no tomo parte en elegir personas para los roles. No muevo dinero."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, what she reads and never reads, brief"
-msgid "I read settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people. Money is yours."
-msgstr "Leo ajustes, textos de ayuda y la forma del organigrama. Nunca solicitudes, propuestas, entrevistas, términos ni pagos. No tomo parte en elegir personas. El dinero es suyo."
+msgid "Reads settings, help text and the org chart's shape. Never applications, proposals, interviews, terms or pay. No part in choosing people for roles. Moves no money."
+msgstr "Lee ajustes, textos de ayuda y la forma del organigrama. Nunca solicitudes, propuestas, entrevistas, términos ni pagos. No toma parte en elegir personas para los roles. No mueve dinero."
 
 # needs-native-review: the guide's dock in Admin and on the road to launch, 28 Nov 2026
 msgctxt "guide dock, what the helper conversation is for"
