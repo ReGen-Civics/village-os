@@ -184,8 +184,8 @@ msgstr "El día de la reunión general"
 
 # needs-native-review: the applicant flow's dials, 27 Nov 2026
 msgctxt "game variable org.all_hands_day, description"
-msgid "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless the adoption chose to start now. The start letter invites them to the meeting that day."
-msgstr "El día de la semana de la reunión general de la aldea, en inglés (Monday, Tuesday, etc.). Una persona recién aceptada empieza ese día: el primero después de que se acepta su propuesta que caiga en o después del inicio de la próxima temporada, salvo que la adopción eligiera empezar ya. La carta de inicio la invita a la reunión de ese día."
+msgid "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless Ops directed a start now. The start letter invites them to the meeting that day."
+msgstr "El día de la semana de la reunión general de la aldea, en inglés (Monday, Tuesday, etc.). Una persona recién aceptada empieza ese día: el primero después de que se acepta su propuesta que caiga en o después del inicio de la próxima temporada, salvo que Ops indicara empezar ya. La carta de inicio la invita a la reunión de ese día."
 
 # needs-native-review: the applicant flow's dials, 27 Nov 2026
 msgctxt "game variable org.all_hands_time, label"

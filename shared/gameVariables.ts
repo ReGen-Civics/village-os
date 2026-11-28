@@ -3070,7 +3070,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "The all-hands meeting's day",
     description:
-      "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless the adoption chose to start now. The start letter invites them to the meeting that day.",
+      "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless Ops directed a start now. The start letter invites them to the meeting that day.",
     type: "text",
     default: "Monday",
   },
