@@ -86,7 +86,7 @@ export const CEIBA_ACTS = inPlace("ceiba", [
     id: "ceiba.import.door", tab: "setup", power: "admin", parity: ["F3"],
     title: "Start from a profile file",
     help: "Bring in a project's profile file at the top of Make this yours. It fills the identity boxes, unsaved.",
-    synonyms: ["import", "profile import", "profile file", "bring in a file"],
+    synonyms: ["import", "profile file", "bring in a file"],
     partial: true,
   },
   {
