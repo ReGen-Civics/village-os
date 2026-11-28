@@ -21,6 +21,7 @@ import { CEIBA_WORDS_ES } from "./ceiba";
 import { FIRE_WORDS_ES } from "./fire";
 import { GATE_WORDS_ES } from "./gate";
 import { GREENHOUSE_WORDS_ES } from "./greenhouse";
+import { GUIDE_WORDS_ES } from "./guide";
 import { HALL_WORDS_ES } from "./hall";
 import { LIBRARY_WORDS_ES } from "./library";
 import { STAGE_WORDS_ES } from "./stage";
@@ -41,6 +42,7 @@ export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record
   tower: TOWER_WORDS_ES,
   stage: STAGE_WORDS_ES,
   ceiba: CEIBA_WORDS_ES,
+  guide: GUIDE_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
