@@ -177,7 +177,7 @@ export function CompanionsDialog({
         // A place, not a box of words: `data-scene` keeps the sheet's night in dark mode, where a dialog turns to
         // sand (index.css), so the panel no longer sits cream over the night page (fold QA round 1).
         data-scene=""
-        className={`sheet-night absolute inset-x-0 bottom-[var(--kb,0px)] max-h-[min(88vh,calc(var(--vvh,100vh)-1rem))] overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-sm sm:p-6 md:inset-y-0 md:left-auto md:max-h-none md:w-[34rem] md:rounded-none md:rounded-l-2xl ${aside ? "invisible" : ""}`}
+        className={`sheet-night absolute inset-x-0 bottom-[var(--kb,0px)] max-h-[min(88vh,calc(var(--vvh,100vh)-1rem))] overflow-y-auto rounded-t-2xl border border-border bg-background p-4 shadow-sm sm:p-6 md:top-0 md:bottom-[var(--kb,0px)] md:left-auto md:max-h-none md:w-[34rem] md:rounded-none md:rounded-l-2xl ${aside ? "invisible" : ""}`}
       >
         <div className={`mb-2 flex ${back ? "justify-between" : "justify-end"}`}>
           {back ? (

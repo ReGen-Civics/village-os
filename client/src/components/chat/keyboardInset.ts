@@ -19,10 +19,13 @@ const listeners = new Set<() => void>();
 function measure(): void {
   const vv = window.visualViewport;
   if (!vv) return;
-  const next = Math.max(0, Math.round(window.innerHeight - (vv.offsetTop + vv.height)));
+  // A pinch zoom shrinks and moves the visual viewport too, with no keyboard at all: read nothing while zoomed in
+  // (QA round 3 on #1885, finding 6). A keyboard raised while zoomed in is left to the browser.
+  const zoomed = (vv.scale || 1) > 1.01;
+  const next = zoomed ? 0 : Math.max(0, Math.round(window.innerHeight - (vv.offsetTop + vv.height)));
   const root = document.documentElement;
   root.style.setProperty("--kb", `${next}px`);
-  root.style.setProperty("--vvh", `${Math.round(vv.height)}px`);
+  root.style.setProperty("--vvh", `${Math.round(zoomed ? window.innerHeight : vv.height)}px`);
   if (next !== inset) {
     inset = next;
     listeners.forEach((l) => l());
