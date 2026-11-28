@@ -5,7 +5,7 @@ import { words, type ActWords } from "../types";
 
 export const CEIBA_WORDS_ES: Readonly<Record<string, ActWords>> = {
   "ceiba.road.read": words("El camino al lanzamiento", "Cada requisito entre aquí y la votación que empieza el Juego, en orden.", ["lanzamiento", "camino al lanzamiento", "lista de pendientes", "salir en vivo", "requisitos"]),
-  "ceiba.requirement.confirm": words("Marcar un requisito de lanzamiento como hecho, retirarlo o rechazarlo", "Confirme un requisito que una persona tiene que dar por cierto, retire la confirmación, o rechácelo dejando registro.", ["marcar hecho", "confirmar requisito", "quitar confirmación", "rechazar requisito"]),
+  "ceiba.requirement.confirm": words("Marcar un requisito de lanzamiento como hecho, deshacerlo o rechazarlo", "Confirme un requisito que una persona tiene que dar por cierto, retire la confirmación, o rechácelo dejando registro.", ["marcar hecho", "confirmar requisito", "quitar confirmación", "rechazar requisito"]),
   "ceiba.purpose.save": words("Escribir la declaración de propósito", "La frase propia de la aldea sobre para qué existe.", ["propósito", "declaración de propósito", "para qué estamos", "razón de ser"]),
   "ceiba.email-plot.read": words("La parcela del correo", "Los pasos que dejan funcionando el correo de la aldea, como una parcela del jardín de configuración.", ["parcela del correo", "configurar el correo", "puesta en marcha del correo"]),
   "ceiba.test-run.run": words("Correr el ensayo", "Avanza varias lunas con los ajustes propios de esta aldea, como un ensayo.", ["ensayo", "prueba sin cambios", "simular", "practicar", "simulación"]),

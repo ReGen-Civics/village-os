@@ -9,7 +9,7 @@ export const FRAME_WORDS_ES: Readonly<Record<string, ActWords>> = {
   "frame.account.sign-out": words("Cerrar sesión", "Termine su sesión en este dispositivo.", ["cerrar sesión", "salir de la cuenta", "desconectarse", "salir"]),
   "frame.search.open": words("Buscar en Admin", "Encuentre cualquier página, control o ajuste de Admin por su nombre. Presione Ctrl K en cualquier lugar.", ["buscar", "buscador", "encontrar", "búsqueda", "ctrl k"]),
   "frame.undo.use": words("Deshacer", "Retire lo último que hizo en Admin, mientras Deshacer siga a la vista.", ["deshacer", "me equivoqué", "volver atrás", "revertir"]),
-  "frame.theme.choose": words("Noche y claro", "Elija si el sitio se dibuja en su aspecto de noche o en su aspecto claro. El interruptor está en el encabezado de Admin.", ["modo oscuro", "modo claro", "claro u oscuro", "tema", "apariencia"]),
+  "frame.theme.choose": words("Claro u oscuro", "Elija si el sitio se dibuja en su aspecto de noche o en su aspecto claro. El interruptor está en el encabezado de Admin.", ["modo oscuro", "modo claro", "noche y día", "tema", "apariencia"]),
   "frame.phone.menu": words("Admin en un teléfono", "El menú que muestra Admin en una pantalla angosta.", ["teléfono", "celular", "pantalla pequeña", "botón del menú"]),
   "frame.gate.sign-in": words("La puerta de inicio de sesión de Admin", "Lo que ve una persona cuando abre Admin sin haber iniciado sesión como administradora.", ["iniciar sesión", "entrar a admin", "ingreso de administración", "no soy administrador"]),
   "frame.steward.view": words("La vista corta para un custodio", "Lo que Admin le muestra a un custodio que tiene un poder y no es administrador.", ["vista de custodio", "vista sencilla", "vista de miembro", "admin de solo lectura"]),
