@@ -89,6 +89,12 @@ export const SOURCE_WORDS: Record<InboxSource, SourceWords> = {
     does: msg({ context: "review inbox: a row, what deciding it does", message: "Deciding answers the person who sent it." }),
     door: msg({ context: "review inbox: a row, the door", message: "Read the proposal" }),
   },
+  form: {
+    title: msg({ context: "review inbox: section", message: "Forms to answer" }),
+    what: msg({ context: "review inbox: a row, what it is", message: "A form somebody sent" }),
+    does: msg({ context: "review inbox: a row, what deciding it does", message: "Answering it accepts or declines what they asked." }),
+    door: msg({ context: "review inbox: a row, the door", message: "Open the form" }),
+  },
   structure: {
     title: msg({ context: "review inbox: section", message: "Org chart drafts" }),
     what: msg({ context: "review inbox: a row, what it is", message: "An org chart draft" }),
