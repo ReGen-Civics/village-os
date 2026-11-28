@@ -5,6 +5,9 @@
  *   npx tsx scripts/garden-scoreboard.ts --all      the same, with every open item listed
  *   npx tsx scripts/garden-scoreboard.ts --json     the same counts as JSON, and nothing else
  *   npx tsx scripts/garden-scoreboard.ts --out dir  also writes dir/scoreboard.json and dir/scoreboard.md
+ *   npx tsx scripts/garden-scoreboard.ts --walk dir also writes dir/WALK-LIST.md and dir/WALK-LIST.csv: every act, every
+ *                                                   route an admin can reach that no act claims, every setting with
+ *                                                   no full home, for a person walking the build
  *   npx tsx scripts/garden-scoreboard.ts --ratchet  rewrites server/gardenScoreboard.ratchet.json from today's numbers.
  *                                                   It refuses while any count has gone backward.
  *
@@ -23,6 +26,7 @@ import { gatherScoreInputs } from "../server/testkit/gardenInputs";
 import { scoreGarden } from "../shared/gardenScore";
 import { scoreMarkdown, scoreText } from "../shared/gardenScoreReport";
 import { RATCHET_ABOUT, ratchetDrift, rewritten, type Ratchet } from "../shared/gardenScoreRatchet";
+import { walkCsv, walkMarkdown, walkOf } from "../shared/gardenWalk";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const args = process.argv.slice(2);
@@ -43,7 +47,8 @@ function commitLine(): string {
   }
 }
 
-const board = scoreGarden(gatherScoreInputs(ROOT));
+const inputs = gatherScoreInputs(ROOT);
+const board = scoreGarden(inputs);
 const all = flag("--all");
 
 if (flag("--json")) console.log(JSON.stringify(board, null, 1));
@@ -68,9 +73,20 @@ if (flag("--ratchet")) {
 }
 
 const out = valueOf("--out");
-if (flag("--out") && !out) {
-  console.error("--out needs a folder to write into.");
-  process.exitCode = 2;
+const walkDir = valueOf("--walk");
+for (const name of ["--out", "--walk"]) {
+  if (flag(name) && !valueOf(name)) {
+    console.error(`${name} needs a folder to write into.`);
+    process.exitCode = 2;
+  }
+}
+if (walkDir) {
+  const dir = path.resolve(process.cwd(), walkDir);
+  fs.mkdirSync(dir, { recursive: true });
+  const walk = walkOf(inputs, board);
+  fs.writeFileSync(path.join(dir, "WALK-LIST.md"), `${walkMarkdown(walk, board, commitLine())}\n`);
+  fs.writeFileSync(path.join(dir, "WALK-LIST.csv"), walkCsv(walk));
+  if (!flag("--json")) console.log(`Wrote WALK-LIST.md and WALK-LIST.csv to ${dir}: ${walk.acts.length} acts, ${walk.dials.length} dials, ${walk.routes.length} unclaimed routes an admin can reach, ${walk.settings.length} settings.`);
 }
 if (out) {
   const dir = path.resolve(process.cwd(), out);

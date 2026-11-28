@@ -32,6 +32,7 @@ import { COUNT_KEYS, countOf, routeKey, routeMatches, scoreGarden, type ScoreInp
 import { scoreTable } from "../shared/gardenScoreReport";
 import { NOT_ADMIN_ROUTES } from "../shared/notAdminRoutes";
 import { ratchetDrift, ratchetFailures, ratchetNow, rewritten, type CountRatchet, type Ratchet } from "../shared/gardenScoreRatchet";
+import { walkCsv, walkMarkdown, walkOf } from "../shared/gardenWalk";
 import { gatherScoreInputs } from "./testkit/gardenInputs";
 
 const ROOT = path.resolve(__dirname, "..");
@@ -305,5 +306,47 @@ describe("the two lists a person fills are well formed, so the lane that fills t
         mounted.add(`page ${page}`);
       }
     }
+  });
+});
+
+describe("the walk list is the scoreboard turned to face a person", () => {
+  const walk = walkOf(inputs, board);
+
+  it("part 1 holds every act once: the dials in their own table, everything else by place in the garden's order", () => {
+    expect(walk.acts.length + walk.dials.length).toBe(inputs.acts.length);
+    expect(walk.dials).toHaveLength(inputs.dials.length);
+    const ids = walk.acts.map((a) => a.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const places = walk.acts.map((a) => a.place).filter((p, i, all) => p !== all[i - 1]);
+    expect(places).toEqual((ADMIN_PLACES as readonly string[]).filter((p) => places.includes(p)));
+    for (const a of walk.acts) expect(a.opens.startsWith("/"), a.id).toBe(true);
+    // A row says its act is yours alone only with the sentence of the list that made it so.
+    for (const a of walk.acts) if (a.tier === "yours alone") expect(a.why.length, a.id).toBeGreaterThan(10);
+  });
+
+  it("part 2 and the undecided families are the Endpoints count's own open list, split by what an admin can reach", () => {
+    const open = new Set(countOf(board, "endpoints").open.map((o) => o.name));
+    for (const r of walk.routes) {
+      expect(open.has(`${r.method} ${r.path}`), `${r.method} ${r.path}`).toBe(true);
+      expect(r.why.length, r.path).toBeGreaterThan(0);
+      expect(r.at, r.path).toMatch(/^server\/.+:\d+$/);
+    }
+    expect(walk.routes.length + walk.undecided.reduce((n, u) => n + u.count, 0)).toBe(open.size);
+    // Every open route under /api/admin/ is in part 2, never among the undecided.
+    expect(walk.undecided.map((u) => u.family)).not.toContain("/api/admin");
+    expect(walk.routes.filter((r) => r.path.startsWith("/api/admin/")).length).toBe(countOf(board, "endpoints").open.filter((o) => o.group === "/api/admin").length);
+  });
+
+  it("part 3 is the Settings count's own open list, and the two files say the same rows", () => {
+    expect(walk.settings).toHaveLength(countOf(board, "settings").open.length);
+    const text = walkMarkdown(walk, board, "Measured on commit abc.");
+    expect(text).toContain("Measured on commit abc.");
+    for (const heading of ["## How to use this file", "## Part 1: every act", "### The dials", "## Part 2: every route an admin can reach that no act claims", "### Not decided: whose route is this", "## Part 3: every setting with no full home"]) expect(text).toContain(heading);
+    const rows = walkCsv(walk).trim().split("\n");
+    expect(rows[0].split(",")[0]).toBe("part");
+    expect(rows.filter((r) => r.startsWith("1 act,")).length).toBe(walk.acts.length);
+    expect(rows.filter((r) => r.startsWith("1 dial,")).length).toBe(walk.dials.length);
+    expect(rows.filter((r) => r.startsWith("2 unclaimed route,")).length).toBe(walk.routes.length);
+    expect(rows.filter((r) => r.startsWith("3 setting,")).length).toBe(walk.settings.length);
   });
 });
