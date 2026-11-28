@@ -1,8 +1,10 @@
 {
- "about": "The ratchet over the Admin Garden scoreboard: the most open items each heading of each count may hold. A heading absent here may hold none. Held by server/gardenScoreboard.test.ts. Tighten it with `npx tsx scripts/garden-scoreboard.ts --ratchet`, which only lowers a number. A number that goes up in a diff is something that arrived without a home, and was let through by hand.",
+ "about": "The ratchet over the Admin Garden scoreboard. For each count: how many items there were, how many were open under each heading, and how it is held. `may be open`: a newcomer may arrive open, and nothing that had a home may lose it. `need a home`: nothing may arrive open, and a count written full is held that way for good. Held by server/gardenScoreboard.test.ts. Rewrite it with `npx tsx scripts/garden-scoreboard.ts --ratchet`, which refuses while a count has gone backward.",
  "counts": {
   "functions": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 195,
    "open": {
     "no page draws it": 3,
     "still in the old tab": 192
@@ -10,6 +12,8 @@
   },
   "acts": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 815,
    "open": {
     "needs a consequence line": 40,
     "tier not settled": 3
@@ -17,6 +21,8 @@
   },
   "endpoints": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 1629,
    "open": {
     "/api/admin": 145,
     "/api/agent": 29,
@@ -134,6 +140,8 @@
   },
   "settings": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 418,
    "open": {
     "control: no path by the highest vote": 15,
     "control: no who may change it, no path by the highest vote": 3,
@@ -144,6 +152,8 @@
   "road": "not measured",
   "threeWays": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 815,
    "open": {
     "a dial the guide may not prepare": 113,
     "not by the guide yet: act": 339,
@@ -154,6 +164,8 @@
   },
   "oldDoors": {
    "full": false,
+   "arrivals": "may be open",
+   "total": 489,
    "open": {
     "outside the garden: control": 17,
     "outside the garden: dial": 375,
