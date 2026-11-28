@@ -44,7 +44,7 @@ import { CODE_TRIES, CODE_TTL_MS, KEEP_IN_TOUCH_PARAM, LOOK_GRACE_MS, RESEND_AFT
 import { EVENT_PASS_COOKIE, ENTRIES_PER_HOUR, isInterest, isUpdatesAnswer, LINK_MAX, MIN_FILL_MS, parseEntrance, roleSlugOf, safeNext, type EntranceStatus, type PortalEntry } from "../../shared/entrance";
 import { ipBucket } from "../../shared/openProposals";
 import { ensureContact } from "../lib/comms/contacts";
-import { carriesPass, cookieValue, entranceMiddleware, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
+import { carriesPass, cookieValue, entranceMiddleware, entrancePasses, entryChecker, entryCookieHeader, eventPassCookieHeader, fallbackHuman, readEntry, readEventPass, signEntry, useEventPassSecret, verifyTurnstile, type HumanVerdict } from "../lib/entrance";
 import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import { registerJob } from "../lib/scheduler";
 import { entryLook, markEntryInvited, markEntryVerified, type EntryLook } from "../repos/portalEntries";
@@ -128,7 +128,12 @@ const HUMAN_WORDS: Record<string, string> = {
   check_unavailable: "The check that you are a person is not answering right now. Try again in a moment.",
 };
 
-export function register(app: Express, deps: EntranceRouteDeps): void {
+/** What the entrance hands the routes after it: the gate's own answer for a write (`entrancePasses`). */
+export interface EntranceHandle {
+  passes(req: Request): Promise<boolean>;
+}
+
+export function register(app: Express, deps: EntranceRouteDeps): EntranceHandle {
   const now = deps.now ?? (() => Date.now());
   const { guardCapability } = deps;
   const lookMs = () => Math.max(1, Math.floor(deps.numberVar("entrance.look_minutes") || 3)) * 60 * 1000;
@@ -159,7 +164,9 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     return `${n} page view(s) older than ${days} days`;
   });
   // The gate, in front of every route registered after this call.
-  app.use(entranceMiddleware({ boolVar: deps.boolVar, authedUser: deps.authedUser, isAgent: deps.isAgent, passToken: deps.passToken, eventPassFor }, entered));
+  const gateDeps = { boolVar: deps.boolVar, authedUser: deps.authedUser, isAgent: deps.isAgent, passToken: deps.passToken, eventPassFor };
+  app.use(entranceMiddleware(gateDeps, entered));
+  const handle: EntranceHandle = { passes: entrancePasses(gateDeps, entered) };
   const secureOf = (req: Request) => req.secure || String(req.headers["x-forwarded-proto"] ?? "").split(",")[0].trim() === "https";
 
   const siteKey = (): string | null => {
@@ -542,6 +549,8 @@ export function register(app: Express, deps: EntranceRouteDeps): void {
     for (const e of waiting) if (await syncOne(e)) sent += 1;
     res.json({ ok: true, waiting: waiting.length, sent });
   });
+
+  return handle;
 }
 
 
