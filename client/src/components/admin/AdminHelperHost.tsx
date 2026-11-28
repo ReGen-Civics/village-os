@@ -10,15 +10,31 @@
  *     the launch banner above it is doing; and where it stops, just above the
  *     phone's bottom bar, so that bar never covers the question box;
  *   - mounting the panel only while it is open.
+ *
+ * WHICH SURFACE IT MOUNTS (27 Nov 2026). The village's dial
+ * `platform.admin_guide_dock` ships off, and off means the helper panel,
+ * exactly as before: this host mounts it at once and it reads its own status.
+ * That status is also how the host learns the dial is on, and then it mounts
+ * the guide's dock (dock/GuideDock.tsx) in the panel's place, handing it the
+ * status already read. This browser remembers the answer as a hint, so the
+ * next open goes straight to the dock; the dock reads the status too, so a
+ * village that turns the dial off again gets its panel back the same way.
+ * The shortcut, `?helper=open`, the edges and the save bar are the same for
+ * both.
  */
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
-import type { HelperProposal } from "@shared/adminHelper";
+import type { HelperProposal, HelperStatus } from "@shared/adminHelper";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 import type { NavGroup } from "./adminNavGroups";
 import { applyProposal } from "./adminHelperApi";
+import { readDockHint, rememberDockHint } from "./dock/dockState";
 
 const AdminHelperPanel = lazy(() => import("./AdminHelperPanel"));
+const GuideDock = lazy(() => import("./dock/GuideDock"));
+
+/** The conversations the dock offers beside Admin: the helper, and the organizing guide. */
+const ADMIN_DOCK_MODES = ["helper", "organize"] as const;
 
 /** One proposal as a mark, so a card can tell whether this exact change is waiting or saved. */
 export const proposalMark = (p: Pick<HelperProposal, "key" | "to">): string => `${p.key}=${p.to}`;
@@ -119,6 +135,27 @@ export default function AdminHelperHost({
     return result;
   };
 
+  /*
+   * Whether the village's dock is on, as the last surface to read the status
+   * heard it; until one has, this browser's hint (false on a browser that never
+   * met a dock, which is every browser of a village with the dial off). The
+   * status travels to the other surface with the swap, so it is read once.
+   */
+  const [dockOn, setDockOn] = useState<boolean>(() => readDockHint());
+  const [fresh, setFresh] = useState<{ from: "panel" | "dock"; status: HelperStatus } | null>(null);
+  const heard = useCallback((from: "panel" | "dock", status: HelperStatus) => {
+    const on = status.dock === true;
+    setFresh({ from, status });
+    setDockOn(on);
+    if (on !== readDockHint()) rememberDockHint(on);
+  }, []);
+  const heardByPanel = useCallback((status: HelperStatus) => heard("panel", status), [heard]);
+  const heardByDock = useCallback((status: HelperStatus) => heard("dock", status), [heard]);
+  // Each open reads the status afresh, as it always did.
+  useEffect(() => {
+    if (!open) setFresh(null);
+  }, [open]);
+
   useEffect(() => {
     if (takeHelperOpen()) setOpen(true);
   }, [setOpen]);
@@ -169,19 +206,42 @@ export default function AdminHelperHost({
     <>
       {bar}
       <Suspense fallback={null}>
-        <AdminHelperPanel
-          password={password}
-          groups={groups}
-          tab={tab}
-          top={edges.top}
-          bottom={edges.bottom}
-          onClose={() => setOpen(false)}
-          onOpenTab={onOpenTab}
-          waiting={waiting.map(proposalMark)}
-          saved={saved}
-          onReview={review}
-          onUnreview={unreview}
-        />
+        {dockOn ? (
+          <GuideDock
+            surface="admin"
+            modes={ADMIN_DOCK_MODES}
+            password={password}
+            groups={groups}
+            tab={tab}
+            top={edges.top}
+            bottom={edges.bottom}
+            onClose={() => setOpen(false)}
+            onOpenTab={onOpenTab}
+            initialStatus={fresh?.from === "panel" ? fresh.status : undefined}
+            waiting={waiting.map(proposalMark)}
+            saved={saved}
+            onBar={waiting}
+            onReview={review}
+            onUnreview={unreview}
+            onStatus={heardByDock}
+          />
+        ) : (
+          <AdminHelperPanel
+            password={password}
+            groups={groups}
+            tab={tab}
+            top={edges.top}
+            bottom={edges.bottom}
+            onClose={() => setOpen(false)}
+            onOpenTab={onOpenTab}
+            initialStatus={fresh?.from === "dock" ? fresh.status : undefined}
+            waiting={waiting.map(proposalMark)}
+            saved={saved}
+            onReview={review}
+            onUnreview={unreview}
+            onStatus={heardByPanel}
+          />
+        )}
       </Suspense>
     </>
   );

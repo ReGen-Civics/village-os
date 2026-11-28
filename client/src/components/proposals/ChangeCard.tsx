@@ -22,7 +22,7 @@ import { msg } from "@lingui/core/macro";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/journey/look";
 import { agendaLines, faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
-import { fieldDiffs, valueAt } from "@shared/proposedChanges";
+import { fieldDiffs, valueAt, type ProposerKind } from "@shared/proposedChanges";
 import type { PutBackBlock } from "@shared/proposalPutBack";
 import type { ConflictWith, StaleBy } from "@shared/proposalConflicts";
 import CodeChip from "./CodeChip";
@@ -439,12 +439,13 @@ export default function ChangeCard({ change: c, found = false, conflicts = [], b
 }
 
 /** Who proposed it, in words: an agent account named whole, a person by first name. */
-export function ByWho({ name, kind }: { name: string; kind?: "agent" | "person" }) {
+export function ByWho({ name, kind }: { name: string; kind?: ProposerKind }) {
   const Icon = kind === "agent" ? Firefly : UserRound;
   return (
     <span className="inline-flex items-center gap-1.5">
       <Icon className="size-3.5 text-notice" aria-hidden="true" />
-      {kind === "agent" ? <Trans context="proposed changes">{name}, an agent</Trans> : name}
+      {/* guide: this person sent it to review from the guide's dock, and the guide drafted it (shared/proposedChanges.ts). */}
+      {kind === "agent" ? <Trans context="proposed changes">{name}, an agent</Trans> : kind === "guide" ? <Trans context="proposed changes, a change the village guide drafted for this person">{name}, drafted by the guide</Trans> : name}
     </span>
   );
 }

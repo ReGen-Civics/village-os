@@ -58,6 +58,19 @@ export interface ModeSpec {
   maxTokens: number;
   /** How many reader calls one turn may make before she must answer. */
   toolCalls: number;
+  /**
+   * ONE PERSON'S ASKS AN HOUR, for a mode whose audience is "admin" (27 Nov
+   * 2026). An admin mode's day belongs to a few named people, and until now
+   * only the helper counted each of them: every other admin mode had a day
+   * and the network's burst guard, so one signed-in admin on a script, or on
+   * a changing network, could spend a mode's whole day in minutes. Counted
+   * once per ask in `callAssistant`, beside the burst guard, on the user id
+   * the route passes. Each number is one a person working normally never
+   * meets: the helper's is the sixty it always had, and the others sit at or
+   * under the network guard's thirty. A mode for members or the public has
+   * none: its share of the day is `userDaySlice`.
+   */
+  personPerHour?: number;
 }
 
 /**
@@ -70,10 +83,12 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   proposal: { audience: "public", dailyBudget: 250, maxTokens: 800, toolCalls: 0 },
   concierge: { audience: "member", dailyBudget: 100, maxTokens: 400, toolCalls: 0 },
   member: { audience: "member", dailyBudget: 100, maxTokens: 700, toolCalls: 2 },
-  launch: { audience: "admin", dailyBudget: 50, maxTokens: 700, toolCalls: 0 },
-  organize: { audience: "admin", dailyBudget: 50, maxTokens: 800, toolCalls: 2 },
-  studio: { audience: "admin", dailyBudget: 150, maxTokens: 1600, toolCalls: 4 },
-  synthesize: { audience: "admin", dailyBudget: 25, maxTokens: 2000, toolCalls: 0 },
+  launch: { audience: "admin", dailyBudget: 50, maxTokens: 700, toolCalls: 0, personPerHour: 30 },
+  organize: { audience: "admin", dailyBudget: 50, maxTokens: 800, toolCalls: 2, personPerHour: 30 },
+  studio: { audience: "admin", dailyBudget: 150, maxTokens: 1600, toolCalls: 4, personPerHour: 40 },
+  // Its two call sites (the synthesis route and its batch) post upstream themselves and never reach
+  // `callAssistant`, so this number waits for the day they do.
+  synthesize: { audience: "admin", dailyBudget: 25, maxTokens: 2000, toolCalls: 0, personPerHour: 10 },
   // The journal's guide and its feedback shaping (server/routes/journal.ts).
   // Its own bucket, so an evening of journalling cannot spend the concierge's
   // day. No tools: the member's own data arrives prefetched and fenced, and
@@ -83,7 +98,7 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // whole role card, so it needs the room a draft does. No tools: the member's
   // proposal, their circle's charter and the season goals arrive prefetched.
   roleGuide: { audience: "member", dailyBudget: 150, maxTokens: 2400, toolCalls: 0 },
-  // A live session's card (server/lib/sessionCard.ts): Maia weaves a reading
+  // A live session's card (server/lib/sessionCard.ts): the guide weaves a reading
   // from facts the card already computed. Its own bucket, so a room pulling
   // card after card cannot spend the journal's day. No tools: the facts arrive
   // prefetched, and a card that cannot be woven is served plain.
@@ -94,7 +109,7 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // setting, then the org chart or the open requests if the question needs
   // them. It writes nothing; the admin's Apply goes through the dial's own
   // route.
-  adminHelper: { audience: "admin", dailyBudget: 120, maxTokens: 1500, toolCalls: 3 },
+  adminHelper: { audience: "admin", dailyBudget: 120, maxTokens: 1500, toolCalls: 3, personPerHour: 60 },
   // "Talk it out" beside a long text box (server/routes/fieldGuide.ts): a
   // member talks a field through with their own guide and gets a draft in
   // their voice. Its own bucket, so drafting a profile never spends the
@@ -104,8 +119,20 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // (server/routes/contentTranslations.ts). Off unless the server says so
   // (CONTENT_MACHINE_DRAFTS=on); a holder of the power asks, a page at a time.
   // No tools: the English arrives in the message.
-  translate: { audience: "admin", dailyBudget: 60, maxTokens: 4000, toolCalls: 0 },
+  translate: { audience: "admin", dailyBudget: 60, maxTokens: 4000, toolCalls: 0, personPerHour: 30 },
 };
+
+/**
+ * What an admin mode with no number of its own gets: the network guard's
+ * ceiling. No mode ships without one (the engine's test holds that), so this
+ * only answers for a row added later and forgotten.
+ */
+export const ADMIN_PERSON_PER_HOUR = 30;
+
+/** One person's asks an hour on this mode, or null for a mode that is not an admin's. */
+export function personPerHour(spec: ModeSpec): number | null {
+  return spec.audience === "admin" ? Math.max(0, spec.personPerHour ?? ADMIN_PERSON_PER_HOUR) : null;
+}
 
 /** Conversation limits, shared so no mode can quietly widen them. */
 export const MAX_TURNS = 40;
@@ -615,6 +642,8 @@ async function noteReply(source: KeySource, outcome: PlatformCallOutcome): Promi
  * caller and not about spend: an admin surface where every founder shares one
  * office IP would otherwise throttle the village for its own use. A caller
  * that names a `burstKey` is counted on that bucket in place of its network.
+ * An admin mode then counts the PERSON, once, on `assistant-person:<mode>:<user
+ * id>` at the mode's `personPerHour`, for every route that passes a user id.
  *
  * The day budget and the borrowed-key ceiling moved INSIDE the loop, one of
  * each immediately before each POST. `overLimit` counts and inserts in the
@@ -641,6 +670,16 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
   const burst = await spendGate(burstKey, req.burstPerHour ?? ASSIST_BURST_PER_HOUR, 60 * 60 * 1000);
   if (burst === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE };
   if (burst === "over") return { ok: false, status: 429, error: "Slow down a moment, then keep going." };
+
+  // One person's hour on an admin mode (`ModeSpec.personPerHour`), counted once
+  // per ask like the burst guard and refused in its words. Before the Sera
+  // road, so whoever answers, one person cannot spend the mode's day alone.
+  const hourly = personPerHour(spec);
+  if (hourly !== null && req.userId) {
+    const person = await spendGate(`assistant-person:${req.mode}:${req.userId}`, hourly, 60 * 60 * 1000);
+    if (person === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE };
+    if (person === "over") return { ok: false, status: 429, error: "Slow down a moment, then keep going." };
+  }
 
   if (req.sera) return callSeraRoad(req, spec, req.sera);
 

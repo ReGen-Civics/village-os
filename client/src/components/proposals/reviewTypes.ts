@@ -1,7 +1,7 @@
 /**
  * What GET /api/admin/proposals answers (server/routes/proposedChanges.ts), as the review page reads it.
  */
-import type { ProposalKind } from "@shared/proposedChanges";
+import type { ProposalKind, ProposerKind } from "@shared/proposedChanges";
 import type { PutBackVerdict } from "@shared/proposalPutBack";
 import type { StaleBy } from "@shared/proposalConflicts";
 
@@ -30,7 +30,7 @@ export interface Proposal {
   status: "proposed" | "failed" | "unknown";
   error: string | null;
   by: string;
-  byKind: "agent" | "person";
+  byKind: ProposerKind;
   at: string;
   /** Its place in its batch; older servers sent none. */
   position?: number;
@@ -48,7 +48,7 @@ export interface Batch {
   code?: string | null;
   title: string;
   by: string;
-  byKind?: "agent" | "person";
+  byKind?: ProposerKind;
   at: string;
 }
 
@@ -70,7 +70,7 @@ export interface Decided {
   status: string;
   error?: string | null;
   proposedBy?: string;
-  proposedByKind?: "agent" | "person";
+  proposedByKind?: ProposerKind;
   proposedAt?: string;
   by: string;
   at: string | null;

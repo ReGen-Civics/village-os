@@ -24,7 +24,7 @@
  * bg-muted, bg-primary), so it follows the Admin palette and its night look.
  */
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, Check, Loader2, X } from "lucide-react";
+import { ArrowRight, Loader2, X } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { HelperAnswer, HelperProposal, HelperProvider, HelperStatus } from "@shared/adminHelper";
 import { guideNameAtSentenceStart, UNNAMED_GUIDE } from "@shared/guideName";
@@ -33,15 +33,12 @@ import ChatComposer from "@/components/chat/ChatComposer";
 import { useChatDraft } from "@/components/chat/chatDraft";
 import type { NavGroup } from "./adminNavGroups";
 import { askHelper, fetchHelperStatus, tabsFromGroups, type HelperLine } from "./adminHelperApi";
-import { adminSearchHref } from "@shared/adminSearch";
-import { goTo } from "./search/adminSearchModel";
+// The pieces the dock shares (dock/GuideDock.tsx grew from this panel): moved out whole, words and classes unchanged.
+import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf as mark, readPicked, rememberPicked, SwitchedOff } from "./helperPieces";
+
+export { ConnectSteps, proposalHref } from "./helperPieces";
 
 type Turn = HelperLine & { answer?: HelperAnswer; applied?: "dropped" };
-
-/** Where a proposed dial lives: the address admin search uses, so it lands and focuses the same way. */
-export const proposalHref = (p: Pick<HelperProposal, "key">): string =>
-  adminSearchHref({ id: `dial.${p.key}`, kind: "dial", tab: "variables" });
-const mark = (p: Pick<HelperProposal, "key" | "to">): string => `${p.key}=${p.to}`;
 
 export default function AdminHelperPanel({
   password,
@@ -56,6 +53,7 @@ export default function AdminHelperPanel({
   saved = [],
   onReview,
   onUnreview,
+  onStatus,
 }: {
   password: string;
   groups: readonly NavGroup[];
@@ -75,6 +73,8 @@ export default function AdminHelperPanel({
   /** Put a proposal on the page's one save bar, or take it off. The guide never writes it itself. */
   onReview?: (p: HelperProposal) => void;
   onUnreview?: (p: HelperProposal) => void;
+  /** Told the status this panel read, so its host learns whether the village turned the guide's dock on. */
+  onStatus?: (s: HelperStatus) => void;
 }) {
   const { t, i18n } = useLingui();
   const [status, setStatus] = useState<HelperStatus | null>(initialStatus ?? null);
@@ -92,7 +92,10 @@ export default function AdminHelperPanel({
     if (initialStatus) return;
     const ctrl = new AbortController();
     fetchHelperStatus(password, ctrl.signal)
-      .then(setStatus)
+      .then((s) => {
+        setStatus(s);
+        onStatus?.(s);
+      })
       .catch((e) => {
         if (!ctrl.signal.aborted) setStatusError(String(e?.message ?? e));
       });
@@ -277,40 +280,6 @@ export default function AdminHelperPanel({
   );
 }
 
-/** Off by the village's own switch, which ships off. Turning it on is the village's decision. */
-function SwitchedOff() {
-  return (
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 text-sm text-foreground">
-      <h3 className="font-semibold"><Trans context="admin helper panel">Your helper is switched off</Trans></h3>
-      <p className="text-muted-foreground">
-        <Trans context="admin helper panel">The helper stays off until your village decides to use AI in Admin. Whoever governs that here says yes first.</Trans>
-      </p>
-      <ol className="list-decimal space-y-2 pl-5">
-        <li><Trans context="admin helper, switch step">Open Game Mechanics and find "The guide's helper in Admin" under Platform.</Trans></li>
-        <li><Trans context="admin helper, switch step">Turn it on. It also needs the village's own Anthropic key on the server.</Trans></li>
-      </ol>
-    </div>
-  );
-}
-
-/** The off state: what Rye (or any admin with the hosting) does to turn it on. */
-const PICK_KEY = "admin-helper-provider";
-function readPicked(): HelperProvider | null {
-  try {
-    const v = localStorage.getItem(PICK_KEY);
-    return v === "anthropic" || v === "sera" ? v : null;
-  } catch {
-    return null;
-  }
-}
-function rememberPicked(p: HelperProvider): void {
-  try {
-    localStorage.setItem(PICK_KEY, p);
-  } catch {
-    /* a private window keeps the pick for this visit only */
-  }
-}
-
 /** Claude or Sera, when both are connected. Switching mid-conversation is fine: the next answer comes from the pick. */
 function ProviderPicker({
   available,
@@ -352,127 +321,5 @@ function ProviderLine({ provider }: { provider: "anthropic" | "sera" }) {
         ? <Trans context="admin helper panel, who answers">Answers come from Sera, through your village's org memory connection.</Trans>
         : <Trans context="admin helper panel, who answers">Answers come from Claude, on your village's own Anthropic key.</Trans>}
     </p>
-  );
-}
-
-/** No AI connected yet: the simplest way in first, then the others. It turns on by itself once one is set. */
-export function ConnectSteps({ onOpenIntegrations }: { onOpenIntegrations: () => void }) {
-  return (
-    <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 text-sm text-foreground">
-      <h3 className="font-semibold"><Trans context="admin helper panel">Connect Claude to turn on your helper</Trans></h3>
-      <p className="text-muted-foreground">
-        <Trans context="admin helper panel">The helper runs on Claude, using an Anthropic key that belongs to your village. It turns on by itself as soon as the key is saved, and the key never comes back to your browser.</Trans>
-      </p>
-      <ol className="list-decimal space-y-2 pl-5">
-        <li><Trans context="admin helper, connect step">Sign in at console.anthropic.com and create an API key for the village.</Trans></li>
-        <li><Trans context="admin helper, connect step">Open Integrations, find "Anthropic, the AI guide", paste the key and save.</Trans></li>
-        <li><Trans context="admin helper, connect step">Come back here and open the helper again.</Trans></li>
-      </ol>
-      <button
-        type="button"
-        onClick={onOpenIntegrations}
-        className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <Trans context="admin helper, opens the Integrations page">Open Integrations</Trans>
-      </button>
-      <p className="text-muted-foreground">
-        <Trans context="admin helper panel">Prefer your hosting? Add a variable named ANTHROPIC_API_KEY to the village's service in Railway instead. Railway restarts the service, which takes roughly two minutes.</Trans>
-      </p>
-      <p className="text-muted-foreground">
-        <Trans context="admin helper panel">If your village uses Sera for its org memory, connecting Sera also turns the helper on. A village Anthropic key is used first when both are set.</Trans>
-      </p>
-    </div>
-  );
-}
-
-function OpenLabel({ label }: { label: string }) {
-  return <Trans context="admin helper, opens an admin page">Open {label}</Trans>;
-}
-
-function ProposalCard({
-  proposal,
-  state,
-  onReview,
-  onUnreview,
-  onDrop,
-}: {
-  proposal: HelperProposal;
-  /** waiting: on the save bar; saved: a person's Save wrote it. */
-  state: "waiting" | "saved" | "dropped" | null;
-  onReview: () => void;
-  onUnreview: () => void;
-  onDrop: () => void;
-}) {
-  const { t } = useLingui();
-  const blank = t({ message: "(blank)", context: "admin helper, proposal: an empty value" });
-  if (state === "dropped") {
-    return <p className="mt-2 text-xs text-muted-foreground"><Trans context="admin helper, proposal">Left as it was.</Trans></p>;
-  }
-  return (
-    <div data-testid="helper-proposal" className="mt-2 rounded-xl border border-border bg-card p-3 text-sm">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground"><Trans context="admin helper, proposal">Proposed change</Trans></p>
-      <p className="mt-1 font-semibold text-foreground">{proposal.label}</p>
-      <p className="text-xs text-muted-foreground">{proposal.category}</p>
-      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-        <dt className="text-muted-foreground"><Trans context="admin helper, proposal: current value">Now</Trans></dt>
-        <dd className="break-words font-mono text-foreground line-through decoration-muted-foreground">{proposal.from || blank}</dd>
-        <dt className="text-muted-foreground"><Trans context="admin helper, proposal: new value">Becomes</Trans></dt>
-        <dd className="break-words font-mono font-semibold text-foreground">{proposal.to || blank}</dd>
-      </dl>
-      {proposal.why && <p className="mt-2 text-muted-foreground">{proposal.why}</p>}
-      {state === "saved" ? (
-        <p className="mt-2 flex items-center gap-1 font-medium text-open">
-          <Check className="h-4 w-4" aria-hidden="true" />
-          <Trans context="admin helper, proposal">Saved.</Trans>
-        </p>
-      ) : state === "waiting" ? (
-        <>
-          <p role="status" className="mt-2 text-foreground">
-            <Trans context="admin helper, proposal">Waiting on the save bar at the bottom. Nothing changes until you press Save there.</Trans>
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={onUnreview} className={secondaryBtn}>
-              <Trans context="admin helper, takes the proposed change off the save bar">Take it off the bar</Trans>
-            </button>
-            <TakeMeThere proposal={proposal} />
-          </div>
-        </>
-      ) : (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={onReview}
-            className="inline-flex min-h-11 items-center rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Trans context="admin helper, puts the proposed change on the save bar">Review and save</Trans>
-          </button>
-          <button type="button" onClick={onDrop} className={secondaryBtn}>
-            <Trans context="admin helper, declines the proposed change">Not now</Trans>
-          </button>
-          <TakeMeThere proposal={proposal} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-const secondaryBtn =
-  "inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
-/** The dial's own place in Admin, through the address search uses, so it lands, focuses and asks the one leave guard. */
-function TakeMeThere({ proposal }: { proposal: HelperProposal }) {
-  const href = proposalHref(proposal);
-  return (
-    <a
-      href={href}
-      onClick={(e) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
-        e.preventDefault();
-        goTo(href);
-      }}
-      className={secondaryBtn}
-    >
-      <Trans context="admin helper, opens the setting's own place">Take me there</Trans>
-    </a>
   );
 }

@@ -104,6 +104,7 @@ export default function ChatComposer({
   fieldClassName = FIELD_CLASS,
   within,
   mic = true,
+  onSpoken,
   inputRef,
   className = "",
 }: {
@@ -130,6 +131,8 @@ export default function ChatComposer({
   /** The panel the box sits in, so it grows to two thirds of the panel rather than the screen. */
   within?: RefObject<HTMLElement | null>;
   mic?: boolean;
+  /** Told each phrase that arrived by voice, after it landed in the box, so a page can show what was heard. Nothing is sent. */
+  onSpoken?: (phrase: string) => void;
   inputRef?: RefObject<HTMLTextAreaElement | null>;
   className?: string;
 }) {
@@ -206,6 +209,7 @@ export default function ChatComposer({
     const next = appendSpoken(latest.current, chunk);
     latest.current = next;
     onChange(next);
+    onSpoken?.(chunk);
   };
 
   const near = maxLength ? value.length >= Math.floor(maxLength * NEAR) : false;

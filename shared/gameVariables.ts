@@ -4254,6 +4254,25 @@ export const VARIABLES: VariableDef[] = [
     default: "true",
   },
   /*
+   * THE GUIDE'S DOCK (the founder, 27 Nov 2026: setting up and running a
+   * village is led by the guide, who sits beside every admin screen). Ships
+   * OFF while the dock is built: off, Admin keeps the helper panel and the
+   * road to launch keeps its launch guide, exactly as they were. On, one dock
+   * replaces both (client/src/components/admin/dock/), and the guide in Admin
+   * also answers on the platform's lent key, under the engine's cap on
+   * borrowed calls (server/routes/adminHelper.ts). The guide may never
+   * propose this dial itself (shared/adminHelper.ts).
+   */
+  {
+    key: "platform.admin_guide_dock",
+    category: "Platform",
+    label: "The guide's dock in Admin",
+    description:
+      "Shows the village guide as one dock beside every Admin screen and on the road to launch, in place of the helper panel and the launch guide. The dock opens wide to talk a change through and closes back to the side, takes speech, offers next steps, and can send a change it drafted to the review page for a person to accept. While this is on, the guide in Admin also answers on a key the platform lends when the village has no key of its own, inside the platform's daily limit. Off keeps the helper panel and the launch guide as they are.",
+    type: "boolean",
+    default: "false",
+  },
+  /*
    * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts, 2026-11-24). A crash
    * alert went to every admin and founder, and an admin whose seat is not
    * operational got crash emails that were never hers to act on. This names

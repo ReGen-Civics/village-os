@@ -6,7 +6,7 @@
  * the connector never reads it. This is the redacted read beside it: per change, its batch, id, kind, one sentence,
  * its state, and whether the reader filed it through the connector. Nothing else leaves.
  */
-import type { ProposalKind, ProposalStatus } from "./proposedChanges";
+import type { ProposalKind, ProposalStatus, ProposerKind } from "./proposedChanges";
 
 export type QueueState = "waiting" | "accepted" | "discarded";
 
@@ -32,7 +32,7 @@ export function queueStateOf(status: ProposalStatus | "applying"): QueueState {
 }
 
 export function queueItemOf(
-  c: { id: string; code?: string | null; batchId: string; kind: ProposalKind; summary: string; status: ProposalStatus | "applying"; proposedBy: string; proposedByKind: "agent" | "person" },
+  c: { id: string; code?: string | null; batchId: string; kind: ProposalKind; summary: string; status: ProposalStatus | "applying"; proposedBy: string; proposedByKind: ProposerKind },
   readerId: string,
 ): QueueItem {
   return {

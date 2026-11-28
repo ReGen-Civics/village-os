@@ -10,7 +10,7 @@
  */
 import { randomBytes } from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import { batchCodeOf, changeCodeOf, type ProposalKind, type ProposalStatus } from "../../shared/proposedChanges";
+import { batchCodeOf, changeCodeOf, proposerKindOf, type ProposalKind, type ProposalStatus, type ProposerKind } from "../../shared/proposedChanges";
 import type { KeptBefore } from "../../shared/proposalPutBack";
 
 export interface StoredBatch {
@@ -19,7 +19,7 @@ export interface StoredBatch {
   code: string | null;
   title: string;
   proposedBy: string;
-  proposedByKind: "agent" | "person";
+  proposedByKind: ProposerKind;
   createdAt: string;
 }
 
@@ -41,7 +41,7 @@ export interface StoredChange {
   draftAt: string | null;
   status: ProposalStatus;
   proposedBy: string;
-  proposedByKind: "agent" | "person";
+  proposedByKind: ProposerKind;
   createdAt: string;
   decidedBy: string | null;
   decidedAt: string | null;
@@ -85,7 +85,7 @@ function toChange(r: RowDataPacket): StoredChange {
     // A row a stopped server left `applying` reads as `unknown` (listOpen only returns those once ten minutes old).
     status: (String(r.status) === "applying" ? "unknown" : String(r.status)) as ProposalStatus,
     proposedBy: String(r.proposed_by),
-    proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent",
+    proposedByKind: proposerKindOf(r.proposed_by_kind),
     createdAt: iso(r.created_at) ?? "",
     decidedBy: r.decided_by === null ? null : String(r.decided_by),
     decidedAt: iso(r.decided_at),
@@ -115,7 +115,7 @@ function toBatch(r: RowDataPacket): StoredBatch {
     code: r.code === null || r.code === undefined ? null : String(r.code),
     title: String(r.title),
     proposedBy: String(r.proposed_by),
-    proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent",
+    proposedByKind: proposerKindOf(r.proposed_by_kind),
     createdAt: iso(r.created_at) ?? "",
   };
 }
@@ -174,7 +174,7 @@ export async function ensureCodes(pool: Pool): Promise<void> {
   });
 }
 
-export async function addBatch(pool: Pool, b: { title: string; proposedBy: string; proposedByKind: "agent" | "person" }): Promise<string> {
+export async function addBatch(pool: Pool, b: { title: string; proposedBy: string; proposedByKind: ProposerKind }): Promise<string> {
   await ensureCodes(pool);
   const id = newId("pcb");
   await withCodeLock(pool, async () => {
@@ -191,7 +191,7 @@ export async function nextPosition(pool: Pool, batchId: string): Promise<number>
 
 export async function addChange(
   pool: Pool,
-  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person"; reverts?: string | null },
+  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: ProposerKind; reverts?: string | null },
 ): Promise<string> {
   const id = newId("pc");
   const batch = await batchById(pool, c.batchId);

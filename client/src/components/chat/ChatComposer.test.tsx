@@ -218,4 +218,21 @@ describe("speaking", () => {
     expect(box().style.height).toBe("400px");
     expect(sent).toEqual([]);
   });
+
+  it("tells the page each phrase that came by voice, and never what was typed", () => {
+    const spoken: string[] = [];
+    const sent: string[] = [];
+    function Heard() {
+      const [draft, setDraft] = useState("");
+      return <ChatComposer id="box" label="Message Wren" value={draft} onChange={setDraft} onSend={() => sent.push(draft)} sendLabel="Send" onSpoken={(p) => spoken.push(p)} />;
+    }
+    render(<Heard />);
+    fireEvent.change(box(), { target: { value: "typed by hand" } });
+    expect(spoken).toEqual([]);
+    act(() => mic.onText?.("and then spoken"));
+    // The phrase is in the box already when the page hears of it, and nothing was sent.
+    expect(box()).toHaveValue("typed by hand and then spoken");
+    expect(spoken).toEqual(["and then spoken"]);
+    expect(sent).toEqual([]);
+  });
 });
