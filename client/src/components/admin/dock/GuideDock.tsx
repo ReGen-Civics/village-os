@@ -526,13 +526,14 @@ export default function GuideDock({
       // The garden's scope, on the dock's own root: night in both placements. Gold is the main act's ground.
       className={`${GARDEN} @container flex flex-col overflow-hidden [--primary:var(--garden-gold)] [--primary-foreground:var(--garden-ground)] ${frame}`}
     >
-      <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3">
+      <div className="shrink-0 border-b border-border px-4 py-3">
+        <div className="flex items-start justify-between gap-3">
         {/* Her face: the village's own guide in her gold ring. Sera, or a painting that will not load, is a letter. */}
         <GuideFace name={guide} portrait={!(shown === "helper" && chosen === "sera")} />
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-display text-xl font-semibold leading-tight text-foreground">{guide}</h2>
           {whoAnswers}
-          <p className="hidden text-xs text-muted-foreground @min-[25rem]:block">
+          <p className="hidden text-xs text-muted-foreground @min-[40rem]:block">
             {shown === "helper" ? (
               <Trans context="admin helper panel">Helps you find things and proposes changes for you to approve.</Trans>
             ) : shown === "launch" ? (
@@ -541,31 +542,6 @@ export default function GuideDock({
               <Trans context="guide dock, what the organizing guide does">Counsel on organizing, from your village's own brief first.</Trans>
             )}
           </p>
-          {/* The two choices sit side by side where the dock is wide, and stack in the side column. */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 empty:hidden">
-          {shown === "helper" && status?.on && status.available.length > 1 && <GuideChoice available={status.available} names={names} chosen={chosen} onPick={pick} />}
-          {modes.length > 1 && (
-            <div role="group" aria-label={t({ message: "What to talk about", context: "guide dock, the choice of conversation" })} className="flex max-w-full flex-wrap gap-1">
-              {modes.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  aria-pressed={shown === m}
-                  onClick={() => setMode(m)}
-                  className={`min-h-11 rounded-full px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${shown === m ? "bg-primary text-primary-foreground" : "border border-border text-foreground hover:bg-muted"}`}
-                >
-                  {m === "helper" ? (
-                    <Trans context="guide dock, the conversation that helps inside Admin">Admin</Trans>
-                  ) : m === "launch" ? (
-                    <Trans context="launch guide tab">Launch</Trans>
-                  ) : (
-                    <Trans context="launch guide tab">Organizing</Trans>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {wide && (
@@ -593,6 +569,32 @@ export default function GuideDock({
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
+        </div>
+          {/* The two choices, on a row of their own under her name: side by side where they fit, stacked where they do not. */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 empty:hidden">
+          {shown === "helper" && status?.on && status.available.length > 1 && <GuideChoice available={status.available} names={names} chosen={chosen} onPick={pick} />}
+          {modes.length > 1 && (
+            <div role="group" aria-label={t({ message: "What to talk about", context: "guide dock, the choice of conversation" })} className="flex max-w-full flex-wrap gap-1">
+              {modes.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  aria-pressed={shown === m}
+                  onClick={() => setMode(m)}
+                  className={`min-h-11 rounded-full px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${shown === m ? "bg-primary text-primary-foreground" : "border border-border text-foreground hover:bg-muted"}`}
+                >
+                  {m === "helper" ? (
+                    <Trans context="guide dock, the conversation that helps inside Admin">Admin</Trans>
+                  ) : m === "launch" ? (
+                    <Trans context="launch guide tab">Launch</Trans>
+                  ) : (
+                    <Trans context="launch guide tab">Organizing</Trans>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+          </div>
       </div>
 
       {shown === "helper" && !status && !statusError && (

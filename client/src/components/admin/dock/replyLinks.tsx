@@ -42,7 +42,7 @@ const ADDRESS = /(^|[\s(\["'“‘])(\/[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*
 export function splitReply(text: string): ReplyPiece[] {
   const out: ReplyPiece[] = [];
   let at = 0;
-  for (const m of text.matchAll(ADDRESS)) {
+  for (const m of Array.from(text.matchAll(ADDRESS))) {
     const start = (m.index ?? 0) + m[1].length;
     if (start > at) out.push({ text: text.slice(at, start) });
     out.push({ href: m[2] });
