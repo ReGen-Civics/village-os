@@ -46,6 +46,11 @@ async function draw(path: string) {
       </Layout>
     </Router>,
   );
+  // The placing code loads after the first paint (hooks/useVillageMenu.ts, usePlacedMenu): let it land.
+  await act(async () => {
+    await import("@/config/navPlaces");
+    await new Promise((r) => setTimeout(r, 0));
+  });
 }
 
 describe("a renamed and moved module entry", () => {

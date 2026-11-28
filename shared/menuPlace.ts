@@ -24,17 +24,13 @@
 export const MENU_ACCOUNT = "account";
 /** The one entry that is always last in its group, and so at the bottom of the menu (the lead, 27 Nov 2026). */
 export const MENU_PINNED_LAST = "/modules";
+// The place's shape lives in shared/menuDoc.ts, which the shell loads; this file loads only when a village has placed
+// something (hooks/useVillageMenu.ts, usePlacedMenu), so its cleaning and placing never ride the first page.
+import type { MenuPlace } from "./menuDoc";
+export type { MenuPlace };
+
 /** Positions past this are not positions. */
 export const MENU_AT_MAX = 60;
-
-export interface MenuPlace {
-  /** The group, by the platform's name (NavGroup.label), or MENU_ACCOUNT. */
-  group: string;
-  /** A folder in that group, by the platform's name (NavLink.sub). Absent: a row of its own. */
-  sub?: string;
-  /** Its position: among the group's rows, or among the folder's entries. Absent: the end. */
-  at?: number;
-}
 
 const isPath = (v: unknown): v is string => typeof v === "string" && /^\/[A-Za-z0-9/#?=&._-]{0,120}$/.test(v);
 const name = (v: unknown): string => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, 60) : "");

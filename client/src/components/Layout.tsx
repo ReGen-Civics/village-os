@@ -14,8 +14,8 @@ const WaitingCount = lazy(() => import("@/components/nav/WaitingCount")); // the
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
 import { isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
-import { currentFor, litFor, placedMenu } from "@/config/navBearings";
-import { useVillageMenu } from "@/hooks/useVillageMenu";
+import { currentFor, litFor } from "@/config/navBearings";
+import { usePlacedMenu, useVillageMenu } from "@/hooks/useVillageMenu";
 import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
@@ -101,7 +101,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   // loads they stay out rather than flash in.
   const storyShown = (href: string) => storyPageShown(cfg, href);
   // The village's own menu (gap G5, shared/menuDoc.ts): labels, hidden entries, group names and its module entries' places, laid over the menu once (config/navPlaces.ts). Gates still decide who sees what.
-  const menu = useVillageMenu(), { nav: NAV_PLACED, account: ACCOUNT_PLACED } = placedMenu(menu.places);
+  const menu = useVillageMenu(), { nav: NAV_PLACED, account: ACCOUNT_PLACED } = usePlacedMenu(menu.places);
   const siteMenu = useSiteMenuWords(cfg?.site?.menu, cfg?.paths); // the village's story-page names, translated where it has
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
   const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();

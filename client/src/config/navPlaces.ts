@@ -9,7 +9,7 @@
  *
  * With no places the platform's own lists come back as they are, the same objects, so nothing moves.
  */
-import { MENU_ACCOUNT, placeItems, type MenuPlace } from "@shared/menuPlace";
+import { MENU_ACCOUNT, placeItems, placesOf, type MenuPlace } from "@shared/menuPlace";
 import { ACCOUNT_MENU, NAV, isGroup, type NavEntry, type NavLink } from "./nav";
 
 export interface PlacedMenu {
@@ -30,7 +30,7 @@ export function placedMenu(places: Readonly<Record<string, MenuPlace>> | undefin
   const key = JSON.stringify(places);
   if (last && last.key === key && nav === NAV && account === ACCOUNT_MENU) return last.menu;
   const groups = [...nav.filter(isGroup).map((g) => ({ key: g.label, items: g.items })), { key: MENU_ACCOUNT, items: account }];
-  const placed = placeItems(groups, places).groups;
+  const placed = placeItems(groups, placesOf(places)).groups; // cleaned here: the menu document passes them through
   const itemsOf = (k: string) => {
     const items = placed.find((g) => g.key === k)!.items;
     KEY_OF.set(items, k);

@@ -28,7 +28,6 @@
  * Nothing set is today's menu exactly.
  */
 
-import { placesOf, type MenuPlace } from "./menuPlace";
 
 export const MENU_SECTION = "app-menu";
 export const MENU_LABEL_MAX = 32;
@@ -48,6 +47,16 @@ export interface MenuDoc {
 const isPath = (v: unknown): v is string => typeof v === "string" && /^\/[A-Za-z0-9/#?=&._-]{0,120}$/.test(v);
 const word = (v: unknown, max = MENU_LABEL_MAX): string =>
   typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, max) : "";
+
+/** A module entry's place in the menu: shared/menuPlace.ts cleans and places it, shared/moduleMenu.ts holds the rules. */
+export interface MenuPlace {
+  /** The group, by the platform's name (NavGroup.label), or "account" for the account menu. */
+  group: string;
+  /** A folder in that group, by the platform's name (NavLink.sub). Absent: a row of its own. */
+  sub?: string;
+  /** Its position: among the group's rows, or among the folder's entries. Absent: the end. */
+  at?: number;
+}
 
 /** The stored document, cleaned: addresses only where addresses go, labels clipped, at most four tabs. */
 export function menuDocOf(raw: unknown): MenuDoc {
@@ -69,7 +78,10 @@ export function menuDocOf(raw: unknown): MenuDoc {
   }
   const hidden = Array.isArray(d.hidden) ? Array.from(new Set(d.hidden.filter(isPath))) : [];
   const tabs = Array.isArray(d.tabs) ? d.tabs.filter(isPath).slice(0, MENU_TABS) : [];
-  const places = placesOf(d.places);
+  // Places pass through as an object: the content route held them to the menu's rules when they were saved, and the
+  // placing code cleans them entry by entry when it lays them out (shared/menuPlace.ts placesOf), so the shell's first
+  // page carries none of it.
+  const places = d.places && typeof d.places === "object" && !Array.isArray(d.places) ? (d.places as Record<string, MenuPlace>) : {};
   return carriedOver({ labels, hidden, groups, folders, tabs, ...(Object.keys(places).length ? { places } : {}) });
 }
 
