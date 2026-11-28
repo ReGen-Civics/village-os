@@ -74,11 +74,6 @@ msgid "Your quests did not load."
 msgstr "Sus misiones no cargaron."
 
 # needs-native-review: the portal's next moves, QA round 1, 27 Nov 2026
-msgctxt "profile My work: read the member's quests again"
-msgid "Try again"
-msgstr "Intentar de nuevo"
-
-# needs-native-review: the portal's next moves, QA round 1, 27 Nov 2026
 msgctxt "profile: a quest the village consented to, and the day"
 msgid "Done · {0}"
 msgstr "Hecha · {0}"
@@ -107,3 +102,13 @@ msgstr "Plan de temporada"
 msgctxt "profile My roles: waiting for the role cards"
 msgid "Opening your roles"
 msgstr "Abriendo sus roles"
+
+# needs-native-review: the portal's next moves, QA round 2, 27 Nov 2026
+msgctxt "profile: ask again for a read that failed"
+msgid "Try again"
+msgstr "Intentar de nuevo"
+
+# needs-native-review: the portal's next moves, QA round 2, 27 Nov 2026
+msgctxt "profile My roles: the phone's line that jumps to each role card"
+msgid "Your roles:"
+msgstr "Sus roles:"

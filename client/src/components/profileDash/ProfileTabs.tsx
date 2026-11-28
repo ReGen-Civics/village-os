@@ -70,17 +70,58 @@ export function tabOfAnchor(hash: string): ProfileTab | undefined {
 }
 
 /**
- * Bring the anchor into view once its tab shows it. A section on another phone tab is `display: none`
- * until the tab opens, and some (My moon, a role's card) arrive after a read, so the browser's own jump
- * found nothing to land on. This waits, briefly, for the element to be drawn and visible, then scrolls.
+ * Bring the anchor into view once its tab shows it, and keep it there while the page fills in.
+ *
+ * A section on another phone tab is `display: none` until the tab opens, and the reads above it land
+ * one by one after the jump, some seconds apart (QA round 2: on a desktop, /profile#my-moon ended 6,900px
+ * off once the cards above it arrived). So this scrolls as soon as the target is drawn, and again each
+ * time something above pushes it, for up to `withinMs`. A pause between reads proves nothing, so it does
+ * not stop on one. It lets go the moment the reader takes the page: a wheel, a touch, a key, a press, or a
+ * scroll it did not make. The target's own scroll-margin (the sheet sets one under its sticky bars)
+ * decides where it lands.
+ *
+ * Returns a stop, for a newer jump to cancel an older one.
  */
-export function scrollWhenShown(id: string, tries = 30): void {
-  const el = document.getElementById(id);
-  if (el && el.getClientRects().length > 0) {
-    el.scrollIntoView?.({ block: "start" });
-    return;
-  }
-  if (tries > 0) window.setTimeout(() => scrollWhenShown(id, tries - 1), 100);
+export function scrollWhenShown(id: string, { withinMs = 10000, stepMs = 100 } = {}): () => void {
+  const started = Date.now();
+  let last: number | null = null;
+  let placedAt: number | null = null;
+  let timer = 0;
+  let done = false;
+  const LET_GO = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+  const stop = () => {
+    if (done) return;
+    done = true;
+    window.clearTimeout(timer);
+    LET_GO.forEach((e) => window.removeEventListener(e, stop));
+  };
+  LET_GO.forEach((e) => window.addEventListener(e, stop, { passive: true }));
+  const tick = () => {
+    if (done) return;
+    const el = document.getElementById(id);
+    if (el && el.getClientRects().length > 0) {
+      const at = el.getBoundingClientRect().top + window.scrollY;
+      const moved = last === null || Math.abs(at - last) >= 1;
+      // The target held still and the page moved anyway: the reader scrolled it (a scrollbar drag fires none of the events above).
+      if (!moved && placedAt !== null && Math.abs(window.scrollY - placedAt) > 2) {
+        stop();
+        return;
+      }
+      if (moved) {
+        // Instant: the sheet scrolls smoothly, and a glide would still be moving at the next check.
+        el.scrollIntoView?.({ block: "start", behavior: "instant" as ScrollBehavior });
+        last = at;
+        placedAt = window.scrollY;
+      }
+    }
+    if (Date.now() - started >= withinMs) {
+      stop();
+      return;
+    }
+    timer = window.setTimeout(tick, stepMs);
+  };
+  tick();
+  return stop;
 }
 
 export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t: ProfileTab) => void }) {
@@ -88,13 +129,15 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
   const id = useId();
   // A hash that names a section on another tab opens that tab first.
   useEffect(() => {
+    let settling: (() => void) | null = null;
     const go = () => {
       const hash = window.location.hash.replace(/^#/, "");
       // A path's own card (/profile#path-<id>, the bar's path slot) lives on the Sheet.
       const t = tabOfAnchor(hash);
       if (!t) return;
       onTab(t);
-      scrollWhenShown(decodeURIComponent(hash));
+      settling?.();
+      settling = scrollWhenShown(decodeURIComponent(hash));
     };
     go();
     window.addEventListener("hashchange", go);
@@ -103,6 +146,7 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
     return () => {
       window.removeEventListener("hashchange", go);
       window.removeEventListener("pushState", go);
+      settling?.();
     };
   }, [onTab]);
 

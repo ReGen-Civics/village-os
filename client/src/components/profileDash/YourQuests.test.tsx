@@ -48,12 +48,15 @@ describe("your quests", () => {
     expect(screen.getByRole("link", { name: /Quest back/ }).textContent).toContain("Taken back to change.");
     expect(screen.getByRole("link", { name: /Quest old/ }).textContent).toContain("Done");
     await waitFor(() => expect(screen.getByRole("link", { name: /Tend the hives/ }).getAttribute("href")).toBe("/quests/bees"));
+    // Open work wears no plant, and keeps the mark's slot so it lines up with the rows above.
+    expect(screen.getByRole("link", { name: /Tend the hives/ }).firstElementChild?.className).toContain("size-5");
     expect(gameFetch).toHaveBeenCalledWith("/api/game/quests/suited");
   });
 
-  it("keeps the newest three done, newest first, and leaves a returned claim out", async () => {
+  it("keeps the newest four done, newest first, and leaves a returned claim out", async () => {
     gameFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ quests: [] }) });
     view([
+      claim("z", "consented", { resolvedAt: "2026-09-01T10:00:00.000Z" }),
       claim("a", "consented", { resolvedAt: "2026-10-01T10:00:00.000Z" }),
       claim("b", "consented", { resolvedAt: "2026-11-01T10:00:00.000Z" }),
       claim("c", "consented", { resolvedAt: "2026-11-10T10:00:00.000Z" }),
@@ -61,7 +64,7 @@ describe("your quests", () => {
       claim("e", "declined"),
     ]);
     const done = screen.getAllByRole("link").filter((a) => a.getAttribute("data-your-quest") === "consented");
-    expect(done.map((a) => a.getAttribute("href"))).toEqual(["/quests/d", "/quests/c", "/quests/b"]);
+    expect(done.map((a) => a.getAttribute("href"))).toEqual(["/quests/d", "/quests/c", "/quests/b", "/quests/a"]);
     // One short line with the day, and the board's own mark beside each row (a flower only for this moon).
     expect(done[0]!.textContent).toContain("Done · 20 Nov");
     expect(done.every((a) => a.firstElementChild?.getAttribute("aria-hidden") === "true")).toBe(true);

@@ -25,7 +25,7 @@ vi.mock("@/modules/ModuleProvider", () => ({
   moduleIsOn: () => false,
 }));
 
-import MyRoleCards, { partOfYou } from "./MyRoleCards";
+import MyRoleCards, { RoleJumpLine, partOfYou } from "./MyRoleCards";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -136,7 +136,7 @@ describe("My roles", () => {
     expect(line.textContent).toContain("Your roles did not load.");
     expect(document.querySelector("[data-commitment-field]")).toBeNull();
     fail = false;
-    fireEvent.click(within(line).getByRole("button", { name: "Retry" }));
+    fireEvent.click(within(line).getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(document.querySelectorAll("[data-commitment-field]")).toHaveLength(1));
     expect(document.querySelector("[data-roles-failed]")).toBeNull();
   });
@@ -171,8 +171,40 @@ describe("My roles", () => {
     expect(failed.firstElementChild?.textContent).toContain("This card did not load.");
     await waitFor(() => expect(screen.getByRole("link", { name: new RegExp(FIXTURE_ROLE_TITLE(1)) }).getAttribute("href")).toBe("/roles?seat=r1"));
     fail = false;
-    fireEvent.click(within(failed.firstElementChild as HTMLElement).getByRole("button", { name: "Retry" }));
+    const again = within(failed.firstElementChild as HTMLElement).getByRole("button", { name: "Try again" });
+    expect(again.className).toContain("min-w-11");
+    fireEvent.click(again);
     await waitFor(() => expect(document.querySelectorAll("article.pc-rolecard")).toHaveLength(2));
+  });
+});
+
+describe("the phone's line to the role cards", () => {
+  it("names each role held and jumps to its card", async () => {
+    render(
+      <I18nProvider i18n={i18n}>
+        <RoleJumpLine />
+      </I18nProvider>,
+    );
+    const line = await waitFor(() => {
+      const el = document.querySelector("[data-role-jumps]");
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(line.className).toContain("sm:hidden");
+    expect(line.textContent).toBe(`Your roles: ${FIXTURE_ROLE_TITLE(1)}, ${FIXTURE_ROLE_TITLE(2)}`);
+    expect(within(line).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["#role-r1", "#role-r2"]);
+  });
+
+  it("is left out for a member who holds no role", async () => {
+    rolesN = 0;
+    render(
+      <I18nProvider i18n={i18n}>
+        <RoleJumpLine />
+      </I18nProvider>,
+    );
+    await waitFor(() => expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(0));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(document.querySelector("[data-role-jumps]")).toBeNull();
   });
 });
 

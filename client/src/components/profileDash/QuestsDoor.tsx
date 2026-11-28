@@ -10,13 +10,15 @@
  * A MEMBER WHO HOLDS A ROLE IS NOT PUSHED TOWARD QUESTS (the lead, 27 Nov 2026: roles do not
  * normally do quests; quests are a way for others to contribute). For them the door stays last on
  * the tab and says the board is there if they want it. For everyone else it is the way in. Until
- * the page knows which (`holdsRole` undefined), it draws nothing, so the wrong words never flash.
+ * the page knows which (`holdsRole` undefined), it draws nothing, so the wrong words never flash; a
+ * page whose read of the roles failed says `false`, so My work always keeps its link to Quests.
  */
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { SeedGlint } from "@/components/sacred/living";
-import { BTN_SECONDARY, CARD, DOOR, EYEBROW, H2, HINT, TILE } from "@/components/journey/look";
+import { CARD, DOOR, EYEBROW, H2, HINT } from "@/components/journey/look";
+import ReadFailedTile from "./ReadFailedTile";
 
 export default function QuestsDoor({ holdsRole }: { holdsRole: boolean | undefined }) {
   const { t } = useLingui();
@@ -48,11 +50,8 @@ export default function QuestsDoor({ holdsRole }: { holdsRole: boolean | undefin
 export function QuestsReadFailed({ onRetry }: { onRetry: () => void }) {
   const { t } = useLingui();
   return (
-    <div role="status" className={`mb-6 flex flex-wrap items-center gap-3 ${TILE}`} data-quests-failed="">
-      <p className="m-0 text-foreground">{t({ message: "Your quests did not load.", context: "profile My work: the member's quests could not be read" })}</p>
-      <button type="button" onClick={onRetry} className={BTN_SECONDARY}>
-        {t({ message: "Try again", context: "profile My work: read the member's quests again" })}
-      </button>
+    <div className="mb-6" data-quests-failed="">
+      <ReadFailedTile name="quests" words={t({ message: "Your quests did not load.", context: "profile My work: the member's quests could not be read" })} onRetry={onRetry} />
     </div>
   );
 }

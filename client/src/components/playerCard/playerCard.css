@@ -1346,6 +1346,16 @@ a.pc-chip:hover {
   flex-wrap: wrap;
   gap: 12px;
 }
+/* On the profile a role's card is a jump target (#role-<id>, the phone's "Your roles" line): it clears the
+   sticky header, and on a phone the profile's tab bar too, so its title shows. Unlayered, like the rule above. */
+.sheet-night .pc-rolecard {
+  scroll-margin-top: 7rem;
+}
+@media (max-width: 639.98px) {
+  .sheet-night .pc-rolecard {
+    scroll-margin-top: 10rem;
+  }
+}
 /* The profile's My roles: each role's art, the tile's gold line icon, beside its title. */
 .pc-roletitle-row {
   display: flex;
@@ -1378,11 +1388,6 @@ a.pc-chip:hover {
   background: var(--pc-gold-lit);
   border-color: var(--pc-gold-lit);
   color: var(--pc-ground);
-}
-.pc-list-plain {
-  list-style: none;
-  margin: 0;
-  padding: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

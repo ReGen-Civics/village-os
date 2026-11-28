@@ -15,7 +15,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
-const session = vi.hoisted(() => ({ roles: [] as Array<{ id: string; name: string }>, meDown: false, progressionHangs: false }));
+const session = vi.hoisted(() => ({ roles: [] as Array<{ id: string; name: string }>, meDown: false, progressionHangs: false, progressionDown: false }));
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/contexts/AuthContext", () => ({
@@ -34,7 +34,7 @@ vi.mock("@/modules/ModuleProvider", () => ({
   useModuleOn: () => false,
   moduleIsOn: () => false,
 }));
-vi.mock("@/components/profileDash/MyRoleCards", () => ({ default: () => null }));
+vi.mock("@/components/profileDash/MyRoleCards", () => ({ default: () => null, RoleJumpLine: () => null }));
 vi.mock("@/components/ProfileJourney", () => ({ default: () => null }));
 vi.mock("@/components/NeedCard", () => ({ default: () => null }));
 vi.mock("@/components/ProfileHero", () => ({ default: () => null }));
@@ -81,6 +81,7 @@ const ME = {
 
 function answer(url: string): Response {
   if (url.startsWith("/api/game/me")) return session.meDown ? json({ error: "down" }, 500) : json(ME);
+  if (url.startsWith("/api/game/progression") && session.progressionDown) return json({ error: "down" }, 500);
   if (url.startsWith("/api/game/progression"))
     return json({ stage: null, stageIndex: 0, consentedQuests: 1, capabilities: [], capabilityCatalogue: [], roles: session.roles, history: [], firsts: {}, signing: null });
   if (url.startsWith("/api/game/quests/suited")) return json({ quests: [{ id: "compost", title: "Turn the compost bays", circle: "Land and Food", why: "circle" }] });
@@ -104,6 +105,7 @@ afterEach(() => {
   session.roles = [];
   session.meDown = false;
   session.progressionHangs = false;
+  session.progressionDown = false;
 });
 
 const view = () => render(<Router><Profile /></Router>);
@@ -148,6 +150,13 @@ describe("My work", () => {
     view();
     await screen.findByRole("region", { name: "Your quests" });
     expect(document.querySelector("[data-quests-door]")).toBeNull();
+  });
+
+  it("keeps its link to Quests, in the general words, when the roles could not be read", async () => {
+    session.progressionDown = true;
+    view();
+    await waitFor(() => expect(document.querySelector("[data-quests-door]")?.getAttribute("data-quests-door")).toBe("open"));
+    expect(within(screen.getByRole("region", { name: "The village's quests" })).getByRole("link").getAttribute("href")).toBe("/quests");
   });
 
   it("says when the member's quests did not load, and reads them again on Try again", async () => {

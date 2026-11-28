@@ -39,6 +39,7 @@ import { useMyCommitment } from "@/lib/useMyCommitment";
 import { authToken } from "@/lib/gameApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import ReadFailedTile from "./ReadFailedTile";
 
 /** Where "This moon" goes: My moon on this page when the village runs it, else the card's own moon cycle. */
 const MOON_ON_PAGE = "#my-moon";
@@ -125,14 +126,60 @@ function MoonAndSeasonDoors({ moonHref }: { moonHref: string }) {
   );
 }
 
-/** A failed read of the roles held, said with a way to ask again (the old Your roles panel's sentence). */
+/** A failed read of the roles held, said in the bar's tile with a way to ask again (the old panel's sentence). */
 function RolesReadFailed({ onRetry }: { onRetry: () => void }) {
   return (
-    <p role="status" className="pc-f14" data-roles-failed="">
-      {YOUR_ROLES_WORDS.failed}{" "}
-      <button type="button" onClick={onRetry} className="pc-tab">
-        {YOUR_ROLES_WORDS.retry}
-      </button>
+    <div data-roles-failed="">
+      <ReadFailedTile name="roles" words={YOUR_ROLES_WORDS.failed} onRetry={onRetry} />
+    </div>
+  );
+}
+
+/**
+ * ONE READ OF THE ROLES HELD FOR THE TAB. The cards and the phone's jump line (RoleJumpLine) mount
+ * together and both want `/api/season-plans/mine`; they share the read in flight, and a retry asks anew.
+ */
+let mineInFlight: ReturnType<typeof fetchMine> | null = null;
+function readMine(fresh = false): ReturnType<typeof fetchMine> {
+  if (fresh || !mineInFlight) {
+    const p = fetchMine();
+    mineInFlight = p;
+    void p.finally(() => {
+      if (mineInFlight === p) mineInFlight = null;
+    });
+  }
+  return mineInFlight as ReturnType<typeof fetchMine>;
+}
+
+/**
+ * THE ROLES, ONE LINE, ON A PHONE (QA round 2): My moon draws first there (batch 157), so the cards start a
+ * long scroll down. One quiet line above the moon names each role and jumps to its card. Absent with no role,
+ * and on a desktop, where the cards come first.
+ */
+export function RoleJumpLine() {
+  const { t } = useLingui();
+  const [seats, setSeats] = useState<HeldSeat[]>([]);
+  useEffect(() => {
+    let alive = true;
+    void readMine().then((a) => {
+      if (alive && a.ok && Array.isArray(a.data?.heldSeats)) setSeats(a.data.heldSeats);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  if (!seats.length) return null;
+  return (
+    <p className="m-0 text-sm text-muted-foreground sm:hidden" data-role-jumps="">
+      {t({ message: "Your roles:", context: "profile My roles: the phone's line that jumps to each role card" })}{" "}
+      {seats.map((s, i) => (
+        <span key={s.id}>
+          {i > 0 ? ", " : null}
+          <a href={`#role-${s.id}`} className="inline-flex min-h-11 items-center font-medium text-notice underline underline-offset-2">
+            {s.name}
+          </a>
+        </span>
+      ))}
     </p>
   );
 }
@@ -173,7 +220,7 @@ function ProposingDoor({ mine, apps }: { mine: MinePayload | null; apps: readonl
       {apps.length > 0 ? (
         <div className="pc-stack">
           <h4 className="pc-h3">{YOUR_ROLES_WORDS.openHeading}</h4>
-          <ul className="pc-stack pc-list-plain">
+          <ul className="pc-stack m-0 list-none p-0">
             {apps.map((a) => (
               <li key={a.id}>
                 <Link href={a.href || `/role-applications/${encodeURIComponent(a.id)}`} className="pc-tab" data-open-proposal={a.id}>
@@ -235,10 +282,10 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
   }, [locale]);
   useEffect(() => loadCard(), [loadCard]);
 
-  const loadMine = useCallback(() => {
+  const loadMine = useCallback((fresh = false) => {
     let alive = true;
     setMineFailed(false);
-    void fetchMine().then((a) => {
+    void readMine(fresh).then((a) => {
       if (!alive) return;
       if (!a.ok || !a.data || typeof a.data !== "object") {
         setMineFailed(true);
@@ -269,12 +316,7 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
   if (cardFailed) {
     return (
       <div className="flex flex-col gap-4" data-card-failed="">
-        <p role="status" className="text-foreground">
-          {CARD_LOAD_WORDS.failed}{" "}
-          <button type="button" onClick={loadCard} className="min-h-11 font-medium text-notice underline underline-offset-2">
-            {CARD_LOAD_WORDS.retry}
-          </button>
-        </p>
+        <ReadFailedTile name="card" words={CARD_LOAD_WORDS.failed} onRetry={loadCard} />
         <YourRolesSection />
       </div>
     );
@@ -334,7 +376,7 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
               <>
                 {held.length || card.card.roles.length ? <MoonAndSeasonDoors moonHref={moonHref} /> : null}
                 {/* How much you give stays for everybody, a member with no role too (the old panel drew it with none). */}
-                {mineFailed ? <RolesReadFailed onRetry={loadMine} /> : mine ? <RolesCommitment seats={held} mine={commitment} /> : null}
+                {mineFailed ? <RolesReadFailed onRetry={() => loadMine(true)} /> : mine ? <RolesCommitment seats={held} mine={commitment} /> : null}
               </>
             ),
             door: <ProposingDoor mine={mine} apps={apps} />,

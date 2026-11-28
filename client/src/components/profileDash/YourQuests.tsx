@@ -4,7 +4,7 @@
  *
  *   doing       every quest in the member's hands or turned in, from the same
  *               `/api/game/me` claims the rest of the profile reads;
- *   done        the last few the village consented to, newest first, which the
+ *   done        the last four the village consented to, newest first, which the
  *               short Quests card used to carry before it left My work;
  *   suited      open quests suited to the roles they hold, from
  *               `/api/game/quests/suited`: a quest whose role gate they hold,
@@ -38,8 +38,8 @@ interface SuitedQuest {
   why: "role" | "circle";
 }
 
-/** How many finished quests the list keeps: the newest few, the record of the rest lives on the treasury tab. */
-const DONE_SHOWN = 3;
+/** How many finished quests the list keeps: four, as many as the short card it replaced could show. */
+const DONE_SHOWN = 4;
 
 const ROW = "flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -133,7 +133,9 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
             {suited.map((q) => (
               <li key={q.id}>
                 <Link href={`/quests/${encodeURIComponent(q.id)}`} className={ROW} data-suited-quest={q.why}>
-                  <span className="min-w-0">
+                  {/* Open work wears no plant yet; the empty slot keeps it in line with the rows above. */}
+                  <span className="size-5 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{q.title}</span>
                     <span className="block text-xs text-muted-foreground">
                       {q.why === "role"
