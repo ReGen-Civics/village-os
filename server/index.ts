@@ -25,7 +25,8 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck, villageNameCheck } from "../shared/launchRequirements";
-import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
+import { MENU_SECTION, menuDocOf } from "../shared/menuDoc";
+import { menuDocumentProblem } from "../shared/moduleMenu"; // the menu document and its module entries' places, by the menu's rules
 import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
 import { readVillageNounsFrom } from "./lib/villageNouns";
 import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
@@ -8037,7 +8038,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocumentProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();

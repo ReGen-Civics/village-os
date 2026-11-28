@@ -10,8 +10,8 @@ import { ACCOUNT_MENU, NAV, isGroup, type NavLink } from "./nav";
 import { navRows } from "./navNest";
 import { placedMenu } from "./navPlaces";
 import { MENU_ACCOUNT, placeItems } from "@shared/menuPlace";
-import { MENU_SHAPE, MODULE_MENU, choiceOf, choicesChangeNothing, moduleMenuFor, placeProblems, placesProblem, withChoices } from "@shared/moduleMenu";
-import { menuDocOf, menuDocProblem } from "@shared/menuDoc";
+import { MENU_SHAPE, MODULE_MENU, choiceOf, choicesChangeNothing, menuDocumentProblem, moduleMenuFor, placeProblems, placesProblem, withChoices } from "@shared/moduleMenu";
+import { menuDocOf } from "@shared/menuDoc";
 import { contentDocumentFor } from "@shared/contentDocuments";
 import { mergeOnto } from "@shared/proposedChanges";
 
@@ -127,10 +127,12 @@ describe("a place the menu's rules refuse", () => {
   });
 
   it("is the content route's refusal for the whole menu document", () => {
-    expect(menuDocProblem({ places: { "/forum": { group: "Village" } } })).toMatch(/7 rows/);
-    expect(menuDocProblem({ places: { "/forum": { group: "Village" } }, hidden: ["/library"] })).toBeNull();
-    expect(menuDocProblem({ labels: { "/forum": "Crew Talk" }, places: { "/forum": { group: "Village", sub: "Maps" } } })).toBeNull();
-    expect(menuDocProblem({ places: [] })).toMatch(/Places come as/);
+    expect(menuDocumentProblem({ places: { "/forum": { group: "Village" } } })).toMatch(/7 rows/);
+    expect(menuDocumentProblem({ places: { "/forum": { group: "Village" } }, hidden: ["/library"] })).toBeNull();
+    expect(menuDocumentProblem({ labels: { "/forum": "Crew Talk" }, places: { "/forum": { group: "Village", sub: "Maps" } } })).toBeNull();
+    expect(menuDocumentProblem({ places: [] })).toMatch(/Places come as/);
+    // The document's own shape is still checked first.
+    expect(menuDocumentProblem({ tabs: ["/", "/a", "/b", "/c", "/d"] })).toMatch(/up to 4/);
   });
 });
 

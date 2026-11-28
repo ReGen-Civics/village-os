@@ -17,7 +17,7 @@
  *   places  where a module's entry sits, by address (shared/menuPlace.ts; the lead, 27 Nov 2026: "all module menu
  *           items are up for the village to determine where in the menu they would like them to be and what their
  *           name would be"). Its name is its label above. Until a village places one, it sits where it ships
- *           (shared/moduleMenu.ts), and the rules a place is held to are checked there.
+ *           (shared/moduleMenu.ts), and the rules a place is held to are checked there (menuDocumentProblem).
  *
  * ENTRIES KEEP THEIR ROUTES AND THEIR GATES. A label never changes where an
  * entry goes, and a hidden flag only ever takes an entry away: an entry a
@@ -29,7 +29,6 @@
  */
 
 import { placesOf, type MenuPlace } from "./menuPlace";
-import { placesProblem } from "./moduleMenu";
 
 export const MENU_SECTION = "app-menu";
 export const MENU_LABEL_MAX = 32;
@@ -130,6 +129,7 @@ export function menuDocProblem(raw: unknown): string | null {
   if (d.tabs !== undefined && (!Array.isArray(d.tabs) || d.tabs.length > MENU_TABS || d.tabs.some((h) => !isPath(h)))) {
     return `Choose up to ${MENU_TABS} phone tabs, by their addresses. The fifth is always More.`;
   }
-  // A module entry's place, held to the menu's rules (shared/moduleMenu.ts), with the entries this document hides left out.
-  return placesProblem(d.places, Array.isArray(d.hidden) ? d.hidden.filter(isPath) : []);
+  // A module entry's place is held to the menu's rules by menuDocumentProblem (shared/moduleMenu.ts), which the content
+  // route and the proposal path ask: those rules carry the menu's whole shape, which the shell never loads.
+  return null;
 }

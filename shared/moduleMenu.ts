@@ -24,6 +24,7 @@
  * show their own translated words for the same checks.
  */
 import { TASK_BOARD_PATH, TASK_MENU } from "./taskMenu";
+import { menuDocProblem } from "./menuDoc";
 import { MENU_ACCOUNT, MENU_AT_MAX, MENU_PINNED_LAST, placeItems, placesOf, positionIn, rowStarts, type MenuPlace } from "./menuPlace";
 
 export interface ShapeEntry {
@@ -41,12 +42,16 @@ export interface ShapeGroup {
   items: readonly ShapeEntry[];
 }
 
-const e = (href: string, sub?: string, module?: string, label?: string): ShapeEntry => ({
-  href,
-  ...(sub ? { sub } : {}),
-  ...(module ? { module } : {}),
-  ...(label ? { label } : {}),
-});
+// Pure, so a chunk that takes one helper from this file and not the shape leaves the shape out.
+/*@__NO_SIDE_EFFECTS__*/
+function e(href: string, sub?: string, module?: string, label?: string): ShapeEntry {
+  return {
+    href,
+    ...(sub ? { sub } : {}),
+    ...(module ? { module } : {}),
+    ...(label ? { label } : {}),
+  };
+}
 
 export const MENU_SHAPE: readonly ShapeGroup[] = [
   {
@@ -164,6 +169,7 @@ export interface ModuleMenuEntry {
 
 
 /** Every module's menu entries, with the name and place each ships with, in the menu's order. */
+/*@__NO_SIDE_EFFECTS__*/
 export function moduleMenuEntries(shape: readonly ShapeGroup[] = MENU_SHAPE): ModuleMenuEntry[] {
   return shape.flatMap((g) =>
     g.items.flatMap((it, i) =>
@@ -174,7 +180,7 @@ export function moduleMenuEntries(shape: readonly ShapeGroup[] = MENU_SHAPE): Mo
   );
 }
 
-export const MODULE_MENU: readonly ModuleMenuEntry[] = moduleMenuEntries();
+export const MODULE_MENU: readonly ModuleMenuEntry[] = /* @__PURE__ */ moduleMenuEntries();
 
 /** A module's own menu entries (most have one; the map has three). */
 export function moduleMenuFor(moduleId: string): ModuleMenuEntry[] {
@@ -292,6 +298,18 @@ export function placesProblem(rawPlaces: unknown, hidden: readonly string[] = []
   if (rawPlaces === undefined) return null;
   if (!rawPlaces || typeof rawPlaces !== "object" || Array.isArray(rawPlaces)) return "Places come as { address: { group, sub, at } }.";
   return placeProblems(rawPlaces, hidden)[0]?.sentence ?? null;
+}
+
+/**
+ * The content route's and the proposal path's one check of the whole menu document: its shape (shared/menuDoc.ts),
+ * then its module entries' places against the menu's rules, with the entries it hides left out.
+ */
+export function menuDocumentProblem(raw: unknown): string | null {
+  const shape = menuDocProblem(raw);
+  if (shape) return shape;
+  const d = raw as Record<string, unknown>;
+  const hidden = Array.isArray(d.hidden) ? d.hidden.filter((h): h is string => typeof h === "string") : [];
+  return placesProblem(d.places, hidden);
 }
 
 /** A name and a place for one module entry, as an editor holds it. */
