@@ -46,7 +46,7 @@ export default function ApplicationNextCard() {
   const ownButton = book.length > 0 || !!view.tasks?.some((task) => task.external && task.href);
   // "I've booked it" beside the booking (the lead, 27 Nov 2026), signed in as the applicant.
   const b = next.status.bookNow;
-  const bookedIt = view.booking && b && next.status.outcome == null ? (
+  const bookedIt = view.booking && b && !!b.links?.length && next.status.outcome == null ? (
     <BookedIt
       booked={b.booked ?? null}
       zone={b.zone ?? ""}

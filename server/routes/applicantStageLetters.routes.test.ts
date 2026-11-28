@@ -297,6 +297,12 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     const final = (await ivs(id)).find((i: any) => Number(i.is_final) === 1);
     await score(id, Number(final.id), FINAL.id);
     expect(stageMails("agreement")).toHaveLength(0);
+    // Its own letter instead (QA round 5, item 8): refine, then send it on, with the page as its button; once.
+    const ready = state.fresh.filter((m) => m.idempotencyKey === `open-proposal:${id}:to-circle-ready`);
+    expect(ready).toHaveLength(1);
+    expect(ready[0].text).toContain("Refine your proposal, then send it to");
+    expect(ready[0].text).toMatch(new RegExp(`Refine and send it: ${ORIGIN}/application-status/${id}\\?token=`));
+    expect(ready[0].html).toContain("Refine and send it");
     const after = (await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.sixStages;
     expect(after).toMatchObject({ now: "final_interview", toCircle: true, refine: { open: true, frozen: false } });
     expect((await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "After the final, a little clearer.", aim: "Books anyone can read." })).status).toBe(200);
@@ -697,10 +703,33 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
       // Clearing the card's date later re-times nothing: the application keeps the day it arrived under (QA round 5).
       await cardApplyBy(null);
       expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.reviewAfter).toBe(deadline);
-      // The window opens (its stamped deadline 30 days back): the role up next hears it.
+      // Nothing to book yet: "I've booked it" is refused, and the page offers no booking (QA round 5).
+      expect((await call("POST", `/api/application-status/${id}/booked?token=${statusToken(id)}`, { at: new Date(Date.now() + 2 * 86_400_000).toISOString() })).body.error).toBe("no_booking");
+      // The window opens (its stamped deadline 30 days back): the role up next hears it, and the applicant gets the
+      // Ops booking letter, once, with its link (nothing had brought it).
+      const { makeApplicantTeller } = await import("../lib/applicantUpdates");
+      deps.tellApplicant = makeApplicantTeller({ getPool: () => pool, members: usersRepo(pool), notify: deps.notify, postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN });
       await stampApplyBy(id, new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10));
+      // The conversation opened at arrival, 40 days back, long before the window (opened 23 days back).
+      await q("UPDATE application_interviews SET opened_at = ? WHERE id = ?", [new Date(Date.now() - 40 * 86_400_000), iv.id]);
+      state.fresh.length = 0;
+      await nudgeTick(deps);
       await nudgeTick(deps);
       expect(state.notices.some((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`))).toBe(true);
+      const opened = state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:update:conversation:window`));
+      expect(opened).toHaveLength(1);
+      expect(opened[0].text).toContain(LINK.ops);
+      // The 5-day reminder counts from the opening: the conversation has been open four days, the window far longer,
+      // and no reminder goes before five days from the window's opening... which is past here, so exactly one may go.
+      expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:nudge:book`)).length).toBeLessThanOrEqual(1);
+
+      // Applied after the deadline: said plainly (QA round 5: "after 10 September 2026" to a late applicant).
+      const pastDay = new Date(Date.now() - 20 * 86_400_000).toISOString().slice(0, 10);
+      await cardApplyBy(pastDay);
+      const late = await confirmed("window-late@example.test");
+      const lateMail = state.posted.find((m) => m.idempotencyKey === `open-proposal:${late}:status`)!;
+      expect(lateMail.text).toContain("Applications for this role closed on");
+      expect(lateMail.text).not.toContain("We review applications 1 to 2 weeks after");
     } finally {
       await cardApplyBy(null);
     }

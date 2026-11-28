@@ -19,7 +19,7 @@ import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import * as repo from "../repos/applicationReview";
 import { referencesOf } from "../repos/applicantOnboarding";
 import { numberVar, stringVar } from "./variables";
-import { isApplicant, scorecardHref, type ReviewDeps } from "./applicationReview";
+import { isApplicant, scorecardHref, stepBookingOf, type ReviewDeps } from "./applicationReview";
 
 export const NUDGE_VARIABLES = { book: "org.nudge_book_days", step: "org.nudge_step_days", warn: "org.close_warning_days" } as const;
 
@@ -64,9 +64,18 @@ export async function nudgeTick(deps: ReviewDeps): Promise<{ applicant: number; 
     };
     let roles: string | null = null;
     const rolesNow = async () => (roles ??= await rolesOf(pool, r.ref));
+    // RULING 17 (QA round 5): a role with a deadline books nothing before its review window opens. The reminder counts
+    // from the opening, and the opening brings the open conversation's booking letter, once.
+    const opens = repo.reviewWindowOpensAt(deadline);
     for (const iv of await repo.interviewsOf(pool, r.ref)) {
       if (iv.state !== "open" || !iv.openedAt) continue;
-      const age = Math.floor((now.getTime() - iv.openedAt.getTime()) / DAY);
+      const from = opens && opens.getTime() > iv.openedAt.getTime() ? opens : iv.openedAt;
+      if (from.getTime() > now.getTime()) continue;
+      const age = Math.floor((now.getTime() - from.getTime()) / DAY);
+      if (opens && opens.getTime() > iv.openedAt.getTime() && !iv.bookedAt && kindOfRef(r.ref) === "open" && deps.tellApplicant) {
+        const step = await stepBookingOf(pool, r.ref, iv.roleId);
+        if (step.links.length) await deps.tellApplicant(r.ref, "conversation", { part: `window-${iv.position}`, withRole: step.label, minutes: iv.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+      }
       // The applicant: once per conversation, while it is still open and nobody has said it is booked ("I've booked
       // it", shared/callBooked.ts).
       if (age >= bookDays && !iv.bookedAt && kindOfRef(r.ref) === "open" && (await deps.tellApplicant?.nudge?.(r.ref, iv.id))) out.applicant++;

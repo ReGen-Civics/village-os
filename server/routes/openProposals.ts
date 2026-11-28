@@ -969,7 +969,10 @@ export function register(app: Express, deps: Deps): void {
         const next = await receivedNextLines(getPool(), confirmed.proposal.id, lang);
         // With a role's application deadline (0445), when review happens; else the one-moon promise, unchanged.
         const deadline = await reviewRepo.applicationDeadline(getPool(), confirmed.proposal.id).catch(() => null);
-        const promise = deadline ? wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline)) : wordsIn(lang).replyPromise(replyMoons);
+        // Arrived after the deadline (QA round 5): said plainly, never "we review 1 to 2 weeks after" a day long past.
+        const arrived = confirmed.proposal.confirmedAt ?? new Date();
+        const late = !!deadline && arrived.toISOString().slice(0, 10) > deadline;
+        const promise = deadline ? (late ? wordsIn(lang).lateApplication(wordsIn(lang).day(deadline)) : wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline))) : wordsIn(lang).replyPromise(replyMoons);
         const text = [apply.statusText(mailedLink, promise), ...(accountHolder ? ["", apply.profileLine(`${site()}/profile`)] : []), "", next.join("\n")].join("\n");
         try {
           await postEmail({

@@ -44,6 +44,8 @@ export interface ApplicantMessages {
   noteIntro: string;
   /** With a role's application deadline (0445): when review happens, in place of the one-moon promise. */
   reviewWindow(day: string): string;
+  /** Applied after the role's deadline (QA round 5): said plainly. */
+  lateApplication(day: string): string;
   day(iso: string): string;
 
   confirm: {
@@ -418,6 +420,7 @@ const en: ApplicantMessages = {
     moons === null ? "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk." : moons === 1 ? "You'll hear from us within one moon cycle." : `You'll hear from us within ${moons} moon cycles.`,
   noteIntro: "A note from us:",
   reviewWindow: (day) => `We review applications 1 to 2 weeks after ${day}, when applications close.`,
+  lateApplication: (day) => `Applications for this role closed on ${day}. We'll still read yours, and write to you.`,
   day: dayIn("en-GB"),
 
   confirm: {
@@ -772,6 +775,7 @@ const es: ApplicantMessages = {
       : moons === 1 ? "Tendrá noticias nuestras dentro de un ciclo lunar." : `Tendrá noticias nuestras dentro de ${moons} ciclos lunares.`, // needs-native-review: new words, 24 Nov 2026
   noteIntro: "Una nota de parte nuestra:",
   reviewWindow: (day) => `Revisamos las postulaciones de 1 a 2 semanas después del ${day}, cuando cierran las postulaciones.`, // needs-native-review: the review window, 27 Nov 2026
+  lateApplication: (day) => `Las postulaciones para este rol cerraron el ${day}. Igual leeremos la suya, y le escribiremos.`, // needs-native-review: QA round 5
   day: dayIn("es"),
 
   confirm: {
@@ -1395,7 +1399,8 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     }
     // A conversation's button belongs to its own stage: the final one's only at the Final conversation (QA round 1).
     const atFinal = six.now === "final_interview";
-    const bookable = s.bookNow && !decided && (atFinal ? !!s.bookNow.final : !s.bookNow.final) ? s.bookNow : null;
+    // A step with no way to book yet (a role's review window not open) offers no booking and no "book below" (QA round 5).
+    const bookable = s.bookNow && !decided && (atFinal ? !!s.bookNow.final : !s.bookNow.final) && (s.bookNow.url || (s.bookNow.links?.length ?? 0) > 0) ? s.bookNow : null;
     const role = bookable ? bookable.label || bookable.role : null;
     const refineOpen = six.refine.open;
     const hasOffer = !!s.offer && (s.offer.rows?.length ?? 0) > 0;

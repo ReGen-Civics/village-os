@@ -18,7 +18,7 @@
  */
 import type { PostResult } from "../../shared/comms/contracts";
 import { greetingName } from "../../shared/openProposalDecide";
-import { FINAL_CALL_ROLE_VARIABLE, FOLLOWUP_ROLE_VARIABLE, trackStates } from "../../shared/applicantOnboarding";
+import { FINAL_CALL_ROLE_VARIABLE, FOLLOWUP_ROLE_VARIABLE, mayGoToCircle, trackStates } from "../../shared/applicantOnboarding";
 import { bookingNudgeKey, bookingNudgeLetter, stageLetter, stageLetterKey, STAGE_LETTER_STAGES, type StageLetterKind, type StageLetterStage } from "../../shared/applicantStageLetters";
 import { finalFreezes, mayRefine } from "../../shared/proposalRefine";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
@@ -28,7 +28,7 @@ import { trustedAccountFor } from "./applicantAccount";
 import { languageOf } from "./applicantLanguage";
 import { applicantTrackFactsOf } from "./applicantOnboarding";
 import { stepBookingOf } from "./applicationReview";
-import { framedLetter, statusLinkFor, statusLinkIn, withoutStatusLink, type TellDeps } from "./applicantUpdates";
+import { framedLetter, framedLetterWithButton, statusLinkFor, statusLinkIn, withoutStatusLink, type TellDeps } from "./applicantUpdates";
 import { stringVar } from "./variables";
 import { referencesEditable } from "../repos/applicantOnboarding";
 import { wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
@@ -196,6 +196,53 @@ async function stageNowOf(deps: TellDeps, ref: string): Promise<StageLetterStage
   return isLetterStage(now) ? now : null;
 }
 
+/** The ready letter's words (QA round 5, item 8), in the applicant's language. */
+const READY: Record<ApplicantLanguage, { subject: string; line(circle: string): string; button: string }> = {
+  en: {
+    subject: "Your final conversation is written up",
+    line: (circle) => `Refine your proposal, then send it to ${circle}. It's fixed once you send it, and ${circle} reviews it from there.`,
+    button: "Refine and send it",
+  },
+  es: {
+    subject: "Su conversación final está escrita", // needs-native-review: QA round 5
+    line: (circle) => `Mejore su propuesta y luego envíela a ${circle}. Queda fija una vez que la envíe, y ${circle} la revisa desde ahí.`, // needs-native-review: QA round 5
+    button: "Mejorarla y enviarla", // needs-native-review: QA round 5
+  },
+};
+
+/** The ready letter's key: once per application. */
+function readyKey(ref: string): string {
+  return `open-proposal:${ref}:to-circle-ready`;
+}
+
+/**
+ * RULING 7'S LETTER (QA round 5, item 8): once the final conversation is written up, "Refine your proposal, then send
+ * it to the Anchor Circle", with its page as the button. Once; only while the proposal may still go.
+ */
+export async function tellReadyToSend(deps: TellDeps, ref: string): Promise<boolean> {
+  try {
+    const pool = deps.getPool();
+    const p = await proposals.readOpenProposal(pool, ref);
+    if (!p || !p.email || p.status !== "confirmed") return false;
+    const read = await applicantTrackFactsOf(deps, ref);
+    if (!read || !mayGoToCircle(read.facts)) return false;
+    const lang = languageOf(p);
+    const anchor = await review.anchorCircleName(pool);
+    const circle = anchor ? (/^the\s/i.test(anchor) ? anchor : lang === "es" ? `el ${anchor}` : `the ${anchor}`) : lang === "es" ? "el círculo ancla" : "the anchor circle";
+    const w = READY[lang];
+    const link = await statusLinkFor(deps, ref);
+    const text = [wordsIn(lang).hello(greetingName(p.name)), "", w.line(circle), ""].join("\n");
+    const name = greetingName(p.name);
+    const framed = await framedLetter(deps, lang, { subject: w.subject, text }, null);
+    const dressed = link ? await framedLetterWithButton(deps, lang, w.subject, text, { label: w.button, url: link }) : framed;
+    const sent = await deps.postEmail({ idempotencyKey: readyKey(ref), kind: "essential", origin: "open_proposal.stage", to: { email: p.email, ...(name ? { name } : {}) }, subject: w.subject, ...dressed });
+    return WENT_NOW.has(sent.status);
+  } catch (e) {
+    console.error(`[open-proposals] the ready letter for ${ref} was not sent`, e);
+    return false;
+  }
+}
+
 /**
  * STAGE LETTERS SURVIVE A PROVIDER FAULT (QA pass 3): essential mail keeps no body for the post office to try again,
  * so each attempt is recorded here, and this pass (run with the review clock) sends the letter of the stage an
@@ -233,7 +280,8 @@ export async function receivedNextLines(pool: Pool, ref: string, lang: Applicant
   if (open) {
     const step = await stepBookingOf(pool, ref, open.roleId);
     const links = bookingLinksText(step.links);
-    return [w.shape.next, `- ${links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label)}`, `- ${w.shape.refineAnyTime(await review.anchorCircleName(pool))}`, "", w.shape.who, w.shape.youBook(step.label)];
+    // Nothing to book yet: they write with times, so "you book the time" is not said beside it (QA round 5).
+    return [w.shape.next, `- ${links ? w.shape.receivedBook(step.label, links) : w.shape.receivedWrite(step.label)}`, `- ${w.shape.refineAnyTime(await review.anchorCircleName(pool))}`, "", w.shape.who, links ? w.shape.youBook(step.label) : w.shape.receivedWho(step.label)];
   }
   const welcome = await roleWord({ getPool: () => pool }, stringVar("org.onboarding_role"));
   return [w.shape.next, `- ${w.shape.receivedReview}`, `- ${w.shape.refineAnyTime(await review.anchorCircleName(pool))}`, "", w.shape.who, w.shape.receivedWho(welcome)];

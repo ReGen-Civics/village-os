@@ -943,6 +943,8 @@ export async function bookedByApplicant(deps: ReviewDeps, ref: string, raw: unkn
   // Only while the page offers this conversation's booking: open, undecided, invited.
   const open = s?.bookNow ? (await review.interviewsOf(pool, ref)).find((i) => i.state === "open") : undefined;
   if (!open) return { ok: false, status: 409, error: "closed" };
+  // Nothing to book yet (a role's review window not open, QA round 5): there is no call to say was booked.
+  if (!s?.bookNow?.links.length) return { ok: false, status: 409, error: "no_booking" };
   const read = readBookedAt(raw, deps.now());
   if (!read.ok) return { ok: false, status: 400, error: read.error };
   if (!(await review.markBooked(pool, open.id, read.at))) return { ok: false, status: 409, error: "closed" };

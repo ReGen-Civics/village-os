@@ -376,6 +376,8 @@ async function afterMove(deps: ReviewDeps, ref: string, opened: { position: numb
   // A written-up conversation can begin References and proposal (the first) or Agreement (the final one): that
   // stage's next-step letter, once (server/lib/applicantStageLetters.ts).
   const staged = kindOfRef(ref) === "open" ? !!(await deps.tellApplicant?.stage?.(ref)) : false;
+  // Ruling 7 (QA round 5, item 8): the final written up, its own letter, once: refine, then send it on.
+  if (kindOfRef(ref) === "open") await deps.tellApplicant?.ready?.(ref);
   if (scoresIn) {
     await deps.notifyAdmins("governance", REVIEW_WORDS.interviewsDone(await roleNamesOf(deps, ref)), `app:${ref}:scores-in`, scorecardHref(ref));
     // RULING 7 (the lead, 27 Nov 2026): the circle's consent round waits for the proposal to be SENT to the anchor

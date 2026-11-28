@@ -463,7 +463,7 @@ export default function ApplicationStatus() {
                   )}
                   {view.six && view.booking?.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
                   {/* "I've booked it" beside the booking (the lead, 27 Nov 2026): optional, the date they picked. */}
-                  {view.six && view.booking && s.bookNow && s.outcome == null && (
+                  {view.six && view.booking && s.bookNow && !!s.bookNow.links?.length && s.outcome == null && (
                     <div className="mt-2">
                       <BookedIt
                         booked={s.bookNow.booked ?? null}

@@ -98,6 +98,23 @@ export async function framedLetter(
   }
 }
 
+/** The same frame with a button of its own words (a letter whose act is not just "See your page"). */
+export async function framedLetterWithButton(
+  deps: Pick<TellDeps, "getPool" | "projectName" | "siteUrl">,
+  lang: ApplicantLanguage,
+  subject: string,
+  text: string,
+  button: { label: string; url: string },
+): Promise<{ html: string; text: string; preheader?: string }> {
+  const origin = deps.siteUrl?.().replace(/\/+$/, "") ?? "";
+  if (!origin) return { html: plainLetterHtml(`${text}\n${button.label}: ${button.url}`), text: `${text}\n${button.label}: ${button.url}` };
+  const dressed = await dressLetter(deps.getPool(), origin, { subject, text, button }, { lang, comeAndPlay: false, villageName: deps.projectName?.() });
+  const at = dressed.text.indexOf(comeAndPlayWords(lang).signOff);
+  const line = `${button.label}: ${button.url}`;
+  const plain = at >= 0 ? `${dressed.text.slice(0, at)}${line}\n\n${dressed.text.slice(at)}` : `${dressed.text}\n\n${line}`;
+  return { html: dressed.html, text: plain, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
+}
+
 /** What one update may add: which part of a kind (the position of a conversation), and facts the words use. */
 export interface UpdateFacts {
   part?: string;
@@ -121,6 +138,8 @@ export type TellApplicant = ((ref: string, kind: ApplicantUpdateKind, facts?: Up
   nudge?: (ref: string, interviewId: number) => Promise<boolean>;
   /** Stage letters a provider fault stopped, tried again (server/lib/applicantStageLetters.ts `retryStageLetters`). */
   retry?: (refs: readonly string[]) => Promise<number>;
+  /** The one letter once the final is written up: refine, then send it on (server/lib/applicantStageLetters.ts). */
+  ready?: (ref: string) => Promise<boolean>;
 };
 
 
@@ -188,6 +207,7 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
   tell.refined = async (ref) => (await import("./applicantStageLetters")).tellRefinedLetter(deps, ref);
   tell.nudge = async (ref, interviewId) => (await import("./applicantStageLetters")).tellBookingNudge(deps, ref, interviewId);
   tell.retry = async (refs) => (await import("./applicantStageLetters")).retryStageLetters(deps, refs);
+  tell.ready = async (ref) => (await import("./applicantStageLetters")).tellReadyToSend(deps, ref);
   return tell;
 }
 
