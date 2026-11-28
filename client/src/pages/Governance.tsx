@@ -209,19 +209,25 @@ export default function Governance() {
    */
   useEffect(() => {
     if (!page) return;
+    // The frame and the timer are cancelled as the page goes: a late one ran after the page was gone (and, in a
+    // test, after the window was), which failed a whole test shard at random.
+    let frame = 0;
+    let timer = 0;
     const go = () => {
       if (window.location.pathname !== "/governance/how") return;
       // A newcomer whose link asked for the mechanics by query alone (?dial=, ?focus=) lands on the locked row
       // too, as the #game-mechanics arrival does, so the row and the way in under it are on the first screen.
       const id = window.location.hash.slice(1) || (!member && asksForMechanics() ? GAME_MECHANICS_ANCHOR : "");
       if (!id || !/^[A-Za-z0-9_-]{1,80}$/.test(id)) return;
-      window.requestAnimationFrame(() => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
         const el = document.getElementById(id);
         if (!el) return;
         el.scrollIntoView?.({ block: "start" });
         // The app's ScrollToTop answers a hash 100ms after a new page mounts, and sends a page whose anchor it
         // could not find yet back to the very top. Land again if that is what happened in between.
-        window.setTimeout(() => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => {
           if (window.scrollY === 0 && el.isConnected && el.getBoundingClientRect().top > window.innerHeight / 2) el.scrollIntoView?.({ block: "start" });
         }, 160);
       });
@@ -232,7 +238,11 @@ export default function Governance() {
     // is one), which wouter sends by pushState and so fires no hashchange.
     go();
     window.addEventListener("pushState", go);
-    return () => window.removeEventListener("pushState", go);
+    return () => {
+      window.removeEventListener("pushState", go);
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!page, readPending, member]);
 
