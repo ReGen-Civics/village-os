@@ -3,6 +3,8 @@
  *
  *   POST /api/nav/visit   { path }   a signed-in member's phone says a page was visited
  *   GET  /api/nav/bar                the bar's settings and the village's most visited pages
+ *   GET  /api/admin/nav/usage        an admin's read of the same counts over a window of days (How the menu is
+ *                                    used, wayfinding lane, 27 Nov 2026): pages and counts, never a person
  *
  * PRIVACY IS THE DESIGN LINE. The visit route counts the page and nothing else:
  * no member id, session, address or device is written or logged
@@ -34,6 +36,9 @@ export interface NavBarDeps {
   countVisit(pool: Pool, day: string, path: string): Promise<void>;
   visitTotals(pool: Pool, sinceDay: string): Promise<PathCount[]>;
   readDoc(pool: Pool, key: string): Promise<Record<string, unknown> | null>;
+  isAdmin(req: Request): Promise<boolean>;
+  visitTotalsBetween(pool: Pool, fromDay: string, untilDay: string): Promise<PathCount[]>;
+  firstVisitDay(pool: Pool): Promise<string | null>;
   writeDoc(pool: Pool, key: string, doc: Record<string, unknown>): Promise<void>;
   now(): Date;
 }
@@ -51,6 +56,19 @@ export function cleanPath(raw: unknown): string | null {
   if (typeof raw !== "string" || raw.length > 191) return null;
   const p = raw.split(/[?#]/)[0].replace(/\/$/, "") || "/";
   return /^\/[\w\-/]*$/.test(p) ? p : null;
+}
+
+const DAY_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+/** The widest window one read may ask for: a long season and change. */
+const USAGE_MAX_DAYS = 400;
+/** The window when none is asked for. */
+const USAGE_DEFAULT_DAYS = 90;
+
+/** A "YYYY-MM-DD" that names a real day, or null. */
+export function dayParam(raw: unknown): string | null {
+  if (typeof raw !== "string" || !DAY_SHAPE.test(raw)) return null;
+  const at = Date.parse(`${raw}T00:00:00Z`);
+  return Number.isNaN(at) || utcDay(new Date(at)) !== raw ? null : raw;
 }
 
 export function register(app: Express, d: NavBarDeps): void {
@@ -94,6 +112,38 @@ export function register(app: Express, d: NavBarDeps): void {
     } catch {
       // The bar is a convenience: on any trouble the phone keeps the fixed bar.
       return res.json(off);
+    }
+  });
+
+  /*
+   * HOW THE MENU IS USED (an admin's page, wayfinding lane). The same per-page, per-day sums the bar reads, over the
+   * window the admin picks (a season's days): `from` inclusive, `to` exclusive. Counts only: the table holds no person,
+   * so there is none to leave out. What the counts cannot say is said in the answer itself: visits are signed-in only
+   * (a visitor is never counted), members and admins are counted together, and a page reached from the menu, a link
+   * or a typed address counts the same.
+   */
+  app.get("/api/admin/nav/usage", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    if (!(await d.isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const today = utcDay(d.now());
+    const to = req.query.to === undefined ? utcDay(new Date(d.now().getTime() + DAY_MS)) : dayParam(req.query.to);
+    const from = req.query.from === undefined && to ? utcDay(new Date(Date.parse(`${to}T00:00:00Z`) - USAGE_DEFAULT_DAYS * DAY_MS)) : dayParam(req.query.from);
+    if (!from || !to) return res.status(400).json({ error: "bad_window", message: "Ask for days as YYYY-MM-DD." });
+    if (from >= to) return res.status(400).json({ error: "bad_window", message: "The window has to end after it starts." });
+    if ((Date.parse(to) - Date.parse(from)) / DAY_MS > USAGE_MAX_DAYS) return res.status(400).json({ error: "bad_window", message: `Ask for ${USAGE_MAX_DAYS} days at most.` });
+    try {
+      const pool = d.getPool();
+      const [totals, recordedSince] = await Promise.all([d.visitTotalsBetween(pool, from, to), d.firstVisitDay(pool)]);
+      return res.json({
+        from,
+        to,
+        today,
+        recordedSince,
+        totals,
+        counted: { signedInOnly: true, byAudience: false, perPage: true },
+      });
+    } catch {
+      return res.status(503).json({ error: "unavailable", message: "The visit counts could not be read just now." });
     }
   });
 }

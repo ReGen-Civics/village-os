@@ -1,10 +1,11 @@
 /**
- * How the role-journey measures are arranged for reading (the fold of
- * /role-measures into Circles & Roles, 27 Nov 2026). Pure: handed the rows
- * `GET /api/role-measures` serves, it picks the seasons, the order and the
- * circle, and says how each number reads. It never computes a measure: that
- * is shared/roleMeasures.ts on the server, which withholds a number built
- * from fewer than three people before it ever reaches here.
+ * How the role-journey measures are arranged for reading on the role progress
+ * page (/admin/role-progress). Pure: handed the rows `GET /api/role-measures`
+ * serves, it picks the seasons, the order and the circle, and says how each
+ * number reads. It never computes a measure: that is shared/roleMeasures.ts on
+ * the server, which shows every number built from at least one recorded fact
+ * (1s and 2s included) and sends null, read here as "no data", only where
+ * nothing was recorded.
  */
 import type { MeasureRow, Share } from "@shared/roleMeasures";
 
@@ -35,13 +36,17 @@ export function rowsFor(rows: readonly ServedRow[], season: string | null, circl
     });
 }
 
-/** A share as a whole percentage, or null where it was withheld. */
+/** A share as a whole percentage (0 is a real zero), or null where nothing was recorded (NO_DATA). */
 export const percent = (s: Share): number | null => (s.share === null ? null : Math.round(s.share * 100));
 
-/** A median length of time: hours under two days, whole days after; null where it was withheld. */
-export function span(h: number | null): { unit: "hours" | "days"; n: number } | null {
+/**
+ * A median length of time: "under an hour" for anything above 0 and under 1, hours under two days, whole days
+ * after. Exactly 0 is a real zero ("0 hours"); null is NO_DATA, nothing recorded.
+ */
+export function span(h: number | null): { unit: "hours" | "days" | "under-an-hour"; n: number } | null {
   if (h === null) return null;
-  if (h < 48) return { unit: "hours", n: Math.max(1, Math.round(h)) };
+  if (h > 0 && h < 1) return { unit: "under-an-hour", n: 0 };
+  if (h < 48) return { unit: "hours", n: Math.round(h) };
   return { unit: "days", n: Math.round(h / 24) };
 }
 

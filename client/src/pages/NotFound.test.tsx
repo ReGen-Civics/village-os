@@ -55,13 +55,14 @@ describe("NotFound in the night world", () => {
     expect(container.querySelector(".animate-spin")).toBeNull();
   });
 
-  it("offers exactly one door, home, with fireflies on it", async () => {
+  it("offers one lit door, home, with fireflies on it", async () => {
     motion(false);
     render(<NotFound />);
     const main = screen.getByRole("main");
     const door = await within(main).findByRole("link", { name: "Back to the village" });
     expect(door.getAttribute("href")).toBe("/");
-    // one door: the only link or button on the page beside the language picker
+    // The helpful not-found page (27 Nov 2026): with no reader to judge (no providers here) no nearest page is offered,
+    // and search waits until Find anything says it is listening. NearestPages.test.tsx covers both.
     const acts = Array.from(main.querySelectorAll("a, button")).filter((el) => !/^Language:/.test(el.getAttribute("aria-label") ?? el.textContent ?? ""));
     expect(acts).toEqual([door]);
     const lights = door.closest(".nk-ff-host")?.querySelector('[data-testid="fireflies"]');

@@ -89,4 +89,15 @@ describe("home", () => {
     render(<HomeBase password="tok" onOpenTab={vi.fn()} groups={groups} />);
     expect(await screen.findByText("1 request is waiting, a role application.")).toBeTruthy();
   });
+
+  it("offers the role progress page right under the waiting role applications, even when none wait", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (String(url).endsWith("/submissions")) return { ok: true, json: async () => [] };
+      return { ok: true, json: async () => ({}) };
+    }));
+    render(<HomeBase password="tok" onOpenTab={vi.fn()} groups={groups} />);
+    expect(await screen.findByText("Nothing is waiting on you.")).toBeTruthy();
+    const door = screen.getByRole("link", { name: /See how roles are going/ });
+    expect(door.getAttribute("href")).toBe("/admin/role-progress");
+  });
 });

@@ -87,6 +87,15 @@ describe("the menu by membership", () => {
   }
 });
 
+describe("how roles are going (the lead, 27 Nov 2026: admin for the whole village, leads for their circle)", () => {
+  const offeredTo = (a: Audience) => barFor(a).flatMap((g) => g.links).map((l) => l.href);
+  it("is a menu door for admins only; a lead reaches their circle's numbers from their circle's page", () => {
+    for (const a of AUDIENCES) {
+      expect(offeredTo(a).includes("/admin/role-progress"), a.name).toBe(a.role === "admin" || a.role === "founder");
+    }
+  });
+});
+
 describe("what a stranger is shown (the lead, round 2)", () => {
   // "we don't need to show a visitor the wallet, the health of the village, or the library", and "Signed out visitor
   // doesn't need to see game mechanics. Only a member needs to see that." The same for the other member tools.
@@ -94,7 +103,7 @@ describe("what a stranger is shown (the lead, round 2)", () => {
   const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
 
   it("offers no member tool to a visitor", () => {
-    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/circles#role-measures", "/governance/how#game-mechanics", "/protocols"]) {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/admin/role-progress", "/governance/how#game-mechanics", "/protocols"]) {
       expect(offered(), h).not.toContain(h);
     }
   });

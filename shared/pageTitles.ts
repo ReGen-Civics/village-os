@@ -149,7 +149,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/role-applications": "Role proposal",
   "/open-proposals": "A proposed role", // somebody with no account proposed it (0305)
   "/reset": "A fresh start", // clears this device's copy of the site (client/src/pages/Reset.tsx)
-  "/role-measures": "How roles are going", // admins only, counts and medians from stamped times
+  "/role-measures": "How roles are going", // the old address: it redirects to /admin/role-progress
+  "/admin/role-progress": "How roles are going", // admins see every circle, a circle's lead their own; counts and medians only
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
   "/season": "Season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned

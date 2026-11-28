@@ -85,6 +85,8 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
       title: "Make it yours",
       items: [
         ...CONTENT_SECTIONS.map(s => ({ ...s })),
+        // Beside the pages and the menu's words: how often each menu entry was opened (wayfinding lane, 27 Nov 2026).
+        { key: "menu-use", label: "How The Menu Is Used", icon: BarChart3 },
         { key: "work-with-us", label: "Work With Us", icon: Handshake },
         { key: "faqs", label: "FAQs", icon: HelpCircle },
         { key: "milestones", label: "Build Progress", icon: Activity },
