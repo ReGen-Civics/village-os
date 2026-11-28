@@ -22,6 +22,8 @@ export interface Ctx {
   /** Who holds the power to set pay, from the count, or null when it could not be said. */
   pay: Door | null;
   acts: SeraActs;
+  /** This reader may set pay (lib/seraPay.ts): a pay row then has a tick, set by hand and never by "Tick all shown". */
+  maySetPay?: boolean;
   onCompare: (d: ListedDifference) => void;
 }
 
@@ -70,7 +72,7 @@ function NestedWords({ n }: { n: number }) {
 export function RowCard({ ctx, d, nested }: { ctx: Ctx; d: ListedDifference; nested: ListedDifference[] }) {
   return (
     <article data-sera-row={d.key} tabIndex={-1} className={`${card} pt-3 pr-3 pb-3 pl-1 flex gap-1 focus-visible:outline-2 focus-visible:outline-ring`}>
-      {d.kind === "pay" ? <span className="min-w-[44px] shrink-0" /> : <RowTick d={d} acts={ctx.acts} />}
+      {d.kind === "pay" && !(ctx.maySetPay && d.subject.ourId) ? <span className="min-w-[44px] shrink-0" /> : <RowTick d={d} acts={ctx.acts} />}
       <div className="flex flex-col gap-1.5 min-w-0 flex-1">
         <p className="text-[15px] leading-snug font-medium text-foreground [overflow-wrap:anywhere]">{d.words.sentence}</p>
         <p className="text-[13px] text-muted-foreground">
@@ -110,7 +112,7 @@ export function CompactRow({ ctx, d, selected, onSelect, inset }: { ctx: Ctx; d:
       onFocus={() => !selected && onSelect()}
       className={`bg-card rounded-[10px] flex ${selected ? "border-2 border-notice" : "border border-border"}${inset ? " ml-6" : ""} focus-visible:outline-2 focus-visible:outline-ring`}
     >
-      {inset || d.kind === "pay" ? <span className="w-8 shrink-0" /> : <RowTick d={d} acts={ctx.acts} compact />}
+      {inset || (d.kind === "pay" && !(ctx.maySetPay && d.subject.ourId)) ? <span className="w-8 shrink-0" /> : <RowTick d={d} acts={ctx.acts} compact />}
       <button
         type="button"
         aria-current={selected ? "true" : undefined}

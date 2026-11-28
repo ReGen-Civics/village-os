@@ -40,6 +40,8 @@ import { SeraMember } from "@/components/review/SeraMember";
 import { CompactRow, Pane, RowCard, Source, Chips, type Ctx } from "@/components/review/SeraRows";
 import { ConflictSubtitle, EditPanel, LiveRegion, RowActions, StatusStrip } from "@/components/review/SeraActs";
 import { BulkBar, BulkSheet } from "@/components/review/SeraBulk";
+import SeraPayWalk from "@/components/review/SeraPayWalk";
+import { useMaySetPay } from "@/components/review/SeraPayRow";
 import { InDraftCard } from "@/components/review/SeraInDraft";
 import { handleListKey, KeysLegend, KeysToggle, useKeysToggle } from "@/components/review/SeraKeys";
 import { useSeraActs } from "@/components/review/useSeraActs";
@@ -243,6 +245,8 @@ function SeraList({
   const reload = onReload ?? onRetry;
   const acts = useSeraActs(list.differences, reload);
   const [keysOn, setKeysOn] = useKeysToggle();
+  // A reader who may set pay can tick pay rows by hand (Rye, 28 Nov 2026: "Can manually select multiple").
+  const maySetPay = useMaySetPay();
   const drafts = list.inDraft ?? [];
 
   const order = useMemo(() => list.circleOrder ?? [], [list]);
@@ -258,6 +262,7 @@ function SeraList({
     agent,
     pay,
     acts,
+    maySetPay,
     onCompare: (d) => {
       backTo.current = d.key;
       setComparing(d.key);
@@ -289,6 +294,7 @@ function SeraList({
     handleListKey(e, keysOn, e.currentTarget, (k) => wide && setSelected(k));
   };
   // What "Tick all shown" ticks: every row shown that has its own tick (a new circle's roles go with it).
+  // NEVER A PAY ROW: pay is ticked by hand, one row at a time, by a person who may set it.
   const tickable = shownList.filter((d) => d.kind !== "pay" && !(d.kind === "roleAdd" && d.subject.ourId === null && (d.subject.circleId ?? "").startsWith("sera:")));
 
   // Back from a comparison, focus returns to the button that opened it, in a layout effect so it is
@@ -404,6 +410,7 @@ function SeraList({
     <>
       <BulkBar acts={acts} agent={agent} />
       <BulkSheet acts={acts} agent={agent} />
+      <SeraPayWalk acts={acts} agent={agent} />
     </>
   );
 

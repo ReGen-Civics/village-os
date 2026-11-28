@@ -19,6 +19,11 @@
  * them, pay, and a new role apart from its new circle. A bulk keep confirms
  * first too (R16).
  *
+ * PAY ROWS TICKED BY HAND (Rye, 28 Nov 2026: "Can manually select multiple")
+ * are never part of a take or a keep. The bar offers them their own act,
+ * "Set pay for N roles", which opens the walk through each role's own pay
+ * setter (SeraPayWalk.tsx).
+ *
  * Nothing goes live from here in this release: every take goes into the draft
  * (the "go live now" line of the board belongs to the automatic lane, later).
  */
@@ -38,13 +43,25 @@ export function BulkBar({ acts, agent }: { acts: SeraActs; agent: string }) {
   const id = useId();
   if (n === 0) return null;
   const owner = possessive(agent);
+  // Pay rows ticked by hand are their own act, the walk through each role's pay setter. A take or a keep never counts one.
+  const pays = acts.tickedRows.filter((d) => d.kind === "pay").length;
+  const rest = n - pays;
+  const takeWords = (n: number) => t({ message: `Take ${owner} for ${n}`, context: "sera answers" });
+  const keepWords = (n: number) => t({ message: `Keep ours for ${n}`, context: "sera answers" });
   return (
     // Above the phone's tab bar (`--tabbar-h`, 0 from 768 px), on the app's ladder just over it (MobileFab.tsx).
     <div data-hides-fab="" className="sticky bottom-[var(--tabbar-h)] z-[52] -mx-4 px-4 py-3 bg-card border-t border-border shadow-sm flex flex-wrap items-center gap-2">
       <p className="text-sm font-semibold text-foreground mr-auto">{n === 1 ? <Trans context="sera answers">1 ticked</Trans> : <Trans context="sera answers">{n} ticked</Trans>}</p>
-      <button type="button" data-bulk="take" aria-disabled={acts.busy || undefined} onClick={(e) => !acts.busy && acts.openSheet("take", e.currentTarget)} className={primary}>
-        {t({ message: `Take ${owner} for ${n}`, context: "sera answers" })}
-      </button>
+      {rest > 0 && (
+        <button type="button" data-bulk="take" aria-disabled={acts.busy || undefined} onClick={(e) => !acts.busy && acts.openSheet("take", e.currentTarget)} className={primary}>
+          {takeWords(rest)}
+        </button>
+      )}
+      {pays > 0 && (
+        <button type="button" data-bulk="pay" onClick={(e) => acts.openPayWalk(e.currentTarget)} className={rest > 0 ? secondary : primary}>
+          {pays === 1 ? <Trans context="sera pay">Set pay for 1 role</Trans> : <Trans context="sera pay">Set pay for {pays} roles</Trans>}
+        </button>
+      )}
       <div
         className="relative"
         onKeyDown={(e) => {
@@ -59,9 +76,11 @@ export function BulkBar({ acts, agent }: { acts: SeraActs; agent: string }) {
         </button>
         {more && (
           <div id={`${id}-more`} className="absolute right-0 bottom-full mb-2 w-56 bg-card border border-border rounded-lg shadow-sm p-1 flex flex-col">
-            <button type="button" data-bulk="keep" onClick={() => { setMore(false); acts.openSheet("keep", moreButton.current); }} className="min-h-[44px] px-3 text-left text-sm rounded-lg hover:bg-muted">
-              {t({ message: `Keep ours for ${n}`, context: "sera answers" })}
-            </button>
+            {rest > 0 && (
+              <button type="button" data-bulk="keep" onClick={() => { setMore(false); acts.openSheet("keep", moreButton.current); }} className="min-h-[44px] px-3 text-left text-sm rounded-lg hover:bg-muted">
+                {keepWords(rest)}
+              </button>
+            )}
             <button type="button" onClick={() => { setMore(false); acts.untickAll(); }} className="min-h-[44px] px-3 text-left text-sm rounded-lg hover:bg-muted">
               <Trans context="sera answers">Untick all</Trans>
             </button>
@@ -79,7 +98,8 @@ export function BulkSheet({ acts, agent }: { acts: SeraActs; agent: string }) {
   const owner = possessive(agent);
   const plan = acts.plan;
   const keep = sheet?.kind === "keep";
-  const n = keep ? acts.tickedRows.length : plan.take.length;
+  // A keep never reaches a pay row (useSeraActs.ts), so it does not count one.
+  const n = keep ? acts.tickedRows.filter((d) => d.kind !== "pay").length : plan.take.length;
   const checks = plan.leftOut.filter((l) => l.why === "checkFirst" || l.why === "notTakeable").length;
   const pays = plan.leftOut.filter((l) => l.why === "pay").length;
   const named = plan.leftOut.filter((l) => l.why !== "withCircle").map((l) => l.d.subject.name);
@@ -125,7 +145,7 @@ export function BulkSheet({ acts, agent }: { acts: SeraActs; agent: string }) {
                 <li>{checks === 1 ? <Trans context="sera answers">1 marked Check first is left out. Take it on its own.</Trans> : <Trans context="sera answers">{checks} marked Check first are left out. Take each of them on its own.</Trans>}</li>
               )}
               {pays > 0 && (
-                <li>{pays === 1 ? <Trans context="sera answers">1 pay suggestion is left out of this take. Pay is set where pay is set, by the people who set pay.</Trans> : <Trans context="sera answers">{pays} pay suggestions are left out of this take. Pay is set where pay is set, by the people who set pay.</Trans>}</li>
+                <li>{pays === 1 ? <Trans context="sera answers">1 pay suggestion is left out of this take. Pay is set in the role's own pay setter, opened from its row.</Trans> : <Trans context="sera answers">{pays} pay suggestions are left out of this take. Pay is set in the role's own pay setter, opened from each row.</Trans>}</li>
               )}
               {plan.cascades.map((c) => {
                 const circle = c.circle.subject.name;

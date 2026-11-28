@@ -124,7 +124,9 @@ export async function doorsNow(
   const decideIn = await inputFor("org.decide");
   return {
     decides: doorFrom({ ...decideIn, launched }),
-    paySetBy: doorFrom({ ...(await inputFor("cash.pay")), launched }),
+    // `role.pay` is the power the pay route asks (PUT /api/org/roles/:id/pay, through the holder door). This read
+    // `cash.pay`, which is marking a payment made: it named people the pay route refuses.
+    paySetBy: doorFrom({ ...(await inputFor("role.pay")), launched }),
     // Who decides, by id, for the reader's own line (QA Q5); never sent.
     deciderIds: doorHolders(decideIn).map((h) => h.userId),
   };
