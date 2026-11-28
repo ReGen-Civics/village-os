@@ -19,6 +19,7 @@ import ModuleGate from "@/components/modules/ModuleGate";
 import { useCallback, useEffect, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { authToken } from "@/lib/gameApi";
 import { Globe2, HandHeart, HelpingHand, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
@@ -79,7 +80,7 @@ export default function Network() {
   useEffect(() => {
     if (networkModule) {
       load();
-      if (user && (user.role === "admin" || user.role === "founder")) loadPeers();
+      if (hasAdminAccess(user)) loadPeers();
     }
   }, [networkModule?.id, user?.id]);
 

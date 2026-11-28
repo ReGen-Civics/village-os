@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import type { DomainPanel, SettingsPayload } from "@/components/admin/comms/commsSettingsApi";
 import FieldNotes from "@/components/setupGame/FieldNotes";
 import JourneyView from "@/components/setupGame/JourneyView";
@@ -45,7 +46,7 @@ function firstView(): View {
 export default function SetupGame() {
   const { t } = useLingui();
   const { user, loading } = useAuth();
-  const isFounder = !!user && (user.role === "admin" || user.role === "founder");
+  const isFounder = hasAdminAccess(user);
   const [view, setView] = useState<View>(firstView);
   const [map, setMap] = useState<SetupGameMap | null>(null);
   const [launch, setLaunch] = useState<LaunchItem[]>([]);
