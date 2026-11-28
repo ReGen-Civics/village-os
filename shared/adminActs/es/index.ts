@@ -18,6 +18,7 @@
 import type { AdminPlace } from "../../adminTabs";
 import type { ActWords } from "../types";
 import { FIRE_WORDS_ES } from "./fire";
+import { GATE_WORDS_ES } from "./gate";
 import { HALL_WORDS_ES } from "./hall";
 
 /** No native reader has read this table yet. It turns false, by a person's hand, the day one has. */
@@ -27,6 +28,7 @@ export const ES_AWAITING_NATIVE_READ = true;
 export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record<string, ActWords>>>>> = {
   fire: FIRE_WORDS_ES,
   hall: HALL_WORDS_ES,
+  gate: GATE_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
