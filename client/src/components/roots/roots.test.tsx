@@ -93,6 +93,9 @@ describe("RootTags", () => {
     const tip = document.getElementById(word.getAttribute("aria-describedby") ?? "");
     expect(tip?.textContent?.trim()).toBeTruthy();
     expect(word).toHaveAccessibleDescription(tip?.textContent ?? "");
+    // The drawing is inside the trigger, so a tap on it opens the meaning too; only the name wears the underline.
+    expect(word.querySelector("svg[data-root-glyph]")).not.toBeNull();
+    expect(word.querySelector(".info-word-label")?.textContent).toBe("Connector + Catalyst");
     // No hover-only title anywhere in the row.
     expect(screen.getByRole("list", { name: "Grows from" }).querySelector("[title]")).toBeNull();
     expect(screen.getByRole("listitem").className).toMatch(/\bmin-h-11\b/);

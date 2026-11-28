@@ -45,6 +45,7 @@ import { ROLE_PROPOSAL_WORDS } from "@shared/playerCardProposals";
 import { CardEditContext, ChangedContext, ChangedMark, EditInPlace, Eyebrow, GOLD_FRAME, isChanged, ListSlot, PendingNote, SlotView, useChanged } from "./cardParts";
 import { CardTerm } from "./CcosTerm";
 import InfoTip from "@/components/InfoTip";
+import { useRootCast } from "@/components/roots/rootCast";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import { useLingui } from "@lingui/react/macro";
 import { useCardWords, useProposalWords } from "./cardWords";
@@ -143,6 +144,33 @@ function HealthLine({ health }: { health: HealthOut }) {
   );
 }
 
+/**
+ * The class chips, each with what it means, from the village's own archetype words (QA round 3, 27 Nov 2026): "Plays
+ * as The Catalyst: Catalysts start things...". A chip with no blurb says nothing more, and then "Plays as" is printed
+ * before the chips instead, so they are never left unexplained. Its own component, so the archetype words are read
+ * only for a role that has class chips, and a card without them asks for nothing more than it did.
+ */
+function PlaysChips({ plays }: { plays: NonNullable<RoleOut["plays"]> }) {
+  const cast = useRootCast();
+  const blurbOf = (key: string): string => cast.find((c) => c.key === key)?.blurb.trim() ?? "";
+  const untipped = plays.chips.some((c) => !blurbOf(c.key));
+  return (
+    <>
+      {untipped ? (
+        <li className="pc-dim" data-role-chip="plays-label">
+          {plays.label}
+        </li>
+      ) : null}
+      {plays.chips.map((c) => (
+        <li key={c.key} className="pc-chip pc-arch">
+          {/* What the chip means on its own word, where a phone can open it (a title reached only a mouse). */}
+          {blurbOf(c.key) ? <InfoTip tip={`${plays.label} ${c.name}: ${blurbOf(c.key)}`}>{c.name}</InfoTip> : c.name}
+        </li>
+      ))}
+    </>
+  );
+}
+
 export function RoleInFull({ role, health = null }: { role: RoleOut; health?: HealthOut | null }) {
   const W = useCardWords();
   const { t } = useLingui();
@@ -170,6 +198,7 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
   const shownPowers = role.powers.items.kind === "shown" ? role.powers.items.value : [];
   const powers = role.powers.note ? [] : shownPowers;
   const suited = role.powers.note ? shownPowers : [];
+  const playsShown = role.plays && role.plays.chips.length ? role.plays : null;
 
   return (
     <article id={role.anchor} aria-labelledby={headingId} className="pc-rolecard">
@@ -203,14 +232,7 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
               {p}
             </li>
           ))}
-          {role.plays
-            ? role.plays.chips.map((c) => (
-                <li key={c.key} className="pc-chip pc-arch">
-                  {/* What the chip means on its own word, where a phone can open it (a title reached only a mouse; QA round 2). */}
-                  <InfoTip tip={role.plays!.label}>{c.name}</InfoTip>
-                </li>
-              ))
-            : null}
+          {playsShown ? <PlaysChips plays={playsShown} /> : null}
         </ul>
       ) : null}
       {suited.length ? (

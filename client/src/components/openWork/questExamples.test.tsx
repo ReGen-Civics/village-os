@@ -56,6 +56,7 @@ describe("the quest card's link and its roots (QA round 2, 27 Nov 2026)", () => 
     const roots = screen.getByRole("list", { name: "Grows from" });
     expect(links[0].contains(roots)).toBe(false);
     expect(roots.className).toMatch(/z-10/);
+    expect(roots.className).toMatch(/pr-3/);
   });
 });
 

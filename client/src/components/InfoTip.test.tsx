@@ -22,11 +22,14 @@
  * a class name, because the class name is the implementation and it has
  * already changed once.
  */
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import InfoTip, { nearestWord } from "./InfoTip";
+import InfoTip, { forgetTouches, nearestWord } from "./InfoTip";
+
+// A touch in one test must not count as a recent touch when the next one focuses a word from the keyboard.
+beforeEach(() => forgetTouches());
 
 // The real sentence from client/src/pages/Crowdpool.tsx, so this test names
 // the copy that produced the reported defect rather than a stand-in.
@@ -561,3 +564,100 @@ describe("the near tap (QA round 2, 27 Nov 2026)", () => {
     expect(credits).toHaveAttribute("aria-expanded", "false");
   });
 });
+
+describe("a tap the browser moves onto a link (QA round 3, WebKit, 27 Nov 2026)", () => {
+  it("gives a tap beside a word to the word, even when the browser sent the click to a link around the card", () => {
+    render(
+      <div>
+        <a href="#quest" data-testid="card-link">Map the spring path</a>
+        <ul data-testid="row">
+          <li>
+            <InfoTip tip="Builders make what the village stands on.">Builder</InfoTip>
+          </li>
+        </ul>
+      </div>,
+    );
+    const word = screen.getByRole("button", { name: "Builder" });
+    const r = { left: 20, right: 80, top: 100, bottom: 116, width: 60, height: 16, x: 20, y: 100, toJSON() {} } as DOMRect;
+    word.getClientRects = () => [r] as unknown as DOMRectList;
+    word.getBoundingClientRect = () => r;
+    const row = screen.getByTestId("row");
+    const link = screen.getByTestId("card-link");
+    // Under the finger: the roots row, 6px left of the word. The browser's adjusted click: the card's link.
+    const had = (document as { elementFromPoint?: unknown }).elementFromPoint;
+    (document as { elementFromPoint: (x: number, y: number) => Element | null }).elementFromPoint = () => row;
+    try {
+      const down = new MouseEvent("pointerdown", { bubbles: true, clientX: 14, clientY: 108 });
+      Object.defineProperty(down, "pointerType", { value: "touch" });
+      const click = new MouseEvent("click", { bubbles: true, cancelable: true, clientX: 14, clientY: 108 });
+      act(() => {
+        row.dispatchEvent(down);
+        link.dispatchEvent(click);
+      });
+      expect(word).toHaveAttribute("aria-expanded", "true");
+      expect(click.defaultPrevented).toBe(true);
+    } finally {
+      (document as { elementFromPoint?: unknown }).elementFromPoint = had;
+    }
+  });
+
+  it("leaves a tap whose finger was on the link to the link", () => {
+    render(
+      <div>
+        <a href="#quest" data-testid="card-link">Map the spring path</a>
+        <InfoTip tip="Builders make what the village stands on.">Builder</InfoTip>
+      </div>,
+    );
+    const word = screen.getByRole("button", { name: "Builder" });
+    const r = { left: 20, right: 80, top: 100, bottom: 116, width: 60, height: 16, x: 20, y: 100, toJSON() {} } as DOMRect;
+    word.getClientRects = () => [r] as unknown as DOMRectList;
+    const link = screen.getByTestId("card-link");
+    const down = new MouseEvent("pointerdown", { bubbles: true, clientX: 14, clientY: 108 });
+    Object.defineProperty(down, "pointerType", { value: "touch" });
+    const click = new MouseEvent("click", { bubbles: true, cancelable: true, clientX: 14, clientY: 108 });
+    act(() => {
+      link.dispatchEvent(down);
+      link.dispatchEvent(click);
+    });
+    expect(word).toHaveAttribute("aria-expanded", "false");
+    expect(click.defaultPrevented).toBe(false);
+  });
+});
+
+describe("a focus a touch brings (QA round 3, WebKit, 27 Nov 2026)", () => {
+  it("keeps the tip closed when a touch elsewhere is followed by focus on the word, and the keyboard still opens it", () => {
+    render(
+      <div>
+        <p data-testid="elsewhere">Every card <InfoTip tip={TIP}>wears its pills</InfoTip>.</p>
+      </div>,
+    );
+    const word = screen.getByRole("button", { name: "wears its pills" });
+    const now = vi.spyOn(performance, "now").mockReturnValue(10_000);
+    try {
+      // WebKit: the finger lands beside the word, and the browser focuses the word for it.
+      const down = new MouseEvent("pointerdown", { bubbles: true, clientX: 5, clientY: 5 });
+      Object.defineProperty(down, "pointerType", { value: "touch" });
+      act(() => {
+        screen.getByTestId("elsewhere").dispatchEvent(down);
+      });
+      now.mockReturnValue(10_200);
+      act(() => {
+        word.focus();
+      });
+      expect(word).toHaveFocus();
+      expect(word).toHaveAttribute("aria-expanded", "false");
+      act(() => {
+        word.blur();
+      });
+      // Long after any touch, a focus is the keyboard's, and it opens the tip as before.
+      now.mockReturnValue(20_000);
+      act(() => {
+        word.focus();
+      });
+      expect(word).toHaveAttribute("aria-expanded", "true");
+    } finally {
+      now.mockRestore();
+    }
+  });
+});
+

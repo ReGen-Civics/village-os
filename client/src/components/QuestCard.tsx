@@ -259,8 +259,10 @@ export default function QuestCard({
         </div>
 
         {/* The roots it grows from, drawn as small roots (shared/archetypeRoots.ts). */}
-        {/* Above the card's link layer, so each root's meaning opens on a tap (RootTags, InfoTip). */}
-        {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" className="relative z-10 w-fit" /> : null}
+        {/* Above the card's link layer, so each root's meaning opens on a tap (RootTags, InfoTip). The row reaches 12px
+            past the roots on both sides (given back on the left by a negative margin), so a tap the near tap gives a
+            root, up to 8px off its word, lands on the row and not on the card's link (QA round 3, WebKit). */}
+        {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" className="relative z-10 w-fit -ml-3 pl-3 pr-3" /> : null}
 
         {(active > 0 || done > 0) && (
           <div className="flex flex-wrap items-center gap-3 text-xs">

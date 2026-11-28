@@ -147,6 +147,23 @@ export function nearestWord(x: number, y: number, root: ParentNode = document): 
 let nearTapOn = false;
 /** Where the last touch went down, and when, so the click it makes can be judged by the finger and not the browser. */
 let lastTouch: { x: number; y: number; at: number } | null = null;
+/**
+ * When a touch last went down, on any element (performance.now()). WebKit moves a tap onto a nearby focusable word and
+ * FOCUSES it, and a focus used to open the tip, so on an iPhone a tap 14 to 18px away opened a word, once the wrong one
+ * (QA round 3, /modules at 320). A focus this soon after a touch is the tap's, and the near tap decides a tap alone.
+ */
+let lastTouchAt = -Infinity;
+const TOUCH_FOCUS_MS = 800;
+/** For tests: forget the last touch, so one test's tap does not decide the next test's focus. */
+export function forgetTouches(): void {
+  lastTouchAt = -Infinity;
+  lastTouch = null;
+}
+
+/** True when a focus is the keyboard's, and not one a touch just brought. */
+export function focusIsKeyboard(now: number = typeof performance !== "undefined" ? performance.now() : 0): boolean {
+  return now - lastTouchAt > TOUCH_FOCUS_MS;
+}
 function listenForNearTaps() {
   if (nearTapOn || typeof document === "undefined") return;
   nearTapOn = true;
@@ -154,6 +171,7 @@ function listenForNearTaps() {
     "pointerdown",
     (e) => {
       lastTouch = e.pointerType === "touch" ? { x: e.clientX, y: e.clientY, at: e.timeStamp } : null;
+      if (e.pointerType === "touch") lastTouchAt = performance.now();
     },
     true,
   );
@@ -166,19 +184,27 @@ function listenForNearTaps() {
       const owner = nearestWord(touch.x, touch.y);
       const hit = e.target instanceof Element ? e.target : null;
       const word = hit?.closest<HTMLElement>(".info-word") ?? null;
-      if (word) {
-        // The browser gave the tap to a word. Keep it there when that word is the one nearest the finger; hand it on
-        // when another word is; drop it when the finger was in reach of none (the browser's own reach is wider).
-        // A word with no laid-out box (a page with no layout to ask) keeps its tap.
-        if (owner !== word && (owner || word.getClientRects().length > 0)) {
+      // What is under the FINGER, which the browser's adjusted click may not be: WebKit moved taps that landed on a
+      // quest card's roots row, beside a root, onto the card's link and left the page (QA round 3).
+      const under = typeof document.elementFromPoint === "function" ? document.elementFromPoint(touch.x, touch.y) : hit;
+      const underControl = under && !under.closest(".info-word") ? under.closest(INTERACTIVE) : null;
+      // The finger was on a link, a button or a field: the tap is theirs.
+      if (underControl) return;
+      if (owner) {
+        // A word is in reach: the tap is the nearest word's, wherever the browser sent the click.
+        if (owner !== word) {
           e.preventDefault();
           e.stopPropagation();
-          owner?.click();
+          owner.click();
         }
         return;
       }
-      if (hit?.closest(INTERACTIVE)) return;
-      owner?.click();
+      // No word in reach. A click the browser gave to a word anyway is dropped (its reach is wider than ours); a word
+      // with no laid-out box (a page with no layout to ask) keeps its tap.
+      if (word && word.getClientRects().length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     },
     true,
   );
@@ -316,7 +342,9 @@ export default function InfoTip({ tip, children, className = "" }: InfoTipProps)
           if (!e.repeat) toggleByKey();
         }}
         onFocus={() => {
-          if (!pointerDown.current) show();
+          // The keyboard's focus opens it; a press's or a touch's does not (the press decides on its own, and WebKit
+          // focuses a word near a tap, which the near tap has already judged).
+          if (!pointerDown.current && focusIsKeyboard()) show();
         }}
         onBlur={hide}
         // A mouse's hover only: a touch also sends a made-up hover to whatever word the browser picks for the tap,

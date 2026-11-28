@@ -3076,14 +3076,18 @@ html:has(#sera-changes [data-sera-strip-on]) {
   border-radius: 0.75rem;
   text-decoration-line: none;
 }
-.info-word-tile .info-word-label {
+/* A drawing and its word as one trigger (a root tag): the whole is the target, only the word is underlined. */
+.info-word.info-word-group {
+  text-decoration-line: none;
+}
+:is(.info-word-tile, .info-word-group) .info-word-label {
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-thickness: 1px;
   text-decoration-color: color-mix(in oklab, currentColor var(--info-ink), transparent);
   text-underline-offset: 0.25em;
 }
-.info-word-tile:is(:hover, :focus-visible, [aria-expanded="true"]) .info-word-label {
+:is(.info-word-tile, .info-word-group):is(:hover, :focus-visible, [aria-expanded="true"]) .info-word-label {
   text-decoration-color: currentColor;
 }
 .info-word:hover,

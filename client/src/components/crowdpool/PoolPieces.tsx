@@ -440,9 +440,41 @@ export function closingDay(iso: string | null | undefined, timeZone: string | nu
   }
 }
 
-export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number | null; endsAt: string | null }) {
-  const closes = closingDay(endsAt, useGameConfig()?.season?.timezone ?? null);
-  const closed = daysRemaining === 0 && endsAt !== null && new Date(endsAt).getTime() < Date.now();
+/** A day's civil date in a zone, as a UTC midnight, so two of them subtract to whole days. Null for an unknown zone. */
+function civilMidnight(t: Date, timeZone: string): number | null {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone, year: "numeric", month: "numeric", day: "numeric" }).formatToParts(t);
+    const n = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+    return Date.UTC(n("year"), n("month") - 1, n("day"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The whole days from today to the closing day, both read in the village's zone, so the count and "Closes 19 Dec"
+ * beside it agree (QA round 3, 27 Nov 2026: the server's count of 24-hour spans read 23 where the calendar read 22).
+ * Null when the date cannot be read; never below zero.
+ */
+export function daysUntilClosing(iso: string | null | undefined, timeZone: string | null, now: Date = new Date()): number | null {
+  const s = String(iso ?? "").trim();
+  if (!s) return null;
+  const civil = /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const t = new Date(civil ? `${s}T12:00:00Z` : s);
+  if (Number.isNaN(t.getTime())) return null;
+  const zone = timeZone || "UTC";
+  const end = civil ? Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate()) : civilMidnight(t, zone) ?? civilMidnight(t, "UTC");
+  const today = civilMidnight(now, zone) ?? civilMidnight(now, "UTC");
+  if (end === null || today === null) return null;
+  return Math.max(0, Math.round((end - today) / 86_400_000));
+}
+
+export function StarLantern({ daysRemaining: served, endsAt }: { daysRemaining: number | null; endsAt: string | null }) {
+  const zone = useGameConfig()?.season?.timezone ?? null;
+  const closes = closingDay(endsAt, zone);
+  // Counted in the village's days when the end is known, so it agrees with the closing day beside it.
+  const daysRemaining = endsAt ? (daysUntilClosing(endsAt, zone) ?? served) : served;
+  const closed = endsAt !== null && new Date(endsAt).getTime() < Date.now();
   const glow = daysRemaining === null ? 0.35 : Math.max(0.25, Math.min(1, 1 - daysRemaining / 60));
   const line =
     daysRemaining === null
