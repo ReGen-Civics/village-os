@@ -73784,6 +73784,11 @@ msgctxt "proposed changes: a field"
 msgid "New"
 msgstr "Nuevo"
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor"
+msgid "https://..."
+msgstr ""
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "a canvas block is loading"
