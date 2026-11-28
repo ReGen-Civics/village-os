@@ -589,3 +589,125 @@ describe("what is left, said without a score", () => {
     expect(container.querySelector("[style*='width']"), "no bar drawn to a width").toBeNull();
   });
 });
+
+/*
+ * EACH CONTROL READS THE FACT ITS OWN SERVER DOOR READS (shared/launchFacts.ts).
+ *
+ * "Launched" was never one fact. A village migration 0112 recorded is issuing
+ * with no vote held and an open checklist, and this page read `launchedAt`
+ * alone, so it offered that village a button to open its vote and the server
+ * answered 409. Three villages below, and one where the facts cannot be read.
+ */
+describe("the page offers only what the server would allow", () => {
+  const founder = { id: "u1", role: "founder", name: "A founder" };
+  const FACTS = {
+    claimed: true,
+    issuing: false,
+    issuingSince: null,
+    voteCarried: false,
+    launchedByBallotId: null,
+    checklistFrozen: false,
+    launchedAt: null,
+    voteOpen: false,
+    openBallotId: null,
+    lastVote: null,
+    founderPowerStands: true,
+  };
+  const ready = {
+    ...STATUS,
+    readyToLaunch: true,
+    vote: { governanceOn: true, onTheRoll: 3, tooFew: null, unityPct: 100, quorumPct: 100, minElectorate: 3, why: "Every member is asked.", openBallot: null, past: [] },
+  };
+  const candidates = { "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } } };
+  const FACTS_URL = "/api/admin/launch/facts";
+
+  it("gives a village that is issuing with no vote held its plain name, its rows, and its Start the Game vote", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({
+      "/api/admin/launch": { status: 200, body: ready },
+      ...candidates,
+      [FACTS_URL]: { status: 200, body: { facts: { ...FACTS, issuing: true, issuingSince: "2026-03-01T00:00:00.000Z", founderPowerStands: false }, label: "issuing-vote-not-held" } },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByTestId("start-already-issuing")).toBeTruthy());
+    expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Issuing and vote not held");
+    const told = screen.getByTestId("start-already-issuing");
+    // In the village's own word for its tokens (the generic word while no config names one). It says what does
+    // not restart and what begins, and never that issuance starts.
+    expect(told.textContent).toContain("This village has been issuing tokens since");
+    expect(told.textContent).toContain("and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.");
+    expect(told.textContent).not.toMatch(/ratif/i);
+    expect(told.textContent).not.toMatch(/issuance (starts|turns on|opens)/i);
+    // The server lets this village hold its vote once (server/lib/launchRatify.ts), so the page offers the button
+    // it used to hide. The dead end is gone the other way: there is no "cannot open the vote" sentence left.
+    expect(told.textContent).not.toContain("cannot open the vote");
+    const ask = screen.getByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    // Its checklist is still open, so its rows can still be answered.
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(calls.find((c) => c.url === FACTS_URL)?.init?.headers?.Authorization, "the facts read carries the token").toBe("Bearer a-token");
+  });
+
+  it("offers the ask to a village still being built, as before", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 200, body: { facts: FACTS, label: "setup" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Where the village stands: Setup"));
+    expect(screen.queryByTestId("start-already-issuing")).toBeNull();
+  });
+
+  it("offers no row answers once the checklist froze, because the server refuses them", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-12-30T18:00:00.000Z";
+    answer({
+      "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at } },
+      ...candidates,
+      [FACTS_URL]: {
+        status: 200,
+        body: { facts: { ...FACTS, issuing: true, founderPowerStands: false, voteCarried: true, launchedByBallotId: "bal-3", checklistFrozen: true, launchedAt: at }, label: "running" },
+      },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByText(/The village voted to start its Game on/)).toBeTruthy());
+    // The header says where a launched village stands, so the label steps back.
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
+    expect(screen.getByText(/Take one backup/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /mark done/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+  });
+
+  it("never says a village voted when it was only marked launched, and shows no label over a frozen checklist", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-02-01T12:00:00.000Z";
+    for (const marked of [
+      // A frozen checklist with no vote behind it, issuing (the label would read "Issuing and vote not held")...
+      { ...FACTS, issuing: true, founderPowerStands: false, checklistFrozen: true, launchedAt: at },
+      // ...and one that is not issuing either (the label would read "Setup", under a header that says "live").
+      { ...FACTS, checklistFrozen: true, launchedAt: at },
+    ]) {
+      answer({
+        "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at, launchedByBallotId: null } },
+        ...candidates,
+        [FACTS_URL]: { status: 200, body: { facts: marked, label: marked.issuing ? "issuing-vote-not-held" : "setup" } },
+      });
+      const page = draw();
+      await waitFor(() => expect(screen.getByText(/This village was marked launched on/)).toBeTruthy());
+      expect(screen.getByText(/No launch vote carried\./)).toBeTruthy();
+      expect(screen.queryByText(/The village voted to start its Game/)).toBeNull();
+      expect(screen.queryByTestId("journey-standing")).toBeNull();
+      page.unmount();
+    }
+  });
+
+  it("falls back to what it read before when the facts cannot be read", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 500, body: { error: "boom" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
+  });
+});

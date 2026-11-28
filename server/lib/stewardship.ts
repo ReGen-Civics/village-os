@@ -1465,12 +1465,6 @@ export interface SeasonTurn {
   seasonEndsAt?: Date | null;
   /** The instant the term is measured from. Defaults to now. */
   now?: Date;
-  /**
-   * The launch vote that carried ratified a village already issuing
-   * (server/lib/launchRatify.ts), so the record of what crossed says so.
-   * Absent reads as the vote that started the Game.
-   */
-  ratifying?: boolean;
 }
 
 export interface SeatingReport {
@@ -1982,12 +1976,7 @@ export async function seatCatalystsAsStewards(
     // Owed now, and the first vote-seating finishes it (R165).
     if ((await readLaunchCrossing(pool)) !== "crossed") await writeLaunchCrossing(pool, "waiting", new Date(), launchBallotId);
   } else {
-    const crossed = await crossLaunchSelection(
-      pool,
-      launchBallotId,
-      turn.ratifying ? "The village's own hand on this, from the vote that ratified its launch." : "The village's own hand on this, from the vote that started its Game.",
-      launchBallotId,
-    );
+    const crossed = await crossLaunchSelection(pool, launchBallotId, "The village's own hand on this, from the vote that started its Game.", launchBallotId);
     base.capabilitiesMoved.push(...crossed.moved);
     base.capabilitiesKeptElsewhere.push(...crossed.keptElsewhere);
     // TRUE ONLY WHEN EVERY SELECTED POWER IS THERE, which is what the caller's own

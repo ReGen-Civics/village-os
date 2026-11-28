@@ -87,7 +87,7 @@ export default function Library() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Library, h1">Material Library</Trans></h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Library, h1">Library</Trans></h1>
           {/* R47: the Trail line leads, naming the token as this village does
               (R084). Its tooltip said how the token is earned, which no
               shipped sentence says (the 2026-10-22 token ruling).

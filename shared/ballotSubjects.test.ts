@@ -475,11 +475,8 @@ describe("the launch rule is the village's to change, and frozen on the ballot",
       "Every member who holds a voice votes on starting the Game, each counted once. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.",
     );
     expect(launchRuleSentence({ yesNeeded: 40, roll: "members" })).toContain("the moment 40 of them have said yes");
-    // A village already issuing ratifies its launch and starts nothing, and the sentence says so.
-    expect(launchRuleSentence({ yesNeeded: 3, roll: "founders", ratifying: true })).toBe(
-      "Only founding members vote on ratifying the launch. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.",
-    );
-    expect(launchRuleSentence({ yesNeeded: 3, roll: "members", ratifying: true })).not.toContain("starting the Game");
+    // One name for every village, issuing or not (Rye, 2026-11-28: "Let's stay with start the game").
+    expect(launchRuleSentence({ yesNeeded: 3, roll: "founders" })).not.toMatch(/ratif/i);
   });
 });
 

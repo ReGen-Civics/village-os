@@ -9,7 +9,9 @@ import { Link } from "wouter";
 import { SeedGlint } from "@/components/sacred/living";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
 import { useAppWords } from "@/hooks/useAppWords";
+import { useTokensWord } from "@/hooks/useTokenNames";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { launchDoors, type LaunchFacts } from "@shared/launchFacts";
 
 /** What `/api/admin/launch` says about the launch vote itself (R74). */
 export interface LaunchVote {
@@ -48,10 +50,14 @@ export interface LaunchVote {
 /**
  * STARTING THE GAME (R74). The card that used to mark a village launched.
  *
- * Four states and one of them is new, so each gets its own words and nothing
- * is inferred from a missing field:
+ * Five states, so each gets its own words and nothing is inferred from a
+ * missing field:
  *
  *   a vote is running     what it is waiting for, and where to go and vote
+ *   already issuing       tokens are issued here and no launch vote was held.
+ *                         The server refuses to open the vote for this village
+ *                         (`POST /api/admin/launch/propose` reads `game-start`),
+ *                         so the card says that plainly and offers no button
  *   the roll is short     how many hold a voice, and how many more
  *   ready to ask          the ask, with what carrying it needs
  *   items still open      how many, unchanged from before
@@ -64,6 +70,7 @@ export interface LaunchVote {
 export default function StartTheGame({
   status,
   vote,
+  facts,
   isFounder,
   busy,
   onAsk,
@@ -75,6 +82,12 @@ export default function StartTheGame({
 }: {
   status: any;
   vote: LaunchVote | null;
+  /**
+   * Where the village stands (`shared/launchFacts.ts`), or null when that read
+   * has not arrived. Null reads as "may be asked", which is what this card
+   * assumed before the facts existed; the server still answers for itself.
+   */
+  facts?: LaunchFacts | null;
   isFounder: boolean;
   busy: boolean;
   onAsk: () => void;
@@ -88,10 +101,18 @@ export default function StartTheGame({
   const { t } = useLingui();
   // The village may name its launch vote (gap G7); blank keeps the platform's name.
   const launchName = useAppWords()("launch", "name") ?? "Start the Game";
+  // What this village calls all its tokens together, so the sentence below is in its own words.
+  const tokens = useTokensWord();
   const running = vote?.openBallot ?? null;
   const shortOfPeople = !!vote?.tooFew;
   const governanceOff = vote?.governanceOn === false;
-  const canAsk = !!status.readyToLaunch && !shortOfPeople && !governanceOff && !running && isFounder;
+  // The card reads the fact the button's own door reads (shared/launchFacts.ts).
+  const cannotBeAsked = !running && !!facts && !launchDoors(facts).voteCanBeAsked;
+  // Issuing with no vote held: from the launch read, or from the facts when that read is the one in hand.
+  const alreadyIssuing = !!vote?.ratifying || (!!facts && facts.issuing && !facts.voteCarried && !facts.checklistFrozen);
+  const issuingSince = vote?.issuingSince ?? facts?.issuingSince ?? null;
+  const issuingDay = issuingSince ? new Date(issuingSince).toLocaleDateString() : "";
+  const canAsk = !!status.readyToLaunch && !shortOfPeople && !governanceOff && !running && isFounder && !cannotBeAsked;
 
   return (
     <section
@@ -102,33 +123,32 @@ export default function StartTheGame({
       <div className="flex items-center gap-3 flex-wrap justify-between">
         <div>
           <p className="font-semibold text-stone-900 flex items-center gap-2">
-            {/* A village already issuing does not start anything, so its card says what the vote is (Rye, 2026-11-27). */}
-            <SeedGlint className="w-4 h-4 text-teal-deep" /> {vote?.ratifying ? t({ message: "Ratify the launch", context: "StartTheGame, the card's name on a village already issuing" }) : launchName}
+            <SeedGlint className="w-4 h-4 text-teal-deep" /> {launchName}
           </p>
-          {/* One paragraph for the two facts a founder needs before the count: a village already issuing ratifies and
-              starts nothing (Rye, 2026-11-27), and the vote is held in the governance module. */}
-          {!running && (governanceOff || vote?.ratifying) && (
-            <p className="text-xs text-stone-700 mt-1 max-w-md">
-              {vote?.ratifying && (
+          {/* One line, in one element. A village already issuing may hold this vote once (server/lib/launchRatify.ts), and it
+              keeps the name (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game'
+              going forward"). So it is told what does not restart, and what begins the day the vote carries. */}
+          {!running && (alreadyIssuing || governanceOff) && (
+            <p data-testid={alreadyIssuing ? "start-already-issuing" : undefined} className="text-xs text-stone-700 mt-1 max-w-md">
+              {alreadyIssuing && (
                 <>
-                  {vote.issuingSince ? (
-                    <Trans context="StartTheGame, a village already issuing">This village has been issuing tokens since {new Date(vote.issuingSince).toLocaleDateString()}. This vote puts the launch on the record. It does not restart issuance, and that date does not move.</Trans>
+                  {issuingDay ? (
+                    <Trans context="StartTheGame, a village already issuing">This village has been issuing {tokens} since {issuingDay}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.</Trans>
                   ) : (
-                    <Trans context="StartTheGame, a village already issuing">This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance.</Trans>
+                    <Trans context="StartTheGame, a village already issuing">This village is already issuing {tokens}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in.</Trans>
                   )}
                   {governanceOff && " "}
                 </>
               )}
               {governanceOff && (
-                <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
-                <Link href="/modules/governance" className="text-teal-deep underline">
-                  Turn it on for members first
-                </Link>
-                .
-              </Trans>
-              )}
-            </p>
+              <Trans context="StartTheGame, p">The vote is held in the governance module, and it is off for members.{" "}
+              <Link href="/modules/governance" className="text-teal-deep underline">
+                Turn it on for members first
+              </Link>
+              .
+            </Trans>)}</p>
           )}
+          {!cannotBeAsked && (<>
           {!running && !status.readyToLaunch && shortOfPeople && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">{vote?.tooFew}</p>
           )}
@@ -146,6 +166,7 @@ export default function StartTheGame({
               <Trans context="StartTheGame, p">{vote.onTheRoll} people are on its roll today, and the vote carries without waiting for its window to end.</Trans>
             </p>
           )}
+          </>)}
         </div>
         {running ? (
           <Link
@@ -154,7 +175,7 @@ export default function StartTheGame({
           >
             <Trans context="StartTheGame, Link">Open the vote
           </Trans></Link>
-        ) : (
+        ) : cannotBeAsked ? null : (
           <button
             onClick={onAsk}
             disabled={!canAsk || busy}
@@ -176,7 +197,7 @@ export default function StartTheGame({
           {refusal}
         </p>
       )}
-      {!running && isFounder && <StewardSlatePicker candidates={candidates} powerCount={powerCount} chosen={slate} onToggle={onToggleSlate} disabled={busy} />}
+      {!running && isFounder && !cannotBeAsked && <StewardSlatePicker candidates={candidates} powerCount={powerCount} chosen={slate} onToggle={onToggleSlate} disabled={busy} />}
 
       {/*
         * Every time this village has asked before. A vote that closed without

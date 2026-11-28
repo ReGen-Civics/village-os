@@ -304,7 +304,8 @@ describe.skipIf(!DB_CONFIGURED)("the ratifying vote", () => {
     expect(rows).toHaveLength(1);
     ratifyingBallot = rows[0].id;
     expect(rows[0].status).toBe("open");
-    expect(rows[0].title).toBe("Ratify the launch of Wealden");
+    // The vote keeps its name (Rye, 2026-11-28: "Let's stay with start the game").
+    expect(rows[0].title).toBe("Start the Game in Wealden");
     expect(rows[0].unity).toBe(100);
     // Three of four: the village's number over the roll it chose.
     expect(rows[0].quorum).toBe(75);
@@ -312,14 +313,15 @@ describe.skipIf(!DB_CONFIGURED)("the ratifying vote", () => {
     expect(await rollOf(ratifyingBallot)).toEqual([founderId, wrenId, idaId, tamId].sort());
 
     const doc = rows[0].doc;
-    expect(doc).toContain("# Ratify the launch");
-    expect(doc).toContain("Wealden has been issuing tokens since 2026-03-14, from before the launch vote existed. This vote puts its launch on the record.");
-    expect(doc).toContain("Token issuance does not restart, and the day it began stays 2026-03-14.");
+    expect(doc).toContain("# Start the Game");
+    expect(doc).toContain("Wealden has been issuing tokens since 2026-03-14, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.");
+    expect(doc).toContain("## What was already running");
+    expect(doc).toContain("Token issuance. It does not restart, and the day it began stays 2026-03-14.");
     expect(doc).toContain("nobody's balance moves because of this vote");
     // EVERY "ISSUANCE STARTS" SENTENCE IS GONE FROM THIS CASE.
     expect(doc).not.toContain("Token issuance turns on");
     expect(doc).not.toContain("This vote is what starts it");
-    expect(doc).not.toContain("# Start the Game");
+    expect(doc).not.toMatch(/ratif/i);
     // The rest of the launch is the same act, at the roll this village chose.
     expect(doc).toContain("Every member who holds a voice votes on this, each counted once. It carries the moment 3 of them have said yes, unless one of them has said no.");
     expect(doc).toContain("Who carries the steward role");
@@ -329,7 +331,7 @@ describe.skipIf(!DB_CONFIGURED)("the ratifying vote", () => {
     // The notice and the pulse say ratify, never start.
     const [opening] = await pool.query<any[]>("SELECT title FROM notifications WHERE dedupe_key LIKE ? AND type = 'ballot_opened'", [`bal:${ratifyingBallot}:%`]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     expect(opening.length).toBeGreaterThan(0);
-    for (const n of opening) expect(String(n.title)).toBe("The village is deciding whether to put its launch on the record");
+    for (const n of opening) expect(String(n.title)).toBe("The village is deciding whether to start its Game");
   });
 
   it("a no holds it, and when the no is withdrawn the third yes carries it at once", async () => {
@@ -368,14 +370,15 @@ describe.skipIf(!DB_CONFIGURED)("the ratifying vote", () => {
       [`bal:${ratifyingBallot}:launch-carried`],
     );
     expect(told).toHaveLength(1);
-    expect(String(told[0].title)).toBe("The village ratified its launch: Ratify the launch of Wealden");
-    expect(String(told[0].body)).toBe("The launch is on the record. Token issuance began on 2026-03-14, and that date has not moved.");
+    expect(String(told[0].title)).toBe("The village started its Game: Start the Game in Wealden");
+    // One line of ceremony, then what was already running. Never that issuance opens today.
+    expect(String(told[0].body)).toBe("The Game has begun. Happy birthday, Wealden. Token issuance was already open, since 2026-03-14, and that day has not moved.");
     const [pulse] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       "SELECT text FROM health_events WHERE kind = 'governance' AND entity_type = 'ballot' AND entity_ref = ? AND text LIKE 'The village %'",
       [ratifyingBallot],
     );
-    expect(pulse.map((p) => String(p.text))).toContain("The village put its launch on the record: its launch vote carried.");
-    expect(pulse.map((p) => String(p.text)).some((t) => t.includes("started its Game")), "no line says the Game started today").toBe(false);
+    expect(pulse.map((p) => String(p.text))).toContain("The village started its Game: its launch vote carried.");
+    expect(pulse.map((p) => String(p.text)).some((t) => /issuance (is open|opens|turns on|starts)/i.test(t)), "no line says issuance opens today").toBe(false);
   });
 
   it("seats the founder who was named and accepted, exactly as a first launch does", async () => {
