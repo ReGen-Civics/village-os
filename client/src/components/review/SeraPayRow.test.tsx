@@ -137,6 +137,24 @@ describe("a pay row in Sera's list", () => {
     expect(screen.getAllByTestId("setter")).toHaveLength(1);
   });
 
+  it("a pane that draws one row at a time starts each role fresh: moving to another row closes the setter that was open", async () => {
+    serveDoor(door("holder"));
+    const cook = payRow("r-cook", "Cook");
+    const baker = payRow("r-baker", "Baker");
+    // The compare pane (SeraDifferences.tsx) and the phone's pane (SeraRows.tsx) draw the selected row in one place,
+    // with no key of their own, so the row that is drawn changes under the same element.
+    const pane = (d: ReturnType<typeof payRow>) => <RowActions d={d} acts={{} as never} agent="Sera" pay={TREASURER} layout="compare" />;
+    const { rerender } = render(pane(cook));
+    fireEvent.click(await screen.findByRole("button", { name: OPEN }));
+    expect((await screen.findByTestId("setter")).getAttribute("data-role")).toBe("r-cook");
+    rerender(pane(baker));
+    // A setter opened for Cook, with whatever was typed and answered there, never becomes Baker's.
+    expect(screen.queryByTestId("setter")).toBeNull();
+    expect((await screen.findByRole("button", { name: OPEN })).getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(screen.getByRole("button", { name: OPEN }));
+    expect((await screen.findByTestId("setter")).getAttribute("data-role")).toBe("r-baker");
+  });
+
   it("once pay is set there, the list is read again so the row settles", async () => {
     serveDoor(door("holder"));
     const reload = vi.fn(async () => {});
