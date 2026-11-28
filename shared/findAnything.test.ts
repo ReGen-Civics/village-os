@@ -15,7 +15,7 @@ import {
   type FindEntry,
 } from "./findAnything";
 import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry } from "./findPages";
-import { PAGE_TITLES } from "./pageTitles";
+import { PAGE_TITLES, pageTitleFor } from "./pageTitles";
 
 const pages = FIND_PAGES.map((p) => pageEntry(p, { commitment: "Love Letter" }));
 const role: FindEntry = { id: "role:garden-lead", kind: "role", title: "Garden Lead", help: "Keeps the food forest growing.", path: "/roles/garden-lead" };
@@ -23,6 +23,8 @@ const quest: FindEntry = { id: "quest:q1", kind: "quest", title: "Build the comp
 const person: FindEntry = { id: "person:ana", kind: "person", title: "Ana Example", help: "", path: "/profile/ana" };
 const all = [...pages, role, quest, person];
 const top = (q: string) => rankFind(q, all)[0]?.entry.title;
+/** The calendar's name the way its tab says it, whatever a lane renames it to ("Village Calendar", then "Events"). */
+const EVENTS = pageTitleFor("/events");
 
 describe("the page table", () => {
   it("names every page the way its tab does, and every path is a page the tab table knows", () => {
@@ -31,7 +33,7 @@ describe("the page table", () => {
       const known = Object.keys(PAGE_TITLES).some((k) => (k === "/" ? bare === "/" : bare.startsWith(k)));
       expect(known, p.path).toBe(true);
     }
-    expect(pages.find((e) => e.path === "/events")?.title).toBe("Village Calendar");
+    expect(pages.find((e) => e.path === "/events")?.title).toBe(EVENTS);
     expect(pages.find((e) => e.path === "/love-letter")?.title).toBe("Love Letter");
   });
 
@@ -46,14 +48,20 @@ describe("typo-tolerant ranking", () => {
   it("finds by prefix, by word and by a synonym", () => {
     expect(top("gratit")).toBe("Gratitude");
     expect(top("compost")).toBe("Build the compost bays");
-    expect(top("calendar")).toBe("Village Calendar");
+    expect(top("calendar")).toBe(EVENTS);
     expect(top("donate")).toBe("Contribute");
   });
 
   it("forgives one typo a word: a swap, a missing letter, a wrong letter, an extra one", () => {
     expect(top("qeusts")).toBe("Quests");
     expect(top("gratitde")).toBe("Gratitude");
-    expect(top("calender")).toBe("Village Calendar");
+    expect(top("calender")).toBe(EVENTS);
+  });
+
+  it("finds the calendar by its synonyms whatever its tab calls it, a typo included", () => {
+    // The nav lane renames it "Events" (#1881): the word "calendar" then lives in its synonyms alone.
+    const renamed = all.map((e) => (e.path === "/events" ? { ...e, title: "Events" } : e));
+    for (const q of ["calendar", "calender"]) expect(rankFind(q, renamed)[0]?.entry.path, q).toBe("/events");
     expect(top("forumm")).toBe("Forum");
     expect(top("gardn lead")).toBe("Garden Lead");
   });

@@ -1,19 +1,21 @@
 /**
- * FIND ANYTHING's door: the search icon the header and the phone's top bar draw, and Ctrl K or Cmd K anywhere.
+ * FIND ANYTHING's doors: the root mount, the search icon the header draws, the row the phone's More sheet draws, and
+ * Ctrl K or Cmd K anywhere.
  *
- * This file is the only part of the search on the first page, so it is a button, one key listener and a little
- * state. The dialog itself (FindAnythingDialog.tsx) is a lazy chunk, fetched when a pointer or the focus reaches
- * the button, or on the first press.
+ * This file is the only part of the search on the first page, so it is a button, a root that draws nothing until
+ * asked, two listeners and a little state. The dialog itself (FindAnythingDialog.tsx) is a lazy chunk, fetched when
+ * a pointer or the focus reaches a door, or on the first press.
  *
- * Mount it anywhere, as often as the shell likes (the header and the phone bar are two mounts): every mount shares
- * one state, one key listener and one dialog. The dialog closes back to whatever opened it, the button pressed or
- * the element that had the focus when the keys were.
+ * `FindAnythingRoot` is mounted once at the App's root, outside every Layout, so every page has the search, the
+ * not-found page included. The doors (SearchSlot.tsx places them) share its state and only open it; mounted alone,
+ * a door still answers by itself. The dialog closes back to whatever opened it, the door pressed or the element
+ * that had the focus when the keys were.
  *
  * Any page can open it too: `openFindAnything()` and `useFindAnythingReady()` in findAnythingDoor.ts, which imports
- * nothing of the search, so a link costs its page a few lines and shows only while a mount is here to answer.
+ * nothing of the search, so a link costs its page a few lines and shows only while the search is here to answer.
  *
- * In Admin's own page the admin search keeps Ctrl K (components/admin/search): that page draws no site header, so
- * no mount is there, and a key the admin search already took (`defaultPrevented`) is never taken twice.
+ * On Admin's own page (/admin) the admin search keeps Ctrl K (components/admin/search), and a key another search
+ * already took (`defaultPrevented`) is never taken twice.
  */
 import { lazy, Suspense, useEffect, useRef, useSyncExternalStore } from "react";
 import { Search } from "lucide-react";
@@ -49,15 +51,18 @@ const subscribe = (f: () => void) => {
 const snapshot = () => state;
 
 /** Open the search. `from` takes the focus back on close; absent, whatever has the focus now does. */
-export function openFind(from?: HTMLElement | null, owner?: number): void {
+export function openFind(from?: HTMLElement | null): void {
   if (state.open) return;
   const focused = typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null;
-  setState({ open: true, owner: owner ?? mounts[0] ?? null, returnTo: from ?? focused });
+  setState({ open: true, owner: mounts[0] ?? null, returnTo: from ?? focused });
 }
 
-/** Close it and hand the focus back. */
-export function closeFind(): void {
-  const back = state.returnTo;
+/**
+ * Close it and hand the focus back. `returnFocus: false` when the close hands the reader on to something that takes
+ * the focus itself (the menu, from "Open the menu"), so the two never fight over it.
+ */
+export function closeFind(opts: { returnFocus?: boolean } = {}): void {
+  const back = opts.returnFocus === false ? null : state.returnTo;
   setState({ open: false, owner: null, returnTo: null });
   if (back && typeof back.focus === "function") setTimeout(() => back.isConnected && back.focus(), 0);
 }
@@ -72,28 +77,29 @@ function onAsk(): void {
   openFind(null);
 }
 
+/** Admin's own page keeps Ctrl K for the admin search (components/admin/search), which draws there without the shell. */
+const adminSearchHere = () => typeof window !== "undefined" && /^\/admin\/?$/.test(window.location.pathname);
+
 function onKey(e: KeyboardEvent): void {
-  if (e.defaultPrevented || e.isComposing || !isFindShortcut(e)) return;
+  if (e.defaultPrevented || e.isComposing || !isFindShortcut(e) || adminSearchHere()) return;
   // The browser's own Ctrl K is its address bar's search; on this site the keys are the site's search.
   e.preventDefault();
   openFind(null);
 }
 
 /**
- * The door to the search. `variant="icon"` (the default) is the header's icon; `variant="row"` is a full row with
- * the guide's compass and words, for the first row of the phone's More sheet. `className` replaces the default look
- * of either: the icon takes the ink of whatever bar it sits in, the row draws in the sheet's tokens.
+ * One mount of the search: the root (FindAnythingRoot, at the App's root, so every page has it, the not-found page
+ * included) or a door (FindAnything). The first mount puts the listeners and the ready flag up and the last takes
+ * them down; a root goes to the front, so the dialog is the root's whenever there is one.
  */
-export function FindAnything({ className, variant = "icon" }: { className?: string; variant?: "icon" | "row" }) {
-  const { t } = useLingui();
+function useFindMount(root: boolean): { id: number; open: boolean; owns: boolean } {
   const s = useSyncExternalStore(subscribe, snapshot, snapshot);
   const id = useRef(0);
-  const button = useRef<HTMLButtonElement>(null);
   if (!id.current) id.current = nextMount++;
-
   useEffect(() => {
     const me = id.current;
-    mounts.push(me);
+    if (root) mounts.unshift(me);
+    else mounts.push(me);
     if (mounts.length === 1) {
       document.addEventListener("keydown", onKey);
       window.addEventListener(FIND_ANYTHING_EVENT, onAsk);
@@ -112,8 +118,38 @@ export function FindAnything({ className, variant = "icon" }: { className?: stri
         else setState({ open: false, owner: null, returnTo: null });
       }
     };
-  }, []);
+  }, [root]);
+  return { id: id.current, open: s.open, owns: s.open && s.owner === id.current };
+}
 
+/** The dialog, drawn by whichever mount owns it. Lazy: nothing of it reaches the first page. */
+function Dialog() {
+  return (
+    <Suspense fallback={null}>
+      <FindAnythingDialog onClose={closeFind} />
+    </Suspense>
+  );
+}
+
+/**
+ * THE ROOT MOUNT: once, at the App's root, outside every Layout (client/src/App.tsx). It draws nothing until the
+ * search opens, and it is what makes Ctrl K, `openFindAnything()` and the ready flag true on every page, the
+ * not-found page (which draws no shell) included. The doors in the header and the sheet then only open it.
+ */
+export function FindAnythingRoot() {
+  const { owns } = useFindMount(true);
+  return owns ? <Dialog /> : null;
+}
+
+/**
+ * The door to the search. `variant="icon"` (the default) is the header's icon; `variant="row"` is a full row with
+ * the guide's compass and words, for the first row of the phone's More sheet. `className` replaces the default look
+ * of either: the icon takes the ink of whatever bar it sits in, the row draws in the sheet's tokens.
+ */
+export function FindAnything({ className, variant = "icon" }: { className?: string; variant?: "icon" | "row" }) {
+  const { t } = useLingui();
+  const { open, owns } = useFindMount(false);
+  const button = useRef<HTMLButtonElement>(null);
   const warm = () => void loadDialog().catch(() => undefined);
 
   return (
@@ -121,11 +157,11 @@ export function FindAnything({ className, variant = "icon" }: { className?: stri
       <button
         ref={button}
         type="button"
-        onClick={() => openFind(button.current, id.current)}
+        onClick={() => openFind(button.current)}
         onPointerEnter={warm}
         onFocus={warm}
         aria-haspopup="dialog"
-        aria-expanded={s.open}
+        aria-expanded={open}
         aria-keyshortcuts="Control+K Meta+K"
         // The row says its own name in words; the icon needs one spoken.
         aria-label={variant === "row" ? undefined : t({ message: "Find anything", context: "site header: opens the site search" })}
@@ -143,18 +179,15 @@ export function FindAnything({ className, variant = "icon" }: { className?: stri
             <span aria-hidden="true" className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-notice text-notice">
               <LeafCompass className="size-4" />
             </span>
-            <span className="min-w-0 flex-1"><Trans context="the phone's More sheet: the search's row">Find a page, a role, a quest</Trans></span>
+            {/* One line at 320px: the words give way with an ellipsis, never a second line. */}
+            <span className="min-w-0 flex-1 truncate"><Trans context="the phone's More sheet: the search's row">Find a page, a role, a quest</Trans></span>
             <Search aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" />
           </>
         ) : (
           <Search aria-hidden="true" className="size-5" />
         )}
       </button>
-      {s.open && s.owner === id.current && (
-        <Suspense fallback={null}>
-          <FindAnythingDialog onClose={closeFind} />
-        </Suspense>
-      )}
+      {owns && <Dialog />}
     </>
   );
 }

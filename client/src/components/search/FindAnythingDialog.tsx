@@ -105,7 +105,7 @@ function lookFor(admin: boolean) {
   };
 }
 
-export default function FindAnythingDialog({ onClose }: { onClose: () => void }) {
+export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { returnFocus?: boolean }) => void }) {
   const { t } = useLingui();
   const [location, setLocation] = useLocation();
   const look = lookFor(location === "/admin" || location.startsWith("/admin/"));
@@ -360,8 +360,10 @@ export default function FindAnythingDialog({ onClose }: { onClose: () => void })
                 <button
                   type="button"
                   onClick={() => {
-                    onClose();
-                    openVillageMenu();
+                    // The menu takes the focus itself: close without handing it back, then ask on the next frame,
+                    // once the dialog is gone, so the menu's own focus is the one that stands.
+                    onClose({ returnFocus: false });
+                    requestAnimationFrame(() => openVillageMenu());
                   }}
                   className={look.door}
                 >

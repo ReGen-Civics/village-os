@@ -7,7 +7,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { FindAnything, isFindShortcut } from "./FindAnything";
+import { FindAnything, FindAnythingRoot, isFindShortcut } from "./FindAnything";
+import SearchSlot from "./SearchSlot";
 import { forgetFindIndex } from "./FindAnythingDialog";
 import { FIND_ANYTHING_READY_EVENT, MENU_OPEN_EVENT, openFindAnything, useFindAnythingReady } from "./findAnythingDoor";
 
@@ -273,8 +274,19 @@ describe("Find anything", () => {
     await userEvent.type(within(d).getByRole("combobox"), "s");
     expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
     act(() => shellMenu(true));
+    // The shell's menu takes the focus when it opens; the search must not take it back after.
+    const menuButton = document.createElement("button");
+    menuButton.textContent = "The menu";
+    document.body.appendChild(menuButton);
+    const shellOpens = () => menuButton.focus();
+    window.addEventListener("village:open-menu", shellOpens);
     await userEvent.click(await within(d).findByRole("button", { name: "Open the menu" }));
-    expect(opened).toBe(1);
+    await waitFor(() => expect(opened).toBe(1));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await new Promise((r) => setTimeout(r, 30));
+    expect(menuButton).toHaveFocus();
+    window.removeEventListener("village:open-menu", shellOpens);
+    menuButton.remove();
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     act(() => shellMenu(false));
     await userEvent.click(screen.getByRole("button", { name: "Find anything" }));
@@ -283,5 +295,65 @@ describe("Find anything", () => {
     await within(d).findByRole("option", { name: /Ask Sol/ });
     expect(within(d).queryByRole("button", { name: "Open the menu" })).toBeNull();
     window.removeEventListener("village:open-menu", shell);
+  });
+
+  it("from the App's root alone, the not-found page's button is there and opens the dialog with the focus in its field", async () => {
+    // The not-found page draws no shell: no header icon, no sheet row. Its button is the wayfinding lane's, as it reads
+    // the search through findAnythingDoor.ts.
+    function NotFoundSearch() {
+      return useFindAnythingReady() ? (
+        <button type="button" onClick={openFindAnything}>
+          Search the village
+        </button>
+      ) : null;
+    }
+    render(
+      <>
+        <FindAnythingRoot />
+        <NotFoundSearch />
+      </>,
+    );
+    expect(window.__findAnythingReady).toBe(true);
+    const link = await screen.findByRole("button", { name: "Search the village" });
+    await userEvent.click(link);
+    const d = await dialog();
+    await waitFor(() => expect(within(d).getByRole("combobox")).toHaveFocus());
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(link).toHaveFocus());
+  });
+
+  it("with the root and the header's door both mounted, opens one dialog, and the root keeps Ctrl K", async () => {
+    render(
+      <>
+        <FindAnythingRoot />
+        <SearchSlot place="desktop" />
+      </>,
+    );
+    const icon = screen.getByRole("button", { name: "Find anything" });
+    await userEvent.click(icon);
+    await dialog();
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(icon).toHaveFocus());
+    fireEvent.keyDown(document, { key: "k", ctrlKey: true });
+    expect(await dialog()).toBeTruthy();
+  });
+
+  it("fills the nav lane's slot: the icon on the desktop, the icon from 768px in the phone bar, the row in the sheet", () => {
+    render(
+      <>
+        <SearchSlot place="desktop" />
+        <SearchSlot place="phone" />
+        <SearchSlot place="sheet" />
+      </>,
+    );
+    const icons = screen.getAllByRole("button", { name: "Find anything" });
+    expect(icons).toHaveLength(2);
+    // The phone bar's icon is hidden below md (a phone), shown from 768px (a tablet).
+    expect(icons[1].parentElement?.className).toBe("hidden md:contents");
+    const row = screen.getByRole("button", { name: "Find a page, a role, a quest" });
+    // One line at 320px: the words truncate, never wrap.
+    expect(row.querySelector(".truncate")?.textContent).toBe("Find a page, a role, a quest");
   });
 });

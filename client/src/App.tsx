@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import BreakGlass from "@/components/BreakGlass";
+import { FindAnythingRoot } from "@/components/search/FindAnything";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import QuietLoading from "@/components/natural/QuietLoading";
@@ -640,6 +641,12 @@ function App() {
               * before anything is sent a second time.
               */}
             <BreakGlass />
+            {/*
+              * Find anything's root (components/search/FindAnything.tsx): Ctrl K, `openFindAnything()` and the
+              * search's dialog on every page, the not-found page included, which draws no shell. Nothing until asked;
+              * the dialog is a lazy chunk.
+              */}
+            <FindAnythingRoot />
             <Router />
           </TooltipProvider>
 
