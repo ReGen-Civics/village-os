@@ -13,7 +13,9 @@
  *                      shared password may do anything.
  *   issuing            the `game-start` row (`server/lib/gameStart.ts`). The
  *                      ledger reads it on every faucet posting, and
- *                      `POST /api/admin/launch/propose` refuses once it is set.
+ *                      `POST /api/admin/launch/propose` lets a village that was
+ *                      issuing before the vote existed hold it once, and
+ *                      refuses every other village once this is set.
  *   vote carried       `launch-state.launchedByBallotId`
  *                      (`launchBallotCarried`, `server/lib/launch.ts`). The
  *                      module switch, the key co-sign and the seating read it.
@@ -159,6 +161,16 @@ export interface LaunchDoors {
 export function launchDoors(f: LaunchFacts): LaunchDoors {
   return {
     rowsOpen: !f.checklistFrozen,
-    voteCanBeAsked: !f.issuing && !f.checklistFrozen,
+    /*
+     * A VILLAGE ALREADY ISSUING MAY HOLD ITS VOTE, ONCE (server/lib/launchRatify.ts).
+     * This read `!f.issuing` while the propose route refused every village
+     * whose `game-start` was set. The route now lets a village hold the vote
+     * when it was issuing before the vote existed and no launch is on record,
+     * and that vote never restarts issuance. Such a village is exactly one that
+     * is issuing with its checklist still open, so the open checklist is the
+     * fact. A village whose own vote carried has a frozen checklist and is
+     * refused here and there.
+     */
+    voteCanBeAsked: !f.checklistFrozen,
   };
 }

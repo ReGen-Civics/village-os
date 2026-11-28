@@ -30,6 +30,17 @@
  * kept "so nothing that still points here breaks", and nothing pointed there.
  * Two writers of one document, one of them with no door, is the shape that
  * round removed, and it stays removed.
+ *
+ * ── ONE SAVE, AND THE LAUNCH USES IT TOO ────────────────────────────────────
+ *
+ * `saveCalendar` is the whole save with the request taken out of it: the store
+ * rule, the write, the pulse line when the running season changed, the seats
+ * that follow a season, and the sweep of waiting seat applications. The route
+ * is that plus who may call it. The launch turns the season through the same
+ * function (server/lib/launchSeasonTurn.ts; Rye, 2026-11-27: "The launch is
+ * the turn of the season"), so a season that turned because a vote carried and
+ * one that turned because a founder saved this tab are one event with one set
+ * of consequences.
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
@@ -59,8 +70,57 @@ type Deps = Pick<AppDeps, "isAdmin" | "adminActor" | "getPool" | "notify"> & {
   seatVoteLandsAt(): Date;
 };
 
-export function register(app: Express, deps: Deps): void {
-  const { isAdmin, adminActor, getPool, notify, seasonState, getSeasonConfig, seasonRepo, addActivity, loadRoles } = deps;
+/** What a save answers. `refused` is a sentence when nothing was stored, and null when the list saved and its seats did not move. */
+export type CalendarSave =
+  | { ok: true; after: any; seatsMoved: { permission: number; org: number } }
+  | { ok: false; refused: string }
+  | { ok: false; refused: null; after: any };
+
+type SaveDeps = Pick<Deps, "getPool" | "notify" | "seasonState" | "getSeasonConfig" | "seasonRepo" | "addActivity" | "loadRoles" | "permissionHoldings" | "writePermissionTerms">;
+
+/** Store a season list and run everything a save runs after it. See the header. */
+export async function saveCalendar(deps: SaveDeps, body: unknown, actorUserId: string | null): Promise<CalendarSave> {
+  const { getPool, notify, seasonState, getSeasonConfig, seasonRepo, addActivity, loadRoles } = deps;
+  // An unknown zone is refused in words and nothing is stored (D2-8). An empty
+  // list, or the derived list the Season tab was shown, stores [] so the village
+  // keeps deriving (D2-9). Both rules live in server/lib/seasonCalendar.ts. The
+  // seats below still move, onto whatever the stored document now derives.
+  // The document as it stands, so a save can tell a CHANGED zone from the
+  // normalised one this tab was handed, and so an ordinary save carries an
+  // existing answer forward instead of quietly dropping it.
+  const standing = getSeasonConfig();
+  const saving = seasonDocumentToStore(body, new Date(), standing, actorUserId);
+  if (!saving.ok) return { ok: false, refused: saving.error };
+  const before = seasonState().current?.id ?? null;
+  await seasonRepo.put(saving.doc);
+  // 0298: links to a reworded goal take its new words. A failure is logged and never fails the save.
+  await refreshLinkedGoalWords(getPool(), seasonState().seasons).catch((e) => console.error("[seasons] linked goal words were not refreshed", e));
+  const after = seasonState();
+  if (after.current && after.current.id !== before) {
+    await addActivity("season", `The season has turned: ${after.current.name}`, { actorUserId: actorUserId ?? undefined, entityType: "season" });
+  }
+  let seatsMoved: { permission: number; org: number };
+  try {
+    seatsMoved = await restampSeatsToCalendar({
+      pool: getPool(),
+      calendar: { seasons: after.seasons ?? [], currentSeasonId: after.current?.id ?? null, timezone: after.timezone },
+      permissionHoldings: deps.permissionHoldings,
+      writePermissionTerms: deps.writePermissionTerms,
+      roleName: (id) => loadRoles().find((r) => r.id === id)?.name ?? id,
+      notify,
+    });
+  } catch (e: any) {
+    console.error("[seasons] the season list saved and moving its roles failed:", e?.message ?? e);
+    return { ok: false, refused: null, after };
+  }
+  // Seat applications waiting for the turn are seated now, not up to an hour later (season plans RC2).
+  await seasonSaved();
+  return { ok: true, after, seatsMoved };
+}
+
+/** Registers the routes, and hands back the save so the launch can turn the season through it. */
+export function register(app: Express, deps: Deps): { saveCalendar(body: unknown, actorUserId: string | null): Promise<CalendarSave> } {
+  const { isAdmin, adminActor, getPool, seasonState, getSeasonConfig } = deps;
 
   // Public: the computed season state (current picked by date, never stale),
   // and when a seat vote opened now would land, so the seat form measures a
@@ -109,46 +169,17 @@ export function register(app: Express, deps: Deps): void {
   app.put("/api/admin/seasons", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     if (!req.body || typeof req.body !== "object") return res.status(400).json({ error: "Body required" });
-    // An unknown zone is refused in words and nothing is stored (D2-8). An empty
-    // list, or the derived list the Season tab was shown, stores [] so the village
-    // keeps deriving (D2-9). Both rules live in server/lib/seasonCalendar.ts. The
-    // seats below still move, onto whatever the stored document now derives.
-    // The document as it stands, so a save can tell a CHANGED zone from the
-    // normalised one this tab was handed, and so an ordinary save carries an
-    // existing answer forward instead of quietly dropping it.
-    const standing = getSeasonConfig();
-    const saving = seasonDocumentToStore(req.body, new Date(), standing, adminActor(req)?.id ?? null);
-    if (!saving.ok) return res.status(400).json({ error: saving.error });
-    const before = seasonState().current?.id ?? null;
-    await seasonRepo.put(saving.doc);
-    // 0298: links to a reworded goal take its new words. A failure is logged and never fails the save.
-    await refreshLinkedGoalWords(getPool(), seasonState().seasons).catch((e) => console.error("[seasons] linked goal words were not refreshed", e));
-    const after = seasonState();
-    if (after.current && after.current.id !== before) {
-      await addActivity("season", `The season has turned: ${after.current.name}`, { actorUserId: adminActor(req)?.id, entityType: "season" });
-    }
-    let seatsMoved: { permission: number; org: number };
-    try {
-      seatsMoved = await restampSeatsToCalendar({
-        pool: getPool(),
-        calendar: { seasons: after.seasons ?? [], currentSeasonId: after.current?.id ?? null, timezone: after.timezone },
-        permissionHoldings: deps.permissionHoldings,
-        writePermissionTerms: deps.writePermissionTerms,
-        roleName: (id) => loadRoles().find((r) => r.id === id)?.name ?? id,
-        notify,
-      });
-    } catch (e: any) {
-      console.error("[seasons] the season list saved and moving its roles failed:", e?.message ?? e);
-      return res.status(500).json({
-        ...after,
-        error: "The season list saved, and moving the roles that end with a season failed. Save again to retry moving them.",
-      });
-    }
-    // Seat applications waiting for the turn are seated now, not up to an hour later (season plans RC2).
-    await seasonSaved();
-    res.json({ success: true, ...after, seatsMoved });
+    const saved = await saveCalendar(deps, req.body, adminActor(req)?.id ?? null);
+    if (saved.ok) return res.json({ success: true, ...saved.after, seatsMoved: saved.seatsMoved });
+    if (saved.refused !== null) return res.status(400).json({ error: saved.refused });
+    res.status(500).json({
+      ...saved.after,
+      error: "The season list saved, and moving the roles that end with a season failed. Save again to retry moving them.",
+    });
   });
 
   // A season's links move from a goal id it no longer holds to one it does (server/routes/seasonGoalLinks.ts).
   registerGoalLinkRemap(app, { isAdmin, adminActor, getPool, seasonState });
+
+  return { saveCalendar: (body, actorUserId) => saveCalendar(deps, body, actorUserId) };
 }

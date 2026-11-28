@@ -49,6 +49,7 @@
  */
 import type { Pool } from "mysql2/promise";
 import type { PowerInPlainWords } from "./launchHandover";
+import { LAUNCH_YES_HEADS, type LaunchRollKind } from "../../shared/ballotSubjects";
 import { HANDOVER_SET } from "../../shared/capabilities";
 import { MODULE_SWITCH_KEY, switchVerdict } from "../../shared/moduleSwitch";
 import { ORG_DECIDE } from "./orgDraftDecide";
@@ -164,8 +165,24 @@ export interface LaunchProposalDocInput {
   villageName: string;
   quorumPct: number;
   unityPct: number;
+  /** How many founders this vote is frozen to. */
   onTheRoll: number;
-  /** How weight was assigned when this froze. Empty string when there is nothing to say. */
+  /**
+   * The founders on the frozen roll, as the village reads their names, so the
+   * document a member opens a year later says who was asked (Rye, 2026-11-27:
+   * only founders vote on the launch). Absent on a caller that has no names;
+   * the count above is then all the document says.
+   */
+  founders?: readonly string[];
+  /**
+   * How many on the roll must say yes: the village's own number, frozen when
+   * the vote opened (`governance.launch_min_electorate`, never below three).
+   * Absent reads as the rule as shipped.
+   */
+  yesNeeded?: number;
+  /** Who the village's launch asks (`governance.launch_roll`). Absent reads as the founding members. */
+  rollKind?: LaunchRollKind;
+  /** How an answer is counted on this vote. Empty string when there is nothing to say. */
   weightNote: string;
   /** Whoever opened the vote and chose the slate, as the village reads their name. */
   openedBy: string;
@@ -187,6 +204,21 @@ export interface LaunchProposalDocInput {
    * have. Absent or empty means every row read done.
    */
   carriedOpen?: readonly string[];
+  /**
+   * Set when this is a RATIFYING vote: the village was already issuing when it
+   * opened (Rye, 2026-11-27: "one ratifying launch vote that does not restart
+   * issuance"). `issuingSince` is the instant `game-start` holds. Every
+   * sentence that says issuance starts is replaced, because on this village it
+   * already did. Absent means a first launch, exactly as before.
+   */
+  ratifying?: { issuingSince: string | null };
+  /**
+   * What the launch does to the season, from the calendar as it stood when the
+   * vote opened (`seasonTurnLines`, server/lib/launchSeasonTurn.ts; Rye,
+   * 2026-11-27: "The launch is the turn of the season"). Absent or empty and
+   * the document says nothing about the season.
+   */
+  season?: readonly string[];
 }
 
 /**
@@ -200,24 +232,31 @@ export interface LaunchProposalDocInput {
  */
 export function launchProposalDoc(input: LaunchProposalDocInput): string {
   return [
-    `# Start the Game`,
-    "",
-    `${input.villageName} is built. This vote is what starts it.`,
-    "",
-    "## What changes when this carries",
-    "",
-    "Token issuance turns on. Until then this village can be set up in every other way, and nothing can be issued to anybody.",
-    "",
+    ...openingSection(input),
+    ...seasonSection(input),
     ...doorsSection(input),
     ...stewardSection(input),
     ...handoverSection(input),
     "## What this vote asks",
     "",
-    `Everyone on the roll votes yes: ${input.quorumPct}% participation and ${input.unityPct}% agreement. ${input.onTheRoll} people hold a voice today, and this vote is frozen to those ${input.onTheRoll}.`,
+    // The rule, in Rye's words of 2026-11-27 and the details he accepted, at
+    // the number and the roll this village holds. Its home is the
+    // village_launch entry in shared/ballotSubjects.ts.
+    `${whoVotes(input)} It carries the moment ${yesNeededOf(input)} of them have said yes, unless one of them has said no. It does not wait for the voting window to end.`,
     "",
-    // The one subject where an abstention is not an answer. The reason is
-    // on the village_launch entry in shared/ballotSubjects.ts.
-    "An abstention is not a yes here, and neither is a vote nobody cast. If somebody takes no side, this vote closes short of participation and the village can ask again.",
+    "A no from any one of them holds it for as long as that no stands. Whoever said it can change their answer, and so can anybody who said yes, until the vote carries. Once it has carried, no answer moves.",
+    "",
+    rollKindOf(input) === "founders"
+      ? `${rollLine(input)} A member who is not a founding member is not asked on this one vote, and is asked on every vote the village holds after it.`
+      : rollLine(input),
+    "",
+    // An abstention is neither answer: it does not count toward the yeses and
+    // it does not hold the vote.
+    `An abstention is not a yes and it is not a no. A vote cast for somebody by a person they follow does not count here: each person on the roll answers for themselves. If the window ends before ${yesNeededOf(input)} of them have said yes, nothing changes and the village can ask again.`,
+    "",
+    // Rye, 2026-11-06: everything changes by the highest village vote. Said in
+    // the document, so a reader knows this rule is the village's own.
+    "How many must say yes, and who is asked, are this village's own settings. A founder sets them before the Game starts, and after that only a vote at the village's highest tier moves them. This vote froze them as they stood when it opened.",
     "",
     // How weight was assigned when this froze, in the document itself. The
     // roll and the dials are already frozen here; the rule that turned
@@ -228,6 +267,92 @@ export function launchProposalDoc(input: LaunchProposalDocInput): string {
       : `Every item on the journey to launch read done when ${input.openedBy} opened this, on ${input.openedOn}.`,
     "",
   ].join("\n");
+}
+
+/**
+ * THE OPENING, AND THE ONE PLACE A RATIFYING VOTE READS DIFFERENTLY.
+ *
+ * A first launch starts issuance, and says so. A ratifying vote is held by a
+ * village that has been issuing since before the vote existed, so saying
+ * "issuance turns on" would be false twice: it is already on, and a member
+ * could read it as a restart. It says what is true instead: the day issuance
+ * began, that it does not move, and that nothing already issued changes.
+ * Everything below this section is the same for both, because what the launch
+ * hands over and who is seated is the same act.
+ */
+function openingSection(input: LaunchProposalDocInput): string[] {
+  if (!input.ratifying) {
+    return [
+      `# Start the Game`,
+      "",
+      `${input.villageName} is built. This vote is what starts it.`,
+      "",
+      "## What changes when this carries",
+      "",
+      "Token issuance turns on. Until then this village can be set up in every other way, and nothing can be issued to anybody.",
+      "",
+    ];
+  }
+  const iso = String(input.ratifying.issuingSince ?? "");
+  const day = /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : "";
+  return [
+    // The vote keeps its name (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game' going forward").
+    `# Start the Game`,
+    "",
+    day
+      ? `${input.villageName} has been issuing tokens since ${day}, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`
+      : `${input.villageName} was already issuing tokens before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`,
+    "",
+    "## What was already running",
+    "",
+    day
+      ? `Token issuance. It does not restart, and the day it began stays ${day}. Nothing already issued changes, and nobody's balance moves because of this vote.`
+      : "Token issuance. It does not restart, and the day it began does not move. Nothing already issued changes, and nobody's balance moves because of this vote.",
+    "",
+    "## What changes when this carries",
+    "",
+    "That day is the Game's birthday, and Moon 1 is the moon it falls in. The village's powers pass the way a launch passes them, as the sections below say: who may turn a module on, who may publish the org chart, who is seated as a steward, and what the village holds from that day.",
+    "",
+  ];
+}
+
+/**
+ * THE LAUNCH IS THE TURN OF THE SEASON (Rye, 2026-11-27). Which season begins,
+ * how long a steward seated by this vote holds the role, and that no other
+ * date moves, in the sentences `seasonTurnLines` wrote from the calendar the
+ * vote opened on. Its own section, so a member who reads only headings finds
+ * that a launch moves the calendar.
+ */
+function seasonSection(input: LaunchProposalDocInput): string[] {
+  if (!input.season?.length) return [];
+  return ["## The season", "", ...input.season.flatMap((line) => [line, ""])];
+}
+
+const rollKindOf = (input: LaunchProposalDocInput): LaunchRollKind => input.rollKind ?? "founders";
+
+/** The village's number, never below the three the rule ships with. */
+const yesNeededOf = (input: LaunchProposalDocInput): number =>
+  Math.max(LAUNCH_YES_HEADS, Math.trunc(Number(input.yesNeeded ?? LAUNCH_YES_HEADS)) || LAUNCH_YES_HEADS);
+
+function whoVotes(input: LaunchProposalDocInput): string {
+  return rollKindOf(input) === "founders"
+    ? "Only founding members vote on this."
+    : "Every member who holds a voice votes on this, each counted once.";
+}
+
+/** Who the vote is frozen to: by name when the caller has them and the list is short, and the count either way. */
+function rollLine(input: LaunchProposalDocInput): string {
+  const n = input.onTheRoll;
+  const one = rollKindOf(input) === "founders" ? "founding member" : "member";
+  const who = input.founders?.length && input.founders.length <= 24 ? `: ${nameList(input.founders)}` : "";
+  return n === 1
+    ? `One ${one} is on the roll today${who}, and this vote is frozen to that one.`
+    : `${n} ${one}s are on the roll today${who}, and this vote is frozen to those ${n}.`;
+}
+
+function nameList(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
 /**

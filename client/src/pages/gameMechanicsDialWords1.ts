@@ -580,8 +580,22 @@ export const DIAL_WORDS_1: Readonly<Record<string, DialWords>> = {
     },
   },
   "governance.launch_min_electorate": {
-    label: msg({ message: "Members it takes to launch", context: "game variable governance.launch_min_electorate, label" }),
-    description: msg({ message: "How many members must hold a voice before the village can vote to start its Game. Every one of them has to say yes. The default is three: a founder and two more. Moving it costs the highest tier your village works at.", context: "game variable governance.launch_min_electorate, description" }),
+    label: msg({ message: "Yeses it takes to launch", context: "game variable governance.launch_min_electorate, label" }),
+    description: msg({ message: "How many of the people the launch asks must say yes for the village to start its Game. The vote cannot open with fewer than this many on its roll, and it carries the moment this many have said yes, unless somebody on the roll has said no. The default is three, and it is never fewer. A founder sets it before the Game starts. After that it moves only by a vote at the highest tier your village works at.", context: "game variable governance.launch_min_electorate, description" }),
+  },
+  "governance.launch_roll": {
+    label: msg({ message: "Who the launch vote asks", context: "game variable governance.launch_roll, label" }),
+    description: msg({ message: "Who is on the roll when the village votes to start its Game. Each person on it counts once, and a no from any one of them holds the vote until they change their answer. A founder sets this before the Game starts. After that it moves only by a vote at the highest tier your village works at, which every member answers.", context: "game variable governance.launch_roll, description" }),
+    choices: {
+      "founders": {
+        label: msg({ message: "Founding members", context: "game variable governance.launch_roll, choice founders, label" }),
+        hint: msg({ message: "Only members who hold the founder role answer the launch vote.", context: "game variable governance.launch_roll, choice founders, hint" }),
+      },
+      "members": {
+        label: msg({ message: "Every member", context: "game variable governance.launch_roll, choice members, label" }),
+        hint: msg({ message: "Every member who holds a voice answers the launch vote.", context: "game variable governance.launch_roll, choice members, hint" }),
+      },
+    },
   },
   "governance.subject_mint_rule_quorum_pct": {
     label: msg({ message: "Minting rule changes: quorum floor", context: "game variable governance.subject_mint_rule_quorum_pct, label" }),

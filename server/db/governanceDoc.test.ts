@@ -116,11 +116,26 @@ describe("the governance doc states the numbers the engine produces", () => {
     // The sentence the document leads its subject table with. A village at 90
     // and 60 keeps 90 and 60 on a subject whose floor is lower.
     const village = { unityPct: 90, quorumPct: 60 };
+    let fixed = 0;
     for (const s of doc.subjects) {
       const frozen = dialsForSubject(s.subjectType, (s.method ?? "custom") as BallotMethod, village);
+      if (s.fixedDials) {
+        // THE ONE EXCEPTION, and the document names it: the Birthing's two
+        // numbers are its whole rule (Rye, 2026-11-27: "Not everyone, but at
+        // least 3 members holding the founder role"), so the village's quorum
+        // dial never reaches it and its yes heads are the participation.
+        fixed += 1;
+        expect(frozen).toEqual({ unityPct: s.minUnityPct, quorumPct: s.minQuorumPct });
+        expect(s.roll).toBe("founders");
+        expect(s.carriesAtOnce).toBe(true);
+        expect(Number(s.minYesHeads)).toBeGreaterThanOrEqual(3);
+        continue;
+      }
       expect(frozen.unityPct).toBeGreaterThanOrEqual(village.unityPct === 90 && s.method === "custom" ? 90 : 0);
       expect(frozen.quorumPct).toBe(Math.max(village.quorumPct, s.minQuorumPct));
     }
+    // Exactly one subject is fixed, so the loop above still proves the floor rule on all the others.
+    expect(fixed).toBe(1);
   });
 
   it("states each dial's ring, default and apply timing, as the registry resolves them", () => {
@@ -226,6 +241,17 @@ describe.skipIf(!configured)("the governance doc's claims, against a real ballot
     expect((await castVote(pool, id, "u-b", "abstain")).ok).toBe(true);
     expect((await castVote(pool, id, "u-c", "abstain")).ok).toBe(true);
 
+    // Since 2026-11-27 nobody closes a Birthing early by hand: it carries by
+    // its own rule or runs its window. So the early close is refused first,
+    // and the same close after the window reads the outcome.
+    const early = await closeBallot(pool, {
+      ballotId: id,
+      outcomeNote: "Three people answered and one took a side.",
+      closedBy: "u-opener",
+      closerMayCloseEarly: true,
+    });
+    expect(early.ok).toBe(false);
+    await pool.query("UPDATE ballots SET closes_at = DATE_SUB(NOW(), INTERVAL 1 HOUR) WHERE id = ?", [id]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     const closed = await closeBallot(pool, {
       ballotId: id,
       outcomeNote: "Three people answered and one took a side.",

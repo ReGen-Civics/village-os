@@ -17,6 +17,7 @@ import mysql from "mysql2/promise";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb } from "../db/testDb";
 import {
   ballotById,
+  CARRIES_BY_ITS_OWN_RULE,
   castVote,
   closeBallot,
   fileObjection,
@@ -598,6 +599,7 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
   });
 
   it("the Birthing does not carry on delegations: it closes short of quorum instead", async () => {
+    // The launch's own dials since 2026-11-27: unity 100, and three of this roll of three as its participation.
     const opened = await openOne({
       subjectType: VILLAGE_LAUNCH,
       subjectRef: "gmp-birthing-delegated",
@@ -619,13 +621,16 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
     });
     expect(closed.ok).toBe(true);
     if (!closed.ok) return;
-    // A missed quorum, so the village can ask again on a fresh freeze. Three
-    // delegations to one person are not three people starting a Game.
+    // Short of the three yes heads it asks, so the village can ask again on a
+    // fresh freeze. Two delegations to one person are not three founders
+    // starting a Game: one head said yes, and the two copied rows count for
+    // nothing in weight or in heads.
     expect(closed.outcome).toBe("no_quorum");
     expect(closed.quorum).toBeCloseTo(100 / 3, 5);
+    expect(await headsFor(pool, closed.ballot)).toMatchObject({ yesHeads: 1, noHeads: 0, electorateCount: 3 });
   });
 
-  it("the launch vote runs its whole window: nobody closes it early as short of participation (launch rehearsal)", async () => {
+  it("the launch vote carries by its own rule or runs its whole window: nobody closes it early by hand (Rye, 2026-11-27)", async () => {
     const opened = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-early-close", unityPct: 100, quorumPct: 100 });
     expect(opened.ok).toBe(true);
     if (!opened.ok) return;
@@ -635,13 +640,34 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
     const early = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "Too slow.", closerMayCloseEarly: true });
     expect(early.ok).toBe(false);
     if (early.ok) return;
-    expect(early.error).toContain("runs its whole window");
-    // The control: one no means it can no longer carry, so it may still close early.
+    expect(early.error).toBe(CARRIES_BY_ITS_OWN_RULE);
+    expect(early.error).toContain("stays open for its whole window");
+    /*
+     * A NO HOLDS IT, AND HELD IS NOT FAILED. Until 2026-11-27 one no meant it
+     * could no longer carry, so an early close was allowed here. A no can now
+     * be withdrawn, so the same close is refused and the vote stays open.
+     */
     expect((await castVote(pool, id, "u-b", "no")).ok).toBe(true);
-    const failed = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "A no was cast.", closerMayCloseEarly: true });
-    expect(failed.ok).toBe(true);
-    if (!failed.ok) return;
-    expect(failed.outcome).not.toBe("passed");
+    const held = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "A no was cast.", closerMayCloseEarly: true });
+    expect(held.ok).toBe(false);
+    if (held.ok) return;
+    expect(held.error).toBe(CARRIES_BY_ITS_OWN_RULE);
+    // The founder withdraws the no by answering yes, and the third founder says yes: it carries BEFORE its window ends.
+    expect((await castVote(pool, id, "u-b", "yes")).ok).toBe(true);
+    expect((await castVote(pool, id, "u-c", "yes")).ok).toBe(true);
+    const carried = await closeBallot(pool, { ballotId: id, closedBy: "governance", outcomeNote: "Three founders said yes.", closerMayCloseEarly: false });
+    expect(carried.ok).toBe(true);
+    if (!carried.ok) return;
+    expect(carried.outcome).toBe("passed");
+    expect(Date.parse(carried.ballot.closesAt)).toBeGreaterThan(Date.now());
+    // Control: an ordinary ballot with the same three yeses is still refused an early pass.
+    const ordinary = await openOne({ subjectRef: "launch-early-close-control", unityPct: 100, quorumPct: 100 });
+    expect(ordinary.ok).toBe(true);
+    if (!ordinary.ok) return;
+    for (const who of ["u-a", "u-b", "u-c"]) expect((await castVote(pool, ordinary.ballot.id, who, "yes")).ok).toBe(true);
+    const refused = await closeBallot(pool, { ballotId: ordinary.ballot.id, closedBy: "u-admin", outcomeNote: "All yes.", closerMayCloseEarly: true });
+    expect(refused.ok).toBe(false);
+    if (!refused.ok) expect(refused.error).toContain("passes when its window ends and not before");
   });
 
   it("the launch vote is not called off over other people's votes, even by an admin (security lane S3)", async () => {

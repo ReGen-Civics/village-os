@@ -83,13 +83,14 @@ import type { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
  *
  * ── IT NAMES NO CHOICE, AND THAT IS NOT AN OVERSIGHT ───────────────────────
  *
- * A `village_launch` ballot carries `minYesHeads: "all"` at 100% quorum and
- * 100% unity, so a launch that reached the close has every member on the roll
- * answering and every one of them answering yes. Filtering on `choice = 'yes'`
- * here would be a condition that cannot fail, and a condition that cannot fail
- * reads as a rule the caller is relying on. The thresholds are the one place
- * that decides what a launch needs (`shared/ballotSubjects.ts`), and a second
- * copy of it in a SELECT would be two homes for one rule.
+ * A `village_launch` ballot carries on three founder yeses with no founder's
+ * no (Rye, 2026-11-27), so a launch that carried has no `no` row on it at all.
+ * What can stand beside the yeses is an abstention, and a founder who takes no
+ * side on starting the Game and still accepts the seat has accepted the seat:
+ * the acceptance is its own answer (`ballot_steward_slate`), and the seating
+ * weighs it. So this names no choice. The thresholds are the one place that
+ * decides what a launch needs (`shared/ballotSubjects.ts`), and a second copy
+ * of it in a SELECT would be two homes for one rule.
  *
  * ── A DELEGATED ROW CANNOT APPEAR HERE ─────────────────────────────────────
  *
