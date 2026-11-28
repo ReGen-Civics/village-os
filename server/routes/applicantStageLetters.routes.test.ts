@@ -27,6 +27,9 @@ import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 import { signLink } from "../lib/comms/links";
+import { civilDateKey } from "../../shared/lunar";
+import { wordsIn } from "../../shared/applicantWords";
+import { allHandsOnOrAfter, weekdayName, weekdayOfIso } from "../../shared/startDay";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[applicantStageLetters] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -743,6 +746,196 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     } finally {
       await cardApplyBy(null);
     }
+  });
+
+  describe("THE START DAY, ONE DAY EVERYWHERE (e2e round 3: the letter, the adopter's message, the notice, the invite and the seat)", () => {
+    // This suite's calendar: the running season ends, and Season of Roots begins, on Thursday 1 January 2037. The
+    // all-hands is on Mondays, so the first all-hands day on or after the next season's start is Monday 5 January 2037.
+    const START_ISO = "2037-01-05";
+    const today = () => civilDateKey(new Date(), "UTC");
+    let n = 0;
+    let plain = "";
+
+    beforeAll(async () => {
+      // Room for every adoption below: a full role would promise no day.
+      await q("UPDATE org_roles SET seats = 40 WHERE id = ?", [gate]);
+      // A role that names NO conversations: adopted outside the applicant flow.
+      plain = await createOrgRole(pool, { id: "sl-role-plain", name: "Compost Keeper", seats: 40, circleId: "c-sl", aim: "Keep the compost." });
+      await variable("org.all_hands_time", "12:00");
+      await variable("org.all_hands_timezone", "America/Costa_Rica");
+      await variable("org.all_hands_link", "https://meet.example.test/all-hands");
+    });
+
+    /** Somebody with an account here, so the adoption places them at once and no invitation is needed. */
+    const account = async () => {
+      n += 1;
+      const who = { id: `u-sl-start-${n}`, name: "Rowan Field", email: `start-${n}@example.test` };
+      await usersRepo(pool).add({ id: who.id, name: who.name, email: who.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+      return who;
+    };
+    /** Through the whole conversation flow, to the proposal sent on to the anchor circle. */
+    const throughTheFlow = async (email: string) => {
+      const id = await confirmed(email);
+      expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+      const [first] = await ivs(id);
+      await score(id, Number(first.id), IA.id);
+      expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+      const given = await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, {
+        references: [
+          { name: "Ana Example", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We kept a farm's books.", ally: "" },
+          { name: "Ben Example", email: "ben@example.test", whatsapp: "+506 8888 1234", how: "He hired me twice.", ally: "" },
+        ],
+      });
+      expect(given.status, given.text).toBe(200);
+      const second = (await ivs(id)).find((i: any) => Number(i.position) === 2);
+      await score(id, Number(second.id), IB.id);
+      await q("UPDATE application_references SET followed_up_at = NOW(3), notes = ? WHERE application_ref = ?", [FOLLOWUP, id]);
+      expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
+      const final = (await ivs(id)).find((i: any) => Number(i.is_final) === 1);
+      await score(id, Number(final.id), FINAL.id);
+      const sent = await call("POST", `/api/application-status/${id}/to-circle?token=${statusToken(id)}`);
+      expect(sent.status, sent.text).toBe(200);
+      return id;
+    };
+    const adopt = async (id: string) => {
+      state.fresh.length = 0;
+      state.notices.length = 0;
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { confirmOverLimit: true }, FOUNDER.id);
+      expect(r.status, r.text).toBe(200);
+      const letter = state.fresh.find((m) => m.origin === "open_proposal.adopted")!;
+      expect(letter, "the adoption letter").toBeTruthy();
+      const ics = letter.attachments?.[0] ? Buffer.from(String(letter.attachments[0].contentBase64), "base64").toString("utf8") : null;
+      return { message: String(r.body.message), letter, ics };
+    };
+    const seatOf = async (userId: string) =>
+      (await q("SELECT status, UNIX_TIMESTAMP(starts_at) AS starts_s, DATE_FORMAT(starts_at, '%Y-%m-%d') AS starts_on, DATE_FORMAT(term_ends_at, '%Y-%m-%d') AS ends_on FROM seat_applications WHERE candidate_user_id = ? ORDER BY created_at DESC", [userId]))[0];
+    const holds = async (userId: string, roleId: string) => (await q("SELECT 1 FROM org_role_assignments WHERE user_id = ? AND org_role_id = ? AND ended_at IS NULL", [userId, roleId])).length > 0;
+    const tookUp = (userId: string) => state.notices.filter((x) => x.userId === userId && /^You took up the role/.test(x.title));
+    const inMoonMode = async <T,>(fn: () => Promise<T>): Promise<T> => {
+      expect((await call("PUT", "/api/admin/open-proposals/settings", { term: "moon" }, FOUNDER.id)).status).toBe(200);
+      try {
+        return await fn();
+      } finally {
+        await call("PUT", "/api/admin/open-proposals/settings", { term: "season" }, FOUNDER.id);
+      }
+    };
+    /** Every date the letter prints after a weekday name falls on that weekday: none is a setting's name put in front of a date. */
+    const weekdaysAreTheDatesOwn = (text: string) => {
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const found = Array.from(text.matchAll(/(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday) (\d{1,2}) ([A-Z][a-z]+) (\d{4})/g));
+      for (const m of found) expect(days[new Date(Date.UTC(Number(m[4]), months.indexOf(m[3]), Number(m[2]))).getUTCDay()], m[0]).toBe(m[1]);
+      return found.length;
+    };
+
+    it("BY DEFAULT, in both term modes: the letter's day is the seat's start, on the first all-hands day on or after the next season's start; nobody is seated or told they took up the role before it", async () => {
+      for (const mode of ["season", "moon"] as const) {
+        const run = async () => {
+          const who = await account();
+          const id = await throughTheFlow(who.email);
+          const { message, letter, ics } = await adopt(id);
+          // The letter: one start day, a Monday, with the all-hands that day and the role that may start them sooner.
+          expect(letter.text, mode).toContain("You start on Monday 5 January 2037.");
+          expect(letter.text, mode).toContain("asks you to start sooner, they'll write to you.");
+          expect(letter.text, mode).toContain("That day, join us for our all-hands meeting, Monday at 12:00 Costa Rica time.");
+          expect(weekdaysAreTheDatesOwn(letter.text), mode).toBeGreaterThan(0);
+          // No other day is promised: no "this moon", no "next season", and no "when the season begins" for a Thursday.
+          expect(letter.text, mode).not.toMatch(/this moon|next season|Season of Roots begins/);
+          // The adopter reads the same day.
+          expect(message, mode).toContain("their roles start on Monday 5 January 2037.");
+          // The invite is for that day's all-hands: 12:00 in Costa Rica is 18:00 UTC.
+          expect(ics, mode).toContain("DTSTART:20370105T180000Z");
+          // The seat starts that day, and nobody holds the role or is told they took it up before then.
+          const seat = await seatOf(who.id);
+          expect(seat, mode).toMatchObject({ status: "adopted", starts_on: START_ISO });
+          expect(Number(seat.starts_s) * 1000, mode).toBe(Date.parse(`${START_ISO}T00:00:00Z`));
+          expect(await holds(who.id, gate), mode).toBe(false);
+          expect(tookUp(who.id), mode).toEqual([]);
+          if (mode === "moon") {
+            // A moon role takes the moon its start day falls in, and the letter says that run: never a term that ends before it starts.
+            expect(seat.ends_on > START_ISO).toBe(true);
+            expect(letter.text).toContain(`Your roles run from 5 January 2037 to the next new moon, ${wordsIn("en").day(seat.ends_on)}.`);
+          }
+        };
+        if (mode === "moon") await inMoonMode(run);
+        else await run();
+      }
+    });
+
+    it("B2, START NOW, in both term modes: the letter says today, the seat starts at the adoption instant, 'You took up the role' goes at once, and the invite is the next all-hands by its own date", async () => {
+      for (const mode of ["season", "moon"] as const) {
+        const run = async () => {
+          const who = await account();
+          const id = await throughTheFlow(who.email);
+          expect((await call("POST", `${app(id)}/start-now`, {}, IA.id)).status).toBe(200);
+          const before = Date.now();
+          const { message, letter, ics } = await adopt(id);
+          const day = today();
+          const nextAllHands = allHandsOnOrAfter(day, 1);
+          const dated = (iso: string) => `${weekdayName(weekdayOfIso(iso), "en")} ${wordsIn("en").day(iso)}`;
+          // The letter: today, by its own weekday; no "start sooner"; the NEXT all-hands with its real date.
+          expect(letter.text, mode).toContain(`Your roles start today, ${dated(day)}.`);
+          expect(letter.text, mode).not.toMatch(/start sooner|You start on|That day/);
+          expect(letter.text, mode).toContain(`Join us for our next all-hands meeting, ${dated(nextAllHands)} at 12:00 Costa Rica time.`);
+          expect(weekdayOfIso(nextAllHands), mode).toBe(1);
+          expect(weekdaysAreTheDatesOwn(letter.text), mode).toBeGreaterThanOrEqual(2);
+          expect(letter.text, mode).not.toContain("5 January 2037");
+          // The invite file is for that all-hands.
+          expect(ics, mode).toContain(`DTSTART:${nextAllHands.replace(/-/g, "")}T180000Z`);
+          // The adopter reads it, with why.
+          expect(message, mode).toContain("their roles start today, because Ops chose to start now.");
+          // The seat starts at the adoption instant, the role is held, and the notice went in the same act.
+          const seat = await seatOf(who.id);
+          expect(Number(seat.starts_s) * 1000, mode).toBeGreaterThanOrEqual(Math.floor(before / 1000) * 1000 - 1000);
+          expect(Number(seat.starts_s) * 1000, mode).toBeLessThan(Date.now() + 1000);
+          expect(seat.starts_on, mode).toBe(day);
+          expect(await holds(who.id, gate), mode).toBe(true);
+          expect(tookUp(who.id), mode).toHaveLength(1);
+          // A season role started now runs to the end of the season it was proposed for; a moon role to its moon's end.
+          if (mode === "season") expect(seat.ends_on).toBe(NEXT.endsOn);
+          else expect(letter.text).toContain(`Your roles run from ${wordsIn("en").day(day)} to the next new moon, ${wordsIn("en").day(seat.ends_on)}.`);
+          // The team's view says why.
+          const walk = await call("GET", `${app(id)}/walkthrough`, undefined, IA.id);
+          expect(JSON.stringify(walk.body)).toContain("because Ops chose to start now");
+        };
+        if (mode === "moon") await inMoonMode(run);
+        else await run();
+      }
+    });
+
+    it("B3, OUTSIDE THE FLOW: a role that names no conversations seats at adoption, with the letter, the subject and the adopter's words it always had; CONTROL: the same adoption in the flow seats on its start day", async () => {
+      await inMoonMode(async () => {
+        const who = await account();
+        const r = await call("POST", "/api/open-proposals", { name: who.name, email: who.email, locale: "en", roles: [{ roleId: plain, note: "I turn compost." }], why: "I want to keep the compost well.", aim: "Good soil." });
+        expect(r.status, r.text).toBe(200);
+        const mail = state.fresh.find((m) => m.to.email === who.email)!;
+        const id = mail.idempotencyKey.split(":")[1];
+        expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) })).status).toBe(200);
+        // No conversations, so nothing to send on first, and no start-now to wait for.
+        const before = Date.now();
+        const { message, letter, ics } = await adopt(id);
+        expect(message).toContain("their roles start today, for this moon.");
+        expect(letter.subject).toBe("Test Village said yes to your proposal");
+        expect(letter.text).toContain("Test Village said yes to your proposal to hold Compost Keeper this moon.");
+        expect(letter.text).toContain(`Your roles run from ${wordsIn("en").day(today())} to the next new moon`);
+        expect(letter.text).toContain("1. Sign in with this address.");
+        expect(letter.text).toContain("Each one has its own door there.");
+        expect(letter.text).not.toMatch(/You start on|all-hands|Your buddy|Who acts next|application-status|Core Circle/);
+        expect(ics).toBeNull();
+        const seat = await seatOf(who.id);
+        expect(Number(seat.starts_s) * 1000).toBeGreaterThanOrEqual(Math.floor(before / 1000) * 1000 - 1000);
+        expect(Number(seat.starts_s) * 1000).toBeLessThan(Date.now() + 1000);
+        expect(await holds(who.id, plain)).toBe(true);
+        expect(tookUp(who.id)).toHaveLength(1);
+
+        // CONTROL: the same village, the same moment, a role that names conversations: the start day, and no seat yet.
+        const flowed = await account();
+        const flowId = await throughTheFlow(flowed.email);
+        await adopt(flowId);
+        expect((await seatOf(flowed.id)).starts_on).toBe(START_ISO);
+        expect(await holds(flowed.id, gate)).toBe(false);
+      });
+    });
   });
 
   describe("the 90-day close", () => {

@@ -42,7 +42,9 @@
  *
  * No `recordEvent` and no `addActivity`: the rows are the record.
  */
-import { ALL_HANDS_VARIABLES, startOf as startOfDay, weekdayIndex } from "../../shared/startDay";
+import { ALL_HANDS_VARIABLES, startOf as startOfDay, weekdayIndex, type StartRule } from "../../shared/startDay";
+import { moonTermFor } from "../../shared/openProposalTerm";
+import { activeClock } from "./gratitude-cycles";
 import { startNowOf } from "../repos/openProposals";
 import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
@@ -485,6 +487,94 @@ export async function roomFor(deps: Pick<DecideDeps, "getPool" | "calendar" | "l
   return seatsWithoutRoom(pool, { seatIds, candidateUserId: own, at, calendar: deps.calendar(), lapse: { ...deps.lapse(), now: deps.now() }, seasonId: proposal.body.term ? null : proposal.targetSeasonId, promised, promisedCommitments, adding, overridden });
 }
 
+/**
+ * WHEN AN ADOPTED PROPOSAL'S ROLES START, AND WHAT TERM THEY TAKE: one answer, read by the seat (`placeOnRoles`), the
+ * letter, the adopter's message, the invite and the team's view, so they cannot say different days (e2e round 3).
+ *
+ * OUTSIDE THE CONVERSATION FLOW (a role that names no conversations; `flow` false) nothing changed from the village's
+ * older rule: a moon proposal starts at adoption, never before the moon's first day, and a season one on the season's
+ * first day.
+ *
+ * IN THE CONVERSATION FLOW the rule is shared/startDay.ts `startOf`:
+ *   by default      the first all-hands day on or after the next season's start, in every term mode. A moon role then
+ *                   takes the moon that day falls in, since the moon it was proposed for is usually over by then;
+ *   Ops's start now the adoption instant. A moon role keeps its moon (or the one running, when its own has ended), and
+ *                   a season role runs from now to the end of the season it was proposed for.
+ */
+export interface StartPlan {
+  /** The application went through the conversation flow: its role names conversations. */
+  flow: boolean;
+  /** Ops directed "start now" (a recorded step), honoured in the flow only. */
+  startNow: boolean;
+  /** The instant the seat starts, at the precision `starts_at` keeps. Null when the season is gone from the calendar. */
+  startsAt: Date | null;
+  /** The civil day the role starts, as the letters say it. */
+  startIso: string | null;
+  /** The civil day of the all-hands they are invited to. Null outside the flow, which promises no meeting. */
+  allHandsIso: string | null;
+  rule: StartRule | null;
+  /** A moon role's last day, when the flow moved it off the moon it was proposed for. Null keeps the proposal's own. */
+  moonEndsOn: string | null;
+  /** A season role started now: the last day of the season it was proposed for. */
+  seasonEndsOn: string | null;
+}
+
+export async function startPlanOf(
+  deps: Pick<DecideDeps, "getPool" | "calendar">,
+  proposal: store.StoredOpenProposal,
+  /** The adoption instant: the day the rule counts from. */
+  acceptedAt: Date,
+  /** The instant the seat is written: the adoption, or the arrival through the invitation. */
+  now: Date,
+): Promise<StartPlan> {
+  const pool = deps.getPool();
+  const calendar = deps.calendar();
+  const tz = calendar.timezone || "UTC";
+  const term = proposal.body.term;
+  const season = calendar.seasons.find((s) => s.id === proposal.targetSeasonId);
+  const nowSecond = wholeSecond(now);
+  const flow = (await review.interviewsOf(pool, proposal.id)).length > 0;
+  const startNow = flow && (await startNowOf(pool, proposal.id));
+  if (!flow) {
+    const moonStart = term ? civilDateInstant(term.startsOn, tz) : null;
+    const startsAt = term ? (moonStart && moonStart.getTime() > now.getTime() ? moonStart : nowSecond) : season ? civilDateInstant(season.startsOn, tz) : null;
+    return { flow, startNow: false, startsAt, startIso: startsAt ? civilDateKey(startsAt, tz) : null, allHandsIso: null, rule: null, moonEndsOn: null, seasonEndsOn: null };
+  }
+  const day = startOfDay({
+    acceptedIso: civilDateKey(acceptedAt, tz),
+    weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)),
+    seasonStarts: calendar.seasons.map((s) => String(s.startsOn ?? "")),
+    startNow,
+  });
+  if (startNow) {
+    const today = civilDateKey(now, tz);
+    const begins = season?.startsOn ? civilDateInstant(season.startsOn, tz) : null;
+    return {
+      flow,
+      startNow,
+      startsAt: nowSecond,
+      startIso: day.iso,
+      allHandsIso: day.allHandsIso,
+      rule: day.rule,
+      moonEndsOn: term && today > term.endsOn ? moonTermFor(now, activeClock(), tz).endsOn : null,
+      // Proposed for a season that has not begun: the seat runs from now to that season's end.
+      seasonEndsOn: !term && season?.endsOn && begins && begins.getTime() > now.getTime() ? String(season.endsOn) : null,
+    };
+  }
+  const startsAt = civilDateInstant(day.iso, tz);
+  const within = !!term && day.iso >= term.startsOn && day.iso <= term.endsOn;
+  return {
+    flow,
+    startNow,
+    startsAt,
+    startIso: day.iso,
+    allHandsIso: day.allHandsIso,
+    rule: day.rule,
+    moonEndsOn: term && !within && startsAt ? moonTermFor(startsAt, activeClock(), tz).endsOn : null,
+    seasonEndsOn: null,
+  };
+}
+
 export async function placeOnRoles(
   deps: DecideDeps,
   p: { account: string; proposal: store.StoredOpenProposal; adopterId: string; authority: string; /** False writes the application and stops: it waits for a vote (role journey L5, the ballot fallback). */ adopt?: boolean },
@@ -497,26 +587,15 @@ export async function placeOnRoles(
   const term = p.proposal.body.term;
   // A season proposal starts on the season's first day. A moon proposal starts
   // at adoption, never before the moon's first day, and ends on its last day
-  // (shared/openProposalTerm.ts, Rye 9 Nov 2026).
-  const moonStart = term ? civilDateInstant(term.startsOn, tz) : null;
-  // "Now" in whole seconds, the precision `starts_at` keeps (see startReached in seatApplicationCloser.ts).
-  const nowSecond = wholeSecond(now);
-  // A moon role's seat starts on its start day (QA round 5: the letter said 21 December beside a term from 28 November):
-  // the first all-hands day within the moon, or at once when Ops directed "start now".
-  const startDay = term
-    ? startOfDay({
-        acceptedIso: civilDateKey(now, tz),
-        weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)),
-        seasonStarts: [],
-        startNow: await startNowOf(pool, p.proposal.id),
-        term: { startsOn: term.startsOn, endsOn: term.endsOn },
-      })
-    : null;
-  const dayStart = startDay && startDay.rule !== "start_now" ? civilDateInstant(startDay.iso, tz) : null;
-  const moonFloor = moonStart && moonStart.getTime() > now.getTime() ? moonStart : nowSecond;
-  const startsAt = term ? (dayStart && dayStart.getTime() > moonFloor.getTime() ? dayStart : moonFloor) : season ? civilDateInstant(season.startsOn, tz) : null;
+  // (shared/openProposalTerm.ts, Rye 9 Nov 2026). An application that went through
+  // the conversation flow starts by the start rule instead: `startPlanOf`, above.
+  const plan = await startPlanOf(deps, p.proposal, p.proposal.decidedAt ?? now, now);
+  const startsAt = plan.startsAt;
+  // The term the seat takes: the proposal's own, or the one the start rule moved it to.
+  const seatTerm = term ? { endsOn: plan.moonEndsOn ?? term.endsOn } : plan.seasonEndsOn ? { endsOn: plan.seasonEndsOn } : null;
   if (!season || !startsAt) return { ok: false, code: "cannot", error: "The season this proposal was for is no longer on the village's calendar, so nothing was changed." };
-  if (term && civilDateKey(now, tz) > term.endsOn) {
+  // Outside the flow a moon proposal is for its own moon. In the flow the start rule names the moon (`plan.moonEndsOn`).
+  if (!plan.flow && term && civilDateKey(now, tz) > term.endsOn) {
     return { ok: false, code: "cannot", error: "The moon this proposal was for has ended, so nothing was changed. Ask them to propose again for this moon." };
   }
   const seatIds = p.proposal.body.roles.map((r) => r.roleId);
@@ -567,7 +646,7 @@ export async function placeOnRoles(
       deliverables: deliverablesOf(p.proposal.body, seats, agreed, only) || null,
       // The goals as a list, so the proposal's page draws them as one (joining lane PR 1), and the terms as agreed.
       ...(Object.keys(answers).length ? { answers } : {}),
-      settings: settingsOfAgreed(agreed, term, price),
+      settings: settingsOfAgreed(agreed, seatTerm, price),
     });
     if (!parsed.ok) return { ok: false, code: "cannot", error: parsed.error };
     const made = await prepareApplication({

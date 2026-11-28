@@ -45,7 +45,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { loadVariables } from "../lib/variables";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { consentClosesAt, CONSENT_WORDS } from "../../shared/roleProposalConsent";
-import { startOf } from "../../shared/startDay";
 import { DECIDE_WORDS, openInviteId, roleStartsOn } from "../../shared/openProposalDecide";
 import { civilDateKey } from "../../shared/lunar";
 import { wordsIn } from "../../shared/applicantWords";
@@ -1378,7 +1377,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
   });
 
   describe("a proposal for this moon (Rye, 9 Nov 2026)", () => {
-    it("is adopted into this season, starting on its start day within the moon, with its term ending on the moon's last day", async () => {
+    it("is adopted into this season, starting now, with its term ending on the moon's last day", async () => {
       state.viewer = FOUNDER.id;
       expect((await call("PUT", "/api/admin/open-proposals/settings", { term: "moon" }, FOUNDER.id)).status).toBe(200);
       try {
@@ -1391,20 +1390,18 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
         expect(r.status, JSON.stringify(r.body)).toBe(200);
         const apps = await q("SELECT status, term_season_id, UNIX_TIMESTAMP(starts_at) AS starts_s, DATE_FORMAT(term_ends_at, '%Y-%m-%d') AS ends_on FROM seat_applications WHERE candidate_user_id = ? ORDER BY created_at DESC", [MOONER.id]);
         expect(apps[0]).toMatchObject({ status: "adopted", term_season_id: "s-now" });
-        // QA round 5: the seat starts on the start day, the first all-hands day (Monday) within the moon, never past
-        // its last day; never on next season's first day, so the letter's run and its start day agree.
-        const today = civilDateKey(new Date(before), "UTC");
-        const startIso = startOf({ acceptedIso: today, weekday: 1, seasonStarts: [], startNow: false, term: { startsOn: moon.startsOn, endsOn: moon.endsOn } }).iso;
-        if (startIso > today) expect(Number(apps[0].starts_s) * 1000).toBe(Date.parse(`${startIso}T00:00:00Z`));
-        else expect(Number(apps[0].starts_s) * 1000).toBeLessThan(Date.now() + 60_000);
+        // Starts at adoption (never before the moon's first day), not on next season's first day.
+        expect(Number(apps[0].starts_s) * 1000).toBeGreaterThanOrEqual(Math.floor(before / 1000) * 1000 - 1000);
+        expect(Number(apps[0].starts_s) * 1000).toBeLessThan(Date.now() + 60_000);
         expect(apps[0].ends_on).toBe(moon.endsOn);
         const mail = state.sent.find((m) => m.origin === "open_proposal.adopted");
         expect(mail?.text).toContain("this moon");
         expect(mail?.text).not.toContain("next season");
-        // The role runs from its start day, never from the moon's first day when that is already past (verify B153).
+        // The role runs from the day it was adopted, never from the moon's first day when that is already past (verify B153).
+        const today = civilDateKey(new Date(before), "UTC");
         const adoptedOn = today > moon.startsOn ? today : moon.startsOn;
         expect(roleStartsOn(moon.startsOn, today)).toBe(adoptedOn);
-        expect(mail?.text).toContain(`Your roles run from ${wordsIn("en").day(startIso > adoptedOn ? startIso : adoptedOn)} to the next new moon`);
+        expect(mail?.text).toContain(`Your roles run from ${wordsIn("en").day(adoptedOn)} to the next new moon`);
       } finally {
         await call("PUT", "/api/admin/open-proposals/settings", { term: "season" }, FOUNDER.id);
       }

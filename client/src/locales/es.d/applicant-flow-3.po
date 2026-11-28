@@ -296,8 +296,8 @@ msgstr "Empezar ya"
 
 # needs-native-review: ruling 8, Ops only, QA round 5
 msgctxt "applicant onboarding: startNow.ask"
-msgid "Start them on the next all-hands day, not the next season's? Ops decides this."
-msgstr "¿Empieza el próximo día de reunión general, no el de la próxima temporada? Esto lo decide Ops."
+msgid "Start them the day they are adopted, not on the next season's first all-hands day? Ops decides this."
+msgstr "¿Empieza el día en que se adopta, y no el primer día de reunión general de la próxima temporada? Esto lo decide Ops."
 
 # needs-native-review: ruling 8, Ops only, QA round 5
 msgctxt "applicant onboarding: startNow.yes"
@@ -311,18 +311,23 @@ msgstr "Ahora no"
 
 # needs-native-review: ruling 8, Ops only, QA round 5
 msgctxt "applicant onboarding: startNow.chosen"
-msgid "Ops chose to start now: the next all-hands day after acceptance."
-msgstr "Ops eligió empezar ya: el próximo día de reunión general después de la aceptación."
+msgid "Ops chose to start now: their roles start the day they are adopted."
+msgstr "Ops eligió empezar ya: sus roles empiezan el día en que se adopta."
 
 # needs-native-review: ruling 8, Ops only, QA round 5
 msgctxt "applicant onboarding: startNowDone"
 msgid "Start now is already chosen."
 msgstr "Empezar ya ya está elegido."
 
-# needs-native-review: QA round 5, 27 Nov 2026
-msgctxt "open proposal decide: adoptedAccountMoon"
-msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start on their start day, within this moon."
-msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan en su día de inicio, dentro de esta luna."
+# needs-native-review: the start rule, 28 Nov 2026
+msgctxt "open proposal decide: adoptedAccountOn"
+msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start on {day}."
+msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan el {day}."
+
+# needs-native-review: the start rule, 28 Nov 2026
+msgctxt "open proposal decide: adoptedAccountNow"
+msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start today, because Ops chose to start now."
+msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan hoy, porque Ops eligió empezar ya."
 
 # needs-native-review: QA round 5
 msgctxt "role progress, a measure"

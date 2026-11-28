@@ -556,10 +556,10 @@ export const ONBOARDING_WORDS = {
   },
   startNow: {
     button: "Start now",
-    ask: "Start them on the next all-hands day, not the next season's? Ops decides this.",
+    ask: "Start them the day they are adopted, not on the next season's first all-hands day? Ops decides this.",
     yes: "Start now",
     keep: "Not now",
-    chosen: "Ops chose to start now: the next all-hands day after acceptance.",
+    chosen: "Ops chose to start now: their roles start the day they are adopted.",
   },
   startNowDone: "Start now is already chosen.",
   referencesAsked: "References were asked for. The applicant adds them from their status page.",

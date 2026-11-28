@@ -75,7 +75,7 @@ import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
 import { civilDateKey } from "../../shared/lunar";
 import { wordsIn } from "../../shared/applicantWords";
 import { parseRoleShortLabels } from "../../shared/roleShortLabel";
-import { ALL_HANDS_VARIABLES, START_RULE_WORDS, startOf, weekdayIndex, weekdayName } from "../../shared/startDay";
+import { ALL_HANDS_VARIABLES, START_RULE_WORDS, startOf, weekdayIndex, weekdayName, weekdayOfIso } from "../../shared/startDay";
 import { stringVar } from "./variables";
 
 type Db = Pool | PoolConnection;
@@ -547,18 +547,19 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
   );
   // Start (ruling 8): the day they start, and which rule chose it, for the team.
-  if (!member && how === "adopted" && decidedStep && track.now === "start") {
+  if (!member && how === "adopted" && decidedStep && track.now === "start" && interviews.length > 0) {
     const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
     const accepted = civilDateKey(decidedStep.at, deps.calendar().timezone || "UTC");
-    const moonTerm = (await proposals.readOpenProposal(pool, ref))?.body.term ?? null;
-    const start = startOf({ acceptedIso: accepted, weekday, seasonStarts: deps.calendar().seasons.map((x) => String(x.startsOn ?? "")), startNow: await proposals.startNowOf(pool, ref), term: moonTerm ? { startsOn: moonTerm.startsOn, endsOn: moonTerm.endsOn } : null });
+    // The same rule the seat and the letter read (shared/startDay.ts): this track is the conversation flow's.
+    const start = startOf({ acceptedIso: accepted, weekday, seasonStarts: deps.calendar().seasons.map((x) => String(x.startsOn ?? "")), startNow: await proposals.startNowOf(pool, ref) });
     const day = weekdayName(weekday, "en");
     // The date in words and the buddy by first name (QA round 5).
     const chosen = await proposals.buddyOf(pool, ref);
     const buddyId = chosen ?? (welcomeRole ? (await review.liveHoldersOfRole(pool, welcomeRole))[0] ?? null : null);
     const buddy: any = buddyId ? await deps.members.byId(buddyId) : null;
     const buddyName = String(buddy?.name ?? "").trim().split(/\s+/)[0] || null;
-    track.next = `${track.next} They start ${day} ${wordsIn("en").day(start.iso)}: ${START_RULE_WORDS[start.rule](day)}.${buddyName ? ` Their buddy is ${buddyName}.` : ""}`;
+    // The weekday is the date's own, never the all-hands setting's (round 3: "Monday 28 November", a Saturday).
+    track.next = `${track.next} They start ${weekdayName(weekdayOfIso(start.iso), "en")} ${wordsIn("en").day(start.iso)}: ${START_RULE_WORDS[start.rule](day)}.${buddyName ? ` Their buddy is ${buddyName}.` : ""}`;
   }
 
   const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false });

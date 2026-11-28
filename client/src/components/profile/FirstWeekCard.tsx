@@ -12,7 +12,7 @@ import { authToken, gameFetch } from "@/lib/gameApi";
 import { CARD, EYEBROW, H2, HINT } from "@/components/journey/look";
 import { zonedInstant, zoneLabel } from "@shared/startDay";
 
-type FirstWeek = { ref: string; startIso: string; buddy: { name: string; role: string | null } | null; allHands: { time: string; zone: string; link: string | null } | null };
+type FirstWeek = { ref: string; startIso: string; /** The all-hands they join: the start day's, or with "start now" the next one. */ allHandsIso?: string; buddy: { name: string; role: string | null } | null; allHands: { time: string; zone: string; link: string | null } | null };
 
 /** A moment said in a zone: weekday, date and time. */
 export function sayAt(at: Date, zone: string | undefined, locale: string): string {
@@ -39,7 +39,7 @@ export default function FirstWeekCard() {
     };
   }, []);
   if (!week) return null;
-  const at = week.allHands ? zonedInstant(week.startIso, week.allHands.time, week.allHands.zone) : null;
+  const at = week.allHands ? zonedInstant(week.allHandsIso ?? week.startIso, week.allHands.time, week.allHands.zone) : null;
   const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const lang = i18n.locale === "es" ? "es" : "en";
   // The start date, and the week's steps with done or to do (QA pass 1): done once its moment has passed.

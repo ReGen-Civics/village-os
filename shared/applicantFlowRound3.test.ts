@@ -60,7 +60,7 @@ describe("local times (the lead: 'Yes local times!')", () => {
 
 describe("the buddy and the reminder", () => {
   it("the start letter names the buddy and their role", () => {
-    const l = adoptedAccountLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en", signIn: "https://v.example.test/profile", buddy: { name: "Iva", role: "Ops" } } as any);
+    const l = adoptedAccountLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en", signIn: "https://v.example.test/profile", buddy: { name: "Iva", role: "Ops" }, flow: true } as any);
     expect(l.text).toContain("Your buddy is Iva (Ops). They'll help you through your first week.");
   });
   it("the booking reminder: gentle, once per conversation, its own link only", () => {

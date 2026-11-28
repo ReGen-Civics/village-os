@@ -2,8 +2,7 @@
  * Words the launch rehearsal (15 Nov 2026) read wrong, each pinned:
  *   F3   a Gratitude send of 2.5 is refused in words, never floored to 2 in silence
  *   F11  "the village holds this power" for one, and the stewards' pulse line names what crossed
- *   F12  a moon proposal adopted onto an existing account starts on its start day, within this moon
- *        (QA round 5, 27 Nov 2026: the seat starts on the start day, so "start today" is no longer said)
+ *   F12  a moon proposal adopted onto an existing account starts today, for this moon
  */
 import { describe, expect, it } from "vitest";
 import { launchProposalDoc } from "./launchProposal";
@@ -37,9 +36,8 @@ describe("launch words from the rehearsal", () => {
     expect((tiny as any).error).toMatch(/such as 1\.$/);
   });
 
-  it("F12: a moon proposal's adoption says the roles start on their start day, within this moon", () => {
-    expect(DECIDE_WORDS.adoptedAccountMoon).toContain("their roles start on their start day, within this moon");
-    expect(DECIDE_WORDS.adoptedAccountMoon).not.toContain("today");
+  it("F12: a moon proposal's adoption says the roles start today", () => {
+    expect(DECIDE_WORDS.adoptedAccountMoon).toContain("their roles start today, for this moon");
     expect(DECIDE_WORDS.adoptedAccount).toContain("the season's first day");
   });
 });

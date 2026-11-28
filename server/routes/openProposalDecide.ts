@@ -96,7 +96,7 @@ import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
 import { anyAddressAccount } from "../lib/applicantAccount";
-import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
+import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, startPlanOf, type DecideDeps, type StartPlan } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, mayReadObjectionReasons, withoutObjectionReasons, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
@@ -127,7 +127,7 @@ import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
 import { declineNextStepsLines, DECLINE_STEPS_KEYS } from "../../shared/declineNextSteps";
 import type { PlayDoor } from "../../shared/comms/comeAndPlay";
 import { boolVar, stringVar } from "../lib/variables";
-import { ALL_HANDS_VARIABLES, startDayOf, startOf, weekdayIndex, weekdayName, zoneLabel } from "../../shared/startDay";
+import { ALL_HANDS_VARIABLES, weekdayName, weekdayOfIso, zoneLabel } from "../../shared/startDay";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { liveHoldersOfRole, roleNamesById, rolesHeldBy } from "../repos/applicationReview";
 import { trustedAccountFor } from "../lib/applicantAccount";
@@ -350,36 +350,37 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     return WENT.has(r.status) ? null : whyNotSent(r);
   }
 
-  /** The start day (ruling 8 and its moon-term case), once Ops's "start now" is known: shared/startDay.ts `startOf`. */
-  const startDayFor = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<string> =>
-    startOf({
-      acceptedIso: civilDateKey(adoptedAt, tz()),
-      weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)),
-      seasonStarts: (deps.seasonState().seasons ?? []).map((x: any) => String(x?.startsOn ?? "")),
-      startNow: await store.startNowOf(getPool(), p.id),
-      term: p.body.term ? { startsOn: p.body.term.startsOn, endsOn: p.body.term.endsOn } : null,
-    }).iso;
-  /** The same day, for a moon role's letter, without "start now" (which only brings it sooner, never past the term). */
-  const startDayIso = (p: store.StoredOpenProposal, adoptedAt: Date): string => {
-    const t = p.body.term!;
-    const accepted = civilDateKey(adoptedAt, tz());
-    const late = roleStartsOn(t.startsOn, accepted);
-    const day = startOf({ acceptedIso: accepted, weekday: weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day)), seasonStarts: [], startNow: false, term: { startsOn: t.startsOn, endsOn: t.endsOn } }).iso;
-    return day > late ? day : late;
-  };
+  /** When the roles start, from the one plan the seat is written by (server/lib/openProposalDecide.ts `startPlanOf`). */
+  const planFor = (p: store.StoredOpenProposal, adoptedAt: Date): Promise<StartPlan> => startPlanOf(work, p, adoptedAt, adoptedAt);
 
-  /** What the letters say about the season the roles start in. */
-  /** The letter's days. A moon role starts on the day it is adopted, never before the moon's first day (audit: "from 9 November" for a role adopted on the 11th). */
-  const seasonWords = (p: store.StoredOpenProposal, adoptedAt: Date) => {
+  /** A date with the weekday it falls on ("Monday 21 December 2026"). The weekday is the date's own, never a setting's. */
+  const dated = (iso: string, lang: ApplicantLanguage): string => `${weekdayName(weekdayOfIso(iso), lang)} ${wordsIn(lang).day(iso)}`;
+
+  /**
+   * THE LETTER'S DAYS. Outside the conversation flow they are the ones that letter always had: a moon role starts on
+   * the day it is adopted, never before the moon's first day (audit: "from 9 November" for a role adopted on the
+   * 11th), and a season role on the season's first day. In the flow every day comes from the plan, so the letter, the
+   * seat and the invite name one day (e2e round 3).
+   */
+  const seasonWords = (p: store.StoredOpenProposal, adoptedAt: Date, plan: StartPlan) => {
     const s = seasonOf(p);
     const t = p.body.term;
     const lang = languageOf(p);
     const w = wordsIn(lang);
     const civilDayWords = w.day;
-    // A moon role's seat starts on the start day (QA round 5), so its run is said from that day.
-    const from = t ? startDayIso(p, adoptedAt) : null;
+    const season = s?.name ? String(s.name) : null;
+    if (plan.flow && plan.startIso) {
+      return {
+        season,
+        startsOn: civilDayWords(plan.startIso),
+        moon: t ? { from: civilDayWords(plan.startIso), to: civilDayWords(plan.moonEndsOn ?? t.endsOn) } : null,
+        seasonSameDay: !t && !!s?.startsOn && String(s.startsOn).slice(0, 10) === plan.startIso,
+        lang,
+      };
+    }
+    const from = t ? roleStartsOn(t.startsOn, civilDateKey(adoptedAt, tz())) : null;
     return {
-      season: s?.name ? String(s.name) : null,
+      season,
       startsOn: t && from ? civilDayWords(from) : s?.startsOn ? civilDayWords(String(s.startsOn)) : w.adopt.firstDay,
       moon: t && from ? { from: civilDayWords(from), to: civilDayWords(t.endsOn) } : null,
       lang,
@@ -387,31 +388,28 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   };
 
   /**
-   * THE DAY THEY START AND THE ALL-HANDS THEY JOIN (the lead, 27 Nov 2026): the village's all-hands weekday, the first
-   * one after the acceptance and on or after the role's own start, and the meeting from the village's settings. The
-   * welcoming role may start them sooner, which the letter says by its name.
+   * THE DAY THEY START AND THE ALL-HANDS THEY JOIN (the lead, 27 Nov 2026), for the conversation flow only. By
+   * default the start day is the all-hands day, and the welcoming role may start them sooner, which the letter says by
+   * its name. With Ops's "start now" the roles start today, no "sooner" is said, and the all-hands is the next one by
+   * its own date. The meeting's time, zone and link are the village's settings.
    */
-  const startWords = async (p: store.StoredOpenProposal, adoptedAt: Date) => {
-    const s = seasonOf(p);
-    const t = p.body.term;
+  const startWords = async (p: store.StoredOpenProposal, plan: StartPlan) => {
+    if (!plan.flow || !plan.startIso) return { flow: false as const };
     const lang = languageOf(p);
-    const accepted = civilDateKey(adoptedAt, tz());
-    const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
-    // Ruling 8: the next season's start in every term mode, unless the adoption chose "start now".
-    const day = await startDayFor(p, adoptedAt);
-    void s;
-    void t;
-    const dayName = weekdayName(weekday, lang);
     const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
     const zone = zoneLabel(stringVar(ALL_HANDS_VARIABLES.zone), lang);
     const link = stringVar(ALL_HANDS_VARIABLES.link).trim();
     const welcome = stringVar("org.onboarding_role").trim();
     const welcomeName = welcome ? (await roleNamesById(getPool(), [welcome])).get(welcome) : undefined;
+    const meeting = plan.allHandsIso ?? plan.startIso;
+    // Default: "That day ..., Monday at 12:00". Start now: "... our next all-hands meeting, Monday 30 November 2026 at 12:00".
+    const meetingDay = plan.startNow ? dated(meeting, lang) : weekdayName(weekdayOfIso(meeting), lang);
     return {
-      startIso: day,
-      startDay: `${dayName} ${wordsIn(lang).day(day)}`,
-      soonerRole: (await store.startNowOf(getPool(), p.id)) ? null : welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
-      allHands: time ? { when: [dayName, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
+      flow: true as const,
+      startToday: plan.startNow,
+      startDay: dated(plan.startIso, lang),
+      soonerRole: plan.startNow ? null : welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
+      allHands: time ? { when: [meetingDay, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
     };
   };
 
@@ -436,15 +434,24 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   };
 
   /** Everything the start letter adds: the day, the all-hands, the buddy. */
-  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()), statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id) });
+  const newcomer = async (p: store.StoredOpenProposal, plan: StartPlan) =>
+    plan.flow ? { ...(await startWords(p, plan)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()), statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id) } : {};
+
+  /** The adoption letter's start: its words and its invite file, from one plan. A role outside the flow adds nothing. */
+  const startOfLetter = async (p: store.StoredOpenProposal, adoptedAt: Date) => {
+    const plan = await planFor(p, adoptedAt);
+    return { plan, words: { ...seasonWords(p, adoptedAt, plan), ...(await newcomer(p, plan)) }, attachments: await allHandsAttachment(p, plan) };
+  };
 
   /** The all-hands as a calendar invite, attached to the start letter (the lead, 27 Nov 2026). */
-  const allHandsAttachment = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<OutgoingEmail["attachments"]> => {
-    const sw = await startWords(p, adoptedAt);
+  const allHandsAttachment = async (p: store.StoredOpenProposal, plan: StartPlan): Promise<OutgoingEmail["attachments"]> => {
+    // The invite is for the all-hands the letter names: the start day's, or with "start now" the next one.
+    const day = plan.flow ? (plan.allHandsIso ?? plan.startIso) : null;
     const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
     const zone = stringVar(ALL_HANDS_VARIABLES.zone).trim();
-    if (!time || !zone) return [];
-    const ics = allHandsInvite({ uid: `all-hands-${p.id}@village`, dayIso: sw.startIso, time, zone, title: wordsIn(languageOf(p)).adopt.allHandsTitle, link: sw.allHands?.link ?? null, now: now() });
+    const link = stringVar(ALL_HANDS_VARIABLES.link).trim();
+    if (!day || !time || !zone) return [];
+    const ics = allHandsInvite({ uid: `all-hands-${p.id}@village`, dayIso: day, time, zone, title: wordsIn(languageOf(p)).adopt.allHandsTitle, link: /^https:\/\//.test(link) ? link : null, now: now() });
     return ics ? [{ filename: "all-hands.ics", contentType: "text/calendar; charset=utf-8; method=PUBLISH", contentBase64: Buffer.from(ics, "utf8").toString("base64") }] : [];
   };
 
@@ -460,14 +467,18 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const email = typeof (viewer as any).email === "string" ? (viewer as any).email : "";
     for (const p of email ? await store.adoptedFromAddress(getPool(), emailKeyOf(email)) : []) {
       if ((await trustedAccountFor(members, p, getPool())) !== String(viewer.id)) continue;
-      const at = p.decidedAt ?? now();
-      const sw = await startWords(p, at);
+      const plan = await planFor(p, p.decidedAt ?? now());
+      // The first week is the conversation flow's: a role adopted outside it has no start day to show.
+      if (!plan.flow || !plan.startIso) continue;
+      const sw = await startWords(p, plan);
       return res.set("Cache-Control", "no-store").json({
         firstWeek: {
           ref: p.id,
-          startIso: sw.startIso,
+          startIso: plan.startIso,
+          // The all-hands they join: the start day's, or with "start now" the next one.
+          allHandsIso: plan.allHandsIso ?? plan.startIso,
           buddy: await buddyFor(p),
-          allHands: sw.allHands ? { time: stringVar(ALL_HANDS_VARIABLES.time).trim(), zone: stringVar(ALL_HANDS_VARIABLES.zone).trim(), link: sw.allHands.link } : null,
+          allHands: sw.flow && sw.allHands ? { time: stringVar(ALL_HANDS_VARIABLES.time).trim(), zone: stringVar(ALL_HANDS_VARIABLES.zone).trim(), link: sw.allHands.link } : null,
         },
       });
     }
@@ -870,7 +881,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // The moon this was proposed for has ended before the decision: the holder may adopt for the moon running now (Rye, role journey 4a).
     let theMoonNow = false;
     let moonNow: ReturnType<typeof currentMoonTerm> | null = null;
-    if (moonEnded(p.body.term, at, tz())) {
+    // In the conversation flow the start rule names the moon the role takes (`startPlanOf`), so nothing is asked.
+    const inFlow = (await planFor(p, at)).flow;
+    if (!inFlow && moonEnded(p.body.term, at, tz())) {
       if (req.body?.forCurrentMoon !== true) {
         return res.status(409).json({ error: "moon_ended", message: DECIDE_WORDS.moonEnded, canAdoptForThisMoon: true });
       }
@@ -967,9 +980,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
       }
       await keepBuddy();
+      const start = await startOfLetter(p, at);
       const why = await sent(
         p.email
-          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await newcomer(p, at)), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: await allHandsAttachment(p, at) })
+          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...start.words, signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: start.attachments })
           : null,
       );
       await tell(p.id, "adopted");
@@ -982,7 +996,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         application: { id: placed.applicationId, href: applicationHref(placed.applicationId) },
         // One agreement per role when it named several (the lead, 17 Nov 2026).
         ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}),
-        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
+        // In the flow, the one day the letter and the seat name; outside it, the words this message always had.
+        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : start.plan.flow && start.plan.startIso ? (start.plan.startNow ? DECIDE_WORDS.adoptedAccountNow : DECIDE_WORDS.adoptedAccountOn(dated(start.plan.startIso, "en"))) : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
       });
     }
 
@@ -1015,10 +1030,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     await keepBuddy();
 
     const link = `${site()}${invitePath(token)}`;
+    const inviteStart = await startOfLetter(p, at);
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), ...(await newcomer(p, at)), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: await allHandsAttachment(p, at) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...inviteStart.words, link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: inviteStart.attachments })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
@@ -1225,9 +1241,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (!held.value) return res.status(409).json({ error: DECIDE_WORDS.noInvitation });
     const link = `${site()}${invitePath(token)}`;
     const firstName = greetingName(p.name);
+    const resendStart = await startOfLetter(p, p.decidedAt ?? now());
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), ...(await newcomer(p, p.decidedAt ?? now())), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p), attachments: await allHandsAttachment(p, p.decidedAt ?? now()) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...resendStart.words, link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p), attachments: resendStart.attachments })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, now(), why === null);

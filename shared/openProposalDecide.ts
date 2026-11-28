@@ -155,7 +155,10 @@ export const DECIDE_WORDS = {
   adoptedNotEmailed: (why: NotSentWhy) => `Adopted. ${NOT_SENT[why]} Copy their invitation below and send it to them yourself.`,
   adoptedAccount: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.",
   // A proposal for this moon starts its seat the day it is adopted, so it never says "the season's first day" (launch rehearsal F12).
-  adoptedAccountMoon: "Adopted. That address already has an account here, so no invitation was needed: their roles start on their start day, within this moon.",
+  adoptedAccountMoon: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon.",
+  // An application that went through the conversation flow starts by the start rule (shared/startDay.ts): one day, said here as the letter says it.
+  adoptedAccountOn: (day: string) => `Adopted. That address already has an account here, so no invitation was needed: their roles start on ${day}.`,
+  adoptedAccountNow: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, because Ops chose to start now.",
   accountTold: "They were told by email as well.",
   accountNotTold: (why: NotSentWhy) => `${NOT_SENT[why]} They see it in their notifications when they sign in.`,
   declinedEmailed: "Declined. A kind no went to them by email.",
@@ -294,6 +297,16 @@ export function whyNotSent(r: { reason?: string | null }): NotSentWhy {
 // ── The letters ────────────────────────────────────────────────────────────
 
 export interface AdoptLetterIn {
+  /**
+   * The application went through the conversation flow (its role names conversations). Only then does the letter
+   * carry the start day, the all-hands, the buddy and the page; without it the letter is the one a role adopted
+   * outside the flow always had, word for word (e2e round 3, B3).
+   */
+  flow?: boolean;
+  /** Ops chose "start now": the roles start the day they are adopted, and `allHands` is the next one, with its date. */
+  startToday?: boolean;
+  /** A season role whose start day is the season's first day, so the letter may say "when the season begins". */
+  seasonSameDay?: boolean;
   firstName: string | null;
   /** The applicant's page, shown as "See your page" (QA round 5, item 9). */
   statusLink?: string | null;
@@ -328,12 +341,12 @@ export interface AdoptLetterIn {
 
 /** The start day and the all-hands, when the letter knows them, and never for a role still waiting on a seat. */
 const startLines = (i: AdoptLetterIn): string[] => {
-  if (i.waitsForSeat) return [];
+  if (i.waitsForSeat || !i.flow) return [];
   const w = wordsIn(i.lang).adopt;
+  const meeting = (line: (when: string) => string) => (i.allHands ? ["", line(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : []);
   return [
-    ...(i.startDay
-      ? ["", w.startDay(i.startDay), w.startSooner(i.soonerRole ?? null), ...(i.allHands ? ["", w.allHands(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : [])]
-      : []),
+    // Start now: today, with no "start sooner" sentence, and the next all-hands by its own date.
+    ...(i.startDay ? (i.startToday ? ["", w.startToday(i.startDay), ...meeting(w.allHandsNext)] : ["", w.startDay(i.startDay), w.startSooner(i.soonerRole ?? null), ...meeting(w.allHands)]) : []),
     ...(i.buddy ? ["", w.buddy(i.buddy.name, i.buddy.role)] : []),
     ...(i.statusLink ? ["", wordsIn(i.lang).statusLinkLine(i.statusLink)] : []),
   ];
@@ -342,8 +355,11 @@ const startLines = (i: AdoptLetterIn): string[] => {
 /** The headline, and the first cycle's line for a reviewed application. */
 const yesLines = (i: AdoptLetterIn, w: ReturnType<typeof wordsIn>): string[] =>
   i.reviewed && !i.waitsForSeat
-    ? [w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole, i.anchorCircle ?? null), "", w.adopt.firstCycle]
-    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i), i.anchorCircle ?? null)];
+    ? [i.flow ? w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole, i.anchorCircle ?? null) : w.adopt.headlineReviewedPlain(i.village, w.list(i.roleNames) || w.aRole), "", w.adopt.firstCycle]
+    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i), anchorOf(i))];
+
+/** The circle the letter names: the anchor circle in the conversation flow, and none outside it. */
+const anchorOf = (i: AdoptLetterIn): string | null => (i.flow ? (i.anchorCircle ?? null) : null);
 
 /**
  * THE ADOPTION LETTER'S EXTRA LINES (audit P11 and B3), in every applicant language. Kept here
@@ -361,27 +377,47 @@ export const ADOPT_MORE: Record<ApplicantLanguage, {
 }> = {
   en: {
     nextHeading: "What comes next:",
-    stepCreate: "- Make your profile with the button above.",
-    stepSignIn: "- Sign in with this address.",
-    stepAgreements: "- Align with what your profile lists before you start, like our confidentiality agreement and your role's terms. Each one has its own button there.",
-    stepFirstDays: "- Once you start, your profile walks you through your first days with us.",
+    stepCreate: "1. Create your profile with the button above.",
+    stepSignIn: "1. Sign in with this address.",
+    stepAgreements: "2. Your profile lists any agreements we ask you to align with before your role starts, such as our confidentiality agreement and your role's terms. Each one has its own door there.",
+    stepFirstDays: "3. Once your role starts, your profile shows your first days with us, step by step.",
     seatOpens: (roles) => `Every place in ${roles} is filled right now, so your role starts when a place opens. We will tell you the day it does.`,
     forAPlace: "for when a place opens",
   },
   es: {
     nextHeading: "Lo que sigue:",
-    stepCreate: "- Cree su perfil con el botón de arriba.",
-    stepSignIn: "- Inicie sesión con este correo.",
-    stepAgreements: "- Alinéese con lo que muestra su perfil antes de empezar, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su botón.", // check: "alinear"; needs-native-review: the voice pass, 27 Nov 2026
-    stepFirstDays: "- Cuando empiece, su perfil le acompaña en sus primeros días con nosotros.",
+    stepCreate: "1. Cree su perfil con el botón de arriba.",
+    stepSignIn: "1. Inicie sesión con este correo.",
+    stepAgreements: "2. Su perfil muestra los acuerdos con los que le pedimos alinearse antes de que empiece su rol, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su propia puerta.", // check: "alinear", "puerta"
+    stepFirstDays: "3. Cuando empiece su rol, su perfil muestra sus primeros días con nosotros, paso a paso.",
     seatOpens: (roles) => `Todos los lugares de ${roles} están ocupados ahora, así que su rol empieza cuando se abra un lugar. Le avisaremos el día que eso pase.`, // check: "lugar" for a place in a role
     forAPlace: "para cuando se abra un lugar",
   },
 };
 
+/**
+ * The steps as the conversation flow's start letter lists them (the lead, 27 Nov 2026: every multi-step line a list).
+ * A role adopted outside the flow keeps ADOPT_MORE's numbered ones, word for word (e2e round 3, B3).
+ */
+const ADOPT_STEPS_FLOW: Record<ApplicantLanguage, { stepCreate: string; stepSignIn: string; stepAgreements: string; stepFirstDays: string }> = {
+  en: {
+    stepCreate: "- Make your profile with the button above.",
+    stepSignIn: "- Sign in with this address.",
+    stepAgreements: "- Align with what your profile lists before you start, like our confidentiality agreement and your role's terms. Each one has its own button there.",
+    stepFirstDays: "- Once you start, your profile walks you through your first days with us.",
+  },
+  es: {
+    stepCreate: "- Cree su perfil con el botón de arriba.",
+    stepSignIn: "- Inicie sesión con este correo.",
+    stepAgreements: "- Alinéese con lo que muestra su perfil antes de empezar, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su botón.", // check: "alinear"; needs-native-review: the voice pass, 27 Nov 2026
+    stepFirstDays: "- Cuando empiece, su perfil le acompaña en sus primeros días con nosotros.",
+  },
+};
+
 const nextSteps = (i: AdoptLetterIn, first: "create" | "signIn"): string[] => {
   const m = ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en;
-  return ["", m.nextHeading, first === "create" ? m.stepCreate : m.stepSignIn, m.stepAgreements, m.stepFirstDays];
+  const s = i.flow ? (ADOPT_STEPS_FLOW[i.lang ?? "en"] ?? ADOPT_STEPS_FLOW.en) : m;
+  return ["", m.nextHeading, first === "create" ? s.stepCreate : s.stepSignIn, s.stepAgreements, s.stepFirstDays];
 };
 
 const noteLines = (lang: ApplicantLanguage | undefined, note: string | null | undefined): string[] => (note ? ["", wordsIn(lang).noteIntro, note] : []);
@@ -393,10 +429,13 @@ const whenRolesStart = (i: AdoptLetterIn) => {
   const w = wordsIn(i.lang);
   // A role with every seat taken starts when one opens, and the letter promises no day (audit B3).
   if (i.waitsForSeat) return (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).seatOpens(w.list(i.roleNames) || w.aRole);
-  return i.moon ? w.adopt.moonRuns(i.moon.from, i.moon.to) : w.adopt.seasonStarts(i.season, i.startsOn);
+  if (i.moon) return w.adopt.moonRuns(i.moon.from, i.moon.to);
+  // In the flow the start line says the day. "When the season begins" is said beside it only when that is the same day.
+  return i.flow && !i.seasonSameDay ? "" : w.adopt.seasonStarts(i.season, i.startsOn);
 };
+// In the flow the start line says when: "this moon" and "next season" could both name another day.
 const forWhen = (i: AdoptLetterIn) =>
-  i.waitsForSeat ? (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).forAPlace : i.moon ? wordsIn(i.lang).adopt.forThisMoon : wordsIn(i.lang).adopt.forNextSeason;
+  i.waitsForSeat ? (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).forAPlace : i.flow ? "" : i.moon ? wordsIn(i.lang).adopt.forThisMoon : wordsIn(i.lang).adopt.forNextSeason;
 
 /**
  * THE DAY A MOON ROLE STARTS, as the letter says it: the day it is adopted, and
@@ -411,7 +450,7 @@ export function roleStartsOn(moonStartsOn: string, adoptedOn: string): string {
 export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: number }): { subject: string; text: string; button: { label: string; url: string } } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village, i.anchorCircle ?? null),
+    subject: w.adopt.subject(i.village, anchorOf(i)),
     button: { label: w.adopt.button, url: i.link },
     text: [
       w.hello(i.firstName),
@@ -422,16 +461,14 @@ export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: num
       w.adopt.inviteIntro,
       i.link,
       "",
-      w.adopt.inviteWorks(i.days, whenRolesStart(i)),
+      w.adopt.inviteWorks(i.days, whenRolesStart(i)).trim(),
       ...startLines(i),
       "",
       w.adopt.nextAfterProfile,
       ...nextSteps(i, "create"),
       ...signFirst(i),
       "",
-      w.shape.who,
-      w.shape.adoptWho,
-      "",
+      ...(i.flow ? [w.shape.who, w.shape.adoptWho, ""] : []),
     ].join("\n"),
   };
 }
@@ -444,22 +481,20 @@ export const NEXT_AFTER_PROFILE = LANGUAGES.en.adopt.nextAfterProfile;
 export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village, i.anchorCircle ?? null),
+    subject: w.adopt.subject(i.village, anchorOf(i)),
     text: [
       w.hello(i.firstName),
       "",
       ...yesLines(i, w),
       ...noteLines(i.lang, i.note),
       "",
-      w.adopt.signIn(whenRolesStart(i)),
+      w.adopt.signIn(whenRolesStart(i)).trim(),
       i.signIn,
       ...startLines(i),
       ...nextSteps(i, "signIn"),
       ...signFirst(i),
       "",
-      w.shape.who,
-      w.shape.adoptWho,
-      "",
+      ...(i.flow ? [w.shape.who, w.shape.adoptWho, ""] : []),
     ].join("\n"),
   };
 }

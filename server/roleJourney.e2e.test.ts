@@ -159,15 +159,6 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
       accountabilities: ["One living model", "A cash view every Monday", "Bills and filings on time"],
     }, F);
     expect(words.status, JSON.stringify(words.json)).toBe(200);
-
-    // Ops, held by the founder: the role that welcomes newcomers, and the only one that may direct "start now"
-    // (ruling 8, 27 Nov 2026; QA round 5).
-    const ops = await call("POST", "/api/admin/org/roles", { name: "Operations Steward", circleId: "anchor", seats: 1 }, F);
-    const opsId = String(ops.json?.id ?? "");
-    expect(opsId).toBeTruthy();
-    const seated = await call("POST", `/api/admin/org/roles/${opsId}/holders`, { userId: state.founderId }, F);
-    expect(seated.status, JSON.stringify(seated.json)).toBe(200);
-    expect((await call("PUT", "/api/admin/variables/org.onboarding_role", { value: opsId }, F)).status).toBe(200);
   });
 
   it("a visitor reads the form for this moon: the role with its outcomes, and the season's goals", async () => {
@@ -212,12 +203,6 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect(page.status).toBe(200);
     expect(page.json.proposal.card).toMatchObject({ terms: { choice: "accept" }, serves: [{ goalId: state.goalId, goal: "One set of numbers everyone trusts" }] });
     expect(page.json.proposal.roles[0].accountabilities).toHaveLength(3);
-    // A moon role's seat starts on its start day, the first all-hands day within the moon, unless Ops directs
-    // "start now" (ruling 8, 27 Nov 2026; QA round 5). This journey is one stranger taking one role THIS moon,
-    // placed the day they arrive, so Ops directs it: a recorded step, once.
-    const startNow = await call("POST", `/api/governance/applications/${state.proposalId}/start-now`, {}, state.founder);
-    expect(startNow.status, JSON.stringify(startNow.json)).toBe(200);
-    expect((await call("POST", `/api/governance/applications/${state.proposalId}/start-now`, {}, state.founder)).status).toBe(409);
     const adopted = await call("POST", `/api/governance/open-proposals/${state.proposalId}/adopt`, {}, state.founder);
     expect(adopted.status, JSON.stringify(adopted.json)).toBe(200);
     const invite = mailTo(APPLICANT.email, /said yes to your proposal/).pop();

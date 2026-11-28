@@ -178,11 +178,17 @@ export interface ApplicantMessages {
     signFirst(): string;
     /** A reviewed application's yes: the circle consented, said as a welcome. */
     headlineReviewed(village: string, roles: string, anchor?: string | null): string;
+    /** The same yes for a role adopted outside the conversation flow: the words that role's letter always had. */
+    headlineReviewedPlain(village: string, roles: string): string;
     firstCycle: string;
     /** The day they start, and the all-hands they join that day (the lead, 27 Nov 2026). */
     startDay(day: string): string;
     startSooner(role: string | null): string;
+    /** Ops chose "start now": the roles start the day they are adopted, said with that day. */
+    startToday(day: string): string;
     allHands(when: string): string;
+    /** With "start now": the next all-hands, with its own date. */
+    allHandsNext(when: string): string;
     allHandsLink(link: string): string;
     /** Their buddy for the first week (the lead, 27 Nov 2026: the Ops role by default). */
     buddy(name: string, role: string | null): string;
@@ -535,7 +541,7 @@ const en: ApplicantMessages = {
 
   adopt: {
     subject: (v, anchor) => (anchor ? `${cap(theCircle(anchor))} accepted your proposal` : `${v} said yes to your proposal`),
-    headline: (v, roles, forWhen, anchor) => `${anchor ? `${cap(theCircle(anchor))} accepted` : `${v} said yes to`} your proposal to hold ${roles} ${forWhen}.`,
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `${cap(theCircle(anchor))} accepted` : `${v} said yes to`} your proposal to hold ${roles}${forWhen ? ` ${forWhen}` : ""}.`,
     forThisMoon: "this moon",
     forNextSeason: "next season",
     inviteIntro: "Here is your invitation. Use the button to create your profile, or open this link:",
@@ -549,12 +555,15 @@ const en: ApplicantMessages = {
     button: "Create your profile",
     startDay: (day) => `You start on ${day}.`,
     startSooner: (role) => (role ? `If ${role} asks you to start sooner, they'll write to you.` : "If the team asks you to start sooner, they'll write to you."),
+    startToday: (day) => `Your roles start today, ${day}.`,
     allHands: (when) => `That day, join us for our all-hands meeting, ${when}.`,
+    allHandsNext: (when) => `Join us for our next all-hands meeting, ${when}.`,
     allHandsLink: (link) => `The video call: ${link}`,
     buddy: (name, role) => `Your buddy is ${name}${role ? ` (${role})` : ""}. They'll help you through your first week.`,
     allHandsTitle: "All-hands meeting",
     signFirst: () => "Before you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:",
     headlineReviewed: (v, roles, anchor) => `${cap(theCircle(anchor ?? null))} accepted your proposal: we'd love you to hold ${roles} in ${v}. Welcome.`,
+    headlineReviewedPlain: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
     firstCycle: "We begin with a first cycle together, and at its end either side may choose to end it there.",
   },
 
@@ -917,7 +926,7 @@ const es: ApplicantMessages = {
 
   adopt: {
     subject: (v, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
-    headline: (v, roles, forWhen, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta para ocupar ${roles}${forWhen ? ` ${forWhen}` : ""}.`, // needs-native-review: new words, 16 Nov 2026
     forThisMoon: "esta luna",
     forNextSeason: "la próxima temporada",
     inviteIntro: "Aquí está su invitación. Use el botón para crear su perfil, o abra este enlace:",
@@ -931,12 +940,15 @@ const es: ApplicantMessages = {
     button: "Cree su perfil",
     startDay: (day) => `Usted empieza el ${day}.`, // needs-native-review: the start day, 27 Nov 2026
     startSooner: (role) => (role ? `Si ${role} le pide empezar antes, le escribirá.` : "Si el equipo le pide empezar antes, le escribirá."),
+    startToday: (day) => `Sus roles empiezan hoy, ${day}.`, // needs-native-review: start now, 28 Nov 2026
     allHands: (when) => `Ese día, acompáñenos en nuestra reunión general, ${when}.`,
+    allHandsNext: (when) => `Acompáñenos en nuestra próxima reunión general, ${when}.`, // needs-native-review: start now, 28 Nov 2026
     allHandsLink: (link) => `La videollamada: ${link}`,
     buddy: (name, role) => `Su acompañante de inicio es ${name}${role ? ` (${role})` : ""}. Le ayudará en su primera semana.`,
     allHandsTitle: "Reunión general",
     signFirst: () => "Antes de ocupar su rol, alinéese con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearse con ella le hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearse", "membresía"; needs-native-review: new words, 16 Nov 2026
     headlineReviewed: (v, roles, anchor) => `${anchor ? `El ${anchor}` : "El círculo"} aceptó su propuesta: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // needs-native-review: the voice pass, 27 Nov 2026
+    headlineReviewedPlain: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
   },
 

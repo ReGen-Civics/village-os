@@ -8,7 +8,7 @@ import { parseRoleShortLabels, roleShortLabel } from "./roleShortLabel";
 import { bookingLinksText, roleBookingFor } from "./interviewBooking";
 import { adoptedAccountLetter, adoptedInviteLetter, closedLetter, invitedLetter } from "./openProposalDecide";
 import { sayOnProfile } from "./applicantWords";
-import { START_RULE_WORDS, startDayOf, startOf, weekdayIndex, weekdayName, zoneLabel } from "./startDay";
+import { START_RULE_WORDS, allHandsOnOrAfter, startDayOf, startOf, weekdayIndex, weekdayName, weekdayOfIso, zoneLabel } from "./startDay";
 
 const base: StageLetterInput = {
   kind: "references",
@@ -120,7 +120,7 @@ describe("the letters already on main, in the same shape (the lead, 27 Nov 2026)
   });
 
   it("the adoption letters: the start day, the all-hands with its link, who may start them sooner, who acts next", () => {
-    const base2 = { firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en" as const, startDay: "Monday 4 January 2027", soonerRole: "Ops", allHands: { when: "Monday at 12:00 Costa Rica time", link: "https://meet.example.test/all-hands" } };
+    const base2 = { firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en" as const, startDay: "Monday 4 January 2027", soonerRole: "Ops", allHands: { when: "Monday at 12:00 Costa Rica time", link: "https://meet.example.test/all-hands" }, flow: true, anchorCircle: "Anchor Circle" };
     for (const l of [adoptedInviteLetter({ ...base2, link: "https://v.example.test/join", days: 14 } as any), adoptedAccountLetter({ ...base2, signIn: "https://v.example.test/profile" } as any)]) {
       expect(l.text).toContain("You start on Monday 4 January 2027.");
       expect(l.text).toContain("If Ops asks you to start sooner, they'll write to you.");
@@ -129,6 +129,45 @@ describe("the letters already on main, in the same shape (the lead, 27 Nov 2026)
     }
     // A role still waiting on a seat promises no day.
     expect(adoptedAccountLetter({ ...base2, waitsForSeat: true, signIn: "https://v.example.test/profile" } as any).text).not.toContain("You start on");
+    // In the flow the start line is the one statement of when: the headline names no "this moon" or "next season",
+    // and "when the season begins" is said only when that is the start day.
+    const plain = adoptedAccountLetter({ ...base2, signIn: "https://v.example.test/profile" } as any);
+    expect(plain.subject).toBe("The Anchor Circle accepted your proposal");
+    expect(plain.text).toContain("The Anchor Circle accepted your proposal to hold Lead Role.");
+    expect(plain.text).not.toContain("Your roles start when Season of Roots begins");
+    expect(plain.text).toContain("Sign in with this address to see your roles.\nhttps://v.example.test/profile");
+    expect(adoptedAccountLetter({ ...base2, seasonSameDay: true, signIn: "https://v.example.test/profile" } as any).text).toContain("Your roles start when Season of Roots begins, on 1 January 2027.");
+  });
+
+  it("START NOW (e2e round 3, B2): the roles start today, no 'start sooner' is said, and the all-hands is the next one by its own date", () => {
+    const base3 = { firstName: "Rowan", village: "V", roleNames: ["Lead Role"], season: null, startsOn: "28 November 2026", moon: { from: "28 November 2026", to: "9 December 2026" }, flow: true, startToday: true, startDay: "Saturday 28 November 2026", soonerRole: null, allHands: { when: "Monday 30 November 2026 at 12:00 Costa Rica time", link: "https://meet.example.test/all-hands" } };
+    for (const lang of ["en", "es"] as const) {
+      for (const l of [adoptedInviteLetter({ ...base3, lang, link: "https://v.example.test/join", days: 14 } as any), adoptedAccountLetter({ ...base3, lang, signIn: "https://v.example.test/profile" } as any)]) {
+        expect(l.text).toContain(lang === "en" ? "Your roles start today, Saturday 28 November 2026." : "Sus roles empiezan hoy, Saturday 28 November 2026.");
+        expect(l.text).toContain(lang === "en" ? "Join us for our next all-hands meeting, Monday 30 November 2026 at 12:00 Costa Rica time.\nThe video call: https://meet.example.test/all-hands" : "Acompáñenos en nuestra próxima reunión general, Monday 30 November 2026 at 12:00 Costa Rica time.");
+        expect(l.text).not.toMatch(/start sooner|empezar antes/);
+        expect(l.text).not.toMatch(/You start on|Usted empieza el|That day|Ese día/);
+      }
+    }
+  });
+
+  it("OUTSIDE THE CONVERSATION FLOW (e2e round 3, B3): the letter and its subject are the ones production sends, word for word", () => {
+    // Production's own letter for a moon role adopted onto an account (fold-qa e2e-r3, s7-noconversation-role-PROD.json).
+    const l = adoptedAccountLetter({
+      firstName: "Wren", village: "Unnamed Village", roleNames: ["Compost Steward"], season: "Season of Seeds", startsOn: "28 November 2026",
+      moon: { from: "28 November 2026", to: "9 December 2026" }, lang: "en", signIn: "http://127.0.0.1:3298/profile", loveLetter: "http://127.0.0.1:3298/love-letter",
+      // What the flow would add is ignored without `flow`: no start day, no all-hands, no buddy, no page, no circle's name.
+      startDay: "Monday 30 November 2026", soonerRole: "Ops", allHands: { when: "Monday at 12:00", link: null }, buddy: { name: "Iva", role: "Ops" }, statusLink: "http://127.0.0.1:3298/application-status/x", anchorCircle: "Anchor Circle",
+    } as any);
+    expect(l.subject).toBe("Unnamed Village said yes to your proposal");
+    expect(l.text).toBe("Hi Wren,\n\nUnnamed Village said yes to your proposal to hold Compost Steward this moon.\n\nSign in with this address to see your roles. Your roles run from 28 November 2026 to the next new moon, 9 December 2026.\nhttp://127.0.0.1:3298/profile\n\nWhat comes next:\n1. Sign in with this address.\n2. Your profile lists any agreements we ask you to align with before your role starts, such as our confidentiality agreement and your role's terms. Each one has its own door there.\n3. Once your role starts, your profile shows your first days with us, step by step.\n\nBefore you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:\nhttp://127.0.0.1:3298/love-letter\n");
+    // A reviewed application outside the flow keeps the older welcome too.
+    const reviewed = adoptedAccountLetter({ firstName: "Wren", village: "V", roleNames: ["Compost Steward"], season: null, startsOn: "x", lang: "en", signIn: "https://v.example.test/profile", reviewed: true, anchorCircle: "Anchor Circle" } as any);
+    expect(reviewed.text).toContain("The circle has consented: we would love you to hold Compost Steward in V. Welcome.");
+    const invite = adoptedInviteLetter({ firstName: "Wren", village: "V", roleNames: ["Compost Steward"], season: "Season of Roots", startsOn: "1 January 2027", lang: "en", link: "https://v.example.test/join", days: 14, anchorCircle: "Anchor Circle" } as any);
+    expect(invite.subject).toBe("V said yes to your proposal");
+    expect(invite.text).toContain("1. Create your profile with the button above.");
+    expect(invite.text).not.toContain("Who acts next");
   });
 
   it("the closed letter: a list of ways to stay close, and who acts next", () => {
@@ -154,19 +193,38 @@ describe("the start day (the lead, 27 Nov 2026: accepted Friday, start Monday, a
     expect(startDayOf("2027-01-01", "2026-11-27", 1)).toBe("2027-01-04");
     expect(startDayOf("2027-01-04", "2026-11-27", 1)).toBe("2027-01-04");
   });
-  it("RULING 8: on or after the NEXT season's start in every term mode, unless the adoption chose start now; and says which rule", () => {
+  it("RULING 8: on or after the NEXT season's start in every term mode; with start now, the day it is adopted and the next all-hands; and says which rule", () => {
     // QA pass 1: a moon-term village got Monday 30 November when the next season begins Monday 21 December.
     const seasons = ["2026-09-21", "2026-12-21", "2027-03-20"];
-    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: false })).toEqual({ iso: "2026-12-21", rule: "next_season" });
-    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: true })).toEqual({ iso: "2026-11-30", rule: "start_now" });
-    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: [], startNow: false })).toEqual({ iso: "2026-11-30", rule: "no_season" });
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: false })).toEqual({ iso: "2026-12-21", rule: "next_season", allHandsIso: "2026-12-21" });
+    // Start now (e2e round 3, B2): the role starts the day it is adopted, a Friday here, and the all-hands is the NEXT one.
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: true })).toEqual({ iso: "2026-11-27", rule: "start_now", allHandsIso: "2026-11-30" });
+    // Adopted on the all-hands day itself: that day's all-hands is the next one.
+    expect(startOf({ acceptedIso: "2026-11-30", weekday: 1, seasonStarts: seasons, startNow: true })).toEqual({ iso: "2026-11-30", rule: "start_now", allHandsIso: "2026-11-30" });
+    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: [], startNow: false })).toEqual({ iso: "2026-11-30", rule: "no_season", allHandsIso: "2026-11-30" });
     // A season starting on a Wednesday: the first Monday on or after it.
     expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: ["2026-12-23"], startNow: false }).iso).toBe("2026-12-28");
     expect(START_RULE_WORDS.next_season("Monday")).toBe("the first Monday on or after the next season begins");
-    // A MOON TERM (QA round 5): the first all-hands day within its own moon, never past its last day.
-    expect(startOf({ acceptedIso: "2026-11-27", weekday: 1, seasonStarts: seasons, startNow: false, term: { startsOn: "2026-11-28", endsOn: "2026-12-26" } })).toEqual({ iso: "2026-11-30", rule: "moon_term" });
-    // A moon ending before the next Monday: its first day after acceptance, within it.
-    expect(startOf({ acceptedIso: "2026-12-01", weekday: 1, seasonStarts: seasons, startNow: false, term: { startsOn: "2026-11-28", endsOn: "2026-12-05" } })).toEqual({ iso: "2026-12-01", rule: "moon_term" });
+    expect(START_RULE_WORDS.start_now("Monday")).toContain("because Ops chose to start now");
+  });
+  it("B1 (e2e round 3): adopted on either of a moon's last two days, the start day is a real all-hands day, and its weekday is the date's own", () => {
+    // The moon of 9 November to 9 December 2026, whose last all-hands (a Monday) is 7 December. The next season begins 21 December.
+    const seasons = ["2026-09-21", "2026-12-21", "2027-03-20"];
+    for (const accepted of ["2026-12-08", "2026-12-09"]) {
+      const day = startOf({ acceptedIso: accepted, weekday: 1, seasonStarts: seasons, startNow: false });
+      expect(day).toEqual({ iso: "2026-12-21", rule: "next_season", allHandsIso: "2026-12-21" });
+      // Never the acceptance day, and never the moon's last day.
+      expect(day.iso).not.toBe(accepted);
+      expect(weekdayOfIso(day.iso)).toBe(1);
+      expect(`${weekdayName(weekdayOfIso(day.iso), "en")} ${day.iso}`).toBe("Monday 2026-12-21");
+      // With start now the role starts that day, a Tuesday and a Wednesday, and the all-hands is the next Monday by the calendar.
+      const now = startOf({ acceptedIso: accepted, weekday: 1, seasonStarts: seasons, startNow: true });
+      expect(now).toEqual({ iso: accepted, rule: "start_now", allHandsIso: "2026-12-14" });
+      expect(weekdayName(weekdayOfIso(now.iso), "en")).toBe(accepted === "2026-12-08" ? "Tuesday" : "Wednesday");
+    }
+    // The round's own case: Saturday 28 November 2026 is never called a Monday.
+    expect(weekdayName(weekdayOfIso("2026-11-28"), "en")).toBe("Saturday");
+    expect(allHandsOnOrAfter("2026-11-28", 1)).toBe("2026-11-30");
   });
   it("reads the village's weekday and zone, in the applicant's language", () => {
     expect(weekdayIndex("Monday")).toBe(1);

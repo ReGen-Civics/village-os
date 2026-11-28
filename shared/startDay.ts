@@ -3,9 +3,8 @@
  * proposals on friday and they would start on monday and be invited to the monday all hands meeting ... following the
  * start of the next season or immediately if directed by Ops").
  *
- * The start day is the village's all-hands weekday (Monday by default), the first one AFTER the day the proposal is
- * accepted and on or after the day the role starts (the season's first day, or the moon's). The meeting's day, time,
- * zone and link are village settings (shared/gameVariables.ts `org.all_hands_*`); no village's link sits here.
+ * The start day is the village's all-hands weekday (Monday by default): `startOf` below holds the rule. The meeting's
+ * day, time, zone and link are village settings (shared/gameVariables.ts `org.all_hands_*`); no village's link sits here.
  *
  * PURE: civil dates (YYYY-MM-DD) in, civil dates out.
  */
@@ -43,35 +42,51 @@ export function startDayOf(roleStartsIso: string | null, acceptedIso: string, we
   return toIso(d);
 }
 
-/**
- * RULING 8 (the lead, 27 Nov 2026): a newcomer starts on the all-hands weekday after the Friday their proposal is
- * accepted that falls on or after the start of the NEXT season, in every term mode (a moon-term role too: QA pass 1
- * got 30 November when the next season begins 21 December), unless Ops chose "start now", which starts them on the
- * first all-hands weekday after acceptance. Which rule chose the day is said in the team's view.
- */
-export type StartRule = "next_season" | "start_now" | "no_season" | "moon_term";
-export function startOf(i: { acceptedIso: string; weekday: number; seasonStarts: readonly string[]; startNow: boolean; term?: { startsOn: string; endsOn: string } | null }): { iso: string; rule: StartRule } {
-  if (i.startNow) return { iso: startDayOf(null, i.acceptedIso, i.weekday), rule: "start_now" };
-  // A MOON TERM (QA round 5: "roles run from 28 November to 9 December" then "You start on Monday 21 December"): its
-  // seat runs within its own term, so the day is the first all-hands day within it, never past its last day.
-  if (i.term) {
-    const floor = i.term.startsOn > i.acceptedIso ? i.term.startsOn : null;
-    const day = startDayOf(floor, i.acceptedIso, i.weekday);
-    if (day <= i.term.endsOn) return { iso: day, rule: "moon_term" };
-    const first = floor ?? i.acceptedIso;
-    return { iso: first, rule: "moon_term" };
-  }
-  const next = [...i.seasonStarts].filter((d) => /^\d{4}-\d{2}-\d{2}/.test(d) && d.slice(0, 10) > i.acceptedIso.slice(0, 10)).sort()[0] ?? null;
-  if (next) return { iso: startDayOf(next.slice(0, 10), i.acceptedIso, i.weekday), rule: "next_season" };
-  return { iso: startDayOf(null, i.acceptedIso, i.weekday), rule: "no_season" };
+/** The first `weekday` on or after `iso`: the next all-hands, today's when today is the day. */
+export function allHandsOnOrAfter(iso: string, weekday = 1): string {
+  const d = toDate(iso);
+  while (d.getUTCDay() !== weekday) d.setUTCDate(d.getUTCDate() + 1);
+  return toIso(d);
 }
 
-/** The team's words for which rule chose the day. English, like every team line. */
+/** The weekday a civil date falls on, 0 for Sunday. A letter names a date's weekday from the date, never from a setting. */
+export function weekdayOfIso(iso: string): number {
+  return toDate(iso).getUTCDay();
+}
+
+/**
+ * THE START RULE, IN ONE PLACE (the lead, 27 Nov 2026; the coordinator, e2e round 3). For an application that went
+ * through the conversation flow:
+ *
+ *   by default, in every term mode   the role starts on the first all-hands weekday on or after the NEXT season's
+ *                                    start, and that day is the all-hands they join;
+ *   Ops chose "start now"            the role starts the day it is adopted, and they are invited to the NEXT
+ *                                    all-hands: the first all-hands weekday on or after that day, from the calendar.
+ *
+ * No moon's last day and no acceptance day ever stands in for an all-hands day (round 3: "Monday 28 November", a
+ * Saturday). A role adopted outside the conversation flow keeps the village's older rule, which is not this file's.
+ */
+export type StartRule = "next_season" | "start_now" | "no_season";
+export interface StartDay {
+  /** The civil day the role starts. */
+  iso: string;
+  rule: StartRule;
+  /** The civil day of the all-hands they are invited to. */
+  allHandsIso: string;
+}
+export function startOf(i: { acceptedIso: string; weekday: number; seasonStarts: readonly string[]; startNow: boolean }): StartDay {
+  const accepted = i.acceptedIso.slice(0, 10);
+  if (i.startNow) return { iso: accepted, rule: "start_now", allHandsIso: allHandsOnOrAfter(accepted, i.weekday) };
+  const next = [...i.seasonStarts].filter((d) => /^\d{4}-\d{2}-\d{2}/.test(d) && d.slice(0, 10) > accepted).sort()[0] ?? null;
+  const iso = startDayOf(next ? next.slice(0, 10) : null, accepted, i.weekday);
+  return { iso, rule: next ? "next_season" : "no_season", allHandsIso: iso };
+}
+
+/** The team's words for which rule chose the day. English, like every team line. `w` is the all-hands weekday. */
 export const START_RULE_WORDS: Record<StartRule, (weekday: string) => string> = {
   next_season: (w) => `the first ${w} on or after the next season begins`,
-  start_now: (w) => `the first ${w} after acceptance, because the adoption chose to start now`,
+  start_now: () => "the day they were adopted, because Ops chose to start now",
   no_season: (w) => `the first ${w} after acceptance, because no next season is set`,
-  moon_term: (w) => `the first ${w} within the moon the role is proposed for`,
 };
 
 /** A weekday's name in the applicant's language. */

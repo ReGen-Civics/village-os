@@ -52,10 +52,10 @@ export const ONBOARDING_MIRROR: WordMirror<typeof ONBOARDING_WORDS> = {
   referencesPrivate: msg({ message: "Personal details of people who never signed up. Only the people who hold this application's conversations, the people who place roles and each reference's owner read them. No AI reads them. They are deleted with the application.", context: "applicant onboarding: referencesPrivate" }),
   startNow: {
     button: msg({ message: "Start now", context: "applicant onboarding: startNow.button" }),
-    ask: msg({ message: "Start them on the next all-hands day, not the next season's? Ops decides this.", context: "applicant onboarding: startNow.ask" }),
+    ask: msg({ message: "Start them the day they are adopted, not on the next season's first all-hands day? Ops decides this.", context: "applicant onboarding: startNow.ask" }),
     yes: msg({ message: "Start now", context: "applicant onboarding: startNow.yes" }),
     keep: msg({ message: "Not now", context: "applicant onboarding: startNow.keep" }),
-    chosen: msg({ message: "Ops chose to start now: the next all-hands day after acceptance.", context: "applicant onboarding: startNow.chosen" }),
+    chosen: msg({ message: "Ops chose to start now: their roles start the day they are adopted.", context: "applicant onboarding: startNow.chosen" }),
   },
   startNowDone: msg({ message: "Start now is already chosen.", context: "applicant onboarding: startNowDone" }),
   sendToCircle: {
