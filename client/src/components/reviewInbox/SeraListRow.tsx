@@ -3,8 +3,9 @@
  *
  * The live list drew 185 rows and 159 of them were these, each a door to another page. Now they are one row that says
  * how many wait and opens the list where a person ticks and takes them together, in place (SeraSheet). The number is
- * the server's (`holds`: what waits for a person by the list's own rule), and the row says what a take never takes
- * together, because those exclusions are the list's and stay exactly as they are.
+ * the server's (`holds`: what waits for a person by the list's own rule). Sera's suggestions for pay and for new roles
+ * are in that list like any other (Rye, 27 Nov 2026: "Sera, can also make suggestions for pay and new roles, but with
+ * our confirmation"), and the row says which ones a person confirms one at a time, as the list has always had it.
  *
  * NO NEW ACT. The row opens and closes a list. Every decision is made inside it, by the controls it already has.
  */
@@ -38,7 +39,7 @@ export default function SeraListRow({ item, onChanged }: { item: InboxItem; onCh
           </p>
           <p className="text-sm text-foreground">{words.does}</p>
           <p className={HINT}>
-            <Trans context="review inbox: Sera's one row">Tick the ones to take and take them together. Pay, anything marked Check first, and a new role apart from its circle are left out of that: each is decided on its own.</Trans>
+            <Trans context="review inbox: Sera's one row">Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. Nothing is taken without a person: pay, a new role apart from its circle, and anything marked Check first are each confirmed on their own.</Trans>
           </p>
           {since ? (
             <p className={HINT}>

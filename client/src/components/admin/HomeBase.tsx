@@ -148,7 +148,7 @@ export default function HomeBase({
             ) : needs.sentence ? (
               needs.sentence
             ) : (
-              <DecisionsLine counts={counted} />
+              <DecisionsLine counts={counted} listsApplications={false} />
             )}
           </p>
           {!counted && (

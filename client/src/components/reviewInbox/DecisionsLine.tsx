@@ -10,12 +10,15 @@
  *   - Blocked rows are said beside the count, never inside it.
  *   - Applications are named as listed and not counted. No number here is about a person.
  *   - `held` is the review page's own (what the engine held back); Home leaves it out.
+ *   - `listsApplications` is off on Home, which lists role applications itself right under the count, from its own
+ *     read: saying a second number for them there could disagree with that list.
  */
 import { Plural } from "@lingui/react/macro";
 import type { InboxCounts } from "./useReviewInbox";
 
-export default function DecisionsLine({ counts, held = 0 }: { counts: InboxCounts; held?: number }) {
-  const { decisions, applications, blocked } = counts;
+export default function DecisionsLine({ counts, held = 0, listsApplications = true }: { counts: InboxCounts; held?: number; listsApplications?: boolean }) {
+  const { decisions, blocked } = counts;
+  const applications = listsApplications ? counts.applications : 0;
   const heldCount = held;
   const unknown = counts.unknown.length;
   return (

@@ -52,3 +52,9 @@ msgstr "Responderlo acepta o rechaza lo que pidieron."
 msgctxt "review inbox: a row, the door"
 msgid "Open the form"
 msgstr "Abrir el formulario"
+
+# needs-native-review: Sera's one row, pay and new roles are confirmed by a person (Rye, 27 Nov 2026)
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. Nothing is taken without a person: pay, a new role apart from its circle, and anything marked Check first are each confirmed on their own."
+msgstr "Marque las que quiera tomar y tómelas juntas. Las sugerencias de Sera sobre el pago y sobre roles nuevos también están en la lista. Nada se toma sin una persona: el pago, un rol nuevo separado de su círculo y todo lo marcado Revisar primero se confirman cada uno por separado."

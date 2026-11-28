@@ -1,8 +1,8 @@
 /**
  * THE LIST SERA'S ROW OPENS (the hall relief, 27 Nov 2026): the list /review draws, unchanged, with its ticks, its bar
  * and its sheet (components/review/SeraDifferences.tsx, SeraBulk.tsx, SeraKeys.tsx). Nothing about what a take does
- * moves here: the bar leaves out pay, anything marked Check first and a new role apart from its circle, by the rule the
- * server holds it to (shared `bulkPlan`), and every take goes into a draft.
+ * moves here: pay, anything marked Check first and a new role apart from its circle are in the list and are each
+ * confirmed on their own, by the rule the server holds the bar to (shared `bulkPlan`), and every take goes into a draft.
  *
  * It makes the two reads /review makes: the differences (`useSeraDifferences`), and the review queue for whether one of
  * its drafts is open, which the list needs before it may say everything is in step. A read that failed is said as a

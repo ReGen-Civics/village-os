@@ -336,8 +336,9 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     const row = await screen.findByTestId("row-sera:differences");
     expect(screen.getAllByTestId(/^row-sera:/)).toHaveLength(1);
     expect(within(row).getByTestId("sera-holds").textContent).toBe("159 differences wait, as one list.");
-    // The row says what a take together leaves out: the list's own exclusions, which stay as they are.
-    expect(row.textContent).toContain("Pay, anything marked Check first, and a new role apart from its circle are left out of that");
+    // Pay and new roles are Sera's to suggest and a person's to confirm (Rye, 27 Nov 2026): the row says both.
+    expect(row.textContent).toContain("Sera's suggestions for pay and for new roles are in the list too.");
+    expect(row.textContent).toContain("pay, a new role apart from its circle, and anything marked Check first are each confirmed on their own.");
     // One row counts once at the top and in its kind, whatever it holds.
     expect(screen.getByTestId("inbox-status").textContent).toBe("1 decision waiting on you.");
     expect(screen.getByTestId("count-sera").textContent).toBe("1");

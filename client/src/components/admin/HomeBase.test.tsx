@@ -102,7 +102,8 @@ describe("home", () => {
       ] },
     });
     show();
-    await waitFor(() => expect(count()).toBe("1 decision waiting on you. 2 applications are listed, and are not counted."));
+    // The count leaves them out, and says no second number for them: the list right under it is where they are.
+    await waitFor(() => expect(count()).toBe("1 decision waiting on you."));
     expect(screen.getByText("2 role applications are waiting.")).toBeTruthy();
     expect(screen.getByText(/^1 decision, /)).toBeTruthy();
     const graham = screen.getByText("Graham").closest("a");

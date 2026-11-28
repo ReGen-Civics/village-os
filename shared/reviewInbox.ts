@@ -231,7 +231,7 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
  * the live list were these, each a door to another page). The row holds what waits for a person by the list's own rule
  * (shared/seraWaiting.ts: every decision and conflict, and the small changes), so its number is the number the list
  * itself says. Facts, and what is ahead here, wait for nobody and are not counted. The row opens the list where a
- * person ticks and takes, with that list's own exclusions (never pay, never a new role apart from its circle).
+ * person ticks and takes. Pay and new roles are in that list too; the list confirms those one at a time, as before.
  * Dated by its oldest waiting difference, so it takes its place in the order like anything else.
  */
 export function fromSeraDifferences(body: unknown): InboxItem[] {
