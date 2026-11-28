@@ -684,28 +684,34 @@ describe.skipIf(!DB_CONFIGURED)("the permission matrix, against the built server
   });
 });
 
-// ── The one ruled change, driven with a real row ────────────────────────────
+// ── Who answers a launch row, driven with a real row ────────────────────────
 
 /**
- * FOUNDERS ONLY ANSWER LAUNCH ROWS (Rye, 27 Nov 2026: "Founders only before
- * launch. Tighten the server.").
+ * WHOEVER THE ADMIN GATE ADMITS ANSWERS A LAUNCH ROW (Rye, 27 Nov 2026, on
+ * marking a row done, taking that back and declining: "Admins can too").
  *
  * `POST /api/admin/launch/confirm` marks a launch row done, takes that back,
- * or declines it. It asked the admin gate, so an admin's account and a member
- * with admin access through a power group could answer a row. Now only an
- * account whose role is founder may, by the test `POST /api/admin/launch/propose`
- * makes. The matrix above pins the six codes on an empty body, and its
- * snapshot diff shows the two cells that moved. This drives the route with
- * real rows, because a refusal is only worth pinning beside the same call
- * from a founder seen to work.
+ * or declines it. It asks the admin gate and nothing narrower, so an admin, a
+ * member with admin access through a power group and a founder all answer a
+ * row, and the answer carries the name of whoever gave it. A narrower rule
+ * (founders only) was built on this branch and taken out again on that
+ * ruling. The matrix above pins the six codes on an empty body. This drives
+ * the route with real rows, because a 400 on an empty body cannot tell "let
+ * in" from "let in and then refused by name".
  *
- * It runs LAST and after every cell is compared: it changes the launch record.
+ * Opening the vote, the steward list and the hand-over stay a founder's; the
+ * matrix holds their cells and their own suites drive them.
+ *
+ * It runs LAST and after every cell is compared: it changes the launch record,
+ * and puts each row back as it found it.
  */
-describe.skipIf(!DB_CONFIGURED)("only a founder answers a launch row", () => {
+describe.skipIf(!DB_CONFIGURED)("whoever the admin gate admits answers a launch row", () => {
   /** A row somebody confirms by hand, and the one row that may be declined. */
   const MANUAL = "backups-drilled";
   const DECLINABLE = "issuance-cap";
   const answers = [{ id: MANUAL, done: true }, { id: MANUAL, done: false }, { id: DECLINABLE, done: "declined" }, { id: DECLINABLE, done: false }];
+  const ADMITTED = ["adminGroup", "admin", "founder"] as const;
+  const REFUSED = ["signedOut", "member", "powerHolder"] as const;
   const confirm = (body: unknown, who: Identity) => call("POST", "/api/admin/launch/confirm", body, tokens[who]);
 
   /** One row as the checklist reads it, asked as `who`. */
@@ -717,48 +723,50 @@ describe.skipIf(!DB_CONFIGURED)("only a founder answers a launch row", () => {
     return { state: String(found.state), confirmedBy: found.confirmedBy ?? null, declinedBy: found.declinedBy ?? null };
   }
 
-  it("refuses everybody but a founder, and no refused answer changes a row", async () => {
+  it("covers all six identities between the admitted and the refused", () => {
+    expect([...ADMITTED, ...REFUSED].sort()).toEqual([...IDENTITIES].sort());
+  });
+
+  it("refuses whoever the admin gate refuses, and no refused answer changes a row", async () => {
     const before = { manual: await row(MANUAL), declinable: await row(DECLINABLE) };
     expect(before.manual.confirmedBy, "the fixture starts with the row unconfirmed").toBeNull();
     expect(before.declinable.declinedBy, "the fixture starts with the row undeclined").toBeNull();
-
-    // Signed out, a member and a power holder never pass the admin gate: 401, as before the ruling.
-    // An admin and a group holder pass it and are refused by name: 403, where they were let in.
-    const refusal: Record<Exclude<Identity, "founder">, number> = { signedOut: 401, member: 401, powerHolder: 401, adminGroup: 403, admin: 403 };
-    for (const who of IDENTITIES) {
-      if (who === "founder") continue;
+    for (const who of REFUSED) {
       for (const body of answers) {
         const r = await confirm(body, who);
-        expect(r.status, `${who} sending ${JSON.stringify(body)}: ${r.text.slice(0, 200)}`).toBe(refusal[who]);
+        expect(r.status, `${who} sending ${JSON.stringify(body)}: ${r.text.slice(0, 200)}`).toBe(401);
       }
-    }
-    for (const who of ["adminGroup", "admin"] as const) {
-      const told = await confirm({ id: MANUAL, done: true }, who);
-      expect(told.json?.error, `${who} is told why, in one sentence`).toBe("Confirming or declining a launch step is a founder's act");
     }
     expect({ manual: await row(MANUAL), declinable: await row(DECLINABLE) }).toEqual(before);
   });
 
-  it("lets a founder mark a row done, take it back, decline a row, and take that back", async () => {
-    const done = await confirm({ id: MANUAL, done: true }, "founder");
-    expect(done.status, done.text.slice(0, 300)).toBe(200);
-    expect((await row(MANUAL)).confirmedBy, "the confirmation carries the founder's name").toBeTruthy();
-    expect((await row(MANUAL)).state).toBe("ok");
+  it("lets an admin, a group holder and a founder mark a row done, take it back, decline a row, and take that back", async () => {
+    const names = new Set<string>();
+    for (const who of ADMITTED) {
+      const done = await confirm({ id: MANUAL, done: true }, who);
+      expect(done.status, `${who} marks done: ${done.text.slice(0, 300)}`).toBe(200);
+      const confirmed = await row(MANUAL);
+      expect(confirmed.state, who).toBe("ok");
+      expect(confirmed.confirmedBy, `the confirmation carries the name of the ${who} who gave it`).toBeTruthy();
+      names.add(String(confirmed.confirmedBy));
 
-    const back = await confirm({ id: MANUAL, done: false }, "founder");
-    expect(back.status, back.text.slice(0, 300)).toBe(200);
-    expect((await row(MANUAL)).confirmedBy).toBeNull();
+      const back = await confirm({ id: MANUAL, done: false }, who);
+      expect(back.status, `${who} takes it back: ${back.text.slice(0, 300)}`).toBe(200);
+      expect((await row(MANUAL)).confirmedBy, who).toBeNull();
 
-    const declined = await confirm({ id: DECLINABLE, done: "declined" }, "founder");
-    expect(declined.status, declined.text.slice(0, 300)).toBe(200);
-    expect((await row(DECLINABLE)).declinedBy, "the decline carries the founder's name").toBeTruthy();
+      const declined = await confirm({ id: DECLINABLE, done: "declined" }, who);
+      expect(declined.status, `${who} declines: ${declined.text.slice(0, 300)}`).toBe(200);
+      expect((await row(DECLINABLE)).declinedBy, `the decline carries the name of the ${who} who gave it`).toBeTruthy();
 
-    const undone = await confirm({ id: DECLINABLE, done: false }, "founder");
-    expect(undone.status, undone.text.slice(0, 300)).toBe(200);
-    expect((await row(DECLINABLE)).declinedBy).toBeNull();
+      const undone = await confirm({ id: DECLINABLE, done: false }, who);
+      expect(undone.status, `${who} takes the decline back: ${undone.text.slice(0, 300)}`).toBe(200);
+      expect((await row(DECLINABLE)).declinedBy, who).toBeNull();
+    }
+    // Three people answered, and each answer was attributed to the one who gave it.
+    expect(names.size, `the three answers were attributed to three people: ${[...names].join(", ")}`).toBe(ADMITTED.length);
   });
 
-  it("an admin and a group holder still read every row", async () => {
+  it("an admin and a group holder read the same rows a founder does", async () => {
     const asFounderReads = (await call("GET", "/api/admin/launch", undefined, tokens.founder)).json?.items ?? [];
     expect(asFounderReads.length, "the checklist has rows").toBeGreaterThan(5);
     for (const who of ["adminGroup", "admin"] as const) {

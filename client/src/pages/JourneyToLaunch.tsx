@@ -553,7 +553,7 @@ export default function JourneyToLaunch() {
                                   {i.fixLabel} <ChevronRight className="w-3 h-3" />
                                 </Link>
                               )}
-                              {rowsOpen && user?.role === "founder" && i.checkKey.startsWith("manual:") && (
+                              {rowsOpen && i.checkKey.startsWith("manual:") && (
                                 <button
                                   onClick={() => confirm(i.id, i.state !== "ok")}
                                   disabled={busy === i.id}
@@ -579,7 +579,7 @@ export default function JourneyToLaunch() {
                                 * this is where naming none is recorded, with
                                 * a name and an instant on it.
                                 */}
-                              {rowsOpen && user?.role === "founder" && i.declinable && (
+                              {rowsOpen && i.declinable && (
                                 <button
                                   onClick={() => confirm(i.id, i.declinedBy ? false : "declined")}
                                   disabled={busy === i.id}
@@ -591,11 +591,6 @@ export default function JourneyToLaunch() {
                                 >
                                   {i.declinedBy ? "Undo" : "Decline"}
                                 </button>
-                              )}
-                              {/* A founder's act (Rye, 27 Nov 2026): the server refuses everybody else, so the two buttons above
-                                  are a founder's alone, and anybody else reading the row is told why in their place. */}
-                              {rowsOpen && user?.role !== "founder" && (i.checkKey.startsWith("manual:") || i.declinable) && (
-                                <span data-testid="founder-answers" className="text-xs text-muted-foreground"><Trans context="JourneyToLaunch, span">Only a founder confirms or declines this before launch.</Trans></span>
                               )}
                             </div>
                           </div>

@@ -593,15 +593,15 @@ describe("what is left, said without a score", () => {
 /*
  * WHO READS THE CHECKLIST, AND WHO ANSWERS ITS ROWS (27 Nov 2026).
  *
- * Two rules meet on this page. The page opens for whoever may use admin, and
- * that includes a member whose admin access comes from a power group
- * (`hasAdminAccess`, client/src/lib/adminAccess.ts): the server already lets
- * them read `/api/admin/launch`. And Rye ruled "Founders only before launch.
- * Tighten the server.", so `POST /api/admin/launch/confirm` now refuses
- * everybody but a founder. A button the server refuses is not offered, so the
- * row's two answers are drawn for a founder alone, while an admin and a group
- * holder still read every row, and read ONE sentence where a founder has the
- * buttons: never an empty gap, never a disabled button.
+ * The page opens for whoever may use admin, and that includes a member whose
+ * admin access comes from a power group (`hasAdminAccess`,
+ * client/src/lib/adminAccess.ts): the server already lets them read
+ * `/api/admin/launch`. And whoever reads a row may answer it. Rye, 27 Nov 2026,
+ * on marking a row done, taking that back and declining: "Admins can too". So
+ * `POST /api/admin/launch/confirm` asks the admin gate and nothing narrower,
+ * and the row's two answers are drawn for an admin, a group holder and a
+ * founder alike. Opening the vote, the steward list and the hand-over stay a
+ * founder's, and their own tests hold that.
  */
 describe("who reads the checklist, and who answers its rows", () => {
   const DECLINABLE = {
@@ -612,10 +612,9 @@ describe("who reads the checklist, and who answers its rows", () => {
     checkKey: "issuance-cap",
     declinable: true,
   };
-  /** A row the server checks by itself: nobody answers it by hand, so it carries neither a button nor the sentence. */
+  /** A row the server checks by itself: nobody answers it by hand, so it carries no answer button. */
   const OBSERVED = { ...STATUS.items[0], id: "admin-identities", title: "Every admin signs in as themselves", checkKey: "admin-identities" };
   const BOTH = { ...STATUS, items: [STATUS.items[0], DECLINABLE, OBSERVED] };
-  const FOUNDERS_ONLY = "Only a founder confirms or declines this before launch.";
   const page = {
     "/api/admin/launch": { status: 200, body: BOTH },
     "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } },
@@ -641,44 +640,30 @@ describe("who reads the checklist, and who answers its rows", () => {
     expect(calls.map((c) => c.url), "no admin read on a member's page").toEqual([]);
   });
 
-  it("shows an admin and a group holder every row, with one sentence where a founder has the buttons", async () => {
-    for (const user of [admin, groupHolder]) {
+  it("offers an admin, a group holder and a founder both answers, and sends each answer to the server", async () => {
+    for (const user of [admin, groupHolder, founder]) {
       auth.current = { user, loading: false };
+      calls.length = 0;
       answer(page);
       const drawn = draw();
       await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
-      expect(screen.getByText(/Name what the village may issue/i), user.role).toBeTruthy();
-      expect(screen.queryByRole("button", { name: "Mark done" }), user.role).toBeNull();
-      expect(screen.queryByRole("button", { name: "Un-confirm" }), user.role).toBeNull();
-      expect(screen.queryByRole("button", { name: "Decline" }), user.role).toBeNull();
-      expect(screen.queryByRole("button", { name: "Undo" }), user.role).toBeNull();
-      // Told why, once on each row that has such a button for a founder, and on no other row.
-      const told = screen.getAllByText(FOUNDERS_ONLY);
-      expect(told.length, user.role).toBe(2);
-      expect(told.map((el) => el.closest("li")?.textContent?.includes("Every admin signs in")), user.role).toEqual([false, false]);
-      expect(screen.getByText(/Every admin signs in/i), user.role).toBeTruthy();
-      // The way to the place a row is fixed stays: reading and fixing are still theirs.
-      expect(screen.getAllByText("Open Data & backups").length, user.role).toBeGreaterThan(0);
+      const sent = () =>
+        calls.filter((c) => c.url === "/api/admin/launch/confirm").map((c) => JSON.parse(String(c.init?.body ?? "{}")));
+      // One answer button on each row somebody answers by hand, and none on the row the server checks itself.
+      expect(screen.getAllByRole("button", { name: "Mark done" }).length, user.role).toBe(1);
+      expect(screen.getAllByRole("button", { name: "Decline" }).length, user.role).toBe(1);
+      expect(screen.getByText(/Every admin signs in/i).closest("li")?.querySelector("button"), user.role).toBeNull();
+      // Nobody is told the answer is somebody else's.
+      expect(screen.queryByText(/Only a founder/i), user.role).toBeNull();
+
+      // The first row is a manual one, so it carries the confirmation. The second may be declined.
+      fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
+      await waitFor(() => expect(sent(), user.role).toEqual([{ id: "backups-drilled", done: true }]));
+
+      fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
+      await waitFor(() => expect(sent(), user.role).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
       drawn.unmount();
     }
-  });
-
-  it("offers a founder both answers and no sentence, and sends each answer to the server", async () => {
-    auth.current = { user: founder, loading: false };
-    answer(page);
-    draw();
-    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
-    const sent = () =>
-      calls.filter((c) => c.url === "/api/admin/launch/confirm").map((c) => JSON.parse(String(c.init?.body ?? "{}")));
-    // The buttons are theirs, so the sentence that stands in for them is not drawn.
-    expect(screen.queryByText(FOUNDERS_ONLY)).toBeNull();
-
-    // The first row is a manual one, so it carries the confirmation. The second may be declined.
-    fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
-    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }]));
-
-    fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
-    await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
   });
 });
 
