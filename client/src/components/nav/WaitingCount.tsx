@@ -81,7 +81,8 @@ export function useWaiting(who: string): number | null {
  * `dot`: a small mark on a group's name or the account button, with the number for a screen reader.
  */
 /** `at`: where the dot sits on its host (the phone's More tab keeps it inside the screen's edge). */
-export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 -top-1" }: { who: string | number; variant?: "badge" | "dot"; at?: string }) {
+/** `bare`: on a row already named "Waiting on you", read just the number, so the name is not said twice. */
+export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 -top-1", bare = false }: { who: string | number; variant?: "badge" | "dot"; at?: string; bare?: boolean }) {
   const { t } = useLingui();
   const n = useWaiting(String(who));
   if (!n || n <= 0) return null;
@@ -98,7 +99,7 @@ export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 
       <span aria-hidden="true" data-waiting-count="" className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full border border-border bg-muted px-1.5 text-xs font-bold leading-none text-foreground align-middle">
         {n > 99 ? "99+" : n}
       </span>
-      <span className="sr-only">, {words}</span>
+      <span className="sr-only">, {bare ? n : words}</span>
     </>
   );
 }

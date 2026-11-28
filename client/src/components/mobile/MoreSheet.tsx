@@ -184,10 +184,12 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
         className="fixed inset-x-0 z-[70] max-h-[calc(100svh-var(--tabbar-h,4rem)-4rem)] overflow-y-auto rounded-t-2xl border-t border-border bg-card px-4 pb-4 pt-2 text-card-foreground shadow-sm"
         style={{ bottom: "var(--tabbar-h, 4rem)" }}
       >
-        <div className="sticky top-0 -mx-4 flex items-center justify-between bg-card px-4 pb-1 pt-1">
+        {/* Above the speed cards (a lifted card is z-10), which drew over this bar once the sheet scrolled and took its
+            taps. The search row keeps clear of Close (pr-14), and the handle sits above it, out of the row's way. */}
+        <div data-more-bar="" className="sticky top-0 z-20 -mx-4 flex min-h-4 items-center bg-card pb-1 pl-4 pr-14 pt-3">
+          <span aria-hidden="true" data-more-handle="" className="absolute left-1/2 top-1 h-1.5 w-11 -translate-x-1/2 rounded-full bg-border" />
           <SearchSlot place="sheet" />
-          <span aria-hidden="true" className="mx-auto h-1.5 w-11 rounded-full bg-border" />
-          <button type="button" onClick={close} aria-label={t({ message: "Close More", context: "the phone's More sheet: close button" })} className="absolute right-2 top-0 inline-flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={close} aria-label={t({ message: "Close More", context: "the phone's More sheet: close button" })} className="absolute bottom-0 right-2 top-2 inline-flex min-h-11 w-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground">
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>
@@ -295,7 +297,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
           height (the menu's QA, round 1: inside their section they were cut off at 320 by 640). One Tab stop: the
           arrows, Home and End move between them (roving focus).
         */}
-        <div role="tablist" aria-label={t({ message: "The menu's groups", context: "the phone's More sheet: the group tabs, read aloud" })} data-wayfinding="menu" className="sticky -bottom-4 -mx-4 -mb-4 mt-3 flex gap-1 border-t border-border bg-card px-2 pb-3 pt-2">
+        <div role="tablist" aria-label={t({ message: "The menu's groups", context: "the phone's More sheet: the group tabs, read aloud" })} data-wayfinding="menu" className="sticky -bottom-4 z-20 -mx-4 -mb-4 mt-3 flex gap-1 border-t border-border bg-card px-2 pb-3 pt-2">
           {groups.map((g, i) => (
             <button
               key={g.label}

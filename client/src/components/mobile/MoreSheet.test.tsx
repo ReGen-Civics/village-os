@@ -237,6 +237,21 @@ describe("the group tabs at the bottom, within thumb reach", () => {
     expect(panel.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(tabs.className).toContain("sticky");
     expect(shown()).toEqual(["/quests"]);
+  });
+
+  it("keeps its top bar and its tabs above the speed cards, and the handle out of the search row's way", async () => {
+    // The joint QA with search: once the sheet scrolled, the cards (a lifted card and a card's remove button are
+    // z-10) drew over the bar and took the taps meant for the search row and Close. The bar and the tabs sit above them.
+    await sheet();
+    const bar = document.querySelector("[data-more-bar]")!;
+    expect(bar.className.split(" ")).toEqual(expect.arrayContaining(["sticky", "z-20", "pr-14"]));
+    expect(bar.querySelector("[data-more-handle]")!.className).toContain("absolute");
+    expect(bar.contains(screen.getByRole("button", { name: "Close More" }))).toBe(true);
+    expect(screen.getByRole("tablist").className).toContain("z-20");
+  });
+
+  it("shows a tab's rows when the tab is pressed", async () => {
+    await sheet();
     fireEvent.click(screen.getByRole("tab", { name: "Community" }));
     expect(shown()).toContain("/events");
   });

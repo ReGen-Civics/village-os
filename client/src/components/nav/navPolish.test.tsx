@@ -143,6 +143,11 @@ describe("the waiting-on-you count", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(document.querySelector("[data-waiting-dot]")?.textContent).toBe("4");
     expect(document.querySelector("[data-waiting-count]")?.textContent).toBe("4");
+    // A host with another name hears what the number counts; a row named "Waiting on you" hears just the number.
+    expect(document.querySelector("[data-waiting-count]")?.nextElementSibling?.textContent).toBe(", 4 waiting on you");
+    cleanup();
+    render(<WaitingCount who="u1" bare />);
+    expect(document.querySelector("[data-waiting-count]")?.nextElementSibling?.textContent).toBe(", 4");
     cleanup();
     forgetWaiting();
     fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: [{ decideAt: "/decisions/9" }] }), { status: 200 }));

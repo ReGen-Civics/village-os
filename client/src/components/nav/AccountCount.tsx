@@ -10,11 +10,12 @@ const TaskCountBadge = lazy(() => import("@/components/tasks/TaskCountBadge"));
 const MessageCountBadge = lazy(() => import("@/components/messages/MessageCountBadge"));
 const WaitingCount = lazy(() => import("@/components/nav/WaitingCount"));
 
-export default function AccountCount({ count, who }: { count: NavLink["count"]; who: string | number }) {
+/** `named`: on a host with another name (a shut folder), the waiting count says what it counts; a row says just the number. */
+export default function AccountCount({ count, who, named = false }: { count: NavLink["count"]; who: string | number; named?: boolean }) {
   if (!count) return null;
   return (
     <Suspense fallback={null}>
-      {count === "tasks" ? <TaskCountBadge who={who} /> : count === "messages" ? <MessageCountBadge who={who} /> : <WaitingCount who={who} />}
+      {count === "tasks" ? <TaskCountBadge who={who} /> : count === "messages" ? <MessageCountBadge who={who} /> : <WaitingCount who={who} bare={!named} />}
     </Suspense>
   );
 }

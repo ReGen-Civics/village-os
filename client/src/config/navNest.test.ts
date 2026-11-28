@@ -108,6 +108,12 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     }
   });
 
+  it("keeps Protocols for a newcomer who is signed in, as the account menu did", () => {
+    // Main showed it to every signed-in reader in Your things; the move to Guides loses it for nobody but a visitor.
+    const applicant = AUDIENCES[1]!;
+    expect(barFor(applicant).flatMap((g) => g.links).map((l) => l.href)).toContain("/protocols");
+  });
+
   it("offers a visitor what the village is, how to come and see, how to join, its story and team, and the Love Letter", () => {
     for (const h of ["/map", "/quests", "/housing", "/visit", "/roles", "/investor", "/team", "/love-letter", "/governance", "/powers", "/modules"]) {
       expect(offered(), h).toContain(h);

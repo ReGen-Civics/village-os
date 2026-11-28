@@ -69,7 +69,7 @@ Govern
     Training  `/training`
     Rights and agreements  `/rights`
     Leaving Well  `/rights#leaving-well`
-    Protocols  `/protocols`
+    Protocols  `/protocols`  (signed in only: the newcomer, never the visitor)
   How we work ▸
     How we work together  `/governance/how`
     How We Create  `/how-we-create`
@@ -519,7 +519,7 @@ Every route in `client/src/App.tsx`, 155 of them, with the 1.3.98 batch (rights 
 | `/journal` | Journal | M R A | Account menu / Journal | Account menu / Your things / Journal | STAY |  |
 | `/protocols/practice/:protocolId` |  | M R A | - | - | STAY | reached from Protocols |
 | `/protocols/run/:id` |  | M R A | - | - | STAY | reached from Protocols |
-| `/protocols` | Protocols | M R A | Account menu / Protocols | Account menu / Your things / Protocols | STAY |  |
+| `/protocols` | Protocols | M R A | Account menu / Protocols | Govern / Guides / Protocols | STAY | signed in only, as in the account menu: a newcomer keeps it; it left Your things so Pay could sit by the Wallet |
 | `/hidden-map` | Hidden map | M R A | Village / Hidden map | Village / Maps / Hidden map | STAY | Village's Maps folder; no longer added to the phone sheet's Also yours |
 | `/funding-rounds` | Funding rounds | M R A | Governance / Funding Rounds | Govern / This season / Funding Rounds | STAY |  |
 | `/funding-rounds/:id` |  | M R A | - | - | STAY | reached from Funding Rounds |
