@@ -32,7 +32,7 @@ export const HALL_WORDS_ES: Readonly<Record<string, ActWords>> = {
   "hall.reports.message": words("Responder un mensaje reportado", "Marque un mensaje reportado como resuelto o desestimado.", ["mensaje reportado", "reporte de mensaje", "denuncia de mensaje"]),
   "hall.drafts.accept": words("Aceptar un borrador de la guía", "Acepte un borrador que escribió la guía, como un rol o un círculo. Puede editarlo antes.", ["borradores de la guía", "aceptar borrador", "borrador de rol", "borrador de círculo"]),
   "hall.drafts.reject": words("Descartar un borrador de la guía", "Descarte un borrador que escribió la guía, con una nota que diga por qué.", ["descartar borrador", "rechazar borrador", "no usar borrador"]),
-  "hall.structure.accept": words("Aceptar cambios de estructura de una sincronización", "Acepte los círculos y roles que propuso una sincronización, un lote a la vez, después de una prueba en seco.", ["revisión de estructura", "sincronización", "lote de cambios", "prueba en seco"]),
+  "hall.structure.accept": words("Aceptar cambios de estructura de una sincronización", "Acepte los círculos y roles que propuso una sincronización, un lote a la vez, después de una prueba sin cambios.", ["revisión de estructura", "sincronización", "lote de cambios", "prueba sin cambios"]),
   "hall.keys.cosign": words("Firmar también una clave de producción", "Dé la segunda firma que espera una clave de producción. Hace falta una segunda persona administradora, con su propia sesión.", ["segunda firma", "firmar clave", "clave de producción", "claves en espera"]),
   "hall.keys.decline": words("Rechazar una clave de producción", "Rechace una clave de producción que espera una segunda firma.", ["rechazar clave", "negar clave", "objetar una clave"]),
 };
