@@ -96,8 +96,8 @@ export const SHEET_SECTIONS: SheetSection[] = [
   // The task board: what you took on in a live session, and what your seats
   // hold. Answered today, with nothing earned first. Absent with the module off.
   { id: "tasks", band: "now", quiet: "" },
-  // Quests rides with nextStep inside GameDashboard, and belongs here anyway:
-  // browsing and claiming a quest needs nothing earned first.
+  // Quests: the member's own (YourQuests) and one door to the village's board
+  // (QuestsDoor). Browsing and claiming a quest needs nothing earned first.
   { id: "quests", band: "now", quiet: "" },
   { id: "vessel", band: "now", quiet: "" },
   // Your season: the seats you keep, hand back or ask for, and your part.
