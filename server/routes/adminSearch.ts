@@ -26,6 +26,7 @@ import type { AppDeps } from "../lib/appDeps";
 import type { Capability } from "../../shared/capabilities";
 import { dialEntry, type AdminSearchEntry } from "../../shared/adminSearch";
 import { ADMIN_ACT_ENTRIES } from "../../shared/adminActs";
+import { storyServed } from "../lib/brochurePages";
 
 /** The registry's entries this route serves: everything but the tabs (the menu's) and the dials (read live below). */
 export const SERVED_ACT_ENTRIES: readonly AdminSearchEntry[] = ADMIN_ACT_ENTRIES.filter((e) => e.kind !== "page" && e.kind !== "dial");
@@ -35,19 +36,26 @@ export interface AdminSearchDeps extends Pick<AppDeps, "isAdmin" | "mayStillSee"
   dials(): Array<{ key: string; label: string; description?: string; category?: string }>;
   /** A module's effective lifecycle (`effectiveLifecycle`). */
   lifecycle(id: string): string;
+  /** Whether this village serves a story page to an admin. Absent: `storyServed` (server/lib/brochurePages.ts), as Find anything reads it. */
+  storyServed?(path: string): boolean;
 }
 
-/** Keep the entries this person may use. Each capability is asked once. */
+/**
+ * Keep the entries this person may use. Each capability is asked once. An entry on a story page is kept only while
+ * `served` says the village serves that page; with no answer it is left out, never a link to the not-found page.
+ */
 export async function visibleEntries(
   entries: readonly AdminSearchEntry[],
   may: (cap: Capability) => Promise<boolean>,
   lifecycle: (id: string) => string,
+  served: (path: string) => boolean = () => false,
 ): Promise<AdminSearchEntry[]> {
   const asked = new Map<Capability, boolean>();
   const out: AdminSearchEntry[] = [];
   for (const e of entries) {
     if (e.module && lifecycle(e.module) === "off") continue;
     if (e.modulesAny && e.modulesAny.every((id) => lifecycle(id) === "off")) continue;
+    if (e.brochure && !served(e.brochure)) continue;
     if (e.capability) {
       if (!asked.has(e.capability)) asked.set(e.capability, await may(e.capability));
       if (!asked.get(e.capability)) continue;
@@ -64,6 +72,7 @@ export function register(app: Express, deps: AdminSearchDeps): void {
       [...SERVED_ACT_ENTRIES, ...deps.dials().map(dialEntry)],
       (cap) => deps.mayStillSee(req, cap),
       deps.lifecycle,
+      deps.storyServed ?? ((path) => storyServed(path, true)),
     );
     res.set("Cache-Control", "private, no-store");
     res.json({ entries });

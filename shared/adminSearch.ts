@@ -68,6 +68,11 @@ export interface AdminSearchEntry {
   module?: string;
   /** Modules any ONE of which shows it: a tab that answers for more than one (shared/adminTabModules.ts). */
   modulesAny?: readonly string[];
+  /**
+   * The story page it lives on (shared/brochure.ts), as `FindPage.brochure` names one: offered only while this
+   * village serves that page, so a search never lands on the not-found page. Absent: not a story page.
+   */
+  brochure?: string;
 }
 
 // ── Pages: synonyms for the Admin tabs ─────────────────────────────────────

@@ -275,6 +275,7 @@ export function actSearchEntry(a: AdminAct): AdminSearchEntry {
     ...(isCapability(a.power) ? { capability: a.power } : {}),
     ...(module ? { module } : {}),
     ...(modulesAny ? { modulesAny } : {}),
+    ...(a.brochure ? { brochure: a.brochure } : {}),
   };
 }
 

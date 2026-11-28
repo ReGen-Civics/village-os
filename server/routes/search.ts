@@ -53,8 +53,7 @@ import { listingViewerFor } from "../lib/listingViewer";
 import { questClosed } from "../repos/quests";
 import { visibleEntries } from "./adminSearch";
 import { effectiveLifecycle } from "../lib/modules";
-import { brochurePageServed } from "../lib/brochurePages";
-import { isMemberDoor } from "../../shared/brochure";
+import { storyServed } from "../lib/brochurePages";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, type AdminSearchEntry } from "../../shared/adminSearch";
 import { ADMIN_ACT_ENTRIES } from "../../shared/adminActs";
 import { circleViews } from "../../shared/circleView";
@@ -158,10 +157,8 @@ export function searchSources(deps: Pick<AppDeps, "getPool" | "lapseContext" | "
   };
 }
 
-/** A story page served to this reader: a member's door always to somebody signed in, the rest by the switches (`servedTo`). */
-export function storyServed(path: string, signedIn: boolean): boolean {
-  return (signedIn && isMemberDoor(path)) || brochurePageServed(path);
-}
+// A story page served to this reader. It lives beside the switches (server/lib/brochurePages.ts), so admin search reads the same one.
+export { storyServed };
 
 /** Who is reading, from the server's own answers. An admin or a founder is always a member. */
 export async function readerOf(deps: Pick<SearchDeps, "authedUser" | "isAdmin">, req: Request): Promise<{ viewer: any | null; reader: FindReader }> {
@@ -214,7 +211,8 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
   }
 
   if (r.admin) {
-    const admin = await visibleEntries(opts.registry === false ? [...OUTSIDE_ENTRIES, ...CONTROL_ENTRIES] : ADMIN_ACT_ENTRIES, may, lifecycle);
+    // An act on a story page is held to that page's switch by the same `served` the page above was held to.
+    const admin = await visibleEntries(opts.registry === false ? [...OUTSIDE_ENTRIES, ...CONTROL_ENTRIES] : ADMIN_ACT_ENTRIES, may, lifecycle, (path) => served(path, r.signedIn));
     for (const e of admin) {
       const found = findEntryOf(e);
       if (found.kind === "page") put(found);
