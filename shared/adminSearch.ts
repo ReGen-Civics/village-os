@@ -11,6 +11,7 @@
  *   a control   /admin?tab=<tab>&setting=<id>     (the page focuses it)
  *   a dial      /admin?tab=variables&variable=<key>
  *   a page outside Admin   its own path
+ *   an act      the page that holds its control: /admin?tab=<tab>, or its own path
  *
  * So the search bar, the village's guide, a launch checklist row and a lane
  * pasting a link into a pull request all land on the same control.
@@ -34,10 +35,18 @@
  * client/src/components/admin/settingFocus.ts). An entry whose page does not
  * land yet would promise a button and deliver a page, which is the failure
  * this file exists to end. The client test checks every control's tab exists.
+ *
+ * ── THE REGISTRY OF ACTS GROWS FROM THIS FILE ──────────────────────────────
+ *
+ * shared/adminActs.ts gives every admin function one entry: the controls and
+ * the outside pages below (their ids unchanged), every tab, every dial, and
+ * the acts on pages that do not land on a control yet. Those last are kind
+ * "act": the address is the page that holds the control, which is the honest
+ * promise until the page lands on it. Both searches read the registry.
  */
 import type { Capability } from "./capabilities";
 
-export type AdminSearchKind = "page" | "control" | "dial" | "outside";
+export type AdminSearchKind = "page" | "control" | "dial" | "outside" | "act";
 
 export interface AdminSearchEntry {
   /** Stable, and part of the address. Never renamed: a rename breaks every link to it. */
@@ -247,6 +256,8 @@ export const OUTSIDE_ENTRIES: readonly AdminSearchEntry[] = [
 /** The one address an entry lands on. */
 export function adminSearchHref(e: Pick<AdminSearchEntry, "id" | "kind" | "tab" | "path">): string {
   if (e.kind === "outside") return e.path ?? "/admin";
+  // An act lands on the page that holds its control: its own path, or its tab with nothing focused.
+  if (e.kind === "act") return e.tab ? `/admin?tab=${encodeURIComponent(e.tab)}` : e.path ?? "/admin";
   const tab = e.tab ?? "home";
   if (e.kind === "dial") return `/admin?tab=variables&variable=${encodeURIComponent(e.id.replace(/^dial\./, ""))}`;
   if (e.kind === "control") return `/admin?tab=${encodeURIComponent(tab)}&setting=${encodeURIComponent(e.id)}`;
