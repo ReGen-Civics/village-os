@@ -540,13 +540,13 @@ describe("design pass M1: the founding team leads the page", () => {
     expect(after?.nextElementSibling?.nextElementSibling?.matches("[data-your-gift]")).toBe(true);
     expect(after?.nextElementSibling?.nextElementSibling?.nextElementSibling?.matches("[data-other-ways]")).toBe(true);
     const other = screen.getByRole("region", { name: "Other ways to join" });
-    const header = await screen.findByRole("heading", { level: 2, name: "Roles and Circles" });
+    const header = await screen.findByRole("heading", { level: 2, name: "Roles" });
     expect(other.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("keeps the page's own header first while the founding team is off (control)", async () => {
     founding = { on: false, roleIds: [], sections: {}, showPayRanges: false, villagePay: VILLAGE_PAY };
     renderRoles();
-    const h1 = await screen.findByRole("heading", { level: 1, name: "Roles and Circles" });
+    const h1 = await screen.findByRole("heading", { level: 1, name: "Roles" });
     const other = screen.getByRole("region", { name: "Other ways to join" });
     expect(h1.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });

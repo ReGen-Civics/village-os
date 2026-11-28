@@ -61,7 +61,8 @@ describe("MenuUseTab", () => {
     expect(limits.textContent).toMatch(/Members and admins are counted together/);
     expect(limits.textContent).toContain("This window counted 30 days");
     const suggestions = screen.getByTestId("menu-use-suggestions");
-    expect(suggestions.textContent).toMatch(/No one opened Gratitude this season: consider folding it\./);
+    // The suggestion names the first unopened page in the menu's order, and Join leads the menu (the lead, 27 Nov 2026).
+    expect(suggestions.textContent).toMatch(/No one opened Open Roles this season: consider folding it\./);
     expect(screen.getByTestId("menu-use-unopened").textContent).toContain("Gratitude");
     expect(screen.getByTestId("menu-use-window").textContent).toBe("1 Nov 2026 to 31 Jan 2027, counted in UTC days");
     // Places in one line, in the menu's order: "In Village, and in Govern under This season".

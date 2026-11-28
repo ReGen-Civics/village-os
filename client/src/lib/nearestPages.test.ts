@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import type { NavLink } from "@/config/nav";
+import { PAGE_TITLES } from "@shared/pageTitles";
 import { editDistance, menuPages, nearestPages, wordMatch, wordsOf } from "./nearestPages";
 
 /** A member's menu with every module on: the widest view short of an admin's. */
@@ -44,8 +45,11 @@ describe("nearestPages", () => {
   });
 
   it("finds a page by its title when the menu calls it something else", () => {
-    // The menu says Events; the page's own name is Village Calendar (shared/pageTitles.ts).
-    expect(hrefs("/calender")).toContain("/events");
+    // Every menu page now carries the menu's word as its title (one name per page), so the case is built here: a
+    // village whose Events page is still titled Village Calendar.
+    const titles = { ...PAGE_TITLES, "/events": "Village Calendar" };
+    expect(nearestPages("/calender", { visible: member, titles }).map((p) => p.href)).toContain("/events");
+    expect(hrefs("/calender")).not.toContain("/events");
   });
 
   it("finds a chapter by its old address's words", () => {
