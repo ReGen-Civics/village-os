@@ -6,6 +6,8 @@
  *   - every power it names is the one the route's own handler asks for, and every field key is one the handler reads;
  *   - ids are unique, and the ids that shipped are frozen, so a rename fails by name;
  *   - the class is computed from the lists and follows them when they change;
+ *   - under the guide's rules (the founder, 27 Nov 2026) a village-wide money dial with bounds is one to prepare,
+ *     and THE WALK holds every act that moves value or sets a person's pay a person's alone under every rule set;
  *   - a consequence line is the catalog's own, never typed here;
  *   - every tab and every dial is found by its own name in admin search;
  *   - every act names the rows of the parity ledger it covers.
@@ -17,6 +19,7 @@ import { describe, expect, it } from "vitest";
 import {
   ADMIN_ACTS,
   ADMIN_ACT_ENTRIES,
+  CONNECTOR_MONEY_RULE,
   HELPER_RULE_KEY,
   PERSON_ONLY_LISTS,
   WRITTEN_ACTS,
@@ -35,16 +38,17 @@ import {
 } from "./adminActs";
 import { CONTROL_ACTS, DIAL_ACTS, DIAL_ROUTE, OUTSIDE_ACTS, SECRET_ROUTE, SEED_ACTS, TAB_ACTS, dialAct } from "./adminActs/derived";
 import { FROZEN_ACT_IDS } from "./adminActs/frozenIds";
-import { mayPropose } from "./adminHelper";
+import { DOCK_SWITCH, HELPER_SWITCH, MONEY_SWITCH, TODAYS_RULES, buildAdvice, buildProposal, mayPropose, proposalRefusal, type GuideRules } from "./adminHelper";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, rankAdminSearch } from "./adminSearch";
 import { TAB_MODULE } from "./adminTabModules";
 import { ADMIN_PLACES, ADMIN_TABS } from "./adminTabs";
 import { ALWAYS_A_PERSON } from "./agentAdmin";
 import { ALL_CAPABILITIES } from "./capabilities";
 import { CAPABILITY_CONSEQUENCE } from "./draftKinds";
-import { VARIABLES, VARIABLES_BY_KEY } from "./gameVariables";
+import { VARIABLES, VARIABLES_BY_KEY, type VariableDef } from "./gameVariables";
 import { SEEDS_BY_ID } from "./guilds";
-import { neverProposed } from "./proposedChanges";
+import { NEVER_PROPOSED, PROPOSAL_KINDS, neverProposed, routePatternFor } from "./proposedChanges";
+import { GUIDE_MAY_FILE, readGuideFiling } from "../server/lib/guideFiling";
 import { ROUTE_POWERS } from "../server/lib/operatorRoutes";
 
 // ── The server's routes, read from its sources ─────────────────────────────
@@ -360,13 +364,159 @@ describe("the class is computed from the lists", () => {
     expect(actReason(dial(byHelper[0].key))?.key).toBe(HELPER_RULE_KEY);
   });
 
-  it("no act to prepare is one NEVER_PROPOSED names, or one the connector's list names with mode always", () => {
-    for (const a of ADMIN_ACTS) {
-      if (actClass(a) !== "prepare") continue;
-      const p = (actPath(a) ?? "").replace(/:[A-Za-z][A-Za-z0-9]*/g, "x");
-      const asProposed = a.route!.path === DIAL_ROUTE ? a.route!.path : p;
-      expect(neverProposed(a.route!.method, asProposed, {}), a.id).toBeNull();
-      expect(ALWAYS_A_PERSON.filter((r) => r.mode === "always" && r.test(a.route!.method, p)).map((r) => r.key), a.id).toEqual([]);
+  // ── The guide's rules (the founder, 27 Nov 2026) ──────────────────────────
+  //
+  // Each kind of dial is picked by what it IS. Money and choosing people are read off the helper's own sentence under
+  // the rules as they always were, which the tests above already hold; everything else is read off the definition.
+  const OPEN: GuideRules = { wide: true, moneyDials: true };
+  const ADVISING: GuideRules = { wide: true, moneyDials: false };
+  const RULE_SETS: Array<[string, GuideRules]> = [["the rules as they always were", TODAYS_RULES], ["money dials open", OPEN], ["money dials closed", ADVISING]];
+  const SWITCHES = [HELPER_SWITCH, DOCK_SWITCH, MONEY_SWITCH];
+  const BOUNDED = ["integer", "decimal", "percentage", "boolean", "choice"];
+  const sealed = (v: VariableDef) => !!v.withheld || !!v.movedToSecret;
+  const aboutMoney = (v: VariableDef) => (proposalRefusal(v) ?? "").includes("is about money");
+  const aboutChoosing = (v: VariableDef) => (proposalRefusal(v) ?? "").includes("stays out of selection");
+  const filledPath = (a: AdminAct) => (actPath(a) ?? "").replace(/:[A-Za-z][A-Za-z0-9]*/g, "x");
+
+  it("no act to prepare is one NEVER_PROPOSED names, or one the connector's list names with mode always, under every rule set", () => {
+    for (const [name, rules] of RULE_SETS) {
+      for (const a of ADMIN_ACTS) {
+        if (actClass(a, PERSON_ONLY_LISTS, rules) !== "prepare") continue;
+        const p = filledPath(a);
+        const asProposed = a.route!.path === DIAL_ROUTE ? a.route!.path : p;
+        expect(neverProposed(a.route!.method, asProposed, {}), `${name}: ${a.id}`).toBeNull();
+        const always = ALWAYS_A_PERSON.filter((r) => r.mode === "always" && r.test(a.route!.method, p)).map((r) => r.key);
+        // The one thing the rules open: a village-wide money dial with bounds. The connector's money rule may name it by
+        // a word in its key, and that rule alone. Under the rules as they always were nothing is opened.
+        const def = a.route!.path === DIAL_ROUTE ? VARIABLES_BY_KEY[a.route!.params!.key] : undefined;
+        const opened = !!def && rules.moneyDials && aboutMoney(def) && BOUNDED.includes(def.type);
+        expect(always, `${name}: ${a.id}`).toEqual(opened && always.length ? [CONNECTOR_MONEY_RULE] : []);
+      }
+    }
+  });
+
+  it("with money dials open, every money dial with bounds is one to prepare, and with them closed it is a person's alone", () => {
+    const bounded = VARIABLES.filter((v) => aboutMoney(v) && BOUNDED.includes(v.type));
+    expect(bounded.length).toBeGreaterThan(40);
+    for (const v of bounded) {
+      expect(actClass(dial(v.key)), v.key).toBe("person-only");
+      expect(actClass(dial(v.key), PERSON_ONLY_LISTS, ADVISING), v.key).toBe("person-only");
+      expect(actClass(dial(v.key), PERSON_ONLY_LISTS, OPEN), v.key).toBe("prepare");
+      expect(actReason(dial(v.key), PERSON_ONLY_LISTS, OPEN), v.key).toBeNull();
+      expect(actCard(dial(v.key), PERSON_ONLY_LISTS, OPEN).actClass, v.key).toBe("prepare");
+    }
+    // The connector's money rule names some of them by a word in the key. It still names them, and with the village's
+    // money dial closed it is still what holds them.
+    const named = bounded.filter((v) => actAlwaysRules(dial(v.key)).some((r) => r.key === CONNECTOR_MONEY_RULE && r.mode === "always"));
+    expect(named.length).toBeGreaterThan(10);
+    for (const v of named) {
+      expect(actReason(dial(v.key))?.list, v.key).toBe("always_a_person");
+      expect(actReason(dial(v.key), PERSON_ONLY_LISTS, ADVISING), v.key).toEqual(actReason(dial(v.key)));
+      expect(actCard(dial(v.key), PERSON_ONLY_LISTS, OPEN).alwaysRules.map((r) => r.key), v.key).toContain(CONNECTOR_MONEY_RULE);
+    }
+  });
+
+  it("free-text money, choosing people, the agents' own, a sealed dial and the guide's three switches are a person's alone under every rule set", () => {
+    const kinds: Array<[string, VariableDef[]]> = [
+      ["a money dial in free text", VARIABLES.filter((v) => aboutMoney(v) && !BOUNDED.includes(v.type))],
+      ["a dial about choosing people", VARIABLES.filter(aboutChoosing)],
+      ["a dial under agents.", VARIABLES.filter((v) => v.key.startsWith("agents."))],
+      ["a sealed dial", VARIABLES.filter(sealed)],
+      ["one of the guide's switches", VARIABLES.filter((v) => SWITCHES.includes(v.key))],
+    ];
+    for (const [kind, defs] of kinds) {
+      expect(defs.length, kind).toBeGreaterThan(0);
+      for (const v of defs) {
+        for (const [name, rules] of RULE_SETS) {
+          expect(actClass(dial(v.key), PERSON_ONLY_LISTS, rules), `${kind}, ${name}: ${v.key}`).toBe("person-only");
+          expect(actReason(dial(v.key), PERSON_ONLY_LISTS, rules)?.words, `${kind}, ${name}: ${v.key}`).toBeTruthy();
+          expect(mayPropose(v, rules), `${kind}, ${name}: ${v.key}`).toBe(false);
+        }
+      }
+    }
+    expect(kinds[4][1].map((v) => v.key).sort()).toEqual([...SWITCHES].sort());
+    // Free text that names where value goes says so, where the helper's list is what holds it.
+    const textMoney = kinds[0][1].filter((v) => !sealed(v));
+    expect(textMoney.some((v) => actReason(dial(v.key), PERSON_ONLY_LISTS, OPEN)?.words.includes("names where value goes or who holds it"))).toBe(true);
+    for (const v of textMoney) expect(proposalRefusal(v, OPEN), v.key).toContain("names where value goes or who holds it");
+  });
+
+  it("the registry and the save bar agree under every rule set: a dial reads prepare exactly where a change to it would be drawn", () => {
+    // A dial the helper allows and the connector's list names by a word in its key was a person's alone before the
+    // rules existed. The rules add no such dial, and there are few enough to list.
+    const apart = (rules: GuideRules) => VARIABLES.filter((v) => mayPropose(v, rules) !== (actClass(dial(v.key), PERSON_ONLY_LISTS, rules) === "prepare")).map((v) => v.key);
+    const before = apart(TODAYS_RULES);
+    expect(before.length).toBeLessThanOrEqual(2);
+    for (const key of before) {
+      expect(mayPropose(VARIABLES_BY_KEY[key]), key).toBe(true);
+      expect(actReason(dial(key))?.list, key).toBe("always_a_person");
+    }
+    expect(apart(OPEN)).toEqual(before);
+    expect(apart(ADVISING)).toEqual(before);
+  });
+
+  it("THE WALK: every act that moves value or sets a person's pay is a person's alone under every rule set, and neither of the guide's roads can make a card for it", () => {
+    const never = NEVER_PROPOSED.filter((r) => r.key === "money" || r.key === "seating");
+    const always = ALWAYS_A_PERSON.filter((r) => r.key === "money" || r.key === "tier_c");
+    expect(never.map((r) => r.key).sort()).toEqual(["money", "seating"]);
+    expect(always.map((r) => r.key).sort()).toEqual(["money", "tier_c"]);
+    // An act is walked by its own route. A dial is a setting, read the way a proposal reads one, by the dial door's
+    // pattern, which none of the four rules names: the dial tests above hold every dial under every rule set.
+    const walked = ADMIN_ACTS.filter((a) => {
+      if (!a.route || a.route.method === "GET" || a.route.path === DIAL_ROUTE) return false;
+      const p = filledPath(a);
+      return never.some((r) => r.test(a.route!.method, p, {})) || always.some((r) => r.test(a.route!.method, p));
+    });
+    expect(walked.length).toBeGreaterThan(30);
+    for (const rule of never) expect(rule.test("PUT", DIAL_ROUTE, {}), `the dial door, by ${rule.key}`).toBe(false);
+    for (const rule of always) expect(rule.test("PUT", DIAL_ROUTE), `the dial door, by ${rule.key}`).toBe(false);
+    for (const id of ["store.mint.approve", "store.cash.mark-paid", "store.cycles.close", "store.moon.payers", "store.budget.add-line", "gate.org.seat", "gate.org.unseat"]) {
+      expect(walked.map((a) => a.id), id).toContain(id);
+    }
+
+    /*
+     * The connector's `tier_c` rule has mode "writes": by its own words a connector proposes those acts and a person
+     * does them, which is what "prepare" means. Two acts it names put words in front of people and move no value.
+     * They are named here, so a third cannot join them unseen.
+     */
+    const PUBLISHES = ["greenhouse.calls.publish", "hall.org-drafts.publish"];
+    expect(walked.filter((a) => actClass(a) === "prepare").map((a) => a.id).sort()).toEqual(PUBLISHES);
+
+    for (const [name, rules] of RULE_SETS) {
+      for (const a of walked) {
+        const where = `${name}: ${a.id}`;
+        // The rules move no act that is not a dial: its class and its reason are what they were.
+        expect(actClass(a, PERSON_ONLY_LISTS, rules), where).toBe(PUBLISHES.includes(a.id) ? "prepare" : "person-only");
+        expect(actReason(a, PERSON_ONLY_LISTS, rules), where).toEqual(actReason(a));
+
+        // The save bar's road and the advice beside it know only a dial, by its key. Named every way this act could be, it is not one.
+        const p = filledPath(a);
+        for (const key of [a.id, a.route!.path, p, `${a.route!.method} ${p}`]) {
+          const built = buildProposal({ key, value: "1", why: "the walk" }, () => undefined, rules);
+          expect(built?.ok ?? false, `${where} as ${key}`).toBe(false);
+          expect(buildAdvice({ key, value: "1", why: "the walk" }, () => undefined, rules), `${where} as ${key}`).toBeNull();
+        }
+        // The review road drafts only the kinds on her list, and never "any other admin route".
+        const filed = readGuideFiling({ kind: "setting", target: { method: a.route!.method, path: p }, body: {}, summary: "the walk" });
+        expect(filed === null || filed.ok === false, `${where}: ${JSON.stringify(filed)}`).toBe(true);
+      }
+    }
+
+    // From the other side: every card the two roads CAN make is on a route no walked act has.
+    const walkedRoutes = new Set(walked.map(routeKey));
+    expect(walkedRoutes.has(`PUT ${DIAL_ROUTE}`)).toBe(false);
+    const drafted = PROPOSAL_KINDS.filter((k) => GUIDE_MAY_FILE[k]);
+    expect(drafted.length).toBeGreaterThan(0);
+    for (const kind of drafted) {
+      expect(kind).not.toBe("setting");
+      const r = routePatternFor(kind as Exclude<typeof kind, "setting">);
+      expect(walkedRoutes.has(`${r.method} ${r.path}`), kind).toBe(false);
+    }
+    for (const [name, rules] of RULE_SETS) {
+      for (const v of VARIABLES) {
+        const built = buildProposal({ key: v.key, value: v.default === "true" ? "false" : "true", why: "the walk" }, () => undefined, rules);
+        if (built?.ok) expect(built.proposal.applyPath, `${name}: ${v.key}`).toBe(`/api/admin/variables/${encodeURIComponent(v.key)}`);
+      }
     }
   });
 

@@ -7,13 +7,15 @@
  * process. So these prove what the provider is actually sent (the model, the
  * tools, the fenced reader results) and what the panel is actually handed.
  */
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { register, DENIED_READS, HELPER_TOOLS, helperSystemPrompt, helperToolRunner } from "./adminHelper";
 import { wireAssistant, ADMIN_HELPER_MODEL, ASSISTANT_MODES } from "../lib/assistant";
 import { GUIDE_FILING_WORDS, readGuideTicket, signGuideFiling } from "../lib/guideFiling";
 import { MODULES } from "../../shared/modules";
-import { VARIABLES, type VariableDef } from "../../shared/gameVariables";
-import { DOCK_SWITCH, HELPER_SWITCH, guideMaySee, mayPropose, searchAdmin, type HelperDial } from "../../shared/adminHelper";
+import { VARIABLES, validateVariable, type VariableDef } from "../../shared/gameVariables";
+import { DOCK_SWITCH, HANDS_OFF_CATEGORIES, HELPER_SWITCH, MONEY_SWITCH, guideMaySee, mayPropose, searchAdmin, type GuideRules, type HelperDial } from "../../shared/adminHelper";
+import { seraHelperQuestion } from "../lib/adminHelperSera";
 import { orgStructureForHelper } from "../lib/adminHelperReaders";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -83,6 +85,8 @@ function setup(o: {
   sera?: ((q: string) => Promise<{ ok: true; text: string } | { ok: false }>) | null;
   /** The village's dock dial. Absent: the route reads the dial itself, which ships off. */
   dock?: boolean;
+  /** The village's money dial. Absent: the route reads the dial itself, which ships on. */
+  moneyDials?: boolean;
   /** Who is signed in. */
   user?: string;
   /** What the review queue answers to a filing. */
@@ -99,6 +103,7 @@ function setup(o: {
     clientIp: () => "127.0.0.1",
     overLimit: async (bucket: string) => o.limited?.(bucket) ?? o.overLimit ?? false,
     ...(o.dock === undefined ? {} : { dockOn: () => o.dock }),
+    ...(o.moneyDials === undefined ? {} : { moneyDialsOn: () => o.moneyDials }),
     fileForReview: async (_req: any, payload: any) => {
       filings.push(payload);
       return o.queue?.(payload) ?? { status: 200, body: { success: true, codes: [{ id: "pc_1", code: "B-3.1" }], held: [], waiting: [], applied: false, reviewAt: "/admin/proposals" } };
@@ -479,7 +484,7 @@ describe("the guide's dock", () => {
     it("answers with the dock on, and the status says dock and lent and still never a key or where one is kept", async () => {
       lent([]);
       const out = await setup({ dock: true, owner: "platform" }).call("GET", "/api/admin/helper");
-      expect(out.body).toEqual({ on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true, lent: true });
+      expect(out.body).toEqual({ on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true, lent: true, rules: { wide: true, moneyDials: true } });
       const raw = JSON.stringify(out.body);
       expect(raw).not.toContain("lent-by-the-platform");
       expect(raw).not.toContain("PLATFORM_ASSISTANT_KEY");
@@ -487,9 +492,9 @@ describe("the guide's dock", () => {
     });
 
     it("is never said of the village's own key, which still wins the moment it is there", async () => {
-      expect((await setup({ dock: true, owner: "own" }).call("GET", "/api/admin/helper")).body).toEqual({ on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true });
+      expect((await setup({ dock: true, owner: "own" }).call("GET", "/api/admin/helper")).body).toEqual({ on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true, rules: { wide: true, moneyDials: true } });
       // The dock on with no key anywhere is still off, asking for a key.
-      expect((await setup({ dock: true, owner: "none" }).call("GET", "/api/admin/helper")).body).toEqual({ on: false, guide: "Sol", off: "key", provider: null, available: [], names: {}, dock: true });
+      expect((await setup({ dock: true, owner: "none" }).call("GET", "/api/admin/helper")).body).toEqual({ on: false, guide: "Sol", off: "key", provider: null, available: [], names: {}, dock: true, rules: { wide: true, moneyDials: true } });
     });
 
     it("sends the ask on the lent key, counted on the engine's own cap for borrowed calls", async () => {
@@ -586,11 +591,14 @@ describe("the guide's dock", () => {
       expect(safe.body.filing).toBeNull();
       expect(safe.body.proposal).toMatchObject({ key: SAFE.key, to, why: "You asked for it." });
 
+      // A money dial drafted as a filing meets the money rule on that road too. With the village's money dial closed:
       wire([text({ reply: "Here.", file: { kind: "variable", target: { key: MONEY.key }, body: { value: MONEY.default }, summary: "Change the ledger." } })]);
-      const money = await setup({ dock: true }).call("POST", "/api/admin/helper/ask", ask("change the ledger"));
+      const money = await setup({ dock: true, moneyDials: false }).call("POST", "/api/admin/helper/ask", ask("change the ledger"));
       expect(money.body.filing).toBeNull();
       expect(money.body.proposal).toBeNull();
       expect(money.body.refused).toContain("money settings stay in your own hands");
+      // The refused change is said as advice: the same dial, what it holds now, and nothing to apply.
+      expect(money.body.advice).toEqual({ key: MONEY.key, label: MONEY.label, category: MONEY.category, now: MONEY.default, suggested: null, why: "Change the ledger." });
     });
 
     it("keeps to one change an answer: a dial that made a card wins over a draft sent beside it", async () => {
@@ -684,6 +692,225 @@ describe("the guide's dock", () => {
       expect((await held.call("POST", "/api/admin/helper/file", { ticket })).body).toEqual({ state: "held", code: null, words: "This is already live, so it was not sent on.", reviewAt: "/admin/proposals" });
       const refused = setup({ dock: true, queue: () => ({ status: 400, body: { error: "refused", message: "Nothing was filed.", refused: [{ index: 0, error: "An FAQ needs its question." }] } }) });
       expect(await refused.call("POST", "/api/admin/helper/file", { ticket })).toEqual({ status: 400, body: { error: "An FAQ needs its question." } });
+    });
+  });
+});
+
+/**
+ * THE RULES SHE ANSWERS UNDER (the founder, 27 Nov 2026). With the dock off: the rules, the prompt, the reads and the
+ * answer as they always were. With it on: wide rules, advice with no apply, and, while the village's money dial is
+ * on, a village-wide money dial with bounds on the save bar. The rules are read from the village's two dials and
+ * from nothing a model or a browser says.
+ */
+describe("the rules the guide answers under", () => {
+  const OPEN: GuideRules = { wide: true, moneyDials: true };
+  const ADVISING: GuideRules = { wide: true, moneyDials: false };
+  const sha = (s: string) => createHash("sha256").update(s, "utf8").digest("hex");
+  const base = { guide: "Sol", village: "North Wind", tabs: TABS, openTab: "home" };
+  const sealed = (v: VariableDef) => !!v.withheld || !!v.movedToSecret;
+  const NUMBER = VARIABLES.find((v) => HANDS_OFF_CATEGORIES.includes(v.category) && v.type === "integer" && !sealed(v)) as VariableDef;
+  const next = String(Number(NUMBER.default) + 1);
+
+  describe("the dial", () => {
+    it("exists, ships ON, sits beside the dock's dial, and the guide may never propose it under any rules", () => {
+      const def = VARIABLES.find((v) => v.key === MONEY_SWITCH)!;
+      const dock = VARIABLES.find((v) => v.key === DOCK_SWITCH)!;
+      expect(def).toBeTruthy();
+      expect(def.type).toBe("boolean");
+      expect(def.default).toBe("true");
+      expect(def.category).toBe(dock.category);
+      for (const rules of [undefined, OPEN, ADVISING]) expect(mayPropose(def, rules)).toBe(false);
+    });
+
+    it("does nothing while the dock is off: the status and the answer are what they always were, whichever way it stands", async () => {
+      for (const moneyDials of [true, false]) {
+        const off = setup({ dock: false, moneyDials });
+        expect(Object.keys((await off.call("GET", "/api/admin/helper")).body).sort()).toEqual(["available", "guide", "names", "off", "on", "provider"]);
+        wire([text({ reply: "Sure.", propose: { key: NUMBER.key, value: next, why: "x" }, advise: { key: NUMBER.key, value: next, why: "x" } })]);
+        const out = await off.call("POST", "/api/admin/helper/ask", ask("change it"));
+        expect(Object.keys(out.body).sort()).toEqual(["consulted", "open", "proposal", "refused", "reply"]);
+        expect(out.body.proposal).toBeNull();
+        expect(out.body.refused).toContain("money settings stay in your own hands");
+      }
+    });
+
+    it("read from the village's own dials when nothing is injected: on with the dock, the money dial stands as it ships", async () => {
+      expect((await setup({ dock: true }).call("GET", "/api/admin/helper")).body.rules).toEqual({ wide: true, moneyDials: true });
+      expect((await setup({ dock: true, moneyDials: false }).call("GET", "/api/admin/helper")).body.rules).toEqual({ wide: true, moneyDials: false });
+    });
+  });
+
+  describe("the prompt", () => {
+    it("with the dock off is today's, byte for byte", async () => {
+      // The digests were taken from the tree before the rules existed (c73647ca), with these same inputs.
+      expect(sha(helperSystemPrompt(base))).toBe("ae574fca9e85ec05583a608b6c432deae1ae427262c394f8fb998d71de571fe8");
+      expect(sha(helperSystemPrompt({ ...base, filing: true }))).toBe("f36f2ba6fa2595e98bd45309fa714aba1f12f07d0b98cfac86d2db481a53e8e3");
+      expect(helperSystemPrompt({ ...base, rules: { wide: false, moneyDials: false } })).toBe(helperSystemPrompt(base));
+      // And it is what the route sends with the dock off, whichever way the money dial stands.
+      for (const moneyDials of [true, false]) {
+        const w = wire([text({ reply: "ok" })]);
+        await setup({ dock: false, moneyDials }).call("POST", "/api/admin/helper/ask", ask("hello"));
+        expect(w.sent[0].body.system).toBe(helperSystemPrompt(base));
+      }
+    });
+
+    it("gives Sera her question byte for byte too, with the dock off", () => {
+      const q = { guide: "Sera", village: "North Wind", openTab: TABS[0], readings: [{ key: "admin.find", data: { pages: [], settings: [] } }], conversation: [{ role: "user" as const, content: "hello" }] };
+      expect(sha(seraHelperQuestion(q))).toBe("1ea9c9c0c2f20a6a686743c26426853aa030eacff20a361ccd1ff99349f5bf8e");
+      expect(sha(seraHelperQuestion({ ...q, filing: true }))).toBe("4d56fec024889630d4875647b5636fb6972ed544f4485e5e1f41b8cd54e85f2d");
+      expect(seraHelperQuestion({ ...q, rules: { wide: false, moneyDials: false } })).toBe(seraHelperQuestion(q));
+    });
+
+    it("with the dock on swaps the two lines about money and selection for the wide ones, adds advise, and changes nothing else", () => {
+      const off = helperSystemPrompt({ ...base, filing: true }).split("\n");
+      const on = helperSystemPrompt({ ...base, filing: true, rules: OPEN }).split("\n");
+      const gone = off.filter((line) => !on.includes(line));
+      const came = on.filter((line) => !off.includes(line));
+      expect(gone).toHaveLength(3);
+      expect(gone[0]).toContain("You cannot help with selection");
+      expect(gone[1]).toContain("Money stays in the admin's hands");
+      expect(gone[2]).toContain('{"reply"');
+      expect(came).toHaveLength(5);
+      expect(came[0]).toContain("You may explain and suggest on money, pay, votes and signatures");
+      expect(came[0]).toContain("A person does every act");
+      expect(came[1]).toContain('marked "proposable": true you may prepare with "propose"');
+      expect(came[1]).toContain('answer with "advise"');
+      expect(came[2]).toContain('An estimate carries the word "roughly"');
+      expect(came[2]).toContain("Never suggest a figure for a named person, never compare two people's pay, never say how to vote on a ballot about a person, and never sign anything.");
+      expect(came[3]).toContain("You explain selection settings");
+      expect(came[3]).toContain("you never score, rank, compare or recommend a person");
+      expect(came[3]).toContain("You never read role applications, open proposals, interview scores, role terms or pay, or anybody's details");
+      expect(came[4]).toBe(gone[2].replace(', "file": null or', ', "advise": null or {"key": "<setting key>", "value": "<the value you suggest, as text, or leave it out>", "why": "<one sentence>"}, "file": null or'));
+      // The prompt says the rules, and the server holds them: it reads the same whichever way the money dial stands.
+      expect(helperSystemPrompt({ ...base, filing: true, rules: ADVISING })).toBe(helperSystemPrompt({ ...base, filing: true, rules: OPEN }));
+    });
+
+    it("is what the route sends with the dock on, and Sera is told the same rules", async () => {
+      const w = wire([text({ reply: "ok" })]);
+      await setup({ dock: true }).call("POST", "/api/admin/helper/ask", ask("hello"));
+      expect(w.sent[0].body.system).toBe(helperSystemPrompt({ ...base, filing: true, rules: OPEN }));
+      const asked: string[] = [];
+      await setup({ dock: true, owner: "none", sera: async (q: string) => (asked.push(q), { ok: true as const, text: "ok" }) }).call("POST", "/api/admin/helper/ask", ask("hello"));
+      expect(asked[0]).toContain("you may explain and suggest on money, pay, votes and signatures");
+      expect(asked[0]).toContain("never compare two people's pay");
+      expect(asked[0]).toContain("you never score, rank, compare or recommend a person");
+      expect(asked[0]).toContain('"advise": null or');
+      expect(asked[0]).not.toContain("never propose one");
+    });
+  });
+
+  describe("what she is shown", () => {
+    const shown = async (o: Parameters<typeof setup>[0], words: string) => {
+      const w = wire([toolUse("admin_find"), text({ reply: "ok" })]);
+      await setup(o).call("POST", "/api/admin/helper/ask", ask(words));
+      const result = w.sent[1].body.messages.at(-1).content[0];
+      return String(result.content);
+    };
+
+    it("with the dock off, no money dial; with it on, the money dial, marked proposable by the village's money dial", async () => {
+      const words = `${NUMBER.label} ${NUMBER.key}`;
+      expect(await shown({ dock: false }, words)).not.toContain(`"key":"${NUMBER.key}"`);
+      const open = await shown({ dock: true, moneyDials: true }, words);
+      expect(open).toContain(`"key":"${NUMBER.key}"`);
+      expect(open).toMatch(new RegExp(`"key":"${NUMBER.key.replace(/\./g, "\\.")}"[^}]*"proposable":true`));
+      const closed = await shown({ dock: true, moneyDials: false }, words);
+      expect(closed).toMatch(new RegExp(`"key":"${NUMBER.key.replace(/\./g, "\\.")}"[^}]*"proposable":false`));
+      expect(open).toContain("Sealed settings are never shown to the guide.");
+      expect(await shown({ dock: false }, words)).toContain("Money, role selection and sealed settings are never shown to the guide.");
+    });
+
+    it("never a sealed dial, under any rules, and the refused reads are refused the same", async () => {
+      const everything = VARIABLES.map((v) => v.label).join(" ");
+      for (const rules of [undefined, OPEN, ADVISING]) {
+        const seen = searchAdmin(everything, [], dials(), { tabs: 8, dials: 1000 }, rules).settings.map((s) => s.key);
+        for (const v of VARIABLES.filter(sealed)) {
+          if (rules || v.movedToSecret) expect(seen, v.key).not.toContain(v.key);
+        }
+        const run = helperToolRunner({ query: "anything", tabs: TABS, dials: dials(), readOrgStructure: async () => ({}), rules });
+        for (const name of Object.keys(DENIED_READS)) expect((await run(name)).ok, name).toBe(false);
+      }
+      expect(HELPER_TOOLS.map((t) => t.name)).toEqual(["admin_find", "org_chart"]);
+    });
+  });
+
+  describe("preparing and advising", () => {
+    it("places a money dial with bounds on the save bar while the village's money dial is on, on the dial's own route", async () => {
+      expect(validateVariable(NUMBER, next)).toBeNull();
+      wire([text({ reply: "Here.", propose: { key: NUMBER.key, value: next, why: "You asked." } })]);
+      const out = await setup({ dock: true, moneyDials: true }).call("POST", "/api/admin/helper/ask", ask("change it"));
+      expect(out.body.proposal).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, from: NUMBER.default, to: next, why: "You asked.", applyPath: `/api/admin/variables/${encodeURIComponent(NUMBER.key)}` });
+      expect(out.body.refused).toBeNull();
+      expect(out.body.advice).toBeNull();
+      expect(out.body.filing).toBeNull();
+    });
+
+    it("with the village's money dial closed, says the same change as advice and keeps the refusal's sentence", async () => {
+      wire([text({ reply: "Here.", propose: { key: NUMBER.key, value: next, why: "You asked.", applyPath: "/api/admin/tokens/mint" } })]);
+      const out = await setup({ dock: true, moneyDials: false }).call("POST", "/api/admin/helper/ask", ask("change it"));
+      expect(out.body.proposal).toBeNull();
+      expect(out.body.refused).toContain("money settings stay in your own hands");
+      expect(out.body.advice).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now: NUMBER.default, suggested: next, why: "You asked." });
+    });
+
+    it("draws no advice for a refusal that is about the value, and none beside a card that was prepared or drafted", async () => {
+      const to = SAFE.default === "true" ? "false" : "true";
+      const tries: Array<[Record<string, unknown>, (body: any) => void]> = [
+        [{ propose: { key: SAFE.key, value: "maybe" } }, (b) => expect(b.refused).toContain("cannot be set to that")],
+        [{ propose: { key: SAFE.key, value: SAFE.default } }, (b) => expect(b.refused).toContain("already set to that")],
+        [{ propose: { key: SAFE.key, value: to }, advise: { key: NUMBER.key, value: next, why: "x" } }, (b) => expect(b.proposal).toMatchObject({ key: SAFE.key })],
+        [{ file: { kind: "faq_add", target: { pathway: "resident" }, body: { question: "Where do I park?", answer: "By the barn." }, summary: "Add an FAQ." }, advise: { key: NUMBER.key, value: next, why: "x" } }, (b) => expect(b.filing).toBeTruthy()],
+      ];
+      for (const [said, check] of tries) {
+        wire([text({ reply: "Here.", ...said })]);
+        const out = await setup({ dock: true }).call("POST", "/api/admin/helper/ask", ask("do it"));
+        check(out.body);
+        expect(out.body.advice, JSON.stringify(said)).toBeNull();
+      }
+    });
+
+    it("reads the dial's value as it stands now, and suggests nothing the dial would refuse", async () => {
+      const now = String(Number(NUMBER.default) + 7);
+      const { app, handlers } = collect();
+      register(app, {
+        isAdmin: async () => true,
+        authedUser: async () => ({ id: "u-1" }),
+        clientIp: () => "127.0.0.1",
+        overLimit: async () => false,
+        dockOn: () => true,
+        moneyDialsOn: () => false,
+        villageName: () => "North Wind",
+        guideSource: () => "Sol",
+        dials: () => dials().map((d) => (d.key === NUMBER.key ? { ...d, value: now, isDefault: false } : d)),
+        readOrgStructure: async () => ({}),
+        switchOn: () => true,
+        noteAssistantUsage: async () => undefined,
+        keyOwner: () => "own",
+      } as any);
+      const asking = async (advise: unknown) => {
+        wire([text({ reply: "Here.", advise })]);
+        const { res, out } = makeRes();
+        await handlers.get("POST /api/admin/helper/ask")!({ body: ask("advise me"), headers: {} }, res);
+        return out.body.advice;
+      };
+      expect(await asking({ key: NUMBER.key, value: next, why: "x" })).toMatchObject({ now, suggested: next });
+      // The same as it stands: nothing to suggest. A value the dial would refuse: nothing to suggest. No value: advice in words.
+      expect(await asking({ key: NUMBER.key, value: now, why: "x" })).toMatchObject({ now, suggested: null });
+      expect(await asking({ key: NUMBER.key, value: "a great deal", why: "x" })).toMatchObject({ now, suggested: null });
+      expect(await asking({ key: NUMBER.key, why: "It looks right as it is." })).toEqual({ key: NUMBER.key, label: NUMBER.label, category: NUMBER.category, now, suggested: null, why: "It looks right as it is." });
+      // A long reason is clipped the way a proposal's is.
+      expect((await asking({ key: NUMBER.key, value: next, why: "y".repeat(900) })).why).toHaveLength(400);
+    });
+
+    it("gives Sera's answer the same rules: a money change she proposes is prepared or said as advice by the village's dial", async () => {
+      const sera = async () => ({ ok: true as const, text: JSON.stringify({ reply: "Here.", propose: { key: NUMBER.key, value: next, why: "You asked." } }) });
+      const open = await setup({ dock: true, moneyDials: true, owner: "none", sera }).call("POST", "/api/admin/helper/ask", ask("change it"));
+      expect(open.body.proposal).toMatchObject({ key: NUMBER.key, to: next });
+      const closed = await setup({ dock: true, moneyDials: false, owner: "none", sera }).call("POST", "/api/admin/helper/ask", ask("change it"));
+      expect(closed.body.proposal).toBeNull();
+      expect(closed.body.advice).toMatchObject({ key: NUMBER.key, suggested: next });
+      const off = await setup({ dock: false, owner: "none", sera }).call("POST", "/api/admin/helper/ask", ask("change it"));
+      expect(off.body.proposal).toBeNull();
+      expect("advice" in off.body).toBe(false);
     });
   });
 });

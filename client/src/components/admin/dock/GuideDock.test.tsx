@@ -10,6 +10,7 @@
  *   - who answers is named by the village's name for its guide and by Sera's, and a lent key is never called its own
  *   - a finished reply is announced once, whole
  *   - a dial goes on the save bar; a drafted change goes to review by its ticket alone; neither is written here
+ *   - what she says she reads follows the rules the status names, and her advice is a card with one button and no apply
  *   - in a slot the dock pins nothing, and a host that holds the state is only told what was asked for
  *   - one person's draft is never read back to the next person on the same browser
  */
@@ -836,5 +837,123 @@ describe("never a raw address in her words", () => {
     expect(adminTabOf("/admin?tab=org-chart&x=1")).toBe("org-chart");
     expect(adminTabOf("/admin?tab=../x")).toBeNull();
     expect(adminTabOf("/journey-to-launch?tab=season")).toBeNull();
+  });
+});
+
+/**
+ * THE GUIDE'S RULES IN THE DOCK (the founder, 27 Nov 2026). What she says she reads is true of the rules the status
+ * names, and her advice on a setting is a card with one button that takes the person there: no apply, no save,
+ * nothing for the save bar.
+ */
+describe("her rules and her advice", () => {
+  const WIDE: HelperStatus = { ...ON, rules: { wide: true, moneyDials: true } };
+  const ADVISING: HelperStatus = { ...ON, rules: { wide: true, moneyDials: false } };
+  const ADVICE = { key: "ledger.cycle_cap", label: "Issuance cap per cycle", category: "Ledger", now: "10000", suggested: "8000", why: "Issuance ran well under the cap for three cycles." };
+
+  it("says what she reads as it always was when the status names no rules", () => {
+    dock();
+    expect(screen.getByText(/I read settings, help text and the shape of the org chart\./)).toBeTruthy();
+    expect(screen.getByText(/Money stays with you too\./)).toBeTruthy();
+    expect(screen.queryByText(/the money ones/)).toBeNull();
+  });
+
+  it("under the wide rules says she reads money and selection settings, still never applications or pay, and may prepare a money setting", () => {
+    dock({ initialStatus: WIDE });
+    expect(screen.getByText(/Ask me how to do something in Admin/)).toBeTruthy();
+    expect(screen.getByText(/I read your settings, the money ones and the ones about choosing people among them, the help text and the shape of the org chart\./)).toBeTruthy();
+    expect(screen.getByText(/I never read applications, proposals, interviews, or a role's terms or pay, and I never score, rank or recommend a person\./)).toBeTruthy();
+    expect(screen.getByText(/I can also prepare a change to a village-wide money setting, and nothing changes until you save it\. A person makes every change\./)).toBeTruthy();
+    // The old sentences would no longer be true, so they are gone.
+    expect(screen.queryByText(/Money stays with you too\./)).toBeNull();
+    expect(screen.queryByText(/can't help with choosing people for roles/)).toBeNull();
+  });
+
+  it("with the village's money dial closed says she suggests on money and prepares no money setting", () => {
+    dock({ initialStatus: ADVISING });
+    expect(screen.getByText(/On money, pay, votes and signatures I can say what I would do and why\. Your village keeps money settings for people to set, so I prepare none of them\. A person makes every change\./)).toBeTruthy();
+    expect(screen.queryByText(/I can also prepare a change/)).toBeNull();
+    expect(screen.getByText(/the money ones and the ones about choosing people among them/)).toBeTruthy();
+  });
+
+  it("reads the rules off the status route, and nothing of them from a village with the dock off", async () => {
+    mockFetch({ "GET /api/admin/helper": () => ({ body: { on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, dock: true, rules: { wide: true, moneyDials: false, extra: "ignored" } } }) });
+    const seen: HelperStatus[] = [];
+    dock({ initialStatus: undefined, onStatus: (s) => seen.push(s) });
+    await screen.findByText(/I prepare none of them/);
+    expect(seen[0].rules).toEqual({ wide: true, moneyDials: false });
+    cleanup();
+    mockFetch({ "GET /api/admin/helper": () => ({ body: { on: true, guide: "Sol", off: null, provider: "anthropic", available: ["anthropic"], names: { anthropic: "Sol" }, rules: { wide: true, moneyDials: true } } }) });
+    const off: HelperStatus[] = [];
+    dock({ initialStatus: undefined, onStatus: (s) => off.push(s) });
+    await screen.findByText(/Money stays with you too\./);
+    expect("rules" in off[0]).toBe(false);
+  });
+
+  it("ADVICE: the setting, what it holds now, what she would set and why, and ONE button that takes the person there", async () => {
+    const calls = mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ reply: "I would lower it.", refused: "Issuance cap per cycle is about money, and money settings stay in your own hands.", filing: null, advice: ADVICE }) }) });
+    const onReview = vi.fn();
+    dock({ initialStatus: ADVISING, onReview });
+    await userEvent.type(box(), "what about the cap{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    expect(card.textContent).toContain("My advice");
+    expect(card.textContent).toContain("Issuance cap per cycle");
+    expect(card.textContent).toContain("Ledger");
+    expect(card.textContent).toContain("Now10000");
+    expect(card.textContent).toContain("I would set8000");
+    expect(card.textContent).toContain("Issuance ran well under the cap for three cycles.");
+    expect(card.textContent).toContain("I have prepared nothing here, and nothing has changed. If you agree, you make this change yourself.");
+    // One control, and it is a link to the setting's own place, made from its key the way a prepared change's is.
+    expect(within(card).queryAllByRole("button")).toEqual([]);
+    const links = within(card).getAllByRole("link");
+    expect(links).toHaveLength(1);
+    expect(links[0].textContent).toBe("Take me there");
+    expect(links[0].getAttribute("href")).toBe("/admin?tab=variables&variable=ledger.cycle_cap");
+    for (const never of ["Review and save", "Send to review", "Apply", "Save", "Not now"]) expect(within(card).queryByText(never), never).toBeNull();
+    // The refusal's own sentence stays beside it, and nothing was prepared, saved or filed.
+    expect(talk().getByText(/money settings stay in your own hands/)).toBeTruthy();
+    expect(screen.queryByTestId("helper-proposal")).toBeNull();
+    expect(screen.queryByTestId("guide-filing")).toBeNull();
+    expect(onReview).not.toHaveBeenCalled();
+    expect(posts(calls).map((c) => c.url)).toEqual(["/api/admin/helper/ask"]);
+  });
+
+  it("ADVICE: with no value to suggest it shows what the setting holds and her reason, and a blank value is said as blank", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...ADVICE, now: "", suggested: null, why: "It reads right as it is." } }) }) });
+    dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    expect(card.textContent).toContain("Now(blank)");
+    expect(card.textContent).not.toContain("I would set");
+    expect(card.textContent).toContain("It reads right as it is.");
+    expect(within(card).getAllByRole("link")).toHaveLength(1);
+  });
+
+  it("ADVICE: her reason is plain words, never a link, whatever it holds", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: { ...ADVICE, why: "Go to /admin?tab=tokens and https://elsewhere.example/collect now." } }) }) });
+    dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    expect(within(card).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["/admin?tab=variables&variable=ledger.cycle_cap"]);
+  });
+
+  it("ADVICE: expanded, it stays with her words and is never listed among what waits on a yes", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: ADVICE }) }) });
+    dock({ initialStatus: WIDE, initialShape: "expanded" });
+    await userEvent.type(box(), "x{Enter}");
+    expect(await talk().findByTestId("guide-advice")).toBeTruthy();
+    expect(screen.getAllByTestId("guide-advice")).toHaveLength(1);
+    expect(within(screen.getByTestId("guide-say-yes")).queryByTestId("guide-advice")).toBeNull();
+    expect(screen.getByText("Nothing is waiting on you.")).toBeTruthy();
+    expect(screen.queryByTestId("guide-prepared-pointer")).toBeNull();
+  });
+
+  it("ADVICE: drawn on tokens alone, like the cards beside it", async () => {
+    mockFetch({ "POST /api/admin/helper/ask": () => ({ body: answer({ advice: ADVICE }) }) });
+    dock({ initialStatus: WIDE });
+    await userEvent.type(box(), "x{Enter}");
+    const card = await screen.findByTestId("guide-advice");
+    const classes = [card, ...Array.from(card.querySelectorAll("*"))].flatMap((el) => String(el.getAttribute("class") ?? "").split(/\s+/));
+    expect(classes.filter((c) => /(?:^|:)(?:bg|text|border|ring|from|to|via|fill|stroke|outline|decoration|placeholder|divide|shadow)-(?:[a-z]+-)?(?:50|[1-9]00|950)(?:\/\d+)?$/.test(c))).toEqual([]);
+    expect(classes.filter((c) => /#[0-9a-f]{3,8}\b|\b(?:rgb|hsl|oklch)a?\(/i.test(c))).toEqual([]);
   });
 });

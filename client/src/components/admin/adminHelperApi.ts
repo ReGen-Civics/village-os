@@ -39,8 +39,10 @@ export async function fetchHelperStatus(password: string, signal?: AbortSignal):
     provider,
     available,
     names,
-    // Only a village that turned the guide's dock on sends these two.
-    ...(d?.dock === true ? { dock: true, ...(d?.lent === true ? { lent: true } : {}) } : {}),
+    // Only a village that turned the guide's dock on sends these: the dock, the lent key, and the rules she answers under.
+    ...(d?.dock === true
+      ? { dock: true, ...(d?.lent === true ? { lent: true } : {}), ...(d?.rules?.wide === true ? { rules: { wide: true, moneyDials: d.rules.moneyDials === true } } : {}) }
+      : {}),
   };
 }
 

@@ -76,7 +76,7 @@ import { GARDEN } from "../garden/Garden";
 import type { NavGroup } from "../adminNavGroups";
 import { askGuide, askHelper, fetchHelperStatus, fileForReview, tabsFromGroups, type GuideConsulted, type HelperLine } from "../adminHelperApi";
 import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, WhatTheGuideReads, type ProposalState } from "../helperPieces";
-import { ConsultedLine, FilingCard, GuideChoice, GuideFace, WhoAnswers, type FilingState } from "./DockCards";
+import { AdviceCard, ConsultedLine, FilingCard, GuideChoice, GuideFace, WhoAnswers, type FilingState } from "./DockCards";
 import { dockDraftKey, dockSaidKey, readDockShape, rememberDockShape, type DockShape } from "./dockState";
 import { DOCKED_SUGGESTIONS, MAX_SUGGESTIONS, useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
 import { replyAsWords, ReplyText, useLinkNamer } from "./replyLinks";
@@ -621,7 +621,7 @@ export default function GuideDock({
                         <Trans context="guide dock, the guide's first line before any question">Hello. What are we tending today?</Trans>
                       )}
                     </p>
-                    <WhatTheGuideReads />
+                    <WhatTheGuideReads rules={status?.rules} />
                   </div>
                 )}
                 {gone[shown] && (
@@ -670,6 +670,8 @@ export default function GuideDock({
                         ) : (
                           cardsOf(turn, i)
                         ))}
+                      {/* Her advice prepares nothing, so it never joins the list of what waits on a yes: it stays with her words, in both shapes. */}
+                      {turn.answer?.advice && <AdviceCard advice={turn.answer.advice} />}
                     </div>
                   ))}
                 {busy === shown && (

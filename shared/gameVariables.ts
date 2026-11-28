@@ -4273,6 +4273,27 @@ export const VARIABLES: VariableDef[] = [
     default: "false",
   },
   /*
+   * WHAT THE GUIDE MAY PREPARE ABOUT MONEY (the founder, 27 Nov 2026: she may
+   * place her suggested value for a village-wide money dial on the save bar
+   * for a person to press; and everything is changeable by the village, so
+   * the rule ships as a dial a village can close). READ by
+   * server/routes/adminHelper.ts, and only while the dock above is on: on,
+   * `proposalRefusal` (shared/adminHelper.ts) lets a money dial with bounds
+   * through to the save bar; off, she advises on money in words and prepares
+   * nothing about it. Free text that names where value goes, pay, payments
+   * and anything about one person stay a person's either way. The guide may
+   * never propose this dial itself.
+   */
+  {
+    key: "platform.admin_guide_money",
+    category: "Platform",
+    label: "The guide prepares money settings",
+    description:
+      "With the guide's dock on, the guide can prepare a change to a village-wide money setting, and nothing changes until a person saves it. A setting that names where value goes or who holds it is set by a person alone, and so are pay, payments and anything about one person. Turn this off and the guide still says what it would do about money, and prepares no money setting. This does nothing while the guide's dock is off.",
+    type: "boolean",
+    default: "true",
+  },
+  /*
    * WHO HEARS ABOUT A CRASH (shared/crashAlerts.ts, 2026-11-24). A crash
    * alert went to every admin and founder, and an admin whose seat is not
    * operational got crash emails that were never hers to act on. This names

@@ -1,6 +1,7 @@
 /**
  * THE DOCK'S OWN PIECES (GuideDock.tsx draws them): the card for a change the
- * guide drafted for the review page, the line that says who is answering and
+ * guide drafted for the review page, her advice on a setting a person changes
+ * by hand, the line that says who is answering and
  * the choice between the village's guide and Sera, what the launch and
  * organizing guides say they read, and her face. (How an address in a reply is
  * drawn is ./replyLinks.tsx.)
@@ -11,10 +12,10 @@
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { HelperFiled, HelperFiling, HelperProvider } from "@shared/adminHelper";
+import type { HelperAdvice, HelperFiled, HelperFiling, HelperProvider } from "@shared/adminHelper";
 import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
 import type { GuideConsulted } from "../adminHelperApi";
-import { secondaryBtn } from "../helperPieces";
+import { secondaryBtn, TakeMeThere } from "../helperPieces";
 
 export const primaryBtn =
   "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -95,6 +96,46 @@ export function FilingCard({ filing, state, onSend, onDrop }: { filing: HelperFi
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/**
+ * HER ADVICE ON ONE SETTING (the founder, 27 Nov 2026: she may advise and
+ * suggest on money, pay, votes and signatures; the act stays a person's).
+ * What the setting holds now, the value she would set when she named one, and
+ * her reason. It prepares nothing: there is no apply, no save and nothing for
+ * the save bar, and the one button takes the person to the setting's own
+ * place, reached from its key the way a prepared change's "Take me there" is.
+ * Every field but the reason and the suggested value was read by the server
+ * from the setting itself (shared/adminHelper.ts, `buildAdvice`), and the
+ * reason is drawn as plain words, never as a link.
+ */
+export function AdviceCard({ advice }: { advice: HelperAdvice }) {
+  const { t } = useLingui();
+  const blank = t({ message: "(blank)", context: "admin helper, proposal: an empty value" });
+  return (
+    <div data-testid="guide-advice" className="mt-2 rounded-xl border border-border bg-card p-3 text-sm">
+      <p className="text-xs uppercase tracking-wider text-muted-foreground"><Trans context="guide dock, the guide's advice on a setting a person changes">My advice</Trans></p>
+      <p className="mt-1 break-words font-semibold text-foreground">{advice.label}</p>
+      <p className="text-xs text-muted-foreground">{advice.category}</p>
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <dt className="text-muted-foreground"><Trans context="admin helper, proposal: current value">Now</Trans></dt>
+        <dd className="break-words font-mono text-foreground">{advice.now || blank}</dd>
+        {advice.suggested !== null && (
+          <>
+            <dt className="text-muted-foreground"><Trans context="guide dock, advice: the value the guide would set">I would set</Trans></dt>
+            <dd className="break-words font-mono font-semibold text-foreground">{advice.suggested || blank}</dd>
+          </>
+        )}
+      </dl>
+      {advice.why && <p className="mt-2 whitespace-pre-wrap break-words text-muted-foreground">{advice.why}</p>}
+      <p className="mt-2 text-foreground">
+        <Trans context="guide dock, advice: nothing was prepared and the person makes the change">I have prepared nothing here, and nothing has changed. If you agree, you make this change yourself.</Trans>
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <TakeMeThere proposal={advice} />
+      </div>
     </div>
   );
 }

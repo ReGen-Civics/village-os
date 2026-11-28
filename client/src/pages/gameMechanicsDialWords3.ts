@@ -223,6 +223,10 @@ export const DIAL_WORDS_3: Readonly<Record<string, DialWords>> = {
     label: msg({ message: "The guide's dock in Admin", context: "game variable platform.admin_guide_dock, label" }),
     description: msg({ message: "Shows the village guide as one dock beside every Admin screen and on the road to launch, in place of the helper panel and the launch guide. The dock opens wide to talk a change through and closes back to the side, takes speech, offers next steps, and can send a change it drafted to the review page for a person to accept. While this is on, the guide in Admin also answers on a key the platform lends when the village has no key of its own, inside the platform's daily limit. Off keeps the helper panel and the launch guide as they are.", context: "game variable platform.admin_guide_dock, description" }),
   },
+  "platform.admin_guide_money": {
+    label: msg({ message: "The guide prepares money settings", context: "game variable platform.admin_guide_money, label" }),
+    description: msg({ message: "With the guide's dock on, the guide can prepare a change to a village-wide money setting, and nothing changes until a person saves it. A setting that names where value goes or who holds it is set by a person alone, and so are pay, payments and anything about one person. Turn this off and the guide still says what it would do about money, and prepares no money setting. This does nothing while the guide's dock is off.", context: "game variable platform.admin_guide_money, description" }),
+  },
   "ops.crash_alert_recipients": {
     label: msg({ message: "Addresses that hear about crashes", context: "game variable ops.crash_alert_recipients, label" }),
     description: msg({ message: "Email addresses that hear about crashes. An admin or founder's address also gets the notice in the app; an address with no account gets the email only. Blank tells every admin and founder. Separate addresses with commas, at most 10. A member's address is skipped, and a list with no address left to reach tells every admin and founder.", context: "game variable ops.crash_alert_recipients, description" }),

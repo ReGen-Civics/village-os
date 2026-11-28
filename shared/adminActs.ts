@@ -28,6 +28,8 @@
  *                    propose (shared/adminHelper.ts). Otherwise "prepare": the guide fills the real control or
  *                    files a proposal, and a person presses. `actReason` says which list and which rule decided.
  *                    Change a list and the class changes with it; nothing here can disagree with the lists.
+ *                    The helper's list is asked under the guide's rules (`GuideRules`, shared/adminHelper.ts):
+ *                    the rules as they always were unless a caller hands in the ones a village's dials set.
  *   its consequence  `actConsequence`: the line the catalogs already hold. A key reads its seed's line
  *                    (shared/guilds.ts); everything else reads the line of the power it needs
  *                    (CAPABILITY_CONSEQUENCE, shared/draftKinds.ts). Where no catalog holds a line it is empty.
@@ -60,7 +62,7 @@
  *
  * Pure: no I/O, no clock.
  */
-import { proposalRefusal } from "./adminHelper";
+import { proposalRefusal, TODAYS_RULES, type GuideRules } from "./adminHelper";
 import { ALWAYS_A_PERSON } from "./agentAdmin";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, type AdminSearchEntry } from "./adminSearch";
 import { TAB_MODULE } from "./adminTabModules";
@@ -151,8 +153,8 @@ export interface PersonOnlyLists {
   neverProposed(method: string, path: string, body: unknown): { key: string; words: string } | null;
   /** A dial whose value is sealed, or that governs the agents themselves (shared/proposedChanges.ts). */
   variableNever(def: VariableDef | undefined): { key: string; words: string } | null;
-  /** Why the helper may not propose a change to this dial, or null when it may (shared/adminHelper.ts). */
-  proposalRefusal(def: VariableDef | undefined): string | null;
+  /** Why the helper may not propose a change to this dial under these rules, or null when it may (shared/adminHelper.ts). */
+  proposalRefusal(def: VariableDef | undefined, rules?: GuideRules): string | null;
 }
 
 /** The lists as the platform holds them today. */
@@ -167,6 +169,9 @@ export interface ActReason {
 
 /** The key the helper's refusal is recorded under: the helper's list is one rule, with its own sentence for each dial. */
 export const HELPER_RULE_KEY = "may_not_propose";
+
+/** The connector's rule about money (ALWAYS_A_PERSON, shared/agentAdmin.ts), by its key. */
+export const CONNECTOR_MONEY_RULE = "money";
 
 type Routed = Pick<AdminAct, "route">;
 
@@ -199,25 +204,36 @@ export function actAlwaysRules(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_L
  *   2. A rule of the connector's list names it with mode "always": erasure, money, voice, comparing, secrets,
  *      accounts and the agents themselves. The modes "writes" and "personal" do NOT make an act a person's alone:
  *      their own words say a connector proposes them and a person does them, which is what "prepare" means.
- *   3. It is a dial the helper may not propose: money, choosing people, a sealed value, its own switch.
+ *   3. It is a dial the helper may not propose under `rules`: money, choosing people, a sealed value, the agents'
+ *      own, one of its own switches.
+ *
+ * THE ONE PLACE THE RULES MOVE A CLASS (the founder, 27 Nov 2026: the guide may place a village-wide money dial on
+ * the save bar, and a village may close that). A dial the helper's list holds under the rules as they always were
+ * and allows under `rules` is one the village opened to the guide. The connector's money rule names many of those
+ * by a word in their key ("ledger", "mint", "budget"), because it reads a concrete path. That rule holds the
+ * connector, and still shows among the act's `alwaysRules`; for a dial the village opened it does not make the act
+ * a person's alone. Under the rules as they always were nothing is opened, and every reason is what it was. No
+ * other rule is set aside, and no act that is not a dial is touched: an act that moves value or sets a person's
+ * pay reads the same under every rule set.
  */
-export function actReason(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS): ActReason | null {
+export function actReason(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS, rules: GuideRules = TODAYS_RULES): ActReason | null {
   if (!isWrite(a)) return null;
   const { method } = a.route;
   const dial = dialOf(a);
   const never = lists.neverProposed(method, dial ? a.route.path : filled(actPath(a) ?? ""), {}) ?? (dial ? lists.variableNever(dial) : null);
   if (never) return { list: "never_proposed", key: never.key, words: never.words };
-  const always = actAlwaysRules(a, lists).find((r) => r.mode === "always");
+  const refused = dial ? lists.proposalRefusal(dial, rules) : null;
+  const opened = !!dial && refused === null && lists.proposalRefusal(dial, TODAYS_RULES) !== null;
+  const always = actAlwaysRules(a, lists).find((r) => r.mode === "always" && !(opened && r.key === CONNECTOR_MONEY_RULE));
   if (always) return { list: "always_a_person", key: always.key, words: always.words };
-  const refused = dial ? lists.proposalRefusal(dial) : null;
   if (refused) return { list: "helper_money", key: HELPER_RULE_KEY, words: refused };
   return null;
 }
 
 /** The class of an act, computed: a read calls no write route, a reason makes it a person's alone, and every other write is one to prepare. */
-export function actClass(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS): ActClass {
+export function actClass(a: Routed, lists: PersonOnlyLists = PERSON_ONLY_LISTS, rules: GuideRules = TODAYS_RULES): ActClass {
   if (!isWrite(a)) return "read";
-  return actReason(a, lists) ? "person-only" : "prepare";
+  return actReason(a, lists, rules) ? "person-only" : "prepare";
 }
 
 // ── The consequence line, read from the catalogs that hold it ──────────────
@@ -286,7 +302,7 @@ export interface ActCard {
   consequence: string;
 }
 
-/** One act with everything computed for it. */
-export function actCard(a: AdminAct, lists: PersonOnlyLists = PERSON_ONLY_LISTS): ActCard {
-  return { act: a, href: actHref(a), actClass: actClass(a, lists), reason: actReason(a, lists), alwaysRules: actAlwaysRules(a, lists), consequence: actConsequence(a) };
+/** One act with everything computed for it, under the guide's rules: the rules as they always were unless handed others. */
+export function actCard(a: AdminAct, lists: PersonOnlyLists = PERSON_ONLY_LISTS, rules: GuideRules = TODAYS_RULES): ActCard {
+  return { act: a, href: actHref(a), actClass: actClass(a, lists, rules), reason: actReason(a, lists, rules), alwaysRules: actAlwaysRules(a, lists), consequence: actConsequence(a) };
 }

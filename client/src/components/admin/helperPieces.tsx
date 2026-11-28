@@ -10,7 +10,7 @@
  */
 import { Check } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { HelperProposal, HelperProvider } from "@shared/adminHelper";
+import type { GuideRules, HelperProposal, HelperProvider } from "@shared/adminHelper";
 import { adminSearchHref } from "@shared/adminSearch";
 import { goTo } from "./search/adminSearchModel";
 
@@ -27,12 +27,36 @@ export const proposalMarkOf = (p: Pick<HelperProposal, "key" | "to">): string =>
  * this. They are true to the code as it stands (the tool layer's two readers
  * and its refusals, server/routes/adminHelper.ts). When what she may read
  * changes, change them here, once.
+ *
+ * THREE VARIANTS, ALL HERE, each true of one rule set (`GuideRules`, which the
+ * status route sends only while the village's dock is on). No rules, or rules
+ * that are not wide: the sentences as they always were. Wide: she reads money
+ * and selection settings too and may advise on money, and with the village's
+ * money dial on she may also prepare a village-wide money setting. Under every
+ * one she reads no application, proposal, interview, role terms or pay, and a
+ * person makes every change.
  */
-export function WhatTheGuideReads() {
+export function WhatTheGuideReads({ rules }: { rules?: GuideRules }) {
+  const first = (
+    <p><Trans context="admin helper panel">Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide.</Trans></p>
+  );
+  if (!rules?.wide) {
+    return (
+      <>
+        {first}
+        <p><Trans context="admin helper panel">I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I can't help with choosing people for roles. Money stays with you too.</Trans></p>
+      </>
+    );
+  }
   return (
     <>
-      <p><Trans context="admin helper panel">Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide.</Trans></p>
-      <p><Trans context="admin helper panel">I read settings, help text and the shape of the org chart. I never read applications, proposals, interviews, terms or pay, and I can't help with choosing people for roles. Money stays with you too.</Trans></p>
+      {first}
+      <p><Trans context="guide dock, what the guide reads under the wide rules">I read your settings, the money ones and the ones about choosing people among them, the help text and the shape of the org chart. I never read applications, proposals, interviews, or a role's terms or pay, and I never score, rank or recommend a person.</Trans></p>
+      {rules.moneyDials ? (
+        <p><Trans context="guide dock, what the guide may do about money, with the village's money dial on">On money, pay, votes and signatures I can say what I would do and why. I can also prepare a change to a village-wide money setting, and nothing changes until you save it. A person makes every change.</Trans></p>
+      ) : (
+        <p><Trans context="guide dock, what the guide may do about money, with the village's money dial off">On money, pay, votes and signatures I can say what I would do and why. Your village keeps money settings for people to set, so I prepare none of them. A person makes every change.</Trans></p>
+      )}
     </>
   );
 }
@@ -177,8 +201,11 @@ export function ProposalCard({
 export const secondaryBtn =
   "inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-/** The dial's own place in Admin, through the address search uses, so it lands, focuses and asks the one leave guard. */
-export function TakeMeThere({ proposal }: { proposal: HelperProposal }) {
+/**
+ * The dial's own place in Admin, through the address search uses, so it lands, focuses and asks the one leave guard.
+ * Made from the dial's key alone, so a card that prepares nothing (the dock's advice) reaches the control the same way.
+ */
+export function TakeMeThere({ proposal }: { proposal: Pick<HelperProposal, "key"> }) {
   const href = proposalHref(proposal);
   return (
     <a
