@@ -10,6 +10,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { StrictMode } from "react";
 
 const mic = vi.hoisted(() => ({ onText: null as null | ((chunk: string) => void) }));
 vi.mock("@/components/MicButton", () => ({
@@ -33,9 +34,14 @@ let phone = false;
 /** The tab bar's height as the composer's probe measures it (`--tabbar-h`). */
 let tabBar = 0;
 
+let windowHeight: PropertyDescriptor | undefined;
+
 beforeEach(() => {
   phone = false;
   tabBar = 0;
+  // The window as tall as the visual viewport below: no keyboard is up unless a test raises one.
+  windowHeight = Object.getOwnPropertyDescriptor(window, "innerHeight");
+  Object.defineProperty(window, "innerHeight", { configurable: true, value: 600 });
   auth.user = { id: "u-ana" };
   window.sessionStorage.clear();
   Object.defineProperty(HTMLTextAreaElement.prototype, "scrollHeight", {
@@ -60,6 +66,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete (HTMLTextAreaElement.prototype as { scrollHeight?: number }).scrollHeight;
   delete (HTMLElement.prototype as { offsetHeight?: number }).offsetHeight;
+  if (windowHeight) Object.defineProperty(window, "innerHeight", windowHeight);
+  else delete (window as { innerHeight?: number }).innerHeight;
 });
 
 function Chat({
@@ -274,6 +282,122 @@ describe("Send kept in view", () => {
   });
 });
 
+describe("the phone keyboard", () => {
+  /** A visual viewport that can shrink and pan the way iOS Safari and Android Chrome do: the layout viewport stays. */
+  const fakeViewport = (height: number, offsetTop = 0) => {
+    const vv = Object.assign(new EventTarget(), { height, offsetTop, width: 375, pageTop: 0, scale: 1 });
+    vi.stubGlobal("visualViewport", vv);
+    return {
+      raise(h: number, top: number) {
+        vv.height = h;
+        vv.offsetTop = top;
+        act(() => {
+          vv.dispatchEvent(new Event("resize"));
+          vv.dispatchEvent(new Event("scroll"));
+        });
+      },
+    };
+  };
+  let realInner: PropertyDescriptor | undefined;
+  beforeEach(() => {
+    realInner = Object.getOwnPropertyDescriptor(window, "innerHeight");
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 812 });
+  });
+  afterEach(() => {
+    if (realInner) Object.defineProperty(window, "innerHeight", realInner);
+    document.documentElement.style.removeProperty("--kb");
+    document.documentElement.style.removeProperty("--vvh");
+  });
+  const row = () => box().closest("[class*='@container']")!.querySelector(":scope > div") as HTMLElement;
+
+  it("says how much the keyboard covers, so a pinned panel lifts above it, and keeps Send on the box's row", () => {
+    phone = true;
+    const kb = fakeViewport(812, 0);
+    render(
+      <div style={{ position: "fixed", bottom: "var(--kb, 0px)" }} data-panel="">
+        <Chat />
+      </div>,
+    );
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("0px");
+    expect(row().getAttribute("data-composer-row")).toBeNull();
+    box().focus();
+    // The keyboard takes 45% and the browser pans to the field: the visual viewport shows 218 to 665 of 812.
+    kb.raise(447, 218);
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe(`${812 - (218 + 447)}px`);
+    expect(document.documentElement.style.getPropertyValue("--vvh")).toBe("447px");
+    // Send rides beside the box, in the band the browser shows, never under it where the keyboard is.
+    expect(row().getAttribute("data-composer-row")).toBe("beside");
+    expect(row().className).toContain("flex-row");
+    expect(row().contains(screen.getByRole("button", { name: "Send" }))).toBe(true);
+    // The keyboard goes down: the buttons may go back under the box.
+    kb.raise(812, 0);
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("0px");
+    expect(row().getAttribute("data-composer-row")).toBeNull();
+  });
+
+  it("leaves a worded Send under the box when beside it would take the box's width", () => {
+    phone = true;
+    const kb = fakeViewport(812, 0);
+    // The row is 311px wide and the mic and a worded Send take 130px: the box would keep 173px, under 60%.
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.querySelector?.(":scope > textarea") ? 311 : 0;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+      configurable: true,
+      get(this: HTMLElement) {
+        return !this.querySelector?.("textarea") && this.querySelector?.("button") ? 130 : 0;
+      },
+    });
+    try {
+      render(
+        <div style={{ position: "fixed" }}>
+          <Chat />
+        </div>,
+      );
+      box().focus();
+      kb.raise(447, 218);
+      expect(document.documentElement.style.getPropertyValue("--kb")).toBe("147px");
+      expect(row().getAttribute("data-composer-row")).toBeNull();
+    } finally {
+      delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+      delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
+    }
+  });
+
+  it("caps the box at two thirds of what the keyboard leaves, inside a pinned panel", () => {
+    phone = true;
+    const kb = fakeViewport(812, 0);
+    render(
+      <div style={{ position: "fixed" }}>
+        <Chat />
+      </div>,
+    );
+    box().focus();
+    kb.raise(447, 218);
+    fireEvent.change(box(), { target: { value: lines(40) } });
+    expect(box().style.height).toBe(`${Math.floor(447 * (2 / 3))}px`);
+  });
+
+  it("keeps the buttons where they were on a desk, keyboard or not", () => {
+    const kb = fakeViewport(812, 0);
+    render(<Chat />);
+    kb.raise(447, 0);
+    expect(row().getAttribute("data-composer-row")).toBeNull();
+  });
+
+  it("forgets both values when the last chat box closes", () => {
+    fakeViewport(447, 218);
+    const first = render(<Chat />);
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("147px");
+    first.unmount();
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("");
+    expect(document.documentElement.style.getPropertyValue("--vvh")).toBe("");
+  });
+});
+
 describe("Enter", () => {
   it("sends on a desk, and Shift+Enter adds a line", () => {
     expect(enterSends({ key: "Enter" }, false)).toBe(true);
@@ -392,6 +516,38 @@ describe("the draft", () => {
     expect(window.sessionStorage.getItem("village-paper")).toBe("sea-chart");
     render(<Chat draftKey="journal-guide" />);
     expect(box()).toHaveValue("");
+  });
+
+  it("switches conversation and member under StrictMode without setting state while rendering", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      window.sessionStorage.setItem("chat-draft:u-ana:talk-it-out:About you", "kept for About you");
+      const view = render(
+        <StrictMode>
+          <Chat draftKey="talk-it-out:Bio" />
+        </StrictMode>,
+      );
+      fireEvent.change(box(), { target: { value: "for the bio" } });
+      view.rerender(
+        <StrictMode>
+          <Chat draftKey="talk-it-out:About you" />
+        </StrictMode>,
+      );
+      expect(box()).toHaveValue("kept for About you");
+      fireEvent.change(box(), { target: { value: "kept for About you, and more" } });
+      expect(readDraft("u-ana:talk-it-out:About you")).toBe("kept for About you, and more");
+      expect(readDraft("u-ana:talk-it-out:Bio")).toBe("for the bio");
+      auth.user = { id: "u-ben" };
+      view.rerender(
+        <StrictMode>
+          <Chat draftKey="talk-it-out:About you" />
+        </StrictMode>,
+      );
+      expect(box()).toHaveValue("");
+      expect(errors.mock.calls.map((c) => String(c[0])).filter((m) => /Maximum update depth|while rendering a different component|Too many re-renders/.test(m))).toEqual([]);
+    } finally {
+      errors.mockRestore();
+    }
   });
 
   it("is kept nowhere for a visitor", () => {

@@ -164,6 +164,7 @@ export default function TalkItOut({
         onSend={() => void send()}
         busy={busy}
         label={t({ message: "Your words to the guide", context: "talk it out: input label" })}
+        minRows={2}
         sendLabel={t({ message: "Send", context: "talk it out: sends your words" })}
       />
     </section>

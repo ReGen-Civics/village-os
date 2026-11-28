@@ -91,7 +91,7 @@ export function LaunchGuide({ open, onClose, launched = false }: { open: boolean
   // `data-hides-fab` hides the covered shortcut button while this panel holds the corner
   // (index.css), so a keyboard never lands on a control nobody can see.
   return (
-    <div ref={panel} data-hides-fab data-dialogue className="fixed bottom-[calc(var(--tabbar-h)+0.5rem)] md:bottom-4 right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[70vh]">
+    <div ref={panel} data-hides-fab data-dialogue className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)-1rem))]">
       <header className="px-4 py-3 border-b border-stone-100 flex items-center justify-between gap-2">
         <div className="flex gap-1">
           {!launched && (

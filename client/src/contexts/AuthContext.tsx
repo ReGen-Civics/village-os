@@ -86,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthToken();
         setToken(null);
         forgetExamplesCache();
+        // An expired session is a sign-out too: its half-written chat messages leave with it.
+        forgetChatDrafts();
       }
     } catch (err) {
       // A dropped connection says nothing about whether the token is valid.

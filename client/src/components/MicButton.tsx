@@ -138,12 +138,17 @@ export default function MicButton({
         aria-label={fieldName ? `${label}: ${fieldName}` : label}
         title={label}
         // The bar's own colours, so the button re-themes with the village and reads in both modes (QA round 1 on #1885).
-        className={`shrink-0 size-11 rounded-xl flex items-center justify-center border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
+        // Listening is the gold-edged button, never a second gold fill beside Send, and its ring alone moves, only
+        // where motion is welcome; the button itself holds still at full contrast (QA round 2: the pulse dipped to 2.61:1).
+        className={`${/\babsolute\b/.test(className) ? "" : "relative"} shrink-0 size-11 rounded-xl flex items-center justify-center border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
           listening
-            ? "border-notice bg-notice text-background motion-safe:animate-pulse"
+            ? "border-2 border-notice bg-background text-notice"
             : "border-border bg-muted text-foreground hover:bg-background"
         } ${className}`}
       >
+        {listening ? (
+          <span aria-hidden="true" data-mic-listening="" className="pointer-events-none absolute -inset-1 rounded-[0.9rem] border-2 border-notice/60 motion-safe:animate-ping" />
+        ) : null}
         {listening ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
       </button>
       {problem && !listening && (

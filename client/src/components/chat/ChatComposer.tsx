@@ -20,18 +20,21 @@
  * The draft itself is the call site's (useChatDraft in ./chatDraft keeps it
  * per conversation), so a closed panel opens on the same words.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Send } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import { growHeight } from "@/components/form/GrowingField";
 import { useFieldName } from "@/components/form/fieldName";
+import { useKeyboardInset } from "./keyboardInset";
 
 /** One line, never under a finger's 44px. */
 export const MIN_HEIGHT = 44;
 /** How much of the visible screen the box may take before it scrolls. */
 export const SHARE = 2 / 3;
+/** With a phone keyboard up, Send moves beside the box only when the box keeps this much of the row. */
+const BESIDE_SHARE = 0.6;
 /** The count shows from here on (80% of the limit). */
 const NEAR = 0.8;
 
@@ -110,7 +113,8 @@ function scrollBox(el: HTMLElement): HTMLElement | null {
 export function visibleRoom(el: HTMLElement): { top: number; bottom: number } {
   const vv = window.visualViewport;
   let top = vv?.offsetTop || 0;
-  let bottom = top + (vv?.height || window.innerHeight || 0) - tabBarHeight();
+  // The visual viewport's foot, or the tab bar's top when that is higher. With a keyboard up the bar is under it.
+  let bottom = Math.min(top + (vv?.height || window.innerHeight || 0), (window.innerHeight || 0) - tabBarHeight());
   const box = scrollBox(el);
   if (box) {
     const r = box.getBoundingClientRect();
@@ -217,6 +221,19 @@ export default function ChatComposer({
   const ref = inputRef ?? own;
   const row = useRef<HTMLDivElement>(null);
   const fieldName = useFieldName(ref);
+  // A phone's keyboard is up: the docked panels lift above it (keyboardInset.ts), and the browser shows the box being
+  // written in, so Send rides on the box's row too (QA round 2 on #1885). Only where the box keeps most of the width:
+  // a worded Send beside it left the role companion's box 137px wide, and the lead asked to see what he writes.
+  const keyboardUp = useKeyboardInset() > 0 && isPhoneKeyboard();
+  const tools = useRef<HTMLDivElement>(null);
+  const [roomBeside, setRoomBeside] = useState(true);
+  useLayoutEffect(() => {
+    if (!keyboardUp) return;
+    const width = row.current?.clientWidth ?? 0;
+    const used = (tools.current?.offsetWidth ?? 0) + 8;
+    setRoomBeside(width === 0 || width - used >= width * BESIDE_SHARE);
+  }, [keyboardUp]);
+  const beside = keyboardUp && roomBeside;
   // The latest words, so two phrases finished in one breath both land.
   const latest = useRef(value);
   latest.current = value;
@@ -309,7 +326,11 @@ export default function ChatComposer({
         {label}
       </label>
       {/* Beside the box where there is room; under it, at the right, in a narrow panel or on a phone, so the box keeps the width. */}
-      <div ref={row} className="flex flex-col gap-2 @min-[22rem]:flex-row @min-[22rem]:items-end">
+      <div
+        ref={row}
+        data-composer-row={beside ? "beside" : undefined}
+        className={beside ? "flex flex-row items-end gap-2" : "flex flex-col gap-2 @min-[22rem]:flex-row @min-[22rem]:items-end"}
+      >
         <textarea
           ref={ref}
           id={id}
@@ -333,9 +354,9 @@ export default function ChatComposer({
             send();
           }}
           data-chat-composer=""
-          className={`min-h-11 w-full min-w-0 resize-none whitespace-pre-wrap break-words @min-[22rem]:flex-1 ${fieldClassName}`}
+          className={`min-h-11 w-full min-w-0 resize-none whitespace-pre-wrap break-words ${beside ? "flex-1" : "@min-[22rem]:flex-1"} ${fieldClassName}`}
         />
-        <div className="flex shrink-0 items-end justify-end gap-2">
+        <div ref={tools} className="flex shrink-0 items-end justify-end gap-2">
           {mic ? <MicButton onText={heard} disabled={disabled} fieldName={fieldName} /> : null}
           <button type="button" onClick={send} disabled={!canSend} aria-label={sendText ? undefined : sendLabel} className={sendClassName}>
             {sendText ?? <Send className="h-4 w-4" aria-hidden="true" />}

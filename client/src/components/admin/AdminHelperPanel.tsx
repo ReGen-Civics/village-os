@@ -164,7 +164,8 @@ export default function AdminHelperPanel({
       ref={panel}
       aria-label={t({ message: `${guide}, your Admin helper`, context: "admin helper panel" })}
       data-testid="admin-helper"
-      style={{ top, bottom }}
+      // Above a phone's keyboard too (QA round 2 on #1885): --kb is set while a chat box is open (chat/keyboardInset.ts).
+      style={{ top, bottom: `max(${bottom}px, var(--kb, 0px))` }}
       className="fixed right-0 z-20 flex w-full flex-col border-l border-border bg-card text-card-foreground shadow-lg sm:w-[26rem]"
     >
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">

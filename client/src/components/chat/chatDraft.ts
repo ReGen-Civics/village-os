@@ -8,7 +8,7 @@
  * visitor's is kept nowhere, so the next person on the same tab never reads
  * it (QA round 1 on #1885). Sign-out clears them all (AuthContext.logout).
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { readDraft, writeDraft } from "./draftStore";
 
@@ -21,24 +21,34 @@ export function draftKeyFor(userId: string | null | undefined, conversation: str
   return userId ? `${userId}:${conversation}` : null;
 }
 
-/** The draft for one conversation, read once and written on every change. A new member or conversation reads its own. */
+/**
+ * The draft for one conversation, read once and written on every change. A new member or conversation reads its own.
+ *
+ * NO STATE IS SET WHILE RENDERING (QA round 2 on #1885 saw one "Maximum update depth exceeded" in Talk it out, not
+ * reproduced). A render whose key moved reads the stored draft directly, and an effect then adopts it, so React
+ * never re-renders from inside a render, under StrictMode or not. The setter always writes to the key of the latest
+ * render.
+ */
 export function useChatDraft(conversation: string): [string, SetDraft] {
   const userId = useOptionalAuth()?.user?.id;
   const key = draftKeyFor(userId, conversation);
   const [held, setHeld] = useState(() => ({ key, value: key ? readDraft(key) : "" }));
-  let current = held;
-  if (held.key !== key) {
-    current = { key, value: key ? readDraft(key) : "" };
-    setHeld(current);
-  }
+  const keyRef = useRef(key);
+  keyRef.current = key;
+  const value = held.key === key ? held.value : key ? readDraft(key) : "";
+  useEffect(() => {
+    setHeld((was) => (was.key === key ? was : { key, value: key ? readDraft(key) : "" }));
+  }, [key]);
   const set = useCallback<SetDraft>(
     (next) =>
       setHeld((was) => {
-        const value = typeof next === "function" ? next(was.value) : next;
-        if (was.key) writeDraft(was.key, value);
-        return { key: was.key, value };
+        const k = keyRef.current;
+        const base = was.key === k ? was.value : k ? readDraft(k) : "";
+        const v = typeof next === "function" ? next(base) : next;
+        if (k) writeDraft(k, v);
+        return { key: k, value: v };
       }),
     [],
   );
-  return [current.value, set];
+  return [value, set];
 }
