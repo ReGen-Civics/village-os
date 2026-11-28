@@ -762,7 +762,7 @@ describe("the speaking dial, and the garden's own lines in both forms", () => {
     expect(text("band")).toBe("North Wind this afternoon: four places need you.");
     afternoon.unmount();
     show(<Probe hour={8} needing={0} />);
-    expect(text("band")).toBe("Nothing needs you this morning. The village is steady.");
+    expect(text("band")).toBe("The village is quiet this morning. Nothing needs you.");
   });
 
   it("says one place as one, a count past ten as a number, and nothing waiting as steady", () => {
@@ -773,11 +773,11 @@ describe("the speaking dial, and the garden's own lines in both forms", () => {
     expect(text("band")).toBe("North Wind tonight: 12 places need you.");
     many.unmount();
     const none = show(<Probe needing={0} />);
-    expect(text("band")).toBe("Nothing needs you tonight. The village is steady.");
+    expect(text("band")).toBe("The village is quiet tonight. Nothing needs you.");
     none.unmount();
     // A count that is no count is nothing waiting, never a line with NaN in it.
     show(<Probe needing={Number.NaN} />);
-    expect(text("band")).toBe("Nothing needs you tonight. The village is steady.");
+    expect(text("band")).toBe("The village is quiet tonight. Nothing needs you.");
   });
 
   it("uses the village's own name, and a plain one while it has none: no village's name is written into the platform", () => {
