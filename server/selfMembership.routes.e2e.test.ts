@@ -115,12 +115,20 @@ async function letterVersion(): Promise<string> {
   return String(letter.json.version);
 }
 
-/** How many people the live roll holds right now, straight through the gate. */
+/**
+ * How many people the live roll holds right now, straight through the gate.
+ *
+ * `membersWithAVoice`, the roll every ordinary ballot freezes. This read
+ * `vote.onTheRoll` until 2026-11-27, when that became the LAUNCH's roll, which
+ * is the founders (Rye: "at least 3 members holding the founder role"). What
+ * this suite measures is who holds a voice, so it reads the count that still
+ * means that.
+ */
 async function onTheRoll(): Promise<number> {
   const status = await call("GET", "/api/admin/launch");
   expect(status.status, JSON.stringify(status.json)).toBe(200);
-  const n = status.json?.vote?.onTheRoll;
-  expect(typeof n, `onTheRoll must be a number, got ${JSON.stringify(status.json?.vote)}`).toBe("number");
+  const n = status.json?.vote?.membersWithAVoice;
+  expect(typeof n, `membersWithAVoice must be a number, got ${JSON.stringify(status.json?.vote)}`).toBe("number");
   return Number(n);
 }
 

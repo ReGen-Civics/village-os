@@ -19,6 +19,8 @@ import {
   type TokenMintHandoverDeps,
 } from "./lib/tokenMintHandover";
 import { TREASURY_ROLE_ID } from "./lib/starterRoles";
+import { readGameStart } from "./lib/gameStart";
+import { recordLaunchCarried } from "./lib/launch";
 import { HANDOVER_SET, isBadgeGrantable, TRANSFERABLE } from "../shared/capabilities";
 
 const DB = testDbConfigured();
@@ -163,5 +165,70 @@ describe.skipIf(!DB)("the boot step for a village migration 0112 recorded as sta
     const out = await boot(world(both, {}).deps, applied, { started: true, ballotId: null });
     expect(out).toMatchObject({ moved: false, reason: "nobody-to-hold-it" });
     expect(applied).toEqual([]);
+  });
+});
+
+/**
+ * A RATIFIED VILLAGE IS STILL ONE MIGRATION 0112 RECORDED (Rye, 2026-11-27:
+ * "one ratifying launch vote that does not restart issuance").
+ *
+ * The boot step keys on `game-start.ballotId === null`. A ratifying vote
+ * records the launch and never touches `game-start`, so that id stays null
+ * after it, and these cases drive the step with the REAL fact read back from
+ * the documents a ratification leaves. What must hold: the step never takes
+ * the key from where the vote put it, and a ratified village whose vote seated
+ * nobody still gets the key to a steward at the boot after one is seated.
+ */
+describe.skipIf(!DB)("the boot step after a ratifying launch vote", () => {
+  const both: Role[] = [{ id: "steward", capabilities: [] }, { id: "treasury", capabilities: [] }];
+  const ROW_0112 = { startedAt: "2026-03-14T09:26:53Z", ballotId: null, startedBy: null, note: "Recorded by migration 0112." };
+
+  /** The documents exactly as a ratification leaves them: 0112's game-start untouched, and the launch on record. */
+  async function ratified(): Promise<{ started: boolean; ballotId: string | null }> {
+    await pool.query("DELETE FROM app_config WHERE config_key IN ('game-start', 'launch-state')"); // module-review-ok: fixture SQL against the scratch schema this suite provisioned
+    await pool.query("INSERT INTO app_config (config_key, value) VALUES ('game-start', ?)", [JSON.stringify(ROW_0112)]); // module-review-ok: the same
+    await recordLaunchCarried(pool, { ballotId: "bal-ratify", closedBy: "governance" });
+    const fact = await readGameStart(pool);
+    return { started: fact.started, ballotId: fact.ballotId };
+  }
+  const boot = (deps: TokenMintHandoverDeps, applied: string[], gs: { started: boolean; ballotId: string | null }) =>
+    handTokenMintOverFor0112({ ...deps, gameStart: async () => gs, applied: () => applied, markApplied: async (id) => { applied.push(id); } });
+
+  it("still reads as started with no ballot behind it, which is what the step keys on", async () => {
+    expect(await ratified()).toEqual({ started: true, ballotId: null });
+  });
+
+  it("finds the key where the ratifying vote put it, leaves it there, and marks itself done", async () => {
+    const gs = await ratified();
+    await seedRoles(both);
+    // The launch closer moved it at the carry, with the ratifying ballot as its mover.
+    const atCarry = world(both, { steward: 1, treasury: 1 });
+    const moved = await handTokenMintToStewardsAndTreasury(atCarry.deps, { ballotId: "bal-ratify", note: "The launch was ratified." });
+    expect(moved).toMatchObject({ moved: true, holderRoleId: "steward" });
+    const [before] = await pool.query<any[]>("SELECT * FROM capability_holding WHERE capability = ?", [TOKEN_MINT]); // module-review-ok: the same
+
+    const applied: string[] = [];
+    const out = await boot(world(atCarry.state.roles, { steward: 1, treasury: 1 }).deps, applied, gs);
+    expect(out).toEqual({ moved: false, reason: "already-held", holderRoleId: "steward" });
+    expect(applied).toEqual([TOKEN_MINT_0112_MARKER]);
+    // Not one column of the holding changed: the vote's record of who moved it stands.
+    const [after] = await pool.query<any[]>("SELECT * FROM capability_holding WHERE capability = ?", [TOKEN_MINT]); // module-review-ok: the same
+    expect(after).toEqual(before);
+  });
+
+  it("a ratified village whose vote seated nobody gets the key to a steward at the boot after one is seated", async () => {
+    const gs = await ratified();
+    await seedRoles(both);
+    // At the carry nobody held either role, so the key stayed with the admin.
+    const atCarry = await handTokenMintToStewardsAndTreasury(world(both, {}).deps, { ballotId: "bal-ratify", note: "The launch was ratified." });
+    expect(atCarry).toMatchObject({ moved: false, reason: "nobody-to-hold-it" });
+    const applied: string[] = [];
+    // A boot with still nobody seated: it warns and stays armed.
+    expect(await boot(world(both, {}).deps, applied, gs)).toMatchObject({ moved: false, reason: "nobody-to-hold-it" });
+    expect(applied).toEqual([]);
+    // A steward is seated, and the next boot moves it, once.
+    expect(await boot(world(both, { steward: 1 }).deps, applied, gs)).toMatchObject({ moved: true, holderRoleId: "steward" });
+    expect(applied).toEqual([TOKEN_MINT_0112_MARKER]);
+    expect(await holding()).toEqual(["steward"]);
   });
 });

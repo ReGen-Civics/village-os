@@ -207,7 +207,19 @@ export function evaluateBallot(input: EvaluateInput): BallotOutcome {
   const needYes = requiredYesHeads(input.minYesHeads, input.heads?.electorateCount);
   if (needYes !== null) {
     if (!input.heads) return "failed";
-    if (input.heads.yesHeads < needYes) return "failed";
+    /*
+     * SHORT OF THE YES HEADS IT ASKS FOR, AND NOBODY SAID NO: that is a
+     * question the roll has not finished answering, so it reads `no_quorum`
+     * and can be asked again. A standing no is a refusal and reads `failed`.
+     * (Rye, 2026-11-27: the launch carries on three founder yeses and a no
+     * holds it. Under the earlier every-seat rule this branch was reached
+     * only with a no on the roll, so it reads as it did for that rule.)
+     * A re-run decided by the votes cast still fails closed, as the note on
+     * `majorityOfCast` says.
+     */
+    if (input.heads.yesHeads < needYes) {
+      return input.heads.noHeads > 0 || input.majorityOfCast ? "failed" : "no_quorum";
+    }
   }
   if (input.method === "consent" && (input.openObjections ?? 0) > 0) return "failed";
   if (missed) return input.tallies.yesW > input.tallies.noW ? "passed" : "failed";

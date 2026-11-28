@@ -116,11 +116,73 @@ describe("the launch proposal's frozen document", () => {
     expect(doc).toContain("## What changes when this carries");
     expect(doc).toContain("Token issuance turns on.");
     expect(doc).toContain("## What this vote asks");
-    expect(doc).toContain("Everyone on the roll votes yes: 100% participation and 100% agreement.");
-    expect(doc).toContain("4 people hold a voice today");
-    expect(doc).toContain("An abstention is not a yes here");
+    // The rule of 2026-11-27, which replaced "Everyone on the roll votes yes".
+    expect(doc).toContain("Only founding members vote on this. It carries the moment 3 of them have said yes, unless one of them has said no. It does not wait for the voting window to end.");
+    expect(doc).toContain("A no from any one of them holds it for as long as that no stands.");
+    expect(doc).toContain("4 founding members are on the roll today, and this vote is frozen to those 4.");
+    expect(doc).toContain("An abstention is not a yes and it is not a no.");
+    expect(doc).toContain("each person on the roll answers for themselves");
+    // Rye, 2026-11-06: the rule is the village's own, and the document says so.
+    expect(doc).toContain("How many must say yes, and who is asked, are this village's own settings.");
+    expect(doc).toContain("This vote froze them as they stood when it opened.");
+    expect(doc, "the old rule is gone from the document").not.toContain("Everyone on the roll votes yes");
+    expect(doc).not.toContain("% participation");
     expect(doc).toContain("Everybody's voice weighs the same here.");
     expect(doc).toContain("Every item on the journey to launch read done when Wren opened this, on 2026-09-24.");
+  });
+
+  it("names the founders the vote is frozen to, when the caller has their names", () => {
+    const doc = launchProposalDoc({ ...BASE, onTheRoll: 3, founders: ["Wren", "Ida", "Tam"] });
+    expect(doc).toContain("3 founding members are on the roll today: Wren, Ida and Tam, and this vote is frozen to those 3.");
+    // And a member who is not a founder reads where they stand, in the document itself.
+    expect(doc).toContain("A member who is not a founding member is not asked on this one vote, and is asked on every vote the village holds after it.");
+  });
+
+  it("states the village's OWN number and roll when it has changed them (Rye, 2026-11-06)", () => {
+    // The number raised to five on the roll as shipped.
+    const five = launchProposalDoc({ ...BASE, onTheRoll: 6, yesNeeded: 5 });
+    expect(five).toContain("Only founding members vote on this. It carries the moment 5 of them have said yes, unless one of them has said no.");
+    expect(five).toContain("If the window ends before 5 of them have said yes");
+    // A stored number below three is never written into a document.
+    expect(launchProposalDoc({ ...BASE, yesNeeded: 1 })).toContain("It carries the moment 3 of them have said yes");
+    // A village that asks every member.
+    const members = launchProposalDoc({ ...BASE, onTheRoll: 9, rollKind: "members" });
+    expect(members).toContain("Every member who holds a voice votes on this, each counted once. It carries the moment 3 of them have said yes, unless one of them has said no.");
+    expect(members).toContain("9 members are on the roll today, and this vote is frozen to those 9.");
+    expect(members, "nobody is told they are not asked when everybody is").not.toContain("is not asked on this one vote");
+    expect(members).not.toContain("founding members are on the roll");
+  });
+
+  it("a village ALREADY ISSUING keeps the name Start the Game, is told what was already running, and is never told issuance starts", () => {
+    // Rye, 2026-11-27: the vote "does not restart issuance". Rye, 2026-11-28: "Let's stay with start the game and
+    // have it as the 'birthday of the game' going forward".
+    const doc = launchProposalDoc({ ...BASE, slate: [{ id: "u1", name: "Wren" }], ratifying: { issuingSince: "2026-03-14T09:26:53Z" } });
+    expect(doc).toContain("# Start the Game");
+    expect(doc).toContain(
+      "Larksfield has been issuing tokens since 2026-03-14, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.",
+    );
+    expect(doc).toContain("## What was already running");
+    expect(doc).toContain("Token issuance. It does not restart, and the day it began stays 2026-03-14. Nothing already issued changes, and nobody's balance moves because of this vote.");
+    expect(doc).toContain("That day is the Game's birthday, and Moon 1 is the moon it falls in.");
+    expect(doc).toContain("Voting yes is voting for this list as well as for starting the Game.");
+    // EVERY "ISSUANCE STARTS" SENTENCE IS REPLACED FOR THIS CASE, and the word Rye turned down is nowhere.
+    for (const gone of ["This vote is what starts it", "Token issuance turns on", "nothing can be issued to anybody", "Ratify", "ratif"]) {
+      expect(doc, gone).not.toContain(gone);
+    }
+    // What the launch hands over and who it seats is the same act, so those sections are unchanged.
+    for (const kept of ["## What changes when this carries", "## Who carries the steward role", "## What the launch hands to the village", "## What this vote asks", "An admin can no longer publish a change to the org chart directly."]) {
+      expect(doc, kept).toContain(kept);
+    }
+    expect(doc).not.toContain("\n\n\n");
+    // With no readable date it still says the truth and names no day.
+    const undated = launchProposalDoc({ ...BASE, ratifying: { issuingSince: null } });
+    expect(undated).toContain("Larksfield was already issuing tokens before the launch vote existed.");
+    expect(undated).toContain("Token issuance. It does not restart, and the day it began does not move.");
+    // Control: a first launch reads exactly as it did.
+    const first = launchProposalDoc(BASE);
+    expect(first).toContain("# Start the Game");
+    expect(first).toContain("Token issuance turns on.");
+    expect(first).not.toContain("What was already running");
   });
 
   it("leaves no empty line where a weight note would have been", () => {

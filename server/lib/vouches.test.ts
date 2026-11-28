@@ -7,6 +7,8 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { LAUNCH_YES_HEADS, SUBJECT_THRESHOLDS, VILLAGE_LAUNCH } from "../../shared/ballotSubjects";
+import { VARIABLES_BY_KEY } from "../../shared/gameVariables";
 import {
   DEFAULT_VOUCHES_FOR_MEMBERSHIP,
   VOUCHED_IS_GONE,
@@ -101,6 +103,23 @@ describe("vouchState", () => {
     expect(DEFAULT_VOUCHES_FOR_MEMBERSHIP).toBe(3);
     expect(vouchState([v("a"), v("b")]).needed).toBe(3);
     expect(vouchState([v("a"), v("b")]).off).toBe(false);
+  });
+
+  it("is still coupled to the launch's head count, and the 2026-11-27 launch rule did not move it", () => {
+    /*
+     * The vouch bar reads `minElectorate` on the launch entry, the village's
+     * minimum circle of trust (shared/ballotSubjects.ts). On 2026-11-27 the
+     * launch started counting founders and carrying on a number of yeses. That
+     * number is a SEPARATE field, so a later change to how many yeses carry a
+     * launch cannot move who is admitted.
+     */
+    const launch = SUBJECT_THRESHOLDS[VILLAGE_LAUNCH];
+    expect(DEFAULT_VOUCHES_FOR_MEMBERSHIP).toBe(launch.minElectorate);
+    expect(VARIABLES_BY_KEY["membership.vouches_required"].default).toBe(String(launch.minElectorate));
+    expect(VARIABLES_BY_KEY["governance.launch_min_electorate"].default).toBe(String(launch.minElectorate));
+    // Today the two numbers agree, and they are two numbers: this pins that the bar reads the first.
+    expect(launch.minYesHeads).toBe(LAUNCH_YES_HEADS);
+    expect(Object.is(launch.minElectorate, launch.minYesHeads) || launch.minElectorate === 3).toBe(true);
   });
 
   it("ignores a row with no voucher on it", () => {
