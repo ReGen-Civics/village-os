@@ -37,7 +37,7 @@ import multer from "multer";
 import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
-import { addFinalConversation, answerShortlist, askForReferences, assignOwner, claimReference, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
+import { addFinalConversation, answerShortlist, directStartNow, askForReferences, assignOwner, claimReference, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
 import { addConversationFile, addConversationText, bookedByTeam, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
 import { CONVERSATION_FILE_MAX_BYTES, CONVERSATION_NOTES_PER_HOUR, NOTES_WORDS, isConversationNoteKind, storedExtension } from "../../shared/conversationNotes";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume } from "../lib/uploads";
@@ -122,6 +122,13 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     const out = await answerShortlist(work, a.ref, a.viewerId, req.body?.answer);
     if (!out.ok) return answer(res, out);
     res.json({ success: true, answer: out.answer, message: out.answer === "yes" ? ONBOARDING_WORDS.shortlisted : ONBOARDING_WORDS.notShortlisted });
+  });
+
+  /** Ops directs "start now" (ruling 8): Ops's own act, never a placer's. */
+  app.post("/api/governance/applications/:ref/start-now", async (req, res) => {
+    const a = await acting(req, res, "start-now");
+    if (!a) return;
+    answer(res, await directStartNow(work, a.ref, a.viewerId), { message: ONBOARDING_WORDS.startNow.chosen });
   });
 
   app.post("/api/governance/applications/:ref/references/ask", async (req, res) => {

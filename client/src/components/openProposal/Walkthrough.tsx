@@ -71,7 +71,7 @@ interface ServedWalkthrough {
   /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts), and its words now. */
   proposalVersions?: ProposalVersion[];
   proposalNow?: { why: string; aim: string } | null;
-  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle?: boolean; isFinalCall: boolean; holdsPower: boolean };
+  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle?: boolean; mayStartNow?: boolean; startNow?: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
 /**
@@ -266,6 +266,13 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
         <p className={`mt-3 ${LABEL}`}>{OW.whatNext}</p>
         <p className="text-foreground" data-walk-what="">{t.next}</p>
+        {/* Ruling 8: Ops's own "start now", with a confirm; once chosen, it is said. */}
+        {w.you.mayStartNow && (
+          <div className="mt-3" data-walk-start-now="">
+            <SendToCircle url={`${base}/start-now`} words={{ button: OW.startNow.button, ask: OW.startNow.ask, yes: OW.startNow.yes, keep: OW.startNow.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
+          </div>
+        )}
+        {w.you.startNow && <p className={`mt-2 ${HINT}`} data-walk-start-now-chosen="">{OW.startNow.chosen}</p>}
       </div>
 
       {/* The stage track as trail stones: one row of six on a phone (the stage's name is the eyebrow above); from sm

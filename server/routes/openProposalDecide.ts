@@ -105,6 +105,9 @@ import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, int
 import { currentMoonTerm, moonEnded, REVIEW_WORDS, reviewStageOf } from "../../shared/applicationReview";
 import { statusLinkFor } from "../lib/applicantUpdates";
 import { anchorCircleName } from "../repos/applicationReview";
+import { waitsForSend } from "../lib/applicantOnboarding";
+/** Adopt and terms before the send (ruling 23). */
+const SEND_FIRST = "Send it to the Anchor Circle first.";
 import { stepsOf } from "../repos/applicationReview";
 import { activeClock } from "../lib/gratitude-cycles";
 import { createInviteOn, inviteById, reissueInviteOn, revokeInvite } from "../repos/memberInvites";
@@ -376,7 +379,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     return {
       startIso: day,
       startDay: `${dayName} ${wordsIn(lang).day(day)}`,
-      soonerRole: welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
+      soonerRole: (await store.startNowOf(getPool(), p.id)) ? null : welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
       allHands: time ? { when: [dayName, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
     };
   };
@@ -715,6 +718,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.status !== "confirmed") return res.status(409).json({ error: DECIDE_WORDS.decided, status: p.status });
     const may = await deciding(p, actorId);
     if (!may.ok) return res.status(may.status).json(may.body);
+    // Ruling 23: the terms are the anchor circle's answer, so they wait for the send too.
+    if (await waitsForSend(work, p.id)) return res.status(409).json({ error: "send_first", message: SEND_FIRST });
     // An agent's proposal has no terms to offer: no pay, allowance or commitment (audit B8a).
     if (p.body.agent) return res.status(409).json({ error: "no_terms_for_an_agent", message: DECIDE_WORDS.noTermsForAnAgent });
     const body = req.body && typeof req.body === "object" ? req.body : {};
@@ -788,12 +793,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // The buddy, when the adopter chose one (the lead, 27 Nov 2026): a member holding a role now.
     const buddyAsked = typeof req.body?.buddyUserId === "string" ? req.body.buddyUserId.trim().slice(0, 64) : "";
     if (buddyAsked && (await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
-    // "Start now" (ruling 8): the adoption may start them on the next all-hands day instead of the next season's.
-    const startNow = req.body?.startNow === true;
     // Saved only once the adoption itself is recorded (QA pass 2: a refused adoption still kept the buddy).
     const keepBuddy = async () => {
       if (buddyAsked) await store.setBuddy(getPool(), p!.id, buddyAsked);
-      if (startNow) await store.setStartNow(getPool(), p!.id);
     };
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
@@ -819,6 +821,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       const named = left.map((c) => (c.unheld ? DECIDE_WORDS.conversationUnheld(c.role) : DECIDE_WORDS.conversationMissing(c.role))).join(" ");
       return res.status(409).json({ error: "interviews_not_done", message: named || REVIEW_WORDS.interviewsNotDone, conversations: left });
     }
+    // Ruling 23: nothing is adopted before the proposal is sent to the anchor circle.
+    if (await waitsForSend(work, p.id)) return res.status(409).json({ error: "send_first", message: SEND_FIRST });
 
     const pool = getPool();
     const at = now();

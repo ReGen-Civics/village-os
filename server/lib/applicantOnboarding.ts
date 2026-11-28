@@ -74,6 +74,7 @@ import { applicationHref } from "../../shared/seatApplications";
 import { finalCallHolders, isApplicant, openConsentRound, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
 import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
 import { civilDateKey } from "../../shared/lunar";
+import { parseRoleShortLabels } from "../../shared/roleShortLabel";
 import { ALL_HANDS_VARIABLES, START_RULE_WORDS, startOf, weekdayIndex, weekdayName } from "../../shared/startDay";
 import { stringVar } from "./variables";
 
@@ -519,7 +520,7 @@ export interface Walkthrough {
   proposalVersions: ProposalVersion[];
   /** The proposal's words now, beside the earlier versions; null when there are none. */
   proposalNow: { why: string; aim: string } | null;
-  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle: boolean; isFinalCall: boolean; holdsPower: boolean };
+  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle: boolean; mayStartNow: boolean; startNow: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
 /**
@@ -631,6 +632,9 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
         // Only when the page offers the move: the same readiness the door requires (QA round 4).
         track.primary === "add_final" &&
         (interviews.some((i) => i.final && i.state === "waiting") || (shortlist === "yes" && !!finalRole)),
+      // Ruling 8: Ops directs "start now", once, until they start.
+      mayStartNow: !member && how !== "declined" && how !== "withdrawn" && !steps.some((x) => x.kind === "start_now") && !s.isApplicant && !s.recused && (await holdsOps(deps, viewerId)),
+      startNow: steps.some((x) => x.kind === "start_now"),
       // Ruling 7: Ops or the Visionary (or a placer) may send the written-up proposal on to the anchor circle.
       maySendToCircle: !member && open && !s.recused && track.primary === "send_to_circle" && (await mayTeamSend(deps, s)),
       isFinalCall: s.isFinalCall,
@@ -980,6 +984,50 @@ export async function bookedByTeam(deps: ReviewDeps, ref: string, viewerId: stri
   if (!read.ok) return refuse(400, read.error, w[read.error]);
   if (!(await review.markBooked(deps.getPool(), interviewId, read.at))) return refuse(409, "closed", w.closed);
   return { ok: true, at: read.at.toISOString() };
+}
+
+/** The Ops role's ids: the welcoming role, and any role the village's short labels call "Ops". */
+function opsRoleIds(): string[] {
+  const ids = new Set<string>();
+  const welcome = stringVar("org.onboarding_role").trim();
+  if (welcome) ids.add(welcome);
+  for (const [id, label] of parseRoleShortLabels(stringVar(ROLE_SHORT_LABELS_VARIABLE))) if (label.trim().toLowerCase() === "ops") ids.add(id);
+  return Array.from(ids);
+}
+
+/** Whether this viewer holds the Ops role, and may direct "start now" (ruling 8). */
+export async function holdsOps(deps: Pick<ReviewDeps, "getPool">, viewerId: string): Promise<boolean> {
+  const held = new Set(await review.rolesHeldBy(deps.getPool(), viewerId));
+  return opsRoleIds().some((id) => held.has(id));
+}
+
+/**
+ * "START NOW" IS OPS'S OWN ACT (ruling 8: "following the start of the next season or immediately if directed by Ops";
+ * QA round 5): a holder of the Ops role directs it from the walkthrough, a recorded step. A placer cannot set it; the
+ * adoption honours it, and the letters then drop "if Ops asks you to start sooner". Once.
+ */
+export async function directStartNow(deps: ReviewDeps, ref: string, viewerId: string): Promise<{ ok: true } | Refusal> {
+  if (kindOfRef(ref) !== "open") return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  const pool = deps.getPool();
+  const p = await proposals.readOpenProposal(pool, ref);
+  if (!p || p.status === "declined" || p.status === "withdrawn") return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  const s = await standingOf(deps, ref, viewerId);
+  if (s.isApplicant || s.recused || !(await holdsOps(deps, viewerId))) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
+  if (!(await review.stampStep(pool, { ref, kind: "start_now", at: deps.now(), actorUserId: viewerId }))) return refuse(409, "done", ONBOARDING_WORDS.startNowDone);
+  return { ok: true };
+}
+
+/**
+ * ADOPT AND TERMS NEED THE SEND (QA round 5, ruling 23): an open application whose role names conversations is
+ * decided only once its proposal went to the anchor circle (`to_circle`, or a round in flight that counts as sent).
+ */
+export async function waitsForSend(deps: Pick<ReviewDeps, "getPool">, ref: string): Promise<boolean> {
+  if (kindOfRef(ref) !== "open") return false;
+  const pool = deps.getPool();
+  const steps = await review.stepsOf(pool, ref);
+  if (!steps.some((s) => s.kind === "confirmed")) return false;
+  const interviews = await review.interviewsOf(pool, ref);
+  return interviews.length > 0 && !sentToCircleOf(steps, interviews);
 }
 
 /** Who on the team may send the proposal on: Ops (the welcoming or follow-up role), the Visionary (the final call), or a placer. */

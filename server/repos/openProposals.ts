@@ -318,15 +318,10 @@ export async function setBuddy(db: Db, id: string, userId: string | null): Promi
   await db.query("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.buddyUserId', ?) WHERE id = ?", [userId, id]);
 }
 
-/** Ruling 8: the adoption chose "start now" (the next all-hands day, not the next season's). */
-export async function setStartNow(db: Db, id: string): Promise<void> {
-  await db.query("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.startNow', true) WHERE id = ?", [id]);
-}
-
+/** Ruling 8: Ops directed "start now" (the step `start_now`, Ops's own act on the walkthrough). */
 export async function startNowOf(db: Db, id: string): Promise<boolean> {
-  const [rows] = await db.query<RowDataPacket[]>("SELECT JSON_EXTRACT(body_json, '$.startNow') AS s FROM open_role_proposals WHERE id = ? LIMIT 1", [id]);
-  const v = rows[0]?.s;
-  return v === true || v === 1 || v === "true" || v === "1";
+  const [rows] = await db.query<RowDataPacket[]>("SELECT 1 FROM application_steps WHERE application_ref = ? AND kind = 'start_now' LIMIT 1", [id]);
+  return rows.length > 0;
 }
 
 export async function buddyOf(db: Db, id: string): Promise<string | null> {

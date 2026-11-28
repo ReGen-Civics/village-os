@@ -300,6 +300,9 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     const after = (await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.sixStages;
     expect(after).toMatchObject({ now: "final_interview", toCircle: true, refine: { open: true, frozen: false } });
     expect((await call("POST", `/api/application-status/${id}/proposal?token=${statusToken(id)}`, { why: "After the final, a little clearer.", aim: "Books anyone can read." })).status).toBe(200);
+    // Ruling 23 (QA round 5): every call written up, but not sent: no adoption and no terms yet.
+    expect((await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id)).body).toMatchObject({ error: "send_first", message: "Send it to the Anchor Circle first." });
+    expect((await call("POST", `/api/governance/open-proposals/${id}/terms`, { words: { term: "x" }, expectedRevision: 0 }, FOUNDER.id)).body.error).toBe("send_first");
     // A member who is neither Ops, the Visionary nor a placer cannot send it on.
     expect((await call("POST", `${app(id)}/to-circle`, {}, IB.id)).status).toBe(404);
     // The applicant sends it on: Agreement, its one letter, and the proposal fixed from that moment.
@@ -536,6 +539,23 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     await reviewClockTick(deps);
     const finals = state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:stage:final_interview`));
     expect(finals.map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:stage:final_interview:r1`]);
+  });
+
+  it("START NOW IS OPS'S OWN ACT (ruling 8, QA round 5): a placer cannot set it; Ops sets it once, the walkthrough says so, and adopt needs the send", async () => {
+    const id = await confirmed("start-now@example.test");
+    // A placer (the founder) is not Ops.
+    expect((await call("POST", `${app(id)}/start-now`, {}, FOUNDER.id)).status).toBe(403);
+    // The Community holder is not Ops either.
+    expect((await call("POST", `${app(id)}/start-now`, {}, IB.id)).status).toBe(403);
+    // Ops is (the role the short labels call "Ops").
+    const w0 = await call("GET", `${app(id)}/walkthrough`, undefined, IA.id);
+    expect(w0.body.walkthrough.you).toMatchObject({ mayStartNow: true, startNow: false });
+    expect((await call("POST", `${app(id)}/start-now`, {}, IA.id)).status).toBe(200);
+    expect((await call("POST", `${app(id)}/start-now`, {}, IA.id)).status).toBe(409);
+    expect((await call("GET", `${app(id)}/walkthrough`, undefined, IA.id)).body.walkthrough.you).toMatchObject({ mayStartNow: false, startNow: true });
+    // Ruling 23: nothing is adopted, and no terms are offered, before the proposal is sent to the Anchor Circle.
+    const adopt = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+    expect([adopt.status, adopt.body.error]).toEqual([409, expect.stringMatching(/send_first|interviews_not_done|review_first/)]);
   });
 
   it("NUDGES (the lead: 'yes' to nudges): once each, and never a move", async () => {
