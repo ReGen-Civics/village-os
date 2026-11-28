@@ -1,0 +1,40 @@
+/**
+ * The Tower's acts in Spanish, by act id (the English is shared/adminActs/tower.ts). The Spanish is awaiting a native reader.
+ */
+import { words, type ActWords } from "../types";
+
+export const TOWER_WORDS_ES: Readonly<Record<string, ActWords>> = {
+  "tower.mail.run-now": words("Correr el correo ahora", "Corre ahora una de las tareas del correo, sin esperar su siguiente turno.", ["correr ahora", "enviar la cola", "tarea de correo", "procesar correo"]),
+  "tower.journeys.set-state": words("Encender o apagar un recorrido de correo", "Cambie si un recorrido está corriendo.", ["recorrido", "automatización", "encender recorrido", "correos de bienvenida", "serie de correos"]),
+  "tower.journeys.edit-step": words("Cambiar un paso de un recorrido de correo", "Cambie cuándo sale un paso de un recorrido y qué dice.", ["paso del recorrido", "editar paso", "espera entre correos", "cuándo sale el recordatorio"]),
+  "tower.journeys.test-step": words("Enviarse un paso de un recorrido", "Envíe una prueba de un paso de un recorrido a su propia dirección.", ["probar paso", "vista previa del correo", "enviar prueba del recorrido"]),
+  "tower.journeys.stop-one": words("Sacar a una persona de un recorrido", "Detiene un recorrido para una persona. Las demás siguen en él.", ["detener recorrido", "sacar del recorrido", "dar de baja del recorrido"]),
+  "tower.journeys.path-options": words("Cambiar las opciones de recorrido de un camino", "Las opciones que dan forma al recorrido de un camino.", ["opciones del camino", "recorrido del camino", "correos del camino"]),
+  "tower.words.save": words("Cambiar las palabras de un correo", "Cambie el asunto y las palabras de uno de los correos de la aldea.", ["palabras del correo", "plantilla", "asunto", "editar correo"]),
+  "tower.words.restore": words("Volver a una versión anterior de un correo", "Restaura las palabras que tenía un correo antes.", ["restaurar palabras", "versión anterior", "deshacer cambio del correo"]),
+  "tower.words.test": words("Enviarse las palabras de un correo", "Envíe una prueba de un correo a su propia dirección.", ["probar palabras del correo", "vista previa de plantilla", "prueba de plantilla"]),
+  "tower.people.suppress": words("Dejar de enviarle correo a una persona", "Detiene el correo masivo de la aldea a una dirección, con lo que se pidió.", ["cancelar suscripción", "no enviar correo", "dar de baja del correo", "dejar de escribirle"]),
+  "tower.people.restore": words("Volver a enviarle correo a una persona", "Deja que el correo de la aldea llegue otra vez a una dirección, con el motivo.", ["volver a suscribir", "restaurar correo", "escribirle otra vez"]),
+  "tower.people.stop-journey": words("Detener un recorrido para una persona", "Termina un recorrido en el que está una persona, desde su fila.", ["detener recorrido de una persona", "terminar su recorrido"]),
+  "tower.people.export": words("Descargar la libreta de direcciones", "Una hoja de cálculo de las personas a quienes la aldea puede escribir.", ["exportar contactos", "libreta de direcciones", "lista de correo", "csv"]),
+  "tower.letters.write": words("Escribir una carta", "Empiece una carta para las personas que aceptaron recibir noticias de la aldea.", ["carta", "boletín", "anuncio", "escribirles a todos", "noticias"]),
+  "tower.letters.edit": words("Cambiar una carta", "Cambie las palabras de una carta y a quién va antes de enviarla.", ["editar carta", "destinatarios de la carta"]),
+  "tower.letters.test": words("Enviarse una carta", "Envíe una prueba de una carta a su propia dirección.", ["probar carta", "vista previa de la carta"]),
+  "tower.letters.send": words("Enviar una carta", "Envíe una carta a todas las personas a quienes va dirigida, ahora o a la hora programada.", ["enviar carta", "enviar boletín", "enviar a todos"]),
+  "tower.letters.cancel": words("Cancelar una carta que espera salir", "Detiene una carta programada antes de que se envíe.", ["cancelar carta", "detener carta"]),
+  "tower.letters.reschedule": words("Mover cuándo sale una carta", "Cambie la hora en que se envía una carta programada.", ["reprogramar carta", "enviar más tarde", "cambiar la hora de la carta"]),
+  "tower.sent.retry": words("Reintentar un correo que falló", "Envía de nuevo un correo que no salió.", ["reintentar correo", "reenviar", "correo rebotado", "correo fallido"]),
+  "tower.sent.cancel": words("Cancelar un correo en espera", "Detiene un correo que está en la cola y todavía no ha salido.", ["cancelar correo", "detener correo en cola"]),
+  "tower.mail.verify-domain": words("Revisar los registros del dominio de envío", "Pregunta al servicio de correo si los registros del dominio están en su lugar.", ["verificar dominio", "revisar dns", "registros del dominio"]),
+  "tower.mail.key-rights": words("Revisar que la clave de correo solo pueda enviar", "Confirma que la clave de envío puede enviar y no puede hacer nada más.", ["permisos de la clave", "solo enviar", "revisar clave de correo", "clave restringida"]),
+  "tower.calendar.add-event": words("Poner un evento en el calendario", "Agregue un encuentro con su hora, su lugar y para quién es.", ["nuevo evento", "agregar evento", "encuentro", "programar", "calendario"]),
+  "tower.calendar.edit-event": words("Cambiar un evento", "Cambie la hora, el lugar y las palabras de un evento.", ["editar evento", "mover evento", "reprogramar evento"]),
+  "tower.calendar.remove-event": words("Cancelar un evento", "Saca un evento del calendario.", ["cancelar evento", "eliminar evento", "quitar encuentro"]),
+  "tower.calendar.add-slot": words("Agregar una parte a un evento", "Agregue una parte con nombre a un evento.", ["parte del evento", "sesión", "bloque de horario", "espacio"]),
+  "tower.calendar.remove-slot": words("Quitar una parte de un evento", "Saca una parte de un evento.", ["quitar parte", "eliminar sesión", "borrar bloque"]),
+  "tower.calendar.month-name": words("Nombrar un mes del año de la aldea", "Dele a un mes del calendario el nombre propio de la aldea.", ["nombres de los meses", "nombres de las lunas", "nombres del calendario"]),
+  "tower.calendar.add-feed": words("Seguir un calendario externo", "Muestra en el calendario de la aldea los eventos de otro calendario, por su dirección.", ["calendario externo", "importar calendario", "calendario de google", "suscribirse a un calendario", "ical"]),
+  "tower.calendar.remove-feed": words("Dejar de seguir un calendario externo", "Saca del calendario de la aldea los eventos de otro calendario.", ["quitar calendario externo", "dejar de seguir calendario"]),
+  "tower.calendar.refresh-feed": words("Leer de nuevo un calendario externo ahora", "Trae ahora los eventos de otro calendario, sin esperar.", ["actualizar calendario", "sincronizar calendario", "refrescar calendario externo"]),
+  "tower.calendar.event-email": words("Cambiar los correos de un evento", "Qué correos envía un evento: la invitación, los recordatorios y el resumen.", ["correos del evento", "recordatorios", "correo de resumen", "correo del encuentro"]),
+};
