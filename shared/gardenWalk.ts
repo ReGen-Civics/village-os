@@ -87,9 +87,13 @@ export interface Walk {
 
 const TIER: Readonly<Record<"read" | "prepare" | "person-only", WalkAct["tier"]>> = { read: "reads only", prepare: "prepares for your yes", "person-only": "yours alone" };
 
-/** Who a door admits, in a few words: the power it asks, and the holder the widening map lets through beside an admin. */
+/**
+ * Who a door admits, in a few words. A door that asks the one capability gate for a power reads "the gate, asked for
+ * <power>": a holder passes, and so does an admin unless the village holds that power (shared/capabilities.ts). A door
+ * that asks only for an admin names the holder the widening map lets through beside one.
+ */
 export function doorWords(a: Pick<AdminAct, "power" | "holder" | "also">): string {
-  const base = a.power === "admin" ? "an admin" : a.power === "founder" ? "a founder" : a.power === "member" ? "any member" : a.power === "signed-in" ? "anybody signed in" : a.power === "anyone" ? "anyone" : `a holder of ${a.power}`;
+  const base = a.power === "admin" ? "an admin" : a.power === "founder" ? "a founder" : a.power === "member" ? "any member" : a.power === "signed-in" ? "anybody signed in" : a.power === "anyone" ? "anyone" : `the gate, asked for ${a.power}`;
   return `${base}${a.holder ? `, or a holder of ${a.holder}` : ""}${a.also?.length ? `, and it also asks for ${a.also.join(", ")}` : ""}`;
 }
 
@@ -189,6 +193,7 @@ export function walkMarkdown(walk: Walk, board: Scoreboard, stamp: string): stri
   out.push("2. An act marked partial has a control, and its route or its fields were never read from the server, so walk it with more care and say what it really does.");
   out.push("3. Part 2 is where a function could be hiding with no entry: a route an admin can reach that no act claims. Part 3 is every setting with no full home.");
   out.push("", "A row that names a module under Needs on shows only while that module is on. With the module off its tab is hidden, and that is not a lost function.");
+  out.push("", "Where a door reads \"the gate, asked for\" a power, the server asks the one capability gate: a holder of that power passes, and so does an admin unless the village holds that power.");
   out.push("");
   const tiers = new Map<string, number>();
   for (const a of walk.acts) tiers.set(a.tier, (tiers.get(a.tier) ?? 0) + 1);
