@@ -30,6 +30,8 @@ export { default as Fireflies } from "./Fireflies";
 export type { FirefliesProps } from "./Fireflies";
 export { Desk, Grounds } from "./Grounds";
 export type { DeskProps, GardenPlaceState, GroundsProps } from "./Grounds";
+export { useGuideSpeaking, useGardenWords, useNumberWord, dayPartOf, readGuideSpeaking, GARDEN_SPEAKING_KEY, GUIDE_SPEAKING, DEFAULT_GUIDE_SPEAKING } from "./speaking";
+export type { DayPart, GardenWords, GuideSpeaking, GuideSpeakingState } from "./speaking";
 export { ViewSwitch } from "./view";
 export type { ViewSwitchProps } from "./view";
 export { LensToggle, useGardenLens, GARDEN_LENS_KEY } from "./lens";
