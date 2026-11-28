@@ -38,7 +38,6 @@ function lower(s: string): string {
  */
 export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { onSeeAll: () => void; allShown: boolean; nested?: boolean }) {
   const { t } = useLingui();
-  const rootWord = t({ message: "root", context: "glossary: the word a tip explains" });
   const [castServed, setCast] = useState<Archetype[]>([]);
   const cast = useArchetypesInLanguage(castServed); // the village's class words in the reader's language
   const Heading = nested ? "h4" : "h2";
@@ -70,7 +69,7 @@ export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { 
     <section aria-labelledby="roles-step-one-h" className={nested ? "mt-3 text-left" : "mx-auto mb-12 max-w-5xl text-left"} data-archetype-step={nested ? "nested" : "step"}>
       {!nested && <p className={EYEBROW}>{t({ message: "Step one", context: "roles page archetypes" })}</p>}
       <Heading id="roles-step-one-h" className={nested ? "font-display text-xl leading-tight text-foreground text-balance" : "mt-2 font-display text-3xl leading-tight text-foreground text-balance"}>
-        <Trans context="roles page archetypes">Choose the root<GlossaryTip slot="root" word={rootWord} /> you grow from</Trans>
+        <Trans context="roles page archetypes">Choose the <GlossaryTip slot="root">root</GlossaryTip> you grow from</Trans>
       </Heading>
       <p className={`mt-2 ${LEDE}`}>
         {t({ message: "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five.", context: "roles page archetypes" })}

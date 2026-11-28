@@ -40,6 +40,42 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.6 (2026-11-28)
+
+### What changed for your village
+
+- **Tooltips sit on the word.** An explained word now carries a quiet dotted underline and opens its note on a tap, a click or the keyboard. The small marks beside words are gone everywhere, and a paragraph no longer moves when a note opens. On a phone a tap opens the word under the finger, and links and buttons keep their own taps.
+- **Role types say what they mean.** On a role, each "Plays as" chip explains its type in the village's own words.
+- **The crowd pool counts days in the village's time zone,** so the days left match the closing date beside them.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.4.5 is safe.
+
+---
+
+## 1.4.5 (2026-11-28)
+
+### What changed for your village
+
+- **The helpful page fits a phone.** On a wrong address, each suggestion's place in the menu stays on one line on a phone, so the way home stays on the first screen.
+- **The glow waits for you.** When a link lands on part of a page, the glow now starts once that part is on screen and still, so a slow page no longer glows out of sight.
+- **How the menu is used reads plainly.** Suggestions say the count ("all 5 visits"), a past season is named as itself, single days and visits read as one, and two pages with the same name show their address.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.4.4 is safe.
+
+---
+
 ## 1.4.4 (2026-11-27)
 
 ### What changed for your village

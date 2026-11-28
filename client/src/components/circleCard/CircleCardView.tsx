@@ -20,7 +20,7 @@ import CircleName from "@/components/circles/CircleName";
 import { useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { Pencil } from "lucide-react";
-import InfoTip, { WORDED_TAP } from "@/components/InfoTip";
+import InfoTip from "@/components/InfoTip";
 import { BOX, EYEBROW, LINK, QUIET_BUTTON, SECTION, SlotView } from "@/components/playerCard/cardParts";
 import type { CircleCard, CircleSection, RoleRowOut, SignOut, Slot } from "@shared/circleCard";
 import { useCircleWords } from "./circleWords";
@@ -32,23 +32,17 @@ import WorkPayBlock from "@/components/WorkPayBlock";
 
 const H2 = "font-display text-xl font-bold text-card-foreground sm:text-2xl";
 const H3 = "text-sm font-semibold text-card-foreground";
-const HEADING_TAP = "inline-flex min-h-11 items-center text-left";
-/**
- * An inline trigger inside a sentence keeps the sentence's line height, and its
- * own box grows to a 44px touch target (WORDED_TAP, the InfoTip default).
- */
-const INLINE_TAP = WORDED_TAP;
 
 /** A heading, with its CCOS term on hover or tap when the village shows the terms. */
 function Heading({ text, term, level }: { text: string; term: string | null; level: 2 | 3 }) {
   const Tag = level === 2 ? "h2" : "h3";
   const cls = level === 2 ? H2 : H3;
-  if (!term) return <Tag className={`${cls} ${level === 3 ? "flex min-h-11 items-center" : ""}`}>{text}</Tag>;
+  // The same box with the term and without it, so turning the terms on moves nothing: the words are the trigger.
+  const box = `${cls} ${level === 3 ? "flex min-h-11 items-center" : ""}`;
+  if (!term) return <Tag className={box}>{text}</Tag>;
   return (
-    <Tag className={cls}>
-      <InfoTip tip={term} triggerClassName={HEADING_TAP}>
-        {text}
-      </InfoTip>
+    <Tag className={box}>
+      <InfoTip tip={term}>{text}</InfoTip>
     </Tag>
   );
 }
@@ -340,7 +334,7 @@ export default function CircleCardView({
             {header.existsWhile.kind !== "unread" ? (
               <p className="text-sm text-muted-foreground">
                 {header.existsWhileTerm ? (
-                  <InfoTip tip={header.existsWhileTerm} triggerClassName={INLINE_TAP}>
+                  <InfoTip tip={header.existsWhileTerm}>
                     {header.existsWhileLabel}
                   </InfoTip>
                 ) : (

@@ -49,7 +49,8 @@ vi.mock("@/modules/ModuleProvider", () => ({
 }));
 vi.mock("@/hooks/useTokenNames", () => ({ useTokenName: () => "Cob Credit", useTokensWord: () => "Village Tokens" }));
 vi.mock("@/components/SwapCard", () => ({ default: () => null }));
-vi.mock("@/components/InfoTip", () => ({ default: () => null }));
+// The word a tip explains is the tip's children (InfoTip.tsx), so the stand-in keeps the word and drops the tip.
+vi.mock("@/components/InfoTip", () => ({ default: ({ children }: { children?: import("react").ReactNode }) => children ?? null }));
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { id: "usr-ora", name: "Ora" } }),
 }));
