@@ -679,5 +679,89 @@ describe("who reads the checklist, and who answers its rows", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
     await waitFor(() => expect(sent()).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
+ * EACH CONTROL READS THE FACT ITS OWN SERVER DOOR READS (shared/launchFacts.ts).
+ *
+ * "Launched" was never one fact. A village migration 0112 recorded is issuing
+ * with no vote held and an open checklist, and this page read `launchedAt`
+ * alone, so it offered that village a button to open its vote and the server
+ * answered 409. Three villages below, and one where the facts cannot be read.
+ */
+describe("the page offers only what the server would allow", () => {
+  const founder = { id: "u1", role: "founder", name: "A founder" };
+  const FACTS = {
+    claimed: true,
+    issuing: false,
+    issuingSince: null,
+    voteCarried: false,
+    launchedByBallotId: null,
+    checklistFrozen: false,
+    launchedAt: null,
+    voteOpen: false,
+    openBallotId: null,
+    lastVote: null,
+    founderPowerStands: true,
+  };
+  const ready = {
+    ...STATUS,
+    readyToLaunch: true,
+    vote: { governanceOn: true, onTheRoll: 3, tooFew: null, unityPct: 100, quorumPct: 100, minElectorate: 3, why: "Every member is asked.", openBallot: null, past: [] },
+  };
+  const candidates = { "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } } };
+  const FACTS_URL = "/api/admin/launch/facts";
+
+  it("gives a village that is issuing with no vote held its plain name, its rows, and no button the server refuses", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({
+      "/api/admin/launch": { status: 200, body: ready },
+      ...candidates,
+      [FACTS_URL]: { status: 200, body: { facts: { ...FACTS, issuing: true, issuingSince: "2026-03-01T00:00:00.000Z", founderPowerStands: false }, label: "issuing-vote-not-held" } },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByTestId("start-already-issuing")).toBeTruthy());
+    expect(screen.getByTestId("journey-standing").textContent).toBe("Issuing and vote not held");
+    expect(screen.getByTestId("start-already-issuing").textContent).toContain("no launch vote has carried");
+    // The dead button: Start the Game used to show here, and POST /launch/propose answered 409.
+    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+    // Its checklist is still open, so its rows can still be answered.
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(calls.find((c) => c.url === FACTS_URL)?.init?.headers?.Authorization, "the facts read carries the token").toBe("Bearer a-token");
+  });
+
+  it("offers the ask to a village still being built, as before", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 200, body: { facts: FACTS, label: "setup" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Setup"));
+    expect(screen.queryByTestId("start-already-issuing")).toBeNull();
+  });
+
+  it("offers no row answers once the checklist froze, because the server refuses them", async () => {
+    auth.current = { user: founder, loading: false };
+    const at = "2026-12-30T18:00:00.000Z";
+    answer({
+      "/api/admin/launch": { status: 200, body: { ...STATUS, launchedAt: at } },
+      ...candidates,
+      [FACTS_URL]: {
+        status: 200,
+        body: { facts: { ...FACTS, issuing: true, founderPowerStands: false, voteCarried: true, launchedByBallotId: "bal-3", checklistFrozen: true, launchedAt: at }, label: "running" },
+      },
+    });
+    draw();
+    await waitFor(() => expect(screen.getByTestId("journey-standing").textContent).toBe("Running"));
+    expect(screen.getByText(/Take one backup/i)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /mark done/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Ask the village" })).toBeNull();
+  });
+
+  it("falls back to what it read before when the facts cannot be read", async () => {
+    auth.current = { user: founder, loading: false };
+    answer({ "/api/admin/launch": { status: 200, body: ready }, ...candidates, [FACTS_URL]: { status: 500, body: { error: "boom" } } });
+    draw();
+    const ask = await screen.findByRole("button", { name: "Ask the village" });
+    await waitFor(() => expect((ask as HTMLButtonElement).disabled).toBe(false));
+    expect(screen.getByRole("button", { name: /mark done/i })).toBeTruthy();
+    expect(screen.queryByTestId("journey-standing")).toBeNull();
   });
 });

@@ -45,6 +45,9 @@ import HandOverPowers from "@/components/governance/HandOverPowers";
 import { useBrochurePages } from "@/lib/brochure";
 import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { Trans } from "@lingui/react/macro";
+import { launchDoors, type LaunchFactsAnswer } from "@shared/launchFacts";
+import { readLaunchFacts } from "@/lib/launchReads";
+import { useLaunchLabelWords } from "@/lib/launchWords";
 
 /**
  * THE SECTION EACH REQUIREMENT SITS IN.
@@ -178,6 +181,15 @@ export default function JourneyToLaunch() {
   const { user, loading } = useAuth();
   const isAdmin = hasAdminAccess(user);
   const [status, setStatus] = useState<any>(null);
+  /**
+   * Where the village stands, as facts (`shared/launchFacts.ts`). The checklist
+   * payload carries `launchedAt` and nothing else about it, and the doors behind
+   * this page read three different facts, so each control below reads its own.
+   * Null until the read arrives, and null if it fails: the page then falls back
+   * to `launchedAt`, which is what it read before.
+   */
+  const [standing, setStanding] = useState<LaunchFactsAnswer | null>(null);
+  const standingWords = useLaunchLabelWords();
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState("");
   const [view, setViewState] = useState<JourneyView>(viewFromAddress);
@@ -239,6 +251,9 @@ export default function JourneyToLaunch() {
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((d) => { setStatus(d); setFailed(false); })
       .catch(() => setFailed(true));
+    // Asked fresh beside the checklist, so the two never describe different moments.
+    const token = authToken();
+    if (token) void readLaunchFacts(token, { fresh: true }).then(setStanding);
   }, []);
   useEffect(() => { if (isAdmin) load(); }, [isAdmin, load]);
   useEffect(() => {
@@ -380,6 +395,9 @@ export default function JourneyToLaunch() {
   const items: any[] = status?.items ?? [];
   const launched = !!status?.launchedAt;
   const vote: LaunchVote | null = status?.vote ?? null;
+  const facts = standing?.facts ?? null;
+  // The row buttons' door (`POST /api/admin/launch/confirm`) refuses once the checklist froze.
+  const rowsOpen = facts ? launchDoors(facts).rowsOpen : !launched;
 
   return (
     <Layout>
@@ -413,6 +431,11 @@ export default function JourneyToLaunch() {
             * the handover is a journey, never a grade. The two counts say what
             * a founder can act on, and the rows below say which.
             */}
+          {standing && (
+            <p data-testid="journey-standing" className={`text-white text-xs mb-1 ${shownView === "canvas" ? "hidden" : ""}`}>
+              {standingWords(standing.label)}
+            </p>
+          )}
           {status && !launched && (
             <p data-testid="journey-remaining" className={`text-white text-xs ${shownView === "canvas" ? "hidden" : ""}`}>
               <Trans context="JourneyToLaunch, p">{status.blockingOpen} blocking · {status.recommendedOpen} recommended remaining
@@ -522,7 +545,7 @@ export default function JourneyToLaunch() {
                                   {i.fixLabel} <ChevronRight className="w-3 h-3" />
                                 </Link>
                               )}
-                              {user?.role === "founder" && i.checkKey.startsWith("manual:") && (
+                              {rowsOpen && user?.role === "founder" && i.checkKey.startsWith("manual:") && (
                                 <button
                                   onClick={() => confirm(i.id, i.state !== "ok")}
                                   disabled={busy === i.id}
@@ -548,7 +571,7 @@ export default function JourneyToLaunch() {
                                 * this is where naming none is recorded, with
                                 * a name and an instant on it.
                                 */}
-                              {user?.role === "founder" && i.declinable && (
+                              {rowsOpen && user?.role === "founder" && i.declinable && (
                                 <button
                                   onClick={() => confirm(i.id, i.declinedBy ? false : "declined")}
                                   disabled={busy === i.id}
@@ -563,7 +586,7 @@ export default function JourneyToLaunch() {
                               )}
                               {/* A founder's act (Rye, 27 Nov 2026): the server refuses everybody else, so the two buttons above
                                   are a founder's alone, and anybody else reading the row is told why in their place. */}
-                              {user?.role !== "founder" && (i.checkKey.startsWith("manual:") || i.declinable) && (
+                              {rowsOpen && user?.role !== "founder" && (i.checkKey.startsWith("manual:") || i.declinable) && (
                                 <span data-testid="founder-answers" className="text-xs text-muted-foreground"><Trans context="JourneyToLaunch, span">Only a founder confirms or declines this before launch.</Trans></span>
                               )}
                             </div>
@@ -591,6 +614,7 @@ export default function JourneyToLaunch() {
                 <StartTheGame
                   status={status}
                   vote={vote}
+                  facts={facts}
                   isFounder={user?.role === "founder"}
                   busy={busy === "launch"}
                   onAsk={askTheVillage}
