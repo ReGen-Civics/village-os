@@ -187,6 +187,21 @@ describe("My roles", () => {
 });
 
 describe("the phone's line to the role cards", () => {
+  it("is left out while the card has failed, as the plain panel has no card per role to jump to", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (url: unknown) => (String(url).startsWith("/api/people/me/role-card") ? json({ error: "nope" }, 500) : answer(String(url)))));
+    render(
+      <I18nProvider i18n={i18n}>
+        <Router>
+          <RoleJumpLine />
+          <MyRoleCards />
+        </Router>
+      </I18nProvider>,
+    );
+    await waitFor(() => expect(document.querySelector("[data-card-failed]")).not.toBeNull());
+    await waitFor(() => expect(screen.getByRole("link", { name: new RegExp(FIXTURE_ROLE_TITLE(1)) })).toBeTruthy());
+    expect(document.querySelector("[data-role-jumps]")).toBeNull();
+  });
+
   it("names each role held and jumps to its card", async () => {
     render(
       <I18nProvider i18n={i18n}>

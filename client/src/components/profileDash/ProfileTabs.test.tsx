@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import ProfileTabs, { PROFILE_TABS, TAB_OF_ANCHOR, scrollWhenShown, tabOfAnchor } from "./ProfileTabs";
+import ProfileTabs, { PLACE_KEY, PROFILE_TABS, TAB_OF_ANCHOR, cameBack, savePlace, savedPlace, scrollWhenShown, tabOfAnchor } from "./ProfileTabs";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -126,7 +126,7 @@ describe("the member portal's tabs", () => {
     }
   });
 
-  it("keeps following through a key or a press inside a dialog, and holds off the browser's restore meanwhile", () => {
+  it("keeps following through a key or a press inside a dialog, and holds off the browser's restore and anchoring", () => {
     vi.useFakeTimers();
     try {
       pageAt(0);
@@ -141,6 +141,7 @@ describe("the member portal's tabs", () => {
       history.scrollRestoration = "auto";
       scrollWhenShown("my-moon");
       expect(history.scrollRestoration).toBe("manual");
+      expect(document.documentElement.style.overflowAnchor).toBe("none");
       expect(el.scrollIntoView).toHaveBeenCalledTimes(1);
       // Escape closes the level-up moment: that is not the reader taking the page.
       close.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -153,10 +154,101 @@ describe("the member portal's tabs", () => {
       at.top = 3000;
       vi.advanceTimersByTime(300);
       expect(el.scrollIntoView).toHaveBeenCalledTimes(2);
-      expect(history.scrollRestoration).toBe("auto");
+      // The page keeps its own place for this entry, so the browser's restore stays off for it; anchoring comes back.
+      expect(history.scrollRestoration).toBe("manual");
+      expect(document.documentElement.style.overflowAnchor).toBe("");
+      history.scrollRestoration = "auto";
       dialog.remove();
       el.remove();
     } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("puts a reader who comes back where they were beside the anchor, however the reads above it land", () => {
+    vi.useFakeTimers();
+    const to = vi.fn();
+    const scrollTo = window.scrollTo;
+    window.scrollTo = to as unknown as typeof window.scrollTo;
+    try {
+      pageAt(0);
+      const at = { top: 1600 };
+      const el = target("my-moon", at);
+      // The reader sat 140px past the top of My moon when they left.
+      scrollWhenShown("my-moon", { offset: 140, back: true });
+      // The browser's own restore moves the page before anything is drawn: not the reader, so it carries on.
+      pageAt(296);
+      vi.advanceTimersByTime(100);
+      document.body.appendChild(el);
+      at.top = 1600 - 296;
+      vi.advanceTimersByTime(100);
+      expect(to).toHaveBeenLastCalledWith({ top: 1740, behavior: "instant" });
+      expect(el.scrollIntoView).not.toHaveBeenCalled();
+      // The cards above land: it follows the anchor and keeps the reader's place beside it.
+      at.top = 8000 - 296;
+      vi.advanceTimersByTime(100);
+      expect(to).toHaveBeenLastCalledWith({ top: 8140, behavior: "instant" });
+      window.dispatchEvent(new Event("wheel"));
+      el.remove();
+    } finally {
+      window.scrollTo = scrollTo;
+      pageAt(0);
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the reader's place in the page's own history entry, for that anchor only", () => {
+    const el = target("my-moon", { top: -140 });
+    document.body.appendChild(el);
+    history.replaceState({ kept: 1 }, "");
+    savePlace("my-moon");
+    expect(history.state).toEqual({ kept: 1, [PLACE_KEY]: { id: "my-moon", offset: 140 } });
+    expect(savedPlace("my-moon")).toBe(140);
+    expect(savedPlace("roles")).toBeUndefined();
+    expect(savedPlace("my-moon", null)).toBeUndefined();
+    el.remove();
+    history.replaceState(null, "");
+  });
+
+  it("knows a reload or a Back of this very address from an arrival", () => {
+    const entries = vi.spyOn(performance, "getEntriesByType");
+    try {
+      entries.mockReturnValue([{ type: "reload", name: window.location.href }] as unknown as PerformanceEntryList);
+      expect(cameBack()).toBe(true);
+      entries.mockReturnValue([{ type: "back_forward", name: window.location.href }] as unknown as PerformanceEntryList);
+      expect(cameBack()).toBe(true);
+      // A reload of another page, then a link here, is an arrival.
+      entries.mockReturnValue([{ type: "reload", name: "http://localhost/quests" }] as unknown as PerformanceEntryList);
+      expect(cameBack()).toBe(false);
+      entries.mockReturnValue([{ type: "navigate", name: window.location.href }] as unknown as PerformanceEntryList);
+      expect(cameBack()).toBe(false);
+    } finally {
+      entries.mockRestore();
+    }
+  });
+
+  it("counts the page's own instant scroll that leaves the target at its margin as a placement", () => {
+    vi.useFakeTimers();
+    try {
+      pageAt(0);
+      const at = { top: 900 };
+      const el = target("role-seat-welcome", at);
+      el.style.scrollMarginTop = "160px";
+      document.body.appendChild(el);
+      scrollWhenShown("role-seat-welcome");
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(1);
+      // Somebody else scrolls the card exactly under the bars: the target holds still on the page.
+      pageAt(740);
+      at.top = 160;
+      vi.advanceTimersByTime(100);
+      // Still following: when a read lands above, it is placed again.
+      at.top = 160 + 51;
+      vi.advanceTimersByTime(100);
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(2);
+      window.dispatchEvent(new Event("wheel"));
+      el.remove();
+    } finally {
+      pageAt(0);
       vi.useRealTimers();
     }
   });

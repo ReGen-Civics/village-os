@@ -18,7 +18,7 @@
  *
  * Its own file because Profile.tsx sits at the file-lines ratchet.
  */
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Link } from "wouter";
 import { CalendarDays, Moon, UserPlus } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
@@ -140,6 +140,20 @@ function RolesReadFailed({ onRetry }: { onRetry: () => void }) {
  * together and both want `/api/season-plans/mine`; they share the read in flight, and a retry asks anew.
  */
 let mineInFlight: ReturnType<typeof fetchMine> | null = null;
+
+/** Whether the role cards are drawn, for the jump line beside them (it renders in another slot). */
+type CardState = "loading" | "shown" | "failed";
+let cardState: CardState = "loading";
+const cardWatchers = new Set<() => void>();
+function setCardState(next: CardState) {
+  if (next === cardState) return;
+  cardState = next;
+  cardWatchers.forEach((w) => w());
+}
+function onCardState(w: () => void) {
+  cardWatchers.add(w);
+  return () => cardWatchers.delete(w);
+}
 function readMine(fresh = false): ReturnType<typeof fetchMine> {
   if (fresh || !mineInFlight) {
     const p = fetchMine();
@@ -158,6 +172,7 @@ function readMine(fresh = false): ReturnType<typeof fetchMine> {
  */
 export function RoleJumpLine() {
   const { t } = useLingui();
+  const cards = useSyncExternalStore(onCardState, () => cardState, () => cardState);
   const [seats, setSeats] = useState<HeldSeat[]>([]);
   useEffect(() => {
     let alive = true;
@@ -168,7 +183,8 @@ export function RoleJumpLine() {
       alive = false;
     };
   }, []);
-  if (!seats.length) return null;
+  // With the card failed, the plain panel stands in and has no card per role to jump to.
+  if (!seats.length || cards === "failed") return null;
   return (
     <p className="m-0 text-sm text-muted-foreground sm:hidden" data-role-jumps="">
       {t({ message: "Your roles:", context: "profile My roles: the phone's line that jumps to each role card" })}{" "}
@@ -304,12 +320,11 @@ export default function MyRoleCards({ firstDays = false }: { firstDays?: boolean
   }, []);
   useEffect(() => loadMine(), [loadMine]);
 
-  // Arriving by a link to one role (`/profile#role-<id>`): the role exists only once the card has loaded.
-  useEffect(() => {
-    if (!card || typeof window === "undefined") return;
-    const id = decodeURIComponent(window.location.hash.slice(1));
-    if (id.startsWith("role-")) document.getElementById(id)?.scrollIntoView?.({ block: "start" });
-  }, [card]);
+  // Arriving by a link to one role (`/profile#role-<id>`) is the tabs' to land (ProfileTabs scrollWhenShown
+  // follows it as the reads above land); a scroll of its own here read as the reader's and cut that short.
+  // The phone's jump line reads whether the cards are there to jump to.
+  useEffect(() => setCardState(cardFailed ? "failed" : card ? "shown" : "loading"), [card, cardFailed]);
+  useEffect(() => () => setCardState("loading"), []);
 
   // The card is the whole tab; without it, the plain panel still carries the roles and the door, under
   // the card's own sentence and a way to ask again.
