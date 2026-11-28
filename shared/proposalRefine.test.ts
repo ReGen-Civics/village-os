@@ -3,19 +3,22 @@ import { finalFreezes, mayRefine, PROPOSAL_VERSIONS_MAX, readRefined, readVersio
 import { OPEN_AIM_MAX } from "./openProposals";
 
 describe("when the applicant may refine their proposal", () => {
-  it("only at References and proposal, undecided, before the final conversation opens", () => {
+  it("at References and proposal and at the Final conversation, undecided, until it goes to the anchor circle", () => {
+    // The lead, 27 Nov 2026: "one more opportunity to refine their proposal before it's up for anchor circle review".
     expect(mayRefine({ stage: "references", decided: false, finalFrozen: false })).toBe(true);
-    // CONTROLS: every other stage, a decision, or a final conversation that opened closes it.
-    for (const stage of ["received", "review", "final_interview", "agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
+    expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: false })).toBe(true);
+    // "they can refine proposal in each stage" (the lead, 27 Nov 2026): Received and Our review too.
+    expect(mayRefine({ stage: "received", decided: false, finalFrozen: false })).toBe(true);
+    expect(mayRefine({ stage: "review", decided: false, finalFrozen: false })).toBe(true);
+    // CONTROLS: Agreement and Start, a decision, or the proposal sent to the circle closes it.
+    for (const stage of ["agreement", "start"] as const) expect(mayRefine({ stage, decided: false, finalFrozen: false })).toBe(false);
     expect(mayRefine({ stage: "references", decided: true, finalFrozen: false })).toBe(false);
-    expect(mayRefine({ stage: "references", decided: false, finalFrozen: true })).toBe(false);
+    expect(mayRefine({ stage: "final_interview", decided: false, finalFrozen: true })).toBe(false);
   });
 
-  it("a final conversation freezes it once it opens, is booked, held or skipped; one still waiting does not", () => {
-    expect(finalFreezes([])).toBe(false);
-    expect(finalFreezes([{ state: "waiting", booked: false }])).toBe(false);
-    expect(finalFreezes([{ state: "waiting", booked: true }])).toBe(true);
-    for (const state of ["open", "scored", "skipped"]) expect(finalFreezes([{ state, booked: false }])).toBe(true);
+  it("the proposal is fixed once it is SENT to the anchor circle (ruling 7), never at the final conversation's write-up", () => {
+    expect(finalFreezes({ sentToCircle: false })).toBe(false);
+    expect(finalFreezes({ sentToCircle: true })).toBe(true);
   });
 });
 

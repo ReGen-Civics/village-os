@@ -55,8 +55,9 @@ const OUTSIDER = person("u-ob-out", "Olly Out");
 const NEWBIE = person("u-ob-new", "Nia New");
 
 const REFS = [
-  { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a school garden together.", ally: "She runs the valley seed library." },
-  { name: "Ben Reference", contact: "+506 8888 1234", how: "He hired me for two harvests.", ally: "" },
+  // Each with an email and one of WhatsApp, a US phone or Signal (the lead, 27 Nov 2026).
+  { name: "Ana Reference", email: "ana.reference@example.test", whatsapp: "+506 8888 1234", how: "We built a school garden together.", ally: "She runs the valley seed library." },
+  { name: "Ben Reference", email: "ben.reference@example.test", usPhone: "(415) 555-0132", how: "He hired me for two harvests.", ally: "" },
 ];
 
 describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
@@ -213,8 +214,9 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     const id = await confirmed(email, locale);
     expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
     expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)!;
-    const token = tokenOf(letter);
+    // References' one letter waits for the first conversation's write-up too (QA round 5): the status link is signed here.
+    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`);
+    const token = signLink("application_status", { ref: id }, 1);
     const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: REFS }, null);
     expect(given.status, JSON.stringify(given.body)).toBe(200);
     return { id, token, letter };
@@ -253,14 +255,23 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id);
       expect((await call("POST", `${app(id)}/references/ask`, {}, OUTSIDER.id)).status).toBe(403);
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-      const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`);
+      // ONE EMAIL AT REFERENCES (QA rounds 4 and 5): asked before the first conversation is written up, the stage's letter
+      // waits for it, so it carries the ask AND the conversation after; nothing goes at the ask alone.
+      expect(state.sent.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:stage:references`))).toEqual([]);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toEqual([]);
+      const [first] = await interviews(id);
+      const card = await call("GET", `${app(id)}/scorecards`, undefined, IA.id);
+      const criteria = card.body.scorecards.criteria as Array<{ id: string }>;
+      expect((await call("POST", `${app(id)}/interviews/${first.id}/score`, { entries: criteria.map((c) => ({ criterionId: c.id, level: "solid", evidence: "Heard it." })), gut: { answer: "yes", note: "" } }, IA.id)).status).toBe(200);
+      const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`);
       expect(letters).toHaveLength(1);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toEqual([]);
       expect(letters[0].to.email).toBe("ask@example.test");
-      expect(letters[0].subject).toContain("lista corta");
+      expect(letters[0].subject).toContain("referencias");
       expect(letters[0].text).toContain(`${ORIGIN}/application-status/${id}?token=`);
       // Asked twice: refused, and no second letter.
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(409);
-      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toHaveLength(1);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)).toHaveLength(1);
     });
   });
 
@@ -268,18 +279,28 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     it("by the link, once; each goes to the follow-up role and the team hears they arrived", async () => {
       const { id, token } = await withReferences("give@example.test");
       const rows = await refRows(id);
+      // Nobody is named an owner (ruling 22, QA round 5): each waits for somebody who may read it to claim it.
       expect(rows.map((r: any) => [r.position, r.name, r.owner_role_id, r.owner_user_id])).toEqual([
-        [1, "Ana Reference", roleHR, null],
-        [2, "Ben Reference", roleHR, null],
+        [1, "Ana Reference", "", null],
+        [2, "Ben Reference", "", null],
       ]);
       const told = state.notices.filter((n) => n.type === "application_references_in").map((n) => n.userId).sort();
-      expect(told).toEqual([FOUNDER.id, FINAL.id, HR.id].sort());
+      // "Interviewers + placers" (ruling 22): the placer, the final-call role and the conversation's holder; not the follow-up role.
+      expect(told).toEqual([FOUNDER.id, FINAL.id, IA.id].sort());
       // No name or contact rides on a notice.
       expect(JSON.stringify(state.notices)).not.toContain("ana.reference@example.test");
-      // A second list is refused and writes nothing.
-      const again = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[0]] }, null);
-      expect(again.status).toBe(409);
-      expect(await refRows(id)).toHaveLength(2);
+      // THE EDIT (the lead, 27 Nov 2026): while nobody has reached out, a second list replaces the first, and the team
+      // is not told twice.
+      const noticesBefore = state.notices.length;
+      const again = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[1], REFS[0]] }, null);
+      expect(again.status, JSON.stringify(again.body)).toBe(200);
+      expect((await refRows(id)).map((r: any) => r.name)).toEqual(["Ben Reference", "Ana Reference"]);
+      expect(state.notices.length).toBe(noticesBefore);
+      // Once somebody has followed one up, the list is the team's: refused, and nothing changes.
+      await q("UPDATE application_references SET followed_up_at = NOW(3) WHERE application_ref = ? AND position = 1", [id]);
+      const late = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: [REFS[0], REFS[1]] }, null);
+      expect(late.status).toBe(409);
+      expect((await refRows(id)).map((r: any) => r.name)).toEqual(["Ben Reference", "Ana Reference"]);
       // CONTROL: a wrong token is the same 404 as an unknown ref.
       expect((await call("POST", `/api/application-status/${id}/references?token=nope`, { references: REFS }, null)).status).toBe(404);
     });
@@ -292,12 +313,16 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(early.status).toBe(409);
       expect(early.body.error).toBe("not_asked");
       await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
-      const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)!;
-      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", contact: "nowhere", how: "x" }] }, null);
+      // The applicant's status link (References' letter waits for the first write-up, QA round 5).
+      const linkToken = signLink("application_status", { ref: id }, 1);
+      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", how: "x" }] }, null);
       expect(bad.status).toBe(400);
-      expect(bad.body).toMatchObject({ error: "contact", row: 1 });
+      // An email alone is refused: one of WhatsApp, a US phone or Signal too (the lead, 27 Nov 2026).
+      expect(bad.body).toMatchObject({ error: "channel", row: 1 });
+      const badNumber = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", usPhone: "12", how: "x" }] }, null);
+      expect(badNumber.body).toMatchObject({ error: "contact", row: 1 });
       // The status page asks at least two too (the lead, 19 Nov 2026).
-      const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0]] }, null);
+      const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0]] }, null);
       expect([one.status, one.body.error]).toEqual([400, "too_few"]);
       expect(await refRows(id)).toEqual([]);
     });
@@ -306,7 +331,8 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const { id, token } = await withReferences("page@example.test");
       const s = await call("GET", `/api/application-status/${id}?token=${encodeURIComponent(token)}`, undefined, null);
       expect(s.status).toBe(200);
-      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false });
+      // Editable while nobody has reached out (the lead, 27 Nov 2026).
+      expect(s.body.status.referencesAsked).toEqual({ given: 2, mayAdd: false, mayEdit: true, reached: [false, false] });
       expect(s.body.status.path.map((p: any) => p.label)).toContain("References");
       const text = JSON.stringify(s.body);
       for (const secret of ["Ana Reference", "ana.reference@example.test", "8888", "seed library"]) expect(text).not.toContain(secret);
@@ -314,41 +340,34 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
   });
 
   describe("who reads the references", () => {
-    it("the reviewers, the final-call role and the owner read the details; another member gets a 404", async () => {
+    it("'Interviewers + placers' read the details; the follow-up role's holder with no conversation role and another member get a 404", async () => {
       const { id } = await withReferences("read@example.test");
-      for (const who of [FOUNDER.id, FINAL.id, HR.id]) {
+      // The placer, the final-call role and the first conversation's holder.
+      for (const who of [FOUNDER.id, FINAL.id, IA.id]) {
         const w = await walk(id, who);
         expect(w.status, who).toBe(200);
-        expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["ana.reference@example.test", "+506 8888 1234"]);
+        expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       }
-      const out = await walk(id, OUTSIDER.id);
-      expect(out.status).toBe(404);
-      expect(JSON.stringify(out.body)).not.toContain("ana.reference");
+      for (const who of [OUTSIDER.id, HR.id]) {
+        const out = await walk(id, who);
+        if (out.status === 200) expect(out.body.walkthrough.references.list).toEqual([]);
+        else expect(out.status).toBe(404);
+        expect(JSON.stringify(out.body)).not.toContain("ana.reference");
+      }
     });
 
-    it("a reference given to a member leaves the role: the member reads and writes it, the role holder no longer does", async () => {
+    it("NOBODY IS NAMED AN OWNER (ruling 22, QA round 5): the owner door is gone; the member who claims a reference writes its notes, and nobody else", async () => {
       const { id } = await withReferences("owner@example.test");
       const [ana] = await refRows(id);
-      // Only the team picks: the owner role's holder cannot hand it on.
-      expect((await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, HR.id)).status).toBe(403);
-      const set = await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, FOUNDER.id);
-      expect(set.status, JSON.stringify(set.body)).toBe(200);
-      expect(state.notices.filter((n) => n.type === "application_reference_owner").map((n) => n.userId)).toEqual([IB.id]);
-
-      const ib = await walk(id, IB.id);
-      expect(ib.status).toBe(200);
-      expect(ib.body.walkthrough.references.list.map((r: any) => [r.name, r.mine])).toEqual([["Ana Reference", true]]);
-      expect(ib.body.walkthrough.references.total).toBe(2);
-
-      // The follow-up role's holder is no reviewer here: it reads only what it still owns, Ben.
-      const hr = await walk(id, HR.id);
-      expect(hr.body.walkthrough.references.list.map((r: any) => r.name)).toEqual(["Ben Reference"]);
-
-      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, HR.id)).status).toBe(403);
-      const saved = await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her. Warm, and keen to swap seeds with the village.", followedUp: true }, IB.id);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/owner`, { userId: IB.id }, FOUNDER.id)).status).toBe(404);
+      // Unclaimed, nobody writes its notes.
+      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, IA.id)).status).toBe(403);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/claim`, {}, IA.id)).status).toBe(200);
+      expect((await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her.", followedUp: true }, FOUNDER.id)).status).toBe(403);
+      const saved = await call("POST", `${app(id)}/references/${ana.id}/notes`, { notes: "Called her. Warm, and keen to swap seeds with the village.", followedUp: true }, IA.id);
       expect(saved.status, JSON.stringify(saved.body)).toBe(200);
       const after = (await refRows(id))[0];
-      expect([after.notes_by, after.notes]).toEqual([IB.id, "Called her. Warm, and keen to swap seeds with the village."]);
+      expect([after.notes_by, after.notes]).toEqual([IA.id, "Called her. Warm, and keen to swap seeds with the village."]);
     });
   });
 
@@ -400,7 +419,8 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const gathered = await walk(id, FINAL.id);
       expect(gathered.body.walkthrough.scorecards.mayRead).toBe(true);
       expect(gathered.body.walkthrough.scorecards.interviews[0].entries[0].evidence).toBe("Heard it.");
-      expect(gathered.body.walkthrough.track.now).not.toBe("final_interview");
+      // Ruling 7: the final written up waits for the proposal to be sent to the anchor circle.
+      expect(gathered.body.walkthrough.track).toMatchObject({ now: "final_interview", primary: "send_to_circle" });
     });
 
     it("the final-call role reads the scorecards before any conversation of its own, as the power to place people does", async () => {
@@ -490,11 +510,11 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const given = await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id);
       expect(given.status, JSON.stringify(given.body)).toBe(200);
       expect((await mine(id, NEWBIE.id)).body.references).toEqual({ asked: true, given: 2, mayAdd: false });
-      // Each went to the follow-up role, and the reviewers read the details; the applicant and an outsider get a 404.
+      // Nobody is named an owner (ruling 22); the placers read the details; the applicant and an outsider get a 404.
       const rows = await refRows(id);
-      expect(rows.map((r: any) => r.owner_role_id)).toEqual([roleHR, roleHR]);
+      expect(rows.map((r: any) => r.owner_role_id)).toEqual(["", ""]);
       const w = await walk(id, FOUNDER.id);
-      expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(REFS.map((r) => r.contact));
+      expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(["Email: ana.reference@example.test\nWhatsApp: +506 8888 1234", "Email: ben.reference@example.test\nUS phone: (415) 555-0132"]);
       expect(w.body.walkthrough.track.now).toBe("references");
       expect((await walk(id, NEWBIE.id)).status).toBe(404);
       expect((await walk(id, OUTSIDER.id)).status).toBe(404);

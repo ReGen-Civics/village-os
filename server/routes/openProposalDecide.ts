@@ -96,14 +96,18 @@ import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
 import { anyAddressAccount } from "../lib/applicantAccount";
-import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
+import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, startPlanOf, type DecideDeps, type StartPlan } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
-import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
+import { answerAsk, askRolesFor, consentView, decisionFor, mayReadObjectionReasons, withoutObjectionReasons, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
 import { effectiveLifecycle } from "../lib/modules";
-import { answerNotInvited, conversationsOf, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
+import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
 import { currentMoonTerm, moonEnded, REVIEW_WORDS, reviewStageOf } from "../../shared/applicationReview";
-import { statusLinkFor } from "../lib/applicantUpdates";
+import { labelLinks, statusLinkFor, type LetterLink } from "../lib/applicantUpdates";
+import { anchorCircleName } from "../repos/applicationReview";
+import { waitsForSend } from "../lib/applicantOnboarding";
+/** Adopt and terms before the send (ruling 23). */
+const SEND_FIRST = "Send it to the Anchor Circle first.";
 import { stepsOf } from "../repos/applicationReview";
 import { activeClock } from "../lib/gratitude-cycles";
 import { createInviteOn, inviteById, reissueInviteOn, revokeInvite } from "../repos/memberInvites";
@@ -123,6 +127,13 @@ import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
 import { declineNextStepsLines, DECLINE_STEPS_KEYS } from "../../shared/declineNextSteps";
 import type { PlayDoor } from "../../shared/comms/comeAndPlay";
 import { boolVar, stringVar } from "../lib/variables";
+import { ALL_HANDS_VARIABLES, weekdayName, weekdayOfIso, zoneLabel } from "../../shared/startDay";
+import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
+import { liveHoldersOfRole, roleNamesById, rolesHeldBy } from "../repos/applicationReview";
+import { trustedAccountFor } from "../lib/applicantAccount";
+import { allHandsInvite } from "../../shared/startDay";
+import { emailKeyOf } from "../../shared/comms/address";
+import { holderFirstName } from "../../shared/roleHolderLabel";
 
 export type DecideRouteDeps = Pick<
   AppDeps,
@@ -243,6 +254,13 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
    * Whether this member may adopt or decline this proposal at the door, and
    * the proposer's own account here, if any. Refused, with the sentence.
    */
+  /** The applicant themself: their own account, or the person behind the address (the same test `deciding` makes). */
+  async function isTheApplicant(p: store.StoredOpenProposal, viewerId: string, own: string | null | undefined): Promise<boolean> {
+    if (own && own === viewerId) return true;
+    const viewer: any = await members.byId(viewerId);
+    return !!viewer?.email && !!p.email && identityKey(String(viewer.email)) === identityKey(p.email);
+  }
+
   async function deciding(p: store.StoredOpenProposal, actorId: string) {
     const rule = await decideRule(work);
     // An agent's keeper is its own (0374): they proposed it, so they never decide it.
@@ -288,9 +306,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     origin: string,
     to: { email: string; name: string | null },
     words: { subject: string; text: string; button?: { label: string; url: string } },
-    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[] } = {},
+    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[]; attachments?: OutgoingEmail["attachments"]; links?: readonly LetterLink[] } = {},
   ): Promise<OutgoingEmail> {
-    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
+    const dressedRaw = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
+    // The page and each booking by their words, never a raw address (QA round 5, item 9).
+    const page = /https?:\/\/\S+\/application-status\/[^\s<"]+/.exec(words.text)?.[0] ?? null;
+    const dressed = { ...dressedRaw, html: labelLinks(dressedRaw.html, [...(page ? [{ url: page, label: wordsIn(o.lang ?? "en").shape.seePage }] : []), ...(o.links ?? [])]) };
     return {
       idempotencyKey: key,
       kind: "essential",
@@ -300,8 +321,27 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       html: dressed.html,
       text: dressed.text,
       preheader: dressed.preheader,
+      ...(o.attachments?.length ? { attachments: o.attachments } : {}),
     };
   }
+
+  /** The first season that begins after a day, by name and first day (ruling 12: they may apply again then). */
+  const nextSeasonAfter = (dayIso: string): { name: string | null; startsOn: string } | null => {
+    const next = (deps.seasonState().seasons ?? [])
+      .map((x: any) => ({ name: typeof x?.name === "string" && x.name.trim() ? x.name.trim() : null, startsOn: String(x?.startsOn ?? "").slice(0, 10) }))
+      .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.startsOn) && x.startsOn > dayIso)
+      .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
+    return next ?? null;
+  };
+
+  /** The first conversation's booking as the invitation's button ("Book with Ops"). */
+  const firstBookingLinks = async (p: store.StoredOpenProposal): Promise<LetterLink[]> => {
+    const first = (await conversationsToName(getPool(), p.id))[0];
+    if (!first) return [];
+    const label = wordsIn(languageOf(p)).status.booking.bookNow(first.label || first.role);
+    const urls = first.bookingLinks?.length ? first.bookingLinks.map((l) => l.url) : first.bookingUrl ? [first.bookingUrl] : [];
+    return urls.map((url) => ({ url, label, pill: true }));
+  };
 
   /** Send, and say why not when it did not go. */
   async function sent(email: OutgoingEmail | null): Promise<NotSentWhy | null> {
@@ -310,22 +350,140 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     return WENT.has(r.status) ? null : whyNotSent(r);
   }
 
-  /** What the letters say about the season the roles start in. */
-  /** The letter's days. A moon role starts on the day it is adopted, never before the moon's first day (audit: "from 9 November" for a role adopted on the 11th). */
-  const seasonWords = (p: store.StoredOpenProposal, adoptedAt: Date) => {
+  /** When the roles start, from the one plan the seat is written by (server/lib/openProposalDecide.ts `startPlanOf`). */
+  const planFor = (p: store.StoredOpenProposal, adoptedAt: Date): Promise<StartPlan> => startPlanOf(work, p, adoptedAt, adoptedAt);
+
+  /** A date with the weekday it falls on ("Monday 21 December 2026"). The weekday is the date's own, never a setting's. */
+  const dated = (iso: string, lang: ApplicantLanguage): string => `${weekdayName(weekdayOfIso(iso), lang)} ${wordsIn(lang).day(iso)}`;
+
+  /**
+   * THE LETTER'S DAYS. Outside the conversation flow they are the ones that letter always had: a moon role starts on
+   * the day it is adopted, never before the moon's first day (audit: "from 9 November" for a role adopted on the
+   * 11th), and a season role on the season's first day. In the flow every day comes from the plan, so the letter, the
+   * seat and the invite name one day (e2e round 3).
+   */
+  const seasonWords = (p: store.StoredOpenProposal, adoptedAt: Date, plan: StartPlan) => {
     const s = seasonOf(p);
     const t = p.body.term;
     const lang = languageOf(p);
     const w = wordsIn(lang);
     const civilDayWords = w.day;
+    const season = s?.name ? String(s.name) : null;
+    if (plan.flow && plan.startIso) {
+      return {
+        season,
+        startsOn: civilDayWords(plan.startIso),
+        moon: t ? { from: civilDayWords(plan.startIso), to: civilDayWords(plan.moonEndsOn ?? t.endsOn) } : null,
+        seasonSameDay: !t && !!s?.startsOn && String(s.startsOn).slice(0, 10) === plan.startIso,
+        lang,
+      };
+    }
     const from = t ? roleStartsOn(t.startsOn, civilDateKey(adoptedAt, tz())) : null;
     return {
-      season: s?.name ? String(s.name) : null,
+      season,
       startsOn: t && from ? civilDayWords(from) : s?.startsOn ? civilDayWords(String(s.startsOn)) : w.adopt.firstDay,
       moon: t && from ? { from: civilDayWords(from), to: civilDayWords(t.endsOn) } : null,
       lang,
     };
   };
+
+  /**
+   * THE DAY THEY START AND THE ALL-HANDS THEY JOIN (the lead, 27 Nov 2026), for the conversation flow only. By
+   * default the start day is the all-hands day, and the welcoming role may start them sooner, which the letter says by
+   * its name. With Ops's "start now" the roles start today, no "sooner" is said, and the all-hands is the next one by
+   * its own date. The meeting's time, zone and link are the village's settings.
+   */
+  const startWords = async (p: store.StoredOpenProposal, plan: StartPlan) => {
+    if (!plan.flow || !plan.startIso) return { flow: false as const };
+    const lang = languageOf(p);
+    const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
+    const zone = zoneLabel(stringVar(ALL_HANDS_VARIABLES.zone), lang);
+    const link = stringVar(ALL_HANDS_VARIABLES.link).trim();
+    const welcome = stringVar("org.onboarding_role").trim();
+    const welcomeName = welcome ? (await roleNamesById(getPool(), [welcome])).get(welcome) : undefined;
+    const meeting = plan.allHandsIso ?? plan.startIso;
+    // Default: "That day ..., Monday at 12:00". Start now: "... our next all-hands meeting, Monday 30 November 2026 at 12:00".
+    const meetingDay = plan.startNow ? dated(meeting, lang) : weekdayName(weekdayOfIso(meeting), lang);
+    return {
+      flow: true as const,
+      startToday: plan.startNow,
+      startDay: dated(plan.startIso, lang),
+      soonerRole: plan.startNow ? null : welcome && welcomeName ? roleShortLabel(welcome, welcomeName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null,
+      allHands: time ? { when: [meetingDay, lang === "es" ? `a las ${time}` : `at ${time}`, zone].filter(Boolean).join(" "), link: /^https:\/\//.test(link) ? link : null } : null,
+    };
+  };
+
+  /**
+   * THE NEWCOMER'S BUDDY (the lead, 27 Nov 2026: "The buddy by default will be the Ops role unless I choose someone
+   * else"): the member the adopter chose, else whoever holds the welcoming role (`org.onboarding_role`) now. Their
+   * first name and the role's short label go in the start letter and on the newcomer's profile.
+   */
+  const buddyFor = async (p: store.StoredOpenProposal): Promise<{ name: string; role: string | null } | null> => {
+    const pool = getPool();
+    const welcome = stringVar("org.onboarding_role").trim();
+    const chosen = await store.buddyOf(pool, p.id);
+    const userId = chosen ?? (welcome ? ((await liveHoldersOfRole(pool, welcome))[0] ?? null) : null);
+    if (!userId) return null;
+    const row: any = await members.byId(userId);
+    const name = holderFirstName(row?.name ?? null);
+    if (!name) return null;
+    const held = await rolesHeldBy(pool, userId);
+    const roleId = welcome && held.includes(welcome) ? welcome : (held[0] ?? "");
+    const roleName = roleId ? (await roleNamesById(pool, [roleId])).get(roleId) : undefined;
+    return { name, role: roleId && roleName ? roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : null };
+  };
+
+  /** Everything the start letter adds: the day, the all-hands, the buddy. */
+  const newcomer = async (p: store.StoredOpenProposal, plan: StartPlan) =>
+    plan.flow ? { ...(await startWords(p, plan)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()), statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id) } : {};
+
+  /** The adoption letter's start: its words and its invite file, from one plan. A role outside the flow adds nothing. */
+  const startOfLetter = async (p: store.StoredOpenProposal, adoptedAt: Date) => {
+    const plan = await planFor(p, adoptedAt);
+    return { plan, words: { ...seasonWords(p, adoptedAt, plan), ...(await newcomer(p, plan)) }, attachments: await allHandsAttachment(p, plan) };
+  };
+
+  /** The all-hands as a calendar invite, attached to the start letter (the lead, 27 Nov 2026). */
+  const allHandsAttachment = async (p: store.StoredOpenProposal, plan: StartPlan): Promise<OutgoingEmail["attachments"]> => {
+    // The invite is for the all-hands the letter names: the start day's, or with "start now" the next one.
+    const day = plan.flow ? (plan.allHandsIso ?? plan.startIso) : null;
+    const time = stringVar(ALL_HANDS_VARIABLES.time).trim();
+    const zone = stringVar(ALL_HANDS_VARIABLES.zone).trim();
+    const link = stringVar(ALL_HANDS_VARIABLES.link).trim();
+    if (!day || !time || !zone) return [];
+    const ics = allHandsInvite({ uid: `all-hands-${p.id}@village`, dayIso: day, time, zone, title: wordsIn(languageOf(p)).adopt.allHandsTitle, link: /^https:\/\//.test(link) ? link : null, now: now() });
+    return ics ? [{ filename: "all-hands.ics", contentType: "text/calendar; charset=utf-8; method=PUBLISH", contentBase64: Buffer.from(ics, "utf8").toString("base64") }] : [];
+  };
+
+  /**
+   * THE NEWCOMER'S FIRST WEEK ON THEIR PROFILE (the lead, 27 Nov 2026): their buddy, their start day and the all-hands
+   * they join, for the signed-in member's newest adopted proposal that this account is trusted to be. The page says the
+   * meeting's time in the reader's own zone with the village's beside it. Nothing of anyone else's application.
+   */
+  app.get("/api/me/first-week", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`first-week:${String(viewer.id)}`, 60, 10 * 60_000)) return res.status(429).json({ error: "too_many" });
+    const email = typeof (viewer as any).email === "string" ? (viewer as any).email : "";
+    for (const p of email ? await store.adoptedFromAddress(getPool(), emailKeyOf(email)) : []) {
+      if ((await trustedAccountFor(members, p, getPool())) !== String(viewer.id)) continue;
+      const plan = await planFor(p, p.decidedAt ?? now());
+      // The first week is the conversation flow's: a role adopted outside it has no start day to show.
+      if (!plan.flow || !plan.startIso) continue;
+      const sw = await startWords(p, plan);
+      return res.set("Cache-Control", "no-store").json({
+        firstWeek: {
+          ref: p.id,
+          startIso: plan.startIso,
+          // The all-hands they join: the start day's, or with "start now" the next one.
+          allHandsIso: plan.allHandsIso ?? plan.startIso,
+          buddy: await buddyFor(p),
+          allHands: sw.flow && sw.allHands ? { time: stringVar(ALL_HANDS_VARIABLES.time).trim(), zone: stringVar(ALL_HANDS_VARIABLES.zone).trim(), link: sw.allHands.link } : null,
+        },
+      });
+    }
+    res.set("Cache-Control", "no-store").json({ firstWeek: null });
+  });
 
   // ── Read ──────────────────────────────────────────────────────────────────
 
@@ -340,8 +498,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const roles = await rolesOf(pool, p);
     const asks = (await asksFor(pool, [p.id])).get(p.id) ?? [];
     const open = p.status === "confirmed";
-    const view = consentView(asks, at, tz(), viewerId, await askRolesFor(pool, asks));
+    const askRoles = await askRolesFor(pool, asks);
     const may = await deciding(p, viewerId);
+    // The reasons for the circle asked and the applicant only (the lead, 27 Nov 2026); the count for everybody.
+    const whole = consentView(asks, at, tz(), viewerId, askRoles);
+    const view = mayReadObjectionReasons(asks, viewerId, askRoles, await isTheApplicant(p, viewerId, may.own)) ? whole : withoutObjectionReasons(whole);
     const holdsThePower = may.rule.who === "live-holders" && may.rule.holders.includes(viewerId);
     // The invitation's standing, for the holders of the power, on an adoption that made one.
     let invitation: { state: "open" | "used" | "closed"; sentAt: string | null; emailed: boolean | null; askedAt: string | null } | null = null;
@@ -599,6 +760,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.status !== "confirmed") return res.status(409).json({ error: DECIDE_WORDS.decided, status: p.status });
     const may = await deciding(p, actorId);
     if (!may.ok) return res.status(may.status).json(may.body);
+    // Ruling 23: the terms are the anchor circle's answer, so they wait for the send too.
+    if (await waitsForSend(work, p.id)) return res.status(409).json({ error: "send_first", message: SEND_FIRST });
     // An agent's proposal has no terms to offer: no pay, allowance or commitment (audit B8a).
     if (p.body.agent) return res.status(409).json({ error: "no_terms_for_an_agent", message: DECIDE_WORDS.noTermsForAnAgent });
     const body = req.body && typeof req.body === "object" ? req.body : {};
@@ -628,7 +791,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const out = await answerAsk({ pool, notify: deps.notify, timeZone: tz(), sessionsOn, now: now() }, p.id, standing, userId, namesOf(await rolesOf(pool, p)), req.body);
     if (!out.ok) return res.status(out.status).json({ error: out.error, ...(out.field ? { field: out.field } : {}) });
     const asks = (await asksFor(pool, [p.id])).get(p.id) ?? [];
-    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: consentView(asks, now(), tz(), userId, await askRolesFor(pool, asks)) });
+    const askRoles = await askRolesFor(pool, asks);
+    const answered = consentView(asks, now(), tz(), userId, askRoles);
+    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: mayReadObjectionReasons(asks, userId, askRoles, false) ? answered : withoutObjectionReasons(answered) });
   });
 
   // ── Adopt ─────────────────────────────────────────────────────────────────
@@ -667,6 +832,13 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.status !== "confirmed") return res.status(409).json({ error: DECIDE_WORDS.decided, status: p.status });
     const may = await deciding(p, actorId);
     if (!may.ok) return res.status(may.status).json(may.body);
+    // The buddy, when the adopter chose one (the lead, 27 Nov 2026): a member holding a role now.
+    const buddyAsked = typeof req.body?.buddyUserId === "string" ? req.body.buddyUserId.trim().slice(0, 64) : "";
+    if (buddyAsked && (await rolesHeldBy(getPool(), buddyAsked)).length === 0) return res.status(400).json({ error: "buddy", message: "Pick a buddy who holds a role now." });
+    // Saved only once the adoption itself is recorded (QA pass 2: a refused adoption still kept the buddy).
+    const keepBuddy = async () => {
+      if (buddyAsked) await store.setBuddy(getPool(), p!.id, buddyAsked);
+    };
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     // "Start a conversation" carries no terms (the lead, 20 Nov 2026): nobody is placed on it; the full proposal comes first.
@@ -691,6 +863,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       const named = left.map((c) => (c.unheld ? DECIDE_WORDS.conversationUnheld(c.role) : DECIDE_WORDS.conversationMissing(c.role))).join(" ");
       return res.status(409).json({ error: "interviews_not_done", message: named || REVIEW_WORDS.interviewsNotDone, conversations: left });
     }
+    // Ruling 23: nothing is adopted before the proposal is sent to the anchor circle.
+    if (await waitsForSend(work, p.id)) return res.status(409).json({ error: "send_first", message: SEND_FIRST });
 
     const pool = getPool();
     const at = now();
@@ -707,7 +881,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // The moon this was proposed for has ended before the decision: the holder may adopt for the moon running now (Rye, role journey 4a).
     let theMoonNow = false;
     let moonNow: ReturnType<typeof currentMoonTerm> | null = null;
-    if (moonEnded(p.body.term, at, tz())) {
+    // In the conversation flow the start rule names the moon the role takes (`startPlanOf`), so nothing is asked.
+    const inFlow = (await planFor(p, at)).flow;
+    if (!inFlow && moonEnded(p.body.term, at, tz())) {
       if (req.body?.forCurrentMoon !== true) {
         return res.status(409).json({ error: "moon_ended", message: DECIDE_WORDS.moonEnded, canAdoptForThisMoon: true });
       }
@@ -772,6 +948,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         return res.status(409).json({ error: seated.error });
       }
       await stampDecided(work, p.id, "adopted");
+      await keepBuddy();
       await deps.notify({
         userId: agent.keeperUserId,
         type: "open_role_proposal_decided",
@@ -802,9 +979,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         await store.undoAdoption(pool, p.id);
         return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
       }
+      await keepBuddy();
+      const start = await startOfLetter(p, at);
       const why = await sent(
         p.email
-          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...start.words, signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: start.attachments })
           : null,
       );
       await tell(p.id, "adopted");
@@ -817,7 +996,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         application: { id: placed.applicationId, href: applicationHref(placed.applicationId) },
         // One agreement per role when it named several (the lead, 17 Nov 2026).
         ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}),
-        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
+        // In the flow, the one day the letter and the seat name; outside it, the words this message always had.
+        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : start.plan.flow && start.plan.startIso ? (start.plan.startNow ? DECIDE_WORDS.adoptedAccountNow : DECIDE_WORDS.adoptedAccountOn(dated(start.plan.startIso, "en"))) : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
       });
     }
 
@@ -847,12 +1027,14 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     }
     if (!held.ok) return res.status(401).json({ error: "auth_required" });
     await stampDecided(work, p.id, "adopted");
+    await keepBuddy();
 
     const link = `${site()}${invitePath(token)}`;
+    const inviteStart = await startOfLetter(p, at);
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...inviteStart.words, link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p), attachments: inviteStart.attachments })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
@@ -909,7 +1091,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const nextSteps = declineNextStepsLines((k) => stringVar(k), { site: site(), on: boolVar(DECLINE_STEPS_KEYS.on), lang: languageOf(p) });
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true, nextSteps }), { lang: languageOf(p), comeAndPlay: true, skip: nextSteps.length ? NEXT_STEP_DOORS : undefined })
+        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id), nextSeason: nextSeasonAfter(civilDateKey(at, tz())), village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true, nextSteps }), { lang: languageOf(p), comeAndPlay: true, skip: nextSteps.length ? NEXT_STEP_DOORS : undefined })
         : null,
     );
     await tell(p.id, "declined");
@@ -987,13 +1169,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       p.email
         ? await letter(`open-proposal:${p.id}:invited`, "open_proposal.invited", { email: p.email, name: firstName }, invitedLetter({
             firstName,
+            anchorCircle: await anchorCircleName(pool),
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
-            conversations: out.conversations.map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks })),
-            statusLink: statusLinkFor({ siteUrl: site }, p.id),
+            // All three calls, the final one too (the lead, 27 Nov 2026), with only the first one's link.
+            conversations: (await conversationsToName(pool, p.id)).map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks, ...(c.final ? { final: true } : {}) })),
+            statusLink: await statusLinkFor({ siteUrl: site, getPool: () => pool }, p.id),
             lang: languageOf(p),
             note,
-          }), { lang: languageOf(p) })
+          }), { lang: languageOf(p), links: await firstBookingLinks(p) })
         : null,
     );
     await tell(p.id, "invited");
@@ -1025,6 +1209,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             lang: languageOf(p),
             note,
             doorsInBlock: true,
+            nextSeason: nextSeasonAfter(civilDateKey(at, tz())),
           }), { lang: languageOf(p), comeAndPlay: true })
         : null,
     );
@@ -1056,9 +1241,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (!held.value) return res.status(409).json({ error: DECIDE_WORDS.noInvitation });
     const link = `${site()}${invitePath(token)}`;
     const firstName = greetingName(p.name);
+    const resendStart = await startOfLetter(p, p.decidedAt ?? now());
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p) })
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...resendStart.words, link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p), attachments: resendStart.attachments })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, now(), why === null);

@@ -46,6 +46,8 @@ export interface ApplicationFact {
   refsAllFollowedUpAt: number | null;
   /** The conversations, in order. */
   interviews: ReadonlyArray<{ final: boolean; openedAt: number | null; bookedAt: number | null; scoredAt: number | null; skipped: boolean; waiting?: boolean }>;
+  /** When the proposal was sent to the anchor circle (ruling 7), where Agreement begins; null while not sent. */
+  toCircleAt?: number | null;
   /** A proposal from outside whose terms the village countered before it was decided. False for a member's application. */
   countered: boolean;
 }
@@ -163,6 +165,7 @@ export const timingOf = (a: ApplicationFact): StageTimingFacts => ({
   door: a.door,
   refsAllFollowedUpAt: a.refsAllFollowedUpAt,
   adopted: a.outcome === "adopted",
+  ...(a.toCircleAt !== undefined ? { toCircleAt: a.toCircleAt } : {}),
 });
 
 export function buildMeasures(apps: readonly ApplicationFact[], holders: readonly HolderFact[], now: number, starts: readonly StartFact[] = []): MeasureRow[] {

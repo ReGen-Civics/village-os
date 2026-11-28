@@ -89,11 +89,24 @@ export function stepBookingFor(roleName: string, holders: readonly StepHolder[],
 }
 
 /**
+ * HOW AN APPLICANT BOOKS A STEP, BY ROLE ONLY (the lead, 27 Nov 2026: "Just the Role - Ops, Community, Visionary").
+ * The step is named by the role's short label (shared/roleShortLabel.ts), never a person. The role's own link comes
+ * first, since the village set it for this step; else the links of the people holding the role, in the order
+ * `stepBookingLinks` gives, each unnamed (the page and the letter number them when there are several).
+ */
+export function roleBookingFor(label: string, holders: readonly StepHolder[], roleBookingUrl: unknown): StepBooking {
+  const role = parseBookingUrl(roleBookingUrl);
+  const links = role ? [{ who: null, url: role }] : stepBookingLinks(holders, null).map((l) => ({ who: null, url: l.url }));
+  return { label, links };
+}
+
+/**
  * The links as one piece of a letter's sentence: the link itself when there is
- * one, else one line per person ("Name: link") under the sentence.
+ * one, else one numbered line each under the sentence (named by first name only
+ * where an older caller still names them).
  */
 export function bookingLinksText(links: readonly BookingLink[]): string | null {
   if (!links.length) return null;
   if (links.length === 1) return links[0].url;
-  return `\n${links.map((l) => `${l.who ?? "-"}: ${l.url}`).join("\n")}`;
+  return `\n${links.map((l, n) => `${l.who ?? String(n + 1)}: ${l.url}`).join("\n")}`;
 }

@@ -147,6 +147,11 @@ const JOURNEY = [
   "client/src/components/openProposal/Walkthrough.tsx",
   "client/src/components/openProposal/PrivacyNote.tsx",
   "client/src/components/roleCard/RoleArtBeside.tsx",
+  "client/src/components/openProposal/Reflections.tsx",
+  "client/src/components/openProposal/WithdrawApplication.tsx",
+  "client/src/components/openProposal/BuddyPicker.tsx",
+  "client/src/components/profile/FirstWeekCard.tsx",
+  "client/src/components/profile/ApplicationNextCard.tsx",
   // The Governance page's views (26 Nov 2026): born inside the rule.
   "client/src/components/governance/now/NowView.tsx",
   "client/src/components/governance/now/GovernanceTabs.tsx",

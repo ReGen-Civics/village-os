@@ -318,6 +318,10 @@ describe("moduleCatalog", () => {
       "ledger.org_redemption_rate",
       "library.dispute_deadline_days",
       "map.concierge_enabled",
+      // org.all_hands_timezone: the all-hands meeting's zone (the lead, 27 Nov 2026). It ships as the founding
+      // village's zone because the coordinator asked for that default; a fork sets its own in Admin, and the start
+      // letter only ever says the zone beside the time, so a wrong default reads as a wrong clock, never a wrong day.
+      "org.all_hands_timezone",
       "org.role_card_nationality",
       "payments.donation_max_usd",
       "payments.purchase_limit_30d_usd",

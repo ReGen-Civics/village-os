@@ -23,6 +23,7 @@ import { msg } from "@lingui/core/macro";
 import { DIAL_WORDS_1 } from "./gameMechanicsDialWords1";
 import { DIAL_WORDS_2 } from "./gameMechanicsDialWords2";
 import { DIAL_WORDS_3 } from "./gameMechanicsDialWords3";
+import { DIAL_WORDS_4 } from "./gameMechanicsDialWords4";
 
 export interface DialWords {
   label: MessageDescriptor;
@@ -31,7 +32,7 @@ export interface DialWords {
   choices?: Readonly<Record<string, { label: MessageDescriptor; hint?: MessageDescriptor }>>;
 }
 
-export const DIAL_WORDS: Readonly<Record<string, DialWords>> = { ...DIAL_WORDS_1, ...DIAL_WORDS_2, ...DIAL_WORDS_3 };
+export const DIAL_WORDS: Readonly<Record<string, DialWords>> = { ...DIAL_WORDS_1, ...DIAL_WORDS_2, ...DIAL_WORDS_3, ...DIAL_WORDS_4 };
 
 /** The stage ladder's names, by stage id: the choices of every "Stage that unlocks" dial. */
 export const DIAL_STAGE_WORDS: Readonly<Record<string, MessageDescriptor>> = {

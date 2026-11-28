@@ -24,6 +24,8 @@ import { trackStageWords } from "./trackStageWords";
 import ConversationGuide from "@/components/openProposal/ConversationGuide";
 import ConversationNotes from "@/components/openProposal/ConversationNotes";
 import ProposalVersions from "@/components/openProposal/ProposalVersions";
+import Reflections, { type Reflection } from "@/components/openProposal/Reflections";
+import SendToCircle from "@/components/openProposal/SendToCircle";
 import PrivacyNote from "@/components/openProposal/PrivacyNote";
 import { useDayWords } from "@/components/openProposal/ConversationNotes";
 import type { ProposalVersion } from "@shared/proposalRefine";
@@ -52,7 +54,9 @@ interface ServedReference {
 interface ServedWalkthrough {
   track: { stages: Array<{ key: TrackStage; label: string; state: TrackState }>; now: TrackStage; who: string; next: string; primary: PrimaryAction };
   shortlist: ShortlistAnswer | null;
-  references: { asked: boolean; given: boolean; list: ServedReference[]; total: number; mayAssign: boolean };
+  references: { asked: boolean; given: boolean; list: ServedReference[]; total: number; mayAssign: boolean; questions?: string; mayClaim?: boolean };
+  /** Before your call: the earlier holders' voice reflections (the lead, 27 Nov 2026). */
+  reflections?: Reflection[];
   roles: Array<{ id: string; name: string }>;
   members: Array<{ id: string; name: string }>;
   scorecards: {
@@ -60,14 +64,14 @@ interface ServedWalkthrough {
     mayRead: boolean;
     interviews: Array<{ position: number; roleName: string; minutes: number; final: boolean; state: InterviewState; entries: Array<{ criterionId: string; level: string; evidence: string }> | null; gut: { answer: GutAnswer; note: string } | null }>;
   } | null;
-  roleNames: { followup: string | null; finalCall: string | null };
+  roleNames: { followup: string | null; finalCall: string | null; anchorCircle?: string | null };
   guide?: GuideView | null;
   /** Each conversation's private notes and files this reader may read (0444). Never served to the applicant. */
   conversations?: ConversationNotesView[];
   /** The proposal's earlier versions, when the applicant refined it (shared/proposalRefine.ts), and its words now. */
   proposalVersions?: ProposalVersion[];
   proposalNow?: { why: string; aim: string } | null;
-  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
+  you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; maySendToCircle?: boolean; mayStartNow?: boolean; startNow?: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
 /**
@@ -111,9 +115,13 @@ export interface WalkthroughProps {
    * gold-edged, so the page keeps one gold act (QA round 3).
    */
   decideOnPage?: boolean;
+  /** Draw only the references, for the team's own references page (pages/ApplicationReferences.tsx). */
+  only?: "references";
+  /** The reader may not read what `only` asks for. */
+  onRefused?: () => void;
 }
 
-export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false, only, onRefused }: WalkthroughProps) {
   const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
@@ -122,8 +130,11 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   const load = useCallback(async () => {
     const a = await call(`${base}/walkthrough`, "GET");
-    setW(a.ok ? (a.data.walkthrough as ServedWalkthrough) : null);
-  }, [base]);
+    const got = a.ok ? (a.data.walkthrough as ServedWalkthrough) : null;
+    setW(got);
+    // The references page for somebody who may not read them: the caller draws "Off the trail" (QA round 5).
+    if (only === "references" && (!got || (!got.references.mayClaim && got.references.list.length === 0))) onRefused?.();
+  }, [base, only, onRefused]);
 
   useEffect(() => {
     void load();
@@ -190,6 +201,14 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         return w.you.mayAskReferences ? <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("/references/ask")} data-walk-ask="">{label}</button> : null;
       case "add_final":
         return w.you.mayAddFinal ? <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act("/final-conversation")} data-walk-final="">{label}</button> : null;
+      case "send_to_circle":
+        // Ruling 7: the applicant sends it, or Ops or the Visionary from here; it asks once, the proposal is fixed after.
+        return w.you.maySendToCircle ? (
+          <SendToCircle url={`${base}/to-circle`} words={{ button: namedCircle(label, w.roleNames.anchorCircle), ask: namedCircle(OW.sendToCircle.ask, w.roleNames.anchorCircle), yes: OW.sendToCircle.yes, keep: OW.sendToCircle.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
+        ) : (
+          <p className={HINT}>{OW.primary.wait_applicant}</p>
+        );
+      case "welcome":
       case "wait_applicant":
       case "none":
         return <p className={HINT}>{label}</p>;
@@ -225,6 +244,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   const gathered = w.you.isFinalCall || w.you.holdsPower;
 
+  // The team's references page: the references alone, at a link the team can share (the lead, 27 Nov 2026).
+  if (only === "references") {
+    return (
+      <section aria-labelledby="walk-references-page" className={CARD} data-walkthrough-references="">
+        <p className={EYEBROW}>{OW.referencesKicker}</p>
+        <h1 id="walk-references-page" className={H2}>{OW.referencesHeading}</h1>
+        <References w={w} busy={busy} act={act} page />
+        {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
+      </section>
+    );
+  }
+
   return (
     <section id="walkthrough" aria-labelledby="walk-heading" className={`scroll-mt-24 ${CARD}`} data-walkthrough={t.now}>
       <p className={EYEBROW}>{trackStageWords()[t.now]}</p>
@@ -240,6 +271,13 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
         <p className={`mt-3 ${LABEL}`}>{OW.whatNext}</p>
         <p className="text-foreground" data-walk-what="">{t.next}</p>
+        {/* Ruling 8: Ops's own "start now", with a confirm; once chosen, it is said. */}
+        {w.you.mayStartNow && (
+          <div className="mt-3" data-walk-start-now="">
+            <SendToCircle url={`${base}/start-now`} words={{ button: OW.startNow.button, ask: OW.startNow.ask, yes: OW.startNow.yes, keep: OW.startNow.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
+          </div>
+        )}
+        {w.you.startNow && <p className={`mt-2 ${HINT}`} data-walk-start-now-chosen="">{OW.startNow.chosen}</p>}
       </div>
 
       {/* The stage track as trail stones: one row of six on a phone (the stage's name is the eyebrow above); from sm
@@ -251,16 +289,18 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
               {/* The gold fill says "you are here"; no number on it (QA round 4: dark on gold read at 2.35:1). */}
               <span className={`jw-stone-face !size-8 !text-xs ${STONE_FACE[s.state]}`}>{s.state === "done" ? <Check className="size-3.5" /> : ""}</span>
             </span>
-            <span className={`sr-only sm:not-sr-only ${STONE_LABEL[s.state]}`}>{s.label}</span>
+            <span className={`${s.state === "now" ? "" : "sr-only sm:not-sr-only"} ${STONE_LABEL[s.state]}`}>{s.label}</span>
             <span className="sr-only">{OW.stateWords[s.state]}</span>
           </li>
         ))}
       </ol>
 
+      {/* QA pass 2: past stages fold to one line each, the current one opens. */}
       {(w.references.asked || w.references.list.length > 0) && (
-        <References w={w} busy={busy} act={act} />
+        <References w={w} busy={busy} act={act} open={t.now === "references"} />
       )}
 
+      {w.reflections && w.reflections.length > 0 && <Reflections items={w.reflections} />}
       {/* One place for notes (QA round 1): the guide's questions fold into each conversation; alone only when there is none. */}
       {w.conversations && w.conversations.length > 0 ? (
         <ConversationNotes base={base} conversations={w.conversations} guide={w.guide ?? null} onSaved={() => void load()} />
@@ -268,18 +308,26 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />
       )}
       {w.proposalVersions && w.proposalVersions.length > 0 && <ProposalVersions versions={w.proposalVersions} current={w.proposalNow ?? null} />}
-      {gathered && <Gathered w={w} />}
+      {gathered && <Gathered w={w} open={t.now === "final_interview" || t.now === "agreement"} />}
     </section>
   );
 }
 
-function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
+function References({ w, busy, act, page = false, open = true }: { w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean>; page?: boolean; open?: boolean }) {
   const OW = useOnboardingWords();
+  // Folded to its heading when its stage is past (QA pass 2); its own page always open.
+  const Box = page ? "div" : "details";
   return (
-    <div id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="">
-      <p className={EYEBROW}>{OW.referencesKicker}</p>
-      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.referencesHeading}</h3>
+    <Box id="walk-references" className="mt-6 scroll-mt-24" data-walk-references="" {...(page ? {} : { open })}>
+      {!page && <summary className="flex min-h-11 cursor-pointer items-center font-display text-xl font-bold text-foreground">{OW.referencesHeading}</summary>}
+      {!page && <p className={EYEBROW}>{OW.referencesKicker}</p>}
       <PrivacyNote line={OW.referencesShort} label={OW.whoReads} more={OW.referencesPrivate} />
+      {/* The team's own page for the references, to share among the team; never in an applicant's email. */}
+      {!page && typeof window !== "undefined" && window.location.pathname.startsWith("/open-proposals/") && (
+        <a className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline underline-offset-4" href={`${window.location.pathname.replace(/\/references$/, "")}/references`} data-walk-references-page="">
+          {OW.referencesPage}
+        </a>
+      )}
       {!w.references.given && <p className="mt-2 text-foreground">{OW.referencesAsked}</p>}
       {w.references.given && w.references.list.length === 0 && <p className="mt-2 text-foreground">{OW.referencesNone}</p>}
       <ul className="mt-3 grid gap-3">
@@ -287,8 +335,14 @@ function References({ w, busy, act }: { w: ServedWalkthrough; busy: boolean; act
           <ReferenceTile key={r.id} r={r} w={w} busy={busy} act={act} />
         ))}
       </ul>
-    </div>
+    </Box>
   );
+}
+
+/** A team line written with "the anchor circle", said with the village's own name for it ("the Anchor Circle"), one form everywhere (QA round 5). */
+function namedCircle(text: string, name: string | null | undefined): string {
+  if (!name) return text;
+  return text.replace(/the anchor circle/gi, /^the\s/i.test(name) ? name : `the ${name}`).replace(/círculo ancla/gi, name);
 }
 
 function ownerWords(r: ServedReference): string {
@@ -300,44 +354,29 @@ function ownerWords(r: ServedReference): string {
 function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkthrough; busy: boolean; act: (path: string, body?: unknown) => Promise<boolean> }) {
   const OW = useOnboardingWords();
   const day = useDayWords();
-  const [notes, setNotes] = useState(r.notes ?? "");
+  // The village's standard questions open in an empty notes box (the lead, 27 Nov 2026).
+  const [notes, setNotes] = useState(r.notes ?? (w.references.questions || ""));
   const [done, setDone] = useState(r.followedUp);
   const [pick, setPick] = useState("");
   return (
     <li className={TILE} data-walk-reference={r.position}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold text-foreground">{r.name}</p>
+      {/* Folded to its one line (QA round 5); open while it is this reader's to follow up. */}
+      <details open={r.mine && !r.followedUp} data-walk-reference-fold="">
+      <summary className="flex min-h-11 cursor-pointer flex-wrap items-center justify-between gap-2">
+        <span className="font-semibold text-foreground">{r.name}</span>
         <span className={CHIP_SOFT}>{r.followedUp ? OW.followedUp : OW.notFollowedUp}</span>
-      </div>
+      </summary>
       <dl className="mt-2 grid gap-1 text-sm">
         <div><dt className="inline font-semibold text-foreground">{OW.contact}: </dt><dd className="inline break-words text-foreground">{r.contact}</dd></div>
         <div><dt className="inline font-semibold text-foreground">{OW.howKnown}: </dt><dd className="inline break-words text-foreground">{r.how}</dd></div>
         {r.ally && <div><dt className="inline font-semibold text-foreground">{OW.ally}: </dt><dd className="inline break-words text-foreground">{r.ally}</dd></div>}
         <div><dt className="inline font-semibold text-foreground">{OW.owner}: </dt><dd className="inline text-foreground" data-walk-owner="">{ownerWords(r)}</dd></div>
       </dl>
-      {w.references.mayAssign && (
-        <div className="mt-3 flex flex-wrap items-end gap-2">
-          <label className="grow">
-            <span className={LABEL}>{OW.ownerPick}</span>
-            <select className={`mt-1 min-h-11 ${FIELD}`} value={pick} onChange={(e) => setPick(e.target.value)} data-walk-owner-pick="">
-              <option value="">{OW.ownerPick}</option>
-              <optgroup label={OW.ownerRole}>
-                {w.roles.map((role) => <option key={`r:${role.id}`} value={`r:${role.id}`}>{role.name}</option>)}
-              </optgroup>
-              <optgroup label={OW.ownerMember}>
-                {w.members.map((m) => <option key={`u:${m.id}`} value={`u:${m.id}`}>{m.name}</option>)}
-              </optgroup>
-            </select>
-          </label>
-          <button
-            type="button"
-            className={BTN_SECONDARY}
-            disabled={busy || !pick}
-            onClick={() => void act(`/references/${r.id}/owner`, pick.startsWith("r:") ? { roleId: pick.slice(2) } : { userId: pick.slice(2) }).then((ok) => ok && setPick(""))}
-          >
-            {OW.ownerGive}
-          </button>
-        </div>
+      {/* "I'll follow up": any team member who may read the application takes one for themselves (the lead, 27 Nov 2026). */}
+      {!r.mine && w.references.mayClaim && !r.owner.userId && (
+        <button type="button" className={`mt-3 ${BTN_NOTICE}`} disabled={busy} onClick={() => void act(`/references/${r.id}/claim`)} data-walk-claim="">
+          {OW.claim}
+        </button>
       )}
       {r.mine ? (
         <div className="mt-3">
@@ -362,20 +401,21 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
           </div>
         )
       )}
+      </details>
     </li>
   );
 }
 
 /** Everything the final call reads, in one place: each reference's notes and each conversation's scorecard, as written. */
-function Gathered({ w }: { w: ServedWalkthrough }) {
+function Gathered({ w, open = true }: { w: ServedWalkthrough; open?: boolean }) {
   const OW = useOnboardingWords();
   const role = w.roleNames.finalCall ?? "the role that makes the final call";
   const cards = w.scorecards;
   const criterion = (id: string) => cards?.criteria.find((c) => c.id === id)?.text ?? id;
   return (
-    <div className="mt-6" data-walk-gathered="">
+    <details className="mt-6" data-walk-gathered="" open={open}>
+      <summary className="flex min-h-11 cursor-pointer items-center font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</summary>
       <p className={EYEBROW}>{OW.gatheredKicker}</p>
-      <h3 className="mt-1 font-display text-xl font-bold text-foreground">{OW.gatheredHeading}</h3>
       <PrivacyNote line={OW.gatheredShort(role)} label={OW.gatheredMore} more={OW.gatheredIntro(role)} />
       {w.references.list.length > 0 && (
         <ul className="mt-3 grid gap-2">
@@ -411,6 +451,6 @@ function Gathered({ w }: { w: ServedWalkthrough }) {
           ))}
         </div>
       )}
-    </div>
+    </details>
   );
 }

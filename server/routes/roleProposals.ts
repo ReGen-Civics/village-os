@@ -105,7 +105,7 @@ import {
   answerConsent,
   askRolesFor,
   circleAsksFor,
-  consentView,
+  consentView, readableConsent,
   NUDGE_EVERY_MS,
   NUDGE_JOB,
   nudgesFor,
@@ -308,7 +308,8 @@ export function register(app: Express, deps: Deps): void {
         : {}),
       application: p.applicationId ? { id: p.applicationId, href: applicationHref(p.applicationId) } : null,
       // Where the circle's consent stands, and the decision in words once adopted (PR B).
-      consent: p.status === "submitted" && membersUp ? consentView(asks, now(), tz(), viewerId, askRoles) : null,
+      // The reasons for holders in an asked circle and the applicant only (the lead, 27 Nov 2026); the count for everybody.
+      consent: p.status === "submitted" && membersUp ? readableConsent(consentView(asks, now(), tz(), viewerId, askRoles), asks, viewerId, askRoles ?? (() => []), p.userId === viewerId) : null,
       decided: p.decidedWords,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
@@ -903,7 +904,8 @@ export function register(app: Express, deps: Deps): void {
     );
     if (!out.ok) return res.status(out.status).json({ error: out.error, ...(out.field ? { field: out.field } : {}) });
     const asks = (await store.asksFor(pool, [p.id])).get(p.id) ?? [];
-    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: consentView(asks, now(), tz(), userId, await askRolesFor(pool, asks)) });
+    const askRoles = await askRolesFor(pool, asks);
+    res.json({ answer: out.answer, carried: out.carried, carriedWords: out.carriedWords, consent: readableConsent(consentView(asks, now(), tz(), userId, askRoles), asks, userId, askRoles, p.userId === userId) });
   });
 
   // ── The nudges (PR B) ─────────────────────────────────────────────────────

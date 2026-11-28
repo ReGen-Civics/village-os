@@ -3,10 +3,11 @@
  * proposal while they're doing their next conversation with community role ... once they have their proposal solid
  * and they passed this step they move to their final conversation ... to deliver their proposal there").
  *
- * WHEN. Only while the application stands at References and proposal (shared/applicantOnboarding.ts `trackStates`).
- * EDITS FREEZE once the final conversation opens to book, or is booked, held or skipped (the coordinator's ruling,
- * agreed by the lead: the final role reads one fixed version). After that, a change goes only through the
- * counter-offer loop (shared/counterOffer.ts).
+ * WHEN. At References and proposal and at the Final conversation (shared/applicantOnboarding.ts `trackStates`). The
+ * lead, 27 Nov 2026: "they bring a proposal as best as they can but they can also refine their proposal from this
+ * conversation ... one more opportunity to refine their proposal before it's up for anchor circle review". EDITS
+ * FREEZE once the final conversation is written up (held or skipped), which is when the application goes to the anchor
+ * circle for review (Agreement). After that, a change goes only through the counter-offer loop (shared/counterOffer.ts).
  *
  * WHAT. The proposal's own words: why them and why now, and their aim in the role. Every earlier version is kept, so
  * the final conversation reads what changed. Nothing here is scored or read by an AI.
@@ -24,14 +25,20 @@ export interface ProposalVersion {
 /** The most earlier versions kept: plenty for a few weeks of refining, bounded so the row stays small. */
 export const PROPOSAL_VERSIONS_MAX = 20;
 
-/** A final conversation that has opened, been booked, held or skipped freezes the proposal. */
-export function finalFreezes(finals: ReadonlyArray<{ state: string; booked: boolean }>): boolean {
-  return finals.some((i) => i.booked || i.state === "open" || i.state === "scored" || i.state === "skipped");
+/** A final conversation written up (held or skipped) sends the proposal to the anchor circle, which fixes it. */
+export function finalFreezes(f: { sentToCircle: boolean }): boolean {
+  // RULING 7 (the lead, 27 Nov 2026): the proposal is fixed when it is SENT to the anchor circle, never when the final
+  // conversation is only written up, opened or booked.
+  return f.sentToCircle;
 }
 
-/** Whether the applicant may refine their proposal now. */
+/**
+ * Whether the applicant may refine their proposal now: at every stage until it goes to the anchor circle (the lead,
+ * 27 Nov 2026: "they can refine proposal in each stage"): Received, Our review, References and proposal, and the Final
+ * conversation.
+ */
 export function mayRefine(f: { stage: TrackStage; decided: boolean; finalFrozen: boolean }): boolean {
-  return !f.decided && !f.finalFrozen && f.stage === "references";
+  return !f.decided && !f.finalFrozen && (f.stage === "received" || f.stage === "review" || f.stage === "references" || f.stage === "final_interview");
 }
 
 const clean = (v: unknown, max: number): string => (typeof v === "string" ? v.replace(/\r\n/g, "\n").trim() : "").slice(0, max + 1);
@@ -60,7 +67,7 @@ export function readVersions(raw: unknown): ProposalVersion[] {
 export interface RefineView {
   /** The form is open now. */
   open: boolean;
-  /** The final conversation froze the proposal: changes go through the counter-offer now. */
+  /** The proposal went to the anchor circle for review: changes go through the counter-offer now. */
   frozen: boolean;
   why: string;
   aim: string;
@@ -72,6 +79,6 @@ export const REFINE_ERRORS = {
   empty: "Write both: why you, and your aim.",
   too_long: "That is longer than the form allows.",
   unchanged: "Nothing changed.",
-  closed: "Your proposal is fixed now that your final conversation has opened. A change goes through our answer to your proposal.",
+  closed: "Your proposal is fixed now that it's with the circle for review. Any change goes through the circle's answer.",
   not_found: "That proposal is not here.",
 } as const;

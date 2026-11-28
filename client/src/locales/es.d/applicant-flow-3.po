@@ -1,0 +1,350 @@
+# Spanish for the applicant flow, part 3 (the next step on the profile).
+# Folded into ../es.po after the merge (scripts/fold-po-fragments.mjs).
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the applicant's next-step card on their profile, 27 Nov 2026
+msgctxt "profile: the applicant's next-step card, kicker"
+msgid "Your application"
+msgstr "Su postulación"
+
+# needs-native-review: the applicant's next-step card on their profile, 27 Nov 2026
+msgctxt "profile: the applicant's next-step card, link to the status page"
+msgid "Open your application"
+msgstr "Abrir su postulación"
+
+# needs-native-review: the proposal stays open through the final conversation, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and can keep refining their proposal until the final conversation is written up."
+msgstr "La conversación final está abierta. La persona que postula la reserva ahora, y puede seguir mejorando su propuesta hasta que la conversación final quede escrita."
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, kicker"
+msgid "Your first week"
+msgstr "Su primera semana"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, heading"
+msgid "Welcome. Here's how you start"
+msgstr "Bienvenida, bienvenido. Así empieza"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the newcomer's buddy, with their role"
+msgid "Your buddy: {0} ({1})"
+msgstr "Su acompañante: {0} ({1})"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the newcomer's buddy"
+msgid "Your buddy: {0}"
+msgstr "Su acompañante: {0}"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the all-hands in the reader's own zone"
+msgid "All-hands: {0} your time"
+msgstr "Reunión general: {0}, su hora"
+
+# needs-native-review: the newcomer's first week, 27 Nov 2026
+msgctxt "profile: the all-hands video link"
+msgid "Join the video call"
+msgstr "Unirse a la videollamada"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: the adopt act's buddy"
+msgid "Their buddy for the first week"
+msgstr "Su acompañante en la primera semana"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: the default buddy"
+msgid "Whoever holds the welcoming role (the default)"
+msgstr "Quien tenga el rol de bienvenida (por defecto)"
+
+# needs-native-review: the buddy in the adopt act, 27 Nov 2026
+msgctxt "open proposal: what the buddy choice does"
+msgid "Their name and role go in the start letter and on their profile."
+msgstr "Su nombre y su rol van en la carta de inicio y en su perfil."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claimTaken"
+msgid "Somebody else is following this one up."
+msgstr "Otra persona está dando seguimiento a esta."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claim"
+msgid "I'll follow up"
+msgstr "Yo le doy seguimiento"
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: claimed"
+msgid "It's yours. Add your notes and mark it done."
+msgstr "Es suya. Agregue sus notas y márquela como hecha."
+
+# needs-native-review: the team's references page, 27 Nov 2026
+msgctxt "applicant onboarding: referencesPage"
+msgid "Open the references page"
+msgstr "Abrir la página de referencias"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: a voice reflection's player"
+msgid "{role}'s reflection"
+msgstr "Reflexión de {role}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: play a voice reflection"
+msgid "Listen to {role}'s reflection"
+msgstr "Escuchar la reflexión de {role}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: a voice reflection failed"
+msgid "That recording did not open."
+msgstr "Esa grabación no se abrió."
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: the earlier holders' voice reflections, heading"
+msgid "Before your call: listen to {roles}"
+msgstr "Antes de su llamada: escuche a {roles}"
+
+# needs-native-review: the voice reflections between conversations, 27 Nov 2026
+msgctxt "walkthrough: what the reflections are"
+msgid "Their voice reflections from their own conversations. Never shown to the applicant."
+msgstr "Sus reflexiones de voz de sus propias conversaciones. Nunca se muestran a la persona que postula."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: primary.send_to_circle"
+msgid "Send it to the anchor circle"
+msgstr "Enviarla al círculo ancla"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: primary.welcome"
+msgid "Welcome them"
+msgstr "Darle la bienvenida"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: referencesPrivate"
+msgid "Personal details of people who never signed up. Only the people who hold this application's conversations, the people who place roles and each reference's owner read them. No AI reads them. They are deleted with the application."
+msgstr "Datos personales de personas que nunca se registraron. Solo los leen quienes tienen las conversaciones de esta postulación, quienes asignan roles y la persona a cargo de cada referencia. Ninguna IA los lee. Se borran con la postulación."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.ask"
+msgid "Send it to the anchor circle now? The proposal is fixed from that moment."
+msgstr "¿La envía al círculo ancla ahora? La propuesta queda fija desde ese momento."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.yes"
+msgid "Send it"
+msgstr "Enviarla"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.keep"
+msgid "Not yet"
+msgstr "Todavía no"
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.sent"
+msgid "Sent. The anchor circle has it now."
+msgstr "Enviada. El círculo ancla ya la tiene."
+
+# needs-native-review: ruling 7 and the reference rule, 27 Nov 2026
+msgctxt "applicant onboarding: sendToCircle.failed"
+msgid "That did not go through. Try again."
+msgstr "No se envió. Inténtelo de nuevo."
+
+# needs-native-review: ruling 7, 27 Nov 2026
+msgctxt "applicant onboarding: finalAdded"
+msgid "The final conversation is open. The applicant books it now, and keeps refining their proposal until they send it to the anchor circle."
+msgstr "La conversación final está abierta. La persona la reserva ahora, y sigue mejorando su propuesta hasta que la envíe al círculo ancla."
+
+
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.role_short_labels, label"
+msgid "Short role names on an applicant's booking buttons"
+msgstr "Nombres cortos de roles en los botones de reserva de quien postula"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.role_short_labels, description"
+msgid "What an applicant's booking button calls each role, one role per line as role-id = Label (for example ops-role = Ops). The button then reads Book with Ops, and never names a person. A role with no line here reads its full name. Paste each role id from the org chart."
+msgstr "Cómo llama a cada rol el botón de reserva de quien postula, un rol por línea como id-del-rol = Nombre (por ejemplo ops-role = Ops). El botón dice entonces Reserve con Ops, y nunca nombra a una persona. Un rol sin línea aquí muestra su nombre completo. Pegue el id de cada rol desde el organigrama."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.application_close_days, label"
+msgid "Days before an undecided application closes"
+msgstr "Días antes de que se cierre una postulación sin decidir"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.application_close_days, description"
+msgid "An application nobody has decided this many days after it arrived is closed, and the applicant gets one letter saying so (the lead, 27 Nov 2026: yes close in 90 days). When a role it applies for sets the day applications close, the days count from when its review window opens, a week after that day. It is the only step in an application that happens without a person. An application that was adopted, declined or withdrawn is never touched."
+msgstr "Una postulación que nadie decidió tantos días después de llegar se cierra, y quien postula recibe una carta que lo dice (la persona líder, 27 nov 2026: sí, cerrar a los 90 días). Cuando un rol al que postula fija el día en que cierran las postulaciones, los días se cuentan desde que se abre su ventana de revisión, una semana después de ese día. Es el único paso de una postulación que ocurre sin una persona. Una postulación adoptada, rechazada o retirada nunca se toca."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_day, label"
+msgid "The all-hands meeting's day"
+msgstr "El día de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_day, description"
+msgid "The weekday of the village's all-hands meeting, in English (Monday, Tuesday and so on). A newly accepted applicant starts on this day: the first one after their proposal is accepted that falls on or after the next season begins, unless Ops directed a start now. The start letter invites them to the meeting that day."
+msgstr "El día de la semana de la reunión general de la aldea, en inglés (Monday, Tuesday, etc.). Una persona recién aceptada empieza ese día: el primero después de que se acepta su propuesta que caiga en o después del inicio de la próxima temporada, salvo que Ops indicara empezar ya. La carta de inicio la invita a la reunión de ese día."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_time, label"
+msgid "The all-hands meeting's time"
+msgstr "La hora de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_time, description"
+msgid "The meeting's start time, as 24-hour clock time in the zone below (for example 12:00). The start letter says it with the zone."
+msgstr "La hora de inicio de la reunión, en formato de 24 horas en la zona de abajo (por ejemplo 12:00). La carta de inicio la dice con la zona."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_timezone, label"
+msgid "The all-hands meeting's time zone"
+msgstr "La zona horaria de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_timezone, description"
+msgid "The time zone the meeting's time is in, as its standard name (for example America/Costa_Rica). The letter says it as Costa Rica time."
+msgstr "La zona horaria de la hora de la reunión, con su nombre estándar (por ejemplo America/Costa_Rica). La carta la dice como hora de Costa Rica."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_link, label"
+msgid "The all-hands meeting's video link"
+msgstr "El enlace de video de la reunión general"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.all_hands_link, description"
+msgid "The video call a new member joins for the all-hands. Leave it empty and the start letter names the meeting without a link."
+msgstr "La videollamada a la que se une un miembro nuevo para la reunión general. Si se deja vacío, la carta de inicio nombra la reunión sin enlace."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_book_days, label"
+msgid "Days before an applicant is reminded to book a conversation"
+msgstr "Días antes de recordarle a quien postula que reserve una conversación"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_book_days, description"
+msgid "A conversation still open this many days after it opened sends the applicant one gentle reminder to book it, with its link. Once per conversation. A reminder never moves the application."
+msgstr "Una conversación que sigue abierta tantos días después de abrirse le envía a quien postula un recordatorio amable para reservarla, con su enlace. Una vez por conversación. Un recordatorio nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_step_days, label"
+msgid "Days before the team is reminded of a step that waits"
+msgstr "Días antes de recordarle al equipo un paso que espera"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.nudge_step_days, description"
+msgid "A conversation not yet written up, or a reference not yet followed up, this many days on gives the role up next one heads-up on the bell. Once per step. It never moves the application."
+msgstr "Una conversación aún sin escribir, o una referencia aún sin seguimiento, después de tantos días le da al rol que sigue un aviso en la campana. Una vez por paso. Nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.close_warning_days, label"
+msgid "Days after arrival when the team is warned an application will close"
+msgstr "Días tras la llegada en que se avisa al equipo que una postulación se cerrará"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.close_warning_days, description"
+msgid "An application nobody has decided this many days after it arrived warns the people who place roles, once, before it closes on its own at the days set below. With a role's application deadline, the days count from when its review window opens. It never moves the application."
+msgstr "Una postulación que nadie decidió tantos días después de llegar avisa una vez a quienes asignan roles, antes de cerrarse sola en los días fijados abajo. Con una fecha límite de postulación del rol, los días se cuentan desde que se abre su ventana de revisión. Nunca mueve la postulación."
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.reference_questions, label"
+msgid "The standard questions for a reference's follow-up"
+msgstr "Las preguntas estándar para el seguimiento de una referencia"
+
+# needs-native-review: the applicant flow's dials, 27 Nov 2026
+msgctxt "game variable org.reference_questions, description"
+msgid "The questions that open in the notes box of whoever follows a reference up, the same for everyone, one per line. The notes stay with the team; the applicant only ever sees whether each reference was reached."
+msgstr "Las preguntas que se abren en la caja de notas de quien da seguimiento a una referencia, las mismas para todas las personas, una por línea. Las notas se quedan con el equipo; quien postula solo ve si se contactó a cada referencia."
+
+
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the start day step"
+msgid "Your start day: {startDay}"
+msgstr "Su día de inicio: {startDay}"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the all-hands step"
+msgid "Join the all-hands that day"
+msgstr "Únase a la reunión general ese día"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the buddy step"
+msgid "Meet {0}, your buddy"
+msgstr "Conozca a {0}, su acompañante"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a newcomer's first week, the start date"
+msgid "You start {startDay}."
+msgstr "Usted empieza el {startDay}."
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a first-week step, done"
+msgid "Done"
+msgstr "Hecho"
+
+# needs-native-review: QA round 4, 27 Nov 2026
+msgctxt "profile: a first-week step, to do"
+msgid "To do"
+msgstr "Por hacer"
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNow.button"
+msgid "Start now"
+msgstr "Empezar ya"
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNow.ask"
+msgid "Start them the day they are adopted, not on the next season's first all-hands day? Ops decides this."
+msgstr "¿Empieza el día en que se adopta, y no el primer día de reunión general de la próxima temporada? Esto lo decide Ops."
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNow.yes"
+msgid "Start now"
+msgstr "Empezar ya"
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNow.keep"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNow.chosen"
+msgid "Ops chose to start now: their roles start the day they are adopted."
+msgstr "Ops eligió empezar ya: sus roles empiezan el día en que se adopta."
+
+# needs-native-review: ruling 8, Ops only, QA round 5
+msgctxt "applicant onboarding: startNowDone"
+msgid "Start now is already chosen."
+msgstr "Empezar ya ya está elegido."
+
+# needs-native-review: the start rule, 28 Nov 2026
+msgctxt "open proposal decide: adoptedAccountOn"
+msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start on {day}."
+msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan el {day}."
+
+# needs-native-review: the start rule, 28 Nov 2026
+msgctxt "open proposal decide: adoptedAccountNow"
+msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start today, because Ops chose to start now."
+msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan hoy, porque Ops eligió empezar ya."
+
+# needs-native-review: QA round 5
+msgctxt "role progress, a measure"
+msgid "Calls written up (of those booked)"
+msgstr "Llamadas escritas (de las reservadas)"
+
+# needs-native-review: QA round 5
+msgctxt "role measures, holding chain"
+msgid "Seated now (current holders)"
+msgstr "Con rol ahora (quienes lo ocupan)"
+
+# needs-native-review: QA round 5, references are claimed and no longer assigned
+msgctxt "the bell: why a notice of this kind matters, kind application_references_in"
+msgid "An applicant sent their references. Claim the ones you will follow up."
+msgstr "Una persona solicitante envió sus referencias. Tome las que usted va a seguir."
+
+# needs-native-review: QA round 5, references are claimed and no longer assigned
+msgctxt "the bell: several notices of one kind batched into a line, kind application_references_in"
+msgid "{n} applications have references waiting to be claimed."
+msgstr "{n} solicitudes tienen referencias esperando a que alguien las tome."

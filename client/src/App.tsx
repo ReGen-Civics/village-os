@@ -276,6 +276,7 @@ const RequestMembership = lazyPage(() => import("./pages/RequestMembership"));
 const ProposeARole = lazyPage(() => import("./pages/ProposeARole"));
 const ConfirmProposal = lazyPage(() => import("./pages/ProposeARole").then((m) => ({ default: m.ConfirmProposal })));
 const OpenProposal = lazyPage(() => import("./pages/OpenProposal"));
+const ApplicationReferences = lazyPage(() => import("./pages/ApplicationReferences"));
 const ApplicationStatus = lazyPage(() => import("./pages/ApplicationStatus"));
 const YourPath = lazyPage(() => import("./pages/YourPath")); // the whole path, unrolled (the Root)
 const Feed = lazyPage(() => import("./pages/Feed"));
@@ -565,6 +566,7 @@ function Router() {
       <Route path="/propose" component={Propose} />
       {/* One application to hold roles, on terms. Members only, behind terms.read. */}
       <Route path="/role-applications/:id" component={SeatApplication} />
+      <Route path="/open-proposals/:id/references" component={ApplicationReferences} />
       <Route path="/open-proposals/:id" component={OpenProposal} />
       {/* How roles are going folded into Circles & Roles (27 Nov 2026): each circle's page carries its own, the circles page all of them. */}
       <Route path="/role-measures">{() => <Redirect to={`/admin/role-progress#role-measures`} replace />}</Route>

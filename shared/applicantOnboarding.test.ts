@@ -8,7 +8,8 @@ import {
   asksReferences,
   byStageThenDate,
   memberTrackOf,
-  mayAssignOwners,
+  mayClaimReference,
+  mayGoToCircle,
   mayReadReference,
   ONBOARDING_REFERENCES_MAX,
   parseReferenceList,
@@ -20,27 +21,45 @@ import {
 } from "./applicantOnboarding";
 import { mayReadScorecards } from "./applicationReview";
 
-const ref = (over: Partial<Record<string, string>> = {}) => ({ name: "Ana Ref", contact: "ana@example.test", how: "We built a school garden together.", ally: "She runs a seed library.", ...over });
+const ref = (over: Partial<Record<string, string>> = {}) => ({ name: "Ana Ref", email: "ana@example.test", whatsapp: "+506 8888 1234", how: "We built a school garden together.", ally: "She runs a seed library.", ...over });
 
 describe("the reference list", () => {
-  it("takes one to five references and drops wholly blank rows", () => {
-    const out = parseReferenceList([ref(), { name: "", contact: "", how: "", ally: "" }, ref({ name: "Ben", contact: "+506 8888 1234" })]);
+  it("takes one to ten references and drops wholly blank rows", () => {
+    const out = parseReferenceList([ref(), { name: "", email: "", how: "", ally: "" }, ref({ name: "Ben", email: "ben@example.test" })]);
     expect(out.ok && out.value.map((r) => r.name)).toEqual(["Ana Ref", "Ben"]);
+    // The stored contact is labelled lines, the email first.
+    expect(out.ok && out.value[0].contact).toBe("Email: ana@example.test\nWhatsApp: +506 8888 1234");
   });
-  it("leaves the ally line optional and needs a name, a way to reach them and how they know the applicant", () => {
-    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", contact: "ben@example.test" })]).ok).toBe(true);
+  it("leaves the ally line optional and needs a name and how they know the applicant", () => {
+    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", email: "ben@example.test" })]).ok).toBe(true);
     // At least two (the lead, 19 Nov 2026): one alone is refused.
     expect(parseReferenceList([ref()])).toEqual({ ok: false, error: "too_few", row: null });
-    expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0 });
-    expect(parseReferenceList([ref(), ref({ contact: "not a way to reach", name: "C" })])).toEqual({ ok: false, error: "contact", row: 1 });
+    expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0, field: "how" });
+  });
+  it("THE LEAD'S RULE (27 Nov 2026): an email AND one of WhatsApp, a US phone or Signal, each checked", () => {
+    const b = (over: Record<string, string>) => ref({ name: "Ben", email: "ben@example.test", whatsapp: "", ...over });
+    // No email, or a bad one.
+    expect(parseReferenceList([ref(), b({ email: "", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1, field: "email" });
+    expect(parseReferenceList([ref(), b({ email: "not an email", whatsapp: "+506 8888 1234" })])).toEqual({ ok: false, error: "email", row: 1, field: "email" });
+    // An email alone is not enough.
+    expect(parseReferenceList([ref(), b({})])).toEqual({ ok: false, error: "channel", row: 1, field: "whatsapp" });
+    // Each of the three, alone, is enough with the email.
+    expect(parseReferenceList([ref(), b({ whatsapp: "+44 7700 900123" })]).ok).toBe(true);
+    expect(parseReferenceList([ref(), b({ usPhone: "(415) 555-0132" })]).ok).toBe(true);
+    expect(parseReferenceList([ref(), b({ signal: "ben.42" })]).ok).toBe(true);
+    // A number that does not read as its kind is refused.
+    expect(parseReferenceList([ref(), b({ usPhone: "+506 8888 1234" })])).toEqual({ ok: false, error: "contact", row: 1, field: "usPhone" });
+    expect(parseReferenceList([ref(), b({ whatsapp: "12" })])).toEqual({ ok: false, error: "contact", row: 1, field: "whatsapp" });
+    // An older form's single contact reads as the email, and still needs a number.
+    expect(parseReferenceList([ref(), { name: "Old", contact: "old@example.test", how: "Knew me." }])).toEqual({ ok: false, error: "channel", row: 1, field: "whatsapp" });
   });
   it("refuses none, the same reference twice and more than ten", () => {
     expect(parseReferenceList([])).toEqual({ ok: false, error: "none", row: null });
-    expect(parseReferenceList([ref(), ref({ name: "Again", contact: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
-    const six = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.test` }));
-    expect(parseReferenceList(six)).toMatchObject({ ok: false, error: "too_many" });
+    expect(parseReferenceList([ref(), ref({ name: "Again", email: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
+    const many = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, email: `r${i}@example.test` }));
+    expect(parseReferenceList(many)).toMatchObject({ ok: false, error: "too_many" });
     // CONTROL: ten is fine.
-    expect(parseReferenceList(six.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
+    expect(parseReferenceList(many.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
   });
 });
 
@@ -53,23 +72,23 @@ describe("the shortlist answer", () => {
   });
 });
 
-describe("who reads a reference", () => {
-  const nobody = { isApplicant: false, recused: false, isReviewer: false, isFinalCall: false, isOwner: false };
-  it("the reviewers, the final-call role and the reference's owner", () => {
-    expect(mayReadReference({ ...nobody, isReviewer: true })).toBe(true);
-    expect(mayReadReference({ ...nobody, isFinalCall: true })).toBe(true);
-    expect(mayReadReference({ ...nobody, isOwner: true })).toBe(true);
-    // CONTROL: another member reads nothing.
+describe("who reads a reference: 'Interviewers + placers' (the lead, 27 Nov 2026)", () => {
+  const nobody = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
+  it("the conversation roles' holders and the placers, and nobody named an owner (ruling 22 has no exception)", () => {
+    expect(mayReadReference({ ...nobody, isInterviewer: true })).toBe(true);
+    expect(mayReadReference({ ...nobody, isPlacer: true })).toBe(true);
+    // CONTROL: another member, a consent peer among them, reads nothing.
     expect(mayReadReference(nobody)).toBe(false);
   });
   it("never the applicant, never somebody who stepped out, whatever else they hold", () => {
-    expect(mayReadReference({ ...nobody, isReviewer: true, isApplicant: true })).toBe(false);
-    expect(mayReadReference({ ...nobody, isOwner: true, recused: true })).toBe(false);
+    expect(mayReadReference({ ...nobody, isPlacer: true, isApplicant: true })).toBe(false);
+    expect(mayReadReference({ ...nobody, isInterviewer: true, recused: true })).toBe(false);
   });
-  it("owners are picked by the reviewers and the final-call role, never by an owner alone", () => {
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: true, isFinalCall: false })).toBe(true);
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: false, isFinalCall: true })).toBe(true);
-    expect(mayAssignOwners({ isApplicant: false, recused: false, isReviewer: false, isFinalCall: false })).toBe(false);
+  it("only interviewers and placers claim", () => {
+    const f = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
+    expect(mayClaimReference({ ...f, isInterviewer: true })).toBe(true);
+    expect(mayClaimReference({ ...f, isPlacer: true })).toBe(true);
+    expect(mayClaimReference(f)).toBe(false);
   });
 });
 
@@ -114,7 +133,11 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
   });
 
   it("asks for the shortlist inside our review, then the first conversation with its role, before references", () => {
-    expect(trackOf(facts(), roles)).toMatchObject({ now: "review", primary: "shortlist" });
+    // Review-first, invited: the first conversation is open and is part of our review, as the applicant's page says
+    // (QA pass 2: the team was told to shortlist while the applicant was asked to book).
+    expect(trackOf(facts(), roles)).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
+    // The older path (no review first): the shortlist comes first and opens the first conversation.
+    expect(trackOf(facts({ reviewStage: null, interviews: [{ state: "waiting", final: false }, { state: "waiting", final: false }] }), roles)).toMatchObject({ now: "review", primary: "shortlist" });
     // Shortlisted: still our review, until the first conversation (the operations role's) is written up.
     const talking = trackOf(facts({ shortlist: "yes" }), roles);
     expect(talking).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
@@ -145,15 +168,39 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
     expect(trackStates(facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: false }], interviews: [{ state: "scored", final: false }, { state: "open", final: true }] })).now).toBe("final_interview");
     const withFinal = { ...gathered, interviews: [...gathered.interviews, { state: "open", final: true }] };
     expect(trackOf(withFinal, roles).primary).toBe("final_conversation");
-    const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }] };
-    const t = trackOf(held, roles);
-    expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "Lead Steward" });
+    // RULING 7: the final written up is still the Final conversation; the applicant refines, then sends it on.
+    const held = { ...gathered, interviews: [...gathered.interviews, { state: "scored", final: true }], sentToCircle: false };
+    const waiting = trackOf(held, roles);
+    expect(waiting).toMatchObject({ now: "final_interview", primary: "send_to_circle", who: "The applicant" });
+    expect(waiting.next).toContain("Welcome Role or Lead Steward may send it on");
+    expect(waiting.next).not.toMatch(/fixes the proposal|delivers/);
+    // Sent: Agreement, and the anchor circle acts (QA pass 2: the Visionary was named here).
+    const t = trackOf({ ...held, sentToCircle: true }, { ...roles, anchorCircle: "Anchor Circle" });
+    expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "The Anchor Circle" });
     expect(t.next).toMatch(/counter/i);
+    expect(trackOf({ ...held, sentToCircle: true }, roles).who).toBe("The anchor circle");
   });
 
-  it("says the power to place people decides when no final-call role is named", () => {
-    const held = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: true }] });
-    expect(trackOf(held, { ...roles, finalCall: null }).who).toMatch(/power to place people in roles/);
+  it("nothing goes to the circle before the final call when the village names a final-call role (QA round 5)", () => {
+    const talked = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: false }] });
+    expect(mayGoToCircle({ ...talked, finalExpected: true })).toBe(false);
+    // A role with no final call at all: its conversations written up are enough.
+    expect(mayGoToCircle(talked)).toBe(true);
+    expect(mayGoToCircle({ ...talked, finalExpected: true, interviews: [...talked.interviews, { state: "scored", final: true }] })).toBe(true);
+  });
+
+  it("says the power to place people holds the final call when no final-call role is named", () => {
+    const open = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "open", final: true }] });
+    expect(trackOf(open, { ...roles, finalCall: null }).who).toMatch(/power to place people in roles/);
+  });
+
+  it("review-first: the invitation opens the first conversation inside our review, before the shortlist (QA pass 2)", () => {
+    const invited = trackOf(facts({ reviewStage: "invited", firstReplied: true, shortlist: null }), roles);
+    expect(invited).toMatchObject({ now: "review", primary: "conversation", who: "Operations Role" });
+    expect(invited.next).toContain("part of our review");
+    const heard = trackOf(facts({ reviewStage: "invited", firstReplied: true, shortlist: null, interviews: [{ state: "scored", final: false }, { state: "waiting", final: false }] }), roles);
+    expect(heard).toMatchObject({ now: "review", primary: "shortlist" });
+    expect(heard.next).toContain("Shortlisting begins References and proposal");
   });
 
   it("a not shortlisted application stays in our review, skips the rest and declines nobody by itself", () => {
@@ -165,7 +212,8 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
 
   it("adopted reads Start; the stages that never happened read as skipped", () => {
     const t = trackOf(facts({ decided: "adopted", shortlist: "yes" }), roles);
-    expect(t.primary).toBe("none");
+    // Start names the welcoming role, who welcomes them and is their buddy (QA pass 2: "says nobody acts").
+    expect(t).toMatchObject({ primary: "welcome", who: "Welcome Role" });
     expect(t.now).toBe("start");
     expect(stateOf(t)).toMatchObject({ agreement: "done", start: "done", references: "skipped" });
   });

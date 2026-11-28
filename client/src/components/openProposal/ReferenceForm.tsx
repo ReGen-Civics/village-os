@@ -1,8 +1,14 @@
 /**
  * THE APPLICANT'S REFERENCES: people connected with this work, ideally allies or
  * partners of the village. At least two, three preferred, up to ten rows (shared/applyLimits.ts
- * `APPLY_COUNTS.statusReferences`), sent once. The page never shows the details
- * back: the answer is a count.
+ * `APPLY_COUNTS.statusReferences`). The page never shows the details back: the answer is a count.
+ *
+ * HOW WE REACH THEM (the lead, 27 Nov 2026): each reference's email AND at least one of a WhatsApp number, a US phone
+ * number or a Signal number. Checked here first with the server's own rule (shared/applicantOnboarding.ts
+ * `parseReferenceList`), then again by the server.
+ *
+ * EDITING (the lead: "offer them a chance to edit references"): once given, and until anybody reaches out, the form
+ * opens again empty; sending replaces the list. The details are never drawn back onto the page.
  *
  * Drawn on the status page of a shortlisted open proposal (pages/ApplicationStatus.tsx)
  * and on a member's own application for their first long-term role
@@ -13,41 +19,65 @@ import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import type { wordsIn } from "@shared/applicantWords";
 import { APPLY_COUNTS } from "@shared/applyLimits";
-import { ONBOARDING_REFERENCES_MAX, REF_ALLY_MAX, REF_CONTACT_MAX, REF_HOW_MAX, REF_NAME_MAX, type ReferenceError } from "@shared/applicantOnboarding";
+import { ONBOARDING_REFERENCES_MAX, parseReferenceList, REF_ALLY_MAX, REF_CONTACT_MAX, REF_HOW_MAX, REF_NAME_MAX, type ReferenceError, type ReferenceField } from "@shared/applicantOnboarding";
 
-type ReferenceRow = { name: string; contact: string; how: string; ally: string };
-const EMPTY_ROW: ReferenceRow = { name: "", contact: "", how: "", ally: "" };
+type ReferenceRow = { name: string; email: string; whatsapp: string; usPhone: string; signal: string; how: string; ally: string };
+const EMPTY_ROW: ReferenceRow = { name: "", email: "", whatsapp: "", usPhone: "", signal: "", how: "", ally: "" };
 type ReferenceFormWords = ReturnType<typeof wordsIn>["status"]["referenceForm"];
 
-export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: string; words: ReferenceFormWords; onGiven: (n: number) => void; line?: string }) {
+export function ReferenceForm({ postUrl, words, onGiven, line, editing = false }: { postUrl: string; words: ReferenceFormWords; onGiven: (n: number) => void; line?: string; editing?: boolean }) {
   // Three rows to start, the number the village prefers; at least two are asked (the lead, 19 Nov 2026).
   const [rows, setRows] = useState<ReferenceRow[]>(() => Array.from({ length: APPLY_COUNTS.referencesPreferred }, () => ({ ...EMPTY_ROW })));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ text: string; row: number | null } | null>(null);
   const set = (i: number, key: keyof ReferenceRow, value: string) => setRows((cur) => cur.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
+  // Which reference and which field (QA pass 1): "Reference 2, WhatsApp: One of those numbers doesn't look right."
+  const fieldLabel: Record<ReferenceField, string> = { name: words.name, email: words.email, whatsapp: words.whatsapp, usPhone: words.usPhone, signal: words.signal, how: words.how, ally: words.ally };
+  const say = (code: string, row: number | null, field?: string) => {
+    const text = words.errors[code as ReferenceError] ?? words.failed;
+    const label = field && field in fieldLabel ? fieldLabel[field as ReferenceField] : null;
+    const where = row === null ? "" : `${words.row(row + 1)}${label ? `, ${label}` : ""}: `;
+    setError({ text: `${where}${text}`, row });
+  };
   const send = async () => {
-    setBusy(true);
     setError(null);
+    // The server's own rule, here first, so a missing number is said before anything is sent.
+    const checked = parseReferenceList(rows);
+    if (!checked.ok) return say(checked.error, checked.row, checked.field);
+    setBusy(true);
     try {
       const res = await gameFetch(postUrl, { method: "POST", body: JSON.stringify({ references: rows }), cache: "no-store" });
       const data = await res.json().catch(() => null);
       if (res.ok) onGiven(Number(data?.given ?? rows.length));
-      else {
-        const code = String(data?.error ?? "") as ReferenceError;
-        setError({ text: words.errors[code] ?? words.failed, row: typeof data?.row === "number" ? data.row : null });
-      }
+      else say(String(data?.error ?? ""), typeof data?.row === "number" ? data.row : null, typeof data?.field === "string" ? data.field : undefined);
     } catch {
       setError({ text: words.failed, row: null });
     } finally {
       setBusy(false);
     }
   };
+  const field = (i: number, key: keyof ReferenceRow, label: string, opts: { max: number; type?: string; inputMode?: "email" | "tel" | "text" } = { max: REF_CONTACT_MAX }) => (
+    <label className="mt-2 block">
+      <span className={LABEL}>{label}</span>
+      <input
+        className={`mt-1 ${FIELD}`}
+        value={rows[i][key]}
+        maxLength={opts.max}
+        type={opts.type ?? "text"}
+        inputMode={opts.inputMode}
+        autoComplete="off"
+        onChange={(e) => set(i, key, e.target.value)}
+        data-reference-field={key}
+      />
+    </label>
+  );
   return (
-    <section id="reference-form" aria-labelledby="your-references" className={`scroll-mt-24 ${CARD_FEATURED}`} data-reference-form="">
+    <section id="reference-form" aria-labelledby="your-references" className={`scroll-mt-24 ${CARD_FEATURED}`} data-reference-form={editing ? "edit" : ""}>
       <p className={EYEBROW}>{words.step}</p>
       <h2 id="your-references" className={H2}>{words.heading}</h2>
-      <p className="mt-1 text-foreground">{line ?? words.line}</p>
+      <p className="mt-1 text-foreground">{editing ? words.editLine : (line ?? words.line)}</p>
       <p className="mt-1 font-semibold text-foreground" data-reference-how-many="">{words.howMany}</p>
+      <p className="mt-1 text-foreground" data-reference-tell-them="">{words.tellThem}</p>
       <p className={`mt-2 ${HINT}`}>{words.privacy}</p>
       <div className="mt-4 grid gap-3">
         {rows.map((r, i) => (
@@ -61,16 +91,13 @@ export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: stri
                 </button>
               )}
             </div>
-            <label className="mt-2 block">
-              <span className={LABEL}>{words.name}</span>
-              <input className={`mt-1 ${FIELD}`} value={r.name} maxLength={REF_NAME_MAX} autoComplete="off" onChange={(e) => set(i, "name", e.target.value)} />
-            </label>
-            <div className="mt-2">
-              <label className="block">
-                <span className={LABEL}>{words.contact}</span>
-                <input className={`mt-1 ${FIELD}`} value={r.contact} maxLength={REF_CONTACT_MAX} autoComplete="off" onChange={(e) => set(i, "contact", e.target.value)} aria-describedby={`ref-contact-hint-${i}`} />
-              </label>
-              <span id={`ref-contact-hint-${i}`} className={HINT}>{words.contactHint}</span>
+            {field(i, "name", words.name, { max: REF_NAME_MAX })}
+            {field(i, "email", words.email, { max: REF_CONTACT_MAX, type: "email", inputMode: "email" })}
+            <div className="mt-2" role="group" aria-describedby={`ref-channels-hint-${i}`}>
+              <p id={`ref-channels-hint-${i}`} className={HINT}>{words.channelsHint}</p>
+              {field(i, "whatsapp", words.whatsapp, { max: 40, type: "tel", inputMode: "tel" })}
+              {field(i, "usPhone", words.usPhone, { max: 40, type: "tel", inputMode: "tel" })}
+              {field(i, "signal", words.signal, { max: 40 })}
             </div>
             <label className="mt-2 block">
               <span className={LABEL}>{words.how}</span>
@@ -96,7 +123,7 @@ export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: stri
           {words.send}
         </button>
       </div>
-      {error && <p role="alert" className="mt-2 text-sm text-destructive">{error.text}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-destructive" data-reference-error="">{error.text}</p>}
     </section>
   );
 }

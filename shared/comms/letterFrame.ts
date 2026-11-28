@@ -254,13 +254,34 @@ export function bodyFromText(p: LetterPalette, text: string, button?: { label: s
     .split(/\n{2,}/)
     .map((para) => para.replace(/^\n+|\n+$/g, ""))
     .filter((para) => para.trim() !== "");
-  const html = paras.map(
-    (para) =>
-      `<p class="vl-ink" style="margin:0 0 16px 0;font-family:${p.fontBody};font-size:16px;line-height:26px;color:${p.day.ink};">${para
-        .split("\n")
-        .map((line) => linkify(escapeHtml(line), p.day.brand))
-        .join("<br>")}</p>`,
-  );
+  const style = `font-family:${p.fontBody};font-size:16px;line-height:26px;color:${p.day.ink};`;
+  // Lines that start with "- " are a list in the plain text, and a real list here (the lead, 27 Nov 2026: "make these
+  // bullet points when there are multiple steps"). The other lines stay a paragraph.
+  const html = paras.map((para) => {
+    const out: string[] = [];
+    let text: string[] = [];
+    let items: string[] = [];
+    const flushText = () => {
+      if (text.length) out.push(`<p class="vl-ink" style="margin:0 0 16px 0;${style}">${text.map((line) => linkify(escapeHtml(line), p.day.brand)).join("<br>")}</p>`);
+      text = [];
+    };
+    const flushItems = () => {
+      if (items.length) out.push(`<ul class="vl-ink" style="margin:0 0 16px 0;padding-left:22px;${style}">${items.map((line) => `<li style="margin:0 0 6px 0;">${linkify(escapeHtml(line), p.day.brand)}</li>`).join("")}</ul>`);
+      items = [];
+    };
+    for (const line of para.split("\n")) {
+      if (line.startsWith("- ")) {
+        flushText();
+        items.push(line.slice(2));
+      } else {
+        flushItems();
+        text.push(line);
+      }
+    }
+    flushText();
+    flushItems();
+    return out.join("");
+  });
   if (button) {
     const at = paras.findIndex((para) => para.includes(button.url));
     html.splice(at >= 0 ? at + 1 : html.length, 0, buttonHtml(p, button.label, button.url));

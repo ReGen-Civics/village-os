@@ -55,10 +55,13 @@ export function guideItems(criteria: readonly Criterion[], qualities: readonly s
   return items;
 }
 
-/** Who may read and write the guide's notes. */
-export function mayUseGuide(f: { isApplicant: boolean; recused: boolean; isReviewer: boolean; isFinalCall: boolean }): boolean {
+/**
+ * Who may read and write the guide's notes: "Interviewers + placers" (ruling 22, QA round 5), the same people as a
+ * reference's details. A consent peer holding none of the conversation roles reads none of them.
+ */
+export function mayUseGuide(f: { isApplicant: boolean; recused: boolean; isPlacer: boolean; isInterviewer: boolean }): boolean {
   if (f.isApplicant || f.recused) return false;
-  return f.isReviewer || f.isFinalCall;
+  return f.isPlacer || f.isInterviewer;
 }
 
 export type GuideNoteRead = { ok: true; key: string; note: string } | { ok: false; error: string };

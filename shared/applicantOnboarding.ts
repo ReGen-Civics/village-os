@@ -79,7 +79,10 @@ export const FOLLOWUP_NOTE_MAX = 2000;
 /** One reference as the applicant gives it. */
 export interface GivenReference {
   name: string;
-  /** An email address or a phone number. */
+  /**
+   * How to reach them, as the team reads it: their email, then each number given, one per line ("Email: ...",
+   * "WhatsApp: ...", "US phone: ...", "Signal: ..."), built by `contactLines`. Stored in the one contact column.
+   */
   contact: string;
   /** How they know the applicant. */
   how: string;
@@ -97,17 +100,45 @@ export function reachable(contact: string): boolean {
   return PHONE.test(c) && c.replace(/\D/g, "").length >= 6;
 }
 
+/**
+ * HOW WE REACH A REFERENCE (the lead, 27 Nov 2026: "we need 1 of either whatsapp, US phones, or signal numbers to
+ * reach out to references as well as email"). Every reference needs an email AND at least one of these three.
+ */
+export const REFERENCE_CHANNELS = ["whatsapp", "usPhone", "signal"] as const;
+export type ReferenceChannel = (typeof REFERENCE_CHANNELS)[number];
+
+/** A valid email address. */
+export const isReferenceEmail = (v: string): boolean => EMAIL.test(v.trim());
+/** An international phone number, as WhatsApp takes it: 8 to 15 digits, an optional leading +. */
+export const isWhatsApp = (v: string): boolean => PHONE.test(v.trim()) && ((d) => d.length >= 8 && d.length <= 15)(v.replace(/\D/g, ""));
+/** A US phone number: ten digits, with or without a leading +1 or 1. */
+export const isUsPhone = (v: string): boolean => /^[0-9 ().+-]+$/.test(v.trim()) && /^1?[2-9][0-9]{2}[2-9][0-9]{6}$/.test(v.replace(/\D/g, ""));
+/** A Signal number (a phone number) or a Signal username (name.01). */
+export const isSignal = (v: string): boolean => isWhatsApp(v) || /^@?[a-z][a-z0-9_]{2,31}\.[0-9]{2,10}$/i.test(v.trim());
+
+const CHANNEL_OK: Record<ReferenceChannel, (v: string) => boolean> = { whatsapp: isWhatsApp, usPhone: isUsPhone, signal: isSignal };
+/** The label each way of reaching them carries in the stored contact, in the team's language. */
+export const CHANNEL_LABELS: Record<"email" | ReferenceChannel, string> = { email: "Email", whatsapp: "WhatsApp", usPhone: "US phone", signal: "Signal" };
+
+/** The stored contact: one labelled line each, the email first. */
+export function contactLines(c: { email: string } & Partial<Record<ReferenceChannel, string>>): string {
+  return [`${CHANNEL_LABELS.email}: ${c.email}`, ...REFERENCE_CHANNELS.filter((k) => c[k]).map((k) => `${CHANNEL_LABELS[k]}: ${c[k]}`)].join("\n");
+}
+
 const clean = (v: unknown): string => String(typeof v === "string" ? v : "").replace(/\s+/g, " ").trim();
 
 /** The reasons a list is refused, in the applicant's language (shared/applicantWords.ts `status.referenceForm.errors`). */
-export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
+export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "email" | "channel" | "contact" | "twice" | "too_long";
 
-export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null };
+/** The field a refusal is about, so the form names it (QA pass 1: a refusal named neither the reference nor the field). */
+export type ReferenceField = "name" | "how" | "email" | "whatsapp" | "usPhone" | "signal" | "ally";
+export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null; field?: ReferenceField };
 
 /**
- * The list as the form sent it. A wholly blank row is dropped; a row with some
- * of it needs a name, a way to reach them and how they know the applicant.
- * The first problem is answered, with the row it is on.
+ * The list as the form sent it. A wholly blank row is dropped; a row with some of it needs a name, how they know the
+ * applicant, their email AND at least one of a WhatsApp number, a US phone number or a Signal number (the lead,
+ * 27 Nov 2026). The first problem is answered, with the row it is on. An older form that sends one `contact` reads it
+ * as the email when it is one, so it still meets the same rule.
  */
 export function parseReferenceList(raw: unknown): ReferenceParse {
   const rows = Array.isArray(raw) ? raw : [];
@@ -116,14 +147,22 @@ export function parseReferenceList(raw: unknown): ReferenceParse {
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i] as Record<string, unknown> | null;
     const name = clean(r?.name);
-    const contact = clean(r?.contact);
+    const legacy = clean(r?.contact);
+    const email = clean(r?.email) || (isReferenceEmail(legacy) ? legacy : "");
+    const channels = { whatsapp: clean(r?.whatsapp), usPhone: clean(r?.usPhone), signal: clean(r?.signal) };
     const how = clean(r?.how);
     const ally = clean(r?.ally);
-    if (!name && !contact && !how && !ally) continue;
-    if (name.length > REF_NAME_MAX || contact.length > REF_CONTACT_MAX || how.length > REF_HOW_MAX || ally.length > REF_ALLY_MAX) return { ok: false, error: "too_long", row: i };
-    if (!name || !contact || !how) return { ok: false, error: "needs_all", row: i };
-    if (!reachable(contact)) return { ok: false, error: "contact", row: i };
-    const key = contact.toLowerCase().replace(/[^a-z0-9@+.]/g, "");
+    if (!name && !email && !legacy && !channels.whatsapp && !channels.usPhone && !channels.signal && !how && !ally) continue;
+    const contact = contactLines({ email, ...channels });
+    const long: ReferenceField | null = name.length > REF_NAME_MAX ? "name" : how.length > REF_HOW_MAX ? "how" : ally.length > REF_ALLY_MAX ? "ally" : contact.length > REF_CONTACT_MAX ? "email" : null;
+    if (long) return { ok: false, error: "too_long", row: i, field: long };
+    if (!name || !how) return { ok: false, error: "needs_all", row: i, field: !name ? "name" : "how" };
+    if (!email || !isReferenceEmail(email)) return { ok: false, error: "email", row: i, field: "email" };
+    const given = REFERENCE_CHANNELS.filter((k) => channels[k]);
+    if (!given.length) return { ok: false, error: "channel", row: i, field: "whatsapp" };
+    const bad = given.find((k) => !CHANNEL_OK[k](channels[k]));
+    if (bad) return { ok: false, error: "contact", row: i, field: bad };
+    const key = email.toLowerCase();
     if (seen.has(key)) return { ok: false, error: "twice", row: i };
     seen.add(key);
     out.push({ name, contact, how, ally });
@@ -151,29 +190,30 @@ export interface ReferenceReader {
   isApplicant: boolean;
   /** The reader stepped out of this application. */
   recused: boolean;
-  /** The reader decides this application: a live holder of the power to place people in roles, or a circle holder asked to consent. */
-  isReviewer: boolean;
-  /** The reader holds the role that makes the final call. */
-  isFinalCall: boolean;
-  /** The reader is this reference's follow-up owner: the member named, or a holder of the role named when no member is. */
-  isOwner: boolean;
+  /** The reader holds the power to place people in roles. */
+  isPlacer: boolean;
+  /** The reader holds a conversation role of this application: one in its conversations list, or the final-call role. */
+  isInterviewer: boolean;
 }
 
 /**
  * A REFERENCE'S CONTACT DETAILS are personal data of somebody who never signed
- * up. Read by the people who review the application, the role that makes the
- * final call, and the reference's own follow-up owner. Never the applicant,
+ * up. "Interviewers + placers" (the lead, 27 Nov 2026; ruling 22 has no
+ * exception, QA round 5): read, with their notes and claims, only by the
+ * holders of this application's conversation roles (its conversations list and
+ * the final-call role: Ops, Community, Visionary) and the holders of the power
+ * to place people in roles. Nobody is named an owner. A member of the consent
+ * circle reads none of it unless they hold one of those. Never the applicant,
  * never anyone who stepped out, never another member, never an AI.
  */
 export function mayReadReference(f: ReferenceReader): boolean {
   if (f.isApplicant || f.recused) return false;
-  return f.isReviewer || f.isFinalCall || f.isOwner;
+  return f.isPlacer || f.isInterviewer;
 }
 
-/** Who may pick the follow-up owners: the reviewers and the role that makes the final call. */
-export function mayAssignOwners(f: Pick<ReferenceReader, "isApplicant" | "recused" | "isReviewer" | "isFinalCall">): boolean {
-  if (f.isApplicant || f.recused) return false;
-  return f.isReviewer || f.isFinalCall;
+/** Who may claim a reference ("I'll follow up"): the same people. */
+export function mayClaimReference(f: ReferenceReader): boolean {
+  return mayReadReference(f);
 }
 
 // ── The stage track ─────────────────────────────────────────────────────────
@@ -206,7 +246,7 @@ export const TRACK_WORDS: Record<TrackStage, string> = {
 };
 
 /** The one obvious act at a stage. `none` when the stage waits on somebody outside the team, or nothing is left. */
-export const PRIMARY_ACTIONS = ["review", "shortlist", "conversation", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "decide", "none"] as const;
+export const PRIMARY_ACTIONS = ["review", "shortlist", "conversation", "ask_references", "wait_applicant", "follow_up", "add_final", "final_conversation", "send_to_circle", "decide", "welcome", "none"] as const;
 export type PrimaryAction = (typeof PRIMARY_ACTIONS)[number];
 
 export interface TrackFacts {
@@ -219,8 +259,50 @@ export interface TrackFacts {
   refsGiven: boolean;
   /** Each reference's follow-up: written up or still open. */
   references: ReadonlyArray<{ followedUp: boolean }>;
-  /** The application's conversations, in order, with the final one marked, and the role holding each when known. */
-  interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null }>;
+  /** The application's conversations, in order, with the final one marked, the role holding each when known, and whether its call is booked. */
+  interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null; booked?: boolean }>;
+  /**
+   * The proposal was sent to the anchor circle (ruling 7, the lead, 27 Nov 2026): Agreement begins and the proposal is
+   * fixed. Writing up the final conversation alone does neither. Left out, a written-up final counts as sent: the rule
+   * before ruling 7, kept for a caller that does not say (`sentToCircleOf` is what the server passes).
+   */
+  sentToCircle?: boolean;
+  /**
+   * The village names a role for the final call, so a final conversation is still to come when the application has
+   * none yet: nothing goes to the anchor circle before it is held (QA round 5: "written up" was said, and the send
+   * offered, after the Community write-up).
+   */
+  finalExpected?: boolean;
+}
+
+/**
+ * Whether the proposal went to the anchor circle: the step `to_circle`, or, for an application already in flight when
+ * ruling 7 landed, a consent round that the last write-up opened (stamped with or after `scores_in`). A village that
+ * asks the circle at confirm has its round open from the start, and ruling 7 still holds there: its proposal goes
+ * on only when it is sent.
+ */
+export function sentToCircleOf(steps: ReadonlyArray<{ kind: string; at: Date | number }>, interviews: ReadonlyArray<{ state: string; final: boolean }>): boolean {
+  if (steps.some((s) => s.kind === "to_circle")) return true;
+  const ms = (v: Date | number) => (typeof v === "number" ? v : v.getTime());
+  const scoresIn = steps.find((s) => s.kind === "scores_in");
+  const consent = steps.find((s) => s.kind === "consent");
+  // In flight: the round the final write-up opened. A round the older code opened early (after the Community
+  // write-up, before any final: QA pass 1) is not a send, and the applicant still sends it on.
+  const finals = interviews.filter((i) => i.final);
+  return !!scoresIn && !!consent && ms(consent.at) >= ms(scoresIn.at) && finals.length > 0 && finals.every((i) => done(i.state));
+}
+
+/**
+ * Whether the proposal may go to the anchor circle now: undecided, not sent, and the final conversation written up
+ * (a role with no final conversation at all: every conversation written up after a shortlist yes).
+ */
+export function mayGoToCircle(f: TrackFacts): boolean {
+  if (f.decided || (f.sentToCircle ?? false)) return false;
+  const finals = f.interviews.filter((i) => i.final);
+  if (finals.length) return finals.every((i) => done(i.state));
+  if (f.finalExpected) return false;
+  const talks = f.interviews.filter((i) => !i.final);
+  return f.shortlist === "yes" && talks.length > 0 && talks.every((i) => done(i.state));
 }
 
 export interface TrackRoles {
@@ -230,6 +312,8 @@ export interface TrackRoles {
   followup: string | null;
   /** The role that makes the final call, by name, or null. */
   finalCall: string | null;
+  /** The anchor circle, by its own name, which reviews the proposal at Agreement; null names it "the anchor circle". */
+  anchorCircle?: string | null;
 }
 
 export interface Track {
@@ -265,13 +349,17 @@ export function trackStates(f: TrackFacts): { state: Record<TrackStage, TrackSta
   const movedToFinal = finals.some((i) => i.state !== "waiting");
   /** Everything References and proposal asks is in: the moment to move on, never a move by itself. */
   const readyForFinal = reviewDone && talksDone && followedUp;
+  // RULING 7 (the lead, 27 Nov 2026): writing up the final conversation neither fixes the proposal nor moves it to
+  // Agreement. The applicant refines it, then sends it to the anchor circle (or Ops or the Visionary does): that act
+  // ends the Final conversation and begins Agreement.
+  const sent = f.sentToCircle ?? finalDone;
 
   const state: Record<TrackStage, TrackState> = {
     received: "done",
-    review: reviewDone || movedToFinal ? "done" : "now",
-    references: no ? "skipped" : movedToFinal ? "done" : reviewDone ? "now" : "later",
-    final_interview: no ? "skipped" : finalDone ? "done" : movedToFinal ? "now" : "later",
-    agreement: no ? "skipped" : f.decided === "adopted" ? "done" : finalDone ? "now" : "later",
+    review: reviewDone || movedToFinal || sent ? "done" : "now",
+    references: no ? "skipped" : movedToFinal || sent ? "done" : reviewDone ? "now" : "later",
+    final_interview: no ? "skipped" : sent ? (finals.length ? "done" : "skipped") : movedToFinal ? "now" : "later",
+    agreement: no ? "skipped" : f.decided === "adopted" ? "done" : sent ? "now" : "later",
     start: f.decided === "adopted" ? "done" : "later",
   };
   if (f.decided) {
@@ -309,7 +397,11 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
   const talks = f.interviews.filter((i) => !i.final);
   const finals = f.interviews.filter((i) => i.final);
   const no = f.shortlist === "no" || f.reviewStage === "not_invited";
+  const anchor = roles.anchorCircle ? `The ${roles.anchorCircle}` : "The anchor circle";
 
+  if (f.decided === "adopted")
+    // Start (QA pass 2: "says nobody acts"): the welcoming role welcomes them and is their buddy unless another was picked.
+    return { stages, now, who: roles.welcome ?? PLACING_POWER_WORDS, next: "Welcome them on their start day and be their buddy for the first week, unless the adoption named another buddy. Their first-week steps are on their profile.", primary: "welcome" };
   if (f.decided) return { stages, now, who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
   switch (now) {
     case "review":
@@ -317,17 +409,34 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
       if (f.reviewStage === "review")
         return { stages, now, who: PLACING_POWER_WORDS, next: "Read the application, then invite the applicant to the conversations or send the not-invited letter.", primary: "review" };
       if (f.reviewStage === null && !f.firstReplied) return { stages, now, who: roles.welcome ?? PLACING_POWER_WORDS, next: "Send the applicant a first reply.", primary: "review" };
-      if (f.shortlist === null) return { stages, now, who: PLACING_POWER_WORDS, next: "Shortlist this application, or say it is not shortlisted. Shortlisting opens the first conversation to book.", primary: "shortlist" };
+      // REVIEW-FIRST IN STEP WITH THE SIX STAGES (QA pass 2): the invitation opened the first conversation, which is
+      // part of Our review, exactly as the applicant's page says. It is held first, then the shortlist answers.
+      if (f.reviewStage === "invited" && f.shortlist === null && talks[0] && talks[0].state === "open")
+        return {
+          stages,
+          now,
+          who: talks[0].role ? `${talks[0].role}` : PLACING_POWER_WORDS,
+          next: talks[0]?.booked ? "The first conversation is booked. Hold it, then write the notes and the scorecard." : "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
+          primary: "conversation",
+        };
+      if (f.shortlist === null)
+        return {
+          stages,
+          now,
+          who: PLACING_POWER_WORDS,
+          next: f.reviewStage === "invited" ? "Shortlist this application, or say it is not shortlisted. Shortlisting begins References and proposal." : "Shortlist this application, or say it is not shortlisted. Shortlisting opens the first conversation to book.",
+          primary: "shortlist",
+        };
       return {
         stages,
         now,
         who: talks[0]?.role ? `${talks[0].role}` : PLACING_POWER_WORDS,
-        next: "The applicant books the first conversation. Hold it, then write the notes and the scorecard.",
+        next: talks[0]?.booked ? "The first conversation is booked. Hold it, then write the notes and the scorecard." : "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
         primary: "conversation",
       };
     case "references":
       if (readyForFinalOf(f))
-        return { stages, now, who: deciders, next: "The references are followed up and the conversations written up. When the proposal is solid, move the application to the final conversation. That fixes the proposal.", primary: "add_final" };
+        return { stages, now, who: deciders, next: "The references are followed up and the conversations written up. When the applicant is ready, move the application to the final conversation. They keep refining their proposal.", primary: "add_final" };
       if (!f.refsAsked) return { stages, now, who: PLACING_POWER_WORDS, next: "Ask the applicant for references. The letter goes in their language. They refine their proposal and book the next conversation meanwhile.", primary: "ask_references" };
       if (!f.refsGiven) return { stages, now, who: "The applicant", next: "The applicant adds their references, refines their proposal and books the next conversation, from their status page.", primary: "wait_applicant" };
       return {
@@ -338,14 +447,23 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         primary: "follow_up",
       };
     case "final_interview":
-      return { stages, now, who: deciders, next: "Hold the final conversation, where the applicant delivers their proposal, then write the notes and the scorecard.", primary: "final_conversation" };
+      if (mayGoToCircle(f))
+        return {
+          stages,
+          now,
+          who: "The applicant",
+          next: `The final conversation is written up. The applicant refines their proposal, then sends it to ${anchor.replace(/^The /, "the ")}. ${roles.welcome ?? "Ops"} or ${deciders} may send it on from here. It is fixed from that moment.`,
+          primary: "send_to_circle",
+        };
+      return { stages, now, who: deciders, next: "Hold the final conversation, a chance for the applicant to connect with the source of this village, then write the notes and the scorecard. The applicant keeps refining their proposal.", primary: "final_conversation" };
     case "agreement":
     default:
+      // The anchor circle reviews the proposal (QA pass 2: the Visionary was named here).
       return {
         stages,
         now: "agreement",
-        who: deciders,
-        next: "Accept the proposal as it is, or counter it. Counter until both sides agree, then adopt with the existing doors.",
+        who: anchor,
+        next: `${anchor} accepts the proposal as it is, or counters it. Counter until both sides agree, then adopt it. A placer presses accept or counter on the circle's behalf.`,
         primary: "decide",
       };
   }
@@ -414,7 +532,9 @@ export const ONBOARDING_WORDS = {
     follow_up: "Go to the follow-ups",
     add_final: "Move to the final conversation",
     final_conversation: "Go to the final conversation",
+    send_to_circle: "Send it to the anchor circle",
     decide: "Go to the decision",
+    welcome: "Welcome them",
     none: "Nothing to do",
   } as Record<PrimaryAction, string>,
   notShortlist: "Not shortlisted",
@@ -426,7 +546,22 @@ export const ONBOARDING_WORDS = {
   referencesKicker: "Who vouches for them",
   referencesShort: "Private to the team, and deleted with the application.",
   whoReads: "Who reads these",
-  referencesPrivate: "Personal details of people who never signed up. Only the people who review this application, the role that makes the final call and each reference's owner read them. No AI reads them. They are deleted with the application.",
+  referencesPrivate: "Personal details of people who never signed up. Only the people who hold this application's conversations, the people who place roles and each reference's owner read them. No AI reads them. They are deleted with the application.",
+  sendToCircle: {
+    ask: "Send it to the anchor circle now? The proposal is fixed from that moment.",
+    yes: "Send it",
+    keep: "Not yet",
+    sent: "Sent. The anchor circle has it now.",
+    failed: "That did not go through. Try again.",
+  },
+  startNow: {
+    button: "Start now",
+    ask: "Start them the day they are adopted, not on the next season's first all-hands day? Ops decides this.",
+    yes: "Start now",
+    keep: "Not now",
+    chosen: "Ops chose to start now: their roles start the day they are adopted.",
+  },
+  startNowDone: "Start now is already chosen.",
   referencesAsked: "References were asked for. The applicant adds them from their status page.",
   referencesAskedNow: "Asked. The letter went to the applicant in their language.",
   referencesAskedAlready: "References were already asked for.",
@@ -447,6 +582,10 @@ export const ONBOARDING_WORDS = {
   followedUp: "Followed up",
   notFollowedUp: "Not followed up yet",
   notYours: "Only this reference's follow-up owner writes its notes.",
+  claimTaken: "Somebody else is following this one up.",
+  claim: "I'll follow up",
+  claimed: "It's yours. Add your notes and mark it done.",
+  referencesPage: "Open the references page",
   howKnown: "How they know the applicant",
   ally: "Why they might be an ally or partner",
   contact: "How to reach them",
@@ -458,7 +597,7 @@ export const ONBOARDING_WORDS = {
   gatheredIntro: (role: string) => `Everything ${role} reads before the final conversation and the decision: each reference's follow-up notes and each conversation's scorecard. Nothing is totalled or ranked.`,
   gatheredHidden: "This view is for the role that makes the final call and the people who decide.",
   scorecardsHidden: "Scorecards open to you once you have added your own.",
-  finalAdded: "The final conversation is open. The applicant books it now, and their proposal is fixed.",
+  finalAdded: "The final conversation is open. The applicant books it now, and keeps refining their proposal until they send it to the anchor circle.",
   finalExists: "The final conversation is already open or done.",
   finalTalksFirst: "Write up the conversations before it first. Then move the application to the final conversation.",
   finalAtReferences: "The final conversation comes once References and proposal is done: the application shortlisted, its conversations written up, and each reference given and followed up.",
@@ -474,7 +613,7 @@ export const ONBOARDING_WORDS = {
 
 /** The notices this stage sends. Bell only; none carries a name, a contact or a note. */
 export const ONBOARDING_NOTICES = {
-  referencesIn: (roles: readonly string[]) => `References arrived for an application for ${roles.join(", ") || "a role"}. Pick who follows up with each.`,
+  referencesIn: (roles: readonly string[]) => `References arrived for an application for ${roles.join(", ") || "a role"}. Claim the ones you will follow up.`,
   ownerTitle: (roles: readonly string[]) => `You follow up with a reference for an application for ${roles.join(", ") || "a role"}`,
   ownerBody: "Open the application to read how to reach them, then write your follow-up notes on the reference.",
   /** To the member, on their own application for a first long-term role. No name or contact rides on it. */

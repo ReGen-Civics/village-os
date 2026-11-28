@@ -253,7 +253,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
   };
   const A = { choice: "accept", note: "" };
   const save = (id: string, body: unknown, as: string | null = FOUNDER.id) => call("POST", `/api/governance/open-proposals/${id}/terms`, body, as);
-  const termsMails = () => state.sent.filter((m) => m.origin === "open_proposal.update" && m.subject === "The terms for your proposal changed");
+  const termsMails = () => state.sent.filter((m) => m.origin === "open_proposal.update" && m.subject === "We've suggested some changes");
   const bodyOf = async (id: string) => {
     const [row] = await q("SELECT body_json FROM open_role_proposals WHERE id = ?", [id]);
     return typeof row.body_json === "string" ? JSON.parse(row.body_json) : row.body_json;

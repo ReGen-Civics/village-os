@@ -155,7 +155,7 @@ import { readTexts } from "../repos/alignments";
 import { asksFor, proposalsForApplications, setDecidedWords, type StoredAsk, type StoredProposal } from "../repos/roleProposals";
 import { changesRoles } from "../../shared/roleProposals";
 import { CONSENT_WORDS, consentState } from "../../shared/roleProposalConsent";
-import { applyProposalChanges, askRolesFor, consentAsksWaitingOn, consentView, decisionFor, type AskRoles } from "../lib/roleProposals";
+import { applyProposalChanges, askRolesFor, consentAsksWaitingOn, consentView, readableConsent, decisionFor, type AskRoles } from "../lib/roleProposals";
 import { revertDraft } from "../lib/orgDrafts";
 import { groupApplications, groupingContext, PAST_SEATING_WORDS } from "../../shared/applicationGroups";
 import { registerJob } from "../lib/scheduler";
@@ -456,7 +456,7 @@ export function register(app: Express, deps: Deps): void {
       }),
       // The role proposal it came from: whether it changes roles, where the circle's consent stands, and the decision in words.
       proposal: proposal
-        ? { id: proposal.id, changesRoles: changes, consent: answersCloseWith(consentView(asks, new Date(), tz, viewerId, askRoles), awaiting), decided: proposal.decidedWords }
+        ? { id: proposal.id, changesRoles: changes, consent: answersCloseWith(readableConsent(consentView(asks, new Date(), tz, viewerId, askRoles), asks, viewerId, askRoles, isCandidate), awaiting), decided: proposal.decidedWords }
         : null,
       note: a.note,
       // The goals the member listed, or the older words as one goal; `deliverables` is what is left beside them (joining lane PR 1).

@@ -307,6 +307,73 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     expect(await notesOf(id)).toEqual([]);
   });
 
+  it("A TEAM NUDGE NEVER REACHES THE APPLICANT (QA pass 3), even when they hold the role up next; its other holders hear it", async () => {
+    const { nudgeTick } = await import("../lib/applicantNudges");
+    state.notices.length = 0;
+    const id = await confirmed(APPLICANT_HOLDER.email);
+    // At confirm, the first conversation's "your turn" reaches its other holder, never the applicant (QA round 5).
+    expect(state.notices.filter((n) => n.type === "application_interview_turn").map((n) => n.userId)).toContain(IA.id);
+    expect(state.notices.filter((n) => n.userId === APPLICANT_HOLDER.id && n.type !== "applicant_update").map((n) => n.type)).toEqual([]);
+    const [first] = await q("SELECT id FROM application_interviews WHERE application_ref = ? ORDER BY position", [id]);
+    await q("UPDATE application_interviews SET state = 'open', opened_at = ? WHERE id = ?", [new Date(Date.now() - 4 * 86_400_000), first.id]);
+    try {
+      state.notices.length = 0;
+      const deps: any = { getPool: () => pool, notify: async (n: any) => { state.notices.push(n); return { fresh: true }; }, notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id, APPLICANT_HOLDER.id], now: () => new Date(), members: usersRepo(pool) };
+      await nudgeTick(deps);
+      const nudged = state.notices.filter((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`)).map((n) => n.userId);
+      expect(nudged).toContain(IA.id);
+      expect(nudged).not.toContain(APPLICANT_HOLDER.id);
+      expect(state.notices.filter((n) => n.userId === APPLICANT_HOLDER.id)).toEqual([]);
+    } finally {
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE id = ?", [id]);
+    }
+  });
+
+  it("VOICE REFLECTIONS (the lead, 27 Nov 2026): a later holder hears an earlier holder's recording; never the applicant, never earlier hearing later", async () => {
+    await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }, { roleId: "cn-role-data", minutes: 30, final: false }]), gate]);
+    try {
+      const id = await confirmed(APPLICANT_HOLDER.email);
+      const [first, second] = (await q("SELECT id FROM application_interviews WHERE application_ref = ? ORDER BY position", [id])).map((r: any) => Number(r.id));
+      // The Ops holder records a reflection, and writes a text note that stays with Ops's own readers.
+      expect((await sendFile(`${app(id)}/interviews/${first}/notes`, "recording", "ops-reflection.mp3", "AUDIO-FROM-OPS", IA.id)).status).toBe(200);
+      expect((await call("POST", `${app(id)}/interviews/${first}/notes`, { body: "TEXT-ONLY-FOR-OPS-READERS" }, IA.id)).status).toBe(200);
+      // The later holder (Data, the second conversation) hears it before their call.
+      const w = await call("GET", `${app(id)}/walkthrough`, undefined, IB.id);
+      expect(w.status, w.text).toBe(200);
+      expect(w.body.walkthrough.reflections.map((r: any) => r.role)).toEqual(["Operations Role"]);
+      const href = w.body.walkthrough.reflections[0].notes[0].fileHref as string;
+      const heard = await call("GET", href, undefined, IB.id);
+      expect([heard.status, heard.text]).toEqual([200, "AUDIO-FROM-OPS"]);
+      expect(w.text).not.toContain("TEXT-ONLY-FOR-OPS-READERS");
+      // A conversation not yet opened takes no note (QA round 5); once it opens, the later holder records too, and
+      // the earlier holder, without the power, does not hear it.
+      expect((await sendFile(`${app(id)}/interviews/${second}/notes`, "recording", "too-early.mp3", "EARLY", IB.id)).status).toBe(409);
+      await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ?", [second]);
+      const later = await sendFile(`${app(id)}/interviews/${second}/notes`, "recording", "data-reflection.mp3", "AUDIO-FROM-DATA", IB.id);
+      expect(later.status).toBe(200);
+      const [dataNote] = await q("SELECT id FROM application_conversation_notes WHERE application_ref = ? AND interview_id = ?", [id, second]);
+      expect((await call("GET", `${app(id)}/conversation-notes/${dataNote.id}/file`, undefined, IA.id)).status).toBe(404);
+      expect((await call("GET", `${app(id)}/walkthrough`, undefined, IA.id)).body.walkthrough.reflections ?? []).toEqual([]);
+      // The power to place roles hears both.
+      expect((await call("GET", `${app(id)}/conversation-notes/${dataNote.id}/file`, undefined, FOUNDER.id)).status).toBe(200);
+      // The applicant, who even holds the first conversation's role, reaches none of it.
+      expect((await call("GET", `${app(id)}/walkthrough`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+      expect((await call("GET", href, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+      expect((await call("GET", `${app(id)}/conversation-notes/${dataNote.id}/file`, undefined, APPLICANT_HOLDER.id)).status).toBe(404);
+      // Nor set a booked date from the team's side ("I've booked it"): the stranger's 404.
+      expect((await call("POST", `${app(id)}/interviews/${first}/booked`, { at: new Date(Date.now() + 86_400_000).toISOString() }, APPLICANT_HOLDER.id)).status).toBe(404);
+      const own = await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id);
+      // A decided application takes no new note (QA round 5).
+      await q("INSERT IGNORE INTO application_steps (application_ref, kind, subject, stamped_at, detail_json) VALUES (?, 'decided', '', NOW(3), ?)", [id, JSON.stringify({ how: "declined" })]);
+      expect((await call("POST", `${app(id)}/interviews/${first}/notes`, { body: "After the decision." }, IA.id)).status).toBe(409);
+      for (const leak of ["AUDIO-FROM", "reflection.mp3", "conversation-notes"]) expect(own.text).not.toContain(leak);
+    } finally {
+      await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
+      // The address applies again in the next case: this one is closed first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', email_key = NULL WHERE email = ?", [APPLICANT_HOLDER.email]);
+    }
+  });
+
   it("a signed-in applicant who holds the conversation's own role still reads and writes nothing, on any route", async () => {
     const id = await confirmed(APPLICANT_HOLDER.email);
     const iv = await interviewOf(id);
@@ -332,6 +399,8 @@ describe.skipIf(!configured)("conversation notes, on a real schema", () => {
     const booking = (await call("GET", `${app(id)}/status`, undefined, APPLICANT_HOLDER.id)).body.status.bookNow;
     expect(booking, "the open conversation offers its booking").toBeTruthy();
     expect(String(booking.label ?? "")).not.toContain(APPLICANT_HOLDER.name.split(" ")[0]);
-    expect(String(booking.label ?? "")).toContain(IA.name.split(" ")[0]);
+    // By the role only since the lead's answer (27 Nov 2026): no holder is named at all.
+    expect(String(booking.label ?? "")).not.toContain(IA.name.split(" ")[0]);
+    expect(booking.label).toBe("Operations Role");
   });
 });

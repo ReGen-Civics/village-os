@@ -203,8 +203,8 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     if (!Number(asked.n)) expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
     const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`, {
       references: [
-        { name: "Ana Reference", contact: "ana.reference@example.test", how: "We kept the books of a farm together.", ally: "" },
-        { name: "Ben Reference", contact: "ben.reference@example.test", how: "He hired me for two harvests.", ally: "" },
+        { name: "Ana Reference", email: "ana.reference@example.test", whatsapp: "+506 8888 1234", how: "We kept the books of a farm together.", ally: "" },
+        { name: "Ben Reference", email: "ben.reference@example.test", whatsapp: "+506 8888 1234", how: "He hired me for two harvests.", ally: "" },
       ],
     });
     expect(given.status, given.text).toBe(200);
@@ -216,22 +216,24 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     const s = await status(id);
     expect(s.sixStages.stages.map((x: any) => x.key)).toEqual(["received", "review", "references", "final_interview", "agreement", "start"]);
     expect(s.sixStages.now).toBe("review");
-    expect(s.sixStages.refine.open).toBe(false);
+    // Refining is open from the start (the lead, 27 Nov 2026: "they can refine proposal in each stage").
+    expect(s.sixStages.refine.open).toBe(true);
     await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id);
     // Shortlisted, the first conversation not yet written up: still our review.
     expect(await nowOf(id)).toBe("review");
     await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [await interviewOf(id)]);
     expect(await nowOf(id)).toBe("references");
     // Stage keys and states, the shortlist flag and the next ROLE (QA round 2): no note, score, reference or person rides on it.
-    expect(Object.keys(s.sixStages).sort()).toEqual(["next", "now", "refine", "shortlisted", "stages"]);
+    expect(Object.keys(s.sixStages).sort()).toEqual(["anchorCircle", "next", "now", "refine", "shortlisted", "stages", "toCircle"]);
     expect(s.sixStages.shortlisted).toBe(false);
     expect(s.sixStages.next).toBeNull();
   });
 
-  it("refining is refused before References and proposal, saves there with the earlier version kept, and the team reads what changed", async () => {
+  it("refining saves at every stage before Agreement, with the earlier version kept, and the team reads what changed", async () => {
+    // From Received on (the lead, 27 Nov 2026: "they can refine proposal in each stage").
     const early = await confirmed("flow-early@example.test");
     const before = await refine(early, { why: "New why.", aim: "New aim." });
-    expect([before.status, before.body.error]).toEqual([409, "closed"]);
+    expect([before.status, before.body.versions]).toEqual([200, 1]);
 
     const id = await atReferences("flow-refine@example.test");
     expect((await status(id)).sixStages.refine).toMatchObject({ open: true, frozen: false, why: "I want to hold the money well.", aim: "A clear budget.", versions: 0 });
@@ -252,7 +254,7 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     expect((await call("GET", `${app(id)}/walkthrough`, undefined, OUTSIDER.id)).status).toBe(404);
   });
 
-  it("freezes once the final conversation opens: refused, and the page says so", async () => {
+  it("stays open through the final conversation, and freezes once it is written up (the lead, 27 Nov 2026)", async () => {
     const id = await atReferences("flow-freeze@example.test");
     expect((await refine(id, { why: "Second why.", aim: "Second aim." })).status).toBe(200);
     await readyForFinal(id);
@@ -261,11 +263,21 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
     expect(moved.status, moved.text).toBe(200);
     expect((await q("SELECT state FROM application_interviews WHERE application_ref = ? AND is_final = 1", [id]))[0].state).toBe("open");
     expect(await nowOf(id)).toBe("final_interview");
-    const frozen = await refine(id, { why: "Third why.", aim: "Third aim." });
+    // "they can also refine their proposal from this conversation": still open at the Final conversation.
+    expect((await status(id)).sixStages.refine).toMatchObject({ open: true, frozen: false });
+    expect((await refine(id, { why: "Third why.", aim: "Third aim." })).status).toBe(200);
+    // RULING 7: the final written up fixes nothing; the applicant refines once more, then sends it to the anchor circle.
+    await q("UPDATE application_interviews SET state = 'scored' WHERE application_ref = ? AND is_final = 1", [id]);
+    expect(await nowOf(id)).toBe("final_interview");
+    expect((await status(id)).sixStages).toMatchObject({ toCircle: true, refine: { open: true, frozen: false } });
+    expect((await refine(id, { why: "Fourth why.", aim: "Fourth aim." })).status).toBe(200);
+    expect((await call("POST", `/api/application-status/${id}/to-circle?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`)).status).toBe(200);
+    expect(await nowOf(id)).toBe("agreement");
+    const frozen = await refine(id, { why: "Fifth why.", aim: "Fifth aim." });
     expect([frozen.status, frozen.body.error]).toEqual([409, "closed"]);
     expect((await status(id)).sixStages.refine).toMatchObject({ open: false, frozen: true });
     const [row] = await q("SELECT JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.why')) AS why FROM open_role_proposals WHERE id = ?", [id]);
-    expect(row.why).toBe("Second why.");
+    expect(row.why).toBe("Fourth why.");
   });
 
   it("a stage never moves by itself: reading the page, refining and waiting change no step", async () => {
@@ -299,11 +311,11 @@ describe.skipIf(!configured)("the applicant flow, on a real schema", () => {
       expect(s1.bookNow).toBeNull();
       expect(s1.sixStages.refine.open).toBe(true);
       await readyForFinal(id);
-      // The team moves it on: that opens the final conversation and fixes the proposal.
+      // The team moves it on: that opens the final conversation; the proposal stays open to refine (the lead, 27 Nov 2026).
       expect((await call("POST", `${app(id)}/final-conversation`, {}, FINAL.id)).status).toBe(200);
       const s2 = await status(id);
       expect(s2.sixStages.now).toBe("final_interview");
-      expect(s2.sixStages.refine).toMatchObject({ open: false, frozen: true });
+      expect(s2.sixStages.refine).toMatchObject({ open: true, frozen: false });
       expect(s2.bookNow?.final).toBe(true);
     } finally {
       await q("UPDATE org_roles SET conversations = ? WHERE id = ?", [JSON.stringify([{ roleId: roleA, minutes: 30, final: false }]), gate]);
