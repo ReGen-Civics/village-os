@@ -24,6 +24,7 @@ export interface SectionsForm {
   qualities: string;
   aiSupport: string;
   aiCompanion: string;
+  companionUrl: string;
   paid: boolean;
   payShape: Array<{ label: string; pct: string }>;
   payNote: string;
@@ -54,6 +55,7 @@ export function sectionsFormOf(s: RoleCardSections | undefined | null): Sections
     qualities: v.qualities.join("\n"),
     aiSupport: v.aiSupport,
     aiCompanion: v.aiCompanion,
+    companionUrl: v.companionUrl ?? "",
     paid: v.paid,
     payShape: v.payShape.map((x) => ({ label: x.label, pct: String(x.pct) })),
     payNote: v.payNote,
@@ -80,6 +82,7 @@ export function sectionsOf(f: SectionsForm): Record<string, unknown> {
     qualities: lines(f.qualities),
     aiSupport: f.aiSupport.trim(),
     aiCompanion: f.aiCompanion.trim(),
+    companionUrl: f.companionUrl.trim(),
     paid: f.paid,
     payShape: f.payShape.filter((x) => x.label.trim() || x.pct.trim()).map((x) => ({ label: x.label.trim(), pct: x.pct.trim() })),
     payNote: f.payNote.trim(),
@@ -238,7 +241,7 @@ export default function SectionsFields({ value, start, onChange, roles = [] }: {
         </p>
       </Field>
 
-      <Field label={SECTION_WORDS.aiSupport} changed={!same("aiSupport") || !same("aiCompanion")}>
+      <Field label={SECTION_WORDS.aiSupport} changed={!same("aiSupport") || !same("aiCompanion") || !same("companionUrl")}>
         <input
           className={INPUT}
           value={value.aiCompanion}
@@ -254,6 +257,17 @@ export default function SectionsFields({ value, start, onChange, roles = [] }: {
           onChange={(e) => set("aiSupport", e.target.value)}
           aria-label={t({ message: "What the Digital Companion does for this role", context: "role editor" })}
         />
+        <input
+          className={`${INPUT} mt-2`}
+          type="url"
+          inputMode="url"
+          value={value.companionUrl}
+          maxLength={SECTION_LIMITS.companionUrlChars}
+          onChange={(e) => set("companionUrl", e.target.value)}
+          aria-label={SECTION_WORDS.companionUrlLabel}
+          placeholder={t({ message: "https://...", context: "role editor" })}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">{SECTION_WORDS.companionUrlHint}</p>
       </Field>
 
       <Field label={SECTION_WORDS.ceilingLabel} changed={!same("ceilingAmount") || !same("ceilingCurrency") || !same("ceilingPer")}>

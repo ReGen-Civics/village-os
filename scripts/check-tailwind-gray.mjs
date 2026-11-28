@@ -213,8 +213,22 @@ const LIGHT_SURFACES = [
   "client/src/components/admin/",
 ];
 
+/**
+ * NIGHT-FIRST FOLDERS INSIDE THAT WORKSPACE, which are NOT in the zone.
+ *
+ * The Admin Garden (Rye, 27 Nov 2026: night by default, light as a choice) is
+ * built new, on tokens, under `components/admin/`. The zone above would skip
+ * it by path, and a night-first folder is exactly where a fixed gray is a
+ * contrast bug. So these are counted like any themed surface, and a new file
+ * there is born at zero. Existing admin tabs stay in the zone until each is
+ * converted. This only tightens the gate: nothing here was counted before.
+ */
+const NIGHT_FIRST = [
+  "client/src/components/admin/garden/",
+];
+
 const inLightSurfaceZone = (relPath) =>
-  LIGHT_SURFACES.some((p) => relPath === p || relPath.startsWith(p));
+  LIGHT_SURFACES.some((p) => relPath === p || relPath.startsWith(p)) && !NIGHT_FIRST.some((p) => relPath.startsWith(p));
 
 const files = walk(SCAN_ROOT).sort();
 const counts = {};

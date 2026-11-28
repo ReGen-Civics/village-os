@@ -26,9 +26,9 @@
  * cannot be applied as the village stands says Blocked and why. A queue that did not load reads "unknown", never zero,
  * and the number at the top becomes "at least". No new act: nothing here decides more than it did.
  */
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import { Link, useSearch } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { BTN_SECONDARY, CHIP_SOFT, EYEBROW, FIELD, H1, H2, HINT, LABEL, LEDE, LINK, QUIET, WORLD } from "@/components/journey/look";
@@ -44,16 +44,27 @@ import InboxRow, { CHIP_BLOCKED } from "@/components/reviewInbox/InboxRow";
 import OrgDraftRow from "@/components/reviewInbox/OrgDraftRow";
 import SeraListRow from "@/components/reviewInbox/SeraListRow";
 import DecisionsLine from "@/components/reviewInbox/DecisionsLine";
-import { inboxHeaders as headers, kindOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
+import { inboxHeaders as headers, searchWithTags, tagsOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
 
-type View = "waiting" | "held" | "decided";
+/**
+ * THE BATCHES VIEW (the accepted cut C8, 27 Nov 2026): /admin/proposals is folded into this page. Its whole desk is
+ * drawn here, unchanged: each batch as a card with Accept all and Discard all, its filters, and its history. The old
+ * address lands on this view (client/src/lib/proposalsFold.ts). A chunk of its own, read only when the view is opened.
+ */
+const ProposalsDesk = lazy(() => import("@/pages/ProposedChanges").then((m) => ({ default: m.ProposalsDesk })));
+/** As wide as the desk was on its own page, centred on this page's column. */
+const WIDE = "relative left-1/2 w-[min(72rem,calc(100vw-2rem))] -translate-x-1/2";
+
+type View = "waiting" | "held" | "decided" | "batches";
 const viewOf = (search: string): View => {
   const v = new URLSearchParams(search).get("view");
-  return v === "held" || v === "decided" ? v : "waiting";
+  return v === "held" || v === "decided" || v === "batches" ? v : "waiting";
 };
 const TAB = "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium";
 const TAB_ON = `${TAB} bg-notice text-background`;
 const TAB_OFF = `${TAB} border border-border bg-card text-foreground hover:bg-muted`;
+/** A tag that is on: the chip filled, with `aria-pressed` saying so in words. */
+const TAG_ON = "inline-flex items-center gap-1 rounded-full border border-notice bg-notice py-0.5 font-semibold text-background";
 
 
 export default function AdminReview() {
@@ -64,8 +75,13 @@ export default function AdminReview() {
   const [found, setFound] = useState<{ q: string; items: InboxItem[] | null; code: string | null; decided?: { code: string; at: string | null } } | null>(null);
   const search = useSearch();
   const view = viewOf(search);
-  // `?kind=structure` shows one kind: the door a count elsewhere (Admin's Today) lands through.
-  const onlyKind = kindOf(search);
+  // THE TAG FILTER (Rye, 28 Nov 2026: "With different tags for the source for filtering"). A row's tag is where it
+  // came from. `?tags=form,invite` shows only those; `?kind=structure`, the door a count elsewhere (Admin's Today)
+  // lands through, is one tag. Filtering changes what is shown and never what is counted: the count is the server's.
+  const tags = tagsOf(search);
+  const [, navigate] = useLocation();
+  const setTags = (next: readonly InboxSource[]) => navigate(`/admin/review${searchWithTags(search, next)}`, { replace: true });
+  const toggleTag = (s: InboxSource) => setTags(tags.includes(s) ? tags.filter((x) => x !== s) : [...tags, s]);
 
   const titles = Object.fromEntries(INBOX_SOURCES.map((s) => [s, sourceText(s, i18n).title])) as Record<InboxSource, string>;
 
@@ -271,12 +287,29 @@ export default function AdminReview() {
                   <Link href="/admin/review?view=decided" className={view === "decided" ? TAB_ON : TAB_OFF} aria-current={view === "decided" ? "page" : undefined} data-testid="tab-decided">
                     <Trans context="review inbox: views">Decided</Trans>
                   </Link>
+                  <Link href="/admin/review?view=batches" className={view === "batches" ? TAB_ON : TAB_OFF} aria-current={view === "batches" ? "page" : undefined} data-testid="tab-batches">
+                    <Trans context="review inbox: views">Batches</Trans>
+                  </Link>
                 </>
               ) : null}
             </nav>
           ) : null}
 
           {answer && !forbidden && view === "held" && mayDecide ? <HeldList desk={desk} /> : null}
+
+          {answer && !forbidden && view === "batches" && mayDecide ? (
+            <div className={WIDE} data-testid="batches-view">
+              <Suspense
+                fallback={
+                  <p className={HINT}>
+                    <Trans context="review inbox: batches view">Reading the batches.</Trans>
+                  </p>
+                }
+              >
+                <ProposalsDesk embedded onDecided={() => void refresh()} />
+              </Suspense>
+            </div>
+          ) : null}
 
           {answer && !forbidden && view === "decided" && mayDecide ? (
             desk.state === "ok" && desk.decided.length ? (
@@ -320,29 +353,38 @@ export default function AdminReview() {
                   <Trans context="review inbox: the order of the list">In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.</Trans>
                 </p>
               )}
-              {onlyKind ? (
-                <p className={HINT} data-testid="only-kind">
-                  <OnlyKind title={titles[onlyKind]} />{" "}
-                  <Link href="/admin/review" className={LINK}>
+              {groups.length > 1 || tags.length ? (
+                <div role="group" aria-label={t({ context: "review inbox: tags", message: "Show only where it came from" })} className="flex flex-wrap gap-2" data-testid="kinds">
+                  {groups.map((g) => {
+                    const on = tags.includes(g.source);
+                    return (
+                      <button key={g.source} type="button" aria-pressed={on} onClick={() => toggleTag(g.source)} className={`${on ? TAG_ON : CHIP_SOFT} min-h-11 px-3 text-sm`} data-testid={`tag-${g.source}`}>
+                        {titles[g.source]} <span aria-hidden="true">·</span> {countOf(g)}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+              {tags.length ? (
+                <p className={HINT} data-testid="only-kind" role="status">
+                  <OnlyKind title={tags.map((s) => titles[s]).join(", ")} />{" "}
+                  <Trans context="review inbox: tags">The count above is of everything, whatever is shown.</Trans>{" "}
+                  <button type="button" className={LINK} onClick={() => setTags([])} data-testid="tags-clear">
                     <Trans context="review inbox: one kind">Show everything</Trans>
-                  </Link>
+                  </button>
                 </p>
               ) : null}
-              {!onlyKind && groups.length > 1 ? (
-                <nav aria-label={t({ context: "review inbox: kinds", message: "What is waiting, by kind" })} className="flex flex-wrap gap-2" data-testid="kinds">
-                  {groups.map((g) => (
-                    <a key={g.source} href={`#review-${g.source}`} className={`${CHIP_SOFT} min-h-9 px-3 text-sm`}>
-                      {titles[g.source]} <span aria-hidden="true">·</span> {countOf(g)}
-                    </a>
-                  ))}
-                </nav>
+              {tags.length && !groups.some((g) => tags.includes(g.source)) ? (
+                <p className={HINT} data-testid="tags-empty">
+                  <Trans context="review inbox: tags">Nothing of that kind is waiting on you.</Trans>
+                </p>
               ) : null}
               {notice ? (
                 <p className="text-sm text-foreground" role="status" data-testid="row-notice">
                   {notice}
                 </p>
               ) : null}
-              {groups.filter((g) => !onlyKind || g.source === onlyKind).map((g) => {
+              {groups.filter((g) => !tags.length || tags.includes(g.source)).map((g) => {
                 const { source: s, items } = g;
                 // The connector's cards are its own read, whole: its number here is that read's when the list's is unknown.
                 if (s === "connector" && desk.state === "ok") return <ConnectorWaiting key={s} desk={desk} title={titles[s]} count={g.count ?? desk.changes.length} found={foundIds} />;

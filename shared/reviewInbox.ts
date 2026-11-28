@@ -120,7 +120,7 @@ export function fromConnector(body: unknown): InboxItem[] {
       summary: line(c.summary, "A proposed change"),
       filedAt: str(c.at),
       batch: c.batchId ? { key: `connector:${c.batchId}`, code: str(c.batchCode), title: str(batch?.title) } : null,
-      decideAt: "/admin/proposals",
+      decideAt: "/admin/review",
       touchesPerson: false,
     }];
   });
@@ -518,6 +518,73 @@ export function fromForms(body: unknown): InboxItem[] {
   });
 }
 
+// ── The queues that sat on pages of their own (the running garden, 27 Nov 2026) ─────────────────────────────────
+//
+// Reports, departures and invitation requests each had a page and were on no list, so a person had to remember to
+// look. Each is read here as every queue is: its OWN route, as the person, behind its own gate. A report is about
+// somebody's words, a departure and an invitation request are about a person, so each row says what KIND of thing
+// waits and when it arrived, and never who it is about, who sent it or what was said. Its own page shows that.
+
+/** A row's id as text, whether its queue keeps a number or a string. */
+const idOf = (v: unknown): string | null => (typeof v === "number" && Number.isFinite(v) ? String(v) : str(v));
+
+/** `GET /api/admin/forum/reports` (an admin's read): the open reports on forum threads, by the thread's title. */
+export function fromForumReports(body: unknown): InboxItem[] {
+  return list(body).flatMap((x) => {
+    const r = obj(x);
+    const id = idOf(r?.id);
+    if (!r || !id || (r.status && r.status !== "open")) return [];
+    const title = str(r.threadTitle);
+    return [{ key: `report:forum:${id}`, source: "report" as const, kind: `forum_report_${String(r.severity ?? "report")}`, code: null, summary: line(title ? `A report on the thread: ${title}` : "", "A report on a forum thread"), filedAt: str(r.at), batch: null, decideAt: "/admin?tab=forum-moderation", touchesPerson: true }];
+  });
+}
+
+/**
+ * `GET /api/admin/messages/reports` (an admin's read): the open reports on messages. That read carries the message
+ * itself, because a moderator has to judge it; none of it is kept here. The row says a message was reported.
+ */
+export function fromMessageReports(body: unknown): InboxItem[] {
+  return list(body).flatMap((x) => {
+    const r = obj(x);
+    const id = idOf(r?.id);
+    if (!r || !id || (r.status && r.status !== "open")) return [];
+    return [{ key: `report:message:${id}`, source: "report" as const, kind: "message_report", code: null, summary: "A reported message", filedAt: str(r.at), batch: null, decideAt: "/admin?tab=message-reports", touchesPerson: true }];
+  });
+}
+
+/** `GET /api/places/reports` (`map.curatePhotos`): the open reports on photographs of places. */
+export function fromPlaceReports(body: unknown): InboxItem[] {
+  return list(obj(body)?.reports).flatMap((x) => {
+    const r = obj(x);
+    const id = idOf(r?.id);
+    if (!r || !id || (r.status && r.status !== "open")) return [];
+    return [{ key: `photo:${id}`, source: "photo" as const, kind: `photo_report_${String(r.kind ?? "report")}`, code: null, summary: "A reported photograph of a place", filedAt: str(r.at), batch: null, decideAt: "/places#reports", touchesPerson: true }];
+  });
+}
+
+/**
+ * `GET /api/admin/exits` (an admin's read, which answers every departure ever): only those still open or being
+ * settled. By its stage, never by who is leaving.
+ */
+export function fromExits(body: unknown): InboxItem[] {
+  return list(obj(body)?.exits).flatMap((x) => {
+    const e = obj(x);
+    const id = idOf(e?.id);
+    if (!e || !id || (e.status !== "open" && e.status !== "settling")) return [];
+    return [{ key: `exit:${id}`, source: "exit" as const, kind: `exit_${String(e.kind ?? "voluntary")}_${String(e.status)}`, code: null, summary: e.status === "settling" ? "A departure being settled" : "A departure waiting to be settled", filedAt: str(e.openedAt), batch: null, decideAt: "/admin?tab=exits-admin", touchesPerson: true }];
+  });
+}
+
+/** `GET /api/admin/visitors/invitations` (`intake.moderate`): visitors who asked to be invited, by the day they asked. */
+export function fromInviteRequests(body: unknown): InboxItem[] {
+  return list(obj(body)?.requests).flatMap((x) => {
+    const r = obj(x);
+    const id = idOf(r?.visitorId);
+    if (!r || !id) return [];
+    return [{ key: `invite:${id}`, source: "invite" as const, kind: "invite_request", code: null, summary: "A visitor asks to be invited", filedAt: str(r.requestedAt), batch: null, decideAt: "/admin?tab=portal-visitors", touchesPerson: true }];
+  });
+}
+
 export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/admin/proposals", sources: ["connector"], read: fromConnector },
   { path: "/api/review/queue", sources: ["intake", "quest"], read: (b) => { const r = fromReviewQueue(b); return [...r.intake, ...r.quest]; } },
@@ -545,6 +612,11 @@ export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/review/erasure", sources: ["erasure"], read: fromErasure },
   { path: "/api/admin/open-proposals", sources: ["open"], read: fromOpenProposalDesk },
   { path: "/api/admin/submissions", sources: ["form"], read: fromForms },
+  { path: "/api/admin/forum/reports", sources: ["report"], read: fromForumReports },
+  { path: "/api/admin/messages/reports", sources: ["report"], read: fromMessageReports },
+  { path: "/api/places/reports", sources: ["photo"], read: fromPlaceReports },
+  { path: "/api/admin/exits", sources: ["exit"], read: fromExits },
+  { path: "/api/admin/visitors/invitations", sources: ["invite"], read: fromInviteRequests },
 ];
 
 // ── One list ────────────────────────────────────────────────────────────────

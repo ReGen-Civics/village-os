@@ -72,6 +72,28 @@ export function kindOf(search: string): InboxSource | null {
   return k && (INBOX_SOURCES as readonly string[]).includes(k) ? (k as InboxSource) : null;
 }
 
+/**
+ * THE TAGS A PERSON FILTERS THE LIST BY (Rye, 28 Nov 2026: "With different tags for the source for filtering").
+ * A tag is a row's source: where it came from. `?tags=form,invite` names the ones to show; `?kind=form`, the older
+ * door for one kind, is the same thing with one tag. A word that names no source is dropped. An empty list means
+ * everything is shown. FILTERING CHANGES WHAT IS SHOWN, NEVER WHAT IS COUNTED: the count is the server's, of everything.
+ */
+export function tagsOf(search: string): InboxSource[] {
+  const p = new URLSearchParams(search);
+  const named = [...(p.get("tags") ?? "").split(","), p.get("kind") ?? ""].map((s) => s.trim());
+  return INBOX_SOURCES.filter((s) => named.includes(s));
+}
+
+/** The address with these tags on it (none: the filter is off). Every other part of the address is kept. */
+export function searchWithTags(search: string, tags: readonly InboxSource[]): string {
+  const p = new URLSearchParams(search);
+  p.delete("kind");
+  if (tags.length) p.set("tags", INBOX_SOURCES.filter((s) => tags.includes(s)).join(","));
+  else p.delete("tags");
+  const out = p.toString().replace(/%2C/g, ",");
+  return out ? `?${out}` : "";
+}
+
 export function inboxHeaders(): Record<string, string> {
   const t = authToken();
   return t ? { Authorization: `Bearer ${t}` } : {};

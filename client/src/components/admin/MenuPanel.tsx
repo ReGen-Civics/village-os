@@ -6,6 +6,10 @@
  * as the content section `app-menu`. An entry keeps its route and its gates,
  * so renaming one never changes where it goes, and hiding one only takes it
  * out of the menu: its page stays where it was.
+ *
+ * A module's own entry also has a place the village chooses (the lead, 27 Nov 2026): its group, its folder and its
+ * position, listed under Module entries beside the folders (ModuleMenuList.tsx). Those entries leave the plain list
+ * below, so each entry has one name field on the page.
  */
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -15,11 +19,17 @@ import { MENU_LABEL_MAX, MENU_SECTION, MENU_TABS, menuDocOf, type MenuDoc } from
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { useDraftDoc } from "@/lib/unsavedChanges";
+import ModuleMenuList from "./ModuleMenuList";
 
 const GROUPS = NAV.filter(isGroup);
-const ENTRIES = Array.from(
+/** Every folder the menu draws, by the platform's name, in the menu's order (NavLink.sub). */
+const FOLDERS = Array.from(new Set([...GROUPS.flatMap((g) => g.items), ...ACCOUNT_MENU].map((l) => l.sub).filter((s): s is string => !!s)));
+const ALL_ENTRIES = Array.from(
   new Map([...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => [l.href, l] as const)).values(),
 );
+
+/** The entries the plain list names: every one but a module's own, which Module entries names and places. */
+const ENTRIES = ALL_ENTRIES.filter((e) => !e.module);
 
 export default function MenuPanel({ password }: { password: string }) {
   const { t } = useLingui();
@@ -49,6 +59,12 @@ export default function MenuPanel({ password }: { password: string }) {
     else delete groups[name];
     setDoc({ ...doc, groups });
   };
+  const setFolder = (name: string, v: string) => {
+    const folders = { ...doc.folders };
+    if (v) folders[name] = v.slice(0, MENU_LABEL_MAX);
+    else delete folders[name];
+    setDoc({ ...doc, folders });
+  };
   const toggleHidden = (href: string, hide: boolean) =>
     setDoc({ ...doc, hidden: hide ? [...doc.hidden, href] : doc.hidden.filter((h) => h !== href) });
   const setTab = (i: number, href: string) => {
@@ -75,7 +91,7 @@ export default function MenuPanel({ password }: { password: string }) {
       </h3>
       <p className="text-xs text-muted-foreground mb-4 max-w-prose">
         <Trans>
-          Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An
+          Your own word for each menu entry, which ones show, the names of the groups and folders, and the phone's four tabs. An
           entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu.
           Blank keeps the platform's word.
         </Trans>
@@ -98,6 +114,29 @@ export default function MenuPanel({ password }: { password: string }) {
       </div>
 
       <p className="text-sm font-medium text-foreground mb-1">
+        <Trans context="admin menu: the folder names">Folders</Trans>
+      </p>
+      <p className="text-xs text-muted-foreground mb-2 max-w-prose">
+        <Trans context="admin menu: the folder names, explained">
+          A folder holds a few entries inside a group. Blank keeps the platform's name, in each reader's language.
+        </Trans>
+      </p>
+      <div className="grid gap-2 sm:grid-cols-3 mb-4">
+        {FOLDERS.map((f) => (
+          <input
+            key={f}
+            value={doc.folders[f] ?? ""}
+            onChange={(e) => setFolder(f, e.target.value)}
+            placeholder={f}
+            aria-label={t({ message: `The name for the ${f} folder`, context: "admin menu: a folder name field" })}
+            className="min-h-11 text-sm border border-border rounded-lg px-2.5 py-2"
+          />
+        ))}
+      </div>
+
+      <ModuleMenuList doc={doc} setDoc={setDoc} />
+
+      <p className="text-sm font-medium text-foreground mb-1">
         <Trans context="admin menu: the phone tabs">Phone tabs</Trans>
       </p>
       <div className="grid gap-2 sm:grid-cols-4 mb-4">
@@ -109,10 +148,10 @@ export default function MenuPanel({ password }: { password: string }) {
             aria-label={t({ message: `Phone tab ${i + 1}`, context: "admin menu: one of the four phone tabs" })}
             className="text-sm border border-border rounded-lg px-2 py-2 bg-card"
           >
-            {TAB_SLOTS.filter((s) => s.path && !ENTRIES.some((e) => e.href === s.path)).map((s) => (
+            {TAB_SLOTS.filter((s) => s.path && !ALL_ENTRIES.some((e) => e.href === s.path)).map((s) => (
               <option key={s.path} value={s.path}>{s.label}</option>
             ))}
-            {ENTRIES.map((e) => (
+            {ALL_ENTRIES.map((e) => (
               <option key={e.href} value={e.href}>{doc.labels[e.href] || e.label}</option>
             ))}
           </select>

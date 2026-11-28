@@ -15,6 +15,9 @@
  *   - Focus is never touched. A page that moves focus to its section (lib/sectionAnchor.ts) keeps doing so.
  *   - The Living Map's hash is an address, not an anchor, so /map is left alone (components/ScrollToTop.tsx).
  *
+ * It waits for the section to be on screen and still before it glows, so a slow page or a long glide never spends
+ * the glow out of sight.
+ *
  * The target is the element the hash names by id. A tabbed page (Places' #photos and #reports, the season's #plan,
  * #join and #aligned) draws the tab's panel as `<prefix>-panel-<hash>`, so that panel answers for it.
  */
@@ -28,6 +31,15 @@ export const FADE_MS = 400;
 /** How long to wait for a lazy page to draw its section before giving up. */
 export const FIND_FOR_MS = 5000;
 const FIND_EVERY_MS = 100;
+/** How long, from the arrival, a drawn section may take to come on screen and settle before the glow is let go. */
+export const IN_VIEW_FOR_MS = 10000;
+
+/** On screen: some of it sits in the middle four fifths of the window, where the eye is after a landing. */
+export function inView(el: HTMLElement, doc: Document = document): boolean {
+  const r = el.getBoundingClientRect();
+  const h = doc.defaultView?.innerHeight ?? doc.documentElement.clientHeight;
+  return r.bottom > h * 0.1 && r.top < h * 0.9 && r.height > 0;
+}
 /** A beat after the section appears, so the scroll that brings it into view has begun. */
 const SETTLE_MS = 150;
 
@@ -128,15 +140,26 @@ export function arrive(hash: string, path: string, doc: Document = document): ()
     clearGlow?.();
     if (running === stop) running = null;
   };
-  const look = () => {
+  // Found, then in view: the glow waits until the section is on screen and still (a slow first load or a long
+  // glide can leave it far below for a while; QA round 2 saw a glow begin 809px before its section arrived).
+  let lastTop: number | null = null;
+  const watch = (el: HTMLElement) => {
     if (stopped) return;
-    const el = arrivalTarget(hash, doc);
-    if (el) {
+    const top = Math.round(el.getBoundingClientRect().top);
+    if (inView(el, doc) && top === lastTop) {
       timer = setTimeout(() => {
         if (!stopped) clearGlow = highlight(el);
       }, SETTLE_MS);
       return;
     }
+    lastTop = top;
+    waited += FIND_EVERY_MS;
+    if (waited <= IN_VIEW_FOR_MS) timer = setTimeout(() => watch(el), FIND_EVERY_MS);
+  };
+  const look = () => {
+    if (stopped) return;
+    const el = arrivalTarget(hash, doc);
+    if (el) return watch(el);
     waited += FIND_EVERY_MS;
     if (waited <= FIND_FOR_MS) timer = setTimeout(look, FIND_EVERY_MS);
   };

@@ -21,6 +21,8 @@ import {
 } from "@shared/journal";
 import { askGuide, isAssistantUnavailable, problemText } from "@/lib/journalApi";
 import GrowingTextarea from "./GrowingTextarea";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 import GuideTasks from "./GuideTasks";
 import MyGuide, { useGuideState } from "@/components/guide/MyGuide";
 import { JOURNAL_ON_SERA, journalGuide, type GuideState } from "@shared/guideChoice";
@@ -71,7 +73,8 @@ export default function GuidePanel({
   onConfirmReflection: (text: string) => void;
 }) {
   const { t } = useLingui();
-  const [draft, setDraft] = useState("");
+  // Kept in this tab (components/chat/chatDraft.ts): closing the guide halfway through a thought keeps it.
+  const [draft, setDraft] = useChatDraft("journal-guide");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [latest, setLatest] = useState<GuideReply | null>(null);
@@ -142,7 +145,7 @@ export default function GuidePanel({
         // It holds the bottom-right corner on every width, so the shortcuts
         // button steps out (index.css) instead of sitting reachable under it.
         data-hides-fab
-        className="fixed inset-x-0 bottom-0 z-[70] flex max-h-[85vh] flex-col rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:border-l md:border-t-0"
+        className="fixed inset-x-0 bottom-[var(--kb,0px)] z-[70] flex max-h-[min(85vh,calc(var(--vvh,100vh)-1rem))] flex-col rounded-t-2xl border-t border-border bg-card text-card-foreground shadow-2xl md:top-0 md:bottom-[var(--kb,0px)] md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:border-l md:border-t-0"
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <h2 className="font-display text-lg font-bold text-foreground"><Trans context="GuidePanel, h2">The guide</Trans></h2>
@@ -248,23 +251,30 @@ export default function GuidePanel({
           )}
         </div>
 
-        <form
-          className="border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void ask(draft);
-          }}
-        >
-          <label htmlFor={inputId} className="sr-only">
-            <Trans context="GuidePanel, label">Your message to the guide
-          </Trans></label>
-          <GrowingTextarea id={inputId} value={draft} onValue={setDraft} minRows={2} maxLength={2000} />
-          <div className="mt-2 flex flex-wrap gap-2">
-            <button type="submit" className={BTN_PRIMARY} disabled={busy || !draft.trim()}>
-              <Send className="h-4 w-4" aria-hidden="true" />
-              {busy ? "Asking..." : "Ask"}
-            </button>
-            {messages.length === 0 && (
+        <div className="border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <ChatComposer
+            id={inputId}
+            within={panelRef}
+            value={draft}
+            onChange={setDraft}
+            onSend={() => void ask(draft)}
+            busy={busy}
+            maxLength={2000}
+            label={<Trans context="GuidePanel, label">Your message to the guide</Trans>}
+            sendLabel="Ask"
+            sendText={
+              <>
+                <Send className="h-4 w-4" aria-hidden="true" />
+                {busy ? "Asking..." : "Ask"}
+              </>
+            }
+            sendClassName={`${BTN_PRIMARY} shrink-0`}
+            // A journal is written in paragraphs: Enter starts a new line everywhere, and Ask (or Ctrl+Enter) sends.
+            enterSends={false}
+            minRows={2}
+          />
+          {messages.length === 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
               <button
                 type="button"
                 className={BTN_SECONDARY}
@@ -273,9 +283,9 @@ export default function GuidePanel({
               >
                 <Trans context="GuidePanel, button">Reflect this back to me
               </Trans></button>
-            )}
-          </div>
-        </form>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

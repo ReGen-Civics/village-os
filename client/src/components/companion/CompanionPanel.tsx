@@ -21,11 +21,13 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Send, X } from "lucide-react";
+import { X } from "lucide-react";
 import { CANVAS_BLOCKS, type CanvasBlockId } from "@shared/governanceCanvas";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -79,6 +81,9 @@ export function askFailure(status: number | null, body: { error?: unknown; messa
   return typeof body?.error === "string" && body.error ? body.error : "That did not work. Ask again in a moment.";
 }
 
+/** Under this height (px) the panel drops its footnote. */
+const SHORT_PANEL = 260;
+
 export default function CompanionPanel({ block, onClose }: { block: CanvasBlockId | null; onClose: () => void }) {
   const { t } = useLingui();
   const name = block ? CANVAS_BLOCKS[block].name : null;
@@ -90,7 +95,8 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
         : "Ask about the canvas. The guide reads what the village adopted and its readings first, then the shelf.",
     },
   ]);
-  const [draft, setDraft] = useState("");
+  // One draft per block, kept in this tab: closing the panel and asking again opens on the same words.
+  const [draft, setDraft] = useChatDraft(`canvas-companion:${block ?? "canvas"}`);
   const [busy, setBusy] = useState(false);
   /** The line waiting for a yes, if the last answer came back with one. */
   const [line, setLine] = useState<CompanionLine | null>(null);
@@ -98,7 +104,18 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
   /** The member's standing yes, if any, as the server holds it. */
   const [agreed, setAgreed] = useState<{ provider: string; at: string } | null>(null);
   const [lineError, setLineError] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  // A very short panel (a small phone with its keyboard up) keeps the conversation and the box, and lets the
+  // footnote go until there is room again (QA round 3 on #1885, finding 5).
+  const [short, setShort] = useState(false);
+  useEffect(() => {
+    const el = panel.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const watch = new ResizeObserver(() => setShort(el.getBoundingClientRect().height < SHORT_PANEL));
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, []);
 
   useEffect(() => {
     input.current?.focus();
@@ -202,11 +219,12 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
   // From md up the bar is gone and --tabbar-h is 0.
   return (
     <div
+      ref={panel}
       role="dialog"
       aria-label={name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}
       data-testid="companion-panel"
       data-hides-fab
-      className="fixed bottom-[calc(var(--tabbar-h)+0.5rem)] md:bottom-4 right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[70vh] wrap-anywhere"
+      className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)_-_1rem_-_max(0px,var(--tabbar-h,0px)_+_0.5rem_-_var(--kb,0px))))] overflow-hidden wrap-anywhere"
     >
       <header className="px-4 py-3 border-b border-stone-100 flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-stone-900">{name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}</p>
@@ -214,7 +232,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
           <X className="w-4 h-4" aria-hidden="true" />
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3" aria-live="polite">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 space-y-3" aria-live="polite">
         {turns.map((t, i) => (
           <div
             key={i}
@@ -252,29 +270,20 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
           </button>
         </p>
       )}
-      <div className="p-3 border-t border-stone-100 flex gap-2">
-        <input
-          ref={input}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") send();
-          }}
-          aria-label={t({ message: "Your question", context: "guide question field" })}
-          placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
-          className="flex-1 min-w-0 text-sm border border-stone-300 rounded-lg px-3 py-2"
-        />
-        <button
-          type="button"
-          onClick={send}
-          disabled={busy || !draft.trim()}
-          aria-label={t({ message: "Ask", context: "send the question to the guide" })}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center bg-teal-deep text-white rounded-lg disabled:opacity-40"
-        >
-          <Send className="w-4 h-4" aria-hidden="true" />
-        </button>
-      </div>
-      <p className="px-4 pb-3 text-xs text-stone-600">
+      <ChatComposer
+        id="companion-question"
+        className="p-3 border-t border-stone-100"
+        inputRef={input}
+        within={panel}
+        value={draft}
+        onChange={setDraft}
+        onSend={send}
+        busy={busy}
+        label={t({ message: "Your question", context: "guide question field" })}
+        placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
+        sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
+      />
+      <p className={`px-4 pb-3 text-xs text-stone-600 ${short ? "hidden" : ""}`} data-companion-footnote="">
         <Trans>
           The guide never changes the canvas. To change an answer, suggest it under Say on the block.{" "}
           <Link href="/profile" className="text-teal-deep underline">Your profile</Link> holds anything it drafted for you.

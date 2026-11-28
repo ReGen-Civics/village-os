@@ -1346,6 +1346,49 @@ a.pc-chip:hover {
   flex-wrap: wrap;
   gap: 12px;
 }
+/* On the profile a role's card is a jump target (#role-<id>, the phone's "Your roles" line): it clears the
+   sticky header, and on a phone the profile's tab bar too, so its title shows. Unlayered, like the rule above. */
+.sheet-night .pc-rolecard {
+  scroll-margin-top: 7rem;
+}
+@media (max-width: 639.98px) {
+  .sheet-night .pc-rolecard {
+    scroll-margin-top: 10rem;
+  }
+}
+/* The profile's My roles: each role's art, the tile's gold line icon, beside its title. */
+.pc-roletitle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.pc-rolelead-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--pc-gold-deep);
+  background: linear-gradient(160deg, var(--pc-raised), var(--pc-panel));
+  color: var(--pc-gold);
+}
+.pc-rolelead-icon svg {
+  width: 28px;
+  height: 28px;
+}
+/* A panel's one gold act among its pills (the profile's proposing door: Apply for a role). */
+.pc-tab.pc-act {
+  background: var(--pc-gold);
+  border-color: var(--pc-gold);
+  color: var(--pc-ground);
+}
+.pc-tab.pc-act:hover {
+  background: var(--pc-gold-lit);
+  border-color: var(--pc-gold-lit);
+  color: var(--pc-ground);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .pc-card * {

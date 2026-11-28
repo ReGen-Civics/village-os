@@ -32,7 +32,7 @@ export interface SpeedCard {
   /** For a card that opens something in place. It is handed the sheet's close. */
   action?: (close: () => void) => void;
   /** A count beside the label, read for this member alone and hidden at zero (config/nav.ts, `count`). */
-  count?: "tasks" | "messages";
+  count?: NavLink["count"];
   /** The picker's group: the menu's own group name as the reader sees it, or "Yours". */
   group: string;
   /** The same group by the menu's own untranslated name ("Village", "Govern", "Yours"), for its glyph (glyphs.ts). */
@@ -76,7 +76,7 @@ export interface RegistryInput {
   entries: readonly NavEntry[];
   itemsOf: (group: NavGroup) => NavLink[];
   /** The account entries, as Layout filtered them. */
-  account: readonly (NavLink & { count?: "tasks" | "messages" })[];
+  account: readonly NavLink[];
   /** The registered cards whose rule said yes for this member. */
   registered: readonly SpeedCardDef[];
   /** The translated words for the groups the menu does not name. */
@@ -90,7 +90,9 @@ export interface RegistryInput {
  * label translated or renamed by the village and its `items` untouched, so the items find the group in NAV.
  */
 export function groupKeyOf(group: NavGroup): string {
-  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label));
+  // A group the village moved entries into carries new items (config/navPlaces.ts), so it is also known by what it
+  // holds (NavGroup.holds), which no rename or move changes.
+  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label || (!!group.holds && e.holds === group.holds)));
   return own && isGroup(own) ? own.label : group.label;
 }
 
