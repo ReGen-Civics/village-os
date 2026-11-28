@@ -15,6 +15,7 @@ import {
   applyBrochurePatch,
   brochurePathServed,
   brochureState,
+  isMemberDoor,
   type BrochurePatch,
   type BrochurePath,
 } from "../../shared/brochure";
@@ -60,6 +61,11 @@ export function brochureOpenPages(): BrochurePath[] {
  */
 export function brochurePageServed(path: string): boolean {
   return brochurePathServed({ enabled: brochurePagesOn(), hidden: brochureHiddenPages(), open: brochureOpenPages() }, path);
+}
+
+/** A story page served to this reader: a member's door always to somebody signed in, the rest by the switches (`servedTo`). */
+export function storyServed(path: string, signedIn: boolean): boolean {
+  return (signedIn && isMemberDoor(path)) || brochurePageServed(path);
 }
 
 /**

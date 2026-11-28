@@ -51,6 +51,8 @@ export default function AdminSearch({
     control: t({ message: "Button or field", context: "admin search, kind of result" }),
     dial: t({ message: "Dial", context: "admin search, kind of result" }),
     outside: t({ message: "Page", context: "admin search, kind of result" }),
+    // An act lands on the page that holds its control (shared/adminActs.ts): the same words as a control.
+    act: t({ message: "Button or field", context: "admin search, kind of result" }),
   };
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");

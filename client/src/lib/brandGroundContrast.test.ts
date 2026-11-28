@@ -608,7 +608,9 @@ const FIXED: Record<string, number> = {
   // the floating save bar (components/SaveBar.tsx), so the tab draws no white-on-brand hover. 56.
   "client/src/components/profile/InvitePanel.tsx": 1,
   "client/src/components/ui/button.tsx": 1,
-  "client/src/pages/Admin.tsx": 12,
+  // Admin.tsx had 12 until the separate Visit program tab was folded (cut C6, 27 Nov 2026): its Save button left
+  // with the tab, and the one editor that stays, inside Pages, saves through the floating save bar. 30.
+  "client/src/pages/Admin.tsx": 11,
   // The Comms setup editors took one of Admin.tsx's fixed hovers with them; the total stays 63.
   "client/src/components/admin/comms/CommsSetupEditors.tsx": 1,
   // Bootstrap.tsx's one left on 2026-11-25 (whole-app QA, #1684): /claim stands in the sheet's world, its act the sheet's gold. 38.
@@ -661,11 +663,12 @@ describe("under the pointer, a brand button stays readable and visibly moves, li
     // 38 fixed since /claim moved to the night world (whole-app QA, 25 Nov 2026).
     // 33 since the game mechanics folded into How we work together, in the night world (26 Nov 2026), and 31
     // since Your First Walk and its two hovers were removed (the lead, 27 Nov 2026).
-    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(31);
+    // 30 since the separate Visit program tab was folded into the editor inside Pages (cut C6, 27 Nov 2026).
+    expect(Object.values(FIXED).reduce((n, v) => n + v, 0)).toBe(30);
     for (const [file, n] of Object.entries(FIXED)) {
       expect(POINTER_LISTS.filter((l) => l.file === file).length, `${file} hovers read`).toBeGreaterThanOrEqual(n);
     }
-    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(31 + 25);
+    expect(POINTER_LISTS.length).toBeGreaterThanOrEqual(30 + 25);
   });
 
   for (const list of POINTER_LISTS) {

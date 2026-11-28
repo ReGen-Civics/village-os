@@ -591,6 +591,83 @@ describe("what is left, said without a score", () => {
 });
 
 /*
+ * WHO READS THE CHECKLIST, AND WHO ANSWERS ITS ROWS (27 Nov 2026).
+ *
+ * The page opens for whoever may use admin, and that includes a member whose
+ * admin access comes from a power group (`hasAdminAccess`,
+ * client/src/lib/adminAccess.ts): the server already lets them read
+ * `/api/admin/launch`. And whoever reads a row may answer it. Rye, 27 Nov 2026,
+ * on marking a row done, taking that back and declining: "Admins can too". So
+ * `POST /api/admin/launch/confirm` asks the admin gate and nothing narrower,
+ * and the row's two answers are drawn for an admin, a group holder and a
+ * founder alike. Opening the vote, the steward list and the hand-over stay a
+ * founder's, and their own tests hold that.
+ */
+describe("who reads the checklist, and who answers its rows", () => {
+  const DECLINABLE = {
+    ...STATUS.items[0],
+    id: "issuance-cap",
+    title: "Name what the village may issue in a moon",
+    detail: "Not answered yet",
+    checkKey: "issuance-cap",
+    declinable: true,
+  };
+  /** A row the server checks by itself: nobody answers it by hand, so it carries no answer button. */
+  const OBSERVED = { ...STATUS.items[0], id: "admin-identities", title: "Every admin signs in as themselves", checkKey: "admin-identities" };
+  const BOTH = { ...STATUS, items: [STATUS.items[0], DECLINABLE, OBSERVED] };
+  const page = {
+    "/api/admin/launch": { status: 200, body: BOTH },
+    "/api/admin/launch/steward-candidates": { status: 200, body: { candidates: [], powerCount: 0 } },
+    "/api/admin/launch/confirm": { status: 200, body: { success: true, status: BOTH } },
+  };
+  const groupHolder = { id: "u3", name: "Gia", role: "member", adminAccess: true };
+  const admin = { id: "u1", name: "Rye", role: "admin", adminAccess: true };
+  const founder = { id: "u4", name: "Fen", role: "founder", adminAccess: true };
+
+  it("gives a member whose admin access comes from a power group the whole checklist", async () => {
+    auth.current = { user: groupHolder, loading: false };
+    answer(page);
+    draw();
+    await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+    expect(calls[0].url).toBe("/api/admin/launch");
+    expect(screen.getByRole("button", { name: /run the test/i })).toBeTruthy();
+  });
+
+  it("still keeps a plain member off the checklist, whatever else their account carries", () => {
+    auth.current = { user: { id: "u2", name: "Wren", role: "member", adminAccess: false }, loading: false };
+    draw();
+    expect(screen.queryByText(/Take one backup/i)).toBeNull();
+    expect(calls.map((c) => c.url), "no admin read on a member's page").toEqual([]);
+  });
+
+  it("offers an admin, a group holder and a founder both answers, and sends each answer to the server", async () => {
+    for (const user of [admin, groupHolder, founder]) {
+      auth.current = { user, loading: false };
+      calls.length = 0;
+      answer(page);
+      const drawn = draw();
+      await waitFor(() => expect(screen.getByText(/Take one backup/i)).toBeTruthy());
+      const sent = () =>
+        calls.filter((c) => c.url === "/api/admin/launch/confirm").map((c) => JSON.parse(String(c.init?.body ?? "{}")));
+      // One answer button on each row somebody answers by hand, and none on the row the server checks itself.
+      expect(screen.getAllByRole("button", { name: "Mark done" }).length, user.role).toBe(1);
+      expect(screen.getAllByRole("button", { name: "Decline" }).length, user.role).toBe(1);
+      expect(screen.getByText(/Every admin signs in/i).closest("li")?.querySelector("button"), user.role).toBeNull();
+      // Nobody is told the answer is somebody else's.
+      expect(screen.queryByText(/Only a founder/i), user.role).toBeNull();
+
+      // The first row is a manual one, so it carries the confirmation. The second may be declined.
+      fireEvent.click(screen.getByRole("button", { name: "Mark done" }));
+      await waitFor(() => expect(sent(), user.role).toEqual([{ id: "backups-drilled", done: true }]));
+
+      fireEvent.click(await screen.findByRole("button", { name: "Decline" }));
+      await waitFor(() => expect(sent(), user.role).toEqual([{ id: "backups-drilled", done: true }, { id: "issuance-cap", done: "declined" }]));
+      drawn.unmount();
+    }
+  });
+});
+
+/*
  * EACH CONTROL READS THE FACT ITS OWN SERVER DOOR READS (shared/launchFacts.ts).
  *
  * "Launched" was never one fact. A village migration 0112 recorded is issuing

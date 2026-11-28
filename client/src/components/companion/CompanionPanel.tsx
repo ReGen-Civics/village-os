@@ -81,6 +81,9 @@ export function askFailure(status: number | null, body: { error?: unknown; messa
   return typeof body?.error === "string" && body.error ? body.error : "That did not work. Ask again in a moment.";
 }
 
+/** Under this height (px) the panel drops its footnote. */
+const SHORT_PANEL = 260;
+
 export default function CompanionPanel({ block, onClose }: { block: CanvasBlockId | null; onClose: () => void }) {
   const { t } = useLingui();
   const name = block ? CANVAS_BLOCKS[block].name : null;
@@ -103,6 +106,16 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
   const [lineError, setLineError] = useState<string | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   const panel = useRef<HTMLDivElement>(null);
+  // A very short panel (a small phone with its keyboard up) keeps the conversation and the box, and lets the
+  // footnote go until there is room again (QA round 3 on #1885, finding 5).
+  const [short, setShort] = useState(false);
+  useEffect(() => {
+    const el = panel.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const watch = new ResizeObserver(() => setShort(el.getBoundingClientRect().height < SHORT_PANEL));
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, []);
 
   useEffect(() => {
     input.current?.focus();
@@ -211,7 +224,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
       aria-label={name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}
       data-testid="companion-panel"
       data-hides-fab
-      className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)-1rem))] wrap-anywhere"
+      className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)_-_1rem_-_max(0px,var(--tabbar-h,0px)_+_0.5rem_-_var(--kb,0px))))] overflow-hidden wrap-anywhere"
     >
       <header className="px-4 py-3 border-b border-stone-100 flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-stone-900">{name ? t({ message: `Ask about ${name}`, context: "guide panel title" }) : t`Ask about the canvas`}</p>
@@ -219,7 +232,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
           <X className="w-4 h-4" aria-hidden="true" />
         </button>
       </header>
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3" aria-live="polite">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 space-y-3" aria-live="polite">
         {turns.map((t, i) => (
           <div
             key={i}
@@ -270,7 +283,7 @@ export default function CompanionPanel({ block, onClose }: { block: CanvasBlockI
         placeholder={name ? t({ message: `A question about ${name}`, context: "guide question placeholder" }) : t`A question about the canvas`}
         sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
       />
-      <p className="px-4 pb-3 text-xs text-stone-600">
+      <p className={`px-4 pb-3 text-xs text-stone-600 ${short ? "hidden" : ""}`} data-companion-footnote="">
         <Trans>
           The guide never changes the canvas. To change an answer, suggest it under Say on the block.{" "}
           <Link href="/profile" className="text-teal-deep underline">Your profile</Link> holds anything it drafted for you.

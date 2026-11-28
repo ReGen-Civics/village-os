@@ -24,6 +24,7 @@ import { CanvasView } from "@/components/canvas/CanvasView";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { authToken, fetchGameMe } from "@/lib/gameApi";
 import {
   Check,
@@ -178,7 +179,7 @@ function viewOfFixAt(fixAt: string): JourneyView | null {
 export default function JourneyToLaunch() {
   const brochureOn = useBrochurePages() === true;
   const { user, loading } = useAuth();
-  const isAdmin = !!user && (user.role === "admin" || user.role === "founder");
+  const isAdmin = hasAdminAccess(user);
   const [status, setStatus] = useState<any>(null);
   /**
    * Where the village stands, as facts (`shared/launchFacts.ts`). The checklist

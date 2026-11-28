@@ -5,10 +5,11 @@
 import { describe, expect, it } from "vitest";
 import { register, visibleEntries } from "./adminSearch";
 import type { AdminSearchEntry } from "../../shared/adminSearch";
+import { STAGE_ACTS } from "../../shared/adminActs/stage";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
-function harness(opts: { admin: boolean; holds: string[]; off?: string[] }) {
+function harness(opts: { admin: boolean; holds: string[]; off?: string[]; story?: boolean }) {
   const handlers = new Map<string, Handler>();
   const asked: string[] = [];
   const app: any = { get: (path: string, h: Handler) => handlers.set(`GET ${path}`, h) };
@@ -20,6 +21,7 @@ function harness(opts: { admin: boolean; holds: string[]; off?: string[] }) {
     },
     dials: () => [{ key: "comms.quiet_hours", label: "Quiet hours", description: "When nothing is sent.", category: "Comms" }],
     lifecycle: (id) => ((opts.off ?? []).includes(id) ? "off" : "members"),
+    storyServed: () => !!opts.story,
   });
   const out: { status: number; body: any } = { status: 200, body: undefined };
   const res: any = {
@@ -52,6 +54,15 @@ describe("GET /api/admin/search-index", () => {
     expect(ids).toContain("season.timezone");
   });
 
+  it("offers the board's acts only while the village serves the board (its story pages)", async () => {
+    const onBoard = STAGE_ACTS.filter((a) => a.path === "/project-history" && !a.tab).map((a) => a.id);
+    expect(onBoard.length).toBeGreaterThan(0);
+    const off = (await harness({ admin: true, holds: [], story: false }).run()).body.entries.map((e: AdminSearchEntry) => e.id);
+    expect(onBoard.filter((id) => off.includes(id))).toEqual([]);
+    const on = (await harness({ admin: true, holds: [], story: true }).run()).body.entries.map((e: AdminSearchEntry) => e.id);
+    expect(onBoard.filter((id) => !on.includes(id))).toEqual([]);
+  });
+
   it("asks the gate once per capability, however many entries name it", async () => {
     const h = harness({ admin: true, holds: ["comms.manage"] });
     await h.run();
@@ -64,5 +75,9 @@ describe("visibleEntries", () => {
     const e: AdminSearchEntry = { id: "x", kind: "control", tab: "events-admin", title: "X", help: "", synonyms: [], module: "events" };
     expect(await visibleEntries([e], async () => true, () => "off")).toEqual([]);
     expect(await visibleEntries([e], async () => true, () => "public")).toEqual([e]);
+    // A tab that follows two modules shows while either is on, and hides only when both are off.
+    const two = { ...e, module: undefined, modulesAny: ["forum", "messaging"] };
+    expect(await visibleEntries([two], async () => true, () => "off")).toEqual([]);
+    expect(await visibleEntries([two], async () => true, (id) => (id === "messaging" ? "members" : "off"))).toEqual([two]);
   });
 });

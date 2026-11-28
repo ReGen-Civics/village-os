@@ -7,15 +7,16 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
+import { menuRolesAllow } from "@/lib/adminAccess";
 import { useModules } from "@/modules/ModuleProvider";
 // A member's bell and counts load on their own: a visitor who is not signed in never draws them, so they stay off the first page's scripts (MAX_BOOT_JS_KB).
 const NotificationBell = lazy(() => import("@/components/NotificationBell"));
 const WaitingCount = lazy(() => import("@/components/nav/WaitingCount")); // the account button's dot (nav/WaitingCount.tsx)
 import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
-import { NAV, ACCOUNT_MENU, isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
+import { isGroup, navMenuId, navWord, ownWord, platformWords, type NavLink, type NavGroup } from "@/config/nav";
 import { currentFor, litFor } from "@/config/navBearings";
-import { useVillageMenu } from "@/hooks/useVillageMenu";
+import { usePlacedMenu, useVillageMenu } from "@/hooks/useVillageMenu";
 import { useSiteMenuWords } from "@/hooks/useSiteMenuWords";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
@@ -87,11 +88,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const lifecycleOf = (id?: string) => modules.find((m) => m.id === id)?.lifecycle;
 
   // A link survives when its module is on AND the viewer holds one of its
-  // roles. Both absent means everyone sees it. The role is read once into a
-  // local so a signed-out viewer (no user, no role) filters out by the same
-  // test rather than a second branch.
+  // roles. Both absent means everyone sees it. `menuRolesAllow` reads the
+  // roles (client/src/lib/adminAccess.ts): a signed-out viewer filters out by
+  // the same test, and admin access through a power group opens an admin entry.
   const tokenName = useTokenName("Recognition");
-  const role = user?.role;
   // Asked of the gate once per sign-in (GET /api/treasury/doors); unknown or refused shows nothing.
   const treasuryOpen = anyTreasuryDoor(useTreasuryDoors(user ? token : null));
   // The brochure pages are the first village's own story (shared/brochure.ts).
@@ -100,8 +100,8 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   // this page") loses its entry and its link the same way. While the config
   // loads they stay out rather than flash in.
   const storyShown = (href: string) => storyPageShown(cfg, href);
-  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden flag per entry, its group names. Gates still decide who sees what.
-  const menu = useVillageMenu();
+  // The village's own menu (gap G5, shared/menuDoc.ts): labels, hidden entries, group names and its module entries' places, laid over the menu once (config/navPlaces.ts). Gates still decide who sees what.
+  const menu = useVillageMenu(), { nav: NAV_PLACED, account: ACCOUNT_PLACED } = usePlacedMenu(menu.places);
   const siteMenu = useSiteMenuWords(cfg?.site?.menu, cfg?.paths); // the village's story-page names, translated where it has
   // The front door (24 Nov 2026): a newcomer is not offered a member's working areas (config/nav.ts, `newcomers`).
   const { shows: forNewcomer, showsHref, newcomer } = useNewcomerShows();
@@ -111,7 +111,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.story ?? item.href)) &&
-    (!item.roles || (!!role && item.roles.includes(role))) &&
+    menuRolesAllow(item.roles, user) &&
     (item.signedIn === undefined || item.signedIn === !!user) &&
     (!item.door || (item.door === "treasury" && !!user && treasuryOpen));
 
@@ -135,21 +135,21 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   // its optional modules off never renders an empty dropdown.
   const groupItems = (group: NavGroup) => group.items.filter(visible).map(withTokenLabel);
   // A group that `leads` for newcomers comes first for them (the lead, 27 Nov 2026: "having join be first").
-  const ordered = newcomer ? [...NAV.filter((e) => isGroup(e) && e.leads === "newcomers"), ...NAV.filter((e) => !(isGroup(e) && e.leads === "newcomers"))] : NAV;
+  const ordered = newcomer ? [...NAV_PLACED.filter((e) => isGroup(e) && e.leads === "newcomers"), ...NAV_PLACED.filter((e) => !(isGroup(e) && e.leads === "newcomers"))] : NAV_PLACED;
   const navEntries = ordered.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
     isGroup(e) ? { ...e, label: menu.groups[e.label] || navWord(e.label, i18n) } : withTokenLabel(e),
   );
   // Where the page sits in the menu this reader sees, the village's renames and hidden entries included (config/navBearings.ts).
-  const lit = litFor(location, visible, menu, (g) => navWord(g, i18n));
+  const lit = litFor(location, visible, menu, (g) => navWord(g, i18n), NAV_PLACED);
   const leaf = useCrumbLeafValue(); // the page's own name for the breadcrumb (nav/crumbLeaf.tsx)
-  const accountItems = ACCOUNT_MENU.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
+  const accountItems = ACCOUNT_PLACED.filter(visible).map((l) => ({ ...l, label: menu.labels[l.href] || navWord(l.label, i18n) }));
   // One firefly on one entry new since this member last looked (nav/menuJoys.tsx), and Govern's waiting dot.
   // Chosen only once the modules, the config, the sign-in and the newcomer answer are all in (the menu's QA, round 1).
   const [firefly, setFirefly] = useState<string | null>(null);
   const fireflyReady = modulesLoaded && !!cfg && !authLoading && !!user && !newcomer;
   const waitingFor = user && !newcomer ? String(user.id) : null;
   // The folder the lit entry sits in, when it draws as one (two or more visible links), for the full breadcrumb.
-  const litSub = lit?.item.sub && NAV.filter(isGroup).some((g) => g.items.filter((i) => visible(i) && i.sub === lit.item.sub).length > 1) ? lit.item.sub : null;
+  const litSub = lit?.item.sub && NAV_PLACED.filter(isGroup).some((g) => g.items.filter((i) => visible(i) && i.sub === lit.item.sub).length > 1) ? lit.item.sub : null;
   // A breadcrumb step with no page of its own opens the menu there: the group's dropdown when the bar shows, else the menu.
   const openMenuAt = () => {
     const trigger = lit?.group ? document.querySelector<HTMLButtonElement>(`[data-wayfinding="menu"] button[aria-controls="${navMenuId(lit.group)}"]`) : null;
@@ -992,7 +992,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
           surface and the page's single polite live region live here so a
           member never sees the same moment twice. */}
       {user && <Suspense fallback={null}><MemberMoments /></Suspense>}
-      {fireflyReady ? <FireflyPicker hrefs={[...NAV.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href)} here={location} onPick={setFirefly} /> : null}
+      {fireflyReady ? <FireflyPicker hrefs={[...NAV_PLACED.filter(isGroup).flatMap((g) => g.items.filter(visible)), ...accountItems].map((l) => l.href)} here={location} onPick={setFirefly} /> : null}
     </div>
     </MenuWaitingFor.Provider></MenuFirefly.Provider></MenuFolderNames.Provider>
   );
