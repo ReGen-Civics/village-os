@@ -46,8 +46,9 @@ describe("the suggestions above the talk box", () => {
   it("never name money, pay, a vote or a person, and never invite ranking or judging anybody", () => {
     for (const line of all()) {
       expect(line, line).not.toMatch(FORBIDDEN);
-      // No person is named: a capital only opens the line, or is "I" or one of the platform's own nouns.
-      const inner = line.slice(1).replace(/\b(FAQ|Library|Admin|I)\b/g, "");
+      // No person is named: a capital only opens the line, or is "I" or one of the platform's own nouns (the Game and a
+      // Quest take a capital, as the voice sheet writes them).
+      const inner = line.slice(1).replace(/\b(FAQ|Library|Admin|Game|Quest|Quests|I)\b/g, "");
       expect(inner, `"${line}" names something with a capital`).not.toMatch(/[A-Z]/);
     }
   });
@@ -58,6 +59,25 @@ describe("the suggestions above the talk box", () => {
       expect(line, line).toMatch(/[.?]$/);
       expect(line, line).not.toMatch(/[–—]/);
     }
+  });
+
+  it("a first meeting has its own three, word for word, whatever the tab and however wide the dock", () => {
+    const FIRST = ["What should I set up first?", "What does starting a Game mean here?", "Can I change this later?"];
+    for (const tab of ["home", "variables", "a-tab-with-none"]) {
+      expect(words(suggestionsFor({ mode: "helper", tab, firstMeeting: true }, true)), tab).toEqual(FIRST);
+      expect(words(suggestionsFor({ mode: "helper", tab, firstMeeting: true }, true, DOCKED_SUGGESTIONS)), tab).toEqual(FIRST);
+    }
+    // Once something is said back it is a conversation like any other.
+    expect(words(suggestionsFor({ mode: "helper", tab: "home", firstMeeting: true }, false))).toEqual(words(suggestionsFor({ mode: "helper", tab: "home" }, false)));
+    // Left out, or said false, the everyday ones stand.
+    expect(words(suggestionsFor({ mode: "helper", tab: "home", firstMeeting: false }, true))).toEqual(words(suggestionsFor({ mode: "helper", tab: "home" }, true)));
+    // They are held to every rule the others are: the tests around this one read them through everySuggestion.
+    for (const line of FIRST) expect(all(), line).toContain(line);
+    for (const line of FIRST) expect(line, line).not.toMatch(FORBIDDEN);
+  });
+
+  it("write the Game and a Quest with a capital", () => {
+    for (const line of all()) expect(line, line).not.toMatch(/\b(game|games|quest|quests|gratitude)\b/);
   });
 
   it("are keyed by Admin tabs that exist, so a renamed tab cannot leave a dead row", () => {

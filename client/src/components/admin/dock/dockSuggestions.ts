@@ -6,7 +6,9 @@
  * puts the words into the box and stops there: nothing is asked until the
  * person presses Send. They depend on where the person is (the open Admin tab,
  * or the launch or organizing guide) and on whether the conversation has
- * started.
+ * started. A FIRST MEETING (a new village's first evening, which the host
+ * says with GuideDock's `firstMeeting`) has three of its own: the everyday
+ * ones ask about a village that is already running.
  *
  * WHAT A SUGGESTION MAY NEVER DO. Name money, pay, a vote or a person, or
  * invite ranking, comparing or judging anybody: those stay a person's own
@@ -39,7 +41,7 @@ export const SUGGESTED_TABS = [
 export type SuggestedTab = (typeof SUGGESTED_TABS)[number];
 
 /** Which of the dock's conversations is open. */
-export type SuggestionPlace = { mode: "helper"; tab: string } | { mode: "launch" } | { mode: "organize" };
+export type SuggestionPlace = { mode: "helper"; tab: string; firstMeeting?: boolean } | { mode: "launch" } | { mode: "organize" };
 
 export const MAX_SUGGESTIONS = 4;
 /** The side column is narrow, so docked it shows three; opened wide it has room for all four. */
@@ -50,6 +52,13 @@ const GENERAL: readonly MessageDescriptor[] = [
   msg({ message: "Where do I set the timezone?", context: "guide dock, a suggested question" }),
   msg({ message: "What is still not set up?", context: "guide dock, a suggested question" }),
   msg({ message: "What can you help me with?", context: "guide dock, a suggested question" }),
+];
+
+/** A first meeting, before anything is said back: what a founder asks on the first evening. Three, whatever the tab. */
+const FIRST_MEETING: readonly MessageDescriptor[] = [
+  msg({ message: "What should I set up first?", context: "guide dock, a suggested question at a first meeting" }),
+  msg({ message: "What does starting a Game mean here?", context: "guide dock, a suggested question at a first meeting" }),
+  msg({ message: "Can I change this later?", context: "guide dock, a suggested question at a first meeting" }),
 ];
 
 /** Once a conversation has started: ways to go on from the last answer. */
@@ -116,8 +125,8 @@ const BY_TAB: Record<SuggestedTab, readonly MessageDescriptor[]> = {
     msg({ message: "What can you help me with?", context: "guide dock, a suggested question" }),
   ],
   "quests-admin": [
-    msg({ message: "How do quests work here?", context: "guide dock, a suggested question" }),
-    msg({ message: "Where do I add a quest?", context: "guide dock, a suggested question" }),
+    msg({ message: "How do Quests work here?", context: "guide dock, a suggested question" }),
+    msg({ message: "Where do I add a Quest?", context: "guide dock, a suggested question" }),
     msg({ message: "What is this page for?", context: "guide dock, a suggested question" }),
     msg({ message: "What can you help me with?", context: "guide dock, a suggested question" }),
   ],
@@ -155,15 +164,17 @@ export function suggestionsFor(place: SuggestionPlace, empty: boolean, max: numb
         ? empty ? ORGANIZE : GOING_ON
         : !empty
           ? GOING_ON
-          : isSuggestedTab(place.tab)
-            ? BY_TAB[place.tab]
-            : GENERAL;
+          : place.firstMeeting
+            ? FIRST_MEETING
+            : isSuggestedTab(place.tab)
+              ? BY_TAB[place.tab]
+              : GENERAL;
   return pick.slice(0, Math.max(0, Math.min(MAX_SUGGESTIONS, max)));
 }
 
 /** Every suggestion there is, for the test that holds each one to the rules above. */
 export function everySuggestion(): readonly MessageDescriptor[] {
-  return [GENERAL, GOING_ON, LAUNCH, LAUNCH_GOING_ON, ORGANIZE, ...SUGGESTED_TABS.map((t) => BY_TAB[t])].flat();
+  return [GENERAL, FIRST_MEETING, GOING_ON, LAUNCH, LAUNCH_GOING_ON, ORGANIZE, ...SUGGESTED_TABS.map((t) => BY_TAB[t])].flat();
 }
 
 /** The suggestions for a place, in the reader's language. */
