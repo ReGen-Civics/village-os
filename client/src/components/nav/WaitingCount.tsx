@@ -31,8 +31,24 @@ const listeners = new Set<() => void>();
 /** An item decided on the page "Waiting on you" opens. */
 export const DECIDED_ON_WORK = /^\/(?:governance\/work|review)(?:[?#/]|$)/;
 
-/** The inbox's reply, read defensively: how many of its items wait on /governance/work. Null when it is not one. */
+/** The doors "Waiting on you" opens, as the inbox keys them in `byDoor`: the page, and its old address. */
+const WORK_DOORS = ["/governance/work", "/review"] as const;
+const counted = (n: unknown): number => (typeof n === "number" && Number.isFinite(n) && n > 0 ? Math.floor(n) : 0);
+
+/**
+ * The inbox's reply, read defensively: how many things wait on /governance/work. Null when it is not one.
+ *
+ * TWO SHAPES. Once the inbox pages its `items`, counting them undercounts (its QA saw 20 where 37 waited), so the
+ * server counts before paging and sends `byDoor`: how many wait behind each page, keyed by the path of `decideAt`.
+ * When the reply carries it, it is the count, even when `items` holds fewer rows. A reply without it (every server
+ * before that change) is counted from `items`, as before. The shape is read here, never imported from the inbox's
+ * own files, so this chunk stays its own.
+ */
 export function waitingOf(v: unknown): number | null {
+  const byDoor = (v as { byDoor?: unknown } | null)?.byDoor;
+  if (byDoor && typeof byDoor === "object" && !Array.isArray(byDoor)) {
+    return WORK_DOORS.reduce((sum, door) => sum + counted((byDoor as Record<string, unknown>)[door]), 0);
+  }
   const items = (v as { items?: unknown } | null)?.items;
   if (!Array.isArray(items)) return null;
   return items.filter((i) => typeof (i as { decideAt?: unknown })?.decideAt === "string" && DECIDED_ON_WORK.test((i as { decideAt: string }).decideAt)).length;
@@ -81,7 +97,8 @@ export function useWaiting(who: string): number | null {
  * `dot`: a small mark on a group's name or the account button, with the number for a screen reader.
  */
 /** `at`: where the dot sits on its host (the phone's More tab keeps it inside the screen's edge). */
-export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 -top-1" }: { who: string | number; variant?: "badge" | "dot"; at?: string }) {
+/** `bare`: on a row already named "Waiting on you", read just the number, so the name is not said twice. */
+export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 -top-1", bare = false }: { who: string | number; variant?: "badge" | "dot"; at?: string; bare?: boolean }) {
   const { t } = useLingui();
   const n = useWaiting(String(who));
   if (!n || n <= 0) return null;
@@ -98,7 +115,7 @@ export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 
       <span aria-hidden="true" data-waiting-count="" className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full border border-border bg-muted px-1.5 text-xs font-bold leading-none text-foreground align-middle">
         {n > 99 ? "99+" : n}
       </span>
-      <span className="sr-only">, {words}</span>
+      <span className="sr-only">, {bare ? n : words}</span>
     </>
   );
 }

@@ -26,8 +26,8 @@
  * the open roles), and each role one framed panel, its card opening inside its own frame, so a reader always
  * knows which role they are reading. A lead role names the roles still to come under it in one line.
  */
-import GlossaryTip from "@/components/GlossaryTip";
-import { lazy, Suspense, type ReactNode } from "react";
+import { useGlossary } from "@/hooks/useGlossary";
+import { lazy, Suspense, useId, type ReactNode } from "react";
 import { LayoutList} from "lucide-react";
 import { GrowthRings } from "@/components/sacred/living";
 import { useLingui } from "@lingui/react/macro";
@@ -92,6 +92,13 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
   const { t, i18n } = useLingui();
   const shareNames = useShareNames();
   const circle = roles[0]?.circleName ?? null;
+  // What Formation means, when the village wrote it (shared/glossary.ts). The word is this switch's own label, and a
+  // tip never sits inside a button, so while the Formation view is chosen the sentence is one quiet line under the
+  // switch, which a phone shows as readily as a mouse, and the button names it as its description (QA round 1,
+  // 27 Nov 2026: a title reached nobody on touch).
+  const formationMeaning = useGlossary()?.formation || "";
+  const fmId = useId();
+  const fmShown = view === "formation" && formationMeaning !== "";
 
   const toggle = (
     <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={t({ message: "How to show the team", context: "founding team view switch" })}>
@@ -105,6 +112,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
           key={v}
           type="button"
           aria-pressed={view === v}
+          aria-describedby={v === "formation" && fmShown ? fmId : undefined}
           onClick={() => onView(v)}
           className={`inline-flex min-h-11 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
         >
@@ -143,12 +151,13 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
       {heading}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {tally}
-        {/* The view switch, and the mark that says what Formation means (shared/glossary.ts). */}
-        <span className="inline-flex items-center">
-          {toggle}
-          <GlossaryTip slot="formation" word={t({ message: "Formation", context: "glossary: the word a tip explains" })} />
-        </span>
+        {toggle}
       </div>
+      {fmShown && (
+        <p id={fmId} className="-mt-3 text-sm text-muted-foreground sm:max-w-md sm:self-end sm:text-right" data-formation-meaning="">
+          {formationMeaning}
+        </p>
+      )}
       {view === "sheet" ? (
         <div className="flex flex-col gap-3" data-testid="team-sheet">
           {!heading && <p className="text-xs font-bold uppercase tracking-widest text-notice">{t({ message: "Open now", context: "team sheet group" })}</p>}

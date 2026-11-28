@@ -27,6 +27,8 @@ import type { ReactNode } from "react";
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { id: "u-rye", name: "Rye", role: "admin" }, loading: false }),
+  // The launch guide's chat box keeps its draft under the signed-in id (components/chat/chatDraft.ts).
+  useOptionalAuth: () => ({ user: { id: "u-rye", name: "Rye", role: "admin" }, loading: false }),
 }));
 // The real module but for the catalog, so `moduleIsOn` (the launch guide reads
 // it for the canvas) answers from the list below and the canvas reads off.

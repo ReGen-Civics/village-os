@@ -177,6 +177,7 @@ import { register as registerGovernanceLandingRoutes } from "./routes/governance
 import { register as registerMechanicsHistoryRoutes } from "./routes/mechanicsHistory";
 import { register as registerChangeRequestRoutes } from "./routes/changeRequests";
 import { register as registerStewardSlateRoutes } from "./routes/stewardSlate";
+import { register as registerLaunchFactsRoutes } from "./routes/launchFacts";
 import { registerMoonSettlementRoutes } from "./routes/moonSettlement";
 // The dispatcher lane: the landing path, the change-set executor and the roll notice.
 import { applyDueGovernance, autoSettleExpired, digestComposerFor, itemKindsOf, markNotApplicable, overrideDials, routeOutcome, runVetoWatch, vetoWindowOn, type CloseRouting, type LandingDeps, type SubjectCloser } from "./lib/applyDue";
@@ -195,6 +196,7 @@ import { register as registerAgentCompanionRoutes } from "./routes/companion";
 import { register as registerOrganizeRoutes } from "./routes/organize";
 import { register as registerAdminHelperRoutes } from "./routes/adminHelper";
 import { register as registerAdminSearchRoutes } from "./routes/adminSearch";
+import { register as registerSearchRoutes, searchSources } from "./routes/search";
 import { register as registerFieldGuideRoutes } from "./routes/fieldGuide";
 import { register as registerContentTranslationRoutes } from "./routes/contentTranslations";
 import { readTranslationReply, translationMessage, translationSystemPrompt } from "./lib/contentTranslationDraft";
@@ -351,6 +353,7 @@ import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBD
 import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
+import { register as registerGardenArtRoutes, GARDEN_ART_DIR } from "./routes/gardenArt";
 import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
 import { pathArtFocus } from "../shared/pathCardArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
@@ -6730,7 +6733,7 @@ async function startServer() {
   registerSeatGrantFreshness(app, seatGrants); // 0322: the seat grants the synchronous gate reads, fresh for every API request
   app.use(liveViewMiddleware({ verify: (t) => verifyToken(getPool(), t), userById: (id) => members.byId(id), stands: holderStands, mayView: mayLiveView, mayViewAdmin: mayLiveViewAdmin, auditAdminView: async (u, row) => { await recordEvent(getPool(), { kind: "audit", text: `live-view:admin-read:${row.prefix}`, actorUserId: String(u.id), entityType: "agent_token", entityRef: row.id, audience: "admin" }); }, sessionFor: (u) => encodeToken(AUTH_TOKEN_SECRET, u.id, u.email, u.tokenVersion ?? 0), overLimit })); // ahead of the people lock and the entrance: a live.view token reads as its holder, and only reads (server/lib/liveView.ts)
   registerPeopleLock(app, { authedUser, getPool, boolVar });
-  registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name, origin: () => notifyDeps.origin() }, roleNames: async () => new Map((await listOrgRoles(getPool())).map((r) => [String(r.id), String(r.name)])), accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id), add: (m) => members.add(m), makeHandle: (name) => uniqueHandle(slugifyHandle(name)), joined: (u) => void joined(u) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
+  const entrance = registerEntrance(app, { getPool, authedUser, boolVar, stringVar, numberVar, turnstileSecret: () => secretValue("turnstile_secret_key"), secret: AUTH_TOKEN_SECRET, clientIp, overLimit, guardCapability, passToken: () => secretValue("entrance_pass_token"), brevo: { apiKey: () => secretValue("brevo_api_key"), listId: () => numberVar("entrance.brevo_list_id") }, isAgent: async (req) => isAgentBearer(req.headers.authorization) && (await verifyToken(getPool(), String(req.headers.authorization).slice(7))).ok, mail: { ready: () => commsPostOffice.hasApiKey() && !!commsPostOffice.sender(), sendEmail: (o) => sendResendEmail(o), escapeHtml, projectName: () => mergedConfig().project.name, origin: () => notifyDeps.origin() }, roleNames: async () => new Map((await listOrgRoles(getPool())).map((r) => [String(r.id), String(r.name)])), accounts: { byEmail: (e) => members.byEmail(e), update: (id, m) => members.update(id, m), encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v), publicUser, endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), recordAudit: (t, id) => recordAuthAudit(t, id), add: (m) => members.add(m), makeHandle: (name) => uniqueHandle(slugifyHandle(name)), joined: (u) => void joined(u) } }); // the portal entrance, in front of every later route (shared/entrance.ts)
 
   // ── LANE L6 ZONE START: your agent ──────────────────────────────────────────
   //
@@ -13096,6 +13099,8 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
 
   // Admin search: the index the search bar and the guide read, filtered by the one gate (server/routes/adminSearch.ts).
   registerAdminSearchRoutes(app, { isAdmin, mayStillSee, dials: () => allVariables(), lifecycle: (id) => effectiveLifecycle(id) });
+  // Find anything: every place this reader may open, and the guide for words the search missed (server/routes/search.ts).
+  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", villageGuideName: () => getWorkWithUs().assistantName });
 
   registerCapabilityExplainerRoutes(app, { isAdmin, members, capabilityCtx, stageOf });
 
@@ -24507,6 +24512,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
   registerGovernanceModeRoutes(app, { authedUser, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate });
   registerStewardSlateRoutes(app, { authedUser, isAdmin, getPool, members, firstName });
+  registerLaunchFactsRoutes(app, { isAdmin, getPool });
   registerGoverningPurposeRoutes(app, { authedUser, isAdmin, adminActor, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate, addActivity });
   registerGovernanceAgreementRoutes(app, { authedUser, isAdmin, hasMembership, getPool, capabilityCtx, firstName, weightModeNow, circlesRepo, notify, buildElectorate, addActivity, villageTimezone });
   // The two optional canvas modules close their doors here, before any of their routes (Rye, 2026-10-01).
@@ -25869,6 +25875,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
+  registerGardenArtRoutes(app, { dir: path.resolve(__dirname, "..", GARDEN_ART_DIR) });
   registerNatureArtRoutes(app, { dir: path.resolve(__dirname, "..", NATURE_ART_DIR), isAdmin, guardCapability, overLimit, getPool });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

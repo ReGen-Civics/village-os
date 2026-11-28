@@ -64,7 +64,7 @@ export default function MenuRows({
             label={folderWord(row.label, folders, i18n)}
             badge={
               <>
-                {waitingFor && row.links.some((l) => l.count === "waiting") ? <AccountCount count="waiting" who={waitingFor} /> : null}
+                {waitingFor && row.links.some((l) => l.count === "waiting") ? <AccountCount count="waiting" who={waitingFor} named /> : null}
                 {pick && row.links.some((l) => l.href === pick) ? <Firefly href={pick} /> : null}
               </>
             }

@@ -306,8 +306,9 @@ export const NAV: readonly NavEntry[] = [
       { href: "/rights", label: "Rights and agreements", sub: "Guides" },
       { href: "/rights#leaving-well", label: "Leaving Well", sub: "Guides" },
       // The village's checklists and their practice runs: the reference shelf's, beside the guides (it left Your things
-      // so Pay could join the Wallet there, 27 Nov 2026).
-      { href: "/protocols", label: "Protocols", module: "protocols", newcomers: "never", sub: "Guides" },
+      // so Pay could join the Wallet there, 27 Nov 2026). Signed in only, as it was in the account menu: a newcomer
+      // keeps it, a visitor never had it.
+      { href: "/protocols", label: "Protocols", module: "protocols", signedIn: true, sub: "Guides" },
       // How we work (the lead, round 2: "the how we work and the game mechanics and all of that would also be under
       // the governance"). Renamed on 2026-09-28 with the page it opens; the route stays put.
       { href: "/governance/how", label: "How we work together", sub: "How we work" },
