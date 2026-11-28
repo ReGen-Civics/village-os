@@ -9,7 +9,9 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ADMIN_PERSON_PER_HOUR,
   ASSISTANT_MODES,
+  personPerHour,
   ANON_ADDRESS_DAY_DIAL,
   ANON_DAY_DIAL,
   ASSIST_BURST_PER_HOUR,
@@ -1058,5 +1060,96 @@ describe("the shares are village dials, and caps fail closed", () => {
     expect(await callAssistant(req({ mode: "member", userId: "u-ana" }))).toEqual({ ok: false, status: 429, error: SHARE_SPENT });
     expect(h.buckets.find(([b]) => b.includes(":slice:"))?.[1]).toBe(0);
     expect(h.posts()).toBe(0);
+  });
+});
+
+/**
+ * ONE PERSON'S HOUR ON AN ADMIN MODE (27 Nov 2026). Only the helper counted each admin; every other admin mode had
+ * a day and the network's burst guard. The engine now counts the person, once per ask, beside the burst guard, on the
+ * user id the route already passes, and refuses in the burst guard's own shape.
+ */
+describe("one person's hour on an admin mode", () => {
+  const ADMIN_MODES = (Object.keys(ASSISTANT_MODES) as Array<keyof typeof ASSISTANT_MODES>).filter((m) => ASSISTANT_MODES[m].audience === "admin");
+
+  it("gives every admin mode a number of its own, and no other mode one", () => {
+    expect(ADMIN_MODES.sort()).toEqual(["adminHelper", "launch", "organize", "studio", "synthesize", "translate"]);
+    expect(Object.fromEntries(ADMIN_MODES.map((m) => [m, ASSISTANT_MODES[m].personPerHour]))).toEqual({
+      adminHelper: 60,
+      launch: 30,
+      organize: 30,
+      studio: 40,
+      synthesize: 10,
+      translate: 30,
+    });
+    for (const [id, spec] of Object.entries(ASSISTANT_MODES)) {
+      if (spec.audience === "admin") {
+        expect(personPerHour(spec), id).toBe(spec.personPerHour);
+        // An hour of one person never holds more than the mode's whole day.
+        expect(personPerHour(spec)!, id).toBeLessThanOrEqual(spec.dailyBudget);
+      } else {
+        expect(spec.personPerHour, id).toBeUndefined();
+        expect(personPerHour(spec), id).toBeNull();
+      }
+    }
+    // A row added later with no number still gets one, never none.
+    expect(personPerHour({ audience: "admin", dailyBudget: 50, maxTokens: 1, toolCalls: 0 })).toBe(ADMIN_PERSON_PER_HOUR);
+    // Caps fail closed: 0 means zero.
+    expect(personPerHour({ audience: "admin", dailyBudget: 50, maxTokens: 1, toolCalls: 0, personPerHour: 0 })).toBe(0);
+  });
+
+  it("counts the person once per ask, after the burst guard and before the day, at the mode's own number", async () => {
+    for (const mode of ADMIN_MODES) {
+      const h = limiterHarness();
+      expect((await callAssistant(req({ mode, userId: "u-founder" }))).ok, mode).toBe(true);
+      expect(h.buckets.map(([b]) => undated(b)).slice(0, 3), mode).toEqual(["assist:10.0.0.1", `assistant-person:${mode}:u-founder`, `assistant-day:${mode}`]);
+      expect(h.buckets[1][1], mode).toBe(ASSISTANT_MODES[mode].personPerHour);
+    }
+  });
+
+  it("counts once however many reader turns the answer takes", async () => {
+    const h = harness({
+      villageKey: "k",
+      replies: [
+        { content: [{ type: "tool_use", id: "t1", name: "village_brief", input: {} }], stop_reason: "tool_use" },
+        { content: [{ type: "text", text: '{"reply":"done"}' }], stop_reason: "end_turn" },
+      ],
+    });
+    const r = await callAssistant(req({ mode: "organize", userId: "u-founder", tools: [{ name: "village_brief", description: "x", input_schema: { type: "object", properties: {} } }], runTool: async () => ({ ok: true, key: "village.brief", data: {} }) }));
+    expect(r.ok).toBe(true);
+    expect(h.bodies).toHaveLength(2);
+    expect(h.buckets.filter((b) => b.startsWith("assistant-person:"))).toEqual(["assistant-person:organize:u-founder"]);
+  });
+
+  it("refuses a person over their hour in the burst guard's own shape, spending none of the day and sending nothing", async () => {
+    const h = limiterHarness({ state: (b) => (b === "assistant-person:launch:u-founder" ? "over" : "under") });
+    const r = await callAssistant(req({ mode: "launch", userId: "u-founder" }));
+    expect(r).toEqual({ ok: false, status: 429, error: expect.stringContaining("Slow down") });
+    expect(h.buckets.some(([b]) => b.startsWith("assistant-day:"))).toBe(false);
+    expect(h.posts()).toBe(0);
+    // Another admin, and the same admin on another mode, still have theirs.
+    expect((await callAssistant(req({ mode: "launch", userId: "u-other" }))).ok).toBe(true);
+    expect((await callAssistant(req({ mode: "organize", userId: "u-founder" }))).ok).toBe(true);
+  });
+
+  it("fails closed when the limiter cannot be read", async () => {
+    const h = limiterHarness({ state: (b) => (b.startsWith("assistant-person:") ? "unavailable" : "under") });
+    expect(await callAssistant(req({ mode: "studio", userId: "u-founder" }))).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("holds on the Sera road too: whoever answers, one person cannot spend the mode's day alone", async () => {
+    const ask = vi.fn(async () => ({ ok: true as const, text: "hi" }));
+    limiterHarness({ state: (b) => (b.startsWith("assistant-person:") ? "over" : "under") });
+    expect(await callAssistant(req({ mode: "organize", userId: "u-founder", sera: ask as any }))).toEqual({ ok: false, status: 429, error: expect.stringContaining("Slow down") });
+    expect(ask).not.toHaveBeenCalled();
+  });
+
+  it("counts nobody on a member or public mode, and nobody when the route passed no user", async () => {
+    const member = limiterHarness();
+    await callAssistant(req({ mode: "member", userId: "u-ana" }));
+    expect(member.buckets.some(([b]) => b.startsWith("assistant-person:"))).toBe(false);
+    const anonymous = limiterHarness();
+    await callAssistant(req({ mode: "organize" }));
+    expect(anonymous.buckets.some(([b]) => b.startsWith("assistant-person:"))).toBe(false);
   });
 });

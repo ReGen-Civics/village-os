@@ -76,6 +76,7 @@ import { listOrgRoles } from "../lib/orgChart";
 import { recordChangeOutcome, recordStagedOutcome } from "../lib/suggestionOutcome";
 import { closeStaged, closeStagedForChange, heldOf, markPublished, releaseReconsider, stagedById, type StagedRow } from "../repos/suggestionStaging";
 import { afterRelease, HELD_FOR_FILER, readReconsider, sameAsLive, stageAndSort, type Filing } from "../lib/connectorStaging";
+import { GUIDE_DRAFT_HEADER, isGuideDraft } from "../lib/guideFiling";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState" | "capabilityCtx"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -284,7 +285,9 @@ export function register(app: Express, deps: Deps): void {
     if (refused.length) {
       return res.status(400).json({ error: "refused", message: `Nothing was filed. ${refused.length} of ${list.length} cannot be proposed as sent.`, refused });
     }
-    const kind = (await isAgentAccount(pool, uid)) || req.get("x-village-connector") ? "agent" : "person";
+    // An agent account or the connector first. Then the guide's draft, sent to review by this person from the dock:
+    // only this process can make that mark (server/lib/guideFiling.ts), so no outside caller files as the guide.
+    const kind = (await isAgentAccount(pool, uid)) || req.get("x-village-connector") ? "agent" : isGuideDraft(req.get(GUIDE_DRAFT_HEADER)) ? "guide" : "person";
     // Staged and read by the engine first (server/lib/connectorStaging.ts): what is held waits in Held with its reason,
     // what already waits is answered with that change, and only the rest becomes a proposed change.
     const now = new Date();

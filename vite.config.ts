@@ -14,7 +14,7 @@ import {
   copyPartsIn,
 } from "./client/src/lib/routePreload";
 import { pointAtUnhintedFonts } from "./client/src/lib/unhintedFonts";
-import { mayJoinSharedGroup } from "./client/src/lib/privilegedChunks";
+import { drawsAdminOnly, mayJoinSharedGroup, opensPrivileged } from "./client/src/lib/privilegedChunks";
 import { allLazyInBoot, bootIntrudersMessage, judgeRoute, kb, lazyModulesInBoot, pageChunk, routeVerdictMessage, shortId, type BootChunkFacts, type RouteChunkFacts } from "./client/src/lib/bootSet";
 import { CopyCollector, copyPartRead, partsBesideFiles, splitLongCopy } from "./client/src/i18n/copySplit";
 import { splitArtifact, type SplitResult } from "./server/lib/groundsSplit";
@@ -535,7 +535,7 @@ function bigPageGroupOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: 
       return Array.from(own).reduce((n, m) => n + shippedBytes(getModuleInfo(m)?.code ?? ""), 0);
     };
     const big = Array.from(getModuleIds())
-      .filter((m) => SMALL_PAGE.test(m) && !SHOPFRONT_PAGES.test(m) && !OWN_FILE_PAGE.test(m) && !eager.has(m) && !key.has(m) && mayJoinSharedGroup(m))
+      .filter((m) => SMALL_PAGE.test(m) && !SHOPFRONT_PAGES.test(m) && !OWN_FILE_PAGE.test(m) && !eager.has(m) && !key.has(m) && groupablePage(m, getModuleInfo))
       .filter((m) => (getModuleInfo(m)?.dynamicImporters.length ?? 0) > 0 && (getModuleInfo(m)?.code?.length ?? 0) >= MID_PAGE_BYTES)
       .sort((a, b) => path.basename(a).localeCompare(path.basename(b)));
     let n = 1;
@@ -635,7 +635,11 @@ let keySetModules: Map<string, string> | null = null;
  */
 const SMALL_GROUP_NEVER = /components[\\/](?:voice|companion|companionWelcome)[\\/]|components[\\/](?:MicButton|form[\\/]MicInput)\.tsx$|shared[\\/](?:voiceNotes|companionPersona)\.ts$/;
 
-type ModuleInfoOf = (id: string) => { code?: string | null; importers: readonly string[]; importedIds: readonly string[] } | null;
+type ModuleInfoOf = (id: string) => { code?: string | null; importers: readonly string[]; importedIds: readonly string[]; dynamicallyImportedIds?: readonly string[] } | null;
+/** A module a shared component group may take: never the Treasury's or Admin's pieces, and never a door to one (client/src/lib/privilegedChunks.ts). */
+const groupable = (id: string, info: ModuleInfoOf): boolean => mayJoinSharedGroup(id) && !opensPrivileged(info(id)?.dynamicallyImportedIds ?? []);
+/** A page a page group may take: never a privileged page, and never one that draws the dock or the garden itself (the same file). */
+const groupablePage = (id: string, info: ModuleInfoOf): boolean => mayJoinSharedGroup(id) && !drawsAdminOnly(info(id)?.importedIds ?? []);
 
 /**
  * Which merged group a module joins, or null. It must be small, lazy, shared
@@ -657,7 +661,7 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
     !eager.has(id) &&
     !key.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
-    mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
+    groupable(id, info) && // never the Treasury's or Admin's pieces, nor a door to one (client/src/lib/privilegedChunks.ts)
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
@@ -714,7 +718,7 @@ function followsInto(dep: string, by: string, mayImport: readonly string[], info
   const d = info(dep);
   if (!d?.code || d.importers.length !== 1 || d.importers[0] !== by) return false;
   if (!TABLE_HOME.test(dep) && !SMALL_GROUPS.some((g) => g.home.test(dep))) return false;
-  if (eager.has(dep) || key.has(dep) || SMALL_GROUP_NEVER.test(dep) || !mayJoinSharedGroup(dep) || NATURAL_KIT.test(dep) || PAGE_COPY.test(dep)) return false;
+  if (eager.has(dep) || key.has(dep) || SMALL_GROUP_NEVER.test(dep) || !groupable(dep, info) || NATURAL_KIT.test(dep) || PAGE_COPY.test(dep)) return false;
   if (shippedBytes(d.code) >= SMALL_MODULE_BYTES) return false;
   return d.importedIds
     .filter((x) => !(x.includes("node_modules") || eager.has(x) || key.has(x)))
@@ -811,7 +815,7 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
       !id.startsWith("\0") &&
       !eager.has(id) &&
       !SMALL_GROUP_NEVER.test(id) &&
-      mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
+      groupable(id, info) && // never the Treasury's or Admin's pieces, nor a door to one (client/src/lib/privilegedChunks.ts)
       m.importers.length >= 2 &&
       !NATURAL_KIT.test(id) &&
       !m.importers.some((by) => NATURAL_KIT.test(by))
@@ -914,7 +918,7 @@ function lazyGroupPlan(g: {
     !eager.has(id) &&
     !keySet.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
-    mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
+    groupable(id, info) && // never the Treasury's or Admin's pieces, nor a door to one (client/src/lib/privilegedChunks.ts)
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id);
   const label = (id: string) => path.basename(id.split("?")[0]).replace(/\.[jt]sx?$/, "");
@@ -1312,7 +1316,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    */
   // A privileged page (Treasury, Admin*, Mint*, Cash*) keeps its own lazy chunk at any size, so its
   // code never ships to a member who opens a neighbour in a group (client/src/lib/privilegedChunks.ts).
-  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) {
+  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && groupablePage(id, getModuleInfo)) {
     const code = getModuleInfo(id)?.code;
     if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
     if (SHOPFRONT_PAGES.test(id)) return "shopfront";
@@ -1320,7 +1324,7 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
     const grouped = bigPageGroupOf(id, getModuleInfo, getModuleIds, eagerModules, key);
     if (grouped) return grouped;
   }
-  if (RITES_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) return "rites";
+  if (RITES_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && groupablePage(id, getModuleInfo)) return "rites";
   return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
 }
 

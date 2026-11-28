@@ -1,7 +1,7 @@
 /**
  * THE ADMIN HELPER, the pure half (2026-11-09).
  *
- * The village's guide (Maia, Sera, or whatever the village named it) in a
+ * The village's guide (under the name the village gave it, or Sera) in a
  * panel beside Admin. It answers "how do I", finds the right page or setting,
  * explains what a control does, and proposes ONE change at a time for the
  * admin to apply. The server half is server/routes/adminHelper.ts; the panel
@@ -68,6 +68,34 @@ export interface HelperProposal {
   applyPath: string;
 }
 
+/**
+ * A change the guide drafted for the review page (the dock, 27 Nov 2026;
+ * server/lib/guideFiling.ts). It is not a dial, so it cannot go on the save
+ * bar: "Send to review" files it into the queue at /admin/proposals, where a
+ * person accepts it. The guide applies nothing.
+ */
+export interface HelperFiling {
+  /** What it changes, in one sentence. */
+  summary: string;
+  /** Where it lands, as the review page names it ("Library", "Resident page"). */
+  where: string;
+  /** What it would set, field by field, for the card. */
+  fields: Array<{ label: string; value: string }>;
+  /** The change exactly as the server read it, signed for the person who asked. Send to review hands this back. */
+  ticket: string;
+}
+
+/** What "Send to review" answers (POST /api/admin/helper/file). */
+export interface HelperFiled {
+  /** filed: waits on the review page. waiting: the same change already waits there. held: held before review, with the reason. */
+  state: "filed" | "waiting" | "held";
+  /** The short code the review page shows, such as B-27.1, when it has one. */
+  code: string | null;
+  /** A sentence for the card, when the queue had something to say. */
+  words: string;
+  reviewAt: string;
+}
+
 /** The ask route's answer. */
 export interface HelperAnswer {
   reply: string;
@@ -78,6 +106,8 @@ export interface HelperAnswer {
   refused: string | null;
   /** Which readers the guide opened, for the transparency line. */
   consulted: string[];
+  /** A change drafted for the review page. Only ever sent while the village's dock is on. */
+  filing?: HelperFiling | null;
 }
 
 /**
@@ -107,6 +137,18 @@ export interface HelperStatus {
   available: HelperProvider[];
   /** The name each provider answers under. */
   names: Partial<Record<HelperProvider, string>>;
+  /**
+   * The village turned the guide's dock on (`DOCK_SWITCH`): Admin and the road
+   * to launch draw the dock in place of the helper panel and the launch guide.
+   * Absent while it is off, so an off village's answer is what it always was.
+   */
+  dock?: boolean;
+  /**
+   * Only with the dock on: the village has no Anthropic key of its own, and
+   * its own model answers on a key the platform lends for now. The page says
+   * so, and never says "your village's own key" of a key that is not.
+   */
+  lent?: boolean;
 }
 
 /** The provider a request asked for, when it is one that could answer; else the default. */
@@ -116,6 +158,9 @@ export function chooseProvider(asked: unknown, available: readonly HelperProvide
 
 /** The village's own switch for the helper. Ships on; a village may turn it off. */
 export const HELPER_SWITCH = "platform.admin_helper";
+
+/** The village's switch for the guide's dock (shared/gameVariables.ts). Ships off. */
+export const DOCK_SWITCH = "platform.admin_guide_dock";
 
 // ── The map the panel sends ─────────────────────────────────────────────────
 
@@ -178,6 +223,7 @@ export function proposalRefusal(def: VariableDef | undefined): string | null {
   if (!def) return "That is not a setting Admin knows.";
   if (def.movedToSecret) return `${def.label} lives in the sealed connections now, so change it under Integrations yourself.`;
   if (def.key === HELPER_SWITCH) return "The helper cannot switch itself on or off. That is the village's decision, made under Game Mechanics.";
+  if (def.key === DOCK_SWITCH) return "The guide cannot turn its own dock on or off. That is the village's decision, made under Game Mechanics.";
   if (HANDS_OFF_CATEGORIES.includes(def.category) || MONEY_KEY.test(def.key)) {
     return `${def.label} is about money, and money settings stay in your own hands. Open ${def.category} under Game Mechanics to change it.`;
   }

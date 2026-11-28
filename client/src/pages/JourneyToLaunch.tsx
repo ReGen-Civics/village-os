@@ -17,7 +17,7 @@
  */
 import Layout from "@/components/Layout";
 import { EconomicsView } from "@/components/journey/EconomicsView";
-import { LaunchGuide } from "@/components/journey/LaunchGuide";
+import { JourneyGuide } from "@/components/admin/dock/JourneyGuide";
 import { TestRun } from "@/components/journey/TestRun";
 import { ViewTab } from "@/components/canvas/CanvasBaseline";
 import { CanvasView } from "@/components/canvas/CanvasView";
@@ -631,7 +631,7 @@ export default function JourneyToLaunch() {
           )}
         </div>
       </div>
-      <LaunchGuide open={guideOpen} onClose={() => setGuideOpen(false)} launched={launched} />
+      <JourneyGuide open={guideOpen} onClose={() => setGuideOpen(false)} launched={launched} admin={isAdmin} fixes={items} blocking={status?.blockingOpen} />
     </Layout>
   );
 }

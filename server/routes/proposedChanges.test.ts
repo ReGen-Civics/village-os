@@ -10,6 +10,8 @@
  *   - a change that throws on its way to its route is recorded as failed with its reason, and the rest still run
  *   - an accept keeps what was live just before it, and "propose putting it back" files a new proposal carrying it,
  *     applying nothing; kinds that are never put back keep nothing and say why
+ *   - a change the village guide drafted is filed for the person who sent it, reads as drafted by the guide, and is
+ *     only ever marked so by this process
  */
 import http from "node:http";
 import express from "express";
@@ -20,6 +22,7 @@ import { usersRepo } from "../repos/users";
 import { register } from "./proposedChanges";
 import { backfillConnectorOutcomes } from "../lib/suggestionOutcome";
 import { stageSuggestion } from "../repos/suggestionStaging";
+import { GUIDE_DRAFT_HEADER, guideDraftMark } from "../lib/guideFiling";
 import { CCOS_WORDS_REFUSAL, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 
 const configured = testDbConfigured();
@@ -904,5 +907,44 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(offer.pay).toEqual(held.pay);
     expect(offer.words).toEqual({ term: "We renew together each moon.", bonus: "Five to ten percent of the moon when its goals are met." });
     await q("DELETE FROM org_roles WHERE id = 'r-terms'");
+  });
+
+  it("DRAFTED BY THE GUIDE (27 Nov 2026): filed for the person who sent it, named as the guide's draft, decided by a person, and only this process can mark it", async () => {
+    const drafted = { ...FAQ, body: { question: "Where do I park?", answer: "By the barn." }, summary: "Add an FAQ on parking." };
+    // The mark is this process's own. A made-up one files as the person, like any filing by hand.
+    const forged = await call("POST", "/api/admin/proposals", { batch: "By hand", items: [FAQ] }, ADMIN.id, { [GUIDE_DRAFT_HEADER]: "made-up" });
+    expect(forged.status, JSON.stringify(forged.body)).toBe(200);
+    expect((await q("SELECT proposed_by_kind FROM proposed_changes WHERE id = ?", [forged.body.ids[0]]))[0].proposed_by_kind).toBe("person");
+    await call("POST", "/api/admin/proposals/discard", { ids: forged.body.ids });
+
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Drafted by Sol: Add an FAQ on parking.", items: [drafted] }, ADMIN.id, { [GUIDE_DRAFT_HEADER]: guideDraftMark() });
+    expect(filed.status, JSON.stringify(filed.body)).toBe(200);
+    expect(filed.body.applied).toBe(false);
+    const id = filed.body.ids[0];
+    // The row names the person, and says the guide drafted it. Nothing was applied.
+    expect(await q("SELECT proposed_by, proposed_by_kind, status FROM proposed_changes WHERE id = ?", [id])).toEqual([{ proposed_by: ADMIN.id, proposed_by_kind: "guide", status: "proposed" }]);
+    expect(await q("SELECT proposed_by, proposed_by_kind, title FROM proposed_change_batches WHERE id = ?", [filed.body.batchId])).toEqual([{ proposed_by: ADMIN.id, proposed_by_kind: "guide", title: "Drafted by Sol: Add an FAQ on parking." }]);
+    expect(hits.filter((h) => h.method !== "GET")).toEqual([]);
+
+    // The review page: the person by first name, the kind that words it "drafted by the guide", the guide's name on the batch.
+    const page = await call("GET", "/api/admin/proposals");
+    const waiting = page.body.changes.find((c: any) => c.id === id);
+    expect([waiting.by, waiting.byKind]).toEqual(["Fern", "guide"]);
+    expect(page.body.batches.find((b: any) => b.id === filed.body.batchId)).toEqual(expect.objectContaining({ title: "Drafted by Sol: Add an FAQ on parking.", by: "Fern", byKind: "guide" }));
+
+    // It is the person's, never an agent's: an agent cannot claim it as its own or put it aside.
+    const queue = await call("GET", "/api/admin/proposals/queue", undefined, ADMIN.id);
+    expect(queue.body.batches.flatMap((b: any) => b.items).find((i: any) => i.id === id).yours).toBe(false);
+    expect((await call("POST", "/api/admin/proposals/discard-mine", { ids: [id] }, ADMIN.id)).body.discarded).toBe(0);
+
+    // A person accepts it, through the FAQ's own route as themselves, and the record reads: decided by Fern, drafted by the guide.
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.body.accepted, JSON.stringify(acc.body)).toBe(1);
+    expect(hits.filter((h) => h.method === "POST").map((h) => [h.path, h.auth])).toEqual([["/api/admin/faqs/steward", `Bearer ${ADMIN.id}`]]);
+    const decided = (await call("GET", "/api/admin/proposals")).body.decided.find((d: any) => d.id === id);
+    expect(decided).toEqual(expect.objectContaining({ status: "accepted", by: "Fern", proposedBy: "Fern", proposedByKind: "guide", batchTitle: "Drafted by Sol: Add an FAQ on parking." }));
+    expect((await q("SELECT decided_by FROM proposed_changes WHERE id = ?", [id]))[0].decided_by).toBe(ADMIN.id);
+    // What it teaches is filed with the agents' drafts: a person decided on words a model wrote.
+    expect((await q("SELECT proposer_kind FROM suggestion_outcomes WHERE source_id = ?", [id]))[0]?.proposer_kind).toBe("agent");
   });
 });

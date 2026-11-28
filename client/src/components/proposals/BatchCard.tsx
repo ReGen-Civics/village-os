@@ -224,7 +224,7 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
 }
 
 /** A batch in the history: its decided changes, newest first. */
-export function HistoryBatch({ title, code, found = false, by, byKind, items, zone, renderDecided }: { title: string; code?: string | null; found?: boolean; by?: string; byKind?: "agent" | "person"; items: Decided[]; zone: string; renderDecided: (d: Decided) => ReactNode }) {
+export function HistoryBatch({ title, code, found = false, by, byKind, items, zone, renderDecided }: { title: string; code?: string | null; found?: boolean; by?: string; byKind?: Batch["byKind"]; items: Decided[]; zone: string; renderDecided: (d: Decided) => ReactNode }) {
   const { i18n } = useLingui();
   const took = items.filter((d) => d.status === "accepted").length;
   const kinds = kindsOf(items.map((d) => ({ kind: d.kind ?? "setting", route: d.route ?? { method: "PUT", path: "" } })));

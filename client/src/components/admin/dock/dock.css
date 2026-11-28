@@ -1,0 +1,32 @@
+/*
+ * THE PAGE YIELDS HER ROOM (28 Nov 2026).
+ *
+ * A fixed dock stands at the right-hand side of the window, over the page. As
+ * it was, the page ran on under her: at 1440 wide the Admin page's column
+ * reached 224px into her, and at 1280 wide 384px, so the control at the end
+ * of every row on Game Mechanics sat where nobody could press it.
+ *
+ * So while she stands at the side of a window wide enough for both, the page
+ * ends where she begins. GuideDock.tsx says which shape she is in on the root
+ * (data-guide-dock: "docked", "expanded", or "sheet" on a narrower window,
+ * where she takes the page's whole width and closing her gives it back), and
+ * this is the one rule that reads it:
+ *
+ *   - Admin draws its content in one <main>, beside its own rail and under
+ *     its own header. The header keeps its width; she starts under it.
+ *   - The road to launch is drawn in the site's layout: one <main>, and the
+ *     site's footer after it. Both end where she begins, so a link at the far
+ *     end of the footer never passes under her either.
+ *
+ * 26rem is her width at the side (GuideDock.tsx, the `w-[26rem]` on her
+ * frame), and 80rem is the narrowest window where the page still has a
+ * column worth reading beside her: Admin's rail (14rem), 40rem of page, and
+ * her. dock.test.ts holds the two files to the same two numbers.
+ *
+ * Nothing here is drawn, so nothing here has a colour.
+ */
+@media (min-width: 80rem) {
+  :root[data-guide-dock="docked"] :is(main, main ~ footer) {
+    margin-right: 26rem;
+  }
+}

@@ -1,0 +1,98 @@
+/**
+ * SUGGESTED NEXT STEPS (./dockSuggestions.ts): never more than four, in plain
+ * words, and never one that names money, pay, a vote or a person, or invites
+ * ranking, comparing or judging anybody.
+ */
+import { setupI18n } from "@lingui/core";
+import { describe, expect, it } from "vitest";
+import { navGroups } from "../adminNavGroups";
+import { DOCKED_SUGGESTIONS, everySuggestion, MAX_SUGGESTIONS, SUGGESTED_TABS, suggestionsFor } from "./dockSuggestions";
+
+const EN = setupI18n({ locale: "en", messages: { en: {} } });
+const words = (list: ReturnType<typeof suggestionsFor>) => list.map((d) => EN._(d));
+const all = () => words(everySuggestion());
+
+/** Money, pay and votes stay a person's own; nothing here may invite judging a person either. */
+const FORBIDDEN =
+  /\b(money|pay|pays|paid|payment|payout|wage|wages|salary|salaries|price|prices|cash|budget|budgets|token|tokens|credit|credits|fund|funds|dues|fee|fees|invoice|ledger|treasury|mint|reward|rewards|vote|votes|voting|ballot|ballots|elect|election|objection|veto|rank|ranks|ranking|compare|comparing|score|scores|judge|judging|shortlist|candidate|candidates|applicant|applicants|application|applications|interview|interviews|hire|fire|who should)\b/i;
+
+describe("the suggestions above the talk box", () => {
+  it("are never more than four for any place, started or not", () => {
+    expect(MAX_SUGGESTIONS).toBe(4);
+    const places = [
+      ...SUGGESTED_TABS.map((tab) => ({ mode: "helper" as const, tab })),
+      { mode: "helper" as const, tab: "a-tab-with-none" },
+      { mode: "launch" as const },
+      { mode: "organize" as const },
+    ];
+    for (const place of places) {
+      for (const empty of [true, false]) {
+        const list = suggestionsFor(place, empty);
+        expect(list.length, JSON.stringify(place)).toBeGreaterThan(0);
+        expect(list.length, JSON.stringify(place)).toBeLessThanOrEqual(MAX_SUGGESTIONS);
+        expect(new Set(words(list)).size, "no line twice in one place").toBe(list.length);
+      }
+    }
+  });
+
+  it("are three in the narrow side column, the first three of the same four, and never more than four however many are asked for", () => {
+    expect(DOCKED_SUGGESTIONS).toBe(3);
+    const home = { mode: "helper" as const, tab: "home" };
+    expect(words(suggestionsFor(home, true, DOCKED_SUGGESTIONS))).toEqual(words(suggestionsFor(home, true)).slice(0, 3));
+    expect(suggestionsFor(home, true, 99)).toHaveLength(MAX_SUGGESTIONS);
+    expect(suggestionsFor(home, true, 0)).toHaveLength(0);
+  });
+
+  it("never name money, pay, a vote or a person, and never invite ranking or judging anybody", () => {
+    for (const line of all()) {
+      expect(line, line).not.toMatch(FORBIDDEN);
+      // No person is named: a capital only opens the line, or is "I" or one of the platform's own nouns (the Game and a
+      // Quest take a capital, as the voice sheet writes them).
+      const inner = line.slice(1).replace(/\b(FAQ|Library|Admin|Game|Quest|Quests|I)\b/g, "");
+      expect(inner, `"${line}" names something with a capital`).not.toMatch(/[A-Z]/);
+    }
+  });
+
+  it("are short, plain, and written to be said", () => {
+    for (const line of all()) {
+      expect(line.length, line).toBeLessThanOrEqual(44);
+      expect(line, line).toMatch(/[.?]$/);
+      expect(line, line).not.toMatch(/[–—]/);
+    }
+  });
+
+  it("a first meeting has its own three, word for word, whatever the tab and however wide the dock", () => {
+    const FIRST = ["What should I set up first?", "What does starting a Game mean here?", "Can I change this later?"];
+    for (const tab of ["home", "variables", "a-tab-with-none"]) {
+      expect(words(suggestionsFor({ mode: "helper", tab, firstMeeting: true }, true)), tab).toEqual(FIRST);
+      expect(words(suggestionsFor({ mode: "helper", tab, firstMeeting: true }, true, DOCKED_SUGGESTIONS)), tab).toEqual(FIRST);
+    }
+    // Once something is said back it is a conversation like any other.
+    expect(words(suggestionsFor({ mode: "helper", tab: "home", firstMeeting: true }, false))).toEqual(words(suggestionsFor({ mode: "helper", tab: "home" }, false)));
+    // Left out, or said false, the everyday ones stand.
+    expect(words(suggestionsFor({ mode: "helper", tab: "home", firstMeeting: false }, true))).toEqual(words(suggestionsFor({ mode: "helper", tab: "home" }, true)));
+    // They are held to every rule the others are: the tests around this one read them through everySuggestion.
+    for (const line of FIRST) expect(all(), line).toContain(line);
+    for (const line of FIRST) expect(line, line).not.toMatch(FORBIDDEN);
+  });
+
+  it("write the Game and a Quest with a capital", () => {
+    for (const line of all()) expect(line, line).not.toMatch(/\b(game|games|quest|quests|gratitude)\b/);
+  });
+
+  it("are keyed by Admin tabs that exist, so a renamed tab cannot leave a dead row", () => {
+    const real = new Set([...navGroups(true), ...navGroups(false)].flatMap((g) => g.items.map((i) => i.key)));
+    for (const tab of SUGGESTED_TABS) expect(real.has(tab), tab).toBe(true);
+  });
+
+  it("depend on where the person is, and on whether the conversation has started", () => {
+    expect(words(suggestionsFor({ mode: "helper", tab: "home" }, true))).toContain("What needs me today?");
+    expect(words(suggestionsFor({ mode: "helper", tab: "modules" }, true))).toContain("What can this village run?");
+    // A tab with no row of its own reads the general four.
+    expect(words(suggestionsFor({ mode: "helper", tab: "ledger" }, true))).toEqual(words(suggestionsFor({ mode: "helper", tab: "nowhere" }, true)));
+    expect(words(suggestionsFor({ mode: "helper", tab: "home" }, false))).toContain("Tell me more.");
+    expect(words(suggestionsFor({ mode: "launch" }, true))).toContain("What is blocking the launch?");
+    expect(words(suggestionsFor({ mode: "launch" }, false))).toContain("What comes next?");
+    expect(words(suggestionsFor({ mode: "organize" }, true))).toContain("How do we handle a disagreement?");
+  });
+});

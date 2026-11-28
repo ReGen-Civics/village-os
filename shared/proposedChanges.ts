@@ -53,6 +53,24 @@ export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
 export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed", "unknown"] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
+/**
+ * WHO FILED A CHANGE (`proposed_by_kind`, a varchar(8) on both tables, 0379).
+ *
+ *   agent    an agent account, or anybody through the connector
+ *   person   a person, by hand
+ *   guide    the village guide drafted it in Admin for the person in `proposed_by`, who pressed "Send to review"
+ *            (server/routes/adminHelper.ts). The person is still the one named; the guide only drafted. A person
+ *            accepts it on the review page like any other, so its record reads: decided by a person, drafted by
+ *            the guide. An older release reads the value as `agent`, which is the safe side.
+ */
+export const PROPOSER_KINDS = ["agent", "person", "guide"] as const;
+export type ProposerKind = (typeof PROPOSER_KINDS)[number];
+
+/** A stored value read back as a proposer kind. Anything unknown is an agent's, as it always was. PURE. */
+export function proposerKindOf(v: unknown): ProposerKind {
+  return v === "person" || v === "guide" ? v : "agent";
+}
+
 export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
 
 /** What each kind names, in plain words, for the connector's description and a refusal. */
