@@ -13,6 +13,8 @@
  * gate (`mayStillSee`, shared/capabilities.ts). An admin also gets the registry of acts (shared/adminActs.ts): every
  * Admin tab, control, act and dial, filtered by the same `visibleEntries` admin search uses. The registry is read for
  * words and addresses only; nothing here decides access from it, and each act's own door still answers for itself.
+ * An admin who reads in a language the registry has words in (`X-Village-Locale`, shared/adminActsWords.ts) gets
+ * each registry entry in that language, laid on after the gate chose the entries. The guide's list stays English.
  * PEOPLE AND CODES for an admin are not in this answer: the dialog reads the Players page's own route for people
  * and sends a code to the Review page, so each stays behind the door its own page already has.
  * Roles and circles follow the listing rule `/api/org` reads (an unlisted
@@ -57,6 +59,8 @@ import { brochurePageServed } from "../lib/brochurePages";
 import { isMemberDoor } from "../../shared/brochure";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref, type AdminSearchEntry } from "../../shared/adminSearch";
 import { ADMIN_ACT_ENTRIES } from "../../shared/adminActs";
+import { localizeEntry } from "../../shared/adminActsWords";
+import { noSharedCache, readerLocale } from "../lib/contentTranslationRead";
 import { circleViews } from "../../shared/circleView";
 import { circlesToShow, visibleTo } from "../../shared/roleListing";
 import { rolePath } from "../../shared/roleSlug";
@@ -83,6 +87,26 @@ import { FIND_PAGES, audienceAdmits, lifecycleAdmits, pageEntry, type FindReader
 export function findEntryOf(e: AdminSearchEntry): FindEntry {
   const kind = e.kind === "page" || e.kind === "outside" ? "page" : "setting";
   return { id: `${kind}:${e.id}`, kind, title: e.title, help: e.help, path: adminSearchHref(e), synonyms: e.synonyms };
+}
+
+/**
+ * A registry page whose address is already on the list (the site's own page for it came first) is not listed twice.
+ * For a reader of another language its words are kept as synonyms of the page that IS listed, so what they type
+ * still finds it. The listed page keeps its own name and line. English never reaches this: its answer is unchanged.
+ */
+export function alsoFoundBy(list: FindEntry[], words: FindEntry): void {
+  const i = list.findIndex((x) => x.path === words.path);
+  if (i < 0) return;
+  const kept = list[i];
+  const seen = new Set<string>();
+  const synonyms: string[] = [];
+  for (const s of [...(kept.synonyms ?? []), words.title, ...(words.synonyms ?? [])]) {
+    const key = s.trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    synonyms.push(s);
+  }
+  list[i] = { ...kept, synonyms };
 }
 
 /** Where the roles, circles, quests and people come from. `searchSources` reads them; a test hands in its own. */
@@ -177,10 +201,12 @@ export async function readerOf(deps: Pick<SearchDeps, "authedUser" | "isAdmin">,
 export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any | null, r: FindReader, withPeople: boolean, opts: { registry?: boolean } = {}): Promise<FindEntry[]> {
   const out: FindEntry[] = [];
   const seen = new Set<string>();
-  const put = (e: FindEntry) => {
-    if (seen.has(e.path)) return;
+  /** False when a page at that address is already listed. */
+  const put = (e: FindEntry): boolean => {
+    if (seen.has(e.path)) return false;
     seen.add(e.path);
     out.push(e);
+    return true;
   };
   // Several acts live on one page and share its address, so an act is kept by its own id.
   const ids = new Set<string>();
@@ -213,10 +239,15 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
 
   if (r.admin) {
     const admin = await visibleEntries(opts.registry === false ? [...OUTSIDE_ENTRIES, ...CONTROL_ENTRIES] : ADMIN_ACT_ENTRIES, may, lifecycle);
+    // The reader's language, for the registry only and only after the gate chose the entries. The guide's list
+    // (`registry: false`) stays English: what goes to the provider is what it was.
+    const locale = opts.registry === false ? null : readerLocale(req);
     for (const e of admin) {
-      const found = findEntryOf(e);
-      if (found.kind === "page") put(found);
-      else putAct(found);
+      const words = localizeEntry(e, locale);
+      const found = findEntryOf(words);
+      if (found.kind !== "page") putAct(found);
+      // A page the site already listed at this address keeps its place; a reader of another language still finds it by their words.
+      else if (!put(found) && words !== e) alsoFoundBy(out, found);
     }
   }
 
@@ -262,6 +293,8 @@ export function register(app: Express, deps: SearchDeps): void {
       admin: reader.admin,
       guide: { name: guideName(deps.villageGuideName(), guideAudience(viewer)).name, available: resolveKey() !== null },
     };
+    // An admin's answer differs by the reader's language: never stored, and keyed on the header for a cache that keys.
+    noSharedCache(res);
     res.set("Cache-Control", "private, no-store");
     res.json(body);
   });

@@ -12,6 +12,10 @@
  *                    page's own route so its own door answers, and a review code (B-71), which opens the Review
  *                    page's own lookup. Names and addresses from the roster stay in this browser
  *
+ * IN THE READER'S LANGUAGE. The index read names the reader's language (X-Village-Locale), so an admin's registry
+ * entries arrive in it, and the session's copy is kept per language. Dials are served in English and take the Game
+ * Mechanics page's words here (dialSearchWords.ts), loaded only for an admin whose language is not English.
+ *
  * A proper modal: the focus stays inside, Escape closes it, and the focus goes back to what opened it. Arrows move
  * through every result, Enter opens one. Every row is at least 44px tall, and the whole dialog fits 320px.
  *
@@ -26,6 +30,9 @@ import { plural } from "@lingui/core/macro";
 import { ArrowRight, Search, X } from "lucide-react";
 import { LeafCompass } from "@/components/sacred/livingCore";
 import { useGuideName } from "@/hooks/useGuideName";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { localizeDialEntries, useDialSearchWords } from "./dialSearchWords";
 import { openVillageMenu, useVillageMenuReady } from "./findAnythingDoor";
 import { authToken } from "@/lib/gameApi";
 import { guideNameAtSentenceStart } from "@shared/guideName";
@@ -41,18 +48,23 @@ const auth = (): Record<string, string> => {
   return t ? { Authorization: `Bearer ${t}` } : {};
 };
 
-/** The index, kept for the session per account, so a second open draws at once. */
-let cached: { token: string | null; index: FindIndex } | null = null;
+/** The index, kept for the session per account and per language, so a second open draws at once. */
+let cached: { token: string | null; locale: string; index: FindIndex } | null = null;
 
-async function readIndex(): Promise<FindIndex | null> {
+/** The session's copy, when it was read for this account in this language. */
+const cachedFor = (locale: string): FindIndex | null => (cached && cached.token === authToken() && cached.locale === locale ? cached.index : null);
+
+async function readIndex(locale: string): Promise<FindIndex | null> {
   const token = authToken();
-  if (cached && cached.token === token) return cached.index;
+  const kept = cachedFor(locale);
+  if (kept) return kept;
   try {
-    const r = await fetch(INDEX_URL, { headers: auth() });
+    // The reader's language rides the read, so an admin's registry entries arrive in it. English asks nothing.
+    const r = await fetch(INDEX_URL, { headers: { ...auth(), ...(readerLanguage(locale).headers as Record<string, string> | undefined) } });
     if (!r.ok) return null;
     const index = (await r.json()) as FindIndex;
     if (!Array.isArray(index?.entries)) return null;
-    cached = { token, index };
+    cached = { token, locale, index };
     return index;
   } catch {
     return null;
@@ -135,11 +147,12 @@ function lookFor(admin: boolean) {
 }
 
 export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { returnFocus?: boolean }) => void }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const { locale } = useLocale();
   const [location, setLocation] = useLocation();
   const look = lookFor(location === "/admin" || location.startsWith("/admin/"));
   const [query, setQuery] = useState("");
-  const [index, setIndex] = useState<FindIndex | null | "failed">(cached && cached.token === authToken() ? cached.index : null);
+  const [index, setIndex] = useState<FindIndex | null | "failed">(() => cachedFor(locale));
   const [guide, setGuide] = useState<Guide>({ phase: "idle" });
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
@@ -147,11 +160,11 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
 
   useEffect(() => {
     let live = true;
-    void readIndex().then((i) => live && setIndex(i ?? "failed"));
+    void readIndex(locale).then((i) => live && setIndex(i ?? "failed"));
     return () => {
       live = false;
     };
-  }, []);
+  }, [locale]);
 
   // An admin also searches the Players page's roster, read from that page's own route (its own door answers).
   const isAdmin = !!(index && index !== "failed" && index.admin);
@@ -165,10 +178,12 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
     };
   }, [isAdmin]);
   const playersLine = t({ message: "On the Players page", context: "find anything: where a person from the roster opens" });
+  // Only an admin is served dials, so only an admin whose language is not English fetches their words.
+  const dialWords = useDialSearchWords(locale, i18n, isAdmin);
   const entries = useMemo(() => {
-    const base = index && index !== "failed" ? index.entries : [];
+    const base = localizeDialEntries(index && index !== "failed" ? index.entries : [], dialWords);
     return isAdmin && rosterPeople.length ? withRoster(base, rosterPeople, PLAYERS_PATH, playersLine) : base;
-  }, [index, isAdmin, rosterPeople, playersLine]);
+  }, [index, isAdmin, rosterPeople, playersLine, dialWords]);
   // The guide's name the way every surface reads it (hooks/useGuideName.ts), worded for this reader.
   const guideName = useGuideName().name;
   // "Open the menu" only while the shell listens for it (findAnythingDoor.ts): never a door that does not open.

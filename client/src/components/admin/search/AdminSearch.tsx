@@ -20,14 +20,30 @@
  * the person's own, separate act. The index comes from
  * GET /api/admin/search-index, which asked the one gate, so a control this
  * person cannot use is never offered.
+ *
+ * IN THE READER'S LANGUAGE. The read names the reader's language
+ * (X-Village-Locale), so the server answers in it and the list is read again
+ * when the language changes. Dials are served in English and take the Game
+ * Mechanics page's words here (../../search/dialSearchWords.ts), loaded only
+ * for a reader whose language is not English.
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Search, X, ArrowRight, Clock } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { adminSearchHref, controlsOn, rankAdminSearch, type AdminSearchEntry } from "@shared/adminSearch";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { readerLanguage } from "@/lib/readerLanguage";
+import { localizeDialEntries, useDialSearchWords } from "@/components/search/dialSearchWords";
 import { API_BASE, authHeaders } from "../adminApi";
 import type { NavGroup } from "../adminNavGroups";
-import { goTo, isSearchShortcut, readRecent, rememberPlace, searchEntries, type RecentPlace } from "./adminSearchModel";
+import { goTo, isSearchShortcut, readPageWords, readRecent, rememberPlace, searchEntries, type PageWords, type RecentPlace } from "./adminSearchModel";
+
+/** What one read of the index holds, and the language it was read in. */
+interface Served {
+  locale: string;
+  entries: AdminSearchEntry[];
+  pages: PageWords[];
+}
 
 type Row =
   | { type: "entry"; entry: AdminSearchEntry }
@@ -45,7 +61,8 @@ export default function AdminSearch({
   /** Opens the guide's panel. Absent, no guide row. */
   onHelper?: () => void;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const { locale } = useLocale();
   const kindWord: Record<AdminSearchEntry["kind"], string> = {
     page: t({ message: "Page", context: "admin search, kind of result" }),
     control: t({ message: "Button or field", context: "admin search, kind of result" }),
@@ -56,7 +73,9 @@ export default function AdminSearch({
   };
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [served, setServed] = useState<AdminSearchEntry[] | null>(null);
+  const [read, setRead] = useState<Served | null>(null);
+  // A list read in another language is not this reader's list: it is read again.
+  const served = read && read.locale === locale ? read : null;
   const [recent, setRecent] = useState<RecentPlace[]>(() => readRecent());
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
@@ -78,20 +97,28 @@ export default function AdminSearch({
   useEffect(() => {
     if (!open || served) return;
     const ctrl = new AbortController();
-    fetch(`${API_BASE}/admin/search-index`, { headers: authHeaders(password), signal: ctrl.signal })
+    // The reader's language rides the read, so the server answers in it. English asks nothing.
+    const headers = { ...authHeaders(password), ...(readerLanguage(locale).headers as Record<string, string> | undefined) };
+    fetch(`${API_BASE}/admin/search-index`, { headers, signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : { entries: [] }))
-      .then((d) => setServed(Array.isArray(d?.entries) ? d.entries : []))
+      .then((d) => setRead({ locale, entries: Array.isArray(d?.entries) ? d.entries : [], pages: readPageWords(d?.pages) }))
       .catch(() => {
-        if (!ctrl.signal.aborted) setServed([]);
+        if (!ctrl.signal.aborted) setRead({ locale, entries: [], pages: [] });
       });
     return () => ctrl.abort();
-  }, [open, served, password]);
+  }, [open, served, password, locale]);
+
+  // The dials' words in the reader's language: the Game Mechanics page's, fetched once search is open.
+  const dialWords = useDialSearchWords(locale, i18n, open);
 
   useEffect(() => {
     if (open) setRecent(readRecent());
   }, [open]);
 
-  const all = useMemo(() => searchEntries(groups, served ?? []), [groups, served]);
+  const all = useMemo(
+    () => searchEntries(groups, localizeDialEntries(served?.entries ?? [], dialWords), served?.pages ?? []),
+    [groups, served, dialWords],
+  );
   const ranked = useMemo(() => (query.trim() ? rankAdminSearch(query, all, 12) : []), [query, all]);
   const best = ranked[0]?.kind === "page" ? ranked[0] : null;
   const jumps = useMemo(() => (best?.tab ? controlsOn(best.tab, all) : []), [best, all]);

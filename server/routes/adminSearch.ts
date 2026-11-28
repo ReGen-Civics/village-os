@@ -20,15 +20,34 @@
  * key the village holds, exactly as the route behind the control would refuse
  * them. An entry that names a module is kept only while that module is not off.
  * So the search never offers a control whose page would refuse the person.
+ *
+ * THE READER'S LANGUAGE. A read that names a language the registry has words
+ * in (`X-Village-Locale`, shared/adminActsWords.ts) gets each entry's title,
+ * line and synonyms in that language, with the English words kept behind them
+ * as synonyms. The words are laid on AFTER the gate has chosen the entries, so
+ * a language never changes who sees what. Such a read also gets `pages`: the
+ * tabs' words in that language, which the browser lays over the pages its own
+ * menu holds. A read that names no language, or one with no words, gets
+ * exactly the English answer. Dials stay English here: their words in another
+ * language are the Game Mechanics page's, laid on in the browser
+ * (client/src/components/search/dialSearchWords.ts).
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import type { Capability } from "../../shared/capabilities";
 import { dialEntry, type AdminSearchEntry } from "../../shared/adminSearch";
 import { ADMIN_ACT_ENTRIES } from "../../shared/adminActs";
+import { hasActWords, localizeEntry } from "../../shared/adminActsWords";
+import { noSharedCache, readerLocale } from "../lib/contentTranslationRead";
 
 /** The registry's entries this route serves: everything but the tabs (the menu's) and the dials (read live below). */
 export const SERVED_ACT_ENTRIES: readonly AdminSearchEntry[] = ADMIN_ACT_ENTRIES.filter((e) => e.kind !== "page" && e.kind !== "dial");
+
+/** The registry's tabs. The menu draws them in the browser, so they are served only as words, to a reader of another language. */
+export const TAB_ACT_ENTRIES: readonly AdminSearchEntry[] = ADMIN_ACT_ENTRIES.filter((e) => e.kind === "page");
+
+/** A tab's words in the reader's language, as the browser lays them over its own page entry. */
+export type AdminPageWords = Pick<AdminSearchEntry, "id" | "title" | "help" | "synonyms">;
 
 export interface AdminSearchDeps extends Pick<AppDeps, "isAdmin" | "mayStillSee"> {
   /** Every dial's key, label, description and category (`allVariables()`). Values are never read. */
@@ -59,12 +78,18 @@ export async function visibleEntries(
 export function register(app: Express, deps: AdminSearchDeps): void {
   app.get("/api/admin/search-index", async (req, res) => {
     if (!(await deps.isAdmin(req))) return res.status(401).json({ error: "Sign in as an admin to search Admin." });
-    const entries = await visibleEntries(
-      [...SERVED_ACT_ENTRIES, ...deps.dials().map(dialEntry)],
-      (cap) => deps.mayStillSee(req, cap),
-      deps.lifecycle,
-    );
+    const may = (cap: Capability) => deps.mayStillSee(req, cap);
+    const visible = await visibleEntries([...SERVED_ACT_ENTRIES, ...deps.dials().map(dialEntry)], may, deps.lifecycle);
+    // The gate chose the entries; the language only changes their words.
+    const locale = readerLocale(req);
+    const entries = visible.map((e) => localizeEntry(e, locale));
+    // The answer differs by the reader's language: never stored, and keyed on the header for a cache that keys.
+    noSharedCache(res);
     res.set("Cache-Control", "private, no-store");
-    res.json({ entries });
+    if (!hasActWords(locale)) return res.json({ entries });
+    const pages: AdminPageWords[] = (await visibleEntries(TAB_ACT_ENTRIES, may, deps.lifecycle))
+      .map((e) => localizeEntry(e, locale))
+      .map(({ id, title, help, synonyms }) => ({ id, title, help, synonyms }));
+    res.json({ entries, pages });
   });
 }

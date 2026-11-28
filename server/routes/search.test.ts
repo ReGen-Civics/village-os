@@ -5,12 +5,14 @@
  *   - a visitor never gets a member page, an admin page or a person; a member gets both, an admin gets settings;
  *   - a module that is off, or members-only to a visitor, hides its page; a story page follows the switches;
  *   - the guide's answer is held to the reader's own list, so an invented path is dropped;
- *   - with no key the guide answers `unavailable` (a 200 the dialog draws beside its own results), and nothing is sent.
+ *   - with no key the guide answers `unavailable` (a 200 the dialog draws beside its own results), and nothing is sent;
+ *   - an admin who reads in Spanish gets Admin's settings in Spanish; everybody else, and the guide, get the English.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { register, type SearchDeps } from "./search";
 import { wireAssistant } from "../lib/assistant";
 import { entrancePasses } from "../lib/entrance";
+import { ADMIN_ACT_WORDS_ES } from "../../shared/adminActs/es";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
@@ -55,13 +57,14 @@ function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[]; st
     } as any,
   } as any;
   register(app, deps);
-  const run = async (key: string, body?: any) => {
-    const out: { status: number; body: any } = { status: 200, body: undefined };
-    const res: any = { set() { return res; }, status(c: number) { out.status = c; return res; }, json(b: any) { out.body = b; return res; } };
-    await handlers.get(key)!({ body, headers: {} }, res);
+  /** One call, in the language the read names (none: the browser sends no header for English). */
+  const run = async (key: string, body?: any, locale?: string) => {
+    const out: { status: number; body: any; headers: Record<string, string> } = { status: 200, body: undefined, headers: {} };
+    const res: any = { set(k: string, v: string) { out.headers[k.toLowerCase()] = v; return res; }, status(c: number) { out.status = c; return res; }, json(b: any) { out.body = b; return res; } };
+    await handlers.get(key)!({ body, headers: locale ? { "x-village-locale": locale } : {} }, res);
     return out;
   };
-  return { index: () => run("GET /api/search/index"), ask: (query: unknown) => run("POST /api/search/guide", { query }), usage };
+  return { index: (locale?: string) => run("GET /api/search/index", undefined, locale), ask: (query: unknown, locale?: string) => run("POST /api/search/guide", { query }, locale), usage };
 }
 
 const member = { id: "u-member", role: "member", membershipGranted: true, name: "Mo Example" };
@@ -240,5 +243,60 @@ describe("POST /api/search/guide", () => {
     expect(out.status).toBe(429);
     expect(out.body.limit).toBe("hour");
     expect(sent).toEqual([]);
+  });
+});
+
+describe("GET /api/search/index in the reader's language", () => {
+  const adminViewer = { ...member, role: "admin" };
+  const titleOf = (body: any, id: string) => (body.entries as Array<{ id: string; title: string }>).find((e) => e.id === id)?.title;
+  const TEST_EMAIL = "/admin?tab=comms-settings&setting=comms.test-email";
+
+  it("gives an admin Admin's settings in Spanish with X-Village-Locale: es, at the same addresses", async () => {
+    const s = setup(adminViewer, { admin: true, holds: ["comms.manage"] });
+    const en = (await s.index()).body;
+    const es = (await s.index("es")).body;
+    expect(paths(es)).toEqual(paths(en));
+    expect(titleOf(en, "setting:comms.test-email")).toBe("Send me a test email");
+    expect(titleOf(es, "setting:comms.test-email")).toBe(ADMIN_ACT_WORDS_ES["comms.test-email"].title);
+    // The gate still decides in Spanish: operator.secrets is not held, so the key control is not offered.
+    expect(paths(es)).not.toContain("/admin?tab=comms-settings&setting=comms.api-key");
+    // The village's own roles, circles and quests are not the registry's, and stay as the village wrote them.
+    expect(titleOf(es, "role:garden-lead")).toBe("Garden Lead");
+    expect(titleOf(es, "quest:q1")).toBe("Build the compost bays");
+  });
+
+  it("answers exactly as before with no language, and with a language the village does not translate into", async () => {
+    for (const [viewer, opts] of [[adminViewer, { admin: true, holds: ["comms.manage"] }], [member, {}], [null, {}]] as const) {
+      const s = setup(viewer, opts as any);
+      const english = JSON.stringify((await s.index()).body);
+      for (const locale of ["fr", "en", "zz"]) expect(JSON.stringify((await s.index(locale)).body), locale).toBe(english);
+    }
+  });
+
+  it("gives a member and a visitor the same answer in Spanish: nothing of theirs is the registry's", async () => {
+    for (const viewer of [member, null]) {
+      const s = setup(viewer);
+      expect(JSON.stringify((await s.index("es")).body)).toBe(JSON.stringify((await s.index()).body));
+    }
+  });
+
+  it("is never stored and is keyed on the reader's language, for every reader", async () => {
+    for (const [viewer, opts] of [[adminViewer, { admin: true }], [null, {}]] as const) {
+      for (const locale of [undefined, "es"]) {
+        const out = await setup(viewer, opts as any).index(locale);
+        expect(out.headers["cache-control"]).toBe("private, no-store");
+        expect(out.headers.vary).toBe("X-Village-Locale");
+      }
+    }
+  });
+
+  it("sends the guide English places whatever language the question's read names", async () => {
+    reply = `{"picks":[{"path":"${TEST_EMAIL}","why":"It sends you a test."}]}`;
+    const out = await setup(adminViewer, { admin: true, holds: ["comms.manage"] }).ask("where do i send a test", "es");
+    expect(out.body.state).toBe("answered");
+    const system = String(sent[0].system);
+    expect(system).toContain("Send me a test email");
+    expect(system).not.toContain(ADMIN_ACT_WORDS_ES["comms.test-email"].title);
+    expect(out.body.picks[0]).toMatchObject({ path: TEST_EMAIL, title: "Send me a test email" });
   });
 });
