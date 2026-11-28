@@ -381,7 +381,7 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
   it("says the order of the list on the page", async () => {
     stub({ changes: [], extra: [claimRow(1)] });
     render(<AdminReview />);
-    expect((await screen.findByTestId("inbox-order")).textContent).toBe("In each kind: what lapses soonest comes first, then the oldest. What carries no date comes last, in the order its own queue keeps.");
+    expect((await screen.findByTestId("inbox-order")).textContent).toBe("In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.");
   });
 
   it("a queue that did not load reads unknown, never zero, and the number at the top becomes a floor", async () => {

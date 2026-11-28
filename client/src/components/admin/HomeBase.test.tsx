@@ -134,6 +134,17 @@ describe("home", () => {
     await waitFor(() => expect(count()).toBe("At least 1 decision waiting on you. 1 queue did not load, so its number is unknown."));
   });
 
+  it("when no queue that loaded holds a decision and some did not load, the number is said to be unknown, never zero and never nothing", async () => {
+    const answer = listAnswer({ decisions: 0, unknown: ["quest", "claim"] });
+    answer.sections.push({ source: "quest", state: "failed", count: null as unknown as number, atLeast: 0, blocked: 0, more: false }, { source: "claim", state: "failed", count: null as unknown as number, atLeast: 0, blocked: 0, more: false });
+    serve({ inbox: answer });
+    show();
+    await waitFor(() => expect(count()).toBe("How many decisions wait on you is unknown. 2 queues did not load, so their numbers are unknown."));
+    expect(screen.queryByText("Nothing is waiting on you.")).toBeNull();
+    expect(screen.queryByText("Nothing on the review list is waiting on you.")).toBeNull();
+    expect(screen.queryByText("All clear")).toBeNull();
+  });
+
   it("still loads when the role application reads are refused, and says nothing is waiting only when the list is empty", async () => {
     serve();
     show();

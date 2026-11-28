@@ -56,6 +56,11 @@ export interface InboxItem {
    * cannot. Set by the server half for the items a person's own reads already listed; absent when nothing blocks it.
    */
   blocked?: InboxBlocked | null;
+  /**
+   * Other ids a search finds this row by, when one row stands for many things: Sera's row answers to the id of every
+   * batch its differences came in on, as each of her rows did before they became one (QA, 28 Nov 2026).
+   */
+  finds?: string[];
 }
 
 export interface InboxBlocked {
@@ -255,6 +260,7 @@ export function fromSeraDifferences(body: unknown): InboxItem[] {
     decideAt: "/review",
     touchesPerson: false,
     holds: n,
+    finds: Array.from(new Set(waiting.map((d) => str(d.batchId)).filter((v): v is string => !!v))).slice(0, 50),
   }];
 }
 
@@ -617,7 +623,9 @@ export const INBOX_READS: readonly InboxRead[] = [
 
 /**
  * THE ORDER OF THE LIST, one rule wherever it is drawn (the hall relief, 27 Nov 2026):
- *   1. what lapses undecided, soonest lapse first: a real deadline is the only clock on this list;
+ *   0. what is BLOCKED comes first: it needs a hand before anybody can decide it, and a page that says "2 blocked"
+ *      must show them without a press (QA, 28 Nov 2026: a blocked draft sat behind Show more);
+ *   1. then what lapses undecided, soonest lapse first: a real deadline is the only clock on this list;
  *   2. then everything that carries a date, oldest first;
  *   3. then what carries no date, in the order its own queue lists it. Its queue keeps no time, and nothing here
  *      invents one, so it never jumps ahead of something that has waited a known time.
@@ -630,7 +638,9 @@ export function orderInbox(items: readonly InboxItem[]): InboxItem[] {
   const undated = items.filter((i) => !i.lapsesAt && !i.filedAt);
   lapsing.sort((a, b) => a.lapsesAt!.localeCompare(b.lapsesAt!) || a.key.localeCompare(b.key));
   dated.sort((a, b) => a.filedAt!.localeCompare(b.filedAt!) || a.key.localeCompare(b.key));
-  return [...lapsing, ...dated, ...undated];
+  const ordered = [...lapsing, ...dated, ...undated];
+  // Blocked first, each part keeping the order above.
+  return [...ordered.filter((i) => i.blocked), ...ordered.filter((i) => !i.blocked)];
 }
 
 /**
@@ -666,10 +676,15 @@ export interface InboxSectionAnswer {
   blocked: number;
   /** Whether rows past the ones sent wait to be asked for (`?rows=<queue>:<how many>`). */
   more: boolean;
+  /**
+   * Set when the queue holds more rows than one read will ever send (`INBOX_ROWS_MAX`). Then `more` is false: asking
+   * again brings nothing, so a page offers no Show more and sends the person to the queue's own page for the rest.
+   */
+  capped?: true;
 }
 
 /** The most rows of one queue a single read will send, however many are asked for. */
-export const INBOX_ROWS_MAX = 200;
+export const INBOX_ROWS_MAX = 1000;
 
 /**
  * `?rows=structure:20,quest:30`: how many rows of a queue to send, for the queues a person opened past their first
@@ -728,6 +743,28 @@ export function decisionCounts(all: readonly InboxItem[], sections: readonly Pic
   };
 }
 
+/** The page an item is decided on, without its search or its anchor: `/governance/work#approvals` is `/governance/work`. */
+export const doorPath = (decideAt: string): string => decideAt.split(/[?#]/)[0] || "/";
+
+/**
+ * THE ONE COUNT, BY DOOR: the same decisions, keyed by the page each is decided on.
+ *
+ * A number drawn on a door has to equal what is listed behind that door (the coordinator's rule for the menu,
+ * 28 Nov 2026: a member saw "2" on a row that opened a page listing neither of the two). `decisions` is the number
+ * for a page that lists every decision. A door that opens one page reads its own entry here, and the page behind it
+ * lists exactly those. Nothing is counted twice and nothing is left out: every value added together is `decisions`.
+ * Applications and blocked rows are in neither, as in the one count.
+ */
+export function decisionsByDoor(all: readonly InboxItem[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const i of all) {
+    if (LISTED_NOT_COUNTED.includes(i.source) || i.blocked) continue;
+    const door = doorPath(i.decideAt);
+    out[door] = (out[door] ?? 0) + 1;
+  }
+  return out;
+}
+
 export interface InboxPaged {
   sections: InboxSectionAnswer[];
   /** The rows sent: each queue's first page, or as many as were asked for, in the list's one order. */
@@ -737,6 +774,8 @@ export interface InboxPaged {
   blocked: number;
   /** The one count a page says (`decisionCounts`). */
   counts: DecisionCounts;
+  /** The same decisions by the page each is decided on (`decisionsByDoor`), for a number drawn on one door. */
+  byDoor: Record<string, number>;
 }
 
 /**
@@ -759,10 +798,12 @@ export function pageInbox(sections: readonly InboxSection[], rows: ReadonlyMap<I
       count: s.state === "failed" ? null : queue.length,
       atLeast: queue.length,
       blocked: queue.filter((i) => i.blocked).length,
-      more: queue.length > show,
+      // Past the cap nothing more can be asked for: say so, and never offer a press that does nothing.
+      more: queue.length > show && show < INBOX_ROWS_MAX,
+      ...(queue.length > show && show >= INBOX_ROWS_MAX ? { capped: true as const } : {}),
     };
   });
-  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length, counts: decisionCounts(all, sections) };
+  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length, counts: decisionCounts(all, sections), byDoor: decisionsByDoor(all) };
 }
 
 /**
@@ -777,7 +818,8 @@ export function findInInbox(items: readonly InboxItem[], raw: string): InboxItem
     // The id is the key's last part: `agent:seating:<id>` carries the kind between the source and the id.
     const id = i.key.slice(i.key.lastIndexOf(":") + 1);
     const batchId = i.batch ? i.batch.key.slice(i.batch.key.indexOf(":") + 1) : null;
-    return matchesFind(q, { id, code: i.code, batchId, batchCode: i.batch?.code ?? null });
+    // A row that stands for many things is found by each id it answers to (Sera's row, by its batches).
+    return matchesFind(q, { id, code: i.code, batchId, batchCode: i.batch?.code ?? null }) || (i.finds ?? []).some((other) => matchesFind(q, { id: other, code: null, batchId: other, batchCode: null }));
   });
 }
 

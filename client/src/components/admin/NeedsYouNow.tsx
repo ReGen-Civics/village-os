@@ -94,7 +94,8 @@ export default function NeedsYouNow({ inbox }: { inbox: Inbox }) {
 
       {notice && <p role="status" className="text-sm text-foreground">{notice}</p>}
 
-      {total === 0 ? (
+      {/* Never "nothing" while a queue did not load: it may hold something (QA, 28 Nov 2026). The line below names it. */}
+      {total === 0 && failed.length === 0 ? (
         <p className="text-base text-foreground">
           <Trans context="Admin Today, needs you now">Nothing on the review list is waiting on you.</Trans>
         </p>
