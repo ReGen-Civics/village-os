@@ -446,6 +446,7 @@ function endpointsCount(i: ScoreInputs): Count {
     "A route is accounted for when an act calls it (method and path, exactly as Express registers them), when an act's page reads it, or when a named family of routes that are not admin's holds it (shared/notAdminRoutes.ts).",
     i.notAdmin.length ? `Families of routes that are not admin's: ${i.notAdmin.length}.` : "The list of routes that are not admin's is empty, so every route no act names is open.",
     `The permission matrix holds ${Object.keys(i.matrix.routes).length} of these routes. A route outside its scope reads as absent there, which says nothing about whose it is.`,
+    "The permission matrix is a recorded table: it proves the server agreed with the table on the day it was written, and no more. No route is counted done on its word. It only labels open routes, beside what each handler's own code asks.",
     "What a route's own handler asks overrules the families: one that asks the admin question, or names a power only a role gives, is never counted as not admin's (server/testkit/routeDoors.ts says what that reader cannot see).",
   ];
   if (staleCalls.length) notes.push(`Acts name ${some(staleCalls.length, "route")} the server does not register: ${staleCalls.join(", ")}.`);

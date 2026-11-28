@@ -26,7 +26,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import ts from "typescript";
 import { ADMIN_ACTS } from "./adminActs";
+import { LEDGER_NEVER_DRAWN, LEDGER_STILL_OPEN, PARITY_LEDGER } from "./adminActs/ledger";
+import { CUT_BY_RULING, GARDEN_MOUNTS } from "./gardenMounts";
+import { NOT_ADMIN_ROUTES } from "./notAdminRoutes";
 
 const DOCKERFILE = path.resolve(__dirname, "..", "Dockerfile");
 
@@ -83,6 +87,32 @@ describe("the registry's words never read as an import to the image build's prob
     expect(captures(printed(shipped), patterns).length).toBeGreaterThan(0);
     expect(captures(JSON.stringify(shipped), patterns).length).toBeGreaterThan(0);
     expect(captures(JSON.stringify(shipped, null, 2), patterns).length).toBeGreaterThan(0);
+  });
+
+  it("finds nothing in the scoreboard's tables, however they are printed", () => {
+    // None of these reaches the server bundle today. They are scanned so the day one does, it is already clean.
+    const tables: Record<string, unknown> = {
+      "shared/notAdminRoutes.ts": NOT_ADMIN_ROUTES.map(({ key, kind, names, why }) => ({ key, kind, names, why })),
+      "shared/adminActs/ledger.ts": { PARITY_LEDGER, LEDGER_STILL_OPEN, LEDGER_NEVER_DRAWN },
+      "shared/gardenMounts.ts": { GARDEN_MOUNTS, CUT_BY_RULING },
+    };
+    const found = Object.entries(tables).flatMap(([file, table]) =>
+      [...captures(printed(table), patterns), ...captures(JSON.stringify(table), patterns), ...captures(JSON.stringify(table, null, 2), patterns)].map((c) => `${file}: ${c}`),
+    );
+    expect(found, `These words read as an import to the image build's probe. Reword them (see this file's header):\n${found.join("\n")}`).toEqual([]);
+  });
+
+  it("finds nothing in the words of the scoreboard's shared modules beside their real imports", () => {
+    // The sentences the scoreboard prints are string literals in code, so the source itself is read. A file's real
+    // imports are captures too: each is taken off by name, and what is left is a string that reads as one.
+    const stray: string[] = [];
+    for (const file of ["gardenScore.ts", "gardenScoreReport.ts", "gardenMounts.ts", "notAdminRoutes.ts", "adminActs/ledger.ts"]) {
+      const text = fs.readFileSync(path.resolve(__dirname, file), "utf8");
+      const sf = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+      const real = new Set(sf.statements.filter(ts.isImportDeclaration).map((s) => JSON.stringify((s.moduleSpecifier as ts.StringLiteral).text)));
+      for (const c of captures(text, patterns)) if (!real.has(c.slice(0, c.indexOf(" in ...")))) stray.push(`shared/${file}: ${c}`);
+    }
+    expect(stray, stray.join("\n")).toEqual([]);
   });
 
   it("finds nothing in any act, however the table is printed", () => {

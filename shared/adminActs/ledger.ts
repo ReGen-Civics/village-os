@@ -139,7 +139,9 @@ export const PARITY_LEDGER: Readonly<Record<string, string>> = {
   // F. The setup wizard.
   F1: "Wizard: header, progress, re-run the walkthrough",
   F2: "Wizard: the guide key step",
-  F3: "Wizard: profile import",
+  // Worded with the verb first: an entry that ends in that word reads as an import to the image build's probe
+  // (shared/adminActsImageProbe.test.ts).
+  F3: "Wizard: import a profile",
   F4: "Wizard: identity fields",
   F5: "Wizard: home headline and body",
   F6: "Wizard: noun fields",
