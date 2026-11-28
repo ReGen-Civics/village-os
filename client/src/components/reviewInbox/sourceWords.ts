@@ -95,6 +95,30 @@ export const SOURCE_WORDS: Record<InboxSource, SourceWords> = {
     does: msg({ context: "review inbox: a row, what deciding it does", message: "Answering it accepts or declines what they asked." }),
     door: msg({ context: "review inbox: a row, the door", message: "Open the form" }),
   },
+  report: {
+    title: msg({ context: "review inbox: section", message: "Reports to answer" }),
+    what: msg({ context: "review inbox: a row, what it is", message: "A report somebody made" }),
+    does: msg({ context: "review inbox: a row, what deciding it does", message: "Answering it closes the report, and may hide what was reported." }),
+    door: msg({ context: "review inbox: a row, the door", message: "Read the report" }),
+  },
+  photo: {
+    title: msg({ context: "review inbox: section", message: "Reported photographs" }),
+    what: msg({ context: "review inbox: a row, what it is", message: "A reported photograph" }),
+    does: msg({ context: "review inbox: a row, what deciding it does", message: "Answering it closes the report, and the person who made it hears back." }),
+    door: msg({ context: "review inbox: a row, the door", message: "Look at it" }),
+  },
+  exit: {
+    title: msg({ context: "review inbox: section", message: "Departures to settle" }),
+    what: msg({ context: "review inbox: a row, what it is", message: "A departure" }),
+    does: msg({ context: "review inbox: a row, what deciding it does", message: "Settling it closes what the village and the person still hold between them." }),
+    door: msg({ context: "review inbox: a row, the door", message: "Open the departure" }),
+  },
+  invite: {
+    title: msg({ context: "review inbox: section", message: "Visitors asking to be invited" }),
+    what: msg({ context: "review inbox: a row, what it is", message: "A visitor asking to be invited" }),
+    does: msg({ context: "review inbox: a row, what deciding it does", message: "Answering it invites them in, or tells them not now." }),
+    door: msg({ context: "review inbox: a row, the door", message: "Read the request" }),
+  },
   structure: {
     title: msg({ context: "review inbox: section", message: "Org chart drafts" }),
     what: msg({ context: "review inbox: a row, what it is", message: "An org chart draft" }),
