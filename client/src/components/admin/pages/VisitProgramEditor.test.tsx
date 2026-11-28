@@ -156,4 +156,33 @@ describe("where the visit program is edited", () => {
     fireEvent.click(screen.getByRole("button", { name: "Remove way to visit 1" }));
     await waitFor(() => expect(screen.getByLabelText("Page")).toBeDisabled());
   });
+
+  it("opens on the Visit page, at the program, when the address names it: where the old Visit Program tab lands", async () => {
+    // `/admin?tab=visit-config` settles to this address (adminTabAliases.ts), and Admin search lands on it too.
+    window.history.replaceState({}, "", "/admin?tab=pages&setting=visit.program");
+    try {
+      render(<PagesEditor password="pw" />);
+      expect(await screen.findByText("Ways to visit")).toBeInTheDocument();
+      expect((screen.getByLabelText("Page") as HTMLSelectElement).value).toBe("visit");
+      await waitFor(() => expect(document.activeElement?.id).toBe("visit-program-h"));
+      // The key is taken back out once it has landed, so coming back to Pages later opens the first page.
+      expect(window.location.search).toBe("?tab=pages");
+    } finally {
+      window.history.replaceState({}, "", "/");
+    }
+  });
+
+  it("opens the Visit page when that address arrives while Pages is already open", async () => {
+    try {
+      render(<PagesEditor password="pw" />);
+      await screen.findByLabelText("Page");
+      expect(screen.queryByText("Ways to visit")).toBeNull();
+      window.history.pushState({}, "", "/admin?tab=pages&setting=visit.program");
+      fireEvent(window, new PopStateEvent("popstate"));
+      expect(await screen.findByText("Ways to visit")).toBeInTheDocument();
+      await waitFor(() => expect(document.activeElement?.id).toBe("visit-program-h"));
+    } finally {
+      window.history.replaceState({}, "", "/");
+    }
+  });
 });

@@ -1,0 +1,102 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: reports on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Reports to answer"
+msgstr "Reportes por responder"
+
+# needs-native-review: reports on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A report somebody made"
+msgstr "Un reporte que alguien hizo"
+
+# needs-native-review: reports on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it closes the report, and may hide what was reported."
+msgstr "Responderlo cierra el reporte, y puede ocultar lo reportado."
+
+# needs-native-review: reports on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the report"
+msgstr "Leer el reporte"
+
+# needs-native-review: reported photographs on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Reported photographs"
+msgstr "Fotografías reportadas"
+
+# needs-native-review: reported photographs on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A reported photograph"
+msgstr "Una fotografía reportada"
+
+# needs-native-review: reported photographs on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it closes the report, and the person who made it hears back."
+msgstr "Responderlo cierra el reporte, y quien lo hizo recibe respuesta."
+
+# needs-native-review: reported photographs on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Look at it"
+msgstr "Verla"
+
+# needs-native-review: departures on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Departures to settle"
+msgstr "Salidas por resolver"
+
+# needs-native-review: departures on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A departure"
+msgstr "Una salida"
+
+# needs-native-review: departures on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Settling it closes what the village and the person still hold between them."
+msgstr "Resolverla cierra lo que la aldea y la persona todavía tienen pendiente entre sí."
+
+# needs-native-review: departures on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Open the departure"
+msgstr "Abrir la salida"
+
+# needs-native-review: invitation requests on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: section"
+msgid "Visitors asking to be invited"
+msgstr "Visitantes que piden ser invitados"
+
+# needs-native-review: invitation requests on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what it is"
+msgid "A visitor asking to be invited"
+msgstr "Un visitante que pide ser invitado"
+
+# needs-native-review: invitation requests on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, what deciding it does"
+msgid "Answering it invites them in, or tells them not now."
+msgstr "Responderlo los invita a entrar, o les dice que por ahora no."
+
+# needs-native-review: invitation requests on the review list, 27 Nov 2026
+#: client/src/components/reviewInbox/sourceWords.ts
+msgctxt "review inbox: a row, the door"
+msgid "Read the request"
+msgstr "Leer la solicitud"
