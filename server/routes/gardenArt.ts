@@ -18,12 +18,8 @@
  * A MISS FALLS THROUGH to the server's own `/images/` rule, which answers 404
  * text/plain, and a place draws its plaque and lantern without a building.
  *
- * NOT REGISTERED YET. server/index.ts is held by another lane; this module
- * needs one import and one line beside the module art's, before the `/images/`
- * rule:
- *
- *   import { register as registerGardenArtRoutes, GARDEN_ART_DIR } from "./routes/gardenArt";
- *   registerGardenArtRoutes(app, { dir: path.resolve(__dirname, "..", GARDEN_ART_DIR) });
+ * REGISTERED beside the module art in server/index.ts, before the `/images/`
+ * rule, so a painting is found before that rule answers its 404.
  */
 import express, { type Express } from "express";
 import fs from "node:fs";
