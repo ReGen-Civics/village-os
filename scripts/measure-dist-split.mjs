@@ -25,10 +25,16 @@
  *   node scripts/measure-dist-split.mjs                       # writes dist/SPLIT-MEASURED.md
  *   node scripts/measure-dist-split.mjs --out <file.md>       # somewhere else
  *   node scripts/measure-dist-split.mjs --no-build            # the build that is already in dist/
+ *       with --build-log <file>                               # and the log it was built with, for the guard's record
  *   node scripts/measure-dist-split.mjs --room-kb 20          # room measured for what is about to land behind
  *                                                             # the admin routes, for the worked arithmetic
  *   node scripts/measure-dist-split.mjs --candidate /project-history --candidate /governance/work
  *                                                             # what-ifs: a route counted as an admin route
+ *
+ * In Git Bash on Windows an argument that starts with a slash is rewritten
+ * into a Windows path before node sees it, so a --candidate arrives as
+ * "C:/Program Files/Git/project-history" and is reported as no route. Put
+ * MSYS_NO_PATHCONV=1 in front of the command there, or run it from PowerShell.
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -45,6 +51,9 @@ const pass = [];
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--room-kb" || args[i] === "--candidate") pass.push(args[i], args[i + 1] ?? "");
 }
+// With --no-build, the log of the build that is there can still be handed over: --build-log <file>.
+const givenLog = valueOf("--build-log");
+if (args.includes("--no-build") && givenLog) pass.push("--build-log", path.resolve(givenLog));
 
 let haveLog = false;
 if (!args.includes("--no-build")) {

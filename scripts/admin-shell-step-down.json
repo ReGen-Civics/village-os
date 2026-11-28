@@ -9,9 +9,9 @@
   ],
   "route": "/admin",
   "page": "client/src/pages/Admin.tsx",
-  "measuredOn": "614b5d16",
-  "bytes": 749559,
-  "chargedKb": 732,
-  "withWhatOnlyItReachesKb": 820,
+  "measuredOn": "a48a0fdd",
+  "bytes": 750660,
+  "chargedKb": 736,
+  "withWhatOnlyItReachesKb": 824,
   "allowanceWithShellKb": null
 }
