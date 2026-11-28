@@ -148,6 +148,15 @@ const ASKED_IN: Readonly<Record<string, string>> = {
 };
 
 /**
+ * Routes that hand the whole body to a checker in another file, which is where the field keys are read. The handler
+ * is still read for its power; this table only adds where its fields are.
+ */
+const FIELDS_READ_IN: Readonly<Record<string, string>> = {
+  // `writeCommsSettings` checks the body against PERSON_SETTINGS_FIELDS, the one list of what a person may edit there.
+  "PUT /api/admin/comms/settings": "shared/comms/settings.ts",
+};
+
+/**
  * Doors that let a holder through inside the handler, where the widening map (server/lib/operatorRoutes.ts) does
  * not name the route: the file that defines the key the handler asks its holders by.
  */
@@ -234,7 +243,8 @@ describe("the power each act names is the one its door asks for", () => {
       const route = ROUTES.get(routeKey(a));
       if (!route) continue;
       const elsewhere = ASKED_IN[routeKey(a)];
-      const says = elsewhere ? fs.readFileSync(path.join(ROOT, elsewhere), "utf8") : handlerSays(route);
+      const checker = FIELDS_READ_IN[routeKey(a)];
+      const says = (elsewhere ? fs.readFileSync(path.join(ROOT, elsewhere), "utf8") : handlerSays(route)) + (checker ? fs.readFileSync(path.join(ROOT, checker), "utf8") : "");
       // An upload's file part is read by the upload middleware, by its field name.
       for (const f of a.fields) if (!new RegExp(`\\b${f.key}\\b`).test(says)) wrong.push(`${a.id}: ${routeKey(a)} never reads ${f.key}`);
     }

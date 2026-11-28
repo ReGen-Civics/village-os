@@ -15,7 +15,7 @@ import { ADMIN_TABS, type AdminPlace, type AdminTabEntry } from "../adminTabs";
 import { VARIABLES, type VariableDef, type VariableType } from "../gameVariables";
 import { SEEDS, type GuildSeed } from "../guilds";
 import { CONTROL_PARITY, DIAL_PARITY, KEY_ALSO, KEY_PARITY, MINT_DIAL_CATEGORY, MINT_DIAL_PARITY, OUTSIDE_PARITY, TAB_PAGE_ALSO, TAB_PARITY, tabParity } from "./parity";
-import { POST, PUT, secret, text, type ActField, type ActFieldKind, type ActPower, type ActRoute, type AdminAct } from "./types";
+import { POST, PUT, bool, list, long, secret, text, type ActField, type ActFieldKind, type ActPower, type ActRoute, type AdminAct } from "./types";
 
 // ── Tabs ───────────────────────────────────────────────────────────────────
 
@@ -129,8 +129,32 @@ interface Adopted {
  * What the registry adds to each shipped control: its place and the route behind it. A control with no row here is
  * still an act, on its tab's place, marked partial until somebody reads its door.
  */
+/** The door a person edits the mail settings through. Its fields are one list: PERSON_SETTINGS_FIELDS, shared/comms/settings.ts. */
+const COMMS_SETTINGS = "/api/admin/comms/settings";
+
 export const CONTROL_ROUTES: Readonly<Record<string, Adopted>> = {
   "comms.test-email": { place: "tower", route: POST("/api/admin/comms/settings/test") },
+  // Read on 28 Nov 2026 (server/routes/commsSettings.ts): the door asks the gate for comms.manage, and each control
+  // below writes one field of that list.
+  "comms.pause-all": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [bool("paused", "Pause all automated email")] },
+  "comms.postal-address": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [long("postalAddress", "Postal address for the footer")] },
+  "comms.consent-words": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [long("consentText", "Words beside the tick-box on forms")] },
+  "comms.recap-questions": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [list("recapQuestions", "The two recap questions")] },
+  "comms.rehearsal-inbox": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [text("rehearsalTo", "Rehearsal inbox")] },
+  "comms.investor-words": { place: "tower", route: PUT(COMMS_SETTINGS), fields: [bool("investorWordsReviewed", "Investor emails reviewed")] },
+  // Connecting delivery reports makes the webhook at the provider and seals its secret. It takes no fields.
+  "comms.delivery-reports": { place: "tower", route: POST("/api/admin/comms/settings/webhook") },
+  // The inbox for each path is kept in the email document (server/index.ts): the door asks for an admin, and the
+  // widening map lets a holder of operator.secrets through.
+  "comms.reply-to": {
+    place: "tower",
+    power: "admin",
+    holder: "operator.secrets",
+    route: PUT("/api/admin/email-config"),
+    fields: [text("investor", "Inbox for the investor path"), text("steward", "Inbox for the steward path"), text("resident", "Inbox for the resident path"), text("prosperity", "Inbox for the prosperity path")],
+  },
+  // The one visit program editor writes the visit document. Its fields are the document's own and were not read.
+  "visit.program": { place: "library", power: "admin", holder: "story.tell", route: PUT("/api/admin/visit-config"), partial: true },
   "comms.api-key": { place: "tower", power: "admin", holder: "operator.secrets", route: PUT(SECRET_ROUTE, { key: "resend_api_key" }), fields: [secret("value", "Sending key (Resend)")] },
   "comms.sender": { place: "tower", route: PUT("/api/admin/comms/settings/sender"), fields: [text("name", "Sender name"), text("address", "Sender address")] },
   "comms.domain": { place: "tower", route: POST("/api/admin/comms/settings/domain"), fields: [text("name", "Sending domain")] },
