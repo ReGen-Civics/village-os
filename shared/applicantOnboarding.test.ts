@@ -9,6 +9,7 @@ import {
   byStageThenDate,
   memberTrackOf,
   mayClaimReference,
+  mayGoToCircle,
   mayReadReference,
   ONBOARDING_REFERENCES_MAX,
   parseReferenceList,
@@ -178,6 +179,14 @@ describe("the stage track (six stages, the lead's order, 27 Nov 2026)", () => {
     expect(t).toMatchObject({ now: "agreement", primary: "decide", who: "The Anchor Circle" });
     expect(t.next).toMatch(/counter/i);
     expect(trackOf({ ...held, sentToCircle: true }, roles).who).toBe("The anchor circle");
+  });
+
+  it("nothing goes to the circle before the final call when the village names a final-call role (QA round 5)", () => {
+    const talked = facts({ shortlist: "yes", refsAsked: true, refsGiven: true, references: [{ followedUp: true }], interviews: [{ state: "scored", final: false }, { state: "scored", final: false }] });
+    expect(mayGoToCircle({ ...talked, finalExpected: true })).toBe(false);
+    // A role with no final call at all: its conversations written up are enough.
+    expect(mayGoToCircle(talked)).toBe(true);
+    expect(mayGoToCircle({ ...talked, finalExpected: true, interviews: [...talked.interviews, { state: "scored", final: true }] })).toBe(true);
   });
 
   it("says the power to place people holds the final call when no final-call role is named", () => {

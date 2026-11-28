@@ -267,6 +267,12 @@ export interface TrackFacts {
    * before ruling 7, kept for a caller that does not say (`sentToCircleOf` is what the server passes).
    */
   sentToCircle?: boolean;
+  /**
+   * The village names a role for the final call, so a final conversation is still to come when the application has
+   * none yet: nothing goes to the anchor circle before it is held (QA round 5: "written up" was said, and the send
+   * offered, after the Community write-up).
+   */
+  finalExpected?: boolean;
 }
 
 /**
@@ -294,6 +300,7 @@ export function mayGoToCircle(f: TrackFacts): boolean {
   if (f.decided || (f.sentToCircle ?? false)) return false;
   const finals = f.interviews.filter((i) => i.final);
   if (finals.length) return finals.every((i) => done(i.state));
+  if (f.finalExpected) return false;
   const talks = f.interviews.filter((i) => !i.final);
   return f.shortlist === "yes" && talks.length > 0 && talks.every((i) => done(i.state));
 }

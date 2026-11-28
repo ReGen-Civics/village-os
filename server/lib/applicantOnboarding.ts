@@ -537,7 +537,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: stored.map((r) => ({ followedUp: !!r.followedUpAt })),
       interviews: interviews.map((i) => ({ state: i.state, final: i.final, role: names.get(i.roleId) ?? null })),
-      sentToCircle: sentToCircleOf(steps, interviews),
+      sentToCircle: sentToCircleOf(steps, interviews), finalExpected: !!stringVar(FINAL_CALL_ROLE_VARIABLE).trim(),
     },
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
   );
@@ -645,7 +645,7 @@ export async function stagesOf(deps: Pick<ReviewDeps, "getPool">, refs: readonly
         refsGiven: steps.some((x) => x.kind === "refs_given"),
         references: follow.get(ref) ?? [],
         interviews: (await review.interviewsOf(pool, ref)).map((i) => ({ state: i.state, final: i.final })),
-        sentToCircle: sentToCircleOf(steps, await review.interviewsOf(pool, ref)),
+        sentToCircle: sentToCircleOf(steps, await review.interviewsOf(pool, ref)), finalExpected: !!stringVar(FINAL_CALL_ROLE_VARIABLE).trim(),
       },
       roles,
     );
@@ -850,7 +850,7 @@ async function trackFactsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Pro
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: follow.get(ref) ?? [],
       interviews: interviews.map((i) => ({ state: i.state, final: i.final })),
-      sentToCircle: sentToCircleOf(steps, interviews),
+      sentToCircle: sentToCircleOf(steps, interviews), finalExpected: !!stringVar(FINAL_CALL_ROLE_VARIABLE).trim(),
     },
     finals: interviews.filter((i) => i.final).map((i) => ({ state: i.state, booked: !!i.bookedAt })),
   };
