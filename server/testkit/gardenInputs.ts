@@ -2,7 +2,8 @@
  * WHAT THE SCOREBOARD READS, GATHERED FROM THE REPOSITORY: the half of the Admin Garden's scoreboard that touches
  * files. shared/gardenScore.ts is pure and takes everything as input; this hands it the real thing.
  *
- *   the routes        `deriveRoutes` (server/testkit/getRoutes.ts), which parses the server's sources
+ *   the routes        `routeDoors` (server/testkit/routeDoors.ts): every route `deriveRoutes` reads from the server's
+ *                     sources, each with what its own handler asks
  *   the matrix        server/permissionMatrix.snapshot.json, written by the permission matrix's own test
  *   the acts          ADMIN_ACTS (shared/adminActs.ts)
  *   the dials         VARIABLES (shared/gameVariables.ts)
@@ -19,6 +20,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { LEFT_ADMIN, MOVED_TABS } from "../../client/src/components/admin/adminTabAliases";
+// @ts-expect-error - scripts/ is untyped JavaScript, deliberately outside tsconfig
 import { routes as clientRoutes } from "../../scripts/qa/routes.mjs";
 import { ADMIN_ACTS } from "../../shared/adminActs";
 import { LEDGER_NEVER_DRAWN, LEDGER_STILL_OPEN, PARITY_LEDGER } from "../../shared/adminActs/ledger";
@@ -27,7 +29,7 @@ import { VARIABLES } from "../../shared/gameVariables";
 import { CUT_BY_RULING, GARDEN_MOUNTS } from "../../shared/gardenMounts";
 import type { MatrixSnapshot, ScoreInputs } from "../../shared/gardenScore";
 import { NOT_ADMIN_ROUTES } from "../../shared/notAdminRoutes";
-import { deriveRoutes } from "./getRoutes";
+import { routeDoors } from "./routeDoors";
 
 /** The permission matrix's committed snapshot. */
 export function readMatrix(root: string): MatrixSnapshot {
@@ -43,9 +45,9 @@ export function readClientRoutes(): string[] {
 
 /** Everything the scoreboard counts, read from the repository at `root`. */
 export function gatherScoreInputs(root: string): ScoreInputs {
-  const { routes, unresolved } = deriveRoutes(root);
+  const { doors, unresolved } = routeDoors(root);
   return {
-    routes,
+    routes: doors,
     unresolved,
     matrix: readMatrix(root),
     acts: ADMIN_ACTS,

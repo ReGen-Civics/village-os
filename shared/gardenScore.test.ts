@@ -9,7 +9,7 @@ import { mayPropose } from "./adminHelper";
 import { VARIABLES } from "./gameVariables";
 import type { GardenMount } from "./gardenMounts";
 import { gardenPlaceOf } from "./gardenMounts";
-import { actFacts, actSettingFacts, countOf, dialFacts, guideCanToday, matrixVerdict, oldDoors, routeGroup, routeMatches, scoreGarden, type ScoreInputs } from "./gardenScore";
+import { actFacts, actSettingFacts, countOf, dialFacts, guideCanToday, matrixVerdict, oldDoors, routeGroup, routeMatches, scoreGarden, stewardsByItsHandler, type ScoreInputs } from "./gardenScore";
 import { openGroups, scoreMarkdown, scoreTable, scoreText, summaryRow } from "./gardenScoreReport";
 import type { NotAdminFamily } from "./notAdminRoutes";
 
@@ -139,7 +139,7 @@ describe("Endpoints: whose is every route", () => {
     identities: ["signedOut", "member", "powerHolder", "adminGroup", "admin", "founder"],
     routes: { "GET /api/admin/players/:id/notes": [401, 401, 401, 200, 200, 200], "GET /api/admin/players": [401, 200, 200, 200, 200, 200] },
   };
-  const member: NotAdminFamily = { key: "profile", kind: "member", test: (_m, p) => p === "/api/profile" || p.startsWith("/api/profile/"), why: "A member's own profile." };
+  const member: NotAdminFamily = { key: "profile", kind: "member", names: ["/api/profile"], test: (_m, p) => p === "/api/profile" || p.startsWith("/api/profile/"), why: "A member's own profile." };
 
   it("with no reads and no families, only the routes an act calls are accounted for, and a route registered twice counts once", () => {
     const c = countOf(scoreGarden(inputs({ routes, matrix })), "endpoints");
@@ -154,6 +154,24 @@ describe("Endpoints: whose is every route", () => {
     expect(c.open.map((o) => o.name).sort()).toEqual(["GET /api/admin/players/:id/notes", "GET /health"]);
     expect(c.parts.find((p) => p.name === "an act's page reads it")!.value).toBe(1);
     expect(c.parts.find((p) => p.name === "not admin's: a member's own side")!.value).toBe(1);
+  });
+
+  it("what a handler asks overrules a family: asking for an admin, or naming a role's power, keeps the route open", () => {
+    const asks = [
+      { method: "GET", path: "/api/profile", asksAdmin: false, powers: [] },
+      { method: "POST", path: "/api/profile/hide", asksAdmin: true, powers: [] },
+      { method: "POST", path: "/api/profile/pay", asksAdmin: false, powers: ["role.pay"] },
+      // A power a stage unlocks is a member's everyday power, and does not overrule.
+      { method: "POST", path: "/api/profile/post", asksAdmin: false, powers: ["forum.post"] },
+    ];
+    const c = countOf(scoreGarden(inputs({ routes: asks, acts: [], notAdmin: [member] })), "endpoints");
+    expect([c.done, c.total]).toEqual([2, 4]);
+    expect(c.open.map((o) => o.name).sort()).toEqual(["POST /api/profile/hide", "POST /api/profile/pay"]);
+    expect(c.open.find((o) => o.name === "POST /api/profile/hide")!.why).toContain("asks whether the caller is an admin");
+    expect(c.open.find((o) => o.name === "POST /api/profile/pay")!.why).toContain("role.pay");
+    expect(c.parts.find((p) => p.name === "open, in a family that is not admin's and overruled by its own handler")!.value).toBe(2);
+    expect(stewardsByItsHandler({ asksAdmin: false, powers: ["forum.post"] })).toBeNull();
+    expect(stewardsByItsHandler({})).toBeNull();
   });
 
   it("says when the permission matrix shows an open route is admin's", () => {

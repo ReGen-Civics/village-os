@@ -34,6 +34,7 @@ import { PERSON_ONLY_LISTS, actClass, actConsequence, actHref, actReason, actSea
 import { DIAL_ROUTE } from "./adminActs/derived";
 import type { AdminAct } from "./adminActs/types";
 import { ADMIN_PLACES, type AdminTabEntry } from "./adminTabs";
+import { STAGE_UNLOCKS, type Capability } from "./capabilities";
 import { MOVED_TO_SECRET_SENTENCE, applyTimingOf, criticalityOf, ringOf, validateVariable, type VariableDef } from "./gameVariables";
 import { barePath, gardenPlaceOf, type CutByRuling, type GardenMount } from "./gardenMounts";
 import { notAdminFamily, type NotAdminFamily, type NotAdminKind } from "./notAdminRoutes";
@@ -46,6 +47,10 @@ export interface ScoreRoute {
   path: string;
   file?: string;
   line?: number;
+  /** Its own handler asks whether the caller is an admin (server/testkit/routeDoors.ts). Absent: not read. */
+  asksAdmin?: boolean;
+  /** Every capability key its own handler names. Absent: not read. */
+  powers?: readonly string[];
 }
 
 /** A registration whose path the route reader could not read. It is always open. */
@@ -354,7 +359,24 @@ function actsCount(i: ScoreInputs): Count {
 // ── 3. Endpoints ───────────────────────────────────────────────────────────
 
 /** Who answers for one route. */
-export type RouteOwner = { by: "act"; acts: string[] } | { by: "reads"; acts: string[] } | { by: "not-admin"; family: string; kind: NotAdminKind } | { by: "nobody" };
+export type RouteOwner =
+  | { by: "act"; acts: string[] }
+  | { by: "reads"; acts: string[] }
+  | { by: "not-admin"; family: string; kind: NotAdminKind }
+  /** `overruled`: a family holds its path, and what its own handler asks says it is a steward's all the same. */
+  | { by: "nobody"; overruled?: { family: string; why: string } };
+
+/** The powers a route's handler names that only a role gives: no stage unlocks them (STAGE_UNLOCKS, shared/capabilities.ts). */
+export function rolePowers(route: Pick<ScoreRoute, "powers">): string[] {
+  return (route.powers ?? []).filter((p) => !STAGE_UNLOCKS[p as Capability]);
+}
+
+/** Why a route can never be counted as not admin's, read off its own handler, or null. */
+export function stewardsByItsHandler(route: Pick<ScoreRoute, "asksAdmin" | "powers">): string | null {
+  if (route.asksAdmin) return "its handler asks whether the caller is an admin";
+  const powers = rolePowers(route);
+  return powers.length ? `its handler names a power only a role gives (${powers.join(", ")})` : null;
+}
 
 /** The routes the acts name: the one each calls, and the ones each page reads. */
 export function actRoutes(acts: readonly AdminAct[]): { calls: Map<string, string[]>; reads: Map<string, string[]> } {
@@ -376,8 +398,10 @@ export function routeOwner(route: ScoreRoute, named: ReturnType<typeof actRoutes
   const reads = named.reads.get(key);
   if (reads) return { by: "reads", acts: reads };
   const family = notAdminFamily(route.method, route.path, families);
-  if (family) return { by: "not-admin", family: family.key, kind: family.kind };
-  return { by: "nobody" };
+  if (!family) return { by: "nobody" };
+  const stewards = stewardsByItsHandler(route);
+  if (stewards) return { by: "nobody", overruled: { family: family.key, why: stewards } };
+  return { by: "not-admin", family: family.key, kind: family.kind };
 }
 
 function endpointsCount(i: ScoreInputs): Count {
@@ -385,23 +409,30 @@ function endpointsCount(i: ScoreInputs): Count {
   for (const r of i.routes) if (!distinct.has(routeKey(r.method, r.path))) distinct.set(routeKey(r.method, r.path), r);
   const named = actRoutes(i.acts);
   const open: OpenItem[] = [];
-  const n = { act: 0, reads: 0, public: 0, member: 0, machine: 0, openAdminByMatrix: 0, openUnderAdmin: 0 };
+  const n = { act: 0, reads: 0, public: 0, member: 0, machine: 0, openAdminByMatrix: 0, openUnderAdmin: 0, overruled: 0, openAsksAdmin: 0, openRolePower: 0 };
 
-  for (const [key, r] of distinct) {
+  for (const [key, r] of Array.from(distinct)) {
     const owner = routeOwner(r, named, i.notAdmin);
     if (owner.by === "act") n.act++;
     else if (owner.by === "reads") n.reads++;
     else if (owner.by === "not-admin") n[owner.kind]++;
     else {
       const verdict = matrixVerdict(i.matrix, key);
+      const stewards = stewardsByItsHandler(r);
       if (verdict === "admin") n.openAdminByMatrix++;
       if (r.path.startsWith("/api/admin/")) n.openUnderAdmin++;
-      const why =
-        verdict === "admin"
+      if (owner.overruled) n.overruled++;
+      if (r.asksAdmin) n.openAsksAdmin++;
+      else if (stewards) n.openRolePower++;
+      const why = owner.overruled
+        ? `Its path is in the family ${owner.overruled.family}, and ${owner.overruled.why}. It stays open until an act names it.`
+        : verdict === "admin"
           ? "The permission matrix shows it is admin's, and no act names it."
-          : verdict === "open"
-            ? "The permission matrix holds it, no act names it, and no family of routes that are not admin's holds it."
-            : "No act names it, and no family of routes that are not admin's holds it.";
+          : stewards
+            ? `No act names it, and ${stewards}.`
+            : verdict === "open"
+              ? "The permission matrix holds it, no act names it, and no family of routes that are not admin's holds it."
+              : "No act names it, and no family of routes that are not admin's holds it. Nothing read here says whose it is.";
       open.push({ name: key, why, group: routeGroup(r.path) });
     }
   }
@@ -409,12 +440,13 @@ function endpointsCount(i: ScoreInputs): Count {
     open.push({ name: `${u.method} at ${u.file}:${u.line}`, why: `The route reader could not read its path (${u.text}), so nobody can say whose it is.`, group: "(path not read)" });
   }
 
-  const staleCalls = [...named.calls.keys()].filter((k) => !distinct.has(k));
-  const staleReads = [...named.reads.keys()].filter((k) => !distinct.has(k));
+  const staleCalls = Array.from(named.calls.keys()).filter((k) => !distinct.has(k));
+  const staleReads = Array.from(named.reads.keys()).filter((k) => !distinct.has(k));
   const notes = [
     "A route is accounted for when an act calls it (method and path, exactly as Express registers them), when an act's page reads it, or when a named family of routes that are not admin's holds it (shared/notAdminRoutes.ts).",
     i.notAdmin.length ? `Families of routes that are not admin's: ${i.notAdmin.length}.` : "The list of routes that are not admin's is empty, so every route no act names is open.",
     `The permission matrix holds ${Object.keys(i.matrix.routes).length} of these routes. A route outside its scope reads as absent there, which says nothing about whose it is.`,
+    "What a route's own handler asks overrules the families: one that asks the admin question, or names a power only a role gives, is never counted as not admin's (server/testkit/routeDoors.ts says what that reader cannot see).",
   ];
   if (staleCalls.length) notes.push(`Acts name ${some(staleCalls.length, "route")} the server does not register: ${staleCalls.join(", ")}.`);
   if (staleReads.length) notes.push(`Acts name ${some(staleReads.length, "read")} the server does not register: ${staleReads.join(", ")}.`);
@@ -437,6 +469,9 @@ function endpointsCount(i: ScoreInputs): Count {
       { name: "open", value: open.length },
       { name: "open, under /api/admin/", value: n.openUnderAdmin },
       { name: "open, and the permission matrix shows it is admin's", value: n.openAdminByMatrix },
+      { name: "open, and its handler asks whether the caller is an admin", value: n.openAsksAdmin },
+      { name: "open, and its handler names a power only a role gives", value: n.openRolePower },
+      { name: "open, in a family that is not admin's and overruled by its own handler", value: n.overruled },
       { name: "registrations whose path could not be read", value: i.unresolved.length },
       { name: "routes an act names that the server does not register", value: staleCalls.length + staleReads.length },
     ],
@@ -668,7 +703,7 @@ export function oldDoors(i: Pick<ScoreInputs, "acts" | "tabs" | "old" | "mounts"
   for (const key of [...Object.keys(i.old.movedTabs), ...Object.keys(i.old.leftAdmin)]) add(tabAddress(key), "folded tab");
   for (const t of i.tabs) add(tabAddress(t.key), "tab");
   for (const a of i.acts) add(actHref(a), a.kind === "control" ? "control" : a.kind === "dial" ? "dial" : a.tab ? "tab" : "page");
-  return [...doors.values()];
+  return Array.from(doors.values());
 }
 
 function oldDoorsCount(i: ScoreInputs): Count {

@@ -10,7 +10,7 @@ import type { Count, OpenItem, Scoreboard } from "./gardenScore";
 export function openGroups(count: Pick<Count, "open">): Array<{ group: string; items: OpenItem[] }> {
   const groups = new Map<string, OpenItem[]>();
   for (const item of count.open) groups.set(item.group, [...(groups.get(item.group) ?? []), item]);
-  return [...groups.entries()].map(([group, items]) => ({ group, items })).sort((a, b) => b.items.length - a.items.length || (a.group < b.group ? -1 : 1));
+  return Array.from(groups.entries(), ([group, items]) => ({ group, items })).sort((a, b) => b.items.length - a.items.length || (a.group < b.group ? -1 : 1));
 }
 
 const cell = (n: number | null): string => (n === null ? "not measured" : String(n));
