@@ -248,18 +248,29 @@ const STILL_OPEN: Readonly<Record<string, string>> = {
   H1: "its own address, which is not on this base",
 };
 
-type State = "registered" | "partial" | "missing";
+/**
+ * Rows the ledger counts that are NEVER DRAWN anywhere today. Nothing a person can reach does them, so the registry,
+ * which describes today's code, has no act for them, on purpose. They are reported apart from "missing": a missing
+ * row is work to do, and these wait on a ruling about the components themselves.
+ */
+const NEVER_DRAWN: Readonly<Record<string, string>> = {
+  G16: "the component is not rendered by any page",
+  G17: "read only by that component and by one test",
+  G18: "the component is not rendered by any page",
+};
+
+type State = "registered" | "partial" | "missing" | "never drawn";
 
 const covering = (id: string): AdminAct[] => ADMIN_ACTS.filter((a) => a.parity?.includes(id));
 
 function stateOf(id: string): State {
   const acts = covering(id);
-  if (!acts.length) return "missing";
+  if (!acts.length) return NEVER_DRAWN[id] ? "never drawn" : "missing";
   return STILL_OPEN[id] || acts.some((a) => a.partial) ? "partial" : "registered";
 }
 
 /** What was reached on 27 Nov 2026. A floor: the numbers may go up, never down. */
-const FLOOR = { covered: 190, registered: 109 };
+const FLOOR = { covered: 192, registered: 110 };
 
 describe("how much of the parity ledger the registry covers", () => {
   const ids = Object.keys(LEDGER);
@@ -297,6 +308,7 @@ describe("how much of the parity ledger the registry covers", () => {
       line("all", LEDGER_TOTAL),
       `  covered (registered or partial): ${count("registered") + count("partial")} of ${LEDGER_TOTAL}`,
       `  missing: ${of("missing").map((id) => `${id} ${LEDGER[id]}`).join("; ") || "none"}`,
+      `  never drawn today, left out on purpose: ${of("never drawn").map((id) => `${id} ${LEDGER[id]} (${NEVER_DRAWN[id]})`).join("; ") || "none"}`,
       `  partial: ${of("partial").join(", ")}`,
       `  acts in the registry: ${ADMIN_ACTS.length} (${DIAL_ACTS.length} dials, ${SEED_ACTS.length} keys, ${ADMIN_ACTS.filter((a) => a.partial).length} marked partial)`,
       "",
@@ -304,6 +316,10 @@ describe("how much of the parity ledger the registry covers", () => {
     console.log(lines.join("\n"));
     expect(count("registered") + count("partial")).toBeGreaterThanOrEqual(FLOOR.covered);
     expect(count("registered")).toBeGreaterThanOrEqual(FLOOR.registered);
-    expect(count("registered") + count("partial") + count("missing")).toBe(LEDGER_TOTAL);
+    expect(count("registered") + count("partial") + count("missing") + count("never drawn")).toBe(LEDGER_TOTAL);
+    // Nothing is missing: every row is covered, or is one of the three that no page draws.
+    expect(of("missing")).toEqual([]);
+    // A row named as never drawn that an act now covers is a stale name here: take it off the list.
+    for (const id of Object.keys(NEVER_DRAWN)) expect(covering(id), `${id} is on NEVER_DRAWN and has an act`).toEqual([]);
   });
 });

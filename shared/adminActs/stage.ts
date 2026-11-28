@@ -58,6 +58,15 @@ export const STAGE_ACTS = inPlace("stage", [
     fields: [text("id", "The decision"), text("status", "Where it stands"), text("chosen", "What was chosen"), long("notes", "Notes")],
   },
   {
+    // A note on a timeline item is one section of the board's copy, kept under `note-<item>` (pages/ProjectHistory.tsx, saveNote).
+    id: "stage.timeline.note", parity: ["E3"], path: BOARD, power: "admin",
+    title: "Write a note on a timeline item",
+    help: "Add or change the note under one item of the board's timeline.",
+    synonyms: ["deliverable note", "timeline note", "note on an item", "delivery note"],
+    route: POST("/api/journey/copy"),
+    fields: [text("sectionId", "Which item's note"), long("content", "The note")],
+  },
+  {
     id: "stage.documents.save", parity: ["E9"], path: BOARD, power: "admin",
     title: "Change a working document",
     help: "Edit one section of the board's working documents.",

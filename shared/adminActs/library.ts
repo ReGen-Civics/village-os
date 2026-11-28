@@ -232,6 +232,16 @@ export const LIBRARY_ACTS = inPlace("library", [
     partial: true,
   },
   {
+    // The wizard's two home fields ride inside the brand's `project` (heroHeadline, heroBody). Blank keeps Pages, Home.
+    id: "library.home.headline", parity: ["F5"], tab: "setup", power: "admin", holder: "story.tell",
+    title: "Change the homepage headline",
+    help: "The headline on the homepage and the sentence under it. Left blank, the homepage keeps the words in Pages, Home.",
+    synonyms: ["homepage headline", "home headline", "hero", "welcome line", "front page words", "homepage sentence"],
+    route: PUT("/api/admin/brand"),
+    fields: [list("project", "The headline and the sentence under it")],
+    partial: true,
+  },
+  {
     id: "library.pictures.upload", parity: ["F13", "F14", "F15", "F16", "F17", "F18", "F19", "F20", "F21"], tab: "setup", power: "admin", holder: "story.tell",
     title: "Upload a picture for the village",
     help: "Upload a picture the village's look uses, such as the logo or a page's image.",
