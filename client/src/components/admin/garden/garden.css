@@ -552,6 +552,12 @@ button.gd-stone-row:hover {
   outline: 2px solid var(--garden-gold-lit);
   outline-offset: 2px;
 }
+/* The view switch (the guide first, or the dashboard) has the lens toggle's look. In one column she is first and the
+   places follow in both states, so there is nothing to switch: it is drawn only from the frame's two-column width up
+   (the rule is with the frame's, below). */
+.gd-view {
+  display: none;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .gd-place .gd-sprite {
@@ -606,13 +612,17 @@ button.gd-stone-row:hover {
   .gd-frame[data-dock="expanded"] .gd-frame-dock {
     margin-right: 0;
   }
+  /* Two columns: there are two ways to lay the page out, so the view switch is drawn. */
+  .gd-view {
+    display: flex;
+  }
   /* The window, less what stands above the frame's body (the band: `--gd-frame-above`, for a host whose band is
-     taller) and the air around her. Never so short that the talk box has no room. */
+     taller than one row with its switches) and the air around her. Never so short that the talk box has no room. */
   .gd-frame-dock {
     position: sticky;
     top: calc(var(--gd-frame-top, 0px) + 0.75rem);
     align-self: start;
-    height: max(24rem, calc(100dvh - var(--gd-frame-top, 0px) - var(--gd-frame-above, 3.5rem) - 1.5rem));
+    height: max(24rem, calc(100dvh - var(--gd-frame-top, 0px) - var(--gd-frame-above, 4.5rem) - 1.5rem));
   }
 }
 
