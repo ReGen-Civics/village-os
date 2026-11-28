@@ -59,6 +59,9 @@
  * vite.config.ts writes the graph to dist/chunk-graph.json). It prints both
  * sides under the three budget lines, the admin-only files with their sizes,
  * and one line saying whether any member chunk holds the Admin Garden's code.
+ * A last line names the old admin shell's chunk and weight: the allowance
+ * steps down by that weight the day the shell leaves the build, and the gate
+ * fails until it has (scripts/admin-shell-step-down.json says what to do).
  *
  * Two more numbers gate them, read like the other three (the environment, then
  * `.github/workflows/ci.yml`): MAX_MEMBER_DIST_KB, the members' ceiling, and
