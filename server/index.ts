@@ -13100,7 +13100,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   // Admin search: the index the search bar and the guide read, filtered by the one gate (server/routes/adminSearch.ts).
   registerAdminSearchRoutes(app, { isAdmin, mayStillSee, dials: () => allVariables(), lifecycle: (id) => effectiveLifecycle(id) });
   // Find anything: every place this reader may open, and the guide for words the search missed (server/routes/search.ts).
-  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", villageGuideName: () => getWorkWithUs().assistantName });
+  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", menuNames: () => menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]).labels, villageGuideName: () => getWorkWithUs().assistantName });
 
   registerCapabilityExplainerRoutes(app, { isAdmin, members, capabilityCtx, stageOf });
 

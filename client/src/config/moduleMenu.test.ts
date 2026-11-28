@@ -14,6 +14,7 @@ import { MENU_SHAPE, MODULE_MENU, choiceOf, choicesChangeNothing, menuDocumentPr
 import { menuDocOf } from "@shared/menuDoc";
 import { contentDocumentFor } from "@shared/contentDocuments";
 import { mergeOnto } from "@shared/proposedChanges";
+import { FIND_PAGES, pageEntry } from "@shared/findPages";
 
 const shapeOf = (items: readonly NavLink[]) =>
   items.map((l) => ({ href: l.href, ...(l.sub ? { sub: l.sub } : {}), ...(l.module ? { module: l.module, label: l.label } : {}), ...(l.unlessModule ? { unlessModule: l.unlessModule } : {}) }));
@@ -152,5 +153,16 @@ describe("the vote path: a proposal on the menu document", () => {
     expect(accepted.labels["/feed"]).toBe("Town Square");
     const m = placedMenu(accepted.places);
     expect(where(m.nav as typeof NAV, m.account, "/feed")).toEqual(["Village/Maps"]);
+  });
+});
+
+describe("find anything says the village's name", () => {
+  it("names a renamed page by the village's word, and still finds it by the platform's", () => {
+    const forum = FIND_PAGES.find((p) => p.path === "/forum")!;
+    const named = pageEntry(forum, { names: { "/forum": "Crew Talk" } });
+    expect(named.title).toBe("Crew Talk");
+    expect(named.synonyms).toContain("Forum");
+    expect(pageEntry(forum, {}).title).toBe("Forum");
+    expect(pageEntry(forum, {}).synonyms).not.toContain("Forum");
   });
 });
