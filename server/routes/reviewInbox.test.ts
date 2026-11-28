@@ -167,13 +167,14 @@ describe("the deciders' read shows each person exactly what their own queues sho
   it("a storyteller sees B-71 and the agent's seating once, and Sera as failed, never as empty", async () => {
     const r = await get("/api/admin/review/inbox", "teller");
     expect(r.body.items.map((i: any) => [i.key, i.code])).toEqual([
+      // The blocked draft leads: it needs a hand before anybody can decide it.
+      ["structure:dr_2", null],
       ["agent:seating:ap_9", null],
       ["connector:pc_1", "B-71.1"],
       ["structure:dr_1", null],
-      ["structure:dr_2", null],
     ]);
     // A draft made in the admin panel is listed too, and every draft's door is its own page (the lead, 26 Nov 2026).
-    expect(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => i.decideAt)).toEqual(["/governance/decisions/drafts/dr_1", "/governance/decisions/drafts/dr_2"]);
+    expect(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => i.decideAt)).toEqual(["/governance/decisions/drafts/dr_2", "/governance/decisions/drafts/dr_1"]);
     const states = Object.fromEntries(r.body.sections.map((s: any) => [s.source, s.state]));
     expect(states.sera).toBe("failed");
     expect(states.approval).toBe("ok");
@@ -256,13 +257,21 @@ describe("the deciders' read shows each person exactly what their own queues sho
     // outside are listed and stay out of the count.
     expect(r.body.counts).toEqual({ decisions: 3, applications: 3, blocked: 0, unknown: [], waiting: 6 });
     expect(r.body.items.filter((i: any) => i.source === "form").map((i: any) => [i.key, i.summary])).toEqual([["form:s1", "Membership request"], ["form:s2", "Visit"]]);
+    // BY DOOR: the same three decisions by the page each is made on (the two forms in Admin, the finished Quest on
+    // /review), for a number drawn on one door. The applications are on no door's count.
+    expect(r.body.byDoor).toEqual({ "/admin": 2, "/review": 1 });
     // A form is named by its kind, never by who sent it.
     expect(JSON.stringify(r.body)).not.toMatch(/Ana Applicant|Ben Visitor|Cy Done/);
     // The applications are still listed, in arrival order, each on its own row.
     expect(r.body.items.filter((i: any) => i.source === "application" || i.source === "open").map((i: any) => i.key)).toEqual(["open:o1", "application:a1", "application:a2"]);
     // Blocked rows are beside the count, not in it; a queue that did not load makes it a floor that names the queue.
     expect((await get("/api/admin/review/inbox", "teller")).body.counts).toEqual({ decisions: 3, applications: 0, blocked: 1, unknown: ["sera"], waiting: 4 });
-    expect((await get("/api/admin/review/inbox", "moderator")).body.counts).toMatchObject({ decisions: 25, unknown: ["intake", "quest"] });
+    const moderator = (await get("/api/admin/review/inbox", "moderator")).body;
+    expect(moderator.counts).toMatchObject({ decisions: 25, unknown: ["intake", "quest"] });
+    // 23 finished Quests and Sera's one row are decided on /review; the approval on /governance/work. Ten claim rows
+    // are sent and all 23 are counted.
+    expect(moderator.byDoor).toEqual({ "/review": 24, "/governance/work": 1 });
+    expect(Object.values(moderator.byDoor as Record<string, number>).reduce((a, b) => a + b, 0)).toBe(moderator.counts.decisions);
   });
 
   it("THE COUNT IS NEVER CARRIED ACROSS PEOPLE: each answer is this person's, worked out on this read, and may not be stored", async () => {
