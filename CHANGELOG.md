@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.4 (2026-11-27)
+
+### What changed for your village
+
+- **A helpful page when an address is wrong.** A mistyped or old address now offers up to three pages the reader may open, nearest first, each with where it sits in the menu, and a gold door home. A visitor is never offered member or admin pages.
+- **You land where a link points.** Following a link to a part of a page gives that part a short, quiet glow, and a still outline with reduced motion. Focus never moves.
+- **How the menu is used.** Admins get a "How the menu is used" tab: the most opened pages this season or a past one, the pages no one opened, and gentle suggestions once there are enough visits to read.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Page visits the village already counts are read, and going back to 1.4.3 is safe.
+
+---
+
 ## 1.4.3 (2026-11-27)
 
 ### What changed for your village
