@@ -33,6 +33,7 @@ import { plainLetterHtml } from "./letterHtml";
 import { languageOf } from "./applicantLanguage";
 import { STATUS_LINK_STARTS, wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
 import { dressLetter } from "./comms/villageLetter";
+import { comeAndPlayWords } from "../../shared/comms/comeAndPlay";
 import { APPLICATION_CLOSE_DAYS_VARIABLE } from "../../shared/openProposals";
 import { signLink } from "./comms/links";
 import { replyMoonsFor, replyMoonsNow } from "./foundingFirst";
@@ -83,7 +84,14 @@ export async function framedLetter(
       { subject: words.subject, text: statusLink ? withoutStatusLink(words.text) : words.text, button: statusLink ? { label: wordsIn(lang).shape.seePage, url: statusLink } : null },
       { lang, comeAndPlay: false, villageName: deps.projectName?.() },
     );
-    return { html: dressed.html, text: dressed.text, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
+    // The plain text keeps the link (a reader without HTML has no button): "See your page: <link>", before the sign-off.
+    let text = dressed.text;
+    if (statusLink && !text.includes(statusLink)) {
+      const line = `${wordsIn(lang).shape.seePage}: ${statusLink}`;
+      const at = text.indexOf(comeAndPlayWords(lang).signOff);
+      text = at >= 0 ? `${text.slice(0, at)}${line}\n\n${text.slice(at)}` : `${text}\n\n${line}`;
+    }
+    return { html: dressed.html, text, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
   } catch (e) {
     console.error("[open-proposals] a letter could not be framed, so it goes plain", e);
     return { html: plainLetterHtml(words.text), text: words.text };

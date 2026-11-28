@@ -214,7 +214,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     const id = await confirmed(email, locale);
     expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
     expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)!;
+    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)!;
     const token = tokenOf(letter);
     const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: REFS }, null);
     expect(given.status, JSON.stringify(given.body)).toBe(200);
@@ -254,14 +254,16 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id);
       expect((await call("POST", `${app(id)}/references/ask`, {}, OUTSIDER.id)).status).toBe(403);
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-      const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`);
+      // ONE EMAIL AT REFERENCES (QA round 4): the stage's own letter carries the ask; the separate letter never goes with it.
+      const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`);
       expect(letters).toHaveLength(1);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toEqual([]);
       expect(letters[0].to.email).toBe("ask@example.test");
       expect(letters[0].subject).toContain("referencias");
       expect(letters[0].text).toContain(`${ORIGIN}/application-status/${id}?token=`);
       // Asked twice: refused, and no second letter.
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(409);
-      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toHaveLength(1);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)).toHaveLength(1);
     });
   });
 
@@ -301,7 +303,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(early.status).toBe(409);
       expect(early.body.error).toBe("not_asked");
       await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
-      const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)!;
+      const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)!;
       const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", how: "x" }] }, null);
       expect(bad.status).toBe(400);
       // An email alone is refused: one of WhatsApp, a US phone or Signal too (the lead, 27 Nov 2026).
@@ -413,7 +415,8 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const gathered = await walk(id, FINAL.id);
       expect(gathered.body.walkthrough.scorecards.mayRead).toBe(true);
       expect(gathered.body.walkthrough.scorecards.interviews[0].entries[0].evidence).toBe("Heard it.");
-      expect(gathered.body.walkthrough.track.now).not.toBe("final_interview");
+      // Ruling 7: the final written up waits for the proposal to be sent to the anchor circle.
+      expect(gathered.body.walkthrough.track).toMatchObject({ now: "final_interview", primary: "send_to_circle" });
     });
 
     it("the final-call role reads the scorecards before any conversation of its own, as the power to place people does", async () => {
