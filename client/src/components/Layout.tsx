@@ -7,6 +7,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { LanguagePicker } from "@/i18n/LanguagePicker";
 import ThemeSwitch, { useLogoMask } from "@/components/ThemeSwitch";
 import { useAuth } from "@/contexts/AuthContext";
+import { menuRolesAllow } from "@/lib/adminAccess";
 import { useModules } from "@/modules/ModuleProvider";
 // A member's bell and counts load on their own: a visitor who is not signed in never draws them, so they stay off the first page's scripts (MAX_BOOT_JS_KB).
 const NotificationBell = lazy(() => import("@/components/NotificationBell"));
@@ -87,11 +88,10 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
   const lifecycleOf = (id?: string) => modules.find((m) => m.id === id)?.lifecycle;
 
   // A link survives when its module is on AND the viewer holds one of its
-  // roles. Both absent means everyone sees it. The role is read once into a
-  // local so a signed-out viewer (no user, no role) filters out by the same
-  // test rather than a second branch.
+  // roles. Both absent means everyone sees it. `menuRolesAllow` reads the
+  // roles (client/src/lib/adminAccess.ts): a signed-out viewer filters out by
+  // the same test, and admin access through a power group opens an admin entry.
   const tokenName = useTokenName("Recognition");
-  const role = user?.role;
   // Asked of the gate once per sign-in (GET /api/treasury/doors); unknown or refused shows nothing.
   const treasuryOpen = anyTreasuryDoor(useTreasuryDoors(user ? token : null));
   // The brochure pages are the first village's own story (shared/brochure.ts).
@@ -111,7 +111,7 @@ export default function Layout({ children, headerScrollsOnPhone = false }: Layou
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.story ?? item.href)) &&
-    (!item.roles || (!!role && item.roles.includes(role))) &&
+    menuRolesAllow(item.roles, user) &&
     (item.signedIn === undefined || item.signedIn === !!user) &&
     (!item.door || (item.door === "treasury" && !!user && treasuryOpen));
 

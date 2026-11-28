@@ -363,7 +363,8 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // in the menu since round 2, so it does not read as Govern's Treasury tab, the budget every member reads. Since the
   // treasury fold (27 Nov 2026) it opens the desk board at the top of that same Treasury; /treasury redirects there.
   { href: "/governance/treasury#desks", label: "Treasury desk", door: "treasury", sub: "Running the village" },
-  // Its own gate unlocks for admin and founder and walls everyone else.
+  // Its own gate unlocks for whoever may use admin and walls everyone else. A list naming "admin" also opens for
+  // admin access through a power group (`menuRolesAllow`, client/src/lib/adminAccess.ts).
   { href: "/project-history", brochure: true, label: "Command Centre", roles: ["admin", "founder"], accent: true, sub: "Running the village" },
   // The admin's one review page (the Governance lane folds /admin/proposals into it).
   { href: "/admin/review", label: "Review", roles: ["admin", "founder"], sub: "Running the village" },

@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import MemberAdminView from "@/components/admin/MemberAdminView";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
@@ -71,7 +72,7 @@ export default function AdminGate({ onAuth }: { onAuth: (token: string) => void 
   }, [loading]);
 
   // Sheet 19: or a live holding of a power group with admin access, which the server works out (`adminAccess`).
-  const isAdmin = !!user && (user.role === "admin" || user.role === "founder" || (user as any).adminAccess === true);
+  const isAdmin = hasAdminAccess(user);
   // Where this admin was headed, deep link included (`?tab=email-settings&…`),
   // so the Google round trip comes back to the same screen. The server's
   // normalizeNext checks it before it is signed into the state.

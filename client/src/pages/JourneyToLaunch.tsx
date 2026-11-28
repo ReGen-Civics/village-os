@@ -24,6 +24,7 @@ import { CanvasView } from "@/components/canvas/CanvasView";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { authToken, fetchGameMe } from "@/lib/gameApi";
 import {
   Check,
@@ -178,7 +179,7 @@ function viewOfFixAt(fixAt: string): JourneyView | null {
 export default function JourneyToLaunch() {
   const brochureOn = useBrochurePages() === true;
   const { user, loading } = useAuth();
-  const isAdmin = !!user && (user.role === "admin" || user.role === "founder");
+  const isAdmin = hasAdminAccess(user);
   const [status, setStatus] = useState<any>(null);
   /**
    * Where the village stands, as facts (`shared/launchFacts.ts`). The checklist
@@ -552,7 +553,7 @@ export default function JourneyToLaunch() {
                                   {i.fixLabel} <ChevronRight className="w-3 h-3" />
                                 </Link>
                               )}
-                              {rowsOpen && i.checkKey.startsWith("manual:") && (
+                              {rowsOpen && user?.role === "founder" && i.checkKey.startsWith("manual:") && (
                                 <button
                                   onClick={() => confirm(i.id, i.state !== "ok")}
                                   disabled={busy === i.id}
@@ -578,7 +579,7 @@ export default function JourneyToLaunch() {
                                 * this is where naming none is recorded, with
                                 * a name and an instant on it.
                                 */}
-                              {rowsOpen && i.declinable && (
+                              {rowsOpen && user?.role === "founder" && i.declinable && (
                                 <button
                                   onClick={() => confirm(i.id, i.declinedBy ? false : "declined")}
                                   disabled={busy === i.id}
@@ -590,6 +591,11 @@ export default function JourneyToLaunch() {
                                 >
                                   {i.declinedBy ? "Undo" : "Decline"}
                                 </button>
+                              )}
+                              {/* A founder's act (Rye, 27 Nov 2026): the server refuses everybody else, so the two buttons above
+                                  are a founder's alone, and anybody else reading the row is told why in their place. */}
+                              {rowsOpen && user?.role !== "founder" && (i.checkKey.startsWith("manual:") || i.declinable) && (
+                                <span data-testid="founder-answers" className="text-xs text-muted-foreground"><Trans context="JourneyToLaunch, span">Only a founder confirms or declines this before launch.</Trans></span>
                               )}
                             </div>
                           </div>
