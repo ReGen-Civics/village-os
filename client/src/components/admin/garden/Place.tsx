@@ -9,6 +9,18 @@
  *
  * It is a link (`href`) or a button (`onOpen`), and its accessible name says
  * the whole of it: "The Hall, 3 waiting".
+ *
+ * A REAL LANTERN IS NEVER MISTAKEN FOR A PAINTED ONE (the grounds behind the
+ * places carry small painted lanterns, the founder, 28 Nov 2026: "We can keep
+ * the lanterns"). Three things hold that, each with a test:
+ *
+ *   1. The real lantern lives on the place's own label: inside the plaque,
+ *      with the name. It is never drawn on the land or on the building.
+ *   2. It has exactly two states, lit and dark. A place under scaffolding has
+ *      no lantern at all.
+ *   3. Its state is said in words: lit is in the place's name ("3 waiting"),
+ *      dark is in its description ("Nothing waiting."). A screen reader never
+ *      has to see the light.
  */
 import { useId, useState } from "react";
 import { Link } from "wouter";
@@ -58,6 +70,7 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
   const { t, i18n } = useLingui();
   const names = usePlaceNames();
   const detailId = useId();
+  const lanternId = useId();
   const [missingArt, setMissingArt] = useState<string | null>(null);
 
   const shown = name ?? names.nameOf(place);
@@ -71,8 +84,11 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
       ? t({ message: `${shown}, ${plural(count, { one: "# waiting", other: "# waiting" })}`, context: "garden place, its name read aloud" })
       : shown;
 
+  // A lantern that is there and not lit. Lit is already in the name ("3 waiting"); dark is said in the description.
+  const dark = !scaffolding && !lit;
+
   // The second line is the detail when the first is taken by the count or the scaffolding; the Desk has room for it always, the Grounds only for the caller's own words.
-  const firstIsDetail = !scaffolding && !lit;
+  const firstIsDetail = dark;
   const showSecond = !firstIsDetail && (note !== undefined || lens === "desk");
 
   const src = gardenSpriteUrl(place, scaffolding);
@@ -100,6 +116,12 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
             {detail}
           </span>
         )}
+        {dark ? (
+          // Hidden from sight and from the reading order, and still what the description points at: a dark lantern, in words.
+          <span id={lanternId} hidden>
+            <Trans context="garden place, its lantern is dark">Nothing waiting.</Trans>
+          </span>
+        ) : null}
       </span>
     </>
   );
@@ -111,7 +133,7 @@ export default function Place({ place, name, lens = "grounds", waiting = 0, note
     "data-lit": lit ? "true" : "false",
     "data-scaffolding": scaffolding ? "true" : "false",
     "aria-label": label,
-    "aria-describedby": detailId,
+    "aria-describedby": dark ? `${detailId} ${lanternId}` : detailId,
     "aria-current": current ? ("page" as const) : undefined,
   };
 

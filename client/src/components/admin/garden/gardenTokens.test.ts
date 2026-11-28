@@ -17,6 +17,8 @@ import { describe, expect, it } from "vitest";
 import { i18n } from "@lingui/core";
 import { contrastRatio } from "@shared/brandTokens";
 import { GARDEN_PLACE_KEYS, gardenArtFiles } from "@shared/gardenArt";
+import { GARDEN_FRAME_TWO_COLUMNS_REM } from "./frame";
+import { GARDEN_EXIT } from "./oldAdmin";
 import { GARDEN_PLACES, PLACE_NAME_MAX, tidyPlaceName } from "./places";
 
 const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -255,10 +257,29 @@ describe("what the garden's stylesheet promises a host page", () => {
     expect(garden.color).toBe("var(--garden-ink)");
   });
 
-  it("draws the dock first in the document, and moves it beside what you see only in the wide docked state", () => {
-    // No rule pulls the dock ahead by order any more: the document order is the reading order.
-    expect(gardenCss).not.toMatch(/order:\s*-1/);
-    expect(gardenCss).toMatch(/\.gd-frame\[data-dock="docked"\] \.gd-frame-dock\s*\{\s*order:\s*1;/);
+  it("re-orders nothing: what is drawn is the document's own order, so the frame alone decides where the dock stands", () => {
+    // No rule anywhere pulls a thing ahead or pushes it behind by `order`. Docked in two columns the dock used to be
+    // drawn second while standing first in the document; the frame now puts it second in the document (frame.tsx).
+    expect(gardenCss).not.toMatch(/(?:^|[\s;{])order\s*:/);
+    // And the frame's own two-column rules place nothing by hand either: the grid fills in the document's order.
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    const wide = flat.slice(flat.indexOf(`@container (min-width: ${GARDEN_FRAME_TWO_COLUMNS_REM}rem)`));
+    expect(wide).toContain('.gd-frame[data-dock="docked"] .gd-frame-body');
+    expect(wide).not.toMatch(/grid-(?:column|row|area)(?:-start|-end)?\s*:|(?:row|column)-reverse|direction\s*:\s*rtl/);
+  });
+
+  it("lays the two columns out from the same width the frame orders the document by: one number, two readers", () => {
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    // The container rule that holds the docked columns, whatever its number is.
+    const columns = flat.indexOf('.gd-frame[data-dock="docked"] .gd-frame-body');
+    expect(columns).toBeGreaterThan(0);
+    const open = flat.lastIndexOf("@container", columns);
+    expect(flat.slice(open, flat.indexOf("{", open)).trim()).toBe(`@container (min-width: ${GARDEN_FRAME_TWO_COLUMNS_REM}rem)`);
+    expect(GARDEN_FRAME_TWO_COLUMNS_REM).toBe(64);
+    // Measured on the frame's own width, which is what the frame observes: never the window's.
+    expect(rule(".gd-frame")["container-type"]).toBe("inline-size");
+    // There is one such rule: no second width at which the layout changes without the document following.
+    expect(flat.match(/@container \(min-width: 64rem\)/g)).toHaveLength(1);
   });
 
   it("fills and ticks a walked stone, so it never reads as an empty box", () => {
@@ -352,5 +373,121 @@ describe("what the garden's stylesheet promises a host page", () => {
     it("does all of it with the window's own units and container rules: still one @media, the reduced-motion guard", () => {
       expect(gardenCss.match(/@media/g)).toHaveLength(1);
     });
+  });
+
+  /**
+   * THE GROUND BEHIND THE PLACES, AND ITS PICKER (the founder, 28 Nov 2026). The land is never blank: its painted
+   * colours are its own and no rule takes them away; the one picture is a layer over them. A picked ground is drawn,
+   * and so fetched, only where the places are a map, and the picker is drawn only there too.
+   */
+  describe("the ground behind the places, and its picker", () => {
+    const COMPACT = ':is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds)';
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    /** One container rule's whole block, by its condition. */
+    const containerBlock = (condition: string) => {
+      const open = flat.indexOf(`@container (${condition})`);
+      expect(open, condition).toBeGreaterThan(0);
+      return flat.slice(open, flat.indexOf("\n}\n", open));
+    };
+    const fullMap = containerBlock("min-width: 38rem");
+    const smallMap = containerBlock("min-width: 28rem");
+    /** Everything that holds at every width: the stylesheet with its container rules and its one @media taken out. */
+    const everywhere = flat.replace(/@(?:container|media)[^{]*\{[\s\S]*?\n\}\n/g, "");
+
+    it("paints the land from the tokens alone: gradients over a solid ground, and no picture among them", () => {
+      const land = /\n\.gd-land \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(land).toMatch(/background-color: var\(--garden-band\);/);
+      expect(land).toMatch(/background-image:[^;]*linear-gradient\(var\(--garden-ground\), var\(--garden-ground\)\);/);
+      expect(land).not.toContain("url(");
+      expect(land).not.toContain("--gd-land-image");
+      // No other rule anywhere gives the land a background, so nothing can take its colours away.
+      const others = Array.from(flat.matchAll(/([^{}\n]*\.gd-land) \{([^}]*)\}/g)).filter((m) => /background/.test(m[2]));
+      expect(others.map((m) => m[1].trim())).toEqual([".gd-land"]);
+    });
+
+    it("lays the one picture over the land as a layer of its own, at a little over half its strength", () => {
+      const layer = /\n\.gd-land::before \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(layer).toMatch(/position: absolute;\s*inset: 0;/);
+      expect(layer).toMatch(/background-size: cover;\s*background-position: center;/);
+      expect(layer).toMatch(/pointer-events: none;/);
+      // THE VEIL: the land's own night shows through the picture. One number, in one place.
+      expect(layer).toMatch(/opacity: 0\.58;/);
+      expect(gardenCss.match(/opacity:/g)).toHaveLength(2); // this, and the building under scaffolding
+      // A picture that never arrives draws nothing: the layer has no colour of its own to leave behind.
+      expect(layer).not.toMatch(/background-color|background:/);
+    });
+
+    it("names a picked ground only where the places are a map, so where they are rows it is neither drawn nor fetched", () => {
+      // At every width the layer makes no box and names no picture...
+      const layer = /\n\.gd-land::before \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(layer).toMatch(/content: none;/);
+      expect(layer).not.toContain("--gd-land-image");
+      // ...but for a village's own land art, drawn at every width as it always was.
+      expect(everywhere).toMatch(/\n\.gd-land\[data-land="own"\]::before \{\s*content: "";\s*background-image: var\(--gd-land-image, none\);\s*\}/);
+      expect(everywhere.match(/--gd-land-image/g)).toHaveLength(1);
+      // The map's own container rules draw it: the full map, and the small one.
+      expect(fullMap).toMatch(/\n  \.gd-land::before \{\s*content: "";\s*background-image: var\(--gd-land-image, none\);\s*\}/);
+      expect(smallMap).toContain(`${COMPACT} .gd-land::before {\n    content: "";\n    background-image: var(--gd-land-image, none);\n  }`);
+      expect(gardenCss.match(/--gd-land-image/g)).toHaveLength(3);
+    });
+
+    it("draws the picker only where a ground is drawn: never where the places are rows, and by container rules alone", () => {
+      // Standing alone (a settings page) the picker is drawn; in the Grounds' own row it waits for the map.
+      expect(everywhere).toMatch(/\n\.gd-ground-picker \{\s*display: flex;/);
+      expect(everywhere).toMatch(/\n\.gd-grounds-head \.gd-ground-picker \{\s*display: none;\s*\}/);
+      expect(fullMap).toMatch(/\n  \.gd-grounds-head \.gd-ground-picker \{\s*display: flex;\s*\}/);
+      expect(smallMap).toContain(`${COMPACT} .gd-grounds-head .gd-ground-picker {\n    display: flex;\n  }`);
+      // The window's width decides none of it.
+      expect(gardenCss.match(/@media/g)).toHaveLength(1);
+    });
+
+    it("gives the land back the height the picker's line takes, so the picker never pushes the map under the fold", () => {
+      expect(flat).toMatch(/\n\.gd-grounds\[data-picker="true"\] \{\s*max-width: max\(44rem, calc\(\(100dvh - var\(--gd-grounds-above, 10rem\) - 1\.75rem\) \* 10 \/ 9\)\);\s*\}/);
+      // The row above the land: the heading where it starts, the picker where it ends, wrapping where there is no room.
+      expect(everywhere).toMatch(/\n\.gd-grounds-head \{\s*display: flex;\s*flex-wrap: wrap;\s*align-items: flex-end;\s*justify-content: space-between;/);
+    });
+  });
+});
+
+/**
+ * THE WAY TO THE OLD ADMIN, AND BACK (./oldAdmin.tsx). The way back is drawn OUTSIDE the garden's night, on the old
+ * admin page, so it may read nothing of the garden's. Its words and their underline are the page's own text colour
+ * (`text-foreground`), with no fill and no edge of its own. What must hold, then, is each page's own pair: its ink on
+ * the surfaces it draws, in both mode palettes. In the band the same class is the garden's ink on the band.
+ */
+describe("the way to the old admin, and back: readable in the band and outside the garden", () => {
+  const P = palette();
+
+  it("draws from the page's own tokens: its text colour for the words, and nothing only the garden defines", () => {
+    const classes = GARDEN_EXIT.split(" ");
+    expect(classes).toContain("text-foreground");
+    // No fill and no edge: nothing of its own to be unreadable against.
+    expect(classes.filter((c) => /bg-|border/.test(c))).toEqual([]);
+    expect(GARDEN_EXIT).not.toMatch(/gd-|--garden|var\(|notice/);
+    // A full finger tall, with the journey button's focus ring, which is the page's own --ring.
+    expect(classes).toEqual(expect.arrayContaining(["jw-btn", "min-h-11"]));
+    expect(indexCss).toMatch(/\.jw-btn:focus-visible \{\s*outline: 2px solid var\(--ring\);/);
+  });
+
+  it.each([
+    ["day, on the page", "--pal-day-ink", "--pal-day-ground"],
+    ["day, on a panel", "--pal-day-ink", "--pal-day-panel"],
+    ["day, on a tile", "--pal-day-ink", "--pal-day-panel-raised"],
+    ["night, on the page", "--pal-night-ink", "--pal-night-ground"],
+    ["night, on a panel", "--pal-night-ink", "--pal-night-panel"],
+    ["night, on a tile", "--pal-night-ink", "--pal-night-panel-raised"],
+    ["night, on the band", "--pal-night-ink", "--pal-night-band"],
+  ])("outside the garden, the page's own ink is readable: %s", (_where, ink, ground) => {
+    expect(P[ink], ink).toBeDefined();
+    expect(P[ground], ground).toBeDefined();
+    const ratio = contrastRatio(P[ink], P[ground]);
+    expect(ratio, `${P[ink]} on ${P[ground]} is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(TEXT);
+  });
+
+  it("in the band, the same class is the garden's ink on the band, and its focus ring the garden's gold", () => {
+    expect(TOKENS["--foreground"]).toBe("var(--garden-ink)");
+    expect(TOKENS["--ring"]).toBe("var(--garden-gold)");
+    expect(contrastRatio(token("ink"), token("band"))).toBeGreaterThanOrEqual(TEXT);
+    expect(contrastRatio(token("gold"), token("band"))).toBeGreaterThanOrEqual(MARK);
   });
 });

@@ -7,20 +7,58 @@
  * stepping stones are an ordered list with exactly one current step; fireflies
  * are decoration, around one child, and only where the caller asks; the circle
  * keeps the caller's order; the seed says its count in words and never as a
- * meter; the Grounds draw every place by percentage on the village's land or
- * the painted default.
+ * meter; the Grounds draw every place by percentage on the village's own land
+ * art or the painted ground the person picked, over colours that are always
+ * there; a real lantern is never mistaken for a painted one.
  */
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import type { ReactElement } from "react";
-import { GARDEN_PLACE_KEYS, gardenSpriteUrl } from "@shared/gardenArt";
-import { Circle, Desk, Fireflies, Garden, GardenFrame, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, useGardenDock, useGardenLens, ViewSwitch, type GardenPlaceState, type Stone } from "./index";
+import { useEffect, useState, type ReactElement } from "react";
+import { DEFAULT_GARDEN_GROUND, GARDEN_GROUND_KEYS, GARDEN_PLACE_KEYS, gardenGroundUrl, gardenSpriteUrl, type GardenGroundKey } from "@shared/gardenArt";
+import {
+  Circle,
+  Desk,
+  dockDrawnAfter,
+  Fireflies,
+  Garden,
+  GARDEN_EXIT,
+  GARDEN_FRAME_TWO_COLUMNS_REM,
+  GARDEN_GROUND_PICK_KEY,
+  GardenFrame,
+  GroundPicker,
+  Grounds,
+  Lantern,
+  LensToggle,
+  Place,
+  ReturnToGarden,
+  SeedOfLife,
+  SeeOldAdmin,
+  StatusBand,
+  SteppingStones,
+  useGardenDock,
+  useGardenGround,
+  useGardenLens,
+  ViewSwitch,
+  type GardenDockState,
+  type GardenPlaceState,
+  type Stone,
+} from "./index";
 import { cssUrl, groundsPaths } from "./Grounds";
 import { dayPartOf, DEFAULT_GUIDE_SPEAKING, GARDEN_SPEAKING_KEY, GUIDE_SPEAKING, readGuideSpeaking, useGardenWords, useGuideSpeaking } from "./speaking";
 import { forgetPageCopy } from "./gardenMemory";
 import { GARDEN_PLACES } from "./places";
+
+/** The elements a place's description points at, in order. A dark lantern adds its own words after what the place holds. */
+const describedBy = (el: Element): HTMLElement[] =>
+  (el.getAttribute("aria-describedby") ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((id) => document.getElementById(id))
+    .filter((node): node is HTMLElement => node !== null);
 
 beforeEach(() => {
   i18n.loadAndActivate({ locale: "en", messages: {} });
@@ -98,8 +136,9 @@ describe("Place and its lantern", () => {
     const link = screen.getByRole("link", { name: "The Library" });
     expect(link.getAttribute("data-lit")).toBe("false");
     expect(link.querySelector(".gd-lantern")?.getAttribute("data-lit")).toBe("false");
-    expect(link.getAttribute("aria-describedby")).toBeTruthy();
-    expect(document.getElementById(link.getAttribute("aria-describedby")!)?.textContent).toBe("Words and agreements");
+    // What the place holds, then its dark lantern in words.
+    expect(describedBy(link).map((node) => node.textContent)).toEqual(["Words and agreements", "Nothing waiting."]);
+    expect(link).toHaveAccessibleDescription("Words and agreements Nothing waiting.");
   });
 
   it("treats a count that is no number as nothing waiting", () => {
@@ -333,15 +372,17 @@ describe("Grounds", () => {
     expect(within(map).getAllByRole("link").every((a) => a.getAttribute("data-lens") === "grounds")).toBe(true);
   });
 
-  it("stands on the painted default until the village has a land image of its own", () => {
+  it("stands on a painted ground, forest first, until the village has land art of its own", () => {
     const { container, unmount } = show(<Grounds places={ALL} />);
     const painted = container.querySelector(".gd-land") as HTMLElement;
-    expect(painted.getAttribute("data-land")).toBe("painted");
-    expect(painted.style.getPropertyValue("--gd-land-image")).toBe("");
+    expect(painted.getAttribute("data-land")).toBe("ground");
+    expect(painted.getAttribute("data-ground")).toBe("forest");
+    expect(painted.style.getPropertyValue("--gd-land-image")).toBe('url("/images/garden/ground-forest.webp")');
     unmount();
     const own = show(<Grounds places={ALL} landImageUrl="/uploads/land/our-land.webp" />);
     const land = own.container.querySelector(".gd-land") as HTMLElement;
     expect(land.getAttribute("data-land")).toBe("own");
+    expect(land.hasAttribute("data-ground")).toBe(false);
     expect(land.style.getPropertyValue("--gd-land-image")).toBe('url("/uploads/land/our-land.webp")');
   });
 
@@ -479,12 +520,17 @@ describe("GardenFrame: one place for the guide's dock", () => {
     expect(screen.queryByRole("complementary")).toBeNull();
   });
 
-  it("puts the dock before what you see in the document, so reading and tab order match what the eye meets", () => {
-    frame("docked");
-    const dock = screen.getByRole("complementary", { name: "Your guide" });
-    const main = screen.getByText("the grounds");
-    // DOCUMENT_POSITION_FOLLOWING: what you see comes after the dock.
-    expect(dock.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  it("puts the dock before what you see in the document where there is nothing to measure by, as on a phone: she comes first", () => {
+    // No ResizeObserver here (an old browser, this test environment): the frame falls back to her first.
+    expect(typeof ResizeObserver).toBe("undefined");
+    for (const state of ["docked", "expanded"] as const) {
+      const page = frame(state);
+      const dock = screen.getByRole("complementary", { name: "Your guide" });
+      const main = screen.getByText("the grounds");
+      // DOCUMENT_POSITION_FOLLOWING: what you see comes after the dock.
+      expect(dock.compareDocumentPosition(main) & Node.DOCUMENT_POSITION_FOLLOWING, state).toBeTruthy();
+      page.unmount();
+    }
   });
 
   it("takes the caller's own name for the dock", () => {
@@ -494,6 +540,235 @@ describe("GardenFrame: one place for the guide's dock", () => {
       </GardenFrame>,
     );
     expect(screen.getByRole("complementary", { name: "Sol, your guide" })).toBeTruthy();
+  });
+});
+
+/**
+ * THE DOCUMENT FOLLOWS WHAT IS DRAWN. Review of the garden look found: docked on a wide screen she stood first in the
+ * document and was drawn in the right-hand column, so Tab went from the band to her and then back left to what you
+ * see. Now where she is drawn first she is first in the document, where she is drawn after what you see she is after
+ * it, and moving between the two never remounts her and never lifts her out of the page.
+ */
+describe("GardenFrame: the document follows what is drawn", () => {
+  /** A ResizeObserver the test drives: it reports the frame's own width when told to. */
+  class FrameObserver {
+    static live: FrameObserver[] = [];
+    private readonly targets = new Set<Element>();
+    constructor(private readonly report: ResizeObserverCallback) {
+      FrameObserver.live.push(this);
+    }
+    observe(el: Element) {
+      this.targets.add(el);
+    }
+    unobserve(el: Element) {
+      this.targets.delete(el);
+    }
+    disconnect() {
+      this.targets.clear();
+      FrameObserver.live = FrameObserver.live.filter((o) => o !== this);
+    }
+    tell(width: number) {
+      for (const target of Array.from(this.targets)) this.report([{ target, contentRect: { width } } as unknown as ResizeObserverEntry], this as unknown as ResizeObserver);
+    }
+  }
+  /** The frame's own width is measured at this many pixels. One rem is 16px here, so two columns start at 1024. */
+  const frameIs = (width: number) =>
+    act(() => {
+      for (const o of Array.from(FrameObserver.live)) o.tell(width);
+    });
+  const WIDE = 1440;
+  const NARROW = 700;
+
+  let mounts = 0;
+  beforeEach(() => {
+    FrameObserver.live = [];
+    mounts = 0;
+    vi.stubGlobal("ResizeObserver", FrameObserver);
+  });
+
+  /** What stands in the dock's slot: something with a draft, a scrolled conversation, and a count of its own mounts. */
+  function Talk() {
+    const [draft, setDraft] = useState("");
+    useEffect(() => {
+      mounts += 1;
+    }, []);
+    return (
+      <>
+        <div data-testid="talk">the conversation so far</div>
+        <input aria-label="Ask the guide" value={draft} onChange={(e) => setDraft(e.target.value)} />
+        <input aria-label="A note the page does not hold" />
+      </>
+    );
+  }
+  function Page({ start = "docked" }: { start?: GardenDockState }) {
+    const [state, setState] = useState<GardenDockState>(start);
+    const switches = (
+      <>
+        <button type="button" onClick={() => setState("expanded")}>
+          guide first
+        </button>
+        <button type="button" onClick={() => setState("docked")}>
+          dashboard
+        </button>
+        <button type="button" onClick={() => setState("closed")}>
+          close her
+        </button>
+      </>
+    );
+    return (
+      <GardenFrame band={<StatusBand label="Setup" switches={switches} />} dock={<Talk />} dockState={state}>
+        <a href="/admin/hall">a place</a>
+      </GardenFrame>
+    );
+  }
+  const press = (name: string) => fireEvent.click(screen.getByRole("button", { name }));
+  const guide = () => screen.getByRole("complementary", { name: "Your guide" });
+  const body = () => document.querySelector(".gd-frame-body") as HTMLElement;
+  /** The frame's body, in the document's own order. */
+  const order = () => Array.from(body().children).map((c) => (c.classList.contains("gd-frame-dock") ? "dock" : c.classList.contains("gd-frame-main") ? "main" : c.className));
+  /** Everything a keyboard stops at, in the order Tab meets it. */
+  const tabStops = () => Array.from(document.querySelectorAll<HTMLElement>("a[href], button, input")).map((el) => el.getAttribute("aria-label") ?? el.textContent ?? "");
+
+  it("decides from the frame's own width at the stylesheet's own 64rem, and only for the docked state", () => {
+    expect(GARDEN_FRAME_TWO_COLUMNS_REM).toBe(64);
+    expect(dockDrawnAfter("docked", 1024)).toBe(true);
+    expect(dockDrawnAfter("docked", 1023.9)).toBe(false);
+    expect(dockDrawnAfter("docked", 1440)).toBe(true);
+    // A larger root type moves the threshold with it, as the container rule's rem does.
+    expect(dockDrawnAfter("docked", 1100, 20)).toBe(false);
+    expect(dockDrawnAfter("docked", 1280, 20)).toBe(true);
+    // Expanded, the conversation leads at every width. Closed, there is no dock to place.
+    for (const width of [320, 1024, 1920]) {
+      expect(dockDrawnAfter("expanded", width)).toBe(false);
+      expect(dockDrawnAfter("closed", width)).toBe(false);
+    }
+    // Not measured yet, or a measure that is no number: she stays first.
+    expect(dockDrawnAfter("docked", null)).toBe(false);
+    expect(dockDrawnAfter("docked", Number.NaN)).toBe(false);
+  });
+
+  it("puts her after what you see in the document where she is drawn after it: docked, with room for two columns", () => {
+    show(<Page />);
+    // Before the frame is measured she is first, which is the order on a phone.
+    expect(order()).toEqual(["dock", "main"]);
+    frameIs(WIDE);
+    expect(order()).toEqual(["main", "dock"]);
+    expect(screen.getByText("a place").compareDocumentPosition(guide()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Tab now goes from the band to what you see, and then to her: the order the eye meets them in.
+    expect(tabStops()).toEqual(["guide first", "dashboard", "close her", "a place", "Ask the guide", "A note the page does not hold"]);
+  });
+
+  it("keeps her first where she is drawn first: in one column, and at exactly the width the two columns start", () => {
+    show(<Page />);
+    frameIs(NARROW);
+    expect(order()).toEqual(["dock", "main"]);
+    expect(tabStops()).toEqual(["guide first", "dashboard", "close her", "Ask the guide", "A note the page does not hold", "a place"]);
+    frameIs(1023.5);
+    expect(order()).toEqual(["dock", "main"]);
+    frameIs(1024);
+    expect(order()).toEqual(["main", "dock"]);
+    frameIs(1023.5);
+    expect(order()).toEqual(["dock", "main"]);
+  });
+
+  it("keeps her first while expanded at any width, and follows the dock's state as it changes", () => {
+    show(<Page start="expanded" />);
+    frameIs(WIDE);
+    // Expanded: the conversation leads, so she is first in the document too.
+    expect(order()).toEqual(["dock", "main"]);
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+    // Closed and opened again on a wide frame: she arrives where she is drawn.
+    press("close her");
+    expect(order()).toEqual(["main"]);
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    press("close her");
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+  });
+
+  it("never remounts her and never lifts her out of the page: her draft, her nodes and her focus survive every move", () => {
+    show(<Page />);
+    const slot = guide();
+    const draft = screen.getByLabelText("Ask the guide") as HTMLInputElement;
+    const note = screen.getByLabelText("A note the page does not hold") as HTMLInputElement;
+    // A draft the page holds in state, and a value only the element itself holds.
+    fireEvent.change(draft, { target: { value: "How do I set the timezone" } });
+    note.value = "typed and held by the box alone";
+    draft.focus();
+    expect(document.activeElement).toBe(draft);
+
+    // Watch every node the frame's body gains or loses from here on.
+    const lifted: Node[] = [];
+    const watcher = new MutationObserver(() => undefined);
+    watcher.observe(body(), { childList: true });
+    const collect = () => {
+      for (const record of watcher.takeRecords()) lifted.push(...Array.from(record.removedNodes));
+    };
+
+    // Across the threshold and back, and through the dock's own states on a wide frame.
+    frameIs(WIDE);
+    expect(order()).toEqual(["main", "dock"]);
+    collect();
+    frameIs(NARROW);
+    expect(order()).toEqual(["dock", "main"]);
+    collect();
+    frameIs(WIDE);
+    press("guide first");
+    expect(order()).toEqual(["dock", "main"]);
+    collect();
+    press("dashboard");
+    expect(order()).toEqual(["main", "dock"]);
+    collect();
+    watcher.disconnect();
+
+    // The order changed four times, and each time it was what you see that moved. She was never taken out.
+    expect(lifted.length).toBeGreaterThanOrEqual(4);
+    expect(lifted.every((node) => node === document.querySelector(".gd-frame-main"))).toBe(true);
+    expect(lifted).not.toContain(slot);
+
+    // The same slot, the same boxes, the same words in them, and the focus where it was.
+    expect(guide()).toBe(slot);
+    expect(screen.getByLabelText("Ask the guide")).toBe(draft);
+    expect(draft.value).toBe("How do I set the timezone");
+    expect(note.value).toBe("typed and held by the box alone");
+    expect(document.activeElement).toBe(draft);
+    // Mounted once, for the whole of it.
+    expect(mounts).toBe(1);
+    expect(screen.getByTestId("talk").textContent).toBe("the conversation so far");
+  });
+
+  it("moves what you see with everything in it kept, where the browser can do that", () => {
+    const keptMoves: Array<[Node, Node | null]> = [];
+    const proto = Element.prototype as Element & { moveBefore?: (node: Node, before: Node | null) => void };
+    proto.moveBefore = function (this: Element, node: Node, before: Node | null) {
+      keptMoves.push([node, before]);
+      this.insertBefore(node, before);
+    };
+    try {
+      show(<Page />);
+      frameIs(WIDE);
+      expect(order()).toEqual(["main", "dock"]);
+      frameIs(NARROW);
+      expect(order()).toEqual(["dock", "main"]);
+      // Both moves went through it, and both moved what you see: before her, then last.
+      expect(keptMoves).toEqual([
+        [document.querySelector(".gd-frame-main"), guide()],
+        [document.querySelector(".gd-frame-main"), null],
+      ]);
+    } finally {
+      delete proto.moveBefore;
+    }
+  });
+
+  it("stops measuring when the frame leaves the page", () => {
+    const page = show(<Page />);
+    expect(FrameObserver.live).toHaveLength(1);
+    page.unmount();
+    expect(FrameObserver.live).toHaveLength(0);
   });
 });
 
@@ -583,7 +858,11 @@ describe("a place always says what it holds", () => {
       </>,
     );
     const library = screen.getByRole("link", { name: "The Library" });
-    expect(document.getElementById(library.getAttribute("aria-describedby")!)?.className ?? "").not.toContain("sr-only");
+    // What it holds is the first thing its description points at, and it is drawn.
+    const [holds] = describedBy(library);
+    expect(holds.textContent).toBe(i18n._(GARDEN_PLACES.library.holds));
+    expect(holds.className).not.toContain("sr-only");
+    expect(holds.hidden).toBe(false);
     const gate = screen.getByRole("link", { name: "The Gate, 2 waiting" });
     expect(document.getElementById(gate.getAttribute("aria-describedby")!)?.className ?? "").not.toContain("sr-only");
     expect(described(gate)).toBe(i18n._(GARDEN_PLACES.gate.holds));
@@ -873,3 +1152,588 @@ function StatusBandReader() {
   const words = useGardenWords({ now: new Date(2026, 10, 28, 20) });
   return <StatusBand label={words.band({ village: "North Wind", needing: 4 })} />;
 }
+
+/** garden.css as its innermost rules, comments gone: each one's selector and its declarations. */
+const GARDEN_RULES = Array.from(
+  readFileSync(path.resolve(__dirname, "garden.css"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .matchAll(/([^{}]+)\{([^{}]*)\}/g),
+  (m) => ({ selector: m[1].trim().replace(/\s+/g, " "), body: m[2] }),
+);
+
+/** Every place built, two of them lit: the running garden. */
+const BUILT: GardenPlaceState[] = GARDEN_PLACE_KEYS.map((place) => ({ place, href: `/admin/${place}`, waiting: place === "hall" ? 3 : place === "fire" ? 1 : 0 }));
+
+const GROUND_NAMES: Record<GardenGroundKey, string> = { forest: "Forest", valley: "Valley", hills: "Terraced hills", beach: "Beachside" };
+const groundPicker = () => screen.getByRole("group", { name: "The ground behind your garden" });
+const groundChoice = (ground: GardenGroundKey) => within(groundPicker()).getByRole("button", { name: GROUND_NAMES[ground] });
+const theLand = () => document.querySelector(".gd-land") as HTMLElement;
+
+function GroundProbe() {
+  const { ground, setGround } = useGardenGround();
+  return (
+    <>
+      <p data-testid="ground">{ground}</p>
+      <GroundPicker ground={ground} onChange={setGround} />
+    </>
+  );
+}
+
+function GroundEcho() {
+  return <p data-testid="ground-echo">{useGardenGround().ground}</p>;
+}
+
+function QuietSwitch() {
+  const dial = useGuideSpeaking();
+  return (
+    <button type="button" onClick={() => dial.setQuiet(!dial.quiet)}>
+      brief and quiet
+    </button>
+  );
+}
+
+const showFor = (personKey: string, ui: ReactElement) =>
+  render(
+    <I18nProvider i18n={i18n}>
+      <Garden personKey={personKey}>{ui}</Garden>
+    </I18nProvider>,
+  );
+
+/**
+ * THE GROUND BEHIND THE GARDEN (the founder, 28 Nov 2026: "Let users pick forest, valley, or terraced hills and also a
+ * beachside"). Each person's own pick, kept in their own browser. Forest where nobody has picked.
+ */
+describe("the ground behind the garden: each person's own pick", () => {
+  const picked = () => screen.getByTestId("ground").textContent;
+
+  it("holds the four grounds the founder named, and forest is the default", () => {
+    expect(GARDEN_GROUND_KEYS).toEqual(["forest", "valley", "hills", "beach"]);
+    expect(DEFAULT_GARDEN_GROUND).toBe("forest");
+    show(<GroundProbe />);
+    expect(picked()).toBe("forest");
+    // A person who never picked has nothing kept.
+    expect(localStorage.getItem(GARDEN_GROUND_PICK_KEY)).toBeNull();
+  });
+
+  it("is one named group of four real buttons, each a finger tall, in the lens toggle's look, with the one showing marked", () => {
+    show(<GroundProbe />);
+    const buttons = within(groundPicker()).getAllByRole("button");
+    expect(buttons.map((b) => b.textContent)).toEqual(["Forest", "Valley", "Terraced hills", "Beachside"]);
+    for (const b of buttons) {
+      expect(b.tagName).toBe("BUTTON");
+      expect(b.getAttribute("type")).toBe("button");
+      expect(b.className.split(/\s+/)).toContain("min-h-11");
+      expect(b.hasAttribute("aria-pressed")).toBe(true);
+    }
+    expect(buttons.map((b) => b.getAttribute("aria-pressed"))).toEqual(["true", "false", "false", "false"]);
+    expect(groundPicker().className.split(/\s+/)).toContain("gd-lens");
+    // Names and no pictures: a picker of thumbnails would fetch all four grounds.
+    expect(groundPicker().querySelector("img, svg, picture")).toBeNull();
+  });
+
+  it("marks the ground a person picks, and remembers it in their own browser", () => {
+    const first = show(<GroundProbe />);
+    fireEvent.click(groundChoice("hills"));
+    expect(picked()).toBe("hills");
+    expect(within(groundPicker()).getAllByRole("button").map((b) => b.getAttribute("aria-pressed"))).toEqual(["false", "false", "true", "false"]);
+    expect(localStorage.getItem(GARDEN_GROUND_PICK_KEY)).toBe("hills");
+    first.unmount();
+    // The next visit asks the browser again.
+    forgetPageCopy();
+    show(<GroundProbe />);
+    expect(picked()).toBe("hills");
+  });
+
+  it("is each person's own where two share a browser", () => {
+    const ana = showFor("ana", <GroundProbe />);
+    fireEvent.click(groundChoice("beach"));
+    expect(localStorage.getItem(`${GARDEN_GROUND_PICK_KEY}:ana`)).toBe("beach");
+    expect(localStorage.getItem(GARDEN_GROUND_PICK_KEY)).toBeNull();
+    ana.unmount();
+    showFor("ben", <GroundProbe />);
+    expect(picked()).toBe("forest");
+  });
+
+  it("reads a kept value that is no ground as forest", () => {
+    for (const junk of ["desert", "FOREST", "", "ground-forest.webp", '{"ground":"beach"}']) {
+      localStorage.setItem(GARDEN_GROUND_PICK_KEY, junk);
+      forgetPageCopy();
+      const page = show(<GroundProbe />);
+      expect(picked(), junk).toBe("forest");
+      expect(groundChoice("forest").getAttribute("aria-pressed"), junk).toBe("true");
+      page.unmount();
+    }
+  });
+
+  it("keeps every reader on the page in step, and sends a pick nowhere", () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    show(
+      <>
+        <GroundProbe />
+        <GroundEcho />
+      </>,
+    );
+    fireEvent.click(groundChoice("valley"));
+    expect(screen.getByTestId("ground-echo").textContent).toBe("valley");
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("says its line warm and plain, and in its brief form when the person asked for brief and quiet", () => {
+    show(
+      <>
+        <GroundProbe />
+        <QuietSwitch />
+      </>,
+    );
+    expect(screen.getByText("Pick the ground behind your garden. It changes only your own screen.")).toBeTruthy();
+    // The line is the group's description, so a screen reader hears whose screen it changes.
+    expect(groundPicker()).toHaveAccessibleDescription("Pick the ground behind your garden. It changes only your own screen.");
+    fireEvent.click(screen.getByRole("button", { name: "brief and quiet" }));
+    expect(screen.queryByText("Pick the ground behind your garden. It changes only your own screen.")).toBeNull();
+    expect(screen.getByText("Your ground. Only your screen.")).toBeTruthy();
+    expect(groundPicker()).toHaveAccessibleDescription("Your ground. Only your screen.");
+  });
+});
+
+/**
+ * THE LAND DRAWS IT. The village's own land art first; otherwise the person's pick; and under both, always, the land's
+ * own painted colours.
+ */
+describe("the land: the village's own art, then the person's pick, and only one picture ever named", () => {
+  /** How many times the document names a painted ground, anywhere: an attribute, a style, a picture. */
+  const groundsNamed = () => document.documentElement.outerHTML.split("/images/garden/ground-").length - 1;
+
+  it("draws the person's pick behind the places, with the picker above the land", () => {
+    show(<Grounds places={ALL} />);
+    const map = screen.getByRole("navigation", { name: "The grounds" });
+    expect(map.getAttribute("data-picker")).toBe("true");
+    // The picker is the Grounds' own, above the land in the document, so it is met before the places.
+    expect(groundPicker().closest(".gd-grounds")).toBe(map);
+    expect(groundPicker().compareDocumentPosition(theLand()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(groundChoice("beach"));
+    expect(theLand().getAttribute("data-land")).toBe("ground");
+    expect(theLand().getAttribute("data-ground")).toBe("beach");
+    expect(theLand().style.getPropertyValue("--gd-land-image")).toBe('url("/images/garden/ground-beach.webp")');
+    expect(groundChoice("beach").getAttribute("aria-pressed")).toBe("true");
+    // All ten places are still there, each a link, after the ground changes.
+    expect(within(map).getAllByRole("link")).toHaveLength(10);
+  });
+
+  it("names ONLY the picked ground in the whole document: the other three are never asked for", () => {
+    show(<Grounds places={ALL} />);
+    for (const ground of [...GARDEN_GROUND_KEYS].reverse()) {
+      fireEvent.click(groundChoice(ground));
+      const html = document.documentElement.outerHTML;
+      expect(html, ground).toContain(gardenGroundUrl(ground));
+      for (const other of GARDEN_GROUND_KEYS.filter((g) => g !== ground)) expect(html, `${other} while ${ground} shows`).not.toContain(gardenGroundUrl(other));
+      // Named once, as the land's own picture, and by no picture element anywhere.
+      expect(groundsNamed(), ground).toBe(1);
+      expect(Array.from(document.querySelectorAll("img, source, link")).some((el) => el.outerHTML.includes("ground-")), ground).toBe(false);
+    }
+  });
+
+  it("puts the village's own land art first, whatever the person picked, and draws no picker: there is nothing to pick", () => {
+    localStorage.setItem(GARDEN_GROUND_PICK_KEY, "beach");
+    show(<Grounds places={ALL} landImageUrl="/uploads/land/our-land.webp" />);
+    const map = screen.getByRole("navigation", { name: "The grounds" });
+    expect(theLand().getAttribute("data-land")).toBe("own");
+    expect(theLand().hasAttribute("data-ground")).toBe(false);
+    expect(theLand().style.getPropertyValue("--gd-land-image")).toBe('url("/uploads/land/our-land.webp")');
+    expect(screen.queryByRole("group", { name: "The ground behind your garden" })).toBeNull();
+    expect(map.querySelector(".gd-ground-picker")).toBeNull();
+    expect(map.hasAttribute("data-picker")).toBe(false);
+    // No stock ground is named at all under a village's own land.
+    expect(groundsNamed()).toBe(0);
+    // And the person's own pick is still kept for a village with no land art.
+    expect(localStorage.getItem(GARDEN_GROUND_PICK_KEY)).toBe("beach");
+  });
+
+  it("reads an empty land art address as none, and falls back to the person's pick", () => {
+    show(<Grounds places={ALL} landImageUrl="   " />);
+    expect(theLand().getAttribute("data-land")).toBe("ground");
+    expect(theLand().getAttribute("data-ground")).toBe("forest");
+    expect(groundPicker()).toBeTruthy();
+  });
+
+  it("shares one row with the page's own heading, so the picker stands at the end of the row the heading starts", () => {
+    show(<Grounds places={ALL} heading={<h2>The grounds tonight</h2>} />);
+    const head = document.querySelector(".gd-grounds-head")!;
+    expect(within(head as HTMLElement).getByRole("heading", { name: "The grounds tonight" })).toBeTruthy();
+    expect(groundPicker().closest(".gd-grounds-head")).toBe(head);
+    // The heading first, the picker after it, and both before the land.
+    expect(screen.getByRole("heading", { name: "The grounds tonight" }).compareDocumentPosition(groundPicker()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(head.compareDocumentPosition(theLand()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("keeps the heading and drops the row's picker under a village's own land art; with neither there is no row", () => {
+    const own = show(<Grounds places={ALL} heading={<h2>Our land</h2>} landImageUrl="/uploads/land/our-land.webp" />);
+    expect(screen.getByRole("heading", { name: "Our land" }).closest(".gd-grounds-head")).toBeTruthy();
+    expect(document.querySelector(".gd-ground-picker")).toBeNull();
+    own.unmount();
+    show(<Grounds places={ALL} landImageUrl="/uploads/land/our-land.webp" />);
+    expect(document.querySelector(".gd-grounds-head")).toBeNull();
+  });
+});
+
+/**
+ * THE LAND IS NEVER BLANK, and a place never loses its lantern or its name, whatever happens to the pictures. This is
+ * the test that matters most here.
+ */
+describe("the land is never blank, whatever happens to the pictures", () => {
+  /** What must still be true of the page once every picture has failed. */
+  function expectTheLandStands() {
+    const map = screen.getByRole("navigation", { name: "The grounds" });
+    expect(document.querySelectorAll("img")).toHaveLength(0);
+
+    // All ten places, each still a link with its name in sight on its plaque and its lantern beside it.
+    const places = within(map).getAllByRole("link");
+    expect(places.map((p) => p.getAttribute("data-place"))).toEqual([...GARDEN_PLACE_KEYS]);
+    for (const place of places) {
+      const key = place.getAttribute("data-place") as keyof typeof GARDEN_PLACES;
+      const plaque = place.querySelector(".gd-plaque")!;
+      expect(plaque.querySelector(".gd-place-name")?.textContent, key).toBe(i18n._(GARDEN_PLACES[key].name));
+      expect(plaque.querySelectorAll(".gd-lantern"), key).toHaveLength(1);
+    }
+    expect(places.filter((p) => p.querySelector('.gd-lantern[data-lit="true"]')).map((p) => p.getAttribute("data-place"))).toEqual(["fire", "hall"]);
+    expect(within(map).getByRole("link", { name: "The Hall, 3 waiting" })).toBeTruthy();
+    expect(within(map).getByRole("link", { name: "The Library", description: "Words and agreements Nothing waiting." })).toBeTruthy();
+
+    // THE LAND ITSELF. Its picture is a layer in the stylesheet, which has no error to raise here, so what holds
+    // the land is structure, in three parts.
+    const land = map.querySelector(".gd-land") as HTMLElement;
+    // 1. The Grounds hand the land one thing inline, the picture's address. Never a background of their own, which
+    //    would replace the painted colours.
+    expect(Array.from({ length: land.style.length }, (_, i) => land.style.item(i))).toEqual(["--gd-land-image"]);
+    expect(land.style.background).toBe("");
+    expect(land.style.backgroundImage).toBe("");
+
+    // 2. The land's own rule paints it from the garden's tokens: gradients over a solid ground, and no picture.
+    const own = GARDEN_RULES.filter((r) => r.selector.split(",").some((s) => s.trim().endsWith(".gd-land")));
+    const painted = own.filter((r) => /background(?:-image|-color)?\s*:/.test(r.body));
+    expect(painted).toHaveLength(1);
+    expect(painted[0].selector).toBe(".gd-land");
+    expect(painted[0].body).toMatch(/background-color:\s*var\(--garden-band\);/);
+    expect(painted[0].body).toMatch(/background-image:[^;]*linear-gradient\(var\(--garden-ground\), var\(--garden-ground\)\);/);
+    expect(painted[0].body).not.toContain("url(");
+    expect(painted[0].body).not.toContain("--gd-land-image");
+
+    // 3. The picture is read only by the layer over the land, so a picture that never arrives draws nothing there
+    //    and takes nothing away.
+    const readers = GARDEN_RULES.filter((r) => r.body.includes("--gd-land-image"));
+    expect(readers.length).toBeGreaterThanOrEqual(3);
+    for (const r of readers) expect(r.selector.endsWith(".gd-land::before") || r.selector.endsWith('.gd-land[data-land="own"]::before'), r.selector).toBe(true);
+    return land;
+  }
+
+  it("with every image failing, all ten places still show their names and their lanterns, and the land still has its painted colours", () => {
+    show(<Grounds places={BUILT} />);
+    const images = Array.from(document.querySelectorAll("img"));
+    expect(images).toHaveLength(10);
+    for (const img of images) fireEvent.error(img);
+    const land = expectTheLandStands();
+    // The ground is still named, so it is drawn the moment it can be: nothing was given up.
+    expect(land.style.getPropertyValue("--gd-land-image")).toBe('url("/images/garden/ground-forest.webp")');
+  });
+
+  it("holds for every ground a person may pick, and for a village's own land art", () => {
+    for (const ground of GARDEN_GROUND_KEYS) {
+      const page = show(<Grounds places={BUILT} />);
+      fireEvent.click(groundChoice(ground));
+      for (const img of Array.from(document.querySelectorAll("img"))) fireEvent.error(img);
+      expectTheLandStands();
+      page.unmount();
+    }
+    show(<Grounds places={BUILT} landImageUrl="/uploads/land/missing.webp" />);
+    for (const img of Array.from(document.querySelectorAll("img"))) fireEvent.error(img);
+    expectTheLandStands();
+  });
+
+  it("holds as the small map and as the Desk's rows: a failed picture never takes a name or a lantern", () => {
+    const small = show(<Grounds places={BUILT} compact />);
+    for (const img of Array.from(document.querySelectorAll("img"))) fireEvent.error(img);
+    expectTheLandStands();
+    small.unmount();
+    show(<Desk places={BUILT} />);
+    for (const img of Array.from(document.querySelectorAll("img"))) fireEvent.error(img);
+    const rows = within(screen.getByRole("navigation", { name: "Places" })).getAllByRole("link");
+    expect(rows).toHaveLength(10);
+    for (const row of rows) {
+      expect(row.querySelector(".gd-place-name")?.textContent).toBeTruthy();
+      expect(row.querySelectorAll(".gd-lantern")).toHaveLength(1);
+    }
+  });
+});
+
+/**
+ * A REAL LANTERN IS NEVER MISTAKEN FOR A PAINTED ONE. The grounds carry small painted lanterns (the founder, 28 Nov
+ * 2026: "We can keep the lanterns"). A real one lives on the place's own label, has exactly two states, and says its
+ * state in words.
+ */
+describe("a real lantern is never mistaken for a painted one", () => {
+  it("lives on the place's own label: inside the plaque, with the name, and nowhere else on the land", () => {
+    show(<Grounds places={BUILT} />);
+    const land = theLand();
+    const lanterns = Array.from(land.querySelectorAll(".gd-lantern"));
+    expect(lanterns).toHaveLength(10);
+    for (const lantern of lanterns) {
+      const plaque = lantern.closest(".gd-plaque");
+      expect(plaque).toBeTruthy();
+      // The same plaque carries the name: the lantern and the name are one label.
+      expect(plaque?.querySelector(".gd-place-name")?.textContent).toBeTruthy();
+      // One place, one lantern.
+      expect(lantern.closest(".gd-place")?.querySelectorAll(".gd-lantern")).toHaveLength(1);
+    }
+    // Nothing else on the land is a lantern: not the land, not a path, not a building.
+    expect(land.querySelectorAll(".gd-lantern")).toHaveLength(land.querySelectorAll(".gd-plaque .gd-lantern").length);
+    for (const el of [land, ...Array.from(land.querySelectorAll(".gd-paths, .gd-sprite, .gd-places, li"))]) expect(el.classList.contains("gd-lantern")).toBe(false);
+    // And the picker above the land names grounds; it lights nothing.
+    expect(document.querySelectorAll(".gd-lantern")).toHaveLength(10);
+  });
+
+  it("stands on its plaque's own wood, which no ground shows through", () => {
+    // The plaque under a lantern on the map is solid wood with a gold edge, in the full map and the small one.
+    const plaques = GARDEN_RULES.filter((r) => r.selector.endsWith('.gd-place[data-lens="grounds"] .gd-plaque'));
+    expect(plaques).toHaveLength(2);
+    for (const plaque of plaques) {
+      expect(plaque.body).toMatch(/background-color:\s*var\(--garden-wood\);/);
+      expect(plaque.body).toMatch(/border-color:\s*color-mix\(in srgb, var\(--garden-gold-deep\) 80%, var\(--garden-gold\)\);/);
+    }
+    // Wood is the gold in shadow taken down to dark: no part of it is see-through.
+    const wood = GARDEN_RULES.find((r) => r.selector === ".garden")?.body.match(/--garden-wood:\s*([^;]+);/)?.[1];
+    expect(wood).toBe("color-mix(in srgb, var(--garden-gold-deep) 22%, black)");
+  });
+
+  it("has exactly two states, lit and dark, whatever count it is given", () => {
+    const cases: Array<[number, "true" | "false"]> = [
+      [0, "false"],
+      [1, "true"],
+      [7, "true"],
+      [250, "true"],
+      [0.4, "false"],
+      [-3, "false"],
+      [Number.NaN, "false"],
+      [Number.POSITIVE_INFINITY, "false"],
+    ];
+    for (const [waiting, lit] of cases) {
+      const page = show(<Place place="hall" waiting={waiting} href="/x" />);
+      const lantern = page.container.querySelector(".gd-lantern")!;
+      expect(lantern.getAttribute("data-lit"), String(waiting)).toBe(lit);
+      // One switch and no other: nothing else on the lantern can make a third look.
+      expect(lantern.getAttributeNames().filter((a) => a.startsWith("data-")), String(waiting)).toEqual(["data-lit"]);
+      expect(lantern.className.trim(), String(waiting)).toBe("gd-lantern");
+      page.unmount();
+    }
+    // The stylesheet draws those two and no third: the lantern, and the lantern lit.
+    expect(GARDEN_RULES.filter((r) => r.selector.includes(".gd-lantern")).map((r) => r.selector)).toEqual([".gd-lantern", '.gd-lantern[data-lit="true"]']);
+  });
+
+  it("says its state in words: lit in the place's name, dark in its description", () => {
+    show(
+      <>
+        <Place place="hall" waiting={3} href="/a" />
+        <Place place="library" href="/b" />
+        <Place place="stage" scaffolding href="/c" />
+      </>,
+    );
+    // Lit: the name says what waits.
+    const lit = screen.getByRole("link", { name: "The Hall, 3 waiting" });
+    expect(lit.querySelector(".gd-lantern")?.getAttribute("data-lit")).toBe("true");
+    expect(lit).toHaveAccessibleDescription(i18n._(GARDEN_PLACES.hall.holds));
+
+    // Dark: the description says nothing waits.
+    const dark = screen.getByRole("link", { name: "The Library" });
+    expect(dark.querySelector(".gd-lantern")?.getAttribute("data-lit")).toBe("false");
+    expect(dark).toHaveAccessibleDescription("Words and agreements Nothing waiting.");
+    const [, words] = describedBy(dark);
+    expect(words.textContent).toBe("Nothing waiting.");
+    // For a screen reader alone: out of sight and out of the reading order, and still what the description points at.
+    expect(words.hidden).toBe(true);
+    expect(words.closest(".gd-plaque")).toBe(dark.querySelector(".gd-plaque"));
+
+    // The light itself is decoration: the words carry its state.
+    for (const lantern of Array.from(document.querySelectorAll(".gd-lantern"))) expect(lantern.getAttribute("aria-hidden")).toBe("true");
+
+    // Under scaffolding there is no lantern, so there are no lantern words: the name says it is not built yet.
+    const unbuilt = screen.getByRole("link", { name: "The Stage, not built yet" });
+    expect(unbuilt.querySelector(".gd-lantern")).toBeNull();
+    expect(describedBy(unbuilt)).toHaveLength(1);
+    expect(unbuilt).toHaveAccessibleDescription(i18n._(GARDEN_PLACES.stage.holds));
+  });
+
+  it("says a dark lantern on the Desk's rows too, after the caller's own line", () => {
+    show(<Place place="gate" lens="desk" note="Two people are new this moon" href="/b" />);
+    expect(screen.getByRole("link", { name: "The Gate" })).toHaveAccessibleDescription("Two people are new this moon Nothing waiting.");
+  });
+});
+
+/**
+ * A WAY TO THE OLD ADMIN DASHBOARD, AND BACK (the founder, 28 Nov 2026: "yes new one live with the old as a 'return to
+ * old' button for now", and "Okay a 'see the old admin dashboard' button"). An exit in the band, and the way back for
+ * the old admin page. Neither holds anything: the page that mounts the garden owns where the choice is kept.
+ */
+describe("the way to the old admin dashboard, and back", () => {
+  const nothing = () => undefined;
+  const exitButton = (name: string) => screen.getByRole("button", { name });
+  /** The way back as the old admin page draws it: no <Garden> above it. */
+  const onTheOldPage = (ui: ReactElement) =>
+    render(
+      <I18nProvider i18n={i18n}>
+        <main data-testid="old-admin">{ui}</main>
+      </I18nProvider>,
+    );
+
+  it("says each line warm and plain, and in its brief form when the person asked for brief and quiet", () => {
+    show(
+      <>
+        <SeeOldAdmin onPress={nothing} />
+        <ReturnToGarden onPress={nothing} />
+        <QuietSwitch />
+      </>,
+    );
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    fireEvent.click(exitButton("brief and quiet"));
+    expect(exitButton("Old admin")).toBeTruthy();
+    expect(exitButton("The garden")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "See the old admin dashboard" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Return to the garden" })).toBeNull();
+    fireEvent.click(exitButton("brief and quiet"));
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+  });
+
+  it("is a real button a finger tall, and quieter than a switch: words with an underline, never a marked side's fill", () => {
+    show(
+      <>
+        <SeeOldAdmin onPress={nothing} />
+        <ReturnToGarden onPress={nothing} />
+      </>,
+    );
+    for (const button of [exitButton("See the old admin dashboard"), exitButton("Return to the garden")]) {
+      expect(button.tagName).toBe("BUTTON");
+      expect(button.getAttribute("type")).toBe("button");
+      const classes = button.className.split(/\s+/);
+      expect(classes).toEqual(GARDEN_EXIT.split(" "));
+      expect(classes).toEqual(expect.arrayContaining(["jw-btn", "min-h-11", "underline", "text-foreground"]));
+      // An exit, never one side of a choice: nothing is marked, nothing is filled, nothing is edged.
+      expect(button.hasAttribute("aria-pressed")).toBe(false);
+      expect(classes.filter((c) => /^(?:hover:|focus:)?(?:bg-|border)/.test(c))).toEqual([]);
+      expect(button.closest(".gd-lens")).toBeNull();
+    }
+  });
+
+  it("does what the page gave it, once a press, and itself keeps nothing, remembers nothing and asks for nothing", () => {
+    const toTheOld = vi.fn();
+    const back = vi.fn();
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    show(
+      <>
+        <SeeOldAdmin onPress={toTheOld} />
+        <ReturnToGarden onPress={back} />
+      </>,
+    );
+    fireEvent.click(exitButton("See the old admin dashboard"));
+    expect(toTheOld).toHaveBeenCalledTimes(1);
+    expect(toTheOld).toHaveBeenCalledWith();
+    expect(back).not.toHaveBeenCalled();
+    fireEvent.click(exitButton("Return to the garden"));
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(back).toHaveBeenCalledWith();
+    expect(toTheOld).toHaveBeenCalledTimes(1);
+    // Both are still there, saying the same thing: a press changed nothing of their own.
+    expect(exitButton("See the old admin dashboard")).toBeTruthy();
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    // Nothing kept in the browser, nothing sent: where the choice is kept is the page's own business.
+    expect(localStorage.length).toBe(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("stands in the band's own slot: after the switches and the band's own door, last in the band", () => {
+    function Band() {
+      const dock = useGardenDock();
+      const lens = useGardenLens();
+      const switches = (
+        <>
+          <ViewSwitch dock={dock} />
+          <LensToggle lens={lens.lens} onChange={lens.setLens} />
+        </>
+      );
+      return <StatusBand label="The Game is running" switches={switches} action={{ label: "See the road to launch", href: "/admin?tab=launch" }} exit={<SeeOldAdmin onPress={nothing} />} />;
+    }
+    show(<Band />);
+    const band = screen.getByRole("region", { name: "Where the village stands" });
+    const slot = screen.getByTestId("garden-band-exit");
+    const button = within(slot).getByRole("button", { name: "See the old admin dashboard" });
+    // The far end: the last thing in the band, in the document as on the page.
+    expect(band.lastElementChild).toBe(slot);
+    for (const earlier of [screen.getByRole("group", { name: "What leads this page" }), screen.getByRole("group", { name: "How you see the garden" }), within(band).getByRole("link", { name: "See the road to launch" })]) {
+      expect(earlier.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+    // So Tab meets it after both switches and the band's door.
+    const stops = Array.from(band.querySelectorAll("a[href], button")).map((el) => el.textContent);
+    expect(stops[stops.length - 1]).toBe("See the old admin dashboard");
+    expect(stops).toEqual(["Guide first", "Dashboard", "The Grounds", "The Desk", "See the road to launch", "See the old admin dashboard"]);
+  });
+
+  it("is drawn at every width, a phone's too: nothing steps it back, and it wraps under the switches when the band is narrow", () => {
+    show(<StatusBand label="The Game is running" exit={<SeeOldAdmin onPress={nothing} />} />);
+    const band = screen.getByRole("region", { name: "Where the village stands" });
+    const slot = screen.getByTestId("garden-band-exit");
+    const button = within(slot).getByRole("button", { name: "See the old admin dashboard" });
+    for (const el of [slot, button]) {
+      const classes = el.className.split(/\s+/);
+      // No class that hides it, at any width: the lens toggle steps back with `hidden lg:flex`, the view switch with `gd-view`.
+      expect(classes).not.toContain("hidden");
+      expect(classes).not.toContain("gd-view");
+      expect(classes.filter((c) => /^(?:sm|md|lg|xl|2xl|max-[a-z0-9]+):/.test(c))).toEqual([]);
+      expect(classes.filter((c) => c.startsWith("gd-"))).toEqual([]);
+      expect(el.hasAttribute("hidden")).toBe(false);
+    }
+    // No rule in the garden's stylesheet names the slot or the exit, so no container rule can hide it either.
+    expect(GARDEN_RULES.some((r) => /garden-band-exit|gd-exit|old-admin/i.test(r.selector))).toBe(false);
+    // The band wraps its items, so on a narrow band the exit goes to a row of its own under the switches.
+    expect(band.className.split(/\s+/)).toEqual(expect.arrayContaining(["flex", "flex-wrap"]));
+    expect(slot.parentElement).toBe(band);
+  });
+
+  it("draws no slot when the page gives no exit", () => {
+    show(<StatusBand label="The Game is running" />);
+    expect(screen.queryByTestId("garden-band-exit")).toBeNull();
+  });
+
+  it("the way back draws outside the garden's night, from the page's own tokens and nothing of the garden's", () => {
+    const back = vi.fn();
+    onTheOldPage(<ReturnToGarden onPress={back} />);
+    const button = exitButton("Return to the garden");
+    expect(button.closest(".garden")).toBeNull();
+    expect(screen.getByTestId("old-admin").contains(button)).toBe(true);
+    const classes = button.className.split(/\s+/);
+    // Its words and their underline are the page's own text colour, on whatever the page has drawn: no fill of its own.
+    expect(classes).toContain("text-foreground");
+    expect(classes).toContain("underline");
+    expect(classes.filter((c) => /bg-|border/.test(c))).toEqual([]);
+    // Nothing that only the garden defines: none of its classes, none of its tokens, none of its gold.
+    expect(classes.filter((c) => /^gd-|garden|notice|gold/.test(c))).toEqual([]);
+    expect(GARDEN_EXIT).not.toMatch(/--garden|gd-|var\(/);
+    // The focus ring is the page's own too: `jw-btn` draws it from --ring (client/src/index.css).
+    expect(classes).toContain("jw-btn");
+    fireEvent.click(button);
+    expect(back).toHaveBeenCalledTimes(1);
+  });
+
+  it("outside a garden it reads the brief and quiet setting of the person the page names", () => {
+    localStorage.setItem(`${GARDEN_SPEAKING_KEY}:ana`, "quiet");
+    forgetPageCopy();
+    const ana = onTheOldPage(<ReturnToGarden onPress={nothing} personKey="ana" />);
+    expect(exitButton("The garden")).toBeTruthy();
+    ana.unmount();
+    const ben = onTheOldPage(<ReturnToGarden onPress={nothing} personKey="ben" />);
+    expect(exitButton("Return to the garden")).toBeTruthy();
+    ben.unmount();
+    // With nobody named it speaks warm and plain.
+    onTheOldPage(<ReturnToGarden onPress={nothing} />);
+    expect(exitButton("Return to the garden")).toBeTruthy();
+  });
+});
