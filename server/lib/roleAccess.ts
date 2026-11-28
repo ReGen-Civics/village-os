@@ -54,7 +54,7 @@ export async function raiseRevokeForEnded(db: { query: Pool["query"] }, assignme
  * (client/src/components/admin/adminTabAliases.ts).
  */
 export const ACCESS_TASKS_LINK = "/season#plan";
-const MY_ACCESS_LINK = "/season-plan";
+const MY_ACCESS_LINK = "/season#plan";
 
 async function tell(
   pool: Pool,
