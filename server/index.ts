@@ -214,6 +214,7 @@ import { runSeasonReminders } from "./lib/seasonReminders";
 import { crossOwedLaunchSelection, forgetStewardActs, holdingHasLapsed, recordTermStarted, runTermWatch, setVetoWindowCheck, STEWARD_ROLE_ID, STEWARD_VETO, stewardMailRefusal, termWatchLookaheadDays } from "./lib/stewardship";
 import { seatFoundersAtLaunch } from "./lib/launchSeating";
 import { seasonTurnLines, turnSeasonAtLaunch } from "./lib/launchSeasonTurn"; // Rye, 2026-11-27: the launch is the turn of the season
+import { register as registerLaunchCarryChanges } from "./routes/launchCarryChanges";
 import { launchProposalDoc, launchSlateProblem } from "./lib/launchProposal";
 import { FOUNDERS_COUNT_ONCE, launchRollNow, launchRollProblem } from "./lib/launchRoll"; // Rye, 2026-11-27: only founders vote on the launch
 import { carryAtOnceIfMet, carryEveryMetBallot, type CarryDeps } from "./lib/launchCarry";
@@ -12517,6 +12518,9 @@ async function startServer() {
         .map((b) => ({ id: b.id, status: b.status, closedAt: b.closedAt, outcomeNote: b.outcomeNote })),
     };
   }
+
+  // What changes when the launch vote carries, and who it reaches. Read-only (server/routes/launchCarryChanges.ts).
+  registerLaunchCarryChanges(app, { isAdmin, getPool, members, launchRoll, launchRule, liveHoldersOf, loadRoles, loadPowerHoldings, isPresent: (u) => isPresentMember(u as any, AUTH_TOKEN_SECRET), seasons: () => getSeasonConfig().seasons, today: () => seasonState().today, timezone: () => seasonState().timezone, currency: () => mergedConfig().project.fiatCurrency || null });
 
   app.get("/api/admin/launch", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
