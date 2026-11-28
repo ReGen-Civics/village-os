@@ -94,8 +94,12 @@ function PageTitle() {
   const config = useGameConfig();
   const village = config?.project?.name ?? "";
   const commitment = config?.project?.commitmentName ?? "";
-  // The village's own names for its menu entries (Admin, Menu, or chosen when a module was turned on): the tab says them too.
-  const ownNames = (config as { menu?: { labels?: Record<string, string> } } | null)?.menu?.labels;
+  // The village's own names, so a tab reads what the menu reads (one name per page): its story pages' names, and the
+  // names it gave its menu entries (Admin, Menu, or chosen when a module was turned on), which the menu draws first.
+  const names = useMemo(() => {
+    const c = config as { site?: { menu?: Record<string, { label?: string }> }; menu?: { labels?: Record<string, string> } } | null;
+    return { ...Object.fromEntries(Object.entries(c?.site?.menu ?? {}).map(([h, w]) => [h, String(w?.label ?? "")])), ...(c?.menu?.labels ?? {}) };
+  }, [config]);
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
   const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
@@ -129,14 +133,14 @@ function PageTitle() {
     let live = true;
     import("@shared/pageTitles").then(
       ({ documentTitle }) => {
-        if (live) document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment, own: ownNames });
+        if (live) document.title = documentTitle(storyPageShown(switches, location) ? location : "/", village, { commitment, names });
       },
       () => {},
     );
     return () => {
       live = false;
     };
-  }, [location, village, commitment, switches, ownNames]);
+  }, [location, village, commitment, switches, names]);
 
   return null;
 }
@@ -223,6 +227,7 @@ const Mint = lazyPage(() => import("./pages/Mint"));
 const ProposedChanges = lazyPage(() => import("./pages/ProposedChanges"));
 // The deciders' one list, each queue read as the person (docs/REVIEW_INBOX_PLAN.md, lane 4a).
 const AdminReview = lazyPage(() => import("./pages/AdminReview"));
+const RoleProgress = lazyPage(() => import("./pages/RoleProgress"));
 const PublicProfile = lazyPage(() => import("./pages/PublicProfile"));
 const Register = lazyPage(() => import("./pages/Register"));
 const SetPassword = lazyPage(() => import("./pages/SetPassword"));
@@ -354,6 +359,8 @@ function NavVisits() {
   return null;
 }
 
+const ArrivalHighlight = lazy(() => import("@/hooks/useArrivalHighlight"));
+
 function Router() {
   const [location] = useLocation();
   return (
@@ -361,6 +368,10 @@ function Router() {
     <ScrollToTop />
       <PageTitle />
       <NavVisits />
+      {/* A section an address lands on glows briefly, on every page (hooks/useArrivalHighlight.ts). Lazy: the first page pays only the door. */}
+      <Suspense fallback={null}>
+        <ArrivalHighlight />
+      </Suspense>
     <ErrorBoundary key={location}>
     <Suspense fallback={<PageLoading />}>
     <EntranceGate waiting={<PageLoading />}>
@@ -479,6 +490,8 @@ function Router() {
       {/* Every change an agent proposed, reviewed, edited and accepted on one page. */}
       <Route path="/admin/proposals" component={ProposedChanges} />
       <Route path="/admin/review" component={AdminReview} />
+      {/* How roles are going, its own page (the lead, 27 Nov 2026). The /admin/ path gates nothing: a circle's lead opens it too. */}
+      <Route path="/admin/role-progress" component={RoleProgress} />
       <Route path="/profile" component={Profile} />
       {/* The class select. Under /profile because a party is part of who you
           are here, not a separate account setting. */}
@@ -557,7 +570,7 @@ function Router() {
       <Route path="/role-applications/:id" component={SeatApplication} />
       <Route path="/open-proposals/:id" component={OpenProposal} />
       {/* How roles are going folded into Circles & Roles (27 Nov 2026): each circle's page carries its own, the circles page all of them. */}
-      <Route path="/role-measures">{() => <Redirect to={`/circles#role-measures`} replace />}</Route>
+      <Route path="/role-measures">{() => <Redirect to={`/admin/role-progress#role-measures`} replace />}</Route>
       <Route path="/application-status/:ref" component={ApplicationStatus} />
       <Route path="/path" component={YourPath} />
       <Route path="/seat-applications/:id" component={SeatApplicationsAlias} />

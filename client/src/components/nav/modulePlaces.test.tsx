@@ -86,8 +86,8 @@ describe("a renamed and moved module entry", () => {
   });
 
   it("gives the browser tab the village's name for the page", () => {
-    expect(documentTitle("/forum", "Harbour", { own: MENU.labels })).toBe("Crew Talk · Harbour");
-    expect(documentTitle("/forum/42", "Harbour", { own: MENU.labels })).not.toContain("Crew Talk");
-    expect(documentTitle("/feed", "Harbour", { own: MENU.labels })).toBe("Feed · Harbour");
+    expect(documentTitle("/forum", "Harbour", { names: MENU.labels })).toBe("Crew Talk · Harbour");
+    expect(documentTitle("/forum/42", "Harbour", { names: MENU.labels })).not.toContain("Crew Talk");
+    expect(documentTitle("/feed", "Harbour", { names: MENU.labels })).toBe("Feed · Harbour");
   });
 });

@@ -300,11 +300,12 @@ describe("edit mode", () => {
     // The held card is the one picked for the strip.
     expect(screen.getByRole("button", { name: "Journal" })).toHaveAttribute("aria-pressed", "true");
     expect(nav).not.toHaveBeenCalled();
-    // The finger lifts; the swallow lets go a moment later.
+    // The finger lifts; the swallow lets go a moment later, and focus is still on Done (the menu's QA, round 2).
     fireEvent.pointerUp(document.body, { pointerId: 1 });
     act(() => {
       vi.advanceTimersByTime(100);
     });
+    expect(screen.getByRole("button", { name: "Done" })).toHaveFocus();
   });
 
   it("swallows the finger lifting after a hold (a touch), so it never taps what edit mode drew under it", async () => {
@@ -447,6 +448,21 @@ describe("edit mode", () => {
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     await settle();
     expect(session.puts.at(-1)?.body.slots).toEqual(["/profile", null, TASK_BOARD_PATH, "/journal", null, null]);
+  });
+
+  /* The menu's QA, round 2: an Escape meant for a dialog above the sheet (search) threw an unsaved edit away. */
+  it("keeps an unsaved edit when Escape belongs to a dialog above the sheet", async () => {
+    const { container } = await draw();
+    fireEvent.click(screen.getByRole("button", { name: "Edit your cards" }));
+    const other = document.createElement("div");
+    other.setAttribute("role", "dialog");
+    const field = document.createElement("input");
+    other.appendChild(field);
+    document.body.appendChild(other);
+    field.focus();
+    fireEvent.keyDown(field, { key: "Escape" });
+    expect(container.querySelector("[data-editing]")).toBeTruthy();
+    other.remove();
   });
 
   it("leaves without saving on Escape wherever focus is, and Reset puts the defaults back", async () => {

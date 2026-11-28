@@ -273,6 +273,9 @@ export const NAV: readonly NavEntry[] = [
       { href: "/governance/treasury", label: "Treasury", newcomers: "never", sub: "Decide" },
       // Signed out, the page itself asks the visitor to sign in to write one.
       { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never", sub: "Decide" },
+      // What waits on the reader, with its count: Govern's dot leads here (the menu's QA, round 2). The account menu
+      // keeps it too, as the member's own; a page in two places on purpose (navNest.test.ts names it).
+      { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", count: "waiting", sub: "Decide" },
       // No Change Requests entry: folds 6 and 7 (#1861) put change requests inside Decisions
       // (/governance/decisions#changes), and the approvals inside Your work (/governance/work#approvals).
       /**
@@ -285,9 +288,10 @@ export const NAV: readonly NavEntry[] = [
       { href: "/roles", label: "Roles", sub: "Circles & Roles" },
       // 0098. What the village looks after, and who holds each one. Public since #1529.
       { href: "/powers", label: "What We Look After", sub: "Circles & Roles" },
-      // A members-only report on how the roles are going. It had no menu door.
-      // A section of Circles since 1.3.95 (/role-measures redirects to /circles#role-measures).
-      { href: "/circles#role-measures", label: "How roles are going", newcomers: "never", sub: "Circles & Roles" },
+      // How the roles are going: its own page since 27 Nov 2026 (/role-measures and /circles#role-measures redirect there).
+      // Listed for admins only, who read every circle; a circle's lead reaches their own circle's numbers from
+      // their circle's page (the lead, 27 Nov 2026), and every other member would find nothing there.
+      { href: "/admin/role-progress", label: "How roles are going", roles: ["admin", "founder"], newcomers: "never", sub: "Circles & Roles" },
       // The season, one page (the season fold, #1862): Season Plans, Join the Season and the aligned terms are its
       // tabs, and their old addresses redirect there. Members read it, so it is listed for the signed-in roles only.
       { href: "/season", label: "Season", roles: ["member", "admin", "founder"], newcomers: "never", sub: "This season" },

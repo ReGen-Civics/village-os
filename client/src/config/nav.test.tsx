@@ -411,6 +411,7 @@ describe("the dropdowns' folders", () => {
     shell(null);
     expect((window as Window & { __openMenuReady?: boolean }).__openMenuReady).toBe(true);
     expect(ready).toHaveBeenCalledTimes(1);
+    expect((ready.mock.calls[0]![0] as CustomEvent).detail).toBe(true);
     expect(document.getElementById("mobile-menu")).toBeNull();
     act(() => {
       window.dispatchEvent(new Event("village:open-menu"));
@@ -418,6 +419,7 @@ describe("the dropdowns' folders", () => {
     expect(document.getElementById("mobile-menu")).toBeTruthy();
     cleanup();
     expect((window as Window & { __openMenuReady?: boolean }).__openMenuReady).toBeUndefined();
+    expect((ready.mock.calls.at(-1)![0] as CustomEvent).detail).toBe(false);
     window.removeEventListener("village:open-menu-ready", ready);
   });
 

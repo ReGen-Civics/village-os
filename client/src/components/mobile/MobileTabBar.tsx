@@ -343,7 +343,8 @@ export default function MobileTabBar({ inMenu = false }: { inMenu?: boolean } = 
               key={slot.label}
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent(slot.event!))}
-              aria-label={slot.label}
+              // More is named by its visible word, so the waiting dot's hidden words join its name (the menu's QA, round 2).
+              aria-label={opensMenu ? undefined : slot.label}
               {...(opensMenu ? { "aria-expanded": menuOpen, "aria-controls": "mobile-menu", "aria-current": moreLit ? ("true" as const) : undefined } : {})}
               className={cls}
             >

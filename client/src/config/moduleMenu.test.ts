@@ -69,14 +69,14 @@ describe("the defaults are today's menu", () => {
 });
 
 describe("a rename and a move", () => {
-  const places = { "/forum": { group: "Village", sub: "Maps" }, "/wallet": { group: "Govern", sub: "Decide", at: 1 } };
+  const places = { "/forum": { group: "Village", sub: "Maps" }, "/wallet": { group: "Govern", sub: "This season", at: 1 } };
 
   it("lands the entry in its new group and folder, and takes it out of the old one", () => {
     const m = placedMenu(places);
     expect(where(m.nav as typeof NAV, m.account, "/forum")).toEqual(["Village/Maps"]);
-    expect(where(m.nav as typeof NAV, m.account, "/wallet")).toEqual(["Govern/Decide"]);
-    const decide = groupsOf(m.nav).find((g) => g.label === "Govern")!.items.filter((l) => l.sub === "Decide").map((l) => l.href);
-    expect(decide.slice(0, 2)).toEqual(["/governance", "/wallet"]);
+    expect(where(m.nav as typeof NAV, m.account, "/wallet")).toEqual(["Govern/This season"]);
+    const season = groupsOf(m.nav).find((g) => g.label === "Govern")!.items.filter((l) => l.sub === "This season").map((l) => l.href);
+    expect(season.slice(0, 2)).toEqual(["/season", "/wallet"]);
     // Every other field of the entry comes with it: its module gate, its newcomer rule.
     const forum = groupsOf(m.nav).flatMap((g) => g.items).find((l) => l.href === "/forum")!;
     expect(forum.module).toBe("forum");

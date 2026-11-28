@@ -795,7 +795,7 @@ export default function Roles() {
               <WovenBasket className="w-7 h-7" aria-hidden="true" />
             </div>
             <HeroHeading className={`${H1} mb-4`}>
-              {t({ message: `Roles and Circles`, context: "roles page" })}
+              {t({ message: `Roles`, context: "roles page" })}
             </HeroHeading>
             {/* One circle for now (Rye, 14 Nov 2026, through the coordinator): the Anchor Circle holds the whole village.
                 Nothing here implies hiring or building circles. */}
@@ -811,7 +811,7 @@ export default function Roles() {
             </div>
             {canTagNeeds && (
               <p className="mt-3 text-sm">
-                <Link href="/circles#role-measures" className={LINK}>
+                <Link href="/admin/role-progress" className={LINK}>
                   {t({ message: "How roles are going", context: "roles page measures door" })}
                 </Link>
               </p>

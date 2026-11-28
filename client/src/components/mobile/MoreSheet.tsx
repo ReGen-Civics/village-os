@@ -28,7 +28,7 @@
  * DIALOGUE IS SAND), and it is modal, so the corner button steps aside while it
  * is open (index.css hides [data-mobile-fab] under an md:hidden aria-modal).
  */
-import { useEffect, useRef, useState, type ComponentType, type TouchEvent } from "react";
+import { useContext, useEffect, useRef, useState, type ComponentType, type TouchEvent } from "react";
 import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
@@ -47,6 +47,8 @@ import { sayPath } from "@shared/yourPath";
 import { pageTitleFor } from "@shared/pageTitles";
 import { Firefly, SeasonMark } from "@/components/nav/joyDoors";
 import AccountCount from "@/components/nav/AccountCount";
+import { MenuFirefly } from "@/components/nav/menuFolders";
+import SearchSlot from "@/components/search/SearchSlot";
 import SpeedCards from "./SpeedCards";
 
 type AccountLink = NavLink;
@@ -167,6 +169,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
     if (next) setOpenGroup(next.label);
   };
   const shown = groups.find((g) => g.label === openGroup) ?? null;
+  const firefly = useContext(MenuFirefly);
 
   const eyebrow = "text-xs font-semibold uppercase tracking-widest text-notice";
   return (
@@ -182,6 +185,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
         style={{ bottom: "var(--tabbar-h, 4rem)" }}
       >
         <div className="sticky top-0 -mx-4 flex items-center justify-between bg-card px-4 pb-1 pt-1">
+          <SearchSlot place="sheet" />
           <span aria-hidden="true" className="mx-auto h-1.5 w-11 rounded-full bg-border" />
           <button type="button" onClick={close} aria-label={t({ message: "Close More", context: "the phone's More sheet: close button" })} className="absolute right-2 top-0 inline-flex size-11 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground">
             <X aria-hidden="true" className="size-5" />
@@ -277,7 +281,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
           ) : null}
         </section>
 
-        <div className="mt-4 flex items-center gap-2 text-foreground" data-more-foot="">
+        <div className="mt-4 flex items-center gap-2 pb-16 text-foreground" data-more-foot="">
           <LanguagePicker villageDefault={villageDefault ?? null} tone="onSheet" />
           <ThemeSwitch />
           {user ? (
@@ -316,6 +320,7 @@ function Sheet({ entries, itemsOf, account, onClose, villageDefault, lit = null 
             >
               {lit?.group === g.label ? <span aria-hidden="true" data-lit-dot="" className="size-2 rounded-full bg-notice" /> : null}
               {g.label}
+              {firefly && itemsOf(g).some((l) => l.href === firefly) ? <Firefly href={firefly} /> : null}
             </button>
           ))}
         </div>

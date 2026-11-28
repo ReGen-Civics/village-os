@@ -359,6 +359,6 @@ describe("each page once in the sheet (the menu's QA, 27 Nov 2026)", () => {
       collect();
     }
     const twice = Array.from(seen).filter(([, places]) => places.size > 1).map(([h]) => h);
-    expect(twice.sort()).toEqual(["/quests", "/roles"]);
+    expect(twice.sort()).toEqual(["/governance/work", "/quests", "/roles"]);
   });
 });

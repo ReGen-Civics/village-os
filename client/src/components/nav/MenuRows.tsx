@@ -11,7 +11,10 @@
 import { Fragment, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { NavLink } from "@/config/nav";
-import { folderWord, useFolderNames } from "@/components/nav/menuFolders";
+import { useContext } from "react";
+import { MenuFirefly, MenuWaitingFor, folderWord, useFolderNames } from "@/components/nav/menuFolders";
+import AccountCount from "@/components/nav/AccountCount";
+import { Firefly } from "@/components/nav/joyDoors";
 import { folderHolds, navRows } from "@/config/navNest";
 import NavFolder from "@/components/nav/NavFolder";
 
@@ -41,6 +44,9 @@ export default function MenuRows({
   const { i18n } = useLingui();
   // The village's own folder names, where it gave one (Admin, Menu); else the platform's word.
   const folders = useFolderNames();
+  // A shut folder says what is inside it: the waiting count, and the firefly (the menu's QA, round 2).
+  const waitingFor = useContext(MenuWaitingFor);
+  const pick = useContext(MenuFirefly);
   const rows = navRows(links);
   const [open, setOpen] = useState<string | null>(() => {
     const holding = rows.find((r) => folderHolds(r, here));
@@ -56,6 +62,12 @@ export default function MenuRows({
           <NavFolder
             key={row.label}
             label={folderWord(row.label, folders, i18n)}
+            badge={
+              <>
+                {waitingFor && row.links.some((l) => l.count === "waiting") ? <AccountCount count="waiting" who={waitingFor} /> : null}
+                {pick && row.links.some((l) => l.href === pick) ? <Firefly href={pick} /> : null}
+              </>
+            }
             links={row.links}
             holdsHere={folderHolds(row, here)}
             open={open === row.label}

@@ -149,7 +149,8 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/role-applications": "Role proposal",
   "/open-proposals": "A proposed role", // somebody with no account proposed it (0305)
   "/reset": "A fresh start", // clears this device's copy of the site (client/src/pages/Reset.tsx)
-  "/role-measures": "How roles are going", // admins only, counts and medians from stamped times
+  "/role-measures": "How roles are going", // the old address: it redirects to /admin/role-progress
+  "/admin/role-progress": "How roles are going", // admins see every circle, a circle's lead their own; counts and medians only
   "/application-status": "Where your proposal is", // the applicant's own page, by the emailed link (role journey L5)
   "/seat-applications": "Role proposal",
   "/season": "Season", // the season fold (27 Nov 2026): one page for the season, joining it, plans and Aligned
@@ -187,8 +188,10 @@ export const EXACT_TITLES: Readonly<Record<string, string>> = {
  * /forum/123 still reads as the forum. `{commitment}` is the village's own
  * word for what a member signs. Empty means the location has no page name.
  */
-export function pageTitleFor(location: string, words: { commitment?: string } = {}): string {
+export function pageTitleFor(location: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
   const bare = location.split(/[?#]/)[0]!.replace(/(.)\/$/, "$1");
+  // A story page the village names itself (Admin, Pages, Whole site) takes that name, as its menu entry does.
+  if (words.names?.[bare]?.trim()) return words.names[bare]!.trim();
   if (EXACT_TITLES[bare]) return EXACT_TITLES[bare]!;
   const match = Object.keys(PAGE_TITLES)
     .filter((p) => (p === "/" ? location === "/" : location.startsWith(p)))
@@ -197,13 +200,8 @@ export function pageTitleFor(location: string, words: { commitment?: string } = 
   return page.replace("{commitment}", words.commitment?.trim() || "Membership agreement");
 }
 
-/**
- * "Page · Village", or the village alone where the page has no name. `own` is the village's own names for its menu
- * entries, by address (shared/menuDoc.ts `labels`): one name per page means the village's chosen name once it chose
- * one (the lead, 27 Nov 2026), so the tab says what the menu says. A page below an entry keeps its own title.
- */
-export function documentTitle(location: string, village: string, words: { commitment?: string; own?: Readonly<Record<string, string>> } = {}): string {
-  const bare = location.split(/[?#]/)[0]!.replace(/(.)\/$/, "$1");
-  const page = words.own?.[bare]?.trim() || pageTitleFor(location, words);
+/** "Page · Village", or the village alone where the page has no name. */
+export function documentTitle(location: string, village: string, words: { commitment?: string; names?: Readonly<Record<string, string>> } = {}): string {
+  const page = pageTitleFor(location, words);
   return page ? `${page} · ${village}` : village;
 }

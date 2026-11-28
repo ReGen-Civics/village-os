@@ -129,14 +129,14 @@ describe("Admin, Menu, Module entries", () => {
     wrap(<MenuPanel password="pw" />);
     const item = await screen.findByText("/forum").then((el) => el.closest("[data-module-entry]") as HTMLElement);
     fireEvent.change(within(item).getByLabelText("In the menu as"), { target: { value: "Crew Talk" } });
-    fireEvent.change(within(item).getByLabelText("Where"), { target: { value: "Govern::Decide" } });
+    fireEvent.change(within(item).getByLabelText("Where"), { target: { value: "Govern::This season" } });
     expect(item.querySelector('[data-menu-preview="Govern"] [data-here]')?.textContent).toBe("Crew Talk");
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Save" }));
     });
     await waitFor(() => expect(menuWrites().length).toBe(1));
     expect(menuWrites()[0]!.body.labels).toEqual({ "/forum": "Crew Talk" });
-    expect(menuWrites()[0]!.body.places).toEqual({ "/forum": { group: "Govern", sub: "Decide" } });
+    expect(menuWrites()[0]!.body.places).toEqual({ "/forum": { group: "Govern", sub: "This season" } });
     // A module entry has one name field on the page: it left the plain list of entries.
     expect(screen.queryByLabelText("Your word for Forum")).toBeNull();
   });

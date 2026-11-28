@@ -27,3 +27,6 @@ export function useFolderNames(): Readonly<Record<string, string>> {
 
 /** The one entry that wears the firefly, or null (nav/menuJoys.tsx chooses it). */
 export const MenuFirefly = createContext<string | null>(null);
+
+/** The member whose waiting count the menu carries, or null (a visitor, a newcomer): nav/WaitingCount.tsx. */
+export const MenuWaitingFor = createContext<string | null>(null);

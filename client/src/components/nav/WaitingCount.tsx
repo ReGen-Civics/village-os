@@ -88,7 +88,7 @@ export default function WaitingCount({ who, variant = "badge", at = "-right-1.5 
   const words = t({ message: `${n} waiting on you`, context: "the menu: how many things wait on the reader, read aloud" });
   return variant === "dot" ? (
     <>
-      <span aria-hidden="true" data-waiting-dot="" className={`absolute ${at} inline-flex min-w-4 h-4 items-center justify-center rounded-full bg-card px-1 text-xs font-bold leading-none text-foreground`}>
+      <span aria-hidden="true" data-waiting-dot="" className={`absolute ${at} inline-flex min-w-4 h-4 items-center justify-center rounded-full border border-border bg-card px-1 text-xs font-bold leading-none text-foreground`}>
         {n > 9 ? "9+" : n}
       </span>
       <span className="sr-only">, {words}</span>
