@@ -17,10 +17,6 @@ export interface PlacedMenu {
   account: readonly NavLink[];
 }
 
-/** A placed group's items, back to the group's platform name, for a reader handed the group under a village's rename. */
-const KEY_OF = new WeakMap<readonly NavLink[], string>();
-export const placedGroupKey = (items: readonly NavLink[]): string | undefined => KEY_OF.get(items);
-
 const PLATFORM: PlacedMenu = { nav: NAV, account: ACCOUNT_MENU };
 let last: { key: string; menu: PlacedMenu } | null = null;
 
@@ -31,11 +27,7 @@ export function placedMenu(places: Readonly<Record<string, MenuPlace>> | undefin
   if (last && last.key === key && nav === NAV && account === ACCOUNT_MENU) return last.menu;
   const groups = [...nav.filter(isGroup).map((g) => ({ key: g.label, items: g.items })), { key: MENU_ACCOUNT, items: account }];
   const placed = placeItems(groups, placesOf(places)).groups; // cleaned here: the menu document passes them through
-  const itemsOf = (k: string) => {
-    const items = placed.find((g) => g.key === k)!.items;
-    KEY_OF.set(items, k);
-    return items;
-  };
+  const itemsOf = (k: string) => placed.find((g) => g.key === k)!.items;
   const menu: PlacedMenu = {
     nav: nav.map((e) => (isGroup(e) ? { ...e, items: itemsOf(e.label) } : e)),
     account: itemsOf(MENU_ACCOUNT),

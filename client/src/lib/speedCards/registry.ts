@@ -15,7 +15,6 @@
 import type { ComponentType } from "react";
 import type { NavEntry, NavGroup, NavLink } from "@/config/nav";
 import { isGroup, NAV } from "@/config/nav";
-import { placedGroupKey } from "@/config/navPlaces";
 import { SPEED_CARD_SLOTS, type SpeedCardSlots } from "@shared/speedCards";
 import { TASK_BOARD_PATH } from "@shared/taskMenu";
 
@@ -91,10 +90,9 @@ export interface RegistryInput {
  * label translated or renamed by the village and its `items` untouched, so the items find the group in NAV.
  */
 export function groupKeyOf(group: NavGroup): string {
-  // A group the village's own places changed carries new items; they remember the group they belong to (navPlaces.ts).
-  const placed = placedGroupKey(group.items);
-  if (placed) return placed;
-  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label));
+  // A group the village moved entries into carries new items (config/navPlaces.ts), so it is also known by what it
+  // holds (NavGroup.holds), which no rename or move changes.
+  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label || (!!group.holds && e.holds === group.holds)));
   return own && isGroup(own) ? own.label : group.label;
 }
 
