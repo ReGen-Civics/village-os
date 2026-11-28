@@ -1,43 +1,50 @@
 /**
- * THE RATCHET OVER THE SCOREBOARD: nothing that has a home may lose it.
+ * THE RATCHET OVER THE SCOREBOARD: nothing arrives open without its name being written down.
  *
- * The scoreboard (shared/gardenScore.ts) counts. This holds each count where it stands. The plan's rule: "When a
- * count reaches full it becomes a ratchet: CI fails if a new route, act or setting arrives without a home." So a
- * count is held in one of two ways, and one small file (server/gardenScoreboard.ratchet.json) says which:
+ * The scoreboard (shared/gardenScore.ts) counts. This holds each count where it stands, BY IDENTITY: one file
+ * (server/gardenScoreboard.ratchet.json) keeps the name of every item that is open under each count (the ledger
+ * row, the act's id, the route's method and path, the setting's id, the old address), one to a line, in order.
  *
- *   arrivals "may be open"   the count is not full yet. It may not go BACKWARD: what is open may grow only by as
- *                            many items as arrived. An act added tomorrow may arrive open, because nobody can give
- *                            it a place in a garden that is not mounted, or let the guide do it, yet. A route that
- *                            had a home and lost it fails.
- *   arrivals "need a home"   nothing new may arrive open. No heading may hold more open items than the file says,
- *                            and a heading the file does not name may hold none. A count with nothing open is
- *                            written `full: true` and is held this way from then on. A lane may also switch a
- *                            count to it by hand before it is full, the day the fleet is ready for that.
+ * ── THE RULE ───────────────────────────────────────────────────────────────
  *
- * Beside both, the parts that hold BY CONSTRUCTION must stay whole today, whatever the count's state: every act
- * has a place and a Find anything entry, every dial its place, name, description and door, every old address still
- * reaches its page, every registration's path can be read. A newcomer that breaks one of those fails by name now.
+ * An open item whose name is not on its count's list fails, whatever the totals say. The failure names each one,
+ * says why it is open, and says what to add.
  *
- * ── WHY IT COUNTS WHAT IS OPEN, AND NEVER SETS A FLOOR UNDER WHAT IS DONE ──
+ * An item LEAVING the list is always allowed: it found its home, or it was deleted. The file is rewritten to drop
+ * it only by the explicit step below, never silently.
  *
- * Deleting a route that was accounted for lowers "done" and is no step backward, so a floor under done would fail
- * an honest deletion. Open only grows when something arrives open or something loses its home. The total says how
- * many arrived, so the two can be told apart without keeping a thousand names in a file.
+ * A count with nothing open is written `full: true`, its list is empty, and it takes nothing open from then on.
  *
- * What that cannot see: one thing arriving with a home in the same change that takes another's home away. The two
- * cancel, and the count passes. The headings that grew are printed whenever anything fails, and the scoreboard
- * itself names every open item on every run.
+ * ── WHY BY NAME, AND NEVER BY NUMBER ───────────────────────────────────────
  *
- * ── WHAT A FAILURE SAYS ────────────────────────────────────────────────────
+ * The first two ratchets counted. A count cannot tell one item finding a home from another arriving without one in
+ * the same change: the two cancel and the number stands still. Names can. So a newcomer cannot hide behind
+ * somebody else's fix, and the control for exactly that is kept as a test (server/gardenScoreboard.test.ts).
  *
- * The count, the headings that grew with their numbers, every open item under those headings by name, and what to
- * add.
+ * ── WHEN NOTHING CAN GIVE A NEWCOMER A HOME YET ────────────────────────────
  *
- * ── REWRITING THE FILE ─────────────────────────────────────────────────────
+ * Some counts cannot be satisfied by anybody today: no act can be done by the guide until her code exists, and no
+ * address lands inside a garden that is not mounted. A new act therefore arrives open there, and this ratchet
+ * stops it. That is on purpose. The person adding it writes its name into the file by hand, on its own line, in
+ * order, and the reviewer sees that line arrive. Nothing here writes a new name for anybody.
  *
- * `npx tsx scripts/garden-scoreboard.ts --ratchet` rewrites the file from today's numbers. It refuses while any
- * count has gone backward, and it never moves a count from "need a home" back to "may be open". Being better than
- * the file is not a failure, so a lane does not have to touch it to land an improvement.
+ * ── WHAT STILL RESTS ON A NUMBER ───────────────────────────────────────────
+ *
+ * A name on the list says an item is open. It does not say WHY, so an item that was open for one reason and is now
+ * open for a worse one keeps its name and passes. The parts that hold by construction catch that: each must stay
+ * whole (every act has a place and a Find anything entry, every dial its four answers, every old address still
+ * reaches its page), and one must read zero (an act naming a route the server no longer registers).
+ *
+ * ── THE FILE ───────────────────────────────────────────────────────────────
+ *
+ * One name to a line, sorted by code point, so two lanes that each add or drop a name change different lines and a
+ * merge adds lines without rewriting the file.
+ *
+ *   npx tsx scripts/garden-scoreboard.ts --ratchet    rewrites it: drops every name that is no longer open. It
+ *                                                     refuses while any open item is not on the list, and it
+ *                                                     never adds a name.
+ *
+ * Being better than the file is no failure, so a lane does not have to touch it to land an improvement.
  *
  * ── WHAT RESTS ON A RECORDED TABLE ─────────────────────────────────────────
  *
@@ -48,26 +55,21 @@
  *
  * Pure: no I/O, no clock.
  */
-import { COUNT_KEYS, countOf, type Count, type CountKey, type Scoreboard } from "./gardenScore";
-import { openGroups } from "./gardenScoreReport";
+import { COUNT_KEYS, countOf, type Count, type CountKey, type OpenItem, type Scoreboard } from "./gardenScore";
 
 /** What the ratchet file says about itself, written into it. */
 export const RATCHET_ABOUT =
-  "The ratchet over the Admin Garden scoreboard. For each count: how many items there were, how many were open under each heading, and how it is held. " +
-  "`may be open`: a newcomer may arrive open, and nothing that had a home may lose it. `need a home`: nothing may arrive open, and a count written full is held that way for good. " +
-  "Held by server/gardenScoreboard.test.ts. Rewrite it with `npx tsx scripts/garden-scoreboard.ts --ratchet`, which refuses while a count has gone backward.";
-
-export type Arrivals = "may be open" | "need a home";
+  "The ratchet over the Admin Garden scoreboard: the name of every item that is open under each count, one to a line, in order. " +
+  "An open item that is not named here fails server/gardenScoreboard.test.ts. A name may always leave. " +
+  "`npx tsx scripts/garden-scoreboard.ts --ratchet` drops the names that are no longer open and never adds one. " +
+  "A name added by hand is something that arrived without a home, and the reviewer of that line let it through.";
 
 /** One count as the ratchet file holds it. */
 export interface CountRatchet {
   /** True once nothing was open. From then on nothing may be. */
   full: boolean;
-  arrivals: Arrivals;
-  /** How many items the count held when this was written. Growth past it is arrivals. */
-  total: number;
-  /** How many items were open under each heading. */
-  open: Record<string, number>;
+  /** The name of every open item, sorted: a ledger row, an act's id, a route's method and path, a setting's id, an old address. */
+  open: string[];
 }
 
 /** The ratchet file. A count the scoreboard cannot measure yet is written as the words "not measured". */
@@ -76,7 +78,21 @@ export interface Ratchet {
   counts: Record<CountKey, CountRatchet | "not measured">;
 }
 
-/** What to add when something loses its home or arrives without one, count by count. */
+/** Whether something read from disk is a ratchet in this shape: every count is the words "not measured" or a list of names. */
+export function isRatchet(value: unknown): value is Ratchet {
+  if (!value || typeof value !== "object") return false;
+  const counts = (value as { counts?: unknown }).counts;
+  if (!counts || typeof counts !== "object") return false;
+  return COUNT_KEYS.every((key) => {
+    const held = (counts as Record<string, unknown>)[key];
+    if (held === "not measured") return true;
+    if (!held || typeof held !== "object") return false;
+    const { full, open } = held as { full?: unknown; open?: unknown };
+    return typeof full === "boolean" && Array.isArray(open) && open.every((name) => typeof name === "string");
+  });
+}
+
+/** What to add when something arrives without a home, count by count. */
 export const WHAT_TO_ADD: Readonly<Record<CountKey, string>> = {
   functions: "Mount its tab or page in its place (shared/gardenMounts.ts), give the missing part an act, or record the founder's ruling that cuts it (CUT_BY_RULING, with the date and the words).",
   acts: "Give the act a route that was read, so its tier is settled, and a power its catalog holds a consequence line for (shared/adminActs/, shared/draftKinds.ts). Never write the line on the act.",
@@ -88,9 +104,13 @@ export const WHAT_TO_ADD: Readonly<Record<CountKey, string>> = {
   oldDoors: "Make the address land: keep its tab in shared/adminTabs.ts or its alias in client/src/components/admin/adminTabAliases.ts, and mount what it lands on (shared/gardenMounts.ts).",
 };
 
+/** The last line of every failure: the one way through when nothing can give the newcomer a home yet. */
+export const BY_HAND =
+  "If nothing can give it a home yet, write its name into server/gardenScoreboard.ratchet.json by hand, on its own line under this count, in order. The reviewer sees that line arrive.";
+
 /**
  * The parts of a count that hold by construction and must stay whole: each names a number that has to equal its
- * total. A part that slips is a list somebody broke, and the open items of its count say which entry.
+ * total. A name on the list cannot see an item getting worse, and these can.
  */
 export const MUST_BE_WHOLE: Readonly<Partial<Record<CountKey, readonly string[]>>> = {
   acts: ["has a place", "has a Find anything entry"],
@@ -105,16 +125,17 @@ export const MUST_BE_ZERO: Readonly<Partial<Record<CountKey, readonly string[]>>
   functions: ["no act carries it"],
 };
 
-/** How many items are open under each heading of a count, the headings in order. */
-export function openByHeading(count: Pick<Count, "open">): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const g of openGroups(count).sort((a, b) => (a.group < b.group ? -1 : 1))) out[g.group] = g.items.length;
-  return out;
+/** Names in the one order the file keeps: by code point, the same on every machine. */
+export function inOrder(names: readonly string[]): string[] {
+  return Array.from(new Set(names)).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
-const sum = (table: Record<string, number>): number => Object.values(table).reduce((n, v) => n + v, 0);
+/** The name of every open item of a count, in order. */
+export function openNames(count: Pick<Count, "open">): string[] {
+  return inOrder(count.open.map((item) => item.id));
+}
 
-/** Today's numbers in the ratchet's own shape. `arrivals` is what the earlier file said, or "may be open". */
+/** Today's open items in the ratchet's own shape. A count the earlier file wrote as full stays written as full. */
 export function ratchetNow(board: Scoreboard, earlier?: Ratchet | null): Ratchet["counts"] {
   const out = {} as Ratchet["counts"];
   for (const key of COUNT_KEYS) {
@@ -124,25 +145,19 @@ export function ratchetNow(board: Scoreboard, earlier?: Ratchet | null): Ratchet
       continue;
     }
     const held = earlier?.counts[key];
-    const was = held && held !== "not measured" ? held : null;
-    const full = count.open.length === 0 || !!was?.full;
-    out[key] = { full, arrivals: full || was?.arrivals === "need a home" ? "need a home" : "may be open", total: count.total ?? 0, open: openByHeading(count) };
+    const wasFull = !!held && held !== "not measured" && held.full;
+    out[key] = { full: wasFull || count.open.length === 0, open: openNames(count) };
   }
   return out;
 }
 
-/** The headings of a count that hold more open items than the file says, each with every open item under it. */
-function grown(count: Count, held: CountRatchet): string[] {
-  return openGroups(count)
-    .filter((g) => g.items.length > (held.open[g.group] ?? 0))
-    .map((g) => {
-      const before = held.open[g.group] ?? 0;
-      const was = before === 0 ? "Nothing was open under this heading." : `It held ${before}.`;
-      return `  ${g.group}: ${g.items.length} open. ${was}\n${g.items.map((item) => `    ${item.name}: ${item.why}`).join("\n")}`;
-    });
+/** The open items of a count that its list does not name: what arrived without a home. */
+export function newcomers(count: Pick<Count, "open">, held: CountRatchet): OpenItem[] {
+  const known = new Set(held.full ? [] : held.open);
+  return count.open.filter((item) => !known.has(item.id)).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** Every way a scoreboard is worse than the ratchet allows, each naming what lost its home or arrived without one. Empty when it holds. */
+/** Every way a scoreboard is worse than the ratchet allows, each naming what arrived without a home. Empty when it holds. */
 export function ratchetFailures(board: Scoreboard, ratchet: Ratchet): string[] {
   const failures: string[] = [];
   for (const key of COUNT_KEYS) {
@@ -153,34 +168,20 @@ export function ratchetFailures(board: Scoreboard, ratchet: Ratchet): string[] {
       continue;
     }
     if (held === undefined || held === "not measured") {
-      failures.push(`${count.title} is measured now and the ratchet holds nothing for it. Run \`npx tsx scripts/garden-scoreboard.ts --ratchet\` and commit the file.`);
+      failures.push(`${count.title} is measured now and the ratchet holds no list for it. Run \`npx tsx scripts/garden-scoreboard.ts --ratchet\` and commit the file.`);
       continue;
     }
-    const total = count.total ?? 0;
-    const open = count.open.length;
-    const heldOpen = sum(held.open);
-    const headings = grown(count, held);
-    if (held.full || held.arrivals === "need a home") {
-      // Nothing may arrive open: every heading is held to its own number.
-      if (headings.length) {
-        const why = held.full ? "This count was full, so nothing may be open." : "This count takes no new open items.";
-        failures.push(`${count.title}: ${why} Something arrived without a home, under:\n${headings.join("\n")}\n  What to add: ${WHAT_TO_ADD[key]}`);
-      }
-    } else {
-      // A newcomer may arrive open. What is open may grow only by as many items as arrived.
-      const arrived = Math.max(0, total - held.total);
-      if (open > heldOpen + arrived) {
-        const lost = open - heldOpen - arrived;
-        failures.push(
-          `${count.title}: ${open} open of ${total}. The ratchet holds ${heldOpen} open of ${held.total}, and ${arrived} arrived since, so ${lost} that had a home ${lost === 1 ? "is" : "are"} open again. The headings that grew:\n${headings.join("\n")}\n  What to add: ${WHAT_TO_ADD[key]}`,
-        );
-      }
+    const arrived = newcomers(count, held);
+    if (arrived.length) {
+      const why = held.full ? "This count was full, so nothing may be open." : "The ratchet does not name them, so each arrived without a home.";
+      const lines = arrived.map((item) => `    ${item.id}: ${item.why}${item.name !== item.id ? ` (${item.name})` : ""}`).join("\n");
+      failures.push(`${count.title}: ${arrived.length} open ${arrived.length === 1 ? "item is" : "items are"} new. ${why}\n${lines}\n  What to add: ${WHAT_TO_ADD[key]}\n  ${BY_HAND}`);
     }
     for (const name of MUST_BE_WHOLE[key] ?? []) {
       const part = count.parts.find((p) => p.name === name);
       if (!part) failures.push(`${count.title} no longer reports "${name}", which the ratchet holds whole.`);
       else if (part.of !== undefined && part.value !== part.of) {
-        failures.push(`${count.title}: "${name}" reads ${part.value} of ${part.of}. It holds by construction and must stay whole. What slipped is among:\n${headings.join("\n") || "  (no heading grew)"}\n  What to add: ${WHAT_TO_ADD[key]}`);
+        failures.push(`${count.title}: "${name}" reads ${part.value} of ${part.of}. It holds by construction and must stay whole. The open items of this count say which entry slipped, each under its heading.\n  What to add: ${WHAT_TO_ADD[key]}`);
       }
     }
     for (const name of MUST_BE_ZERO[key] ?? []) {
@@ -188,31 +189,31 @@ export function ratchetFailures(board: Scoreboard, ratchet: Ratchet): string[] {
       if (!part) failures.push(`${count.title} no longer reports "${name}", which the ratchet holds at zero.`);
       else if (part.value !== 0) {
         const said = count.notes.filter((n) => n.includes("does not register")).join(" ");
-        failures.push(`${count.title}: "${name}" reads ${part.value} and must read 0. ${said}${said ? " " : ""}${headings.length ? `The headings that grew:\n${headings.join("\n")}` : ""}`.trim());
+        failures.push(`${count.title}: "${name}" reads ${part.value} and must read 0.${said ? ` ${said}` : ""}`);
       }
     }
   }
   return failures;
 }
 
-/** Where today's numbers differ from the file without failing: what a rewrite would record. */
-export function ratchetDrift(board: Scoreboard, ratchet: Ratchet): string[] {
-  const drift: string[] = [];
+/** The names on the list that are no longer open, count by count: what the rewrite step would drop. */
+export function ratchetLeft(board: Scoreboard, ratchet: Ratchet): Array<{ key: CountKey; title: string; names: string[] }> {
+  const left: Array<{ key: CountKey; title: string; names: string[] }> = [];
   for (const key of COUNT_KEYS) {
     const count = countOf(board, key);
     const held = ratchet.counts[key];
     if (!count.measured || held === undefined || held === "not measured") continue;
-    const open = count.open.length;
-    const heldOpen = sum(held.open);
-    if (open !== heldOpen || (count.total ?? 0) !== held.total) drift.push(`${count.title}: ${open} open of ${count.total}, the file holds ${heldOpen} open of ${held.total}`);
+    const open = new Set(count.open.map((item) => item.id));
+    const names = held.open.filter((name) => !open.has(name));
+    if (names.length) left.push({ key, title: count.title, names });
   }
-  return drift;
+  return left;
 }
 
 /**
- * The ratchet rewritten to today's numbers. While any count has gone backward it returns the failures and no file.
- * A count held as "need a home", or written full, stays held that way. With no earlier file it records today as
- * it stands.
+ * The ratchet rewritten to today: every name that is no longer open is dropped, and no name is ever added. While
+ * any open item is not on its list it returns the failures and no file. With no earlier file it records today's
+ * open items as they stand.
  */
 export function rewritten(board: Scoreboard, earlier: Ratchet | null, about: string): { ratchet: Ratchet } | { failures: string[] } {
   if (earlier) {
@@ -220,4 +221,9 @@ export function rewritten(board: Scoreboard, earlier: Ratchet | null, about: str
     if (failures.length) return { failures };
   }
   return { ratchet: { about, counts: ratchetNow(board, earlier) } };
+}
+
+/** The file as it is written: plain JSON, one name to a line. */
+export function ratchetText(ratchet: Ratchet): string {
+  return `${JSON.stringify(ratchet, null, 1)}\n`;
 }

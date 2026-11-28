@@ -8,8 +8,9 @@
  *   npx tsx scripts/garden-scoreboard.ts --walk dir also writes dir/WALK-LIST.md and dir/WALK-LIST.csv: every act, every
  *                                                   route an admin can reach that no act claims, every setting with
  *                                                   no full home, for a person walking the build
- *   npx tsx scripts/garden-scoreboard.ts --ratchet  rewrites server/gardenScoreboard.ratchet.json from today's numbers.
- *                                                   It refuses while any count has gone backward.
+ *   npx tsx scripts/garden-scoreboard.ts --ratchet  rewrites server/gardenScoreboard.ratchet.json: drops every name that is
+ *                                                   no longer open. It never adds a name, and it refuses while any
+ *                                                   open item is not on the list.
  *
  * `pnpm garden:score` runs the first form.
  *
@@ -17,7 +18,13 @@
  * `scoreGarden` (shared/gardenScore.ts) counts, and shared/gardenScoreReport.ts prints. The ratchet
  * (server/gardenScoreboard.test.ts) runs the same two functions, so this command and CI cannot disagree.
  *
- * It exits 0 when it reports. With --ratchet it exits 1 when a count has gone backward, and writes nothing.
+ * THE RATCHET, IN SHORT (shared/gardenScoreRatchet.ts has the whole of it). The ratchet file keeps the NAME of every
+ * item that is open under each count, one to a line, in order. An open item that is not named there fails
+ * server/gardenScoreboard.test.ts, whatever the totals say, so a newcomer cannot hide behind somebody else's fix. A
+ * name may always leave the list, and --ratchet is the one step that drops it. Nothing here adds a name: when nothing
+ * can give a newcomer a home yet, a person writes its line into the file by hand and a reviewer sees it arrive.
+ *
+ * It exits 0 when it reports. With --ratchet it exits 1 when an open item is not on the list, and writes nothing.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -25,7 +32,7 @@ import path from "node:path";
 import { gatherScoreInputs } from "../server/testkit/gardenInputs";
 import { scoreGarden } from "../shared/gardenScore";
 import { scoreMarkdown, scoreText } from "../shared/gardenScoreReport";
-import { RATCHET_ABOUT, ratchetDrift, rewritten, type Ratchet } from "../shared/gardenScoreRatchet";
+import { RATCHET_ABOUT, isRatchet, ratchetLeft, ratchetText, rewritten, type Ratchet } from "../shared/gardenScoreRatchet";
 import { walkCsv, walkMarkdown, walkOf } from "../shared/gardenWalk";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
@@ -55,21 +62,28 @@ if (flag("--json")) console.log(JSON.stringify(board, null, 1));
 else console.log(scoreText(board, { all }));
 
 const RATCHET_FILE = path.join(ROOT, "server", "gardenScoreboard.ratchet.json");
-const earlier: Ratchet | null = fs.existsSync(RATCHET_FILE) ? (JSON.parse(fs.readFileSync(RATCHET_FILE, "utf8")) as Ratchet) : null;
-if (flag("--ratchet")) {
+const onDisk: unknown = fs.existsSync(RATCHET_FILE) ? JSON.parse(fs.readFileSync(RATCHET_FILE, "utf8")) : null;
+if (onDisk !== null && !isRatchet(onDisk)) {
+  console.error("server/gardenScoreboard.ratchet.json is not in the shape this command reads (a list of names under each count). Nothing was compared against it.");
+  process.exitCode = 1;
+}
+const earlier: Ratchet | null = isRatchet(onDisk) ? onDisk : null;
+if (flag("--ratchet") && (onDisk === null || earlier)) {
   const result = rewritten(board, earlier, RATCHET_ABOUT);
   if ("failures" in result) {
-    console.error(`The ratchet was not rewritten: ${result.failures.length} thing(s) have gone backward.\n\n${result.failures.join("\n\n")}`);
+    console.error(`The ratchet was not rewritten: ${result.failures.length} thing(s) fail it.\n\n${result.failures.join("\n\n")}`);
     process.exitCode = 1;
   } else {
-    const moved = earlier ? ratchetDrift(board, earlier) : [];
-    fs.writeFileSync(RATCHET_FILE, `${JSON.stringify(result.ratchet, null, 1)}\n`);
-    console.error(earlier ? `Rewrote server/gardenScoreboard.ratchet.json: ${moved.length} count(s) moved.` : "Wrote server/gardenScoreboard.ratchet.json from today's numbers.");
-    for (const line of moved) console.error(`  ${line}`);
+    const left = earlier ? ratchetLeft(board, earlier) : [];
+    fs.writeFileSync(RATCHET_FILE, ratchetText(result.ratchet));
+    const dropped = left.reduce((n, l) => n + l.names.length, 0);
+    console.error(earlier ? `Rewrote server/gardenScoreboard.ratchet.json: ${dropped} name(s) dropped, none added.` : "Wrote server/gardenScoreboard.ratchet.json from today's open items.");
+    for (const l of left) console.error(`  ${l.title}: ${l.names.join(", ")}`);
   }
 } else if (earlier && !flag("--json")) {
-  const moved = ratchetDrift(board, earlier);
-  if (moved.length) console.log(`${moved.length} count(s) have moved since the ratchet was written. Run with --ratchet to record them.\n`);
+  const left = ratchetLeft(board, earlier);
+  const dropped = left.reduce((n, l) => n + l.names.length, 0);
+  if (dropped) console.log(`${dropped} name(s) on the ratchet's list are no longer open. Run with --ratchet to drop them.\n`);
 }
 
 const out = valueOf("--out");

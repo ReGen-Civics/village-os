@@ -110,6 +110,12 @@ export type CountKey = (typeof COUNT_KEYS)[number];
 
 /** One thing still open, by the name a person would look for it by. */
 export interface OpenItem {
+  /**
+   * What it is, by the one name that never changes: a ledger row's id, an act's id, a route's method and path, a
+   * setting's id, an old address. The ratchet keeps this (shared/gardenScoreRatchet.ts), so a title can be reworded
+   * without an item reading as new.
+   */
+  id: string;
   name: string;
   /** Why it is open, in plain words. */
   why: string;
@@ -224,10 +230,10 @@ function functionsCount(i: ScoreInputs): Count {
       const why = own(i.ledger.neverDrawn, id);
       if (why) {
         neverDrawn++;
-        open.push({ name, why: `No page draws it today: ${why}. It waits on a ruling about the component itself.`, group: "no page draws it" });
+        open.push({ id, name, why: `No page draws it today: ${why}. It waits on a ruling about the component itself.`, group: "no page draws it" });
       } else {
         missing++;
-        open.push({ name, why: "No act in the registry carries it.", group: "no act carries it" });
+        open.push({ id, name, why: "No act in the registry carries it.", group: "no act carries it" });
       }
       continue;
     }
@@ -237,10 +243,10 @@ function functionsCount(i: ScoreInputs): Count {
       oldTab++;
       const places = unique(outside.map((a) => `${where(a)} (${a.place})`));
       const shown = places.slice(0, 3).join(", ") + (places.length > 3 ? `, and ${places.length - 3} more` : "");
-      open.push({ name, why: `Still in the old tab: ${outside.length} of its ${acts.length} acts open outside the garden, on ${shown}.`, group: "still in the old tab" });
+      open.push({ id, name, why: `Still in the old tab: ${outside.length} of its ${acts.length} acts open outside the garden, on ${shown}.`, group: "still in the old tab" });
     } else if (part) {
       partOpen++;
-      open.push({ name, why: `Its acts open in the garden, and one part of it has no act yet: ${part}.`, group: "in the garden, with a part no act carries" });
+      open.push({ id, name, why: `Its acts open in the garden, and one part of it has no act yet: ${part}.`, group: "in the garden, with a part no act carries" });
     } else {
       inPlace++;
     }
@@ -324,7 +330,7 @@ function actsCount(i: ScoreInputs): Count {
     if (!f.entry) why.push({ group: "no Find anything entry", words: "Find anything has no entry for it." });
     if (!f.tierSettled) why.push({ group: "tier not settled", words: "Its route was never read, so nothing says whether it only reads or changes something, and its tier is a guess." });
     if (!f.consequence) why.push({ group: "needs a consequence line", words: `It changes something (${a.route?.method} ${a.route?.path}) and no catalog holds a line for what its door asks, ${a.holder ?? a.power}.` });
-    if (why.length) open.push({ name: `${a.id} ${a.title}`, why: why.map((w) => w.words).join(" "), group: why[0].group });
+    if (why.length) open.push({ id: a.id, name: `${a.id} ${a.title}`, why: why.map((w) => w.words).join(" "), group: why[0].group });
     else n.done++;
   }
 
@@ -441,11 +447,11 @@ function endpointsCount(i: ScoreInputs): Count {
             : verdict === "open"
               ? "The permission matrix holds it, no act names it, and no family of routes that are not admin's holds it."
               : "No act names it, and no family of routes that are not admin's holds it. Nothing read here says whose it is.";
-      open.push({ name: key, why, group: routeGroup(r.path) });
+      open.push({ id: key, name: key, why, group: routeGroup(r.path) });
     }
   }
   for (const u of i.unresolved) {
-    open.push({ name: `${u.method} at ${u.file}:${u.line}`, why: `The route reader could not read its path (${u.text}), so nobody can say whose it is.`, group: "(path not read)" });
+    open.push({ id: `${u.method} at ${u.file}:${u.line}`, name: `${u.method} at ${u.file}:${u.line}`, why: `The route reader could not read its path (${u.text}), so nobody can say whose it is.`, group: "(path not read)" });
   }
 
   const staleCalls = Array.from(named.calls.keys()).filter((k) => !distinct.has(k));
@@ -506,6 +512,8 @@ export type SettingKind = "dial" | "key" | "control";
 /** One setting and what is missing from it, facet by facet. A facet absent from `missing` is answered. */
 export interface SettingFacts {
   kind: SettingKind;
+  /** Its act's id: `dial.<key>`, `key.<slot>`, or a shipped control's own id. */
+  id: string;
   name: string;
   missing: Partial<Record<SettingFacet, string>>;
 }
@@ -530,7 +538,7 @@ export function dialFacts(def: VariableDef, act: AdminAct | undefined): SettingF
   if (validateVariable(def, anotherValue(def)) === MOVED_TO_SECRET_SENTENCE || !applyTimingOf(def) || !criticalityOf(def)) {
     missing.vote = "Its value is kept in the sealed store, and every write path refuses a new one, a passed vote included.";
   }
-  return { kind: "dial", name: `dial.${def.key} ${def.label}`, missing };
+  return { kind: "dial", id: `dial.${def.key}`, name: `dial.${def.key} ${def.label}`, missing };
 }
 
 const NO_VOTE_PATH = "Nothing in the registry ties it to a kind of change a ballot can carry, so its path by a vote is not known.";
@@ -546,7 +554,7 @@ export function actSettingFacts(a: AdminAct, kind: Exclude<SettingKind, "dial">)
   // not. What a partial control with a route still lacks is its fields, which is no part of who may change it.
   if (a.partial && !a.route) missing.who = "Its door was never read, so the power it names is the search entry's and is not confirmed.";
   missing.vote = NO_VOTE_PATH;
-  return { kind, name: `${a.id} ${a.title}`, missing };
+  return { kind, id: a.id, name: `${a.id} ${a.title}`, missing };
 }
 
 function settingsCount(i: ScoreInputs): Count {
@@ -560,7 +568,7 @@ function settingsCount(i: ScoreInputs): Count {
   for (const f of facts) {
     const gaps = SETTING_FACETS.filter((facet) => f.missing[facet]);
     if (!gaps.length) continue;
-    open.push({ name: f.name, why: gaps.map((g) => f.missing[g]).join(" "), group: `${f.kind}: no ${gaps.map((g) => FACET_WORDS[g].replace(/^(a|its) /, "")).join(", no ")}` });
+    open.push({ id: f.id, name: f.name, why: gaps.map((g) => f.missing[g]).join(" "), group: `${f.kind}: no ${gaps.map((g) => FACET_WORDS[g].replace(/^(a|its) /, "")).join(", no ")}` });
   }
 
   const parts: CountPart[] = [];
@@ -651,7 +659,7 @@ function threeWaysCount(i: ScoreInputs): Count {
       else lacks.push(`The guide may not prepare this dial: ${actReason(a, lists)?.words ?? lists.proposalRefusal(def) ?? "its tier is not one to prepare."}`);
     }
     const group = !click ? "no address" : !find ? "no Find anything entry" : isDialAct(a) ? "a dial the guide may not prepare" : `not by the guide yet: ${a.kind === "outside" ? "page beside Admin" : a.kind}`;
-    open.push({ name: `${a.id} ${a.title}`, why: lacks.join(" "), group });
+    open.push({ id: a.id, name: `${a.id} ${a.title}`, why: lacks.join(" "), group });
   }
 
   const notes = [
@@ -723,8 +731,8 @@ function oldDoorsCount(i: ScoreInputs): Count {
   for (const d of doors) {
     if (d.inGarden && d.reaches) continue;
     const to = d.lands.tab ? `the ${d.lands.tab} tab` : `the page ${d.lands.path}`;
-    if (!d.reaches) open.push({ name: d.address, why: `It lands on ${to}, which nothing draws today.`, group: "reaches nothing today" });
-    else open.push({ name: d.address, why: `It still opens ${to}, outside the garden.`, group: `outside the garden: ${d.kind}` });
+    if (!d.reaches) open.push({ id: d.address, name: d.address, why: `It lands on ${to}, which nothing draws today.`, group: "reaches nothing today" });
+    else open.push({ id: d.address, name: d.address, why: `It still opens ${to}, outside the garden.`, group: `outside the garden: ${d.kind}` });
   }
   const kinds: OldDoor["kind"][] = ["tab", "folded tab", "control", "dial", "page"];
   return {
