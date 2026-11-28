@@ -36,7 +36,7 @@ import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { PURPOSE_EXAMPLE } from "../shared/governingPurpose";
-import { CONFLICT_DOOR_READY, recordEveryCanvasBlock } from "./db/launchGovernanceFixture";
+import { CONFLICT_DOOR_READY, makeFounders, recordEveryCanvasBlock } from "./db/launchGovernanceFixture";
 import { waitForHealth } from "./db/e2eBoot";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -81,6 +81,9 @@ let annaId = "";
 /** A member with no admin anything. */
 let benToken = "";
 let benId = "";
+/** The two founders who arrive for the launch vote, and stand down after it. */
+let caiId = "";
+let deeId = "";
 
 interface Answer { status: number; json: any }
 
@@ -381,23 +384,40 @@ describe.skipIf(!DB_CONFIGURED)("before the vote, the founder holds everything t
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("three members vote the Game to start", () => {
-  it("carries, and that one close is the whole of the moment", async () => {
+describe.skipIf(!DB_CONFIGURED)("three founders vote the Game to start", () => {
+  it("carries on the third founder's yes, and that is the whole of the moment", async () => {
+    /*
+     * ONLY FOUNDERS VOTE ON THE LAUNCH, and it carries on three of them (Rye,
+     * 2026-11-27). So two more founders arrive here, after the cases above
+     * that needed Mara to be the last one. Anna is an administrator and Ben a
+     * member, and neither is asked.
+     */
+    const cai = await register("Cai Morrow", "cai");
+    const dee = await register("Dee Harland", "dee");
+    caiId = cai.id; deeId = dee.id;
+    await makeFounders(call, [caiId, deeId]);
+
     const opened = await call("POST", "/api/admin/launch/propose");
     expect(opened.status, JSON.stringify(opened.json)).toBe(200);
     const ballotId = String(opened.json?.ballot?.id ?? "");
     expect(ballotId).toMatch(/^bal-/);
+    expect(opened.json?.ballot?.electorateCount, "the roll is the three founders").toBe(3);
 
-    for (const t of [founderToken, annaToken, benToken]) {
+    for (const t of [annaToken, benToken]) {
+      const v = await call("POST", `/api/governance/ballots/${ballotId}/vote`, { token: t, body: { choice: "yes" } });
+      expect(v.status, "an administrator and a member are not founders").toBe(409);
+      expect(String(v.json?.error)).toContain("Only founding members vote on starting the Game");
+    }
+    for (const t of [founderToken, cai.token]) {
       const v = await call("POST", `/api/governance/ballots/${ballotId}/vote`, { token: t, body: { choice: "yes" } });
       expect(v.status, JSON.stringify(v.json)).toBe(200);
+      expect(v.json?.carried).toBe(false);
     }
-    await expire(ballotId);
-    const closed = await call("POST", `/api/governance/ballots/${ballotId}/close`, {
-      body: { outcomeNote: "All three of us agreed. Wealden starts today." },
-    });
-    expect(closed.status, JSON.stringify(closed.json)).toBe(200);
-    expect(closed.json?.outcome).toBe("passed");
+    expect(await gameStartRow(), "two yeses start nothing").toBeNull();
+    const third = await call("POST", `/api/governance/ballots/${ballotId}/vote`, { token: dee.token, body: { choice: "yes" } });
+    expect(third.status, JSON.stringify(third.json)).toBe(200);
+    // No close and no waiting: the third yes is the moment.
+    expect(third.json?.carried).toBe(true);
     expect((await gameStartRow())?.ballotId).toBe(ballotId);
   });
 
@@ -490,6 +510,13 @@ describe.skipIf(!DB_CONFIGURED)("after the vote the founder holds nothing an adm
     });
     expect(down.status, JSON.stringify(down.json)).toBe(200);
     expect(await roleOf(founderId)).toBe("member");
+    // The two founders who arrived for the vote stand down the same way, so
+    // the cases below count the accounts with admin reach they were written for.
+    for (const id of [caiId, deeId]) {
+      const other = await call("PUT", `/api/admin/users/${id}/role`, { token: annaToken, body: { role: "member" } });
+      expect(other.status, JSON.stringify(other.json)).toBe(200);
+      expect(await roleOf(id)).toBe("member");
+    }
 
     // The founder's own token still works as a member's, and the panel is shut
     // to them, which is the whole of what the demotion means.

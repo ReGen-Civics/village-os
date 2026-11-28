@@ -20,7 +20,7 @@ import { PURPOSE_EXAMPLE } from "../../shared/governingPurpose";
 import { PROPORTIONAL_CLOSING_STATEMENT } from "../../shared/closingPolicies";
 import { writeConfigDocument } from "../repos/appConfigDocs";
 import { VILLAGE_SECRETS_ENV } from "./secrets";
-import { dialsForSubject, overrideDials as highestTierDials, thresholdSettingsFrom, VILLAGE_LAUNCH } from "../../shared/ballotSubjects";
+import { dialsForSubject, overrideDials as highestTierDials, SUBJECT_THRESHOLDS, thresholdSettingsFrom, VILLAGE_LAUNCH } from "../../shared/ballotSubjects";
 
 describe("the site-address check reads FRONTEND_URL's shape", () => {
   const read = (FRONTEND_URL?: string) => siteAddressLaunchCheck({ FRONTEND_URL } as NodeJS.ProcessEnv);
@@ -127,12 +127,21 @@ describe("the launch document names a carried row", () => {
     );
   });
 
-  it("is asked at the highest tier already, because the launch subject is unanimous", () => {
-    // A village that raised every tier to the ceiling still cannot set a bar above the launch's own.
+  it("is carried by a vote no founder objected to: unity at the top of the ladder, and three founder yeses", () => {
+    // A village that raised every tier to the ceiling still cannot set a unity above the launch's own.
     const top = highestTierDials(thresholdSettingsFrom(() => 100));
     const launch = dialsForSubject(VILLAGE_LAUNCH, "custom", { unityPct: 80, quorumPct: 20 });
     expect(launch.unityPct).toBeGreaterThanOrEqual(top.unityPct);
-    expect(launch.quorumPct).toBeGreaterThanOrEqual(top.quorumPct);
+    /*
+     * Its participation stopped being a percentage on 2026-11-27 (Rye: "Not
+     * everyone, but at least 3 members holding the founder role"), so this no
+     * longer compares quorum with the top tier's. What a carried row rides on
+     * now is three founders saying yes and none saying no, and that is pinned
+     * as the registry states it.
+     */
+    expect(launch.quorumPct).toBe(0);
+    expect(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].minYesHeads).toBe(3);
+    expect(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].roll).toBe("founders");
   });
 
   it("marks site-address carriable and session-secret not", () => {

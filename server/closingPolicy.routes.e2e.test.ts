@@ -44,7 +44,7 @@ import { provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFr
 import { waitForHealth } from "./db/e2eBoot";
 import { PURPOSE_EXAMPLE } from "../shared/governingPurpose";
 import { CLOSING_REDEMPTION_NOTICE, PROPORTIONAL_CLOSING_STATEMENT } from "../shared/closingPolicies";
-import { CONFLICT_DOOR_READY, recordEveryCanvasBlock } from "./db/launchGovernanceFixture";
+import { CONFLICT_DOOR_READY, makeFounders, recordEveryCanvasBlock } from "./db/launchGovernanceFixture";
 
 const DB_CONFIGURED = testDbConfigured();
 if (!DB_CONFIGURED) {
@@ -101,6 +101,7 @@ let founderToken = "";
 let founderId = "";
 let wrenToken = "";
 let wrenId = "";
+let idaId = "";
 
 /** An intake role nobody holds until the last case seats Wren in it. Written before boot, so the role cache loads it. */
 const CARE_ROLE = "closing-care";
@@ -268,6 +269,7 @@ beforeAll(async () => {
   wrenToken = wren.token;
   wrenId = wren.id;
   const ida = await register("Ida Kestrel", "ida");
+  idaId = ida.id;
   for (const id of [founderId, wren.id, ida.id]) {
     expect((await call("PUT", `/api/admin/players/${id}/stage`, { body: { stageId: "member" } })).status).toBe(200);
   }
@@ -461,6 +463,11 @@ describe.skipIf(!DB_CONFIGURED)("named, the village may be asked", () => {
     expect(item.state).toBe("ok");
     expect(item.detail).toBe("Named and adopted: Shared by closing-day balances");
     expect(others, "naming closing closed its own row and nothing else").toEqual(othersOpen);
+
+    // Only founders vote on the launch, and it needs three of them on the roll
+    // (Rye, 2026-11-27). Raised HERE and not in the setup: every case above
+    // drives Wren as a member who may not write the policy.
+    await makeFounders(call, [wrenId, idaId]);
 
     // On this branch nothing else is open, so this is the real "yes". Composed
     // with a change whose rows this file does not clear, it is the "no" naming

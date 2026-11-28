@@ -89,6 +89,7 @@ import {
   thresholdsFor,
   thresholdsForSubject,
   VILLAGE_LAUNCH,
+  type LaunchRollKind,
   type ThresholdSettings,
 } from "./ballotSubjects";
 import { CAPABILITY_LABELS, HANDOVER_SET, type Capability } from "./capabilities";
@@ -274,6 +275,12 @@ export interface DecisionMatrixInputs {
   autoApplyEnabled: boolean;
   /** Risk tags by row key. Information only; see rule 4. */
   riskTags?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * The launch's rule as this village holds it: how many must say yes
+   * (`governance.launch_min_electorate`, never below three) and who is asked
+   * (`governance.launch_roll`). Absent reads as the rule as shipped.
+   */
+  launch?: { yesNeeded: number; roll: LaunchRollKind };
 }
 
 // ── The words ──────────────────────────────────────────────────────────────
@@ -729,8 +736,15 @@ function voteRow(
   consultation.push(...stop.lines);
   if (changeSet && tier) consultation.push("A change to a steward's own limits can never be stopped by a steward.");
 
-  const methodLines = [barLine(conducts, bar, inp.village), floorLine(floor, conducts, bar, inp.village)];
-  if (bar.method) methodLines.push("It always runs on these numbers, whatever method the village uses for its other votes.");
+  // The launch is counted in people, so its lines say the rule and never a pair of percentages (Rye, 2026-11-27).
+  const launchRule = launchRuleOf(subject, inp);
+  const methodLines = launchRule
+    ? [
+        `Counted in ${launchRule.roll === "founders" ? "founding members" : "members"}, each once: it carries the moment ${launchRule.yesNeeded} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`,
+        "The village's unity and quorum dials never reach this one, and it does not wait for its window to end. How many must say yes, and who is asked, are settings the village's highest vote can change.",
+      ]
+    : [barLine(conducts, bar, inp.village), floorLine(floor, conducts, bar, inp.village)];
+  if (bar.method && !launchRule) methodLines.push("It always runs on these numbers, whatever method the village uses for its other votes.");
   if (changeSet && tier) methodLines.push("A change that moves a voting bar also costs at least the bar it moves.");
   if (villageMethod === "hypha" && !bar.method) {
     methodLines.push("This village takes its rule changes to Hypha. This one has no Hypha leg, so it is decided here, on the numbers above.");
@@ -759,12 +773,12 @@ function voteRow(
     approval = {
       who: "roll",
       text: withDoors(
-        `${rollText(subject)} Until every transferable power has left the founding role, the founder can also write the statement directly.`,
+        `${rollText(subject, inp)} Until every transferable power has left the founding role, the founder can also write the statement directly.`,
         doors,
       ),
     };
   } else {
-    approval = { who: "roll", text: withDoors(rollText(subject), doors) };
+    approval = { who: "roll", text: withDoors(rollText(subject, inp), doors) };
   }
 
   const information: string[] = [];
@@ -813,14 +827,31 @@ function voteRow(
   };
 }
 
+/** The launch's rule as the village holds it, or null for every subject that is not counted in people. */
+function launchRuleOf(subject: string, inp: DecisionMatrixInputs): { yesNeeded: number; roll: LaunchRollKind } | null {
+  const t = thresholdsForSubject(subject);
+  if (!t?.roll || typeof t.minYesHeads !== "number") return null;
+  return {
+    yesNeeded: Math.max(t.minYesHeads, Math.trunc(Number(inp.launch?.yesNeeded ?? t.minYesHeads)) || t.minYesHeads),
+    roll: inp.launch?.roll ?? t.roll,
+  };
+}
+
 /** Who a subject's roll is, with the extra floors the registry puts on it. */
-function rollText(subject: string): string {
+function rollText(subject: string, inp?: DecisionMatrixInputs): string {
   const t = thresholdsForSubject(subject);
   const extra: string[] = [];
   if (t && t.minElectorate > 0) extra.push(`at least ${t.minElectorate} people on it`);
   if (t?.everySeatWeighs) extra.push("every role carrying weight");
   if (t?.minYesHeads === "all") extra.push("every one of them voting yes");
   else if (typeof t?.minYesHeads === "number" && t.minYesHeads > 0) extra.push(`at least ${t.minYesHeads} of them voting yes`);
+  // The launch's roll (Rye, 2026-11-27): each counts once, and a no from any of them holds the vote.
+  const launch = inp ? launchRuleOf(subject, inp) : t?.roll && typeof t.minYesHeads === "number" ? { yesNeeded: t.minYesHeads, roll: t.roll } : null;
+  if (launch) {
+    const floors = [`at least ${launch.yesNeeded} of them on it`, `at least ${launch.yesNeeded} of them voting yes`, "none of them voting no"];
+    const who = launch.roll === "founders" ? "the founding members present when the ballot opens" : "every member who holds a voice when the ballot opens";
+    return `The roll: ${who}, each counted once, with ${listWords(floors)}.`;
+  }
   const base = "The roll: the members frozen onto the ballot when it opens";
   return extra.length ? `${base}, with ${listWords(extra)}.` : `${base}.`;
 }

@@ -2077,17 +2077,53 @@ export const VARIABLES: VariableDef[] = [
      * still reads that same registry number for its default. Constitutional,
      * so after launch only the highest tier moves it. Never below one: a
      * launch nobody votes on is not a launch.
+     *
+     * SINCE 2026-11-27 IT IS ALSO HOW MANY MUST SAY YES (Rye: the launch
+     * carries with "Not everyone, but at least 3 members holding the founder
+     * role"). One number, so a roll that may open can always carry: this many
+     * on the roll, and this many yeses. `shared/ballotSubjects.ts` holds it at
+     * three or above whatever is stored (`launchMinElectorate`).
      */
     key: "governance.launch_min_electorate",
     category: "Governance",
-    label: "Members it takes to launch",
+    label: "Yeses it takes to launch",
     description:
-      "How many members must hold a voice before the village can vote to start its Game. Every one of them has to say yes. The default is three: a founder and two more. Moving it costs the highest tier your village works at.",
+      "How many of the people the launch asks must say yes for the village to start its Game. The vote cannot open with fewer than this many on its roll, and it carries the moment this many have said yes, unless somebody on the roll has said no. The default is three, and it is never fewer. A founder sets it before the Game starts. After that it moves only by a vote at the highest tier your village works at.",
     type: "integer",
     unit: "members",
     default: String(SUBJECT_THRESHOLDS[VILLAGE_LAUNCH].minElectorate),
     min: 1,
     max: 50,
+    criticality: "constitutional",
+  },
+  {
+    /*
+     * WHO THE LAUNCH ASKS, as the village's own dial. Rye, 2026-11-27: the
+     * launch carries on "at least 3 members holding the founder role", which
+     * is what this ships as. Rye, 2026-11-06: "EVERYTHING can change with the
+     * highest village vote", and no action may be left without a vote path. A
+     * village with fewer than three founders that can make no more (the role
+     * ends when issuance begins) would otherwise have no way to hold this
+     * vote, so who counts is a setting the village can move.
+     *
+     * Constitutional, and closed to the panel once the Game has started with
+     * the other vote rules (server/lib/launchDoors.ts). Read through
+     * `launchRollKindFrom`, so an unrecognised value is the rule as shipped.
+     */
+    // The literal, because the generated governance document reads this
+    // registry as source text. `LAUNCH_ROLL_KEY` in `shared/ballotSubjects.ts`
+    // holds the same string and `ballotSubjects.test.ts` pins the pair equal.
+    key: "governance.launch_roll",
+    category: "Governance",
+    label: "Who the launch vote asks",
+    description:
+      "Who is on the roll when the village votes to start its Game. Each person on it counts once, and a no from any one of them holds the vote until they change their answer. A founder sets this before the Game starts. After that it moves only by a vote at the highest tier your village works at, which every member answers.",
+    type: "choice",
+    default: "founders",
+    choices: [
+      { value: "founders", label: "Founding members", hint: "Only members who hold the founder role answer the launch vote." },
+      { value: "members", label: "Every member", hint: "Every member who holds a voice answers the launch vote." },
+    ],
     criticality: "constitutional",
   },
   {

@@ -39,7 +39,7 @@
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
-import { thresholdSettingsFrom } from "../../shared/ballotSubjects";
+import { launchMinElectorate, launchRollKindFrom, LAUNCH_ROLL_KEY, thresholdSettingsFrom } from "../../shared/ballotSubjects";
 import { HANDOVER_SET, type Capability } from "../../shared/capabilities";
 import { generateDecisionMatrix, type DecisionMatrixInputs, type PowerHolding } from "../../shared/decisionMatrix";
 import { LIFECYCLE_RANK } from "../../shared/modules";
@@ -120,6 +120,11 @@ export async function readMatrixInputs(deps: DecisionMatrixDeps): Promise<Decisi
     settlementMode: settlementModeFrom(stringVar("cycle.settlement_mode")),
     gameStarted: start.started,
     autoApplyEnabled: boolVar("governance.auto_apply_enabled"),
+    // The launch's rule as this village holds it (Rye, 2026-11-06: its number and its roll are the village's own).
+    launch: {
+      yesNeeded: launchMinElectorate(numberVar("governance.launch_min_electorate")),
+      roll: launchRollKindFrom(stringVar(LAUNCH_ROLL_KEY)),
+    },
   };
 }
 

@@ -1512,15 +1512,17 @@ const PROSE = {
     "inside the transaction that opens it, and every later evaluation reads that row. Changing a village setting can " +
     "never rewrite a vote that is already running, and it can never rewrite one that has closed.",
   birthingRule:
-    "**The Birthing.** A village's first vote is the one that starts its Game, and it asks for everybody. Token " +
-    "issuance is refused until it carries, so nothing a member holds exists before it. The floors below are code and " +
-    "not settings, and a village cannot lower them.",
+    "**The Birthing.** A village's first vote is the one that starts its Game, and only its catalysts vote on it. It " +
+    "carries the moment three catalysts have said yes, unless one of them has said no, and a no holds it until that " +
+    "catalyst changes their answer. Token issuance is refused until it carries, so nothing a member holds exists before " +
+    "it. The numbers below are code and not settings, and a village cannot lower them.",
   criticality:
     "**Criticality, and the ceiling of 97.** Nothing is un-votable. The more critical a change is, the more of the " +
     "village has to show up and agree before it lands, and the recommended ceiling is 97 percent of quorum and 97 " +
     "percent of unity. Above that a village is warned in words: as the bar approaches 100, one player dying or " +
-    "drifting away can freeze a Game a large majority wants to continue. The Birthing stays at 100 and 100 because " +
-    "it is the one vote where everyone is present by definition.",
+    "drifting away can freeze a Game a large majority wants to continue. The Birthing sits outside the tiers: it is " +
+    "counted in catalysts, three saying yes and none saying no, so one catalyst's no holding it is the rule and never " +
+    "a stalemate.",
   criticalityToday:
     "Criticality tiers are built. Every setting carries a tier, the tier sets the quorum and the unity a change to it " +
     "needs, and the tiers and the subject floors are themselves settings a village may raise and may never lower. What " +
@@ -1546,8 +1548,9 @@ const PROSE = {
   abstainRule:
     "An abstention counts toward quorum and takes no side on unity. It is the instrument for helping a decision reach " +
     "the room while holding no position in it. One subject overrides that, and the subject table below says which: on " +
-    "the Birthing an abstention answers nothing at all, so it counts toward neither the quorum nor the unity and the " +
-    "vote closes for want of quorum, which can be asked again.",
+    "the Birthing an abstention is neither a yes nor a no, so it does not count toward the three yeses it asks of its " +
+    "catalysts and it does not hold the vote. A window that ends short of three yeses closes for want of quorum, which " +
+    "can be asked again.",
   peopleAndWeight:
     "Every sentence this platform generates about a vote states people AND weight together. One of three people " +
     "voting, holding all of the frozen weight, is a true sentence about a vote; a bare participation percentage is " +
@@ -2031,6 +2034,8 @@ const KNOWN_DIALS = [
   "governance.highest_tier",
   // The launch's head count, a dial since Rye's 2026-11-06 "everything can change with the highest village vote".
   "governance.launch_min_electorate",
+  // Who the launch asks, a dial for the same ruling: founding members as shipped (Rye, 2026-11-27), or every member.
+  "governance.launch_roll",
   // The two that arrived with 19G: whose weight the quorum counts.
   "governance.nonhuman_in_quorum",
   "governance.absent_cycles",
@@ -2277,15 +2282,12 @@ const RULINGS = [
       "then at some point when the game is mature enough and the founders deem it ready that they're ready to start the game then it starts with an initial proposal that needs a minimum of three votes three different parties voting and it has to get 100% quorum and 100% unity so every player of the game needs to show up to the start the game proposal. This proposal will also show the current distribution of Voice as that's the only token that had been issued at that time and give a brief overview of how the game is structured and the conditions that the game is at.",
       "No we need 100% saying yes as a collective 'Birthing' moment where you reveal the game, it's at LEAST 3 but could be many more people who then activate a new game before they all switch to being 'players' instead of just the catalysts (we say Catalyst instead of founder for those who play the game this way.",
     ],
-    status: () => "**Half built.**",
+    status: () => "**Withdrawn in part.** The count was replaced on 2026-11-27.",
     note: (f) =>
-      `Built: the floors are code at ${f.launchFloor.minUnityPct} unity, ${f.launchFloor.minQuorumPct} quorum and ` +
-      `${f.launchFloor.minElectorate} on the roll, with every seat required to carry weight above zero, which is what makes ` +
-      "100 percent of weight also mean 100 percent of people. Built since 2026-09-02: an abstention on the Birthing " +
-      "answers nothing, counting toward neither the quorum nor the unity, and the subject asks for a yes from every seat " +
-      "on the roll by head as well as by weight. One yes and two abstentions now closes for want of quorum, which can be " +
-      "asked again the same hour on a fresh roll. Staged: the proposal shows the head count, the dials and an abstention " +
-      "sentence, and carries no Voice distribution, no overview of the structure and no statement of the conditions.",
+      "The count this ruling asked for, a yes from every member on the roll at 100 percent quorum and 100 percent " +
+      `unity, was replaced on 2026-11-27 by ruling 34. What stands from it: at least ${f.launchFloor.minElectorate} on the roll, ` +
+      "an abstention that is not a yes, and a vote that can be asked again the same hour on a fresh roll. Staged: the " +
+      "proposal carries no Voice distribution, no overview of the structure and no statement of the conditions.",
   },
   {
     id: 12,
@@ -2448,7 +2450,7 @@ const RULINGS = [
       `the ${f.subjects.length} subject floors that used to live only in code are settings too. All ten are raise-only: the shipped number ` +
       "is a floor and a village may go above it and never below, because a village that can lower the bar for changing the " +
       "bar has no bar. Any dial typed above 97 shows the stalemate warning in words while it is being typed, and the " +
-      "Birthing is the one subject exempt from it because it stays at 100 and 100 by rule. Still open: the founder's " +
+      "Birthing is the one subject exempt from it because its rule is counted in catalysts. Still open: the founder's " +
       "2026-09-02 ruling that a threshold changes at its own current bar, which is a later lane.",
   },
   {
@@ -2655,6 +2657,32 @@ const RULINGS = [
       "vote, which is arithmetic telling the truth and not the tier fallback that was withdrawn. The second quote is " +
       "the framing the first governance quests carry.",
   },
+  {
+    id: 34,
+    title: "The launch carries on three catalysts saying yes, and it does not wait for its window",
+    dates: ["2026-11-27"],
+    quotes: [
+      "Not everyone, but at least 3 members holding the founder role",
+      "doesn't need to wait 7 days",
+    ],
+    status: (f) => (f.launchFloor.carriesAtOnce && f.launchFloor.roll === "founders" ? "**Built.**" : "**Staged.** Not built."),
+    note: (f) =>
+      "The details he accepted the same day: only catalysts vote on the launch; it carries the moment a third one " +
+      "says yes, unless one has said no; a no holds it until the catalyst who said it withdraws it. In code: the roll is " +
+      `the catalysts present when the vote opens, each counted once whatever the village's weight mode is, and the vote cannot ` +
+      `open with fewer than ${f.launchFloor.minElectorate} of them, in which case the refusal names who is on the roll and ` +
+      `which of their accounts are not. It carries on ${f.launchFloor.minYesHeads} yes heads at ${f.launchFloor.minUnityPct} unity, ` +
+      "which on that roll means no catalyst has said no, and the village's own quorum dial never reaches it. A catalyst " +
+      "may change their answer until it carries, and a vote cast for somebody by the person they follow never counts. " +
+      "Nobody may close it early by hand. When the window ends short of three yeses it closes for want of quorum, and " +
+      "with a no still standing it closes as failed; nothing changes either way and it can be asked again. This " +
+      "replaces the count in ruling 11. Both halves are the village's own settings, because on 2026-11-06 he ruled " +
+      "that everything changes by the highest village vote and that no action is left without a vote path: " +
+      "`governance.launch_min_electorate` is how many must say yes, never below three, and `governance.launch_roll` " +
+      "is who is asked, the catalysts as shipped or every member who holds a voice. A catalyst sets them before the " +
+      "Game starts. Once a village is issuing they close to the panel and move only by a vote at its highest tier, " +
+      "which is the path for a village with fewer than three catalysts. A ballot freezes both when it opens.",
+  },
 ];
 
 /**
@@ -2670,6 +2698,12 @@ const RULINGS = [
  * `docs/GOVERNANCE_EVOLUTION_PROMPT.md` that withdrew it.
  */
 const WITHDRAWN = [
+  {
+    what: "A Birthing carries when all of the people on the frozen roll have voted and all of the weight that took a side agrees.",
+    on: "2026-11-27",
+    by: "ruling 34",
+    now: "Only catalysts vote on the Birthing. It carries the moment three of them have said yes, unless one of them has said no, and it does not wait for its window to end.",
+  },
   {
     what: "A steward approves a passed proposal before it takes effect.",
     on: "2026-09-03",
@@ -2900,10 +2934,11 @@ export function collectFacts(root = ROOT) {
     return d;
   };
 
-  const launchSubject = subjects.find((s) => s.everySeatWeighs && s.minUnityPct === 100 && s.minQuorumPct === 100);
+  // The Birthing is the subject whose roll is the founders and which carries at once (Rye, 2026-11-27).
+  const launchSubject = subjects.find((s) => s.roll === "founders" && s.carriesAtOnce === true && Number(s.minYesHeads) > 0);
   if (!launchSubject) {
     fail(
-      "no subject in SUBJECT_THRESHOLDS asks 100 unity, 100 quorum and every seat weighing. " +
+      "no subject in SUBJECT_THRESHOLDS has a roll of founders, a yes-head count and carriesAtOnce. " +
         "The Birthing rule is the one floor this document cannot render without.",
     );
   }
@@ -3096,19 +3131,21 @@ export function render(f) {
     table(
       ["The Birthing asks", "Number", "Where it lives"],
       [
-        ["Unity, the share of the weight that took a side and agreed", `${f.launchFloor.minUnityPct}%`, "code, `shared/ballotSubjects.ts`"],
-        ["Quorum, the share of the frozen weight that answered", `${f.launchFloor.minQuorumPct}%`, "code, `shared/ballotSubjects.ts`"],
-        ["People on the roll before it may be asked", String(f.launchFloor.minElectorate), "code, `shared/ballotSubjects.ts`"],
-        ["Every seat carrying weight above zero", f.launchFloor.everySeatWeighs ? "required" : "not required", "code, `shared/ballotSubjects.ts`"],
+        ["Who is on the roll", "the catalysts present when it opens, each counted once", "code, `server/lib/launchRoll.ts`"],
+        ["Who is on the roll, if the village changes it", "every member who holds a voice", "setting, `governance.launch_roll`"],
+        ["How many must say yes, and be on the roll before it may be asked", `${f.launchFloor.minYesHeads}, never fewer`, "setting, `governance.launch_min_electorate`"],
+        ["Unity, the share of the catalysts who took a side and agreed", `${f.launchFloor.minUnityPct}%`, "code, `shared/ballotSubjects.ts`"],
+        ["Quorum from the village's own dial", f.launchFloor.fixedDials ? "never applied" : "applied", "code, `shared/ballotSubjects.ts`"],
+        ["Carries the moment the rule is met", f.launchFloor.carriesAtOnce ? "yes" : "no", "code, `server/lib/launchCarry.ts`"],
         ["Method", code(f.launchFloor.method ?? "the village's own"), "code, `shared/ballotSubjects.ts`"],
       ],
     ),
   );
   p();
   p(
-    `With every seat above zero, ${f.launchFloor.minQuorumPct}% of the weight is reached only when every seat has answered, ` +
-      "so the weight rule proves the people rule. A Birthing carries when all of the people on the frozen roll have voted " +
-      "and all of the weight that took a side agrees.",
+    `Every catalyst counts once, so ${f.launchFloor.minUnityPct}% unity means none of them has said no. A Birthing carries the moment ` +
+      `${f.launchFloor.minYesHeads} catalysts on the frozen roll have said yes with no catalyst's no standing, without waiting ` +
+      "for its window to end. A no holds it until the catalyst who said it changes their answer.",
   );
   p();
   say("criticality");
@@ -3722,6 +3759,12 @@ export function render(f) {
           criticality: s.criticality ?? null,
           abstainPolicy: s.abstainPolicy ?? null,
           minYesHeads: s.minYesHeads ?? null,
+          // The three below are true or named on the Birthing alone (Rye,
+          // 2026-11-27). `fixedDials` means the two numbers above are the whole
+          // rule and the village's own dials never raise them.
+          fixedDials: !!s.fixedDials,
+          carriesAtOnce: !!s.carriesAtOnce,
+          roll: s.roll ?? null,
           executesAtClose: s.executes,
           why: s.why ?? null,
         })),

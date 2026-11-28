@@ -2,29 +2,34 @@
  * THE ONE VOTE A FOUNDER MUST NOT BE ABLE TO CARRY ALONE, driven over HTTP
  * against the built server, with the state that made it possible turned ON.
  *
- * R74 sets the launch ballot at 100% unity, 100% quorum and a floor of three
- * people, because starting the Game turns on token issuance and a token issued
- * is a claim on everybody. Measured on 2026-08-30, all three could be reported
- * true while one person decided:
+ * Starting the Game turns on token issuance, and a token issued is a claim on
+ * everybody. Measured on 2026-08-30, the launch could be reported as carried
+ * by everyone while one person decided:
  *
  *   `governance.weight_mode` is a founder dial. In `custom` mode a member with
  *   no row in `governance_weights` weighs 0. The founder allocates 1 to
- *   themselves and nothing to the other two. The floor of three counts HEADS,
- *   so it passes. `openBallot` accepts a roll of three whose total weight is
- *   1. The founder votes yes. The engine divides 1 by 1 twice and reports
- *   100% participation and 100% agreement, and the frozen document tells the
- *   village that three people held a voice and every one of them agreed.
- *   Issuance opens and does not close again.
+ *   themselves and nothing to the other two. The floor of three counted HEADS,
+ *   so it passed. `openBallot` accepted a roll of three whose total weight was
+ *   1. The founder voted yes. The engine divided 1 by 1 twice and reported
+ *   100% participation and 100% agreement.
+ *
+ * It was first closed by refusing a launch roll with a seat at zero. Since
+ * 2026-11-27 it is closed at the root (Rye: the launch carries with "Not
+ * everyone, but at least 3 members holding the founder role"): the roll is the
+ * founders, every founder is frozen at ONE whatever the village's weight mode
+ * says, and the vote asks for three yes heads. So this file now pins that the
+ * allocation table never reaches the launch, that one founder holding all of
+ * its weight carries nothing, and that the lightest founder's no holds it.
  *
  * The same file drives the second half of the same idea, because they are one
  * question asked twice: a platform VOICE token could be listed on the
  * exchange, priced, stocked out of `sys:mint` and sold for a card payment, and
  * `governance.weight_token` could name any listed token at all.
  *
- * THE CASES RUN IN ORDER. One village walks the whole path: a roll where two
- * people weigh nothing, then a roll where everybody does, then a vote one
- * person answered, then the one that carried, then the market. Run the whole
- * file, never a `-t` slice.
+ * THE CASES RUN IN ORDER. One village walks the whole path: a table where two
+ * people weigh nothing, then a vote one founder answered, then one a founder
+ * held, then the one that carried, then the market. Run the whole file, never
+ * a `-t` slice.
  *
  * Boots the BUILT `dist/index.js` against a throwaway schema, so run
  * `pnpm build` first or you are testing stale code. Skips loudly without
@@ -38,7 +43,7 @@ import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { PURPOSE_EXAMPLE } from "../shared/governingPurpose";
-import { CONFLICT_DOOR_READY, recordEveryCanvasBlock } from "./db/launchGovernanceFixture";
+import { CONFLICT_DOOR_READY, makeFounders, recordEveryCanvasBlock, standDown } from "./db/launchGovernanceFixture";
 import { TIER_FLOORS } from "../shared/governanceEngine";
 import { waitForHealth } from "./db/e2eBoot";
 
@@ -347,7 +352,7 @@ describe.skipIf(!DB_CONFIGURED)("the caps on weight by source are members-only o
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("three heads on the roll, and two of them weigh nothing", () => {
+describe.skipIf(!DB_CONFIGURED)("the village weighs its votes by a table, and the launch roll does not read it", () => {
   it("takes the whole weight, which the platform lets a founder do", async () => {
     // Custom mode is a founder dial and allocating is a founder act. Neither
     // is the defect, and neither is refused: R56 says the village sets this.
@@ -358,43 +363,36 @@ describe.skipIf(!DB_CONFIGURED)("three heads on the roll, and two of them weigh 
     // Wren and Ida are never allocated. An absent row resolves to weight 0.
   });
 
-  it("says on the journey page that two members carry no weight", async () => {
+  it("counts FOUNDERS on the journey page, and two members holding no weight are not who it is short of", async () => {
     const page = await call("GET", "/api/admin/launch");
     expect(page.status).toBe(200);
-    // The head count is fine, which is exactly why the head count was not enough.
-    expect(page.json?.vote?.onTheRoll).toBe(3);
-    expect(String(page.json?.vote?.tooFew)).toContain("2 of the 3 members on the roll carry no voting weight");
-    // And the card now says which rule turned members into weights, so a
-    // founder reads it before pressing rather than after.
-    expect(String(page.json?.vote?.why)).toContain("allocation table");
-  });
-
-  it("REFUSES to open the vote, and writes no ballot at all", async () => {
+    // Three people hold an account here and one of them is a founder. The
+    // launch asks founders (Rye, 2026-11-27), so it is short of founders.
+    expect(page.json?.vote?.onTheRoll).toBe(1);
+    expect(String(page.json?.vote?.tooFew)).toContain("2 more founding members");
+    expect(String(page.json?.vote?.tooFew)).not.toContain("voting weight");
     const early = await call("POST", "/api/admin/launch/propose");
     expect(early.status, JSON.stringify(early.json)).toBe(409);
-    expect(String(early.json?.error)).toContain("no voting weight");
-    expect(early.json?.onTheRoll).toBe(3);
+    expect(early.json?.onTheRoll).toBe(1);
     expect(await launchBallots()).toEqual([]);
     expect(await gameStartRow()).toBeNull();
   });
 
-  it("still refuses when only one of the two is given weight", async () => {
-    expect((await allocate(wrenId, 5)).status).toBe(200);
-    const still = await call("POST", "/api/admin/launch/propose");
-    expect(still.status).toBe(409);
-    expect(String(still.json?.error)).toContain("One of the 3 members");
-    expect(await launchBallots()).toEqual([]);
+  it("is ready the moment there are three founders, though two of them weigh nothing in the table", async () => {
+    await makeFounders(call, [wrenId, idaId]);
+    const page = await call("GET", "/api/admin/launch");
+    expect(page.json?.vote?.onTheRoll).toBe(3);
+    // Until 2026-11-27 this read "2 of the 3 members on the roll carry no
+    // voting weight" and the vote refused to open. Each founder counts once on
+    // this one vote, so the table is not asked.
+    expect(page.json?.vote?.tooFew).toBeNull();
+    expect(String(page.json?.vote?.why)).toContain("Each person on this roll counts once");
+    expect(String(page.json?.vote?.why)).not.toContain("allocation table");
   });
 });
 
-describe.skipIf(!DB_CONFIGURED)("everybody carries weight, and skew is left alone", () => {
-  it("opens at 100/100 on an uneven allocation, because skew is the village's business", async () => {
-    // 1, 5 and 20. Nothing here flattens that; R56 says the village decides
-    // how weight is assigned, and zero was the hole, not inequality.
-    expect((await allocate(idaId, 20)).status).toBe(200);
-    const page = await call("GET", "/api/admin/launch");
-    expect(page.json?.vote?.tooFew).toBeNull();
-
+describe.skipIf(!DB_CONFIGURED)("every founder is frozen at one, whatever the table says", () => {
+  it("opens at unity 100 and three of three as its participation, with three seats of one", async () => {
     const asked = await call("POST", "/api/admin/launch/propose");
     expect(asked.status, JSON.stringify(asked.json)).toBe(200);
 
@@ -404,18 +402,25 @@ describe.skipIf(!DB_CONFIGURED)("everybody carries weight, and skew is left alon
     expect(rows[0].unity).toBe(100);
     expect(rows[0].quorum).toBe(100);
     expect(rows[0].roll).toBe(3);
-    expect(rows[0].total).toBe(26);
-    expect(await frozenRoll(rows[0].id)).toEqual([20, 5, 1]);
-    // The document says how weight was assigned, in the frozen text itself.
-    expect(rows[0].doc).toContain("allocation table");
+    // The table says 1, 0 and 0. The roll says 1, 1 and 1.
+    expect(rows[0].total).toBe(3);
+    expect(await frozenRoll(rows[0].id)).toEqual([1, 1, 1]);
+    // The document says how an answer is counted, in the frozen text itself.
+    expect(rows[0].doc).toContain("Each person on this roll counts once");
+    expect(rows[0].doc).not.toContain("allocation table");
   });
 
-  it("does not carry on the heaviest member's yes alone", async () => {
-    // 20 of 26 is 77% participation against a 100% quorum. This is the whole
-    // point: with every seat above zero, 100% of the weight is 100% of the
-    // people, so silence is still not consent however the weights are shaped.
+  it("does not carry on the one founder who holds all the table's weight", async () => {
+    /*
+     * THE BYPASS THIS FILE WAS WRITTEN FOR, closed a second way. In custom
+     * mode the founder held 1 of a total weight of 1, so one yes read as 100%
+     * participation and 100% agreement. One yes is one head now, and the vote
+     * asks for three.
+     */
     const [running] = await launchBallots();
-    expect((await vote(running.id, idaToken, "yes")).status).toBe(200);
+    const only = await vote(running.id, founderToken, "yes");
+    expect(only.status).toBe(200);
+    expect(only.json?.carried).toBe(false);
     await expire(running.id);
     const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
       body: { outcomeNote: "Only one of us answered." },
@@ -425,40 +430,51 @@ describe.skipIf(!DB_CONFIGURED)("everybody carries weight, and skew is left alon
     expect(await gameStartRow()).toBeNull();
   });
 
-  it("does not carry when the lightest member objects", async () => {
+  it("is held by the lightest founder's no, however the table is skewed", async () => {
+    // 1, 5 and 20 in the table. On the launch roll all three are still one.
+    expect((await allocate(wrenId, 5)).status).toBe(200);
+    expect((await allocate(idaId, 20)).status).toBe(200);
     expect((await call("POST", "/api/admin/launch/propose")).status).toBe(200);
     const rows = await launchBallots();
     const running = rows[rows.length - 1];
+    expect(await frozenRoll(running.id)).toEqual([1, 1, 1]);
     expect((await vote(running.id, idaToken, "yes")).status).toBe(200);
     expect((await vote(running.id, wrenToken, "yes")).status).toBe(200);
-    expect((await vote(running.id, founderToken, "no")).status).toBe(200);
+    const no = await vote(running.id, founderToken, "no");
+    expect(no.status).toBe(200);
+    expect(no.json?.carried).toBe(false);
     await expire(running.id);
     const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
       body: { outcomeNote: "One of us is not ready." },
     });
-    // 25 of 26 in favour is not unity, and one unit of weight is a whole person.
+    // 25 of 26 of the table's weight said yes. One founder said no, and a founder is a whole person.
     expect(closed.json?.outcome).toBe("failed");
     expect(await gameStartRow()).toBeNull();
   });
 
-  it("carries when all three answer and all three agree, and issuance opens", async () => {
+  it("carries the moment the third founder says yes, and issuance opens", async () => {
     expect((await call("POST", "/api/admin/launch/propose")).status).toBe(200);
     const rows = await launchBallots();
     const running = rows[rows.length - 1];
-    for (const t of [founderToken, wrenToken, idaToken]) {
-      expect((await vote(running.id, t, "yes")).status).toBe(200);
-    }
-    await expire(running.id);
-    const closed = await call("POST", `/api/governance/ballots/${running.id}/close`, {
-      body: { outcomeNote: "All three of us agreed. Larksfield starts today." },
-    });
-    expect(closed.json?.outcome).toBe("passed");
+    expect((await vote(running.id, founderToken, "yes")).json?.carried).toBe(false);
+    expect((await vote(running.id, wrenToken, "yes")).json?.carried).toBe(false);
+    const third = await vote(running.id, idaToken, "yes");
+    expect(third.status, JSON.stringify(third.json)).toBe(200);
+    expect(third.json?.carried).toBe(true);
     expect((await gameStartRow())?.ballotId).toBe(running.id);
     // Credits: Gratitude is never minted by hand (Rye, 2026-10-23).
     const mint = await call("POST", "/api/admin/tokens/credits/mint", {
       body: { toUserId: wrenId, amount: 5, reason: "The village started its Game." },
     });
     expect(mint.status, JSON.stringify(mint.json)).toBe(200);
+  });
+
+  it("puts Wren and Ida back as members, so everything after this reads the village's own weights", async () => {
+    // The rest of this file is about ordinary votes after the Birthing, which
+    // weigh by the table. Wren and Ida vote there as the members they were.
+    await standDown(call, [wrenId, idaId]);
+    const [rows] = await pool.query<any[]>("SELECT id, role FROM users WHERE id IN (?, ?) ORDER BY id", [wrenId, idaId]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect(rows.map((r) => String(r.role))).toEqual(["member", "member"]);
   });
 });
 

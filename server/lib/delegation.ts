@@ -734,15 +734,15 @@ export async function effectiveConcentration(pool: Pool, roster: string[]): Prom
  *
  *  - `unityPct` at 100 or above: every decided vote has to agree.
  *  - `consensus`: the method whose own sentence is unity of 100.
- *  - `minYesHeads: "all"`: the Birthing's rule said in heads, every seat yes.
+ *  - `minYesHeads: "all"`: a rule said in heads, every seat yes.
  *
- * On any of them a delegated row is refused. The Birthing's stated meaning is
- * that every member of a new village personally showed up and said yes, and
- * its floor of three different parties is the whole legitimacy of the act. A
- * member holding two accepted delegations would otherwise satisfy that floor
- * alone: three rows, three seats, one person, and a record that reads as three
- * parties agreeing. The audit found the same hole under the transparency
- * ruling, and this is the door it closes.
+ * On any of them a delegated row is refused. The Birthing is one of them by
+ * its unity of 100: its rule is three founders each saying yes in person (Rye,
+ * 2026-11-27), and that floor of three different parties is the whole
+ * legitimacy of the act. A founder holding two accepted delegations would
+ * otherwise satisfy that floor alone: three rows, three seats, one person, and
+ * a record that reads as three parties agreeing. The audit found the same hole
+ * under the transparency ruling, and this is the door it closes.
  *
  * The refusal is not a punishment for delegating. A member who delegated is
  * simply not cast on this one vote and can vote it themselves, which is a

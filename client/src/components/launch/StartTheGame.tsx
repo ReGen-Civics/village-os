@@ -22,10 +22,15 @@ export interface LaunchVote {
    * Absent on a server older than the field, which reads as "not known".
    */
   governanceOn?: boolean;
-  /** How many people hold a voice today. Null when the roll could not be read. */
+  /** How many founders are on the launch roll today. Null when the roll could not be read. */
   onTheRoll: number | null;
   /** The roll is short of the floor, said as a fact. Null when it is not. */
   tooFew: string | null;
+  /**
+   * How many founder yeses carry the vote (Rye, 2026-11-27: only founders vote
+   * on the launch). Absent on a server older than the field.
+   */
+  yesNeeded?: number | null;
   unityPct: number | null;
   quorumPct: number | null;
   minElectorate: number | null;
@@ -140,10 +145,9 @@ export default function StartTheGame({
                   ? vote?.tooFew
                   : vote?.why ?? "This opens the village's vote on starting its Game."}
           </p>
-          {!running && status.readyToLaunch && !shortOfPeople && vote?.unityPct != null && vote?.quorumPct != null && (
+          {!running && status.readyToLaunch && !shortOfPeople && vote?.onTheRoll != null && (
             <p className="text-xs text-stone-500 mt-1 max-w-md">
-              <Trans context="StartTheGame, p">It carries when {vote.quorumPct}% of the roll has answered and {vote.unityPct}% of those who take a side agree.
-              {vote.onTheRoll != null && ` ${vote.onTheRoll} people hold a voice today.`}</Trans>
+              <Trans context="StartTheGame, p">{vote.onTheRoll} people are on its roll today, and the vote carries without waiting for its window to end.</Trans>
             </p>
           )}
           </>)}
@@ -193,7 +197,7 @@ export default function StartTheGame({
               </Link>
               {": "}
               {p.status === "no_quorum"
-                ? "not everyone answered"
+                ? t({ message: "too few on the roll said yes", context: "StartTheGame, a past launch vote" })
                 : p.status === "withdrawn"
                   ? "called off"
                   : p.status === "failed"

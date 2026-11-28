@@ -59,10 +59,12 @@ import {
   type OwnVoteFacts,
 } from "./delegation";
 import {
+  atOnceEvaluation,
   consecutiveNoQuorum,
   delegatedRowsCountOn,
   evaluationRulesFor,
   quorumMissReading,
+  rollIsFounders,
   VILLAGE_LAUNCH,
   type QuorumMissReading,
 } from "../../shared/ballotSubjects";
@@ -644,6 +646,13 @@ export interface VoterStanding {
    * nothing. See `LEFT_THE_VILLAGE_VOTE`.
    */
   leftTheVillage?: boolean;
+  /**
+   * The village's launch asks its founding members and this account is not
+   * one. Worked out by the route from the village's own `governance.launch_roll`
+   * and the member's stored role, because this file reads neither. Absent
+   * reads as no. See `FOUNDERS_ONLY_VOTE`.
+   */
+  notAFoundingMember?: boolean;
 }
 
 /**
@@ -662,6 +671,35 @@ export const LEFT_THE_VILLAGE_VOTE =
   "You have left the village, so you cannot cast a vote here now. Any vote you cast before you left still stands";
 export const LEFT_THE_VILLAGE_OBJECTION =
   "You have left the village, so you cannot file an objection here now. Any objection you filed before you left still stands";
+
+/**
+ * WHAT A MEMBER WHO IS NOT A FOUNDER IS TOLD ON THE LAUNCH VOTE (Rye,
+ * 2026-11-27: "at least 3 members holding the founder role"; only founders
+ * vote on the launch). The roll is the founders present when the vote opened,
+ * so this is the true reason and the freeze is not. Said only while the
+ * village's launch asks its founding members (`VoterStanding.notAFoundingMember`).
+ */
+export const FOUNDERS_ONLY_VOTE =
+  "Only founding members vote on starting the Game, so this vote is not open to your account. Every vote the village holds after it is";
+
+/**
+ * WHY A LAUNCH VOTE CANNOT BE CLOSED BY HAND BEFORE ITS WINDOW ENDS.
+ *
+ * It carries by its own rule, the moment enough of its roll have said yes
+ * with nobody's no standing (`carriesAtOnce`, shared/ballotSubjects.ts). Until
+ * then a no HOLDS it and may still be withdrawn, and somebody who has not
+ * answered still can, so closing it early as failed or as short of
+ * participation would take that from them. Nobody chooses the moment.
+ *
+ * It names no number and no kind of member, because both are the village's
+ * own and are frozen on the ballot: the sentence is true of every launch vote.
+ */
+export const CARRIES_BY_ITS_OWN_RULE =
+  "This vote carries the moment enough of the people on its roll have said yes and nobody on it has said no. Until then it stays open for its whole window: somebody who said no can still change their answer, and somebody who has not answered still can.";
+
+/** The outcome note a ballot carries when its own rule closed it. */
+export const CARRIED_AT_ONCE_NOTE =
+  "Enough of the people on the roll had said yes and nobody on it had said no, so this carried at that moment. Nobody chose the moment.";
 
 /**
  * WHAT TO TELL SOMEBODY WHO IS NOT ON A ROLL, AND WHY THIS TAKES FOUR CASES.
@@ -774,7 +812,13 @@ export async function castVote(
     "SELECT weight FROM ballot_electorate WHERE ballot_id = ? AND user_id = ?",
     [ballotId, userId],
   );
-  if (!inRoll[0]) return { ok: false, error: offRollSentence(standing) };
+  if (!inRoll[0]) {
+    // A roll of founders names its own reason: timing did not keep this member
+    // off it. Only where the route says that is the reason, so a village that
+    // asks every member on its launch reads the ordinary sentence.
+    const foundersOnly = rollIsFounders(ballot.subjectType) && standing?.notAFoundingMember === true;
+    return { ok: false, error: foundersOnly ? FOUNDERS_ONLY_VOTE : offRollSentence(standing) };
+  }
   const cleanReason = String(reason ?? "").trim().slice(0, 2000);
   if (ballot.method === "consent" && choice === "no" && !cleanReason) {
     return { ok: false, error: "A no in consent mode is an objection, and an objection carries its reasoning. Say why" };
@@ -1080,7 +1124,18 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
    */
   const subjectRules = evaluationRulesFor(ballot.subjectType);
   const heads = subjectRules.minYesHeads === undefined ? undefined : await headsFor(pool, ballot);
-  if (!expired && !input.closerMayCloseEarly) {
+  /*
+   * A SUBJECT THAT CARRIES AT ONCE IS DECIDED IN WHOLE HEADS. It froze how
+   * many must say yes as a share of its own roll, and that share is read back
+   * here as a count (`atOnceEvaluation`, shared/ballotSubjects.ts). The frozen
+   * row is still the only source: nothing about the village's settings today
+   * is read. Null for every other subject, which keeps its frozen dials.
+   */
+  const atOnce = atOnceEvaluation(ballot.subjectType, { quorumPct: ballot.quorumPct, electorateCount: ballot.electorateCount });
+  // A subject that carries at once is closed early by its rule and by nobody's
+  // standing, so whether the closer may close early is not asked of it. What
+  // is asked instead sits below, once the outcome is known.
+  if (!expired && !input.closerMayCloseEarly && !subjectRules.carriesAtOnce) {
     return {
       ok: false,
       error: "The voting period is still running. Before it ends, only a proposal.decide holder or an admin may close a ballot",
@@ -1096,14 +1151,17 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
   const evaluation = {
     method: ballot.method,
     unityPct: ballot.unityPct,
-    quorumPct: ballot.quorumPct,
+    quorumPct: atOnce ? atOnce.quorumPct : ballot.quorumPct,
     totalWeight: ballot.totalWeight,
     tallies,
     openObjections,
     abstainPolicy: subjectRules.abstainPolicy,
-    minYesHeads: subjectRules.minYesHeads,
+    minYesHeads: atOnce ? atOnce.minYesHeads : subjectRules.minYesHeads,
     heads,
-    quorum: quorumFacts.reduced ? quorumFacts.arithmetic : undefined,
+    // A subject that carries at once froze its participation as a count of
+    // its own roll (`launchQuorumPct`), so its base is that whole roll and no
+    // seat is taken out of it.
+    quorum: quorumFacts.reduced && !subjectRules.carriesAtOnce ? quorumFacts.arithmetic : undefined,
   };
   const reading = evaluateBallot(evaluation);
   /*
@@ -1115,20 +1173,20 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
   const byMajority = reading === "no_quorum" && missDecidedByMajority(fallbackFactsOf(ballot));
   const outcome = byMajority ? evaluateBallot({ ...evaluation, majorityOfCast: true }) : reading;
   /*
-   * THE LAUNCH VOTE RUNS ITS WHOLE WINDOW (launch rehearsal, 15 Nov 2026).
-   * It asks every person on the roll, so "short of participation" is not an
-   * answer until the window ends: closing it early as no quorum took the
-   * vote from the three people who had not answered yet, and any admin could
-   * do it. Once everyone on the roll has answered there is nobody left to wait for. It still closes early once a no is cast, because one no means it
-   * can no longer carry, and a pass waits for the clock below as every ballot's does.
+   * THE LAUNCH VOTE CARRIES BY ITS OWN RULE OR RUNS ITS WHOLE WINDOW (Rye,
+   * 2026-11-27; the launch rehearsal of 15 Nov 2026 before it).
+   *
+   * Before the window ends, the one close this ballot takes is the pass, at
+   * the moment its rule is met: a third founder's yes with no founder's no
+   * standing. Any other early close is refused whoever asks. A no holds the
+   * vote and may be withdrawn, and a founder who has not answered still can,
+   * so an early `failed` or `no_quorum` would take that from them, and any
+   * admin could do it.
    */
-  if (!expired && ballot.subjectType === VILLAGE_LAUNCH && outcome === "no_quorum" && Number(tallies.noW) === 0 && (await voteCount(pool, ballot.id)) < Number(ballot.electorateCount)) {
-    return {
-      ok: false,
-      error: "The launch vote asks everyone on the roll, so it runs its whole window and closes on the clock. People who have not answered yet still can.",
-    };
+  if (!expired && subjectRules.carriesAtOnce && outcome !== "passed") {
+    return { ok: false, error: CARRIES_BY_ITS_OWN_RULE };
   }
-  if (!expired && outcome === "passed") {
+  if (!expired && outcome === "passed" && !subjectRules.carriesAtOnce) {
     /*
      * A BALLOT PASSES WHEN ITS WINDOW ENDS AND NEVER BEFORE (dispatcher lane).
      *
@@ -1139,6 +1197,10 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
      * The proposer would choose which three days a steward got. So the
      * refusal covers every method, and the settlement path closes ballots on
      * the clock instead.
+     *
+     * The one exception is a subject that says `carriesAtOnce`. It has no
+     * steward window (`NO_WINDOW_SUBJECTS`), so there are no days to choose,
+     * and the moment is set by the votes and not by whoever closes.
      */
     return {
       ok: false,
@@ -1210,7 +1272,7 @@ ${majorityDecisionLine(outcome === "passed" ? "passed" : "failed", tallies.yesW,
     // The same abstain policy the outcome was decided under, and the same
     // quorum base, so the number the close reports and the number that
     // decided are one number.
-    quorum: quorumFacts.reduced
+    quorum: quorumFacts.reduced && !subjectRules.carriesAtOnce
       ? quorumPctOn(quorumFacts.arithmetic)
       : quorumPctOf(tallies, ballot.totalWeight, subjectRules.abstainPolicy),
     quorumBase: quorumFacts.base,
@@ -1376,7 +1438,7 @@ export async function withdrawBallot(pool: Pool, input: WithdrawBallotInput): Pr
     if (others > 0) {
       return {
         ok: false,
-        error: "Other people have voted on starting the Game, so it can no longer be called off. It runs its whole window and closes on the clock, or early once somebody votes no.",
+        error: "Other people have voted on starting the Game, so it can no longer be called off. It carries the moment enough of its roll have said yes with nobody saying no, and otherwise it runs its whole window.",
       };
     }
   }
