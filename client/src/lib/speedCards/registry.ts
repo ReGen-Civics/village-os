@@ -90,7 +90,9 @@ export interface RegistryInput {
  * label translated or renamed by the village and its `items` untouched, so the items find the group in NAV.
  */
 export function groupKeyOf(group: NavGroup): string {
-  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label));
+  // A group the village moved entries into carries new items (config/navPlaces.ts), so it is also known by what it
+  // holds (NavGroup.holds), which no rename or move changes.
+  const own = NAV.find((e) => isGroup(e) && (e.items === group.items || e.label === group.label || (!!group.holds && e.holds === group.holds)));
   return own && isGroup(own) ? own.label : group.label;
 }
 

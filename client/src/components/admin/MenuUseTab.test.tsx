@@ -18,7 +18,8 @@ vi.mock("@/lib/gameApi", () => ({
     ],
   }),
 }));
-vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: [{ id: "map" }, { id: "events" }] }) }));
+const on = vi.hoisted(() => ({ modules: ["map", "events"] }));
+vi.mock("@/modules/ModuleProvider", () => ({ useModules: () => ({ modules: on.modules.map((id) => ({ id })) }) }));
 vi.mock("@/hooks/useVillageMenu", () => ({ useVillageMenu: () => ({ hidden: [], labels: {}, groups: {} }) }));
 
 import MenuUseTab from "./MenuUseTab";
@@ -26,7 +27,18 @@ import MenuUseTab from "./MenuUseTab";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  on.modules = ["map", "events"];
 });
+
+/** The usage route, answering every window with these totals. */
+const answering = (totals: Array<{ path: string; count: number }>, recordedSince = "2026-11-01") =>
+  vi.stubGlobal("fetch", async (url: string) => {
+    const past = url.includes("from=2026-08-01");
+    return new Response(
+      JSON.stringify({ from: past ? "2026-08-01" : "2026-11-01", to: past ? "2026-11-01" : "2027-02-01", today: "2026-11-30", recordedSince, totals }),
+      { status: 200 },
+    );
+  });
 
 describe("MenuUseTab", () => {
   it("reads the season's window and shows the most visited, the unopened and what it suggests", async () => {
@@ -103,5 +115,35 @@ describe("MenuUseTab", () => {
     render(<MenuUseTab password="admin-token" />);
     expect((await screen.findByRole("alert")).textContent).toBe("The visit counts could not be read just now.");
     expect(screen.queryByRole("table")).toBeNull();
+  });
+
+  it("says one day and one visit in the singular (QA round 2)", async () => {
+    answering([{ path: "/quests", count: 1 }], "2026-11-30");
+    render(<MenuUseTab password="admin-token" />);
+    const said = (await screen.findByTestId("menu-use-suggestions")).textContent ?? "";
+    expect(said).toContain("Only 1 visit over 1 day so far.");
+    expect(screen.getByTestId("menu-use-limits").textContent).toContain("This window counted 1 day.");
+    expect(screen.getByText("1 visit to pages in the menu.")).toBeTruthy();
+  });
+
+  it("puts the count in the lift-out sentence, so all of a handful reads as a handful", async () => {
+    // Events holds every one of Community's 5 visits from inside Gatherings; plenty elsewhere clears the window.
+    answering([{ path: "/events", count: 5 }, { path: "/quests", count: 60 }]);
+    render(<MenuUseTab password="admin-token" />);
+    const said = (await screen.findByTestId("menu-use-suggestions")).textContent ?? "";
+    expect(said).toContain("Events draws all 5 visits in Community from inside the Gatherings folder");
+    expect(said).not.toContain("100%");
+  });
+
+  it("tells two pages the menu calls by one name apart by their addresses", async () => {
+    // Map off: /map/circles is not in the menu (not judged) and /circles is, both called Circles.
+    on.modules = ["events"];
+    answering([{ path: "/quests", count: 60 }]);
+    render(<MenuUseTab password="admin-token" />);
+    await screen.findByTestId("menu-use-suggestions");
+    const page = screen.getByTestId("menu-use").textContent ?? "";
+    // The hidden one in the not-judged line, the shown one in the unopened list, each with its address.
+    expect(page).toMatch(/not judged: [^.]*Circles \(\/map\/circles\)/);
+    expect(screen.getByTestId("menu-use-unopened").textContent).toContain("Circles (/circles)");
   });
 });

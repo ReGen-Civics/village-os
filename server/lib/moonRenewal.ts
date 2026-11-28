@@ -105,7 +105,7 @@ export async function renewAllFiled(
         type: "governance",
         title: "Your role carries on into the next moon",
         body: null,
-        link: "/season-plan",
+        link: "/season#plan",
         dedupeKey: `moon-renewed:${r.assignmentId}:${next.toISOString().slice(0, 10)}`,
       }).catch(() => undefined);
     }

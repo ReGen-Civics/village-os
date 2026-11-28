@@ -91,7 +91,7 @@ describe("MapSeatCard", () => {
     );
     // Both cards have read both: the class name and the season clock are drawn twice.
     await waitFor(() => expect(screen.getAllByText("The Architect")).toHaveLength(2));
-    await waitFor(() => expect(screen.getAllByText("Season of Foundations ends 21 Mar 2099")).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByText("Season of Foundations ends 21 Mar 2099", { ignore: "script, style, [hidden]" })).toHaveLength(2));
     expect(asked.filter((u) => u === "/api/archetypes")).toHaveLength(1);
     expect(asked.filter((u) => u === "/api/season")).toHaveLength(1);
   });

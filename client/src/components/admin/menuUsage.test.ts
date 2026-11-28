@@ -121,7 +121,7 @@ describe("what this suggests", () => {
     // Village: map 10, quests 10, stay 40 (in Homes), places 10, library 10. Total 80; median 10.
     // Stay: 40 >= 80 / 4 and 40 >= 2 x 10, so it is lifted out. Places, in the same folder, is not.
     const u = use([{ path: "/map", count: 10 }, { path: "/quests", count: 10 }, { path: "/stay", count: 40 }, { path: "/places", count: 10 }, { path: "/library", count: 10 }, { path: "/rights", count: 10 }]);
-    expect(u.suggestions.filter((s) => s.rule === "lift-out")).toEqual([{ rule: "lift-out", path: "/stay", values: { pct: 50, group: "Village", folder: "Homes" } }]);
+    expect(u.suggestions.filter((s) => s.rule === "lift-out")).toEqual([{ rule: "lift-out", path: "/stay", values: { pct: 50, visits: 40, groupVisits: 80, group: "Village", folder: "Homes" } }]);
   });
 
   it("lifts nothing out on a handful of visits: the group needs thirty, or the page five", () => {

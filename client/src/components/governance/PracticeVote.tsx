@@ -144,11 +144,9 @@ export default function PracticeVote({
           than one of them skipping one. */}
       <Heading className="flex items-center gap-2 text-lg font-bold text-stone-900">
         <MessageCircleQuestion className="w-5 h-5 text-teal-deep" aria-hidden="true" />
-        {asking ? asking.heading : "Ask the village about this"}
-        <InfoTip
-          tip="A practice vote runs on the same engine a binding one does: the same roll, the same weights, the same turnout to reach. Closing it records the answer and changes nothing on its own."
-          label={t({ message: "What a practice vote is", context: "PracticeVote, label" })}
-        />
+        <InfoTip tip="A practice vote runs on the same engine a binding one does: the same roll, the same weights, the same turnout to reach. Closing it records the answer and changes nothing on its own.">
+          {asking ? asking.heading : "Ask the village about this"}
+        </InfoTip>
       </Heading>
       {/* The type is named as a CHIP and never inside a sentence. The wizard
           cards are verb phrases ("Write an agreement"), so folding one into

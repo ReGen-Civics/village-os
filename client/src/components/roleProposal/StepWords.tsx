@@ -16,7 +16,7 @@
  * things" among them.
  */
 import { useId, useState } from "react";
-import { CcosTerm, LABEL_TAP } from "@/components/playerCard/CcosTerm";
+import { CcosTerm } from "@/components/playerCard/CcosTerm";
 import { useCardHeadings } from "@/components/playerCard/cardHeadings";
 import { roleTerm } from "@shared/playerCardCcos";
 import { roleHandover } from "@shared/playerCardHealth";
@@ -139,7 +139,7 @@ function WordInput({
   return (
     <FieldFrame changed={changed} isNew={role.isNew} posted={posted} field={f.field}>
       <div className="text-sm font-semibold text-foreground">
-        <CcosTerm term={f.term ? roleTerm(f.term, frameworkTerms) : null} tap={LABEL_TAP}>
+        <CcosTerm term={f.term ? roleTerm(f.term, frameworkTerms) : null}>
           {f.label}
         </CcosTerm>
       </div>

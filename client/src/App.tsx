@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import BreakGlass from "@/components/BreakGlass";
+import { FindAnythingRoot } from "@/components/search/FindAnything";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import QuietLoading from "@/components/natural/QuietLoading";
@@ -94,8 +95,12 @@ function PageTitle() {
   const config = useGameConfig();
   const village = config?.project?.name ?? "";
   const commitment = config?.project?.commitmentName ?? "";
-  // The village's own menu names for its story pages, so a tab reads what the menu reads (one name per page).
-  const names = useMemo(() => Object.fromEntries(Object.entries((config as { site?: { menu?: Record<string, { label?: string }> } } | null)?.site?.menu ?? {}).map(([h, w]) => [h, String(w?.label ?? "")])), [config]);
+  // The village's own names, so a tab reads what the menu reads (one name per page): its story pages' names, and the
+  // names it gave its menu entries (Admin, Menu, or chosen when a module was turned on), which the menu draws first.
+  const names = useMemo(() => {
+    const c = config as { site?: { menu?: Record<string, { label?: string }> }; menu?: { labels?: Record<string, string> } } | null;
+    return { ...Object.fromEntries(Object.entries(c?.site?.menu ?? {}).map(([h, w]) => [h, String(w?.label ?? "")])), ...(c?.menu?.labels ?? {}) };
+  }, [config]);
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
   const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
@@ -577,6 +582,8 @@ function Router() {
       {/* The season, one page. The three pages it replaced redirect to its tabs, keeping the query (?renew=, ?season=). */}
       <Route path="/season" component={Season} />
       <Route path="/season-plans/mine">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
+      {/* Notices already sent link to /season-plan, an address that never had a page (found 28 Nov 2026). It opens the plan. */}
+      <Route path="/season-plan">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
       <Route path="/season-plans">{() => <Redirect to={`/season${window.location.search}#everyone`} replace />}</Route>
       <Route path="/season-places/circles" component={SeasonCircles} />
       <Route path="/season-places">{() => <Redirect to={`/season${window.location.search}#join`} replace />}</Route>
@@ -651,6 +658,12 @@ function App() {
               * before anything is sent a second time.
               */}
             <BreakGlass />
+            {/*
+              * Find anything's root (components/search/FindAnything.tsx): Ctrl K, `openFindAnything()` and the
+              * search's dialog on every page, the not-found page included, which draws no shell. Nothing until asked;
+              * the dialog is a lazy chunk.
+              */}
+            <FindAnythingRoot />
             <Router />
           </TooltipProvider>
 

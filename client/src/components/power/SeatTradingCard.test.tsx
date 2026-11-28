@@ -218,7 +218,8 @@ describe("the empty seat, the way every fork starts", () => {
     expect(screen.getByText("Nobody holds this yet")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Apply for this role: Seed Keeper" })).toBeTruthy();
     expect(screen.getAllByText("Days left in the season").length).toBeGreaterThan(0);
-    expect(screen.getByText("Season of Foundations ends 21 Mar 2027")).toBeTruthy();
+    // The wide face's clock also carries it as the label's tip, kept hidden until opened, so the visible line is counted.
+    expect(screen.getByText("Season of Foundations ends 21 Mar 2027", { ignore: "script, style, [hidden]" })).toBeTruthy();
     expect(
       screen.getByText(
         "Still to be written down: what it decides on, what it answers for, why it matters and how the next holder is chosen. The founding team writes these down.",

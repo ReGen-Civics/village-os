@@ -189,11 +189,7 @@ export default function ObjectionPanel({
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
         <Trans context="ObjectionPanel, h3"><Hand className="w-4 h-4 text-notice" aria-hidden="true" />
-        Objections
-        <InfoTip
-          tip="An objection names a consequence the village should avoid. Only an objection blocks a consent decision. A worry without reasoning behind it is recorded as a concern instead."
-          label="What an objection is"
-        /></Trans>
+        <InfoTip tip="An objection names a consequence the village should avoid. Only an objection blocks a consent decision. A worry without reasoning behind it is recorded as a concern instead.">Objections</InfoTip></Trans>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
         {standing === 0

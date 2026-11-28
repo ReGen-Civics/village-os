@@ -4,7 +4,7 @@
  * still outline for ARRIVAL_MS; nothing moves and focus is never touched.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ARRIVAL_CSS, ARRIVAL_MS, ARRIVED_ATTR, FADE_MS, FIND_FOR_MS, ROUND_ATTR, arrivalTarget, arrive, highlight } from "./arrivalHighlight";
+import { ARRIVAL_CSS, ARRIVAL_MS, ARRIVED_ATTR, FADE_MS, FIND_FOR_MS, IN_VIEW_FOR_MS, ROUND_ATTR, arrivalTarget, arrive, highlight } from "./arrivalHighlight";
 
 function motion(reduce: boolean) {
   vi.stubGlobal("matchMedia", (q: string) => ({ matches: reduce && q.includes("reduce"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
@@ -15,6 +15,11 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.spyOn(Element.prototype, "getClientRects").mockImplementation(function (this: Element) {
     return (this.closest(".hidden") ? [] : [{}]) as unknown as DOMRectList;
+  });
+  // On screen unless a test moves it: `data-top` stands for where the section sits in the window (768px tall in jsdom).
+  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+    const top = Number(this.getAttribute("data-top") ?? 100);
+    return { top, bottom: top + 200, height: 200, left: 0, right: 100, width: 100, x: 0, y: top, toJSON: () => ({}) } as DOMRect;
   });
   motion(false);
 });
@@ -132,6 +137,30 @@ describe("arrivalTarget", () => {
 });
 
 describe("arrive", () => {
+  it("waits for the section to come on screen and settle before it glows (QA round 2: a glow spent 809px early)", () => {
+    const el = section("leaving-well", 'data-top="1577"');
+    arrive("#leaving-well", "/rights");
+    vi.advanceTimersByTime(2000);
+    expect(el.hasAttribute(ARRIVED_ATTR), "still far below the window").toBe(false);
+    // The page arrives and the glide brings it up: moving, then still.
+    el.setAttribute("data-top", "400");
+    vi.advanceTimersByTime(100);
+    el.setAttribute("data-top", "120");
+    vi.advanceTimersByTime(100);
+    expect(el.hasAttribute(ARRIVED_ATTR), "on screen but still moving").toBe(false);
+    vi.advanceTimersByTime(400);
+    expect(el.getAttribute(ARRIVED_ATTR)).toBe("glow");
+  });
+
+  it("lets the glow go when the reader never brings the section on screen", () => {
+    const el = section("cash", 'data-top="3000"');
+    arrive("#cash", "/governance/treasury");
+    vi.advanceTimersByTime(IN_VIEW_FOR_MS + 1000);
+    el.setAttribute("data-top", "100");
+    vi.advanceTimersByTime(2000);
+    expect(el.hasAttribute(ARRIVED_ATTR)).toBe(false);
+  });
+
   it("waits for a lazy page to draw its section, then lights it", () => {
     arrive("#changes", "/governance/decisions");
     vi.advanceTimersByTime(800);

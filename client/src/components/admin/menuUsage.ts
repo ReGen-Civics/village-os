@@ -173,7 +173,7 @@ function suggest({ shown, total, days, unopened, unlisted }: { shown: UsagePage[
       const folder = p.places[0]?.folder;
       const enough = groupTotal >= LIFT_FLOOR_GROUP || p.count >= LIFT_FLOOR_PAGE;
       if (folder && enough && p.count >= groupTotal / 4 && p.count >= mid * 2 && p.count > 0) {
-        out.push({ rule: "lift-out", path: p.path, values: { pct: Math.round((p.count / groupTotal) * 100), group, folder } });
+        out.push({ rule: "lift-out", path: p.path, values: { pct: Math.round((p.count / groupTotal) * 100), visits: p.count, groupVisits: groupTotal, group, folder } });
       } else if (!folder && mid >= 4 && p.count > 0 && p.count <= mid / 4) {
         out.push({ rule: "fold-in", path: p.path, values: { visits: p.count, group, median: mid } });
       }
