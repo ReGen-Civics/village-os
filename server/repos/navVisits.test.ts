@@ -5,7 +5,7 @@
 import mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb } from "../db/testDb";
-import { countVisit, visitTotals } from "./navVisits";
+import { countVisit, firstVisitDay, visitTotals, visitTotalsBetween } from "./navVisits";
 
 describe.skipIf(!testDbConfigured())("nav_path_visits", () => {
   let db: TestDb;
@@ -32,5 +32,19 @@ describe.skipIf(!testDbConfigured())("nav_path_visits", () => {
     ]);
     const [cols] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM nav_path_visits");
     expect(cols.map((c) => c.Field).sort()).toEqual(["day", "path", "visits"]);
+  });
+
+  it("reads a window of days, its first day in and its last day out, and the first day counted", async () => {
+    // The rows the first test wrote: 2026-11-01 roles 1, 2026-11-20 quests 2, 2026-11-23 quests 1 and roles 1.
+    expect(await visitTotalsBetween(pool, "2026-11-01", "2026-11-23")).toEqual([
+      { path: "/quests", count: 2 },
+      { path: "/roles", count: 1 },
+    ]);
+    expect(await visitTotalsBetween(pool, "2026-11-23", "2026-11-24")).toEqual([
+      { path: "/quests", count: 1 },
+      { path: "/roles", count: 1 },
+    ]);
+    expect(await visitTotalsBetween(pool, "2026-12-01", "2027-01-01")).toEqual([]);
+    expect(await firstVisitDay(pool)).toBe("2026-11-01");
   });
 });

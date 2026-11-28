@@ -513,6 +513,15 @@ export const STAGE_UNLOCKS: Partial<Record<Capability, string>> = {
   // from the seat plane, recorded in
   // docs/ADR_2026-08_REPRESENTS_CIRCLE_DECLARES.md.
   //
+  // A second seat-based read sits outside this gate on purpose: how a
+  // circle's roles are going (`GET /api/role-measures`). The lead ruled it,
+  // 27 Nov 2026: "admin for the whole village and circle leads for their
+  // circle". An admin reads every circle; a live holder of a circle's own lead
+  // seat (`circles.lead_role_id`, the seat kept: active, not an example) reads
+  // that circle's counts and nothing else. It grants no key and writes
+  // nothing; `circlesLed` and `measuresScope` in shared/roleMeasures.ts are the
+  // whole of it, recorded in docs/ADR_2026-11_CIRCLE_LEADS_READ_MEASURES.md.
+  //
   // The five handover keys (0098) are all deliberately absent, and for one
   // reason: every one of them is a job the village fills, so the honest way
   // in is a role or a badge somebody was given. A rung would hand seating,

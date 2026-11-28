@@ -29,6 +29,7 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "tab.setup",
   "tab.pages",
   "tab.paths-stages",
+  "tab.menu-use",
   "tab.legal",
   "tab.covenant",
   "tab.money",

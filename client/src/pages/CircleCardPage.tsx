@@ -16,7 +16,7 @@
  *
  * A circle with no roles yet is a quiet hearth: the embers, one sentence and
  * one door. Below the card, for those who keep the circle, sits this season's
- * pulse from Live Sessions, and for an administrator how the circle's roles
+ * pulse from Live Sessions, and for an administrator or the circle's lead a door to how the circle's roles
  * are going (components/roleMeasures, the fold of /role-measures).
  *
  * PHONE AND DESKTOP, each at its best.
@@ -31,7 +31,7 @@
  * Nothing here scores or ranks a person: stones carry a role's letter,
  * plants describe work, and the seed counts who is coming to one evening.
  */
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import Layout from "@/components/Layout";
 import CircleCardView from "@/components/circleCard/CircleCardView";
@@ -40,10 +40,8 @@ import { LinkedCircles, QuietHearth, WeDecided, WeMeet, WeTend, WhoHolds } from 
 import { adoptionOf, hearthRoles, linkedCircles, meetFacts, stonesOf, threadsOf } from "@/components/circleCard/hearthModel";
 import { tendFor, useHearth } from "@/components/circleCard/useHearth";
 import CirclePulse from "@/components/sessions/CirclePulse";
-import { useIsAdmin } from "@/contexts/AuthContext";
 
-/** How this circle's roles are going (the fold of /role-measures): its own chunk, fetched only for an administrator. */
-const RoleMeasuresPanel = lazy(() => import("@/components/roleMeasures/RoleMeasuresPanel"));
+import CircleProgressLink from "@/components/roleMeasures/CircleProgressLink";
 import { CARD, LINK, WORLD } from "@/components/journey/look";
 import { gameFetch } from "@/lib/gameApi";
 import type { CircleCard, CircleSection } from "@shared/circleCard";
@@ -159,7 +157,6 @@ function HearthPage({
   answer: ReturnType<typeof useHearth>["answer"];
 }) {
   const W = useCircleWords();
-  const admin = useIsAdmin();
   const roles = hearthRoles(card);
   const quiet = roles.kind === "none";
   const stones = roles.kind === "shown" ? stonesOf(roles.roles) : [];
@@ -219,12 +216,9 @@ function HearthPage({
                 lede={W.pulseLede}
               />
             ) : null}
-            {/* How this circle's roles are going (the fold of /role-measures): administrators only. */}
-            {admin ? (
-              <Suspense fallback={null}>
-                <RoleMeasuresPanel circleId={circleId} />
-              </Suspense>
-            ) : null}
+            {/* How this circle's roles are going lives on its own page now (/admin/role-progress): a quiet door to it,
+                filtered to this circle, for an administrator and this circle's lead only. */}
+            {signedIn ? <CircleProgressLink circleId={circleId} /> : null}
           </div>
         </div>
       )}

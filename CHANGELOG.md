@@ -40,6 +40,58 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.5 (2026-11-28)
+
+### What changed for your village
+
+- **The helpful page fits a phone.** On a wrong address, each suggestion's place in the menu stays on one line on a phone, so the way home stays on the first screen.
+- **The glow waits for you.** When a link lands on part of a page, the glow now starts once that part is on screen and still, so a slow page no longer glows out of sight.
+- **How the menu is used reads plainly.** Suggestions say the count ("all 5 visits"), a past season is named as itself, single days and visits read as one, and two pages with the same name show their address.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.4.4 is safe.
+
+---
+
+## 1.4.4 (2026-11-27)
+
+### What changed for your village
+
+- **A helpful page when an address is wrong.** A mistyped or old address now offers up to three pages the reader may open, nearest first, each with where it sits in the menu, and a gold door home. A visitor is never offered member or admin pages.
+- **You land where a link points.** Following a link to a part of a page gives that part a short, quiet glow, and a still outline with reduced motion. Focus never moves.
+- **How the menu is used.** Admins get a "How the menu is used" tab: the most opened pages this season or a past one, the pages no one opened, and gentle suggestions once there are enough visits to read.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Page visits the village already counts are read, and going back to 1.4.3 is safe.
+
+---
+
+## 1.4.3 (2026-11-27)
+
+### What changed for your village
+
+- **How roles are going, its own page.** Admins and circle leads open `/admin/role-progress` from a new button on admin Today, from each circle's page, or from the menu. It tracks role applications live: how many sit at each stage right now and how long the oldest has waited, the median time at each stage, conversations booked, and the measures from before. Admins see every circle and a circle lead sees their own. Counts only, no names. It no longer sits at the end of Circles, and the old addresses take you to the new page.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. The page reads stamps the village already keeps, so going back to 1.4.2 is safe.
+
+---
+
 ## 1.4.2 (2026-11-27)
 
 ### What changed for your village
