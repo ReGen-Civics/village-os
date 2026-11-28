@@ -22,7 +22,7 @@
  * on the admin workspace, which is why it sits in client/src/components/admin
  * where the gray scale is allowed.
  */
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { Activity } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
@@ -45,6 +45,10 @@ import { GoLiveCard } from "@/components/modules/GoLiveCard";
 import SetupNeeded from "@/components/modules/SetupNeeded";
 import ConsentCard from "@/components/modules/ConsentCard";
 import { switchInOrder } from "@/components/modules/switchModules";
+import { moduleMenuFor, type MenuChoice } from "@shared/moduleMenu";
+import { saveMenuChoices } from "@/lib/moduleMenuApi";
+// "In the menu as" and "Where" while a module is turned on (the lead, 27 Nov 2026), with the menu's rules, in its own chunk.
+const MenuPlaceStep = lazy(() => import("@/components/admin/MenuPlaceStep"));
 import { POOL_REASON_COPY, TIER_PILL } from "@shared/moduleCatalog";
 import { healthLine } from "@shared/moduleHealthLine";
 import {
@@ -95,6 +99,14 @@ export default function ModuleStewardPanel({
   const token = authToken() ?? "";
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<ModuleLifecycle | null>(null);
+  // Turning on from off with menu entries to name and place first: the rung pressed, until confirmed.
+  const [placing, setPlacing] = useState<ModuleLifecycle | null>(null);
+  const [menuChoices, setMenuChoices] = useState<MenuChoice[]>([]);
+  const [menuAllowed, setMenuAllowed] = useState(true);
+  const onMenuChoices = useCallback((c: MenuChoice[], allowed: boolean) => {
+    setMenuChoices(c);
+    setMenuAllowed(allowed);
+  }, []);
   const [detailOpen, setDetailOpen] = useState(false);
   const [clearAsk, setClearAsk] = useState(false);
   const { settingsOpen, setSettingsOpen, focusKey, setFocusKey, clearFocusKey } = useModuleDeepLink(true);
@@ -109,6 +121,7 @@ export default function ModuleStewardPanel({
      dependencies first; a module that touches money asks for the card. */
   const move = async (to: ModuleLifecycle) => {
     setPending(null);
+    setPlacing(null);
     const plan = widens(lifecycle, to) ? turnOnPlan([m.id], to, planRows) : [{ ...m, lifecycle } as PlanModule];
     setBusy(true);
     const out = await switchInOrder(plan, to);
@@ -117,14 +130,32 @@ export default function ModuleStewardPanel({
       toast.error(out.refused.id === m.id ? out.refused.message : `${out.refused.name}: ${out.refused.message}`);
     } else {
       toast.success(`${m.name} is now ${LIFECYCLE_LABEL[to].toLowerCase()}`);
+      // Its menu name and place, saved the way the menu saves (lib/moduleMenuApi.ts); kept as they were, nothing is written.
+      if (lifecycle === "off" && menuChoices.length) {
+        const name = m.name;
+        const saved = await saveMenuChoices(menuChoices, t({ message: `Menu name and place for ${name}`, context: "ModuleStewardPanel: the proposal's summary for a menu name and place" }));
+        if (!saved.ok) {
+        const why = saved.message;
+        toast.error(t({ message: `It is on. Its menu name and place did not save: ${why}`, context: "ModuleStewardPanel: the menu choice was refused" }));
+      }
+        else if (saved.how === "proposed") toast.message(t({ message: "Its menu name and place wait for review in Admin, Proposals.", context: "ModuleStewardPanel: the menu choice was filed as a proposal" }));
+      }
     }
     onChanged();
   };
 
-  const press = (to: ModuleLifecycle) => {
-    if (to === lifecycle) return;
+  const arriving = (to: ModuleLifecycle) => (lifecycle === "off" && to !== "off" ? turnOnPlan([m.id], to, planRows).filter((x) => (x.lifecycle ?? "off") === "off").map((x) => x.id) : []);
+  const consentOr = (to: ModuleLifecycle) => {
     if (m.legalReview && lifecycle === "off" && to !== "off") setPending(to);
     else void move(to);
+  };
+  const press = (to: ModuleLifecycle) => {
+    if (to === lifecycle) return;
+    // A module that brings a menu entry is named and placed before it comes on, beside the funds card when it has one.
+    const withMenu = arriving(to).some((id) => moduleMenuFor(id).length > 0);
+    if (withMenu) setPlacing(to);
+    if (withMenu && !(m.legalReview && lifecycle === "off")) return;
+    consentOr(to);
   };
 
   const clearExamples = async () => {
@@ -278,9 +309,25 @@ export default function ModuleStewardPanel({
         {lifecycle === "off" && viewer.canSwitch && <p className="mt-1 text-sm text-gray-600"><Trans context="ModuleStewardPanel, p">Turn it on in preview to look before anyone else does. You go live from here when it is ready.</Trans></p>}
       </div>
 
+      {placing && (
+        <div className="mt-3 space-y-3" data-testid="turn-on-menu-step">
+          <Suspense fallback={null}>
+            <MenuPlaceStep ids={arriving(placing)} onChoices={onMenuChoices} />
+          </Suspense>
+          {!pending && <div className="flex flex-wrap gap-2">
+            <button type="button" disabled={busy || !menuAllowed} onClick={() => consentOr(placing)} className="min-h-[44px] rounded-lg bg-teal-deep px-5 text-sm font-semibold text-white disabled:opacity-40">
+              <Trans context="ModuleStewardPanel, button: confirm turning a module on with its menu name and place">Turn on</Trans>
+            </button>
+            <button type="button" onClick={() => setPlacing(null)} className="min-h-[44px] rounded-lg border border-border bg-background px-4 text-sm font-medium text-foreground">
+              <Trans context="ModuleStewardPanel, button">Not now</Trans>
+            </button>
+          </div>}
+        </div>
+      )}
+
       {pending && (
         <div className="mt-3">
-          <ConsentCard names={[m.name]} action="Turn on" busy={busy} onConfirm={() => move(pending)} onCancel={() => setPending(null)} />
+          <ConsentCard names={[m.name]} action="Turn on" busy={busy || !menuAllowed} onConfirm={() => (menuAllowed ? move(pending) : undefined)} onCancel={() => { setPending(null); setPlacing(null); }} />
         </div>
       )}
 

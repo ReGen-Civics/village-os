@@ -112,6 +112,8 @@ export interface SearchDeps extends Pick<AppDeps, "authedUser" | "isAdmin" | "ma
   villageName(): string;
   /** The village's word for what a member signs (`project.commitmentName`), for that page's name. */
   commitmentName(): string;
+  /** The village's own names for its menu entries, by address (the menu document's `labels`), so search says them. */
+  menuNames?(): Readonly<Record<string, string>>;
   /** The village guide's stored name (`workWithUs.assistantName`). */
   villageGuideName(): unknown;
   noteAssistantUsage(mode: string, model: string, call: AssistantResult, userId: string | null, path?: AssistantPath): Promise<void>;
@@ -197,7 +199,7 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
 
   const lifecycle = deps.lifecycle ?? effectiveLifecycle;
   const served = deps.storyServed ?? storyServed;
-  const words = { commitment: deps.commitmentName() };
+  const words = { commitment: deps.commitmentName(), names: deps.menuNames?.() ?? {} };
   for (const p of FIND_PAGES) {
     if (!audienceAdmits(p.audience, r)) continue;
     if (p.module && !lifecycleAdmits(lifecycle(p.module), r)) continue;

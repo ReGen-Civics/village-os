@@ -43,10 +43,13 @@ function probePatterns(): RegExp[] {
   if (!line) throw new Error("The Dockerfile's runtime-import probe was not found. Update this reader to its new shape.");
   const list = /for\(const re of \[(.+?)\]\)\{let m;/.exec(line);
   if (!list) throw new Error("The probe's list of patterns was not found on its line. Update this reader to its new shape.");
-  // The Dockerfile is this repository's own file, and these are regular expression literals.
-  const patterns = new Function(`return [${list[1]}];`)() as unknown[];
-  if (patterns.length < 3 || !patterns.every((p) => p instanceof RegExp)) throw new Error("The probe's patterns did not read as regular expressions.");
-  return patterns as RegExp[];
+  // Three regular expression literals, each `/source/g`, separated by commas. Read as text and never run as
+  // code: the first test below fails if a pattern stops seeing a real import, so a misread cannot pass quietly.
+  const text = list[1];
+  if (!text.startsWith("/") || !text.endsWith("/g")) throw new Error("The probe's patterns are no longer three /source/g literals. Update this reader to their new shape.");
+  const sources = text.slice(1, -"/g".length).split("/g,/");
+  if (sources.length < 3) throw new Error("The probe's patterns did not read as three regular expressions.");
+  return sources.map((source) => new RegExp(source, "g"));
 }
 
 /** Every capture the probe would make in a text, with a little of what surrounds it. */

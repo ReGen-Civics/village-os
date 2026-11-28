@@ -165,6 +165,8 @@ export default function TalkItOut({
         busy={busy}
         label={t({ message: "Your words to the guide", context: "talk it out: input label" })}
         minRows={2}
+        // A reply or a draft landed above: Send stays in sight while the box keeps focus.
+        follow={`${lines.length}:${offer ? 1 : 0}`}
         sendLabel={t({ message: "Send", context: "talk it out: sends your words" })}
       />
     </section>

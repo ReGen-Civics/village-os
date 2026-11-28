@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.4.8 (2026-11-28)
+
+### What changed for your village
+
+- **A calmer review list.** On the admin review page each queue shows its first rows with "Show all", blocked items come first with their reason, a queue that did not load reads "unknown" and never zero, and Sera's differences are one row that opens her list. Reports, reported photographs, departures and invitation requests join the list, each shown only to the people who could already open it. Every row carries a tag for where it came from, and the tags filter the list.
+- **One count of what waits on you.** The review list, admin Home and the menu's small count now read the same numbers, counted before the list is cut into pages.
+- **Proposed changes live in the review list.** The page of batches an agent proposes is now the review list's Batches view. The old address still opens it.
+- **Admin has fewer thin tabs.** Four small admin tabs fold into the controls they belonged to, old addresses land in the right place, and five broken links and labels are fixed.
+- **A module's menu entry is the village's to name and place.** Turning a module on shows "In the menu as" and "Where", prefilled with the defaults. Admin's Menu page has a "Module entries" list to rename or move any of them later. Menu rules still hold, and a renamed page is found in search under both names.
+- **Admin search knows every admin act.** A registry of admin acts feeds admin search and Find anything for admins, so a function is found by what it does.
+- **Chat boxes on a phone.** After a reply lands, Send stays above the keyboard. Wide touch screens and very short screens are handled, and pinch-zoom is no longer read as a keyboard.
+- **The role-access notice opens the season plan.**
+- **Under the hood.** A test records who may call each admin route and fails when a gate changes.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Menu names and places are kept in the menu settings the village already has. Going back to 1.4.7 is safe.
+
+---
+
 ## 1.4.7 (2026-11-28)
 
 ### What changed for your village
@@ -50,7 +74,8 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **Chat boxes that grow, with voice.** Every chat with the guide or a companion grows with the message up to about two thirds of the screen, then scrolls inside. The mic fills the box and never sends by itself. Send stays above a phone's keyboard. A draft is kept for its writer only and cleared on sign-out.
 - **Where a village stands on its way to launch.** Journey to Launch and the admin strip say plainly where the village stands, and show only the buttons the village can use. A village that is already issuing is told so, with the way to change it by its highest vote.
 - **Renewal notices open the season plan.** "Your role carries on into the next moon" linked to an address with no page. It opens your plan now, and notices already sent do too.
-- **Under the hood.** The Admin Garden's look arrives as pieces nothing uses yet, with its paintings, and a test now records who may call each admin route.
+- **A role card can link to its companion.** A role card may carry an optional "Talk to this role's companion" link.
+- **Under the hood.** The Admin Garden's look arrives as pieces nothing uses yet, with its paintings.
 
 ### What you must do
 
