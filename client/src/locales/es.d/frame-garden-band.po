@@ -1,0 +1,209 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, nothing waits"
+msgid "The village is quiet this afternoon. Nothing needs you."
+msgstr "La aldea está tranquila esta tarde. Nada le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, nothing waits"
+msgid "The village is quiet this morning. Nothing needs you."
+msgstr "La aldea está tranquila esta mañana. Nada le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, nothing waits"
+msgid "The village is quiet tonight. Nothing needs you."
+msgstr "La aldea está tranquila esta noche. Nada le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, nothing waits, brief"
+msgid "All clear."
+msgstr "Todo en orden."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, one place waits"
+msgid "{name} this afternoon: one place needs you."
+msgstr "{name} esta tarde: un lugar le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, one place waits"
+msgid "{name} this morning: one place needs you."
+msgstr "{name} esta mañana: un lugar le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, one place waits"
+msgid "{name} tonight: one place needs you."
+msgstr "{name} esta noche: un lugar le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, one place waits, brief"
+msgid "1 place needs you."
+msgstr "1 lugar le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, several places wait"
+msgid "{name} this afternoon: {count} places need you."
+msgstr "{name} esta tarde: {count} lugares le necesitan."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, several places wait"
+msgid "{name} this morning: {count} places need you."
+msgstr "{name} esta mañana: {count} lugares le necesitan."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, several places wait"
+msgid "{name} tonight: {count} places need you."
+msgstr "{name} esta noche: {count} lugares le necesitan."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, several places wait, brief"
+msgid "{n} places need you."
+msgstr "{n} lugares le necesitan."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden band, where the village has no name of its own yet"
+msgid "The village"
+msgstr "La aldea"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden map legend"
+msgid "A lit lantern marks a place that needs you."
+msgstr "Un farol encendido marca un lugar que le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden map legend, brief"
+msgid "Lit: needs you."
+msgstr "Encendido: le necesita."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden map legend, places not built"
+msgid "A place under scaffolding is not set up yet."
+msgstr "Un lugar con andamios aún no está preparado."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden map legend, places not built, brief"
+msgid "Scaffolding: not set up."
+msgstr "Andamios: sin preparar."
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden view switch"
+msgid "Dashboard"
+msgstr "Tablero"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden view switch"
+msgid "Guide first"
+msgstr "La guía primero"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden view switch"
+msgid "What leads this page"
+msgstr "Qué va primero en esta página"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "eight"
+msgstr "ocho"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "five"
+msgstr "cinco"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "four"
+msgstr "cuatro"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "nine"
+msgstr "nueve"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "seven"
+msgstr "siete"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "six"
+msgstr "seis"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "ten"
+msgstr "diez"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "three"
+msgstr "tres"
+
+# needs-native-review: the garden's band, its switches and its two voices, 28 Nov 2026
+msgctxt "garden, a small count said as a word"
+msgid "two"
+msgstr "dos"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Beachside"
+msgstr "Junto a la playa"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Forest"
+msgstr "Bosque"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Terraced hills"
+msgstr "Colinas en terrazas"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Valley"
+msgstr "Valle"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker"
+msgid "Pick the ground behind your garden. It changes only your own screen."
+msgstr "Elija el terreno detrás de su jardín. Solo cambia su propia pantalla."
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker"
+msgid "The ground behind your garden"
+msgstr "El terreno detrás de su jardín"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker, brief"
+msgid "Your ground. Only your screen."
+msgstr "Su terreno. Solo su pantalla."
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden place, its lantern is dark"
+msgid "Nothing waiting."
+msgstr "Nada en espera."
+
+# needs-native-review: the way to the old admin dashboard and the way back, 28 Nov 2026
+msgctxt "garden band, the way to the old admin"
+msgid "See the old admin dashboard"
+msgstr "Ver el panel de administración anterior"
+
+# needs-native-review: the way to the old admin dashboard and the way back, 28 Nov 2026
+msgctxt "garden band, the way to the old admin, brief"
+msgid "Old admin"
+msgstr "Administración anterior"
+
+# needs-native-review: the way to the old admin dashboard and the way back, 28 Nov 2026
+msgctxt "old admin page, the way back to the garden"
+msgid "Return to the garden"
+msgstr "Volver al jardín"
+
+# needs-native-review: the way to the old admin dashboard and the way back, 28 Nov 2026
+msgctxt "old admin page, the way back to the garden, brief"
+msgid "The garden"
+msgstr "El jardín"

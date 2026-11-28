@@ -52,7 +52,46 @@ export function gardenSpriteUrl(place: GardenPlaceKey, scaffolding = false): str
 export const GARDEN_GUIDE_FILE = "guide.webp";
 export const GARDEN_GUIDE_URL = `${GARDEN_ART_URL}/${GARDEN_GUIDE_FILE}`;
 
-/** Every file the folder must hold: twenty sprites and the guide's portrait. */
+/**
+ * THE FOUR PAINTED GROUNDS (the founder, 28 Nov 2026: "Let users pick forest, valley, or terraced
+ * hills and also a beachside"). The land behind the places, where a village has no land art of its
+ * own. Each person picks one for their own screen, and only the picked one is ever fetched.
+ *
+ * Everything that looks a ground up is keyed by this union, so a table that misses one does not
+ * compile. The names are plain: no village's name is in a file name.
+ */
+export const GARDEN_GROUND_KEYS = ["forest", "valley", "hills", "beach"] as const;
+
+export type GardenGroundKey = (typeof GARDEN_GROUND_KEYS)[number];
+
+/** The ground for a person who has not picked, and for a kept value that is no ground. */
+export const DEFAULT_GARDEN_GROUND: GardenGroundKey = "forest";
+
+/** Every ground is painted to the land's own shape, 10 wide to 9 tall, at this size in pixels. */
+export const GARDEN_GROUND_WIDTH = 1280;
+export const GARDEN_GROUND_HEIGHT = 1152;
+
+/** Whether a value is one of the four grounds. */
+export function isGardenGround(v: unknown): v is GardenGroundKey {
+  return typeof v === "string" && (GARDEN_GROUND_KEYS as readonly string[]).includes(v);
+}
+
+/** A kept value read back as a ground. Anything unknown is the default. */
+export function readGardenGround(v: unknown): GardenGroundKey {
+  return isGardenGround(v) ? v : DEFAULT_GARDEN_GROUND;
+}
+
+/** A ground's file name: `ground-<key>.webp`. */
+export function gardenGroundFile(ground: GardenGroundKey): string {
+  return `ground-${ground}.webp`;
+}
+
+/** A painted ground, for the land behind the places. */
+export function gardenGroundUrl(ground: GardenGroundKey): string {
+  return `${GARDEN_ART_URL}/${gardenGroundFile(ground)}`;
+}
+
+/** Every file the folder must hold: twenty sprites, the guide's portrait and the four grounds. */
 export function gardenArtFiles(): string[] {
-  return [...GARDEN_PLACE_KEYS.flatMap((k) => [gardenSpriteFile(k), gardenSpriteFile(k, true)]), GARDEN_GUIDE_FILE];
+  return [...GARDEN_PLACE_KEYS.flatMap((k) => [gardenSpriteFile(k), gardenSpriteFile(k, true)]), GARDEN_GUIDE_FILE, ...GARDEN_GROUND_KEYS.map(gardenGroundFile)];
 }

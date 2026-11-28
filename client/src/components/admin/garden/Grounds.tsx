@@ -8,18 +8,42 @@
  * container query in garden.css, so it follows the room the Grounds has, not
  * the window.
  *
- * THE LAND (Rye, 27 Nov 2026): each village's own land image where it has one
- * (`landImageUrl`), and a painted default otherwise. The default is painted in
- * garden.css from the garden's own tokens and shows no geography: one
- * village's land is never drawn under another village.
+ * THE LAND, IN THREE LAYERS (Rye, 27 and 28 Nov 2026). Lowest, and always
+ * there, the land's own painted colours: garden.css draws them from the
+ * garden's tokens, they are no picture, and nothing can fail to load. Over
+ * them, one picture: the village's own land art where it has some
+ * (`landImageUrl`), otherwise the painted ground this person picked for their
+ * own screen (./groundPick.tsx; forest until they pick). Over that, the
+ * places, each a lantern and a name in the page itself.
+ *
+ * SO THE LAND IS NEVER BLANK. While the picture loads, or if it never
+ * arrives, the land is its painted colours and every place still shows its
+ * lantern and its name. Only the one picture drawn is ever fetched, and where
+ * the places are rows (a phone) a picked ground is not drawn or fetched at
+ * all. A stock ground shows no village's geography: it is a backdrop a person
+ * chose, and one village's land is never drawn under another village.
+ *
+ * THE PICKER stands above the land, at the end of the row the page's heading
+ * starts (`heading`), so it takes almost no height from the map. It is not
+ * drawn where the village has its own land art (there is nothing to pick) and
+ * not where the places are rows.
+ *
+ * COMPACT: the same map, small, for a narrow column: every place on its own
+ * spot, each plaque its lantern and its name and nothing more. Ask for it with
+ * `compact`; the frame asks for it by itself while the guide's dock is
+ * expanded (garden.css), so on a laptop the land is still seen as land beside
+ * the conversation. What a plaque no longer shows is still in the place's
+ * spoken name ("The Hall, 3 waiting").
  *
  * DESK (lens B): the same places as a dense list.
  *
  * A place the caller leaves out is not drawn: a new village starts as bare
  * land and one fire.
  */
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
+import { gardenGroundUrl } from "@shared/gardenArt";
+import { GroundPicker, useGardenGround } from "./groundPick";
 import Place from "./Place";
 import { GARDEN_PLACES, type GardenPlaceKey } from "./places";
 import "./garden.css";
@@ -43,10 +67,20 @@ export interface GardenPlaceState {
 export interface GroundsProps {
   /** The places to draw, in reading order. */
   places: readonly GardenPlaceState[];
-  /** The village's own land image. Left out, the painted default. */
+  /**
+   * The village's own land art, where it has some. It comes before any person's pick, and the ground picker is not
+   * drawn. Left out (or empty), the land is the painted ground this person picked, forest until they pick.
+   */
   landImageUrl?: string;
+  /**
+   * What stands above the land where it starts: the page's own heading and its legend. Pass them here and they share
+   * one row with the ground picker, inside the map's own width, so the picker takes almost no height from the map.
+   */
+  heading?: ReactNode;
   /** What the map is, for a screen reader. Left out: "The grounds". */
   label?: string;
+  /** The small map: each plaque its lantern and its name only. Left out, the frame still asks for it while the dock is expanded. */
+  compact?: boolean;
   className?: string;
 }
 
@@ -89,13 +123,23 @@ export function groundsPaths(places: readonly GardenPlaceKey[]): string[] {
     });
 }
 
-export function Grounds({ places, landImageUrl, label, className = "" }: GroundsProps) {
+export function Grounds({ places, landImageUrl, heading, label, compact = false, className = "" }: GroundsProps) {
   const { t } = useLingui();
+  const { ground, setGround } = useGardenGround();
   const shown = once(places);
-  const land = landImageUrl ? ({ "--gd-land-image": cssUrl(landImageUrl) } as CSSProperties) : undefined;
+  const own = landImageUrl?.trim() ? landImageUrl : undefined;
+  // ONE picture, named once: the village's own, or the ground this person picked. The stylesheet lays it over the
+  // land's painted colours, so a picture that is slow or missing leaves the land as it always was.
+  const land = { "--gd-land-image": cssUrl(own ?? gardenGroundUrl(ground)) } as CSSProperties;
   return (
-    <nav aria-label={label ?? t({ message: "The grounds", context: "garden lens" })} className={`gd-grounds ${className}`.trim()}>
-      <div className="gd-land rounded-2xl" data-land={landImageUrl ? "own" : "painted"} style={land}>
+    <nav aria-label={label ?? t({ message: "The grounds", context: "garden lens" })} className={`gd-grounds ${className}`.trim()} data-compact={compact ? "true" : undefined} data-picker={own ? undefined : "true"}>
+      {heading || !own ? (
+        <div className="gd-grounds-head">
+          {heading ? <div className="gd-grounds-heading">{heading}</div> : null}
+          {own ? null : <GroundPicker ground={ground} onChange={setGround} />}
+        </div>
+      ) : null}
+      <div className="gd-land rounded-2xl" data-land={own ? "own" : "ground"} data-ground={own ? undefined : ground} style={land}>
         <svg className="gd-paths" aria-hidden="true" focusable="false" viewBox="0 0 100 100" preserveAspectRatio="none">
           {groundsPaths(shown.map((p) => p.place)).map((d) => (
             <path key={d} d={d} />
