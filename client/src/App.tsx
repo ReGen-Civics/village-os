@@ -578,6 +578,8 @@ function Router() {
       {/* The season, one page. The three pages it replaced redirect to its tabs, keeping the query (?renew=, ?season=). */}
       <Route path="/season" component={Season} />
       <Route path="/season-plans/mine">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
+      {/* Notices already sent link to /season-plan, an address that never had a page (found 28 Nov 2026). It opens the plan. */}
+      <Route path="/season-plan">{() => <Redirect to={`/season${window.location.search}#plan`} replace />}</Route>
       <Route path="/season-plans">{() => <Redirect to={`/season${window.location.search}#everyone`} replace />}</Route>
       <Route path="/season-places/circles" component={SeasonCircles} />
       <Route path="/season-places">{() => <Redirect to={`/season${window.location.search}#join`} replace />}</Route>
