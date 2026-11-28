@@ -18,6 +18,7 @@ import type { ReactElement } from "react";
 import { GARDEN_PLACE_KEYS, gardenSpriteUrl } from "@shared/gardenArt";
 import { Circle, Desk, Fireflies, Garden, GardenFrame, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, useGardenDock, useGardenLens, ViewSwitch, type GardenPlaceState, type Stone } from "./index";
 import { cssUrl, groundsPaths } from "./Grounds";
+import { dayPartOf, DEFAULT_GUIDE_SPEAKING, GARDEN_SPEAKING_KEY, GUIDE_SPEAKING, readGuideSpeaking, useGardenWords, useGuideSpeaking } from "./speaking";
 import { forgetPageCopy } from "./gardenMemory";
 import { GARDEN_PLACES } from "./places";
 
@@ -709,3 +710,166 @@ describe("the band's two switches: what leads the page, and the lens", () => {
     expect(lens.className.split(/\s+/)).toEqual(expect.arrayContaining(["hidden", "w-fit", "lg:flex"]));
   });
 });
+
+/**
+ * HOW THE GARDEN SPEAKS (the founder, 28 Nov 2026: "Go with warm and plain with the brief and quiet toggle"). Warm
+ * and plain everywhere; brief and quiet is the `quiet` setting of each person's speaking dial: the same facts in the
+ * fewest words.
+ */
+describe("the speaking dial, and the garden's own lines in both forms", () => {
+  function Probe({ village = "North Wind", needing = 4, hour = 20 }: { village?: string; needing?: number; hour?: number }) {
+    const dial = useGuideSpeaking();
+    const words = useGardenWords({ now: new Date(2026, 10, 28, hour) });
+    return (
+      <div>
+        <p data-testid="setting">{dial.speaking}</p>
+        <p data-testid="band">{words.band({ village, needing })}</p>
+        <p data-testid="legend">{words.legend}</p>
+        <p data-testid="unbuilt">{words.unbuilt}</p>
+        <button type="button" aria-pressed={dial.quiet} onClick={() => dial.setQuiet(!dial.quiet)}>
+          Brief and quiet
+        </button>
+        <button type="button" onClick={() => dial.setSpeaking("walk")}>
+          walk with me
+        </button>
+      </div>
+    );
+  }
+  const text = (id: string) => screen.getByTestId(id).textContent;
+  const toggle = () => fireEvent.click(screen.getByRole("button", { name: "Brief and quiet" }));
+
+  it("holds the three settings the founder named, opens on speaking at decisions, and reads anything else as that", () => {
+    expect(GUIDE_SPEAKING).toEqual(["quiet", "decisions", "walk"]);
+    expect(DEFAULT_GUIDE_SPEAKING).toBe("decisions");
+    for (const junk of [undefined, null, "", "QUIET", "loud", 3, {}]) expect(readGuideSpeaking(junk)).toBe("decisions");
+    show(<Probe />);
+    expect(text("setting")).toBe("decisions");
+  });
+
+  it("WARM AND PLAIN: the band names the village, the part of the day and how many places need the person", () => {
+    show(<Probe />);
+    expect(text("band")).toBe("North Wind tonight: four places need you.");
+    expect(text("legend")).toBe("A lit lantern marks a place that needs you.");
+    expect(text("unbuilt")).toBe("A place under scaffolding is not set up yet.");
+  });
+
+  it("takes the part of the day from the clock: morning from five, afternoon from noon, evening from five", () => {
+    expect([4, 5, 11, 12, 16, 17, 23, 0].map(dayPartOf)).toEqual(["evening", "morning", "morning", "afternoon", "afternoon", "evening", "evening", "evening"]);
+    const morning = show(<Probe hour={8} />);
+    expect(text("band")).toBe("North Wind this morning: four places need you.");
+    morning.unmount();
+    const afternoon = show(<Probe hour={14} />);
+    expect(text("band")).toBe("North Wind this afternoon: four places need you.");
+    afternoon.unmount();
+    show(<Probe hour={8} needing={0} />);
+    expect(text("band")).toBe("Nothing needs you this morning. The village is steady.");
+  });
+
+  it("says one place as one, a count past ten as a number, and nothing waiting as steady", () => {
+    const one = show(<Probe needing={1} />);
+    expect(text("band")).toBe("North Wind tonight: one place needs you.");
+    one.unmount();
+    const many = show(<Probe needing={12} />);
+    expect(text("band")).toBe("North Wind tonight: 12 places need you.");
+    many.unmount();
+    const none = show(<Probe needing={0} />);
+    expect(text("band")).toBe("Nothing needs you tonight. The village is steady.");
+    none.unmount();
+    // A count that is no count is nothing waiting, never a line with NaN in it.
+    show(<Probe needing={Number.NaN} />);
+    expect(text("band")).toBe("Nothing needs you tonight. The village is steady.");
+  });
+
+  it("uses the village's own name, and a plain one while it has none: no village's name is written into the platform", () => {
+    show(<Probe village="  " />);
+    expect(text("band")).toBe("The village tonight: four places need you.");
+  });
+
+  it("BRIEF AND QUIET: the one toggle turns every line to its brief form, and back again", () => {
+    show(<Probe />);
+    toggle();
+    expect(text("setting")).toBe("quiet");
+    expect(screen.getByRole("button", { name: "Brief and quiet" }).getAttribute("aria-pressed")).toBe("true");
+    expect(text("band")).toBe("4 places need you.");
+    expect(text("legend")).toBe("Lit: needs you.");
+    expect(text("unbuilt")).toBe("Scaffolding: not set up.");
+    toggle();
+    expect(text("setting")).toBe("decisions");
+    expect(text("band")).toBe("North Wind tonight: four places need you.");
+  });
+
+  it("BRIEF AND QUIET: one place, and nothing waiting", () => {
+    const one = show(<Probe needing={1} />);
+    toggle();
+    expect(text("band")).toBe("1 place needs you.");
+    one.unmount();
+    show(<Probe needing={0} />);
+    expect(text("band")).toBe("All clear.");
+  });
+
+  it("is remembered in the person's own browser, and a person who never chose leaves no trace", () => {
+    const first = show(<Probe />);
+    expect(localStorage.getItem(GARDEN_SPEAKING_KEY)).toBeNull();
+    toggle();
+    expect(localStorage.getItem(GARDEN_SPEAKING_KEY)).toBe("quiet");
+    first.unmount();
+    forgetPageCopy();
+    const again = show(<Probe />);
+    expect(text("setting")).toBe("quiet");
+    // Back to the default is kept as nothing at all.
+    toggle();
+    expect(localStorage.getItem(GARDEN_SPEAKING_KEY)).toBeNull();
+    again.unmount();
+  });
+
+  it("is each person's own where two share a browser", () => {
+    const ana = render(
+      <I18nProvider i18n={i18n}>
+        <Garden personKey="ana">
+          <Probe />
+        </Garden>
+      </I18nProvider>,
+    );
+    toggle();
+    expect(localStorage.getItem(`${GARDEN_SPEAKING_KEY}:ana`)).toBe("quiet");
+    ana.unmount();
+    render(
+      <I18nProvider i18n={i18n}>
+        <Garden personKey="ben">
+          <Probe />
+        </Garden>
+      </I18nProvider>,
+    );
+    expect(text("setting")).toBe("decisions");
+    expect(text("band")).toBe("North Wind tonight: four places need you.");
+  });
+
+  it("keeps every reader on the page in step, and reads an unknown kept value as the default", () => {
+    localStorage.setItem(GARDEN_SPEAKING_KEY, "loud");
+    forgetPageCopy();
+    show(
+      <>
+        <Probe />
+        <StatusBandReader />
+      </>,
+    );
+    expect(text("setting")).toBe("decisions");
+    toggle();
+    // The band a host draws from the same words follows the same dial.
+    expect(within(screen.getByRole("region", { name: "Where the village stands" })).getByText("4 places need you.")).toBeTruthy();
+  });
+
+  it("holds `walk` as data too, and it speaks as the default does until something follows from it", () => {
+    show(<Probe />);
+    fireEvent.click(screen.getByRole("button", { name: "walk with me" }));
+    expect(text("setting")).toBe("walk");
+    expect(localStorage.getItem(GARDEN_SPEAKING_KEY)).toBe("walk");
+    expect(text("band")).toBe("North Wind tonight: four places need you.");
+  });
+});
+
+/** A second reader of the dial on the same page: the band, as a host would write it. */
+function StatusBandReader() {
+  const words = useGardenWords({ now: new Date(2026, 10, 28, 20) });
+  return <StatusBand label={words.band({ village: "North Wind", needing: 4 })} />;
+}
