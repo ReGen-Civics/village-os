@@ -24,10 +24,14 @@
  * visitor opens (dist headroom pass, 23 Nov 2026).
  *
  * THE GUIDE'S DOCK AND THE ADMIN GARDEN (28 Nov 2026). Everything in
- * `components/admin/dock/` and `components/admin/garden/` is drawn only behind
- * an admin page: Admin itself, and the road to launch. None of it rides a
- * shared group, by the folder it lives in, so a new file there needs no line
- * here (ADMIN_ONLY_HOME).
+ * `components/admin/dock/`, `components/admin/garden/` and the garden's mount
+ * on /admin (`components/admin/gardenMount/`) is drawn only behind an admin
+ * page: Admin itself, and the road to launch. None of it rides a shared
+ * group, by the folder it lives in, so a new file there needs no line here
+ * (ADMIN_ONLY_HOME). The table of the garden's places and art
+ * (`shared/gardenArt.ts`) lives outside those folders and only they import
+ * it, so it is named beside them: left free, the build could put it in a
+ * shared group a member page loads.
  *
  * AND A DOOR TO ONE OF THESE IS HELD OUT TOO. The helper's host
  * (`components/admin/AdminHelperHost.tsx`) has two importers and is small, so
@@ -50,8 +54,11 @@ export const PRIVILEGED_PAGE = /client[\\/]src[\\/]pages[\\/](?:Treasury|Admin|M
 /** A component that carries one of those pages' powers, never a group member. */
 export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|roleCard[\\/]Waitlist(?:Admin|Letter)|treasury[\\/][^\\/]+)\.tsx$/;
 
-/** The guide's dock and the Admin Garden, by their folders: every file in them, the stylesheet included. */
-export const ADMIN_ONLY_HOME = /client[\\/]src[\\/]components[\\/]admin[\\/](?:dock|garden)[\\/]/;
+/**
+ * The guide's dock, the Admin Garden and the garden's mount, by their folders: every file in them, the
+ * stylesheet included. And the one table of theirs that lives in `shared/`.
+ */
+export const ADMIN_ONLY_HOME = /client[\\/]src[\\/]components[\\/]admin[\\/](?:dock|garden|gardenMount)[\\/]|shared[\\/]gardenArt\.ts$/;
 
 /** Whether this module may join a shared page or component group at all. */
 export function mayJoinSharedGroup(id: string): boolean {

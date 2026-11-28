@@ -34,6 +34,22 @@ describe("privileged pages never ride a shared page group", () => {
     expect(mayJoinSharedGroup("/repo/client/src/components/myMoon/MyMoon.tsx")).toBe(true);
   });
 
+  it("keeps the admin garden out: its look and its mount on /admin, and nothing beside them", () => {
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/gardenMount/AdminGardenShell.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\admin\\gardenMount\\AdminGardenShell.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/garden/Grounds.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/garden/StatusBand.tsx")).toBe(false);
+    // Its plain modules too: the place table and the memory helper were grouped with member pages by a rule that named only components.
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/garden/places.ts")).toBe(false);
+    expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\admin\\garden\\gardenMemory.ts")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/gardenMount/groundTabs.ts")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/shared/gardenArt.ts")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/shared/gardenArtOther.ts")).toBe(true);
+    // A neighbour whose name only starts the same is an ordinary admin component.
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/gardening/Other.tsx")).toBe(true);
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/HomeBase.tsx")).toBe(true);
+  });
+
   it("lets ordinary member pages and components group as before", () => {
     for (const name of ["Roles", "Events", "Badges", "Stay"]) expect(mayJoinSharedGroup(page(name)), name).toBe(true);
     expect(mayJoinSharedGroup("/repo/client/src/components/admin/TokensTab.test.tsx")).toBe(true);
