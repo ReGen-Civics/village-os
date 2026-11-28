@@ -390,6 +390,14 @@ export function actRoutes(acts: readonly AdminAct[]): { calls: Map<string, strin
   return { calls, reads };
 }
 
+/**
+ * Whether a route is a steward's by evidence: it sits under /api/admin/, the permission matrix shows it is admin's,
+ * or its own handler asks the admin question or names a power only a role gives.
+ */
+export function stewardsRoute(route: ScoreRoute, matrix: MatrixSnapshot): boolean {
+  return route.path.startsWith("/api/admin/") || matrixVerdict(matrix, routeKey(route.method, route.path)) === "admin" || stewardsByItsHandler(route) !== null;
+}
+
 /** Who answers for a route: an act that calls it, an act whose page reads it, a family that is not admin's, or nobody. */
 export function routeOwner(route: ScoreRoute, named: ReturnType<typeof actRoutes>, families: readonly NotAdminFamily[]): RouteOwner {
   const key = routeKey(route.method, route.path);

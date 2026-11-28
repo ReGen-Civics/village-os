@@ -65,8 +65,9 @@ export interface AdminAct extends Omit<AdminSearchEntry, "capability"> {
   route?: ActRoute;
   /**
    * The GET routes this act's page reads to draw itself, each a path exactly as Express registers it. A page that
-   * draws what a route returns answers for that route on the scoreboard (shared/gardenScore.ts). Name one only after
-   * finding the call in the page's own code; a route read by several pages is named by each.
+   * draws what a route returns answers for that route on the scoreboard (shared/gardenScore.ts). Never typed on a
+   * row: the registry adds it from shared/adminActs/reads.ts, which is derived from the client's own source. A
+   * route read by several pages is named by each.
    */
   reads?: readonly string[];
   fields?: readonly ActField[];

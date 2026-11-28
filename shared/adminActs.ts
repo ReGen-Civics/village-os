@@ -15,6 +15,7 @@
  *   power      what its own server door asks: a capability key, "admin" or "founder" (and `holder`, where a holder
  *              of a power passes that door beside an admin)
  *   route      the method and path it calls, exactly as Express registers it. Absent: a reading page
+ *   reads      the stewards' GET routes its page reads. Never typed: derived from the client (shared/adminActs/reads.ts)
  *   fields     the inputs it takes, by the key its route reads
  *   parity     the rows of the Admin Garden's parity ledger it covers (shared/adminActs/parity.ts), so the count
  *              of what the registry covers is read off the entries themselves
@@ -70,6 +71,7 @@ import { VARIABLES_BY_KEY, type VariableDef } from "./gameVariables";
 import { SEEDS_BY_ID } from "./guilds";
 import { neverProposed, variableNever } from "./proposedChanges";
 import { CONTROL_ACTS, DIAL_ACTS, DIAL_ROUTE, OUTSIDE_ACTS, SEED_ACTS, TAB_ACTS } from "./adminActs/derived";
+import { PATH_READS, TAB_READS } from "./adminActs/reads";
 import { CEIBA_ACTS } from "./adminActs/ceiba";
 import { FIRE_ACTS } from "./adminActs/fire";
 import { FRAME_ACTS } from "./adminActs/frame";
@@ -103,8 +105,19 @@ export const WRITTEN_ACTS: readonly AdminAct[] = [
   ...FRAME_ACTS,
 ];
 
+const ownRow = (table: Readonly<Record<string, readonly string[]>>, key: string): readonly string[] | undefined => (Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined);
+
+/**
+ * An act with the stewards' GET routes its page reads (shared/adminActs/reads.ts, derived from the client's source).
+ * A tab's page act carries its tab's. An act that lands on a page beside Admin carries that page's.
+ */
+function withReads(a: AdminAct): AdminAct {
+  const reads = a.tab ? (a.kind === "page" ? ownRow(TAB_READS, a.tab) : undefined) : a.path ? ownRow(PATH_READS, a.path.replace(/[?#].*$/, "")) : undefined;
+  return reads?.length ? { ...a, reads } : a;
+}
+
 /** Every admin act: the tabs, the pages beside Admin, the shipped controls, the written acts, the keys and the dials. */
-export const ADMIN_ACTS: readonly AdminAct[] = [...TAB_ACTS, ...OUTSIDE_ACTS, ...CONTROL_ACTS, ...WRITTEN_ACTS, ...SEED_ACTS, ...DIAL_ACTS];
+export const ADMIN_ACTS: readonly AdminAct[] = [...TAB_ACTS, ...OUTSIDE_ACTS, ...CONTROL_ACTS, ...WRITTEN_ACTS, ...SEED_ACTS, ...DIAL_ACTS].map(withReads);
 
 const BY_ID = new Map(ADMIN_ACTS.map((a) => [a.id, a]));
 const SHIPPED = new Map([...CONTROL_ENTRIES, ...OUTSIDE_ENTRIES].map((e) => [e.id, e]));
