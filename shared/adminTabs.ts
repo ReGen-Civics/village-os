@@ -21,8 +21,8 @@
 
 export type AreaId = "today" | "inbox" | "people" | "village" | "events" | "connections";
 
-/** The twelve places of the garden. The first ten are grounds a person walks to; Scarlet and the frame hold the rest. */
-export const ADMIN_PLACES = ["fire", "hall", "gate", "library", "greenhouse", "store", "tower", "spring", "stage", "ceiba", "scarlet", "frame"] as const;
+/** The twelve places of the garden. The first ten are grounds a person walks to; the guide and the frame hold the rest. */
+export const ADMIN_PLACES = ["fire", "hall", "gate", "library", "greenhouse", "store", "tower", "spring", "stage", "ceiba", "guide", "frame"] as const;
 export type AdminPlace = (typeof ADMIN_PLACES)[number];
 
 export interface AdminTabEntry {
@@ -47,7 +47,7 @@ export const ADMIN_TABS: AdminTabEntry[] = [
   entry("forum-moderation", "inbox", "hall", "Moderation", "Forum posts a member asked you to look at."),
   entry("message-reports", "inbox", "hall", "Message reports", "Messages a member asked you to look at."),
   entry("drafts", "inbox", "hall", "Her drafts", "Drafts waiting for a person to send or drop."),
-  entry("brain", "inbox", "scarlet", "Village brain", "What the assistant has learned for this village."),
+  entry("brain", "inbox", "guide", "Village brain", "What the assistant has learned for this village."),
   entry("failures", "inbox", "spring", "What is failing", "Work that did not go through, and what to do next."),
   entry("players", "people", "gate", "Players", "Everyone in the village game, and how far they have come."),
   entry("game-roles", "people", "gate", "Power groups", "Groups of permissions you can hand to people."),

@@ -77,7 +77,7 @@ import { GATE_ACTS } from "./adminActs/gate";
 import { GREENHOUSE_ACTS } from "./adminActs/greenhouse";
 import { HALL_ACTS } from "./adminActs/hall";
 import { LIBRARY_ACTS } from "./adminActs/library";
-import { SCARLET_ACTS } from "./adminActs/scarlet";
+import { GUIDE_ACTS } from "./adminActs/guide";
 import { SPRING_ACTS } from "./adminActs/spring";
 import { STAGE_ACTS } from "./adminActs/stage";
 import { STORE_ACTS } from "./adminActs/store";
@@ -99,7 +99,7 @@ export const WRITTEN_ACTS: readonly AdminAct[] = [
   ...SPRING_ACTS,
   ...STAGE_ACTS,
   ...CEIBA_ACTS,
-  ...SCARLET_ACTS,
+  ...GUIDE_ACTS,
   ...FRAME_ACTS,
 ];
 
