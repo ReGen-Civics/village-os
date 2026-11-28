@@ -4,11 +4,18 @@
  *
  * The board's routes ask for an admin (server/routes/journey.ts: `isJourney` is `isAdmin`). Read on 27 Nov 2026.
  */
-import { DELETE, POST, PUT, list, long, num, text, inPlace } from "./types";
+import { DELETE, POST, PUT, list, long, num, text, inPlace, type AdminAct } from "./types";
 
 const BOARD = "/project-history";
 
-export const STAGE_ACTS = inPlace("stage", [
+/**
+ * The board is a story page (shared/brochure.ts): a village serves it only while its story pages are on, and they
+ * start off. Every act on the board names it once, here, so a search offers them only where the page is served,
+ * exactly as Find anything offers the page itself (shared/findPages.ts). The milestones live on an Admin tab.
+ */
+const onTheBoard = (acts: AdminAct[]): AdminAct[] => acts.map((a) => (a.path === BOARD ? { ...a, brochure: BOARD } : a));
+
+export const STAGE_ACTS = onTheBoard(inPlace("stage", [
   {
     id: "stage.plan.save", parity: ["E8"], path: BOARD, power: "admin",
     title: "Change the village's plan",
@@ -117,4 +124,4 @@ export const STAGE_ACTS = inPlace("stage", [
     help: "A fixed list of doors to other pages, on the board.",
     synonyms: ["quick links", "shortcuts", "doors"],
   },
-]);
+]));

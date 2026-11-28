@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 import { buildFindIndex, findEntryOf, register, type SearchDeps } from "./search";
 import { ADMIN_ACT_ENTRIES, WRITTEN_ACTS, adminAct, actSearchEntry } from "../../shared/adminActs";
 import { TAB_ACTS } from "../../shared/adminActs/derived";
+import { STAGE_ACTS } from "../../shared/adminActs/stage";
 import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, adminSearchHref } from "../../shared/adminSearch";
 import { ADMIN_TABS } from "../../shared/adminTabs";
 import { rankFind, type FindEntry, type FindIndex } from "../../shared/findAnything";
@@ -23,7 +24,7 @@ type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
 const MODULES: Record<string, string> = { map: "public", forum: "public", events: "members", stays: "off" };
 
-function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[] | "all" } = {}) {
+function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[] | "all"; story?: boolean } = {}) {
   const handlers = new Map<string, Handler>();
   const app = { get: (p: string, h: Handler) => handlers.set(`GET ${p}`, h), post: (p: string, h: Handler) => handlers.set(`POST ${p}`, h) } as any;
   const deps = {
@@ -34,7 +35,7 @@ function setup(viewer: any | null, opts: { admin?: boolean; holds?: string[] | "
     clientIp: () => "203.0.113.9",
     overLimit: async () => false,
     lifecycle: (id: string) => MODULES[id] ?? "off",
-    storyServed: () => false,
+    storyServed: () => !!opts.story,
     villageName: () => "North Wind",
     commitmentName: () => "",
     villageGuideName: () => "Sol",
@@ -98,6 +99,18 @@ describe("the registry in Find anything", () => {
     expect(got.has("setting:greenhouse.stays.add-place")).toBe(false);
     expect(got.has("page:tab.events-admin")).toBe(true);
     expect(got.has("setting:tower.calendar.add-event")).toBe(true);
+  });
+
+  it("holds the board's acts to the board's own story-page switch, as it holds the page", async () => {
+    // The acts that live on the board, read off the table itself: the milestones live on an Admin tab.
+    const onBoard = STAGE_ACTS.filter((a) => a.path === "/project-history" && !a.tab).map((a) => `setting:${a.id}`);
+    expect(onBoard.length).toBeGreaterThan(0);
+    const off = await setup(admin, { admin: true, holds: "all", story: false }).index();
+    expect(onBoard.filter((id) => ids(off).has(id))).toEqual([]);
+    expect(off.entries.some((e) => e.path === "/project-history")).toBe(false);
+    const on = await setup(admin, { admin: true, holds: "all", story: true }).index();
+    expect(ids(on).has("page:/project-history")).toBe(true);
+    expect(onBoard.filter((id) => !ids(on).has(id))).toEqual([]);
   });
 
   it("keeps every act on a page, though they share the page's address", async () => {
