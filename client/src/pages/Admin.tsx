@@ -118,6 +118,7 @@ import SetupSection from "@/components/admin/SetupSection";
 import BrandTextField from "@/components/admin/BrandTextField";
 import HandoverTab from "@/components/admin/HandoverTab";
 import AdminGate from "@/components/admin/AdminGate";
+import CreditSaleMissing, { readCreditSale } from "@/components/admin/CreditSaleMissing";
 import FailuresTab from "@/components/admin/FailuresTab";
 import PortalVisitorsTab from "@/components/admin/PortalVisitorsTab";
 import SecretsKeyBanner, { SealedSaveButton } from "@/components/admin/SecretsKeyBanner";
@@ -4716,8 +4717,8 @@ function BadgesAdminTab({ password }: { password: string }) { const { t } = useL
 export function LibraryAdminTab({ password, onOpenTab }: { password: string; onOpenTab: (tab: string) => void }) { const { t } = useLingui(); // one line: Admin.tsx's length is ratcheted
   const [data, setData] = useState<any>(null);
   // The credit-sale card's state. The exchange's own read serves it (GET /api/admin/exchange), and
-  // answers only while the exchange is on, so the card shows on the terms it always has. Read on
-  // its own, so the desk never waits for the exchange's books.
+  // answers only while the exchange is on; when it does not answer, the place says why (CreditSaleMissing).
+  // Read on its own, so the desk never waits for the exchange's books.
   const [creditSale, setCreditSale] = useState<any>(null);
   const [off, setOff] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -4729,7 +4730,7 @@ export function LibraryAdminTab({ password, onOpenTab }: { password: string; onO
   const load = useCallback(async () => {
     setLoading(true);
     fetch(`${API_BASE}/admin/exchange`, { headers: authHeaders(password) })
-      .then((r) => (r.ok ? r.json() : null)).then((d) => setCreditSale(d?.creditSale ?? null)).catch(() => setCreditSale(null));
+      .then(readCreditSale).then(setCreditSale).catch(() => setCreditSale({ missing: "unread" }));
     try {
       const [lRes, pRes] = await Promise.all([
         fetch(`${API_BASE}/admin/library`, { headers: authHeaders(password) }),
@@ -4812,6 +4813,7 @@ export function LibraryAdminTab({ password, onOpenTab }: { password: string; onO
           read here, accepted by a named admin, stamped by the server.
           It sat inside the Exchange tab until 27 Nov 2026; it is the
           library's switch (`library.creditSaleEnabled`), so it is here. */}
+      {creditSale?.missing && <CreditSaleMissing why={creditSale.missing} />}
       {creditSale?.libraryOn && (
         <div className={`rounded-xl border p-5 ${creditSale.open ? "border-teal-deep/30 bg-teal-deep/5" : "border-amber-200 bg-amber-50/50"}`}>
           <h3 className="font-semibold text-gray-900 mb-1">
