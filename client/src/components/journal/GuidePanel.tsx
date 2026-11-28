@@ -269,6 +269,9 @@ export default function GuidePanel({
               </>
             }
             sendClassName={`${BTN_PRIMARY} shrink-0`}
+            // A journal is written in paragraphs: Enter starts a new line everywhere, and Ask (or Ctrl+Enter) sends.
+            enterSends={false}
+            minRows={2}
           />
           {messages.length === 0 && (
             <div className="mt-2 flex flex-wrap gap-2">

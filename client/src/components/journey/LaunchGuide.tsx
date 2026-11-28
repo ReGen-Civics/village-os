@@ -153,7 +153,6 @@ export function LaunchGuide({ open, onClose, launched = false }: { open: boolean
           label={t({ message: "Your question", context: "guide question field" })}
           placeholder={t`Ask about any step…`}
           sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
-          sendClassName="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-teal-deep text-white disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
       )}
     </div>

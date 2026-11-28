@@ -5,7 +5,7 @@
  *
  * - It starts at one line, at least 44px, and grows with each line until it
  *   holds about two thirds of what is still visible (the visual viewport, so a
- *   phone's keyboard counts), or half its panel where it sits in one.
+ *   phone's keyboard and the tab bar count), or half its panel where it sits in one (0.4 on a phone).
  *   Past that it scrolls inside itself and keeps the caret in view.
  * - On a desk Enter sends and Shift+Enter adds a line. On a phone Return adds a
  *   line and the Send button sends.
@@ -40,10 +40,12 @@ const NEAR = 0.8;
  * and two thirds of a panel that is itself 70% of the screen left the last reply one line tall (screenshots, 27 Nov 2026).
  */
 export const PANEL_SHARE = 1 / 2;
+/** On a phone a corner panel is narrower and taller per line: 0.4 keeps the last reply readable (QA round 1, 27 Nov 2026). */
+export const PANEL_SHARE_NARROW = 0.4;
 
-/** The tallest the box may grow: two thirds of what is visible, or half its panel when that is less. */
-export function composerCap(visible: number, panel?: number, share = SHARE): number {
-  const room = panel && panel > 0 ? Math.min(visible * share, panel * PANEL_SHARE) : visible * share;
+/** The tallest the box may grow: two thirds of what is visible, or a share of its panel when that is less. */
+export function composerCap(visible: number, panel?: number, share = SHARE, panelShare = PANEL_SHARE): number {
+  const room = panel && panel > 0 ? Math.min(visible * share, panel * panelShare) : visible * share;
   return Math.max(MIN_HEIGHT, Math.floor(room));
 }
 
@@ -53,10 +55,17 @@ export function fitTo(natural: number, cap: number): { height: number; scrolls: 
   return { height, scrolls: natural > cap };
 }
 
-/** Whether this key press sends. Return on a phone adds a line; so does Shift+Enter anywhere, and a key mid-composition. */
-export function enterSends(e: { key: string; shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; isComposing?: boolean }, phone: boolean): boolean {
+/**
+ * Whether this key press sends. Return on a phone adds a line; so does Shift+Enter anywhere, and a key
+ * mid-composition. Where Enter is kept for new lines everywhere (`plain`, the journal), Ctrl or Cmd+Enter sends.
+ */
+export function enterSends(
+  e: { key: string; shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; isComposing?: boolean },
+  phone: boolean,
+  plain = false,
+): boolean {
   if (e.key !== "Enter" || e.isComposing || e.shiftKey) return false;
-  if (phone) return Boolean(e.ctrlKey || e.metaKey);
+  if (phone || plain) return Boolean(e.ctrlKey || e.metaKey);
   return true;
 }
 
@@ -69,9 +78,48 @@ export function isPhoneKeyboard(): boolean {
   }
 }
 
-/** The height still visible: the visual viewport where the browser has one, so a phone's keyboard is taken off. */
-function visibleHeight(): number {
-  return window.visualViewport?.height || window.innerHeight || 0;
+/** The phone's tab bar, measured from its own height (`--tabbar-h` in index.css, 0 from md up). */
+function tabBarHeight(): number {
+  try {
+    const probe = document.createElement("div");
+    probe.setAttribute("aria-hidden", "true");
+    probe.setAttribute("data-tabbar-probe", "");
+    probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:0;height:var(--tabbar-h, 0px)";
+    document.body.appendChild(probe);
+    const h = probe.offsetHeight || 0;
+    probe.remove();
+    return h;
+  } catch {
+    return 0;
+  }
+}
+
+/** The nearest box that scrolls the composer (a sheet, a panel's body), or null where the page itself scrolls. */
+function scrollBox(el: HTMLElement): HTMLElement | null {
+  for (let p = el.parentElement; p && p !== document.body && p !== document.documentElement; p = p.parentElement) {
+    const y = getComputedStyle(p).overflowY;
+    if (y === "auto" || y === "scroll") return p;
+  }
+  return null;
+}
+
+/**
+ * The part of the screen the composer can be seen in, top and bottom in viewport pixels: the visual viewport (so a
+ * phone's keyboard is taken off), above the tab bar, and inside the box that scrolls it.
+ */
+export function visibleRoom(el: HTMLElement): { top: number; bottom: number } {
+  const vv = window.visualViewport;
+  let top = vv?.offsetTop || 0;
+  let bottom = top + (vv?.height || window.innerHeight || 0) - tabBarHeight();
+  const box = scrollBox(el);
+  if (box) {
+    const r = box.getBoundingClientRect();
+    if (r.height > 0) {
+      top = Math.max(top, r.top);
+      bottom = Math.min(bottom, r.bottom);
+    }
+  }
+  return { top, bottom: Math.max(top, bottom) };
 }
 
 /** The panel's own ceiling: its max-height when it has one, else its height. */
@@ -80,6 +128,31 @@ function panelHeight(el: HTMLElement | null | undefined): number | undefined {
   const max = parseFloat(getComputedStyle(el).maxHeight);
   if (Number.isFinite(max) && max > 0) return max;
   return el.getBoundingClientRect().height || undefined;
+}
+
+/** Room left under Send, so it never sits flush on the tab bar or the keyboard (0.5rem). */
+const SEND_MARGIN = 8;
+
+/** Whether the composer sits in a panel pinned to the screen, where scrolling the page behind could only move the page. */
+function insideFixed(el: HTMLElement): boolean {
+  for (let p: HTMLElement | null = el; p && p !== document.body; p = p.parentElement) {
+    if (getComputedStyle(p).position === "fixed") return true;
+  }
+  return false;
+}
+
+/**
+ * Bring the box's row, Send included, into sight above the keyboard and the tab bar, by exactly as much as it is
+ * hidden. The nearest box that scrolls moves (a sheet, a panel's body); the page moves only where the page itself is
+ * what scrolls the composer, and never behind a pinned panel (QA round 1 on #1885: the page behind the companions
+ * sheet jumped 527px, and Send landed under the tab bar).
+ */
+export function keepSendInView(row: HTMLElement): void {
+  const over = row.getBoundingClientRect().bottom - (visibleRoom(row).bottom - SEND_MARGIN);
+  if (over <= 0) return;
+  const box = scrollBox(row);
+  if (box) box.scrollTop += over;
+  else if (!insideFixed(row)) window.scrollBy?.(0, over);
 }
 
 export const FIELD_CLASS =
@@ -106,6 +179,8 @@ export default function ChatComposer({
   mic = true,
   inputRef,
   className = "",
+  enterSends: enterSendsHere = true,
+  minRows = 1,
 }: {
   id: string;
   value: string;
@@ -132,6 +207,10 @@ export default function ChatComposer({
   mic?: boolean;
   inputRef?: RefObject<HTMLTextAreaElement | null>;
   className?: string;
+  /** False keeps Enter for a new line on every device (the journal); Ctrl or Cmd+Enter and the Send button send. */
+  enterSends?: boolean;
+  /** The rows the box starts at. */
+  minRows?: number;
 }) {
   const { t } = useLingui();
   const own = useRef<HTMLTextAreaElement>(null);
@@ -156,29 +235,32 @@ export default function ChatComposer({
     if (el.scrollHeight > 0) {
       const natural = growHeight(el.scrollHeight, el.offsetHeight, el.clientHeight);
       const panel = panelHeight(within?.current);
-      const { height, scrolls } = fitTo(natural, composerCap(visibleHeight() - below, panel ? panel - below : undefined));
+      const room = visibleRoom(hold ?? el);
+      const panelShare = window.innerWidth < 640 ? PANEL_SHARE_NARROW : PANEL_SHARE;
+      const { height, scrolls } = fitTo(natural, composerCap(room.bottom - room.top - below, panel ? panel - below : undefined, SHARE, panelShare));
       el.style.height = `${height}px`;
       el.style.overflowY = scrolls ? "auto" : "hidden";
       // Writing at the end: the newest line stays in sight inside the box.
       if (scrolls && el.selectionEnd === el.value.length) el.scrollTop = el.scrollHeight;
     }
     if (hold) hold.style.minHeight = "";
-    // Grown while being written in: keep the box and Send above the keyboard, moving the page no more than that.
-    if (hold && el.offsetHeight > was && document.activeElement === el) {
-      const vv = window.visualViewport;
-      const bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
-      const over = hold.getBoundingClientRect().bottom - bottom;
-      if (over > 0) window.scrollBy?.(0, over);
-    }
+    // Grown while being written in or spoken into: Send stays above the keyboard and the tab bar. The nearest box
+    // that scrolls moves (a sheet, never the page behind it), and only as far as it must (QA round 1 on #1885).
+    if (hold && el.offsetHeight > was && hold.contains(document.activeElement)) keepSendInView(hold);
   }, [ref, within]);
 
   useLayoutEffect(fit, [value, fit]);
 
-  // The keyboard rising, a turned phone, or a new width: fit again.
+  // The keyboard rising, a turned phone, or a new width: fit again, and while somebody is writing, Send stays in sight.
   useEffect(() => {
     const vv = window.visualViewport;
-    vv?.addEventListener("resize", fit);
-    window.addEventListener("resize", fit);
+    const refit = () => {
+      fit();
+      const hold = row.current;
+      if (hold?.contains(document.activeElement)) keepSendInView(hold);
+    };
+    vv?.addEventListener("resize", refit);
+    window.addEventListener("resize", refit);
     const el = ref.current;
     let width = el?.clientWidth ?? 0;
     const watch =
@@ -191,8 +273,8 @@ export default function ChatComposer({
         : null;
     if (el) watch?.observe(el);
     return () => {
-      vv?.removeEventListener("resize", fit);
-      window.removeEventListener("resize", fit);
+      vv?.removeEventListener("resize", refit);
+      window.removeEventListener("resize", refit);
       watch?.disconnect();
     };
   }, [fit, ref]);
@@ -231,17 +313,22 @@ export default function ChatComposer({
         <textarea
           ref={ref}
           id={id}
-          rows={1}
+          rows={minRows}
           value={value}
           maxLength={maxLength}
           disabled={disabled}
           placeholder={placeholder}
-          enterKeyHint={isPhoneKeyboard() ? "enter" : "send"}
+          enterKeyHint={isPhoneKeyboard() || !enterSendsHere ? "enter" : "send"}
           aria-describedby={near ? countId : undefined}
           aria-invalid={over ? true : undefined}
           onChange={(e) => onChange(e.target.value)}
+          // A tapped box brings itself into view, and Send under it on a phone stays out of sight: bring the row.
+          onFocus={() => {
+            if (row.current) keepSendInView(row.current);
+          }}
           onKeyDown={(e) => {
-            if (!enterSends({ key: e.key, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, isComposing: e.nativeEvent.isComposing }, isPhoneKeyboard())) return;
+            const keys = { key: e.key, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, metaKey: e.metaKey, isComposing: e.nativeEvent.isComposing };
+            if (!enterSends(keys, isPhoneKeyboard(), !enterSendsHere)) return;
             e.preventDefault();
             send();
           }}

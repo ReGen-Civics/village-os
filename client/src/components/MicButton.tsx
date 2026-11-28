@@ -137,10 +137,11 @@ export default function MicButton({
         disabled={disabled}
         aria-label={fieldName ? `${label}: ${fieldName}` : label}
         title={label}
-        className={`shrink-0 size-11 rounded-xl flex items-center justify-center disabled:opacity-50 ${
+        // The bar's own colours, so the button re-themes with the village and reads in both modes (QA round 1 on #1885).
+        className={`shrink-0 size-11 rounded-xl flex items-center justify-center border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
           listening
-            ? "bg-red-500 text-white animate-pulse"
-            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            ? "border-notice bg-notice text-background motion-safe:animate-pulse"
+            : "border-border bg-muted text-foreground hover:bg-background"
         } ${className}`}
       >
         {listening ? <Square className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
