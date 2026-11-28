@@ -527,6 +527,8 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
         sendLabel={t({ message: "Send", context: "YourCompanions, button" })}
         sendText={<Trans context="YourCompanions, button">Send</Trans>}
         sendClassName={`${BTN_GOLD} shrink-0 disabled:opacity-50`}
+        // A reply landed above: with the keyboard still up (iOS keeps it after a tap on Send), Send stays in sight.
+        follow={lines.length}
       />
       {note ? (
         <p role="status" className="m-0 text-[13px] text-notice">

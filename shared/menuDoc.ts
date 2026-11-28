@@ -14,6 +14,10 @@
  *           2026: "Yes" to village-named folders). Until a village names one, a folder is the platform's
  *           word in the reader's language.
  *   tabs    the four phone tabs before More, by address
+ *   places  where a module's entry sits, by address (shared/menuPlace.ts; the lead, 27 Nov 2026: "all module menu
+ *           items are up for the village to determine where in the menu they would like them to be and what their
+ *           name would be"). Its name is its label above. Until a village places one, it sits where it ships
+ *           (shared/moduleMenu.ts), and the rules a place is held to are checked there (menuDocumentProblem).
  *
  * ENTRIES KEEP THEIR ROUTES AND THEIR GATES. A label never changes where an
  * entry goes, and a hidden flag only ever takes an entry away: an entry a
@@ -23,6 +27,7 @@
  *
  * Nothing set is today's menu exactly.
  */
+
 
 export const MENU_SECTION = "app-menu";
 export const MENU_LABEL_MAX = 32;
@@ -35,11 +40,23 @@ export interface MenuDoc {
   /** A folder's own name, keyed by the platform's folder name (NavLink.sub in client/src/config/nav.ts). */
   folders: Record<string, string>;
   tabs: string[];
+  /** Where a module's entry sits, by its address (shared/menuPlace.ts). Absent when the village placed none. */
+  places?: Record<string, MenuPlace>;
 }
 
 const isPath = (v: unknown): v is string => typeof v === "string" && /^\/[A-Za-z0-9/#?=&._-]{0,120}$/.test(v);
 const word = (v: unknown, max = MENU_LABEL_MAX): string =>
   typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, max) : "";
+
+/** A module entry's place in the menu: shared/menuPlace.ts cleans and places it, shared/moduleMenu.ts holds the rules. */
+export interface MenuPlace {
+  /** The group, by the platform's name (NavGroup.label), or "account" for the account menu. */
+  group: string;
+  /** A folder in that group, by the platform's name (NavLink.sub). Absent: a row of its own. */
+  sub?: string;
+  /** Its position: among the group's rows, or among the folder's entries. Absent: the end. */
+  at?: number;
+}
 
 /** The stored document, cleaned: addresses only where addresses go, labels clipped, at most four tabs. */
 export function menuDocOf(raw: unknown): MenuDoc {
@@ -61,7 +78,11 @@ export function menuDocOf(raw: unknown): MenuDoc {
   }
   const hidden = Array.isArray(d.hidden) ? Array.from(new Set(d.hidden.filter(isPath))) : [];
   const tabs = Array.isArray(d.tabs) ? d.tabs.filter(isPath).slice(0, MENU_TABS) : [];
-  return carriedOver({ labels, hidden, groups, folders, tabs });
+  // Places pass through as an object: the content route held them to the menu's rules when they were saved, and the
+  // placing code cleans them entry by entry when it lays them out (shared/menuPlace.ts placesOf), so the shell's first
+  // page carries none of it.
+  const places = d.places && typeof d.places === "object" && !Array.isArray(d.places) ? (d.places as Record<string, MenuPlace>) : {};
+  return carriedOver({ labels, hidden, groups, folders, tabs, ...(Object.keys(places).length ? { places } : {}) });
 }
 
 /**
@@ -93,17 +114,17 @@ function carriedOver(m: MenuDoc): MenuDoc {
     delete groups[from];
   }
   const hidden = Array.from(new Set(m.hidden.map((h) => MOVED_ENTRIES[h] ?? h)));
-  return { labels, hidden, groups, folders: m.folders, tabs: m.tabs };
+  return { labels, hidden, groups, folders: m.folders, tabs: m.tabs, ...(m.places ? { places: m.places } : {}) };
 }
 
 /** True when the village changed nothing, so the menu is the platform's. */
 export function menuDocIsEmpty(m: MenuDoc): boolean {
-  return !Object.keys(m.labels).length && !m.hidden.length && !Object.keys(m.groups).length && !Object.keys(m.folders).length && !m.tabs.length;
+  return !Object.keys(m.labels).length && !m.hidden.length && !Object.keys(m.groups).length && !Object.keys(m.folders).length && !m.tabs.length && !Object.keys(m.places ?? {}).length;
 }
 
 /** Why the content route must refuse this document, or null. */
 export function menuDocProblem(raw: unknown): string | null {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "Send the menu as { labels, hidden, groups, folders, tabs }.";
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "Send the menu as { labels, hidden, groups, folders, tabs, places }.";
   const d = raw as Record<string, unknown>;
   for (const [k, v] of Object.entries((d.labels as Record<string, unknown>) ?? {})) {
     if (!isPath(k)) return `"${k}" is not an address in the menu.`;
@@ -120,5 +141,7 @@ export function menuDocProblem(raw: unknown): string | null {
   if (d.tabs !== undefined && (!Array.isArray(d.tabs) || d.tabs.length > MENU_TABS || d.tabs.some((h) => !isPath(h)))) {
     return `Choose up to ${MENU_TABS} phone tabs, by their addresses. The fifth is always More.`;
   }
+  // A module entry's place is held to the menu's rules by menuDocumentProblem (shared/moduleMenu.ts), which the content
+  // route and the proposal path ask: those rules carry the menu's whole shape, which the shell never loads.
   return null;
 }

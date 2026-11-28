@@ -19,7 +19,8 @@
  *
  * Pure: no database, no Express.
  */
-import { MENU_SECTION, menuDocProblem } from "./menuDoc";
+import { MENU_SECTION } from "./menuDoc";
+import { menuDocumentProblem } from "./moduleMenu";
 import { NOTICE_SECTION, noticeWordsProblem } from "./noticeWords";
 import { NOUN_SLOT_IDS, NOUN_SLOTS, VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "./vocabulary";
 
@@ -35,7 +36,7 @@ export interface ContentDocument {
 
 export const CONTENT_DOCUMENTS: readonly ContentDocument[] = [
   { section: VOCAB_SECTION, label: "The village's words for things", where: { label: "Admin, Make it yours, Identity", href: "/admin?tab=setup" }, problem: vocabularyProblem },
-  { section: MENU_SECTION, label: "The menu and phone tabs", where: { label: "Admin, Make it yours, Menu", href: "/admin?tab=setup" }, problem: menuDocProblem },
+  { section: MENU_SECTION, label: "The menu and phone tabs", where: { label: "Admin, Make it yours, Menu", href: "/admin?tab=setup" }, problem: menuDocumentProblem },
   { section: NOTICE_SECTION, label: "The village's notice words", where: { label: "Admin, Make it yours, Notices", href: "/admin?tab=setup" }, problem: noticeWordsProblem },
 ];
 

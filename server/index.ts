@@ -25,7 +25,8 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck, villageNameCheck } from "../shared/launchRequirements";
-import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
+import { MENU_SECTION, menuDocOf } from "../shared/menuDoc";
+import { menuDocumentProblem } from "../shared/moduleMenu"; // the menu document and its module entries' places, by the menu's rules
 import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
 import { readVillageNounsFrom } from "./lib/villageNouns";
 import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
@@ -8040,7 +8041,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocumentProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -13099,7 +13100,7 @@ ALWAYS respond with ONLY a single JSON object: {"reply": "<what you say>"}`;
   // Admin search: the index the search bar and the guide read, filtered by the one gate (server/routes/adminSearch.ts).
   registerAdminSearchRoutes(app, { isAdmin, mayStillSee, dials: () => allVariables(), lifecycle: (id) => effectiveLifecycle(id) });
   // Find anything: every place this reader may open, and the guide for words the search missed (server/routes/search.ts).
-  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", villageGuideName: () => getWorkWithUs().assistantName });
+  registerSearchRoutes(app, { entrancePasses: (req) => entrance.passes(req), authedUser, isAdmin, mayStillSee, clientIp, overLimit, noteAssistantUsage, sources: searchSources({ getPool, lapseContext, circlesRepo, questsRepo, members, capabilityCtx }), villageName: () => mergedConfig().project.name, commitmentName: () => mergedConfig().project.commitmentName ?? "", menuNames: () => menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]).labels, villageGuideName: () => getWorkWithUs().assistantName });
 
   registerCapabilityExplainerRoutes(app, { isAdmin, members, capabilityCtx, stageOf });
 

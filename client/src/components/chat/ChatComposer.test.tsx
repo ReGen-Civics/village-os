@@ -76,12 +76,14 @@ function Chat({
   busy = false,
   maxLength,
   plainEnter = false,
+  follow,
 }: {
   draftKey?: string;
   onSent?: (words: string) => void;
   busy?: boolean;
   maxLength?: number;
   plainEnter?: boolean;
+  follow?: unknown;
 }) {
   const [draft, setDraft] = useChatDraft(draftKey);
   return (
@@ -98,6 +100,7 @@ function Chat({
       maxLength={maxLength}
       sendLabel="Send"
       {...(plainEnter ? { enterSends: false, minRows: 2 } : {})}
+      follow={follow}
     />
   );
 }
@@ -262,6 +265,59 @@ describe("Send kept in view", () => {
     expect(page.scrollBy).not.toHaveBeenCalled();
   });
 
+  it("brings Send back when a reply lands above with the keyboard still up, and only while the box has focus", () => {
+    let rowTop = 300;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (this.hasAttribute("data-sheet")) return rect(0, 600);
+      const ta = this.querySelector?.("textarea");
+      if (ta) return rect(rowTop, rowTop + (parseFloat(ta.style.height) || 0));
+      return rect(0, 0);
+    };
+    const view = render(
+      <div data-sheet="" style={{ overflowY: "auto" }}>
+        <Chat follow={1} />
+      </div>,
+    );
+    const scrolled = sheetScroll();
+    box().focus();
+    expect(scrolled()).toBe(0);
+    // iOS keeps the keyboard up after a tap on Send: the reply pushes the row 250px down, below the sheet's foot.
+    rowTop = 550;
+    view.rerender(
+      <div data-sheet="" style={{ overflowY: "auto" }}>
+        <Chat follow={2} />
+      </div>,
+    );
+    expect(scrolled()).toBe(550 + 44 - (600 - 8));
+    // The box let go of focus (the keyboard went down): a reply moves nothing.
+    box().blur();
+    rowTop = 800;
+    view.rerender(
+      <div data-sheet="" style={{ overflowY: "auto" }}>
+        <Chat follow={3} />
+      </div>,
+    );
+    expect(scrolled()).toBe(550 + 44 - (600 - 8));
+  });
+
+  it("keeps Send in view on a keystroke that grows nothing", () => {
+    let rowTop = 300;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (this.hasAttribute("data-sheet")) return rect(0, 600);
+      const ta = this.querySelector?.("textarea");
+      if (ta) return rect(rowTop, rowTop + (parseFloat(ta.style.height) || 0));
+      return rect(0, 0);
+    };
+    render(<Sheet />);
+    const scrolled = sheetScroll();
+    box().focus();
+    fireEvent.change(box(), { target: { value: "N" } });
+    expect(scrolled()).toBe(0);
+    rowTop = 580;
+    fireEvent.change(box(), { target: { value: "Ne" } });
+    expect(scrolled()).toBe(580 + 44 - (600 - 8));
+  });
+
   it("leaves everything still when Send is already in sight, or nobody is writing in the box", () => {
     let rowTop = 100;
     Element.prototype.getBoundingClientRect = function (this: Element) {
@@ -386,6 +442,57 @@ describe("the phone keyboard", () => {
     render(<Chat />);
     kb.raise(447, 0);
     expect(row().getAttribute("data-composer-row")).toBeNull();
+  });
+
+  it("brings Send back after a reply while the keyboard is still up, even when the tap on Send took the focus", () => {
+    phone = true;
+    const kb = fakeViewport(812, 0);
+    const real = Element.prototype.getBoundingClientRect;
+    let rowTop = 300;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (this.hasAttribute("data-sheet")) return rect(218, 665);
+      const ta = this.querySelector?.("textarea");
+      if (ta) return rect(rowTop, rowTop + (parseFloat(ta.style.height) || 0));
+      return rect(0, 0);
+    };
+    try {
+      const view = render(
+        <div data-sheet="" style={{ overflowY: "auto" }}>
+          <Chat follow={1} />
+        </div>,
+      );
+      const sheet = document.querySelector("[data-sheet]") as HTMLElement;
+      let top = 0;
+      Object.defineProperty(sheet, "scrollTop", { configurable: true, get: () => top, set: (v: number) => (top = v) });
+      box().focus();
+      kb.raise(447, 218);
+      // Chromium moves the focus off the box on a tap; the keyboard is still up in this simulation.
+      box().blur();
+      expect(document.activeElement).toBe(document.body);
+      rowTop = 640;
+      view.rerender(
+        <div data-sheet="" style={{ overflowY: "auto" }}>
+          <Chat follow={2} />
+        </div>,
+      );
+      expect(top).toBe(640 + 44 - (665 - 8));
+    } finally {
+      Element.prototype.getBoundingClientRect = real;
+    }
+  });
+
+  it("reads no keyboard while the page is pinch-zoomed", () => {
+    const vv = Object.assign(new EventTarget(), { height: 406, offsetTop: 120, width: 188, pageTop: 120, scale: 2 });
+    vi.stubGlobal("visualViewport", vv);
+    render(<Chat />);
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("0px");
+    expect(document.documentElement.style.getPropertyValue("--vvh")).toBe("812px");
+    // Zoomed back out with a keyboard up: it reads again.
+    Object.assign(vv, { scale: 1, height: 447, offsetTop: 218 });
+    act(() => {
+      vv.dispatchEvent(new Event("resize"));
+    });
+    expect(document.documentElement.style.getPropertyValue("--kb")).toBe("147px");
   });
 
   it("forgets both values when the last chat box closes", () => {

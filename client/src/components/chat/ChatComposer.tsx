@@ -186,6 +186,7 @@ export default function ChatComposer({
   className = "",
   enterSends: enterSendsHere = true,
   minRows = 1,
+  follow,
 }: {
   id: string;
   value: string;
@@ -218,6 +219,8 @@ export default function ChatComposer({
   enterSends?: boolean;
   /** The rows the box starts at. */
   minRows?: number;
+  /** Changes when the conversation above changes (its length): Send is brought back into sight if the box has focus. */
+  follow?: unknown;
 }) {
   const { t } = useLingui();
   const own = useRef<HTMLTextAreaElement>(null);
@@ -266,10 +269,22 @@ export default function ChatComposer({
     if (hold) hold.style.minHeight = "";
     // Grown while being written in or spoken into: Send stays above the keyboard and the tab bar. The nearest box
     // that scrolls moves (a sheet, never the page behind it), and only as far as it must (QA round 1 on #1885).
-    if (hold && el.offsetHeight > was && hold.contains(document.activeElement)) keepSendInView(hold);
+    // Every fit while somebody is writing here, grown or not: a reply that landed above can have pushed the row down
+    // with nothing growing (QA round 3 on #1885: 41 to 250px under the keyboard after a reply).
+    if (hold && hold.contains(document.activeElement)) keepSendInView(hold);
   }, [ref, within]);
 
-  useLayoutEffect(fit, [value, fit]);
+  // `beside` too: when Send moves beside the box the box narrows, and it refits in the same step (WebKit fitted it
+  // a frame late, through the ResizeObserver, and logged a ResizeObserver loop).
+  useLayoutEffect(fit, [value, fit, beside]);
+
+  // Something above the box changed (a reply landed): while the box holds focus, or a phone keyboard is still up
+  // after the tap on Send, Send stays in sight.
+  useLayoutEffect(() => {
+    const hold = row.current;
+    if (follow !== undefined && hold && (hold.contains(document.activeElement) || keyboardUp)) keepSendInView(hold);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [follow]);
 
   // The keyboard rising, a turned phone, or a new width: fit again, and while somebody is writing, Send stays in sight.
   useEffect(() => {
