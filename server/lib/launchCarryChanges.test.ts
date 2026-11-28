@@ -20,7 +20,7 @@ import {
 import { seasonTurnAtLaunch } from "./launchSeasonTurn";
 
 const NAMES: Record<string, string> = {
-  rye: "Rye Cordon",
+  ren: "Ren Fenn",
   sera: "Sera Vale",
   qa: "Integration QA",
   ana: "Ana Ruiz",
@@ -42,12 +42,12 @@ function firstVillage(over: Partial<CarryFacts> = {}): CarryFacts {
     kind: "ratifying",
     issuingSince: "2026-03-14T09:26:53Z",
     launchedAt: null,
-    admins: [admin("ana", "admin"), admin("bo", "member", { groups: ["Panel Keys"] }), admin("qa", "founder"), admin("rye", "founder"), admin("sera", "founder")],
+    admins: [admin("ana", "admin"), admin("bo", "member", { groups: ["Panel Keys"] }), admin("qa", "founder"), admin("ren", "founder"), admin("sera", "founder")],
     holders: { pay: [], moduleSwitch: [], orgDecide: [], tokenMint: [], steward: [] },
     roll: {
       kind: "founders",
       yesNeeded: 3,
-      onIt: [{ id: "qa", name: NAMES.qa }, { id: "rye", name: NAMES.rye }, { id: "sera", name: NAMES.sera }],
+      onIt: [{ id: "qa", name: NAMES.qa }, { id: "ren", name: NAMES.ren }, { id: "sera", name: NAMES.sera }],
       notOnIt: [],
     },
     testFounders: [{ id: "qa", name: NAMES.qa, why: "name" }],
@@ -117,12 +117,12 @@ describe("the first village, before its ratifying vote is opened", () => {
 
   it("NAMES EVERY ADMIN WHO WOULD LOSE A DOOR, the group admin included, because nobody is known to hold the power yet", () => {
     // Turning a module on and publishing the org chart pass any admin today, by role or by group.
-    expect(ids(change(out, "module-switch").loses)).toEqual(["ana", "bo", "qa", "rye", "sera"]);
-    expect(ids(change(out, "org-publish").loses)).toEqual(["ana", "bo", "qa", "rye", "sera"]);
+    expect(ids(change(out, "module-switch").loses)).toEqual(["ana", "bo", "qa", "ren", "sera"]);
+    expect(ids(change(out, "org-publish").loses)).toEqual(["ana", "bo", "qa", "ren", "sera"]);
     expect(out.admins.find((a) => a.id === "bo")?.loses).toEqual(["module-switch", "org-publish"]);
     expect(out.admins.find((a) => a.id === "ana")?.loses).toEqual(["module-switch", "org-publish"]);
     const told = out.attention.find((a) => a.id === "admins-lose");
-    expect(told?.text).toBe("5 admins pass a door today that the carry closes to them, on what is known today: Ana Ruiz, Bo Linde, Integration QA, Rye Cordon and Sera Vale.");
+    expect(told?.text).toBe("5 admins pass a door today that the carry closes to them, on what is known today: Ana Ruiz, Bo Linde, Integration QA, Ren Fenn and Sera Vale.");
   });
 
   it("the doors that wait for a steward do not flip while nobody is known to be seated", () => {
@@ -158,16 +158,16 @@ describe("the first village, before its ratifying vote is opened", () => {
 
 describe("with the vote open", () => {
   const open = firstVillage({
-    slate: { named: [{ id: "rye", name: NAMES.rye }, { id: "sera", name: NAMES.sera }], accepted: ["rye"], declined: [] },
+    slate: { named: [{ id: "ren", name: NAMES.ren }, { id: "sera", name: NAMES.sera }], accepted: ["ren"], declined: [] },
     tokenMint: { alreadyHeld: false, rolesWithSomebody: true, treasury: [{ id: "tia", name: NAMES.tia }] },
   });
   const out = launchCarryChanges(open);
 
   it("whoever was named and has accepted keeps every door, and everybody else is named as losing it", () => {
-    expect(change(out, "stewards").holds).toEqual([{ id: "rye", name: "Rye Cordon" }]);
-    expect(change(out, "stewards").after).toContain("Named: Rye Cordon and Sera Vale. Accepted so far: Rye Cordon.");
+    expect(change(out, "stewards").holds).toEqual([{ id: "ren", name: "Ren Fenn" }]);
+    expect(change(out, "stewards").after).toContain("Named: Ren Fenn and Sera Vale. Accepted so far: Ren Fenn.");
     expect(ids(change(out, "module-switch").loses)).toEqual(["ana", "bo", "qa", "sera"]);
-    expect(ids(change(out, "module-switch").holds)).toEqual(["rye"]);
+    expect(ids(change(out, "module-switch").holds)).toEqual(["ren"]);
   });
 
   it("the pay doors now flip, for the admins who pass them today: by role, never by group", () => {
@@ -179,19 +179,19 @@ describe("with the vote open", () => {
 
   it("token.mint crosses to the stewards and the Treasury role, and the Treasury holder keeps it", () => {
     expect(change(out, "token-mint").standing).toBe("flips");
-    expect(ids(change(out, "token-mint").holds)).toEqual(["rye", "tia"]);
+    expect(ids(change(out, "token-mint").holds)).toEqual(["ren", "tia"]);
     expect(ids(change(out, "token-mint").loses)).toEqual(["ana", "qa", "sera"]);
   });
 
   it("the selected powers cross, and the admins who pass by being admins are named", () => {
     expect(change(out, "handover").standing).toBe("flips");
     expect(ids(change(out, "handover").loses)).toEqual(["ana", "qa", "sera"]);
-    expect(out.admins.find((a) => a.id === "rye")?.loses).toEqual([]);
+    expect(out.admins.find((a) => a.id === "ren")?.loses).toEqual([]);
     expect(out.admins.find((a) => a.id === "sera")?.loses).toEqual(["module-switch", "org-publish", "pay", "token-mint", "handover"]);
   });
 
   it("a decline is not an acceptance, and a vote nobody has accepted says what carrying it would mean", () => {
-    const declined = launchCarryChanges(firstVillage({ slate: { named: [{ id: "rye", name: NAMES.rye }], accepted: ["rye"], declined: ["rye"] } }));
+    const declined = launchCarryChanges(firstVillage({ slate: { named: [{ id: "ren", name: NAMES.ren }], accepted: ["ren"], declined: ["ren"] } }));
     expect(change(declined, "stewards").holds).toEqual([]);
     expect(change(declined, "pay").standing).toBe("nothing");
     expect(declined.attention.find((a) => a.id === "nobody-accepted")?.text).toBe(
@@ -213,15 +213,15 @@ describe("with the vote open", () => {
     const held = launchCarryChanges({ ...open, holders: { ...open.holders, pay: ["ana"] } });
     expect(ids(held.attention.find((a) => a.id === "pay-left-out")?.accounts ?? [])).toEqual(["qa"]);
     // A list that names everybody who sets pay says nothing, and so does a village with no vote open.
-    const everyone = launchCarryChanges({ ...open, slate: { named: ["ana", "qa", "rye", "sera"].map((id) => ({ id, name: NAMES[id] })), accepted: [], declined: [] } });
+    const everyone = launchCarryChanges({ ...open, slate: { named: ["ana", "qa", "ren", "sera"].map((id) => ({ id, name: NAMES[id] })), accepted: [], declined: [] } });
     expect(everyone.attention.some((a) => a.id === "pay-left-out")).toBe(false);
     expect(launchCarryChanges(firstVillage()).attention.some((a) => a.id === "pay-left-out")).toBe(false);
   });
 
   it("somebody who already holds a power keeps its door without being a steward", () => {
     const held = launchCarryChanges(firstVillage({ holders: { pay: ["ana"], moduleSwitch: ["bo"], orgDecide: [], tokenMint: [], steward: ["sera"] } }));
-    expect(ids(change(held, "module-switch").loses)).toEqual(["ana", "qa", "rye"]);
-    expect(ids(change(held, "pay").loses)).toEqual(["qa", "rye"]);
+    expect(ids(change(held, "module-switch").loses)).toEqual(["ana", "qa", "ren"]);
+    expect(ids(change(held, "pay").loses)).toEqual(["qa", "ren"]);
     expect(change(held, "stewards").today).toBe("Sera Vale holds the steward role today.");
   });
 });
@@ -249,7 +249,7 @@ describe("a village that has not started its Game", () => {
 describe("what a person should look at before the vote", () => {
   it("a roll short of its number, and founders who are not on it", () => {
     const out = launchCarryChanges(firstVillage({
-      roll: { kind: "founders", yesNeeded: 3, onIt: [{ id: "rye", name: NAMES.rye }], notOnIt: [{ id: "sera", name: NAMES.sera, reason: "not_signed_in" }] },
+      roll: { kind: "founders", yesNeeded: 3, onIt: [{ id: "ren", name: NAMES.ren }], notOnIt: [{ id: "sera", name: NAMES.sera, reason: "not_signed_in" }] },
       testFounders: [{ id: "qa", name: NAMES.qa, why: "address" }],
     }));
     expect(out.attention.find((a) => a.id === "roll-short")?.text).toBe("1 on the launch roll, and the vote needs 3. It cannot open yet.");
@@ -265,7 +265,7 @@ describe("what a person should look at before the vote", () => {
   it("a village that asks every member still counts a test account that holds the founder role", () => {
     // The way through for a village short of founders is to ask every member. The test account is a member too.
     const out = launchCarryChanges(firstVillage({
-      roll: { kind: "members", yesNeeded: 3, onIt: [{ id: "qa", name: NAMES.qa }, { id: "rye", name: NAMES.rye }, { id: "tia", name: NAMES.tia }], notOnIt: [] },
+      roll: { kind: "members", yesNeeded: 3, onIt: [{ id: "qa", name: NAMES.qa }, { id: "ren", name: NAMES.ren }, { id: "tia", name: NAMES.tia }], notOnIt: [] },
     }));
     expect(out.attention.find((a) => a.id === "test-founder")?.text).toBe(
       "Integration QA holds the founder role and reads as a test account: its name carries a test word. It is on the launch roll, so its answer counts toward the 3 yeses the launch needs.",
@@ -292,7 +292,7 @@ describe("what a person should look at before the vote", () => {
   });
 
   it("a village with nothing to look at is told nothing", () => {
-    const calm = launchCarryChanges(firstVillage({ testFounders: [], admins: [admin("rye", "founder")], holders: { pay: [], moduleSwitch: ["rye"], orgDecide: ["rye"], tokenMint: [], steward: ["rye"] } }));
+    const calm = launchCarryChanges(firstVillage({ testFounders: [], admins: [admin("ren", "founder")], holders: { pay: [], moduleSwitch: ["ren"], orgDecide: ["ren"], tokenMint: [], steward: ["ren"] } }));
     expect(calm.attention).toEqual([]);
   });
 });
