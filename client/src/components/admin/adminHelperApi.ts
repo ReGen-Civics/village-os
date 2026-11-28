@@ -13,6 +13,7 @@
  * with the payload the launch guide's own panel always used.
  */
 import type { HelperAnswer, HelperFiled, HelperProposal, HelperProvider, HelperStatus, HelperTab } from "@shared/adminHelper";
+import type { GuideSpeaking } from "@shared/guideSpeaking";
 import type { NavGroup } from "./adminNavGroups";
 import { whatIsThis } from "./adminWords";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
@@ -53,7 +54,7 @@ export type AskOutcome = { ok: true; answer: HelperAnswer } | { ok: false; off: 
 
 export async function askHelper(
   password: string,
-  input: { messages: HelperLine[]; tabs: HelperTab[]; tab: string; provider?: HelperProvider | null },
+  input: { messages: HelperLine[]; tabs: HelperTab[]; tab: string; provider?: HelperProvider | null; speaking?: GuideSpeaking },
 ): Promise<AskOutcome> {
   try {
     const r = await fetch(`${API_BASE}/admin/helper/ask`, {

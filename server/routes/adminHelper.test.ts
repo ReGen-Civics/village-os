@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { register, DENIED_READS, HELPER_TOOLS, helperSystemPrompt, helperToolRunner } from "./adminHelper";
 import { wireAssistant, ADMIN_HELPER_MODEL, ASSISTANT_MODES } from "../lib/assistant";
 import { GUIDE_FILING_WORDS, readGuideTicket, signGuideFiling } from "../lib/guideFiling";
+import { speakingPromptLines, VOICE_LENGTH, VOICE_RULES } from "../lib/guideSpeaking";
 import { MODULES } from "../../shared/modules";
 import { VARIABLES, type VariableDef } from "../../shared/gameVariables";
 import { DOCK_SWITCH, HELPER_SWITCH, guideMaySee, mayPropose, searchAdmin, type HelperDial } from "../../shared/adminHelper";
@@ -685,5 +686,75 @@ describe("the guide's dock", () => {
       const refused = setup({ dock: true, queue: () => ({ status: 400, body: { error: "refused", message: "Nothing was filed.", refused: [{ index: 0, error: "An FAQ needs its question." }] } }) });
       expect(await refused.call("POST", "/api/admin/helper/file", { ticket })).toEqual({ status: 400, body: { error: "An FAQ needs its question." } });
     });
+  });
+});
+
+/**
+ * HOW SHE SPEAKS IN A REPLY SHE WRITES (the founder, 28 Nov 2026: warm and plain, with a brief and quiet toggle).
+ * The person's setting rides with each ask as a closed value, and the voice lines join the prompt only while the
+ * village's dock is on. With the dock off the prompt is, byte for byte, what it was.
+ */
+describe("how she speaks: the voice lines and the person's setting", () => {
+  const base = { guide: "Sol", village: "North Wind", tabs: TABS, openTab: null };
+  const systemOf = (w: { sent: any[] }) => String(w.sent[0].body.system);
+
+  it("leaves the prompt byte for byte what it was when no setting is handed to it", () => {
+    const before = helperSystemPrompt(base);
+    expect(helperSystemPrompt({ ...base, speaking: undefined })).toBe(before);
+    expect(before).not.toContain("HOW YOU SPEAK");
+    // With a setting, the lines are added whole and nothing else moves.
+    const quiet = helperSystemPrompt({ ...base, speaking: "quiet" });
+    expect(quiet.replace(`\n${speakingPromptLines("quiet")}`, "")).toBe(before);
+  });
+
+  it("with the dock off, tells the model nothing of it, whatever the browser sent", async () => {
+    for (const speaking of ["quiet", "decisions", "walk", "anything"]) {
+      const w = wire([text({ reply: "ok" })]);
+      const out = await setup({ dock: false }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), speaking });
+      expect(out.status).toBe(200);
+      expect(systemOf(w)).not.toContain("HOW YOU SPEAK");
+      expect(systemOf(w)).toBe(helperSystemPrompt({ guide: "Sol", village: "North Wind", tabs: TABS, openTab: "home" }));
+    }
+  });
+
+  it("with the dock on and the setting quiet, asks for the fewest words, and only then", async () => {
+    const quiet = wire([text({ reply: "ok" })]);
+    await setup({ dock: true }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), speaking: "quiet" });
+    expect(systemOf(quiet)).toContain(VOICE_LENGTH.quiet);
+    expect(systemOf(quiet)).not.toContain(VOICE_LENGTH.plain);
+    for (const rule of VOICE_RULES) expect(systemOf(quiet)).toContain(rule);
+
+    for (const speaking of ["decisions", "walk"]) {
+      const w = wire([text({ reply: "ok" })]);
+      await setup({ dock: true }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), speaking });
+      expect(systemOf(w), speaking).toContain(VOICE_LENGTH.plain);
+      expect(systemOf(w), speaking).not.toContain(VOICE_LENGTH.quiet);
+    }
+  });
+
+  it("reads a missing or unknown setting as the default: warm and plain, never quiet", async () => {
+    for (const speaking of [undefined, null, "", "QUIET", "loud", 7, { setting: "quiet" }, ["quiet"]]) {
+      const w = wire([text({ reply: "ok" })]);
+      await setup({ dock: true }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), ...(speaking === undefined ? {} : { speaking }) });
+      expect(systemOf(w), JSON.stringify(speaking)).toContain(VOICE_LENGTH.plain);
+      expect(systemOf(w), JSON.stringify(speaking)).not.toContain(VOICE_LENGTH.quiet);
+    }
+  });
+
+  it("tells Sera the same, in the same words, and nothing of it with the dock off", async () => {
+    const asked: string[] = [];
+    const sera = async (q: string) => (asked.push(q), { ok: true as const, text: "ok" });
+    await setup({ dock: true, owner: "none", sera }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), speaking: "quiet" });
+    await setup({ dock: true, owner: "none", sera }).call("POST", "/api/admin/helper/ask", ask("hi"));
+    await setup({ dock: false, owner: "none", sera }).call("POST", "/api/admin/helper/ask", { ...ask("hi"), speaking: "quiet" });
+    expect(asked[0]).toContain(speakingPromptLines("quiet"));
+    expect(asked[1]).toContain(speakingPromptLines("decisions"));
+    expect(asked[2]).not.toContain("HOW YOU SPEAK");
+  });
+
+  it("changes nothing in the answer's shape: the setting only reaches the prompt", async () => {
+    wire([text({ reply: "Open Game Mechanics.", open: "variables", propose: null })]);
+    const out = await setup({ dock: true }).call("POST", "/api/admin/helper/ask", { ...ask("where are the rules?"), speaking: "quiet" });
+    expect(out.body).toEqual({ reply: "Open Game Mechanics.", open: { key: "variables", label: "Game Mechanics" }, proposal: null, refused: null, consulted: [], filing: null });
   });
 });
