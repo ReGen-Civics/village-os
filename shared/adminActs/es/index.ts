@@ -25,6 +25,7 @@ import { GREENHOUSE_WORDS_ES } from "./greenhouse";
 import { GUIDE_WORDS_ES } from "./guide";
 import { HALL_WORDS_ES } from "./hall";
 import { LIBRARY_WORDS_ES } from "./library";
+import { SPRING_WORDS_ES } from "./spring";
 import { STAGE_WORDS_ES } from "./stage";
 import { STORE_WORDS_ES } from "./store";
 import { TOWER_WORDS_ES } from "./tower";
@@ -45,6 +46,7 @@ export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record
   ceiba: CEIBA_WORDS_ES,
   guide: GUIDE_WORDS_ES,
   frame: FRAME_WORDS_ES,
+  spring: SPRING_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
