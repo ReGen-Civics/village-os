@@ -20,6 +20,12 @@ import { useState } from "react";
 import type { HelperAnswer, HelperStatus } from "@shared/adminHelper";
 
 const mic = vi.hoisted(() => ({ onText: null as null | ((chunk: string) => void) }));
+/** Who is signed in. A chat draft is kept under the member's id, and a visitor's is kept nowhere (components/chat/chatDraft.ts). */
+const session = vi.hoisted(() => ({ userId: null as string | null }));
+vi.mock("@/contexts/AuthContext", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/contexts/AuthContext")>();
+  return { ...real, useOptionalAuth: () => (session.userId ? { user: { id: session.userId } } : null) };
+});
 vi.mock("@/components/MicButton", () => ({
   default: ({ onText }: { onText: (chunk: string) => void }) => {
     mic.onText = onText;
@@ -246,6 +252,7 @@ describe("the talk bar", () => {
   });
 
   it("keeps a person's words per person: the next person on the same browser never reads them back", () => {
+    session.userId = "u-ana";
     const a = dock({ password: "token-of-ana" });
     fireEvent.change(box(), { target: { value: "half a private thought" } });
     act(() => mic.onText?.("and a spoken one"));
@@ -253,17 +260,29 @@ describe("the talk bar", () => {
     // Kept the way every chat draft is kept, so a sign-out that clears chat drafts clears these too.
     const keys = Object.keys(sessionStorage);
     expect(keys.length).toBeGreaterThan(0);
-    expect(keys.every((k) => k.startsWith("chat-draft:guide-dock:"))).toBe(true);
+    // Under the member's own id, as every chat draft is, and never under anything of the session token.
+    expect(keys.every((k) => k.startsWith("chat-draft:u-ana:guide-dock:"))).toBe(true);
     expect(keys.join(" ")).not.toContain("token-of-ana");
 
+    session.userId = "u-ben";
     const b = dock({ password: "token-of-ben" });
     expect(box()).toHaveValue("");
     expect(screen.queryByTestId("guide-you-said")).toBeNull();
     b.unmount();
 
+    session.userId = "u-ana";
     dock({ password: "token-of-ana" });
     expect(box()).toHaveValue("half a private thought and a spoken one");
     expect(screen.getByTestId("guide-you-said").textContent).toBe("You said and a spoken one");
+    session.userId = null;
+  });
+
+  it("keeps nothing for somebody who is not signed in", () => {
+    session.userId = null;
+    const a = dock({ password: "token-of-nobody" });
+    fireEvent.change(box(), { target: { value: "words with nobody to keep them for" } });
+    a.unmount();
+    expect(Object.keys(sessionStorage).filter((k) => k.startsWith("chat-draft:"))).toEqual([]);
   });
 });
 

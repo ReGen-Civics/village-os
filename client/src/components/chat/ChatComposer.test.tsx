@@ -10,7 +10,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { StrictMode } from "react";
+import { StrictMode, useState } from "react";
 
 const mic = vi.hoisted(() => ({ onText: null as null | ((chunk: string) => void) }));
 vi.mock("@/components/MicButton", () => ({
