@@ -11,6 +11,7 @@
  *
  * Light only, by ruling.
  */
+import InfoTip from "@/components/InfoTip";
 import { useCallback, useEffect, useState } from "react";
 import { BookOpen, FileText } from "lucide-react";
 import { KIND_LABELS, STANDING_WORDS, type DocumentSummary } from "@shared/villageDocuments";
@@ -35,7 +36,7 @@ function Row({ doc, onOpen, showOwner }: { doc: DocumentSummary; onOpen: (id: nu
           {doc.yours ? (
             <>
               {". "}
-              <span title={STANDING_WORDS[doc.standing]}>{STANDING_SHORT[doc.standing]}</span>
+              <InfoTip tip={STANDING_WORDS[doc.standing]}>{STANDING_SHORT[doc.standing]}</InfoTip>
             </>
           ) : null}
         </p>

@@ -161,146 +161,153 @@ export default function QuestCard({
   const exampleWords = t({ message: "Example quest", context: "the example stamp, read aloud" });
   const linkLabel = [quest.title, example ? exampleWords : null, gate].filter(Boolean).join(", ");
 
+  // A STRETCHED LINK (QA round 2, 27 Nov 2026). The whole card still opens the quest, through one link laid over it,
+  // and the roots row sits above that layer, so a tap on a root opens what the root means instead of the quest. The
+  // card used to be one link around everything, and a tip cannot live inside a link: on touch the tap is the link's,
+  // so a phone reader never met a root's meaning anywhere on the board. (A line comment here, and not a block comment
+  // inside the JSX, which the build keeps: it pushed this module over the small-group size and out into a chunk.)
   return (
-    <Link
-      href={`/quests/${quest.id}`}
-      className="group block h-full focus-visible:outline-2 focus-visible:outline-ring rounded-2xl"
-      aria-label={linkLabel}
-    >
-      <article className="h-full flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-shadow duration-300 group-hover:shadow-lg">
-        <QuestPoster quest={quest} className="aspect-[5/2]" priority={priority}>
-          <div className="absolute top-3 left-3 w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Icon className="w-5 h-5 text-white" />
+    <article className="group relative h-full flex flex-col bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-shadow duration-300 hover:shadow-lg">
+      <Link
+        href={`/quests/${quest.id}`}
+        className="absolute inset-0 z-[1] rounded-2xl focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+        aria-label={linkLabel}
+      />
+      <QuestPoster quest={quest} className="aspect-[5/2]" priority={priority}>
+        <div className="absolute top-3 left-3 w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+          <Icon className="w-5 h-5 text-white" />
+        </div>
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          {statusIs(quest, "seasonal") && !chip && (
+            <span className="px-2 py-0.5 rounded-full bg-white/85 text-teal-deep text-[10px] font-bold uppercase tracking-wide">
+              <Trans context="QuestCard, span">Seasonal
+            </Trans></span>
+          )}
+          {chip && (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${chip.cls}`}>
+              {chip.label}
+            </span>
+          )}
+        </div>
+        {/* The example stamp (the lead, 24 Nov 2026), across the poster
+            and clear of the icon, the chips and the title. */}
+        {example && (
+          <div className="absolute inset-x-0 top-1/3 flex -translate-y-1/2 justify-center">
+            <ExampleStamp />
           </div>
-          <div className="absolute top-3 right-3 flex gap-1.5">
-            {statusIs(quest, "seasonal") && !chip && (
-              <span className="px-2 py-0.5 rounded-full bg-white/85 text-teal-deep text-[10px] font-bold uppercase tracking-wide">
-                <Trans context="QuestCard, span">Seasonal
+        )}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <h3 className="font-display text-lg font-bold text-white leading-snug drop-shadow-sm">
+            {quest.title}
+          </h3>
+          {quest.circle && (
+            <p className="text-white/80 text-xs mt-0.5">{quest.circle}</p>
+          )}
+        </div>
+      </QuestPoster>
+
+      <div className="p-4 flex-1 flex flex-col gap-2.5">
+        {quest.subtitle ? (
+          <p className="text-sm text-foreground/80 italic leading-relaxed">{quest.subtitle}</p>
+        ) : (
+          quest.description && (
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+              {quest.description}
+            </p>
+          )
+        )}
+
+        {/* The goal thread: which season goal this work grows. */}
+        {goal && (
+          <p className="inline-flex items-start gap-1.5 text-sm font-medium text-foreground" data-goal={goal.id}>
+            <Target className="mt-0.5 w-4 h-4 shrink-0 text-open" aria-hidden="true" />
+            <span>{t({ message: `Grows: ${goalText}`, context: "open work card: the season goal this quest grows" })}</span>
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {/* What the quest is worth and pays, or to inquire (0265). Never Gratitude, which pays no quest. */}
+          <WorkPayBlock pay={quest.pay} />
+          {quest.duration && (
+            <span className="inline-flex items-center gap-1 text-muted-foreground">
+              <Clock className="w-3.5 h-3.5" />
+              {quest.duration}
+            </span>
+          )}
+          {commitment !== null && (
+            <span className="inline-flex items-center gap-1 text-muted-foreground" data-commitment-pct={commitment}>
+              <Gauge className="w-3.5 h-3.5" aria-hidden="true" />
+              {t({ message: `${commitment}% of you`, context: "open work card: how much of a person the quest asks" })}
+            </span>
+          )}
+          {fit && (
+            <span className={`px-2 py-0.5 rounded-full font-medium ${fit === "harder" ? "bg-muted text-muted-foreground" : "bg-open/15 text-open"}`} data-fit={fit}>
+              {fitWords[fit]}
+            </span>
+          )}
+          {quest.place && (
+            <span className="inline-flex items-center gap-1 text-muted-foreground" data-place={quest.place}>
+              <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
+              {placeWords[quest.place]}
+            </span>
+          )}
+          {quest.difficulty && (
+            <span className={`px-2 py-0.5 rounded-full font-medium ${difficultyColors[quest.difficulty] ?? "bg-muted text-muted-foreground"}`}>
+              {quest.difficulty}
+            </span>
+          )}
+        </div>
+
+        {/* The roots it grows from, drawn as small roots (shared/archetypeRoots.ts). */}
+        {/* Above the card's link layer, so each root's meaning opens on a tap (RootTags, InfoTip). The row reaches 12px
+            past the roots on both sides (given back on the left by a negative margin), so a tap the near tap gives a
+            root, up to 8px off its word, lands on the row and not on the card's link (QA round 3, WebKit). */}
+        {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" className="relative z-10 w-fit -ml-3 pl-3 pr-3" /> : null}
+
+        {(active > 0 || done > 0) && (
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            {active > 0 && (
+              <span className="inline-flex items-center gap-1 font-medium text-open">
+                <MushroomNetwork className="w-3.5 h-3.5" />
+                {active === 1
+                  ? t({ message: "1 hand on this", context: "open work card: one person carries this quest now" })
+                  : t({ message: `${active} hands on this`, context: "open work card: people carrying this quest now" })}
+              </span>
+            )}
+            {done > 0 && (
+              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                <Trans context="QuestCard, span"><CheckCircle2 className="w-3.5 h-3.5" />
+                {done} completed
               </Trans></span>
             )}
-            {chip && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${chip.cls}`}>
-                {chip.label}
-              </span>
-            )}
           </div>
-          {/* The example stamp (the lead, 24 Nov 2026), across the poster
-              and clear of the icon, the chips and the title. */}
-          {example && (
-            <div className="absolute inset-x-0 top-1/3 flex -translate-y-1/2 justify-center">
-              <ExampleStamp />
-            </div>
-          )}
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <h3 className="font-display text-lg font-bold text-white leading-snug drop-shadow-sm">
-              {quest.title}
-            </h3>
-            {quest.circle && (
-              <p className="text-white/80 text-xs mt-0.5">{quest.circle}</p>
-            )}
-          </div>
-        </QuestPoster>
+        )}
 
-        <div className="p-4 flex-1 flex flex-col gap-2.5">
-          {quest.subtitle ? (
-            <p className="text-sm text-foreground/80 italic leading-relaxed">{quest.subtitle}</p>
-          ) : (
-            quest.description && (
-              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                {quest.description}
-              </p>
-            )
-          )}
+        {gate && (
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-notice">
+            <Sprout className="w-3.5 h-3.5" />
+            {gate}
+          </p>
+        )}
 
-          {/* The goal thread: which season goal this work grows. */}
-          {goal && (
-            <p className="inline-flex items-start gap-1.5 text-sm font-medium text-foreground" data-goal={goal.id}>
-              <Target className="mt-0.5 w-4 h-4 shrink-0 text-open" aria-hidden="true" />
-              <span>{t({ message: `Grows: ${goalText}`, context: "open work card: the season goal this quest grows" })}</span>
-            </p>
-          )}
+        {/* "Open: nobody carries it yet" would promise work an example
+            cannot give, so an example says what it is instead. */}
+        {example ? (
+          <p className="text-xs text-muted-foreground" data-status="example">
+            {t({ message: "An example of the work to come. It cannot be taken yet.", context: "open work card: in place of the status mark on an example quest" })}
+          </p>
+        ) : (
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-status={status}>
+            <PlantGlyph state={status} className="size-5" />
+            {statusWords[status]}
+          </p>
+        )}
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            {/* What the quest is worth and pays, or to inquire (0265). Never Gratitude, which pays no quest. */}
-            <WorkPayBlock pay={quest.pay} />
-            {quest.duration && (
-              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                <Clock className="w-3.5 h-3.5" />
-                {quest.duration}
-              </span>
-            )}
-            {commitment !== null && (
-              <span className="inline-flex items-center gap-1 text-muted-foreground" data-commitment-pct={commitment}>
-                <Gauge className="w-3.5 h-3.5" aria-hidden="true" />
-                {t({ message: `${commitment}% of you`, context: "open work card: how much of a person the quest asks" })}
-              </span>
-            )}
-            {fit && (
-              <span className={`px-2 py-0.5 rounded-full font-medium ${fit === "harder" ? "bg-muted text-muted-foreground" : "bg-open/15 text-open"}`} data-fit={fit}>
-                {fitWords[fit]}
-              </span>
-            )}
-            {quest.place && (
-              <span className="inline-flex items-center gap-1 text-muted-foreground" data-place={quest.place}>
-                <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
-                {placeWords[quest.place]}
-              </span>
-            )}
-            {quest.difficulty && (
-              <span className={`px-2 py-0.5 rounded-full font-medium ${difficultyColors[quest.difficulty] ?? "bg-muted text-muted-foreground"}`}>
-                {quest.difficulty}
-              </span>
-            )}
-          </div>
-
-          {/* The roots it grows from, drawn as small roots (shared/archetypeRoots.ts). */}
-          {quest.archetypes?.length ? <RootTags roots={quest.archetypes} size="sm" /> : null}
-
-          {(active > 0 || done > 0) && (
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              {active > 0 && (
-                <span className="inline-flex items-center gap-1 font-medium text-open">
-                  <MushroomNetwork className="w-3.5 h-3.5" />
-                  {active === 1
-                    ? t({ message: "1 hand on this", context: "open work card: one person carries this quest now" })
-                    : t({ message: `${active} hands on this`, context: "open work card: people carrying this quest now" })}
-                </span>
-              )}
-              {done > 0 && (
-                <span className="inline-flex items-center gap-1 text-muted-foreground">
-                  <Trans context="QuestCard, span"><CheckCircle2 className="w-3.5 h-3.5" />
-                  {done} completed
-                </Trans></span>
-              )}
-            </div>
-          )}
-
-          {gate && (
-            <p className="inline-flex items-center gap-1.5 text-xs font-medium text-notice">
-              <Sprout className="w-3.5 h-3.5" />
-              {gate}
-            </p>
-          )}
-
-          {/* "Open: nobody carries it yet" would promise work an example
-              cannot give, so an example says what it is instead. */}
-          {example ? (
-            <p className="text-xs text-muted-foreground" data-status="example">
-              {t({ message: "An example of the work to come. It cannot be taken yet.", context: "open work card: in place of the status mark on an example quest" })}
-            </p>
-          ) : (
-            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-status={status}>
-              <PlantGlyph state={status} className="size-5" />
-              {statusWords[status]}
-            </p>
-          )}
-
-          <div className="mt-auto pt-2 flex items-center justify-between text-sm font-semibold text-notice">
-            <span><Trans context="QuestCard, span">See the quest</Trans></span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </div>
+        <div className="mt-auto pt-2 flex items-center justify-between text-sm font-semibold text-notice">
+          <span><Trans context="QuestCard, span">See the quest</Trans></span>
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
         </div>
-      </article>
-    </Link>
+      </div>
+    </article>
   );
 }

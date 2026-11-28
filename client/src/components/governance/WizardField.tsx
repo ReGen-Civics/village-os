@@ -106,10 +106,9 @@ export default function WizardField({
 
   const label = (
     <label htmlFor={id} className="block text-sm font-semibold text-foreground">
-      {ww(field.label)}
+      {field.tip ? <InfoTip tip={ww(field.tip)}>{ww(field.label)}</InfoTip> : ww(field.label)}
       {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
       {field.required && <span className="sr-only"> <Trans context="WizardField, span">(required)</Trans></span>}
-      {field.tip && <InfoTip tip={ww(field.tip)} label={`What ${ww(field.label).toLowerCase()} means`} />}
     </label>
   );
 
