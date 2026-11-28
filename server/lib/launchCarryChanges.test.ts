@@ -242,6 +242,16 @@ describe("what a person should look at before the vote", () => {
     );
   });
 
+  it("a village that asks every member still counts a test account that holds the founder role", () => {
+    // The way through for a village short of founders is to ask every member. The test account is a member too.
+    const out = launchCarryChanges(firstVillage({
+      roll: { kind: "members", yesNeeded: 3, onIt: [{ id: "qa", name: NAMES.qa }, { id: "rye", name: NAMES.rye }, { id: "tia", name: NAMES.tia }], notOnIt: [] },
+    }));
+    expect(out.attention.find((a) => a.id === "test-founder")?.text).toBe(
+      "Integration QA holds the founder role and reads as a test account: its name carries a test word. It is on the launch roll, so its answer counts toward the 3 yeses the launch needs.",
+    );
+  });
+
   it("no next season on the calendar", () => {
     const out = launchCarryChanges(firstVillage({ season: seasonTurnAtLaunch([SEASONS[0]], "2026-12-30"), stewardTerm: { endsOn: null, problem: "The running season has no end date." } }));
     expect(change(out, "season")).toMatchObject({ standing: "nothing", after: "No next season is on the calendar, so the season does not turn." });

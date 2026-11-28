@@ -667,7 +667,8 @@ export function launchCarryChanges(facts: CarryFacts, lang: CarryLang = "en"): C
   for (const t of facts.testFounders) {
     attention.push({
       id: "test-founder",
-      text: w.attention.testFounder(t.name, t.why, facts.roll.kind === "founders" && onRoll.has(t.id), facts.roll.yesNeeded),
+      // On the roll whichever roll the village chose: a founder is a member too, so a village that asks every member asks this account.
+      text: w.attention.testFounder(t.name, t.why, onRoll.has(t.id), facts.roll.yesNeeded),
       accounts: [{ id: t.id, name: t.name }],
     });
   }
