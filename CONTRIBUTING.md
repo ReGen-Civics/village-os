@@ -180,6 +180,10 @@ The same gates apply, the same writing rules apply, and the same migration rules
 diff to one thing. A pull request that fixes a bug and also renames four files is two reviews
 wearing one hat.
 
+A pull request that adds an admin tab, a control or a page beside Admin registers it in the
+registry of acts and freezes its id in the same change. The files, what the failing test prints
+and the one trap in the registry's word lists are under "House traps" in `CLAUDE.md`.
+
 Commit messages follow `type(scope): subject` with a body explaining why. Match the log.
 
 ## Review capacity is finite, and here is what that means

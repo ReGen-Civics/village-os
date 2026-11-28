@@ -1,0 +1,24 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: copy key R49, the empty live room, 28 Nov 2026
+#: client/src/components/sessions/roomWords.ts
+msgctxt "live session room: nobodyHere"
+msgid "Nobody has arrived yet."
+msgstr "Nadie ha llegado todavía."
+
+# needs-native-review: copy key R49, the Module Library lede, 28 Nov 2026
+#: client/src/pages/Modules.tsx
+msgctxt "module library lede: what the page holds"
+msgid "Every tool this platform has."
+msgstr "Todas las herramientas que tiene esta plataforma."
+
+# needs-native-review: copy key R49, the Module Library lede, said only to a reader who can turn a module on, 28 Nov 2026
+#: client/src/pages/Modules.tsx
+msgctxt "module library lede: said to a reader who can turn a module on"
+msgid "Turn on the ones your village wants."
+msgstr "Active las que quiera su aldea."

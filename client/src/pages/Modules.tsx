@@ -182,8 +182,18 @@ export default function Modules() {
           <h1 className={H1}><Trans context="Modules, h1">Module Library</Trans></h1>
           {/* The cards themselves are single links, so the pill mechanics
               live up here where a tooltip trigger is legal HTML. */}
+          {/* R49 (the founder's pick, 28 Nov 2026, docs/COPY_STYLE_KEY.md): what the page holds, then what to do
+              there. The page is public, so a visitor and a member read it too, and neither can turn anything on. The
+              first sentence is for every reader. The second is drawn only where the catalog says this reader may turn
+              a module on with one press (`viewer.canSwitch`, the answer that also draws the page's own Turn on). */}
           <p className="text-muted-foreground mt-2 max-w-2xl leading-relaxed">
-            Everything this platform can be, one card at a time. A village{" "}
+            <Trans context="module library lede: what the page holds">Every tool this platform has.</Trans>{" "}
+            {viewer.canSwitch && (
+              <>
+                <Trans context="module library lede: said to a reader who can turn a module on">Turn on the ones your village wants.</Trans>{" "}
+              </>
+            )}
+            A village{" "}
             <InfoTip tip={`Every module ships off. ${catalyst.aNameCap} turns one on for members or for everyone, and the four core modules are always there.`}><Trans context="Modules, InfoTip">turns on</Trans></InfoTip>{" "}
             what it needs and leaves the rest on the shelf, and every card{" "}
             <InfoTip tip={`On a card, "${TIER_PILL.connected}" means the module talks to a service that runs somewhere else, and "${TIER_PILL.managed}" means a vendor runs it for you. A card with neither pill runs entirely here.`}><Trans context="Modules, InfoTip">wears its pills</Trans></InfoTip>{" "}
