@@ -26,7 +26,7 @@
  * cannot be applied as the village stands says Blocked and why. A queue that did not load reads "unknown", never zero,
  * and the number at the top becomes "at least". No new act: nothing here decides more than it did.
  */
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Link, useSearch } from "wouter";
 import Layout from "@/components/Layout";
@@ -46,10 +46,19 @@ import SeraListRow from "@/components/reviewInbox/SeraListRow";
 import DecisionsLine from "@/components/reviewInbox/DecisionsLine";
 import { inboxHeaders as headers, kindOf, useReviewInbox, type InboxGroup } from "@/components/reviewInbox/useReviewInbox";
 
-type View = "waiting" | "held" | "decided";
+/**
+ * THE BATCHES VIEW (the accepted cut C8, 27 Nov 2026): /admin/proposals is folded into this page. Its whole desk is
+ * drawn here, unchanged: each batch as a card with Accept all and Discard all, its filters, and its history. The old
+ * address lands on this view (client/src/lib/proposalsFold.ts). A chunk of its own, read only when the view is opened.
+ */
+const ProposalsDesk = lazy(() => import("@/pages/ProposedChanges").then((m) => ({ default: m.ProposalsDesk })));
+/** As wide as the desk was on its own page, centred on this page's column. */
+const WIDE = "relative left-1/2 w-[min(72rem,calc(100vw-2rem))] -translate-x-1/2";
+
+type View = "waiting" | "held" | "decided" | "batches";
 const viewOf = (search: string): View => {
   const v = new URLSearchParams(search).get("view");
-  return v === "held" || v === "decided" ? v : "waiting";
+  return v === "held" || v === "decided" || v === "batches" ? v : "waiting";
 };
 const TAB = "inline-flex min-h-11 shrink-0 items-center rounded-full px-4 text-sm font-medium";
 const TAB_ON = `${TAB} bg-notice text-background`;
@@ -271,12 +280,29 @@ export default function AdminReview() {
                   <Link href="/admin/review?view=decided" className={view === "decided" ? TAB_ON : TAB_OFF} aria-current={view === "decided" ? "page" : undefined} data-testid="tab-decided">
                     <Trans context="review inbox: views">Decided</Trans>
                   </Link>
+                  <Link href="/admin/review?view=batches" className={view === "batches" ? TAB_ON : TAB_OFF} aria-current={view === "batches" ? "page" : undefined} data-testid="tab-batches">
+                    <Trans context="review inbox: views">Batches</Trans>
+                  </Link>
                 </>
               ) : null}
             </nav>
           ) : null}
 
           {answer && !forbidden && view === "held" && mayDecide ? <HeldList desk={desk} /> : null}
+
+          {answer && !forbidden && view === "batches" && mayDecide ? (
+            <div className={WIDE} data-testid="batches-view">
+              <Suspense
+                fallback={
+                  <p className={HINT}>
+                    <Trans context="review inbox: batches view">Reading the batches.</Trans>
+                  </p>
+                }
+              >
+                <ProposalsDesk embedded onDecided={() => void refresh()} />
+              </Suspense>
+            </div>
+          ) : null}
 
           {answer && !forbidden && view === "decided" && mayDecide ? (
             desk.state === "ok" && desk.decided.length ? (

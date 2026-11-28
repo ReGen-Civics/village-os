@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the Batches view of the review list, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Batches"
+msgstr "Lotes"
+
+# needs-native-review: the Batches view of the review list, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: batches view"
+msgid "Reading the batches."
+msgstr "Leyendo los lotes."
