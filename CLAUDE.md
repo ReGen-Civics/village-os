@@ -315,9 +315,13 @@ uploads volume, never a bigger number here.
 **The same script splits the total into the members' side and admin-only** (the founder's ruling,
 28 Nov 2026: admin-only pages get a counted allowance of their own, and the build decides which
 pages those are from the routes, never from a kept list). A file is ADMIN-ONLY when only an admin
-route can load it: the routes at or under `/admin` plus the road to launch's two pages, read from
-`client/src/App.tsx`, then a walk of the build's own chunk graph (`dist/chunk-graph.json`, written
-by `vite.config.ts`) from what `index.html` loads. Anything a member's page can import, statically
+route can load it, and ADMIN-ONLY IS DECIDED BY WHAT A MEMBER CAN REALLY REACH: an admin route is
+an address at or under `/admin`, read from `client/src/App.tsx`, unless the router or the page's
+own code says a person who is not an admin opens it (`/admin/review`, `/admin/proposals` and
+`/admin/role-progress` today; `ADMIN_PATH_RULINGS` in `scripts/lib/distSplit.mjs` quotes the line
+that proves each, and a test holds each quote to its file). The road to launch's pages are member
+routes until they are folded behind the admin's own door. Then comes a walk of the build's own
+chunk graph (`dist/chunk-graph.json`, written by `vite.config.ts`) from what `index.html` loads. Anything a member's page can import, statically
 or lazily, is a member file, so importing an admin module from a member page MOVES its chunk to
 the members' side; the report lists the admin-only files and says whether any member chunk holds
 the Admin Garden's code. `MAX_MEMBER_DIST_KB` and `MAX_ADMIN_DIST_KB` gate the two sides once both

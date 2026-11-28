@@ -18,7 +18,11 @@ export interface RoutePreloadRows {
   rows: Array<[string, number[]]>;
 }
 export const ROAD_TO_LAUNCH_PATHS: string[];
-export function isAdminPath(routePath: string, roadPaths?: string[]): boolean;
+/** Who opens each address under /admin, with the file and the line of code that proves it. */
+export const ADMIN_PATH_RULINGS: Array<{ path: string; opens: "admins" | "members"; file: string; proof: string }>;
+export const MEMBER_OPENED_ADMIN_PATHS: string[];
+export function isUnderAdmin(routePath: string): boolean;
+export function isAdminPath(routePath: string, roadPaths?: string[], memberOpened?: string[]): boolean;
 export function routesFromApp(appSource: string): AppRoute[];
 export function unreadRoutes(routes: AppRoute[]): string[];
 export function routePatternOf(routePath: string): string;

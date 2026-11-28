@@ -11,14 +11,18 @@
  *
  * THE RULE, in the order it is applied:
  *
- *   1. THE ADMIN ROOTS come from the router. client/src/App.tsx is parsed for
- *      each route's path and the lazily imported page it renders. A route is
- *      an admin route when its path is /admin or under it, or is one of the
- *      road to launch's own pages (ROAD_TO_LAUNCH_PATHS, the one list here,
- *      held to the router by a test). The page's source file is found in the
- *      chunk graph, and the chunk holding it is an admin root, unless a member
- *      route's page sits in the same chunk: then a member route loads that
- *      chunk and it is a member chunk.
+ *   1. THE ADMIN ROOTS come from the router, and ADMIN-ONLY IS DECIDED BY
+ *      WHAT A MEMBER CAN REALLY REACH (the coordinator's ruling, 28 Nov 2026).
+ *      client/src/App.tsx is parsed for each route's path and the lazily
+ *      imported page it renders. A route is an admin route when its path is
+ *      /admin or under it, UNLESS the router or the page's own code says a
+ *      person who is not an admin opens it: ADMIN_PATH_RULINGS below is that
+ *      small reviewed list, each entry with the line of code that proves it,
+ *      held to the router and to the quoted line by a test. A page outside
+ *      /admin joins by ROAD_TO_LAUNCH_PATHS, which is empty today. The page's
+ *      source file is found in the chunk graph, and the chunk holding it is an
+ *      admin root, unless a member route's page sits in the same chunk: then a
+ *      member route loads that chunk and it is a member chunk.
  *
  *   2. THE WALK starts from what index.html loads and follows every static
  *      and dynamic import in the CHUNK graph (dist/chunk-graph.json, written
@@ -61,17 +65,66 @@ export const charged = (bytes) => (bytes === 0 ? 0 : Math.ceil(bytes / BLOCK) * 
 export const ROUTER_MODULE = "client/src/App.tsx";
 
 /**
- * THE ROAD TO LAUNCH'S OWN PAGES: the checklist a founder walks from claiming
- * a village to its launch vote (pages/JourneyToLaunch), and the setup game
- * that fills the same checklist in (pages/SetupGame). They sit outside /admin
- * by address and belong to the admin allowance by the ruling. This is the one
- * hand-written list in the split, and scripts/check-dist-budget.test.mjs fails
- * if a path here stops being a route in client/src/App.tsx.
+ * THE ROAD TO LAUNCH'S OWN PAGES, counted as admin routes though they sit
+ * outside /admin. EMPTY TODAY, on purpose (the coordinator's ruling, 28 Nov
+ * 2026: admin-only is decided by what a member can really reach).
+ *
+ * The first version of this list held /journey-to-launch and /setup-game, and
+ * it counted four files and about 104 KB as admin-only that a member's own
+ * visit loads: a signed-in member runs the test run on /journey-to-launch, a
+ * steward who is not an admin hands powers over there, and the canvas is
+ * there. /setup-game rides a chunk member pages share in any case.
+ *
+ * A road page joins this list on the day it is folded behind the admin's own
+ * door, so that a person who is not an admin can no longer open it, and the
+ * coordinator decides that, in the change that does the folding. Each path
+ * here must be a route in client/src/App.tsx: scripts/check-dist-budget.test.mjs
+ * fails otherwise.
  */
-export const ROAD_TO_LAUNCH_PATHS = ["/journey-to-launch", "/setup-game"];
+export const ROAD_TO_LAUNCH_PATHS = [];
 
-export function isAdminPath(routePath, roadPaths = ROAD_TO_LAUNCH_PATHS) {
-  return routePath === "/admin" || routePath.startsWith("/admin/") || roadPaths.includes(routePath);
+/**
+ * WHO OPENS EACH /admin ADDRESS, AS THE CODE ITSELF SAYS.
+ *
+ * An address under /admin is an admin route by the path rule. The path is a
+ * name and three of these pages say so in their own words: a steward, a
+ * circle's lead or a holder of the needed powers opens them without being an
+ * admin, and what such a person loads is a member's weight. So each /admin
+ * address is ruled on here, with the file and the line that proves it:
+ *
+ *   opens "members"  the page is a MEMBER route. Its chunk is never an admin
+ *                    root, whatever its address.
+ *   opens "admins"   the page is an admin root, and the line quoted is its
+ *                    gate.
+ *
+ * An /admin address with no entry stays an admin root BY PATH ALONE, and the
+ * gate and the written tables say "admin by path, not proved by a gate" beside
+ * it: nobody has guessed for it either way. Nothing here is decided by a file
+ * name. Add an entry only with a line of code to quote; the test holds each
+ * address to the router and each quoted line to its file, so an entry cannot
+ * outlive its proof. What the test cannot see is whether the line is true: for
+ * the three member entries the server's own gate was read as well
+ * (server/routes/reviewInbox.ts admits any member, server/routes/roleMeasures.ts
+ * a circle's lead, server/routes/proposedChanges.ts a holder of a reader key),
+ * and for /admin/mint the server answers only an admin (`isAdmin`, the
+ * /api/admin/economy read in server/index.ts).
+ */
+export const ADMIN_PATH_RULINGS = [
+  { path: "/admin", opens: "admins", file: "client/src/pages/Admin.tsx", proof: "return <AdminGate onAuth={setPassword} />;" },
+  { path: "/admin/mint", opens: "admins", file: "client/src/pages/Mint.tsx", proof: "Sign in with your admin account to open the Mint." },
+  { path: "/admin/proposals", opens: "members", file: "client/src/pages/ProposedChanges.tsx", proof: "This page is for admins and for the people who hold the powers these changes need." },
+  { path: "/admin/review", opens: "members", file: "client/src/pages/AdminReview.tsx", proof: "nothing: a steward who is not an admin opens it." },
+  { path: "/admin/role-progress", opens: "members", file: "client/src/App.tsx", proof: "The /admin/ path gates nothing: a circle's lead opens it too." },
+];
+
+/** The /admin addresses a person who is not an admin opens, by the rulings above. */
+export const MEMBER_OPENED_ADMIN_PATHS = ADMIN_PATH_RULINGS.filter((r) => r.opens === "members").map((r) => r.path);
+
+/** Whether an address sits at or under /admin, whoever opens it. */
+export const isUnderAdmin = (routePath) => routePath === "/admin" || routePath.startsWith("/admin/");
+
+export function isAdminPath(routePath, roadPaths = ROAD_TO_LAUNCH_PATHS, memberOpened = MEMBER_OPENED_ADMIN_PATHS) {
+  return (isUnderAdmin(routePath) && !memberOpened.includes(routePath)) || roadPaths.includes(routePath);
 }
 
 const stripExt = (id) => id.replace(/\.[cm]?[jt]sx?$/, "");
@@ -173,11 +226,18 @@ export function classifyDist(o) {
     if (!isAdminPath(r.path, roadPaths) || r.kind === "lazy" || r.kind === "redirect") continue;
     notes.push(`${r.path} is an admin route the first page draws itself (${r.component ?? "unread"}), so it has no chunk of its own to count apart`);
   }
+  // The /admin addresses a person who is not an admin opens: member routes, named so nobody takes them for an oversight.
+  const rulings = new Map(ADMIN_PATH_RULINGS.map((r) => [r.path, r]));
+  const memberOpened = o.routes
+    .filter((r) => isUnderAdmin(r.path) && !isAdminPath(r.path, roadPaths))
+    .map((r) => ({ path: r.path, page: r.page, chunk: r.page ? (chunkOfModule.get(r.page) ?? null) : null, file: rulings.get(r.path)?.file ?? null, proof: rulings.get(r.path)?.proof ?? null }));
   const roots = [];
   const lazyFacts = o.graph.lazy ?? {};
   for (const r of adminRoutes) {
     const file = chunkOfModule.get(r.page) ?? null;
-    const root = { path: r.path, page: r.page, chunk: file, heldBack: false, why: "" };
+    // `gate` is the line of code that proves only an admin opens the page, or null: admin by path, not proved by a gate.
+    const ruled = rulings.get(r.path);
+    const root = { path: r.path, page: r.page, chunk: file, heldBack: false, why: "", gate: ruled?.opens === "admins" ? { file: ruled.file, proof: ruled.proof } : null, byRoadList: !isUnderAdmin(r.path) };
     roots.push(root);
     if (!file) {
       root.why = "its page is in no chunk of this build";
@@ -315,6 +375,7 @@ export function classifyDist(o) {
   return {
     routerChunk,
     roots,
+    memberOpened,
     notes,
     side,
     memberChunks,

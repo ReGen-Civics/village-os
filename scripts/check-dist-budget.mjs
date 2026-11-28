@@ -387,7 +387,8 @@ const result = {
         maxAdminDistKb: MAX_ADMIN.value,
         gated: splitGated,
         adminOnly: sm.split.adminFiles.map((f) => ({ path: f.path, bytes: f.bytes, chargedKb: kb(f.chargedBytes), owners: f.owners })),
-        adminRoots: sm.split.roots.map((r) => ({ path: r.path, page: r.page, chunk: r.chunk, adminOnly: r.heldBack, why: r.why })),
+        adminRoots: sm.split.roots.map((r) => ({ path: r.path, page: r.page, chunk: r.chunk, adminOnly: r.heldBack, why: r.why, gate: r.gate, byRoadList: r.byRoadList })),
+        memberOpenedAdminPaths: sm.split.memberOpened,
         unnamedFiles: sm.split.unnamedFiles,
         notes: sm.split.notes,
         gardenInMemberChunks: sm.garden.map((g) => ({ chunk: g.chunk, modules: g.modules.map((m) => m.id) })),
@@ -441,6 +442,12 @@ if (!sm.measured) {
   const shown = sm.split.adminFiles.slice(0, adminTop);
   say(`  admin-only files, largest first (${shown.length} of ${sm.split.adminFiles.length}; --admin-top <n> for more)`);
   for (const f of shown) say(`    ${String(kb(f.chargedBytes)).padStart(5)} KB  ${String(f.bytes).padStart(7)} B on disk  ${f.path}  ${f.owners.join(" ")}`);
+  say(`  admin routes, read from the router (${sm.split.roots.length}), each with the line that proves only an admin opens it:`);
+  for (const r of sm.split.roots) say(`    ${r.path}  ${r.gate ? `${r.gate.file}: "${r.gate.proof}"` : r.byRoadList ? "named in ROAD_TO_LAUNCH_PATHS" : "admin by path, not proved by a gate"}`);
+  if (sm.split.memberOpened.length) {
+    say(`  ${sm.split.memberOpened.length} address(es) under /admin that a person who is not an admin opens, so they are member routes:`);
+    for (const r of sm.split.memberOpened) say(`    ${r.path}  ${r.file}: "${r.proof}"`);
+  }
   const carried = sm.split.roots.filter((r) => !r.heldBack);
   if (carried.length) {
     say(`  ${carried.length} admin route(s) whose page is NOT admin-only, so its code counts on the members' side:`);

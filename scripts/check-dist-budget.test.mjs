@@ -34,8 +34,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {
+  ADMIN_PATH_RULINGS,
   GARDEN_DIR,
+  MEMBER_OPENED_ADMIN_PATHS,
   ROAD_TO_LAUNCH_PATHS,
+  isUnderAdmin,
   charged,
   classifyDist,
   firstViewOf,
@@ -384,12 +387,84 @@ check("every route in client/src/App.tsx is read", () => {
 });
 
 check("each road to launch path is still a route the router draws from a lazy page", () => {
-  assert.ok(ROAD_TO_LAUNCH_PATHS.length > 0);
+  // The list is empty today (a member opens the road's pages), so this holds nothing until a path is added to it.
   for (const p of ROAD_TO_LAUNCH_PATHS) {
     const r = realRoutes.find((x) => x.path === p);
     assert.ok(r, `${p} is in ROAD_TO_LAUNCH_PATHS (scripts/lib/distSplit.mjs) and is no longer a route in client/src/App.tsx. Take it off the list, or name the address the road moved to.`);
     assert.notStrictEqual(r.kind, "unread", `${p} is drawn in a shape the reader does not know`);
   }
+});
+
+check("a road page a member opens is a member route, and counts as an admin route only once it is on the list", () => {
+  assert.strictEqual(isAdminPath("/journey-to-launch"), ROAD_TO_LAUNCH_PATHS.includes("/journey-to-launch"));
+  assert.strictEqual(isAdminPath("/journey-to-launch", []), false);
+  assert.strictEqual(isAdminPath("/journey-to-launch", ["/journey-to-launch"]), true);
+});
+
+/*
+ * WHO OPENS EACH /admin ADDRESS. Each ruling names a route, a file and a line
+ * of that file. The route must still be in the router and the line still in
+ * the file, so a ruling cannot outlive the code it quotes. What this cannot
+ * see is whether the line is true; the rulings' own header says what was read
+ * on the server for each.
+ */
+check("every ruling on an /admin address names a route that is still in the router", () => {
+  assert.ok(ADMIN_PATH_RULINGS.length > 0);
+  for (const ruling of ADMIN_PATH_RULINGS) {
+    assert.ok(isUnderAdmin(ruling.path), `${ruling.path} is not at or under /admin, so the path rule never made it an admin route and it needs no ruling`);
+    assert.ok(ruling.opens === "admins" || ruling.opens === "members", `${ruling.path}: opens must be "admins" or "members"`);
+    const r = realRoutes.find((x) => x.path === ruling.path);
+    assert.ok(r, `${ruling.path} is ruled on in ADMIN_PATH_RULINGS (scripts/lib/distSplit.mjs) and is no longer a route in client/src/App.tsx. Take the ruling out.`);
+    assert.strictEqual(r.kind, "lazy", `${ruling.path} no longer draws a lazily imported page, so there is no chunk for the ruling to place`);
+  }
+  assert.strictEqual(new Set(ADMIN_PATH_RULINGS.map((r) => r.path)).size, ADMIN_PATH_RULINGS.length, "one ruling per address");
+});
+
+check("every ruling's proof is still a line of the file it quotes", () => {
+  for (const ruling of ADMIN_PATH_RULINGS) {
+    const file = path.join(HERE, "..", ruling.file);
+    assert.ok(fs.existsSync(file), `${ruling.path}: ${ruling.file} is gone, and it held the proof`);
+    assert.ok(ruling.proof.length >= 30 && !ruling.proof.includes("\n"), `${ruling.path}: the proof must be one whole line of code or comment, long enough to mean something`);
+    assert.ok(
+      fs.readFileSync(file, "utf8").includes(ruling.proof),
+      `${ruling.path}: ${ruling.file} no longer says "${ruling.proof}". Read the page's gate again: if a person who is not an admin still ${ruling.opens === "members" ? "opens" : "cannot open"} it, quote the line that says so now; if that changed, change the ruling.`,
+    );
+  }
+});
+
+check("an /admin address is an admin route unless a ruling says a person who is not an admin opens it", () => {
+  for (const ruling of ADMIN_PATH_RULINGS) assert.strictEqual(isAdminPath(ruling.path), ruling.opens === "admins", ruling.path);
+  assert.deepStrictEqual(MEMBER_OPENED_ADMIN_PATHS, ADMIN_PATH_RULINGS.filter((r) => r.opens === "members").map((r) => r.path));
+  assert.strictEqual(isAdminPath("/admin/some-new-page"), true, "an address nobody has ruled on stays an admin route by its path");
+  assert.strictEqual(isAdminPath("/admin/review", [], []), true, "and with no rulings at all the path rule is the whole rule");
+});
+
+check("a member-opened /admin page's chunk is a member chunk, and an unruled one is an admin root with no gate to quote", () => {
+  const app = `
+    const Quests = lazyPage(() => import("./pages/Quests"));
+    const Admin = lazyPage(() => import("./pages/Admin"));
+    const AdminReview = lazyPage(() => import("./pages/AdminReview"));
+    const Brand = lazyPage(() => import("./pages/AdminBrand"));
+    <Route path="/quests" component={Quests} />
+    <Route path="/admin" component={Admin} />
+    <Route path="/admin/review" component={AdminReview} />
+    <Route path="/admin/brand-new" component={Brand} />`;
+  const g = baseGraph();
+  const router = g.chunks.find((c) => c.file === "assets/first-page.js");
+  router.dynamicImports = ["assets/quests.js", "assets/admin.js", "assets/review.js", "assets/brand.js"];
+  g.chunks = g.chunks.filter((c) => !["assets/profile.js", "assets/mint.js", "assets/road.js"].includes(c.file));
+  g.chunks.push(chunk("assets/review.js", { imports: ["assets/first-page.js"], modules: { "client/src/pages/AdminReview.tsx": 60 } }));
+  g.chunks.push(chunk("assets/brand.js", { imports: ["assets/first-page.js"], modules: { "client/src/pages/AdminBrand.tsx": 60 } }));
+  const files = [...FILES.filter((f) => !["assets/profile.js", "assets/mint.js", "assets/road.js"].includes(f.path)), { path: "assets/review.js", bytes: 2000 }, { path: "assets/brand.js", bytes: 2000 }];
+  const s = classifyDist({ graph: g, routes: routesFromApp(app), files, indexRefs: INDEX_REFS });
+  assert.strictEqual(sideOf(s, "assets/review.js"), "member", "a steward who is not an admin opens /admin/review, so its page is a member's weight");
+  assert.strictEqual(sideOf(s, "assets/brand.js"), "admin");
+  assert.strictEqual(sideOf(s, "assets/admin.js"), "admin");
+  assert.deepStrictEqual(s.roots.map((r) => r.path), ["/admin", "/admin/brand-new"]);
+  assert.ok(s.roots.find((r) => r.path === "/admin").gate?.proof, "the /admin root carries the line that proves its gate");
+  assert.strictEqual(s.roots.find((r) => r.path === "/admin/brand-new").gate, null, "admin by path, not proved by a gate");
+  assert.deepStrictEqual(s.memberOpened.map((r) => [r.path, r.chunk]), [["/admin/review", "assets/review.js"]]);
+  assert.match(s.memberOpened[0].proof, /a steward who is not an admin opens it/);
 });
 
 check("a route's pattern is one segment per parameter, with the trailing slash optional", () => {
@@ -423,9 +498,17 @@ function tree(dir, o = {}) {
   put("client/src/App.tsx", `
     const Quests = lazyPage(() => import("./pages/Quests"));
     const Admin = lazyPage(() => import("./pages/Admin"));
+    const AdminReview = lazyPage(() => import("./pages/AdminReview"));
+    const AdminBrand = lazyPage(() => import("./pages/AdminBrand"));
     <Route path="/quests" component={Quests} />
     <Route path="/admin" component={Admin} />
+    ${o.underAdmin ? `<Route path="/admin/review" component={AdminReview} />\n    <Route path="/admin/brand-new" component={AdminBrand} />` : ""}
   `);
+  // o.underAdmin: two more pages under /admin, 4 KB each: one a steward opens (a ruling says so), one nobody has ruled on.
+  if (o.underAdmin) {
+    put("dist/public/assets/Review-k.js", pad(`import"./first-page-b.js";`, 100));
+    put("dist/public/assets/Brand-j.js", pad(`import"./first-page-b.js";`, 100));
+  }
   const preloadTag = o.preload ? `<script async src="/assets/route-preload-r.js"></script>` : "";
   put("dist/public/index.html", pad(`<script type="module" src="/assets/index-a.js"></script><link rel="modulepreload" href="/assets/first-page-b.js"><link rel="preload" href="/assets/both-h.woff2">${preloadTag}`, 900));
   put("dist/public/assets/index-a.js", pad(`import"./first-page-b.js";`, 1000));
@@ -446,7 +529,13 @@ function tree(dir, o = {}) {
     version: 1,
     chunks: [
       chunk("assets/index-a.js", { isEntry: true, imports: ["assets/first-page-b.js"], modules: { "client/src/main.tsx": 10 } }),
-      chunk("assets/first-page-b.js", { dynamicImports: ["assets/Quests-c.js", "assets/Admin-d.js"], modules: { "client/src/App.tsx": 100 } }),
+      chunk("assets/first-page-b.js", { dynamicImports: ["assets/Quests-c.js", "assets/Admin-d.js", ...(o.underAdmin ? ["assets/Review-k.js", "assets/Brand-j.js"] : [])], modules: { "client/src/App.tsx": 100 } }),
+      ...(o.underAdmin
+        ? [
+            chunk("assets/Review-k.js", { facade: "client/src/pages/AdminReview.tsx", imports: ["assets/first-page-b.js"], modules: { "client/src/pages/AdminReview.tsx": 40 } }),
+            chunk("assets/Brand-j.js", { facade: "client/src/pages/AdminBrand.tsx", imports: ["assets/first-page-b.js"], modules: { "client/src/pages/AdminBrand.tsx": 40 } }),
+          ]
+        : []),
       chunk("assets/Quests-c.js", { facade: "client/src/pages/Quests.tsx", imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: o.plant ? ["assets/AdminTab-e.js"] : [], modules: { "client/src/pages/Quests.tsx": 50 } }),
       chunk("assets/shared-f.js", { modules: { "client/src/lib/shared.ts": 20, ...(o.garden ? { [`${GARDEN_DIR}Lantern.tsx`]: 12 } : {}), ...(o.leak ? { "client/src/components/admin/NeedTagPicker.tsx": 30 } : {}) } }),
       chunk("assets/Admin-d.js", { facade: "client/src/pages/Admin.tsx", imports: ["assets/first-page-b.js", "assets/shared-f.js"], dynamicImports: ["assets/AdminTab-e.js"], css: ["assets/admin-g.css"], modules: { "client/src/pages/Admin.tsx": 500 } }),
@@ -608,6 +697,19 @@ check("a script index.html loads that is not the table is read as text, and what
   assert.strictEqual(r.code, 0, r.err);
   assert.match(r.out, /Members' side: 48 KB, measured in BLOCK-CHARGED bytes across 9 files/);
   assert.match(r.out, /Admin-only: 24 KB, measured in BLOCK-CHARGED bytes across 3 files/);
+});
+
+check("the gate names each admin route with the line that proves its gate, and says so when there is none", () => {
+  const r = gate({ underAdmin: true }, {}, ["--split-md", "@md"]);
+  assert.strictEqual(r.code, 0, r.err);
+  // Two more 4 KB pages: /admin/review is a member's (a ruling says a steward opens it), /admin/brand-new is admin by path alone.
+  assert.match(r.out, /Members' side: 44 KB, measured in BLOCK-CHARGED bytes across 8 files/);
+  assert.match(r.out, /Admin-only: 32 KB, measured in BLOCK-CHARGED bytes across 5 files/);
+  assert.match(r.out, /\/admin {2}client\/src\/pages\/Admin\.tsx: "return <AdminGate onAuth=\{setPassword\} \/>;"/);
+  assert.match(r.out, /\/admin\/brand-new {2}admin by path, not proved by a gate/);
+  assert.match(r.out, /1 address\(es\) under \/admin that a person who is not an admin opens, so they are member routes:\n\s+\/admin\/review {2}client\/src\/pages\/AdminReview\.tsx: "nothing: a steward who is not an admin opens it\."/);
+  assert.match(r.md, /\| `\/admin\/brand-new` \| pages\/AdminBrand \| `Brand-j\.js` \| admin-only \| \*\*admin by path, not proved by a gate\*\* \|/);
+  assert.match(r.md, /\| `\/admin\/review` \| pages\/AdminReview \| `Review-k\.js` \| client\/src\/pages\/AdminReview\.tsx: `nothing: a steward who is not an admin opens it\.` \|/);
 });
 
 /* The step down: the old admin shell, recorded in scripts/admin-shell-step-down.json (the rule's own cases are in admin-shell-step-down.test.mjs). */

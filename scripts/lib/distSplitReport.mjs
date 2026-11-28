@@ -228,9 +228,22 @@ export function splitReportMarkdown(m) {
   say();
   say("## The admin routes, read from the router");
   say();
-  say("| Admin route | Page | Chunk | Counted as |");
-  say("|---|---|---|---|");
-  for (const r of s.adminRoots) say(`| \`${r.path}\` | ${r.page.replace(/^client\/src\//, "")} | ${r.chunk ? `\`${short(r.chunk)}\`` : "none"} | ${r.adminOnly ? "admin-only" : `**member**: ${r.why}`} |`);
+  say("A route is an admin route when its address is `/admin` or under it and no line of code says a person who is not an admin opens its page. The proofs are `ADMIN_PATH_RULINGS` in scripts/lib/distSplit.mjs, held to the router and to each quoted line by a test.");
+  say();
+  say("| Admin route | Page | Chunk | Counted as | The line that proves only an admin opens it |");
+  say("|---|---|---|---|---|");
+  for (const r of s.adminRoots) {
+    const proof = r.gate ? `${r.gate.file}: \`${r.gate.proof}\`` : r.byRoadList ? "named in ROAD_TO_LAUNCH_PATHS" : "**admin by path, not proved by a gate**";
+    say(`| \`${r.path}\` | ${r.page.replace(/^client\/src\//, "")} | ${r.chunk ? `\`${short(r.chunk)}\`` : "none"} | ${r.adminOnly ? "admin-only" : `**member**: ${r.why}`} | ${proof} |`);
+  }
+  if ((s.memberOpenedAdminPaths ?? []).length) {
+    say();
+    say("Under `/admin` by address, and MEMBER routes, because the code says a person who is not an admin opens them:");
+    say();
+    say("| Address | Page | Chunk | The line that says so |");
+    say("|---|---|---|---|");
+    for (const r of s.memberOpenedAdminPaths) say(`| \`${r.path}\` | ${(r.page ?? "no lazy page").replace(/^client\/src\//, "")} | ${r.chunk ? `\`${short(r.chunk)}\`` : "none"} | ${r.file}: \`${r.proof}\` |`);
+  }
   say();
   say(`## The admin-only files, largest first (${s.adminOnly.length})`);
   say();
