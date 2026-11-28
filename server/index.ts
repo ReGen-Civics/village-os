@@ -35,7 +35,7 @@ import { guidePromptName } from "../shared/guideName";
 // the active clock now, and it had no caller left here. `sceneStopsFor` and
 // `cleanCrewName` go with main's dead-import pass for the same reason,
 // measured on the MERGED tree rather than on either side's base.
-import { civilParts, moonPhase, moonPhaseName } from "../shared/lunar";
+import { civilDateKey, civilParts, moonPhase, moonPhaseName } from "../shared/lunar";
 import { crewsRepo as crewsRepoFactory } from "./lib/crews";
 // Restored on merge: the dead-import lane measured these unused against ITS
 // base, and main began using them before it landed. The compiler is the only
@@ -210,6 +210,7 @@ import { isPresentMember, presenceTest } from "./lib/memberPresence";
 import { runSeasonReminders } from "./lib/seasonReminders";
 import { crossOwedLaunchSelection, forgetStewardActs, holdingHasLapsed, recordTermStarted, runTermWatch, setVetoWindowCheck, STEWARD_ROLE_ID, STEWARD_VETO, stewardMailRefusal, termWatchLookaheadDays } from "./lib/stewardship";
 import { seatFoundersAtLaunch } from "./lib/launchSeating";
+import { seasonTurnLines, turnSeasonAtLaunch } from "./lib/launchSeasonTurn"; // Rye, 2026-11-27: the launch is the turn of the season
 import { launchProposalDoc, launchSlateProblem } from "./lib/launchProposal";
 import { FOUNDERS_COUNT_ONCE, launchRollNow, launchRollProblem } from "./lib/launchRoll"; // Rye, 2026-11-27: only founders vote on the launch
 import { carryAtOnceIfMet, carryEveryMetBallot, type CarryDeps } from "./lib/launchCarry";
@@ -13753,6 +13754,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
       carriedOpen: (await launchStatus(getPool(), launchDeps)).carriedOpen.map((c) => c.title), // host-only rows this vote carries
       // A ratifying vote says so in the frozen document, with the day issuance began.
       ratifying: ratifying ? { issuingSince: ratify.issuingSince } : undefined,
+      // Which season the carry begins, from the calendar as it stands now (server/lib/launchSeasonTurn.ts).
+      season: seasonTurnLines(getSeasonConfig().seasons, seasonState().today),
     });
 
     const result = await openBallot(getPool(), {
@@ -18719,7 +18722,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerMapMasterplanRoutes(app, { authedUser, capabilityCtx, getPool, uploadsDir: UPLOADS_DIR });
 
   // The season list and its save, which moves every seat that ends with its season (server/routes/seasons.ts).
-  registerSeasonRoutes(app, {
+  // The launch closer turns the season through the same save (server/lib/launchSeasonTurn.ts).
+  const seasonRoutes = registerSeasonRoutes(app, {
     isAdmin, adminActor, getPool, notify, seasonState, getSeasonConfig, seasonRepo, addActivity, loadRoles,
     permissionHoldings: loadRoleHolders, seatVoteLandsAt: () => seatVoteLandsAt(landingDeps(), roleVoteDays()),
     writePermissionTerms: (moves) => withRoleHolderLock(async () => {
@@ -22009,7 +22013,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
             startedBy: actorId,
             note: "The village voted to start its Game.",
           });
-      await recordLaunchCarried(getPool(), { ballotId: b.id, closedBy: actorId });
+      const carried = await recordLaunchCarried(getPool(), { ballotId: b.id, closedBy: actorId });
       if (!started.started) {
         /*
          * A refusal is held, never swallowed. Nothing today can reach this,
@@ -22066,6 +22070,20 @@ Send an empty drafts array when you are still listening. A role payload is {name
         actorUserId: actorId,
         entityType: "ballot",
         entityRef: b.id,
+      });
+      // THE LAUNCH IS THE TURN OF THE SEASON (Rye, 2026-11-27). The next season
+      // begins the day the launch was recorded, through the Season tab's own
+      // save, and the seating below reads the calendar after it, so the
+      // stewards hold the whole new season. One date moves and no role's end
+      // does (server/lib/launchSeasonTurn.ts). It never refuses the launch.
+      await turnSeasonAtLaunch({
+        config: getSeasonConfig,
+        launchDay: () => civilDateKey(new Date(carried.launchedAt), seasonState().timezone),
+        save: async (body) => {
+          const saved = await seasonRoutes.saveCalendar(body, actorId);
+          return saved.ok ? { ok: true, seatsMoved: saved.seatsMoved } : { ok: false, refused: saved.refused };
+        },
+        audit: (text) => { void recordEvent(getPool(), { kind: "audit", text, actorUserId: actorId, entityType: "launch", entityRef: b.id, audience: "admin" }); },
       });
       // AND THE FOUNDERS TAKE THE STEWARD'S SEAT (Rye, 2026-09-23: "Seat them
       // at launch"). server/lib/launchSeating.ts owns the term, the notices,

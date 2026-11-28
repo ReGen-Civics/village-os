@@ -180,6 +180,24 @@ describe("the launch proposal's frozen document", () => {
     expect(first).not.toContain("Ratify");
   });
 
+  it("says which season the carry begins, in a section of its own, straight after what changes (Rye, 2026-11-27)", () => {
+    const season = [
+      "The day this carries is the turn of the season. Season of Rooting begins that day, taking over from Season of Foundations.",
+      "Whoever is seated as a steward by this vote holds the role for the whole of Season of Rooting, until 2027-04-15.",
+    ];
+    const doc = launchProposalDoc({ ...BASE, season });
+    expect(doc).toContain(["## The season", "", season[0], "", season[1], ""].join("\n"));
+    // After the opening, before the doors the launch closes, so a reader meets it early.
+    expect(doc.indexOf("## What changes when this carries")).toBeLessThan(doc.indexOf("## The season"));
+    expect(doc.indexOf("## The season")).toBeLessThan(doc.indexOf("## What this vote asks"));
+    expect(doc).not.toContain("\n\n\n");
+    // A ratifying vote turns the season as a first launch does, so it carries the section too.
+    expect(launchProposalDoc({ ...BASE, season, ratifying: { issuingSince: "2026-03-14T09:26:53Z" } })).toContain("## The season");
+    // Control: a caller with nothing to say about the season says nothing, and the heading is not left behind.
+    expect(launchProposalDoc(BASE)).not.toContain("## The season");
+    expect(launchProposalDoc({ ...BASE, season: [] })).not.toContain("## The season");
+  });
+
   it("leaves no empty line where a weight note would have been", () => {
     // The `...(note ? [note, ""] : [])` shape, pinned. A blank pair emitted
     // for a village with nothing to say about weight renders as a gap in the

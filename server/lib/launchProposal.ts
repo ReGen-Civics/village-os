@@ -212,6 +212,13 @@ export interface LaunchProposalDocInput {
    * already did. Absent means a first launch, exactly as before.
    */
   ratifying?: { issuingSince: string | null };
+  /**
+   * What the launch does to the season, from the calendar as it stood when the
+   * vote opened (`seasonTurnLines`, server/lib/launchSeasonTurn.ts; Rye,
+   * 2026-11-27: "The launch is the turn of the season"). Absent or empty and
+   * the document says nothing about the season.
+   */
+  season?: readonly string[];
 }
 
 /**
@@ -226,6 +233,7 @@ export interface LaunchProposalDocInput {
 export function launchProposalDoc(input: LaunchProposalDocInput): string {
   return [
     ...openingSection(input),
+    ...seasonSection(input),
     ...doorsSection(input),
     ...stewardSection(input),
     ...handoverSection(input),
@@ -305,6 +313,18 @@ function openingSection(input: LaunchProposalDocInput): string[] {
     "The village's powers pass the way a launch passes them, as the sections below say: who may turn a module on, who may publish the org chart, who is seated as a steward, and what the village holds from that day.",
     "",
   ];
+}
+
+/**
+ * THE LAUNCH IS THE TURN OF THE SEASON (Rye, 2026-11-27). Which season begins,
+ * how long a steward seated by this vote holds the role, and that no other
+ * date moves, in the sentences `seasonTurnLines` wrote from the calendar the
+ * vote opened on. Its own section, so a member who reads only headings finds
+ * that a launch moves the calendar.
+ */
+function seasonSection(input: LaunchProposalDocInput): string[] {
+  if (!input.season?.length) return [];
+  return ["## The season", "", ...input.season.flatMap((line) => [line, ""])];
 }
 
 const rollKindOf = (input: LaunchProposalDocInput): LaunchRollKind => input.rollKind ?? "founders";
