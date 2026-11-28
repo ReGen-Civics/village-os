@@ -31,6 +31,16 @@ describe("readSections", () => {
     expect(payShapeLines(r.value.payShape)).toEqual(["Cash 40%", "Equity 55%", "Credits 5%"]);
   });
 
+  it("reads a companion link and refuses a value that is not a web address", () => {
+    const good = readSections({ companionUrl: "https://example.com/companions?seat=cook" });
+    expect(good.ok).toBe(true);
+    if (good.ok) expect(good.value.companionUrl).toBe("https://example.com/companions?seat=cook");
+    const bad = readSections({ companionUrl: "not a link" });
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.problem).toBe(SECTION_PROBLEMS.notUrl);
+    expect(hasSections({ ...EMPTY_SECTIONS, companionUrl: "https://example.com" })).toBe(true);
+  });
+
   it("reads nothing as the empty set, which draws nothing (control: the full set draws)", () => {
     const r = readSections(undefined);
     expect(r.ok && hasSections(r.value)).toBe(false);

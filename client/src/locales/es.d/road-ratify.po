@@ -1,24 +1,20 @@
-# needs-native-review: the ratifying launch vote, 27 Nov 2026
-#. placeholder {0}: new Date(vote.issuingSince).toLocaleDateString()
+# needs-native-review: the Start the Game vote of a village already issuing, 28 Nov 2026
+#. placeholder {tokens}: what the village calls its tokens together
+#. placeholder {issuingDay}: the day issuance began, in the reader's date format
 #: client/src/components/launch/StartTheGame.tsx
 msgctxt "StartTheGame, a village already issuing"
-msgid "This village has been issuing tokens since {0}. This vote puts the launch on the record. It does not restart issuance, and that date does not move."
-msgstr "Esta aldea emite fichas desde el {0}. Esta votación deja constancia del lanzamiento. La emisión sigue como está, sin reiniciarse, y esa fecha se mantiene."
+msgid "This village has been issuing {tokens} since {issuingDay}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in."
+msgstr "Esta aldea emite {tokens} desde el {issuingDay}, y eso no se reinicia. El día en que esta votación se apruebe es el cumpleaños del Juego, y la Luna 1 es la luna en la que cae."
 
-# needs-native-review: the ratifying launch vote, 27 Nov 2026
+# needs-native-review: the Start the Game vote of a village already issuing, 28 Nov 2026
+#. placeholder {tokens}: what the village calls its tokens together
 #: client/src/components/launch/StartTheGame.tsx
 msgctxt "StartTheGame, a village already issuing"
-msgid "This village is already issuing tokens. This vote puts the launch on the record. It does not restart issuance."
-msgstr "Esta aldea ya emite fichas. Esta votación deja constancia del lanzamiento. La emisión sigue como está, sin reiniciarse."
+msgid "This village is already issuing {tokens}, and that does not restart. The day this vote carries is the Game's birthday, and Moon 1 is the moon it falls in."
+msgstr "Esta aldea ya emite {tokens}, y eso no se reinicia. El día en que esta votación se apruebe es el cumpleaños del Juego, y la Luna 1 es la luna en la que cae."
 
-# needs-native-review: the ratifying launch vote, 27 Nov 2026
+# needs-native-review: the Start the Game vote of a village already issuing, 28 Nov 2026
 #: client/src/pages/JourneyToLaunch.tsx
-msgctxt "JourneyToLaunch, confirm before opening a ratifying launch vote"
-msgid "Open the vote that puts this village's launch on the record? Issuance does not restart. It carries the moment enough of its roll have said yes, unless somebody on it has said no."
-msgstr "¿Abrir la votación que deja constancia del lanzamiento de esta aldea? La emisión sigue como está, sin reiniciarse. Se aprueba en el momento en que suficientes personas de su padrón hayan dicho que sí, salvo que alguna haya dicho que no."
-
-# needs-native-review: the ratifying launch vote, 27 Nov 2026
-#: client/src/components/launch/StartTheGame.tsx
-msgctxt "StartTheGame, the card's name on a village already issuing"
-msgid "Ratify the launch"
-msgstr "Ratificar el lanzamiento"
+msgctxt "JourneyToLaunch, confirm before opening the launch vote of a village already issuing"
+msgid "Open the vote on starting the Game? Issuance is already open and does not restart: the day this carries is the Game's birthday. It carries the moment enough of its roll have said yes, unless somebody on it has said no."
+msgstr "¿Abrir la votación para iniciar el Juego? La emisión ya está abierta y no se reinicia: el día en que se apruebe es el cumpleaños del Juego. Se aprueba en el momento en que suficientes personas de su padrón hayan dicho que sí, salvo que alguna haya dicho que no."

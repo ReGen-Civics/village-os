@@ -77,7 +77,7 @@ export type NavLink = {
    * messages (components/messages/MessageCountBadge.tsx). Each is read for
    * them alone and hidden at zero. Never anyone else's number.
    */
-  count?: "tasks" | "messages";
+  count?: "tasks" | "messages" | "waiting";
   /**
    * true: shown only to someone signed in. false: shown only to a visitor.
    * Absent: both.
@@ -148,12 +148,13 @@ export const isGroup = (entry: NavEntry): entry is NavGroup => "items" in entry;
  * village is run and how we work in Govern, the ways in in Join, and nothing a stranger does not need shown to a
  * signed-out visitor. "So with the feedback that I gave you here, take that same logic and apply it to the rest."
  *
- * Four groups, and no group shows more than five rows to anyone: a row is a link or a folder (`sub`), and a folder
+ * Four groups, and no group shows more than five rows to anyone (Village six: the lead chose "Allow six rows", 27 Nov
+ * 2026): a row is a link or a folder (`sub`), and a folder
  * opens to five links at most. navNest.test.ts holds both counts for every audience.
  *
- *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health.
+ *   Join        ways in. First for every reader (the lead, 27 Nov 2026: "Join should be first on the list").
+ *   Village     the place and its life: the maps, Quests, Places and homes, the Library, Village health, Tools.
  *   Community   the people and the story: Our story, conversations, Gratitude, gatherings, welcoming.
- *   Join        ways in. First for a visitor or a newcomer (`leads`), third for a member.
  *   Govern      how the village is run and how we work: deciding, circles and roles, the season (Quests again,
  *               the one page in two groups on purpose), the guides, how we work, and the Module Library last.
  *
@@ -166,58 +167,10 @@ export const NAV: readonly NavEntry[] = [
    * and on a phone the bottom tab bar carries Home.
    */
   {
-    label: "Village",
-    holds: "The place",
-    items: [
-      // The map is the village's primary surface: the first row, with the hidden map beside it for a member.
-      { href: "/map", label: "Living Map", module: "map", sub: "Maps" },
-      // Members only; the module can never stand at public.
-      { href: "/hidden-map", label: "Hidden map", module: "hidden-map", newcomers: "never", sub: "Maps" },
-      // Quests are something you do in the village, and something the season is made of: in Govern too, on purpose.
-      { href: "/quests", label: "Quests" },
-      // The lead (round 2): "housing and stay and good neighbor criteria all under that", with the places beside
-      // them. Photographs is a section of Places since fold 5 (#1856): /photographs redirects to /places#photos.
-      { href: "/housing", brochure: true, label: "Housing", sub: "Places and homes" },
-      { href: "/stay", label: "Stay", module: "stays", sub: "Places and homes" },
-      // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
-      { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
-      { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
-      // Its own entry (the lead, round 2: "Library could just be its own tab under village, and so could village
-      // health"). Neither is a stranger's: a visitor is not offered them.
-      { href: "/library", label: "Library", module: "library", newcomers: "never" },
-      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
-    ],
-  },
-  {
-    label: "Community",
-    holds: "The people and the story",
-    items: [
-      // The people and the story (the lead, round 2: "Our story could be under community. Our team could be under
-      // community", and the Love Letter "would be under community").
-      { href: "/team", brochure: true, label: "Our Team", sub: "Our story" },
-      { href: "/master-plan", brochure: true, label: "Master Plan", sub: "Our story" },
-      { href: "/love-letter", brochure: true, label: "Sign the Love Letter", sub: "Our story" },
-      // The other villages this one is linked with.
-      { href: "/network", label: "Village Network", module: "network", newcomers: "in-use", sub: "Our story" },
-      { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use", sub: "Conversations" },
-      { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use", sub: "Conversations" },
-      // The village's tools grid: where it talks and meets outside this app. A member's.
-      { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Conversations" },
-      { href: "/feedback", label: "Share Feedback", sub: "Conversations" },
-      // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only).
-      { href: "/gratitude", label: "Gratitude", token: "recognition" },
-      { href: "/events", label: "Events", module: "events", newcomers: "in-use", sub: "Gatherings" },
-      // The circle calls a member takes part in.
-      { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never", sub: "Gatherings" },
-      { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use", sub: "Gatherings" },
-      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
-      { href: "/rites", label: "Rites", module: "rites", newcomers: "never", sub: "Welcoming" },
-      { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never", sub: "Welcoming" },
-    ],
-  },
-  {
     label: "Join",
     holds: "Ways in",
+    // First for every reader (the lead, 27 Nov 2026, on the phone's More sheet: "Join should be first on the list"), so
+    // the desktop bar and the phone show one order. `leads` stays: it says why a newcomer meets Join first.
     leads: "newcomers",
     // A newcomer opens Join to the paths, the first thing a stranger chooses.
     opens: "Choose your path",
@@ -246,6 +199,58 @@ export const NAV: readonly NavEntry[] = [
     ],
   },
   {
+    label: "Village",
+    holds: "The place",
+    items: [
+      // The map is the village's primary surface: the first row, with the hidden map beside it for a member.
+      { href: "/map", label: "Living Map", module: "map", sub: "Maps" },
+      // Members only; the module can never stand at public.
+      { href: "/hidden-map", label: "Hidden map", module: "hidden-map", newcomers: "never", sub: "Maps" },
+      // Quests are something you do in the village, and something the season is made of: in Govern too, on purpose.
+      { href: "/quests", label: "Quests" },
+      // The lead (round 2): "housing and stay and good neighbor criteria all under that", with the places beside
+      // them. Photographs is a section of Places since fold 5 (#1856): /photographs redirects to /places#photos.
+      { href: "/housing", brochure: true, label: "Housing", sub: "Places and homes" },
+      { href: "/stay", label: "Stay", module: "stays", sub: "Places and homes" },
+      // A chapter of Rights and agreements since fold 3 (#1857); its switch and its name stay under /good-neighbor.
+      { href: "/rights#good-neighbor", brochure: true, story: "/good-neighbor", label: "Good Neighbor Criteria", sub: "Places and homes" },
+      { href: "/places", label: "Places", module: "map", newcomers: "in-use", sub: "Places and homes" },
+      // The Library and Village Health are each their own row (the lead, 27 Nov 2026: "LIbrary as it's own village
+      // row", and round 2's "so could village health"). Neither is a stranger's: a visitor is not offered them.
+      { href: "/library", label: "Library", module: "library", newcomers: "never" },
+      { href: "/village-health", label: "Village Health", module: "health", newcomers: "never" },
+      // TOOLS (the lead, 27 Nov 2026, on Village Tools: "Its under community but should be under tools"). A folder, so
+      // the village's other tools can join it; holding only the tools grid (chat, calendar, Hypha) it shows as that row
+      // (navNest.ts). Village is the one group with six rows: the lead chose "Allow six rows" (27 Nov 2026).
+      { href: "/tools", label: "Village Tools", module: "tools", newcomers: "never", sub: "Tools" },
+    ],
+  },
+  {
+    label: "Community",
+    holds: "The people and the story",
+    items: [
+      // The people and the story (the lead, round 2: "Our story could be under community. Our team could be under
+      // community", and the Love Letter "would be under community").
+      { href: "/team", brochure: true, label: "Our Team", sub: "Our story" },
+      { href: "/master-plan", brochure: true, label: "Master Plan", sub: "Our story" },
+      { href: "/love-letter", brochure: true, label: "Sign the Love Letter", sub: "Our story" },
+      // The other villages this one is linked with.
+      { href: "/network", label: "Village Network", module: "network", newcomers: "in-use", sub: "Our story" },
+      { href: "/feed", label: "Feed", module: "feed", newcomers: "in-use", sub: "Conversations" },
+      { href: "/forum", label: "Forum", module: "forum", newcomers: "in-use", sub: "Conversations" },
+      { href: "/feedback", label: "Share Feedback", sub: "Conversations" },
+      // Public since #1528 (the lead, 24 Nov 2026: the wall shows a visitor first names only).
+      { href: "/gratitude", label: "Gratitude", token: "recognition" },
+      { href: "/events", label: "Events", module: "events", newcomers: "in-use", sub: "Gatherings" },
+      // The circle calls a member takes part in.
+      { href: "/sessions", label: "Live Sessions", module: "sessions", newcomers: "never", sub: "Gatherings" },
+      { href: "/seasonal-festivals", label: "Seasonal Festivals", newcomers: "in-use", sub: "Gatherings" },
+      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
+      { href: "/rites", label: "Rites", module: "rites", newcomers: "never", sub: "Welcoming" },
+      { href: "/introductions", label: "Introductions", module: "introductions", newcomers: "never", sub: "Welcoming" },
+    ],
+  },
+  {
     /**
      * GOVERN (the lead, round 2: "which we could just call govern"): how the village is run and how we work. The
      * routes stay where they were (/governance and the rest); only the menu's word changed, and a village that
@@ -268,6 +273,9 @@ export const NAV: readonly NavEntry[] = [
       { href: "/governance/treasury", label: "Treasury", newcomers: "never", sub: "Decide" },
       // Signed out, the page itself asks the visitor to sign in to write one.
       { href: "/propose", label: "Make a Proposal", module: "governance", newcomers: "never", sub: "Decide" },
+      // What waits on the reader, with its count: Govern's dot leads here (the menu's QA, round 2). The account menu
+      // keeps it too, as the member's own; a page in two places on purpose (navNest.test.ts names it).
+      { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", count: "waiting", sub: "Decide" },
       // No Change Requests entry: folds 6 and 7 (#1861) put change requests inside Decisions
       // (/governance/decisions#changes), and the approvals inside Your work (/governance/work#approvals).
       /**
@@ -297,6 +305,10 @@ export const NAV: readonly NavEntry[] = [
       { href: "/training", label: "Training", sub: "Guides" },
       { href: "/rights", label: "Rights and agreements", sub: "Guides" },
       { href: "/rights#leaving-well", label: "Leaving Well", sub: "Guides" },
+      // The village's checklists and their practice runs: the reference shelf's, beside the guides (it left Your things
+      // so Pay could join the Wallet there, 27 Nov 2026). Signed in only, as it was in the account menu: a newcomer
+      // keeps it, a visitor never had it.
+      { href: "/protocols", label: "Protocols", module: "protocols", signedIn: true, sub: "Guides" },
       // How we work (the lead, round 2: "the how we work and the game mechanics and all of that would also be under
       // the governance"). Renamed on 2026-09-28 with the page it opens; the route stays put.
       { href: "/governance/how", label: "How we work together", sub: "How we work" },
@@ -332,10 +344,13 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
    * door (round 2: "wallet shouldn't be under shared things"). Settings has no entry: the profile's own Settings
    * button is its door, and the folder keeps five.
    */
-  { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", sub: "Your things" },
+  // With the count of what waits, as the menu's dots carry it (nav/WaitingCount.tsx).
+  { href: "/governance/work", label: "Waiting on you", roles: ["member", "admin", "founder"], newcomers: "never", count: "waiting", sub: "Your things" },
   { href: "/wallet", label: "Wallet", module: "exchange", newcomers: "never", sub: "Your things" },
+  // PAY (the lead, 27 Nov 2026: "Yes and while we haven't issued credits we can still have it active and showing"). A
+  // member's row beside the Wallet, shown before the village issues credits: the page itself says when there are none.
+  { href: "/pay", label: "Pay", roles: ["member", "admin", "founder"], newcomers: "never", sub: "Your things" },
   { href: "/journal", label: "Journal", module: "journal", sub: "Your things" },
-  { href: "/protocols", label: "Protocols", module: "protocols", sub: "Your things" },
   // Examples only until the village's first real badge (UNFINISHED-AREAS 20), so a newcomer meets it once it is in use.
   { href: "/badges", label: "Badges", module: "badges", newcomers: "in-use", sub: "Your things" },
   /**

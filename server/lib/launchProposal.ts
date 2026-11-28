@@ -296,21 +296,22 @@ function openingSection(input: LaunchProposalDocInput): string[] {
   const iso = String(input.ratifying.issuingSince ?? "");
   const day = /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : "";
   return [
-    `# Ratify the launch`,
+    // The vote keeps its name (Rye, 2026-11-28: "Let's stay with start the game and have it as the 'birthday of the game' going forward").
+    `# Start the Game`,
     "",
     day
-      ? `${input.villageName} has been issuing tokens since ${day}, from before the launch vote existed. This vote puts its launch on the record.`
-      : `${input.villageName} was already issuing tokens before the launch vote existed. This vote puts its launch on the record.`,
+      ? `${input.villageName} has been issuing tokens since ${day}, from before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`
+      : `${input.villageName} was already issuing tokens before the launch vote existed. This vote starts its Game on the record, and the day it carries is the Game's birthday.`,
     "",
-    "## What does not change",
+    "## What was already running",
     "",
     day
-      ? `Token issuance does not restart, and the day it began stays ${day}. Nothing already issued changes, and nobody's balance moves because of this vote.`
-      : "Token issuance does not restart, and the day it began does not move. Nothing already issued changes, and nobody's balance moves because of this vote.",
+      ? `Token issuance. It does not restart, and the day it began stays ${day}. Nothing already issued changes, and nobody's balance moves because of this vote.`
+      : "Token issuance. It does not restart, and the day it began does not move. Nothing already issued changes, and nobody's balance moves because of this vote.",
     "",
     "## What changes when this carries",
     "",
-    "The village's powers pass the way a launch passes them, as the sections below say: who may turn a module on, who may publish the org chart, who is seated as a steward, and what the village holds from that day.",
+    "That day is the Game's birthday, and Moon 1 is the moon it falls in. The village's powers pass the way a launch passes them, as the sections below say: who may turn a module on, who may publish the org chart, who is seated as a steward, and what the village holds from that day.",
     "",
   ];
 }
@@ -433,7 +434,7 @@ function stewardSection(input: LaunchProposalDocInput): string[] {
   return [
     "## Who carries the steward role",
     "",
-    `${input.openedBy} opened this vote and chose who it puts forward. Voting yes is voting for this list as well as for ${input.ratifying ? "ratifying the launch" : "starting the Game"}.`,
+    `${input.openedBy} opened this vote and chose who it puts forward. Voting yes is voting for this list as well as for starting the Game.`,
     "",
     ...input.slate.map((m) => `- ${m.name}`),
     "",

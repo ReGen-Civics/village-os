@@ -42,7 +42,7 @@ describe("the menu document", () => {
       groups: { Community: "Aboard" },
       tabs: ["/", "/quests", "/forum", "/map", "/extra"],
     });
-    expect(d).toEqual({ labels: { "/forum": "Crew Talk" }, hidden: ["/feed"], groups: { Community: "Aboard" }, tabs: ["/", "/quests", "/forum", "/map"] });
+    expect(d).toEqual({ labels: { "/forum": "Crew Talk" }, hidden: ["/feed"], groups: { Community: "Aboard" }, folders: {}, tabs: ["/", "/quests", "/forum", "/map"] });
     expect(menuDocIsEmpty(menuDocOf(null))).toBe(true);
     expect(menuDocProblem({ tabs: ["/", "/a", "/b", "/c", "/d"] })).toMatch(/up to 4/);
     expect(menuDocProblem({ labels: { "/forum": "x".repeat(40) } })).toMatch(/32 characters/);

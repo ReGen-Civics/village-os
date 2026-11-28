@@ -79,23 +79,29 @@ export function issuingSinceDay(issuingSince: string | null | undefined): string
 }
 
 /**
- * The words a ratifying vote says where a first launch says "issuance starts".
- * One home, so the route, the closer and the tests read the same sentences.
+ * THE VOTE KEEPS ITS NAME, AND THE DAY IT CARRIES IS THE GAME'S BIRTHDAY.
+ *
+ * Rye, 28 Nov 2026, asked what a village already issuing should call this
+ * vote: "Let's stay with start the game and have it as the 'birthday of the
+ * game' going forward". So the ballot, its notices, the pulse line and the
+ * steward seating all read exactly as a first launch's do. "Ratifying" is the
+ * name of the mechanism in this file and is never shown to anybody.
+ *
+ * Two sentences still differ, because for this village one fact differs:
+ * issuance was already open. A first launch says issuance opens today. This
+ * village is told what was already running and that it did not move. They are
+ * here, so the closer and the tests read the same words.
  */
 export const RATIFY_WORDS = {
-  title: (villageName: string) => `Ratify the launch of ${villageName}`,
-  deciding: "The village is deciding whether to put its launch on the record",
-  carriedTitle: (title: string) => `The village ratified its launch: ${title}`,
-  carriedBody: (issuingSince: string | null) => {
+  /** To whoever opened the vote, when it carries. One line of ceremony, then the fact. */
+  carriedBody: (villageName: string, issuingSince: string | null) => {
     const day = issuingSinceDay(issuingSince);
+    const birthday = `The Game has begun. Happy birthday, ${villageName}.`;
     return day
-      ? `The launch is on the record. Token issuance began on ${day}, and that date has not moved.`
-      : "The launch is on the record. Token issuance was already open, and nothing about it has moved.";
+      ? `${birthday} Token issuance was already open, since ${day}, and that day has not moved.`
+      : `${birthday} Token issuance was already open, and nothing about it has moved.`;
   },
-  carriedPulse: "The village put its launch on the record: its launch vote carried.",
-  shortTitle: "Too few on the roll said yes, so the launch is not on the record yet",
+  /** To whoever opened the vote, when the window ended short of its yeses. */
   shortBody:
     "The window ended before enough of the roll had said yes. Nothing has changed, issuance carries on as it was, and it can be asked again whenever they are more gathered.",
-  notRatifiedTitle: "The village did not ratify its launch",
-  mintNote: "The launch was ratified: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15).",
 } as const;
