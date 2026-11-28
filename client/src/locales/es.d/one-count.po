@@ -58,3 +58,39 @@ msgstr "Abrir el formulario"
 msgctxt "review inbox: Sera's one row"
 msgid "Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. Nothing is taken without a person: pay, a new role apart from its circle, and anything marked Check first are each confirmed on their own."
 msgstr "Marque las que quiera tomar y tómelas juntas. Las sugerencias de Sera sobre el pago y sobre roles nuevos también están en la lista. Nada se toma sin una persona: el pago, un rol nuevo separado de su círculo y todo lo marcado Revisar primero se confirman cada uno por separado."
+
+# needs-native-review: the order of the review list, blocked first (QA, 28 Nov 2026)
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: the order of the list"
+msgid "In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps."
+msgstr "En cada tipo: primero lo bloqueado, luego lo que vence antes, luego lo más antiguo. Lo que no lleva fecha va al final, en el orden que guarda su propia cola."
+
+# needs-native-review: a long queue on the review list (QA, 28 Nov 2026)
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: more rows of one kind"
+msgid "Show all {n}"
+msgstr "Mostrar los {n}"
+
+# needs-native-review: a long queue on the review list (QA, 28 Nov 2026)
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: a queue too long to list here"
+msgid "This list stops here. The rest are on this queue's own page."
+msgstr "Esta lista termina aquí. El resto está en la página propia de esta cola."
+
+# needs-native-review: the one count when it is unknown (QA, 28 Nov 2026)
+#: client/src/components/reviewInbox/DecisionsLine.tsx
+msgctxt "the one count, when no queue that loaded holds any and some did not load"
+msgid "How many decisions wait on you is unknown."
+msgstr "Se desconoce cuántas decisiones esperan por usted."
+
+# needs-native-review: Sera's sheet, pay is confirmed on its own (Rye, 27 Nov 2026)
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera answers"
+msgid "1 pay change is left out of this take. It is confirmed on its own."
+msgstr "Se deja fuera de esta toma 1 cambio de pago. Se confirma por separado."
+
+# needs-native-review: Sera's sheet, pay is confirmed on its own (Rye, 27 Nov 2026)
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera answers"
+msgid "{pays} pay changes are left out of this take. Each is confirmed on its own."
+msgstr "Se dejan fuera de esta toma {pays} cambios de pago. Cada uno se confirma por separado."
