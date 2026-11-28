@@ -1,0 +1,60 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{more, plural, one {And # more page nobody opened.} other {And # more pages nobody opened.}}"
+msgstr "{more, plural, one {Y # página más que nadie abrió.} other {Y # páginas más que nadie abrió.}}"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} was opened {visits, plural, one {# time} other {# times}} and has no menu entry: consider giving it one."
+msgstr "{name} se abrió {visits, plural, one {# vez} other {# veces}} y no tiene entrada en el menú: considere darle una."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {visits, plural, one {the one visit} other {all # visits}} in {group} from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} recibe {visits, plural, one {la única visita} other {las # visitas}} de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {pct}% of the visits in {group} ({visits} of {groupVisits}) from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} recibe el {pct}% de las visitas de {group} ({visits} de {groupVisits}) desde dentro de la carpeta {folder}: considere darle una fila propia."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Counting began on {recordedSince}. This window counted {countedDays, plural, one {# day} other {# days}}."
+msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays, plural, one {# día} other {# días}}."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}} so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+msgstr "Por ahora solo {visits, plural, one {# visita} other {# visitas}} en {days, plural, one {# día} other {# días}}. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits, plural, one {# visit} other {# visits}} over {days, plural, one {# day} other {# days}}. Suggestions need {minDays} days and {minVisits} visits to read."
+msgstr "Solo {visits, plural, one {# visita} other {# visitas}} en {days, plural, one {# día} other {# días}}. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "{menuVisits, plural, one {# visit to pages in the menu.} other {# visits to pages in the menu.}}"
+msgstr "{menuVisits, plural, one {# visita a páginas del menú.} other {# visitas a páginas del menú.}}"
+
+# needs-native-review: how the menu is used, plurals and counts (QA round 2), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} has a row of its own in {group} and {visits, plural, one {# visit} other {# visits}}, against {median} for a typical page there: consider moving it into a folder."
+msgstr "{name} tiene una fila propia en {group} y {visits, plural, one {# visita} other {# visitas}}, frente a {median} de una página típica allí: considere moverla a una carpeta."
