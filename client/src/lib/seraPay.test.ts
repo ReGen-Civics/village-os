@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/gameApi", () => ({ authToken: () => token }));
 let token = "a-token";
 
-import { currentPayOf, forgetPayDoor, payCall, readPayDoor, readPayHistory, seraFigure, seraPayFromRow, storedEstimateOf } from "./seraPay";
+import { forgetPayDoor, payCall, readPayDoor, readStoredEstimate, seraPayFromRow, storedEstimateOf } from "./seraPay";
 import { listed } from "@/test/seraDifferences";
 
 const pay = (ourId: string, params: Record<string, string | number | null> = { model: "Stipend", monthlyUsd: 1200, standing: "pending" }) =>
@@ -44,7 +44,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("what Sera lists for one role, from its row", () => {
   it("is the row's own sentence and figure, so nothing is read twice", () => {
     const d = pay("r-cook");
-    expect(seraPayFromRow(d, "Sera")).toEqual({ agent: "Sera", sentence: d.words.sentence, monthlyUsd: 1200, editedAt: "2026-10-29T10:00:00.000Z" });
+    expect(seraPayFromRow(d, "Sera")).toEqual({ agent: "Sera", sentence: d.words.sentence, monthlyUsd: 1200 });
   });
 
   it("has no figure when the row carries none, or one that is no amount", () => {
@@ -71,41 +71,12 @@ describe("the estimate stored with the role's last pay setting", () => {
     expect(storedEstimateOf(null)).toBeNull();
   });
 
-  it("is read once from the role's own settings route with the pay as it stands, and is nothing when it does not answer", async () => {
-    const asked = serve({ "/api/org/roles/r-cook/pay/settings": { status: 200, body: { settings: [SETTING({ setMinor: 90000, currency: "USD" })] } } });
-    const history = await readPayHistory("r-cook");
-    expect(history.stored?.estimatedHours).toBe(40);
-    expect(history.current).toEqual({ minor: 90000, currency: "USD", setAt: "2026-10-30T12:00:00.000Z" });
-    expect(asked).toEqual([{ url: "/api/org/roles/r-cook/pay/settings", auth: "Bearer a-token" }]);
+  it("is read from the role's own settings route, and is nothing when it does not answer", async () => {
+    const asked = serve({ "/api/org/roles/r-cook/pay/settings": { status: 200, body: { settings: [SETTING()] } } });
+    expect((await readStoredEstimate("r-cook"))?.estimatedHours).toBe(40);
+    expect(asked[0]).toEqual({ url: "/api/org/roles/r-cook/pay/settings", auth: "Bearer a-token" });
     serve({});
-    expect(await readPayHistory("r-cook")).toEqual({ stored: null, current: null });
-  });
-});
-
-describe("the pay as it stands, which an accepted figure replaces", () => {
-  it("is the newest setting that took effect, never one still waiting for a signer or a vote", () => {
-    const waiting = SETTING({ id: "s-3", state: "awaiting_second", setMinor: 150000, currency: "USD", createdAt: "2026-11-20T12:00:00.000Z" });
-    const set = SETTING({ id: "s-2", state: "set", setMinor: 90000, currency: "USD", signedAt: "2026-11-02T12:00:00.000Z" });
-    expect(currentPayOf({ settings: [waiting, set] })).toEqual({ minor: 90000, currency: "USD", setAt: "2026-11-02T12:00:00.000Z" });
-    expect(currentPayOf({ settings: [waiting] })).toBeNull();
-    expect(currentPayOf({ settings: [] })).toBeNull();
-    expect(currentPayOf(null)).toBeNull();
-  });
-});
-
-describe("her figure, and how it is said, from one place", () => {
-  const her = (monthlyUsd: number | null) => ({ agent: "Sera", sentence: "", monthlyUsd, editedAt: null });
-
-  // Rye, 28 Nov 2026, asked whether her monthly figure is written as a moon's share or as listed: "As listed".
-  it("is her monthly figure as listed, with no conversion, where the village sets pay in US dollars", () => {
-    expect(seraFigure(her(1200), "USD")).toEqual({ minor: 120000, usd: "US$1,200" });
-    expect(seraFigure(her(1250.5), "USD")).toEqual({ minor: 125050, usd: "US$1,250.5" });
-  });
-
-  it("is said and never written as the figure where the village sets pay in another currency, and is nothing when she lists none", () => {
-    expect(seraFigure(her(1200), "CRC")).toEqual({ minor: null, usd: "US$1,200" });
-    expect(seraFigure(her(null), "USD")).toBeNull();
-    expect(seraFigure(null, "USD")).toBeNull();
+    expect(await readStoredEstimate("r-cook")).toBeNull();
   });
 });
 
