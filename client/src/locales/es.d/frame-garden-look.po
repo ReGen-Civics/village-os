@@ -1,0 +1,228 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Fire"
+msgstr "El Fuego"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Hall"
+msgstr "El Salón"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Gate"
+msgstr "El Portal"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Library"
+msgstr "La Biblioteca"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Greenhouse"
+msgstr "El Invernadero"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Store"
+msgstr "El Almacén"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Tower"
+msgstr "La Torre"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Spring"
+msgstr "El Manantial"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Stage"
+msgstr "El Escenario"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place"
+msgid "The Ceiba"
+msgstr "La Ceiba"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Today"
+msgstr "Hoy"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Review and proposals"
+msgstr "Revisión y propuestas"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "People"
+msgstr "Personas"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Words and agreements"
+msgstr "Palabras y acuerdos"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "What the village runs"
+msgstr "Lo que funciona en la aldea"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Money"
+msgstr "Dinero"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Messages"
+msgstr "Mensajes"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "Health"
+msgstr "Salud"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "The Village board"
+msgstr "El tablero de la aldea"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/places.ts
+msgctxt "garden place, what it holds"
+msgid "The road to launch"
+msgstr "El camino al lanzamiento"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Place.tsx
+msgctxt "garden place"
+msgid "Not built yet"
+msgstr "Aún sin construir"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Place.tsx
+msgctxt "garden place, things waiting"
+msgid "{count, plural, one {# waiting} other {# waiting}}"
+msgstr "{count, plural, one {# en espera} other {# en espera}}"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Place.tsx
+msgctxt "garden place, its name read aloud"
+msgid "{shown}, {count, plural, one {# waiting} other {# waiting}}"
+msgstr "{shown}, {count, plural, one {# en espera} other {# en espera}}"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Place.tsx
+msgctxt "garden place, its name read aloud"
+msgid "{shown}, not built yet"
+msgstr "{shown}, aún sin construir"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Grounds.tsx
+msgctxt "garden lens"
+msgid "The grounds"
+msgstr "El terreno"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Grounds.tsx
+msgctxt "garden desk"
+msgid "Places"
+msgstr "Lugares"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/lens.tsx
+msgctxt "garden lens toggle"
+msgid "How you see the garden"
+msgstr "Cómo ve el jardín"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/lens.tsx
+msgctxt "garden lens"
+msgid "The Grounds"
+msgstr "El Terreno"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/lens.tsx
+msgctxt "garden lens"
+msgid "The Desk"
+msgstr "El Escritorio"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/StatusBand.tsx
+msgctxt "garden status band"
+msgid "Where the village stands"
+msgstr "En qué punto está la aldea"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/SteppingStones.tsx
+msgctxt "garden stepping stone, said after a walked stone's name"
+msgid "Walked"
+msgstr "Recorrida"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/Circle.tsx
+msgctxt "garden circle"
+msgid "The circle"
+msgstr "El círculo"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/SeedOfLife.tsx
+msgctxt "garden seed of life, read aloud"
+msgid "{done} of {stones, plural, one {# stone} other {# stones}} walked"
+msgstr "{done} de {stones, plural, one {# piedra recorrida} other {# piedras recorridas}}"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/placeNames.tsx
+msgctxt "garden, rename a place"
+msgid "Your name for {villageName}"
+msgstr "Su nombre para {villageName}"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/placeNames.tsx
+msgctxt "garden, rename a place"
+msgid "Only you see this name. It is kept in this browser."
+msgstr "Solo usted ve este nombre. Se guarda en este navegador."
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/placeNames.tsx
+msgctxt "garden, rename a place"
+msgid "Keep this name"
+msgstr "Guardar este nombre"
+
+# needs-native-review: the Admin Garden's look, 27 Nov 2026
+#: client/src/components/admin/garden/placeNames.tsx
+msgctxt "garden, rename a place"
+msgid "Use the village's name again"
+msgstr "Volver al nombre de la aldea"
