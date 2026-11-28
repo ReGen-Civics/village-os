@@ -78,13 +78,14 @@ export interface LetterLink {
  * village's colour. The plain text keeps the address, for a reader without HTML.
  */
 export function labelLinks(html: string, links: readonly LetterLink[]): string {
-  const brand = /bgcolor="([^"]+)"/.exec(html)?.[1] ?? null;
   let out = html;
   for (const l of links) {
     const shown = escapeHtml(l.url).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const re = new RegExp(`(<a href="[^"]*")([^>]*)>${shown}</a>`, "g");
     out = out.replace(re, (_m, open: string, rest: string) => {
-      const style = l.pill && brand ? ` style="display:inline-block;margin:6px 0;padding:10px 20px;border-radius:999px;background-color:${brand};color:#ffffff;font-weight:bold;text-decoration:none;"` : rest;
+      // The village's colour is the link's own (the frame wrote it); the button's classes carry its dark-mode pair.
+      const brand = /color:(#[0-9a-fA-F]{3,8})/.exec(rest)?.[1] ?? null;
+      const style = l.pill && brand ? ` class="vl-btn vl-btn-text" style="display:inline-block;margin:6px 0;padding:10px 20px;border-radius:999px;background-color:${brand};color:#ffffff;font-weight:bold;text-decoration:none;"` : rest;
       return `${open}${style}>${escapeHtml(l.label)}</a>`;
     });
   }

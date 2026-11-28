@@ -254,6 +254,13 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     const refs = stageMails("references")[0];
     expect(refs.text).toContain(`Book your conversation with Community: ${LINK.community}`);
     expect(refs.text).toMatch(/references/i);
+    // Every link by its words (QA round 5, item 9): the booking is a button in the village's own colour (never the
+    // page's background, which once made it white on white), and the page is "See your page", never a raw address.
+    const pill = /<a href="[^"]*" class="vl-btn vl-btn-text" style="[^"]*background-color:(#[0-9a-fA-F]{3,8});color:#ffffff[^"]*">Book with Community<\/a>/.exec(refs.html ?? "");
+    expect(pill, "the booking button").toBeTruthy();
+    expect(pill![1].toLowerCase()).not.toMatch(/^#f|^#fff/);
+    expect(refs.html).toContain(">See your page</a>");
+    expect(refs.html).not.toContain(`>${ORIGIN}/application-status/`);
     expect(refs.text).not.toContain(LINK.final);
     expect(refs.text).not.toContain("a-person");
     expect(refs.text).not.toMatch(/Iva|Ivo|Flor|Fern/);
