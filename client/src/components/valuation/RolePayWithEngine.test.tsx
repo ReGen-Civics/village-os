@@ -112,118 +112,219 @@ describe("setting a role's pay with the valuation engine", () => {
 });
 
 /*
- * CONFIRMING ONE OF SERA'S PAY SUGGESTIONS happens HERE, in the role's own pay setter, never in her list (Rye,
- * 27 Nov 2026: "Sera, can also make suggestions for pay and new roles, but with our confirmation."). What she lists
- * is shown beside the engine's suggestion, her figure is a choice the person may make, and the route's own rules
- * (the band, the reason, the second signer) judge it like any other figure.
+ * OPENED FROM ONE OF SERA'S PAY ROWS. Rye, 28 Nov 2026: "both write the figure and open the pay control to show it,
+ * so that a player can simply accept or edit and accept". This is a ruled EXCEPTION to the setter's own rule (own
+ * number first, nothing prefilled), and it holds only when the setter is handed `sera`. Her figure arrives written
+ * and chosen, the estimate from last time arrives filled in, and nothing is saved until the person presses. On her
+ * monthly figure, Rye: "As listed". The last block holds the rule itself, unchanged, when opened any other way.
  */
-describe("setting pay from one of Sera's suggestions", () => {
+describe("opened from one of Sera's pay rows: her figure arrives written, to accept or to edit and accept", () => {
   const USD = { ...modelForVillage("USD"), version: 1, bands: [{ key: "general", label: "General help", hourValueMinor: 2500, source: { sentence: "Set by the village", date: "2026-10-31" } }] };
-  const SERA = { agent: "Sera", sentence: "Sera lists Cook's pay as a stipend of US$1,200 a month for the whole role, still pending in Sera. This village has no pay set for it.", monthlyUsd: 1200 as number | null };
-  const STORED = { band: "general", estimatedHours: 40, estimateLow: 30 as number | null, estimateHigh: 55 as number | null, responsibility: "none" as string | null, setAt: "2026-10-30T12:00:00.000Z" };
-  const HERS = "Use the figure Sera lists, $1,200 a month, as this moon's pay";
+  const suggestedFor = (hours: number) =>
+    (suggestValuation(USD, { kind: "role", lines: [{ band: "general", payee: "lead", estimatedHours: hours }], responsibility: "none" }, { eeMeaningWritten: true }) as any).payees[0].expected.totalMinor as number;
+  // She lists what the engine suggests for 40 hours, to the dollar: a figure inside the band.
+  const INSIDE = Math.round(suggestedFor(40) / 100);
+  const sera = (usd: number | null, over: Record<string, unknown> = {}) => ({
+    agent: "Sera",
+    sentence: usd === null ? "Sera lists pay for Cook." : `Sera lists Cook's pay as a stipend of US$${usd.toLocaleString("en-US")} a month for the whole role. This village has no pay set for it.`,
+    monthlyUsd: usd,
+    editedAt: "2026-11-10T12:00:00.000Z" as string | null,
+    ...over,
+  });
+  const STORED = { band: "general", estimatedHours: 40, estimateLow: null as number | null, estimateHigh: null as number | null, responsibility: "none" as string | null, setAt: "2026-10-30T12:00:00.000Z" };
+  const money = (usd: number) => `$${usd.toLocaleString("en-US")}`;
+  // The choice keeps its existing sentence: a month's figure, used as this moon's pay (Rye, 28 Nov 2026: "As listed").
+  const HERS = (usd: number) => `Use the figure Sera lists, ${money(usd)} a month, as this moon's pay`;
 
-  const open = (props: { sera?: typeof SERA | null; stored?: typeof STORED | null; model?: any }, put: (body: any) => any = () => ({ state: "set" })) => {
+  const open = (props: { sera?: ReturnType<typeof sera> | null; stored?: typeof STORED | null; current?: { minor: number; currency: string; setAt: string | null } | null; model?: any }, put: (body: any) => any = () => ({ state: "set" })) => {
     const calls: Array<{ path: string; body: any; method?: string }> = [];
     const call = vi.fn(async (path: string, body?: any, method?: string) => {
       calls.push({ path, body, method });
       if (path === "/valuation/model") return { model: props.model ?? USD, eeMeaningWritten: true, tokenNames: {} };
       return put(body);
     });
-    render(<RolePayWithEngine role={{ id: "cook", name: "Cook" }} call={call} onSaved={() => {}} sera={props.sera ?? null} stored={props.stored ?? null} />);
+    render(<RolePayWithEngine role={{ id: "cook", name: "Cook" }} call={call} onSaved={() => {}} sera={props.sera ?? null} stored={props.stored ?? null} current={props.current ?? null} />);
     return calls;
   };
-  const reveal = async (user: ReturnType<typeof userEvent.setup>, hours = "40") => {
-    await screen.findByText("Kind of work");
-    await user.type(screen.getByLabelText(/Estimated effort for the moon/), hours);
-    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
-  };
+  const puts = (calls: Array<{ method?: string; body: any }>) => calls.filter((c) => c.method === "PUT").map((c) => c.body);
 
-  it("shows what she lists only once the suggestion shows, and offers her figure as a choice that is never made for the person", async () => {
-    const calls = open({ sera: SERA });
+  it("with an estimate from last time, everything is ready: her figure is written and chosen, and one press accepts it", async () => {
+    const calls = open({ sera: sera(INSIDE), stored: STORED });
     const user = userEvent.setup();
     await screen.findByText("Kind of work");
-    // Before the suggestion shows, neither her words nor her figure are on the screen.
-    expect(screen.queryByText(SERA.sentence)).toBeNull();
-    expect(screen.queryByLabelText(HERS)).toBeNull();
-    await reveal(user);
-    expect(screen.getByText(SERA.sentence)).toBeTruthy();
-    const hers = screen.getByLabelText(HERS) as HTMLInputElement;
-    expect(hers.checked).toBe(false);
+    // The exception: no own number first, no reveal step.
+    expect(screen.queryByLabelText(/Your own figure first/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Show the suggestion" })).toBeNull();
+    // The estimate arrives filled in, said to come from last time, and stays editable.
+    expect((screen.getByLabelText(/Estimated effort for the moon/) as HTMLInputElement).value).toBe("40");
+    expect(screen.getByTestId("stored-estimate").textContent).toBe("Filled in from the last time this role's pay was set: General help, 40 hours for the moon. Change anything that is different now.");
+    // Her figure is written, chosen and marked as hers, beside the engine's suggestion.
+    expect(screen.getByText(sera(INSIDE).sentence)).toBeTruthy();
+    expect((screen.getByLabelText(HERS(INSIDE)) as HTMLInputElement).checked).toBe(true);
     expect((screen.getByLabelText(/^Use the suggestion,/) as HTMLInputElement).checked).toBe(false);
+    expect((screen.getByLabelText("The figure to set") as HTMLInputElement).value).toBe(String(INSIDE));
+    expect(screen.getByText("This role has no pay set now.")).toBeTruthy();
+    // Nothing is saved until the person presses.
+    expect(puts(calls)).toEqual([]);
+    await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
+    await waitFor(() => expect(puts(calls)).toHaveLength(1));
+    const put = puts(calls)[0];
+    // As listed: her monthly figure, with no conversion, and the estimate, through the one pay door.
+    expect(put.set).toEqual({ totalMinor: INSIDE * 100 });
+    expect(put.work).toMatchObject({ kind: "role", lines: [{ band: "general", estimatedHours: 40 }] });
+    expect(put.reason).toBeUndefined();
+    // The record keeps what she listed, what it replaces and what was saved.
+    expect(put.note).toBe(`Opened from the pay Sera lists: US$${INSIDE.toLocaleString("en-US")} a month. Before: no pay set. Saved: ${money(INSIDE)}.`);
+    expect(calls.find((c) => c.method === "PUT")!.path).toBe("/org/roles/cook/pay");
+  });
+
+  it("editing her figure makes it the person's own, and the record keeps both", async () => {
+    const calls = open({ sera: sera(INSIDE), stored: STORED, current: { minor: 90000, currency: "USD", setAt: "2026-10-30T12:00:00.000Z" } });
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    expect(screen.getByText("This role's pay is $900 now.")).toBeTruthy();
+    const figure = screen.getByLabelText("The figure to set") as HTMLInputElement;
+    const mine = INSIDE - 10;
+    await user.clear(figure);
+    await user.type(screen.getByLabelText(/^(The figure to set|Your figure)$/), String(mine));
+    // It reads as their own figure now.
+    expect((screen.getByLabelText("My own figure") as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText(HERS(INSIDE)) as HTMLInputElement).checked).toBe(false);
+    await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
+    await waitFor(() => expect(puts(calls)).toHaveLength(1));
+    expect(puts(calls)[0].set).toEqual({ totalMinor: mine * 100 });
+    expect(puts(calls)[0].note).toBe(`Opened from the pay Sera lists: US$${INSIDE.toLocaleString("en-US")} a month. Before: $900. Saved: ${money(mine)}.`);
+  });
+
+  it("outside the band the reason arrives filled with one true sentence, editable, and the band rule is unchanged", async () => {
+    // Four hours of this work is worth far less than the 1,200 she lists.
+    const calls = open({ sera: sera(1200), stored: { ...STORED, estimatedHours: 4 } }, () => ({ state: "awaiting_second" }));
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    expect(screen.getByText(/A second Treasurer or a steward then signs it/)).toBeTruthy();
+    expect((screen.getByLabelText("Reason") as HTMLSelectElement).value).toBe("Other");
+    const why = screen.getByLabelText("Say why") as HTMLInputElement;
+    expect(why.value).toBe("Sera lists this role at US$1,200 a month.");
+    await user.type(why, " The cook now also runs the pantry.");
+    await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
+    await waitFor(() => expect(puts(calls)).toHaveLength(1));
+    expect(puts(calls)[0].reason).toBe("Sera lists this role at US$1,200 a month. The cook now also runs the pantry.");
+    expect(puts(calls)[0].set).toEqual({ totalMinor: 120000 });
+    // The route decides, and the control says which outcome happened.
+    expect((await screen.findByRole("status")).textContent).toMatch(/Waiting for a second signer/);
+  });
+
+  it("with no estimate from last time the person gives it, and is told so before anything else", async () => {
+    const calls = open({ sera: sera(INSIDE) });
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    expect(screen.getByTestId("needs-estimate").textContent).toBe("Give this role's effort for the moon first. The figure Sera lists is ready below once you do.");
+    expect(screen.queryByRole("button", { name: "Set this role's pay" })).toBeNull();
+    await user.type(screen.getByLabelText(/Estimated effort for the moon/), "40");
+    expect((screen.getByLabelText(HERS(INSIDE)) as HTMLInputElement).checked).toBe(true);
+    expect(screen.queryByTestId("needs-estimate")).toBeNull();
+    expect(puts(calls)).toEqual([]);
+  });
+
+  it("says so, before the person accepts, when pay was set here after her suggestion was made", async () => {
+    open({ sera: sera(INSIDE, { editedAt: "2026-11-10T12:00:00.000Z" }), stored: STORED, current: { minor: 90000, currency: "USD", setAt: "2026-11-20T12:00:00.000Z" } });
+    await screen.findByText("Kind of work");
+    expect(screen.getByTestId("pay-stale").textContent).toBe("Pay was set here on 20 Nov 2026, after Sera last edited the suggestion on 10 Nov 2026. Check the figure still applies before you set it.");
+  });
+
+  it("says nothing of the kind when her suggestion is the newer of the two", async () => {
+    open({ sera: sera(INSIDE, { editedAt: "2026-11-25T12:00:00.000Z" }), stored: STORED, current: { minor: 90000, currency: "USD", setAt: "2026-11-20T12:00:00.000Z" } });
+    await screen.findByText("Kind of work");
+    expect(screen.queryByTestId("pay-stale")).toBeNull();
+  });
+
+  it("the person may still choose the engine's suggestion, and the record still says where the visit came from", async () => {
+    const calls = open({ sera: sera(1200), stored: STORED });
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    await user.click(screen.getByLabelText(/^Use the suggestion,/));
+    await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
+    await waitFor(() => expect(puts(calls)).toHaveLength(1));
+    expect(puts(calls)[0].set).toEqual({ totalMinor: suggestedFor(40) });
+    expect(puts(calls)[0].reason).toBeUndefined();
+    expect(puts(calls)[0].note).toMatch(/^Opened from the pay Sera lists: US\$1,200 a month\. Before: no pay set\. Saved: /);
+  });
+
+  it("in a village that does not set pay in US dollars nothing is written as the figure: her words show and the person types", async () => {
+    open({ sera: sera(1200), stored: { ...STORED, estimatedHours: 20 }, model: MODEL });
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    // The estimate is still filled in. The figure is the setter's own rule: own number first, then the suggestion.
+    expect((screen.getByLabelText(/Estimated effort for the moon/) as HTMLInputElement).value).toBe("20");
+    expect(screen.queryByText(sera(1200).sentence)).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
+    expect(screen.getByText(sera(1200).sentence)).toBeTruthy();
+    expect(screen.queryByLabelText(/^Use the figure Sera lists/)).toBeNull();
+    expect(screen.getByText("Sera lists a figure in US dollars. This village sets pay in CRC, so choose the suggestion or type your own figure.")).toBeTruthy();
+    expect((screen.getByRole("button", { name: "Set this role's pay" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("with no figure from her, her words alone, and the setter's own order", async () => {
+    open({ sera: sera(null), stored: STORED });
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
+    expect(screen.getByText("Sera lists pay for Cook.")).toBeTruthy();
+    expect(screen.queryByLabelText(/^Use the figure Sera lists/)).toBeNull();
+    expect(screen.queryByText(/lists a figure in US dollars/)).toBeNull();
+  });
+
+  it("an estimate for a kind of work the village no longer has is not filled in", async () => {
+    open({ sera: sera(INSIDE), stored: { ...STORED, band: "retired-band" } });
+    await screen.findByText("Kind of work");
+    expect(screen.queryByTestId("stored-estimate")).toBeNull();
+    expect((screen.getByLabelText(/Estimated effort for the moon/) as HTMLInputElement).value).toBe("");
+    expect(screen.getByTestId("needs-estimate")).toBeTruthy();
+  });
+});
+
+describe("opened any other way, the setter keeps its own rule: own number first, nothing prefilled", () => {
+  const STORED = { band: "general", estimatedHours: 40, estimateLow: 30, estimateHigh: 55, responsibility: "none", setAt: "2026-10-30T12:00:00.000Z" };
+
+  it("prefills nothing and asks the own figure first, even when handed an estimate and the pay as it stands", async () => {
+    const calls: Array<{ method?: string }> = [];
+    const call = vi.fn(async (path: string, _body?: any, method?: string) => {
+      calls.push({ method });
+      if (path === "/valuation/model") return { model: MODEL, eeMeaningWritten: true, tokenNames: {} };
+      return { state: "set" };
+    });
+    render(<RolePayWithEngine role={{ id: "cook", name: "Cook" }} call={call} onSaved={() => {}} stored={STORED} current={{ minor: 90000, currency: "CRC", setAt: null }} />);
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    expect((screen.getByLabelText(/Estimated effort for the moon/) as HTMLInputElement).value).toBe("");
+    expect(screen.queryByTestId("stored-estimate")).toBeNull();
+    expect(screen.queryByTestId("needs-estimate")).toBeNull();
+    expect(screen.getByLabelText(/Your own figure first/)).toBeTruthy();
+    expect(screen.queryByText("Reward")).toBeNull();
+    await user.type(screen.getByLabelText(/Estimated effort for the moon/), "20");
+    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
+    // No figure is chosen, nothing is written, and the last button waits.
+    expect(screen.getAllByRole("radio").map((r) => (r as HTMLInputElement).checked)).toEqual([false, false]);
+    expect(screen.queryByLabelText(/^(The figure to set|Your figure)$/)).toBeNull();
     expect((screen.getByRole("button", { name: "Set this role's pay" }) as HTMLButtonElement).disabled).toBe(true);
     expect(calls.some((c) => c.method === "PUT")).toBe(false);
   });
 
-  it("choosing her figure sends it with the person's own estimate, through the role's pay route", async () => {
-    // She lists what the engine suggests for 40 hours of this work, to the dollar, so her figure sits inside the band.
-    const suggested = (suggestValuation(USD, { kind: "role", lines: [{ band: "general", payee: "lead", estimatedHours: 40 }], responsibility: "none" }, { eeMeaningWritten: true }) as any).payees[0].expected.totalMinor as number;
-    const dollars = Math.round(suggested / 100);
-    const calls = open({ sera: { ...SERA, monthlyUsd: dollars } });
+  it("a save from anywhere else carries no record of Sera", async () => {
+    const calls: Array<{ method?: string; body?: any }> = [];
+    const call = vi.fn(async (path: string, body?: any, method?: string) => {
+      calls.push({ method, body });
+      if (path === "/valuation/model") return { model: MODEL, eeMeaningWritten: true, tokenNames: {} };
+      return { state: "set" };
+    });
+    render(<RolePayWithEngine role={{ id: "cook", name: "Cook" }} call={call} onSaved={() => {}} />);
     const user = userEvent.setup();
-    await reveal(user, "40");
-    await user.click(screen.getByLabelText(/^Use the figure Sera lists, /));
-    expect(screen.getByText(/inside the suggestion's band, so your word sets it/)).toBeTruthy();
+    await screen.findByText("Kind of work");
+    await user.type(screen.getByLabelText(/Estimated effort for the moon/), "20");
+    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
+    await user.click(screen.getByLabelText(/^Use the suggestion,/));
     await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
     await waitFor(() => expect(calls.some((c) => c.method === "PUT")).toBe(true));
-    const put = calls.find((c) => c.method === "PUT")!;
-    expect(put.path).toBe("/org/roles/cook/pay");
-    // Her figure, in this village's money, and the estimate the person gave: the server prices that estimate again.
-    expect(put.body.set).toEqual({ totalMinor: dollars * 100 });
-    expect(put.body.work).toMatchObject({ kind: "role", lines: [{ band: "general", estimatedHours: 40 }] });
-  });
-
-  it("her figure outside the band is asked a reason and told who signs next, like any other figure", async () => {
-    const calls = open({ sera: SERA });
-    const user = userEvent.setup();
-    // Four hours of this work is worth far less than she lists.
-    await reveal(user, "4");
-    await user.click(screen.getByLabelText(HERS));
-    expect(screen.getByText(/A second Treasurer or a steward then signs it/)).toBeTruthy();
-    await user.click(screen.getByRole("button", { name: "Set this role's pay" }));
-    // No reason picked: nothing is sent.
-    expect(calls.some((c) => c.method === "PUT")).toBe(false);
-  });
-
-  it("in a village that does not set pay in US dollars her words are shown and her figure is not offered as the figure", async () => {
-    open({ sera: SERA, model: MODEL });
-    const user = userEvent.setup();
-    await reveal(user, "20");
-    expect(screen.getByText(SERA.sentence)).toBeTruthy();
-    expect(screen.queryByLabelText(HERS)).toBeNull();
-    expect(screen.getByText("Sera lists a figure in US dollars. This village sets pay in CRC, so choose the suggestion or type your own figure.")).toBeTruthy();
-  });
-
-  it("with no figure from her, her words alone", async () => {
-    open({ sera: { ...SERA, sentence: "Sera lists pay for Cook.", monthlyUsd: null } });
-    const user = userEvent.setup();
-    await reveal(user);
-    expect(screen.getByText("Sera lists pay for Cook.")).toBeTruthy();
-    expect(screen.queryByLabelText(/Use the figure Sera lists/)).toBeNull();
-    expect(screen.queryByText(/lists a figure in US dollars/)).toBeNull();
-  });
-
-  it("offers the estimate from the last time this role's pay was set, shows it, and fills nothing until the person asks", async () => {
-    open({ sera: SERA, stored: STORED });
-    const user = userEvent.setup();
-    await screen.findByText("Kind of work");
-    const offer = screen.getByTestId("stored-estimate");
-    expect(offer.textContent).toContain("The last time this role's pay was set, the estimate was General help, 40 hours for the moon. It could be as little as 30 or as much as 55.");
-    const hours = screen.getByLabelText(/Estimated effort for the moon/) as HTMLInputElement;
-    expect(hours.value).toBe("");
-    await user.click(screen.getByRole("button", { name: "Use that estimate" }));
-    expect(hours.value).toBe("40");
-    expect((screen.getByLabelText("Could be as little as") as HTMLInputElement).value).toBe("30");
-    expect((screen.getByLabelText("Or as much as") as HTMLInputElement).value).toBe("55");
-    // The estimate is filled in where the person can read and change it; no figure is chosen.
-    expect((screen.getByRole("button", { name: "Show the suggestion" }) as HTMLButtonElement).disabled).toBe(false);
-    expect(screen.queryByRole("button", { name: "Set this role's pay" })).toBeNull();
-  });
-
-  it("offers no stored estimate for a kind of work the village no longer has, and none when there is none", async () => {
-    open({ stored: { ...STORED, band: "retired-band" } });
-    await screen.findByText("Kind of work");
-    expect(screen.queryByTestId("stored-estimate")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Use that estimate" })).toBeNull();
+    expect(calls.find((c) => c.method === "PUT")!.body.note).toBeUndefined();
   });
 });

@@ -79,7 +79,7 @@ describe("a pay row in Sera's list", () => {
     // The setter is this row's role, and is handed what Sera lists for it: her words and her figure.
     expect(setter.getAttribute("data-role")).toBe("r-cook");
     expect(setter.getAttribute("data-name")).toBe("Cook");
-    expect(JSON.parse(setter.getAttribute("data-sera")!)).toEqual({ agent: "Sera", sentence: d.words.sentence, monthlyUsd: 1200 });
+    expect(JSON.parse(setter.getAttribute("data-sera")!)).toEqual({ agent: "Sera", sentence: d.words.sentence, monthlyUsd: 1200, editedAt: "2026-10-29T10:00:00.000Z" });
     expect(screen.getByRole("button", { name: "Close this role's pay" }).getAttribute("aria-expanded")).toBe("true");
     // Opening it asked who may set pay and wrote nothing.
     expect(asked.every((a) => a.method === "GET")).toBe(true);
