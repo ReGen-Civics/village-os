@@ -22,7 +22,7 @@ export const VISIT_PAGE: PageSpec = {
     {
       id: "hero",
       label: "Top of the page",
-      shows: "The headline on the coloured band. The sentence under it is in Make it yours, Visit Program.",
+      shows: "The headline on the coloured band. The sentence under it is in Visit Program, further down this page.",
       fields: [{ key: "headline", label: "Headline", kind: "text", max: 48, default: "Come and see for yourself" }],
     },
     {

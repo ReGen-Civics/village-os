@@ -204,17 +204,22 @@ export async function founderPowerStands(conn: Pool | PoolConnection): Promise<b
 }
 
 /**
- * BEFORE OR AFTER LAUNCH, FOR THE SETUP GAME'S PLANTING RULE.
+ * BEFORE OR AFTER GAME START, AS A PLANTING PHASE. NOT WHAT THE CO-SIGN READS.
  *
- * Ruling of 2026-10-13: "any founder should have full ability to do a task
- * before they go live." A keystone seed (`shared/guilds.ts`, `keystoneRule`)
- * always asks for a read-pause, and asks for a second person's co-sign only
- * after launch. This is the one signal that decides which side of launch a
- * planting is on, and it is `founderPowerStands` on purpose: it is already the
- * rule for what one founder may do alone (R90), and it reads as started for a
- * village that was live before the launch ballot existed, where
- * `launch-state.launchedAt` would read as not launched. `shared/guilds.ts`
- * says the same beside `PlantingPhase`.
+ * This was written as the one signal for the setup game's planting rule
+ * (ruling of 2026-10-13: "any founder should have full ability to do a task
+ * before they go live"). It stopped being that on 2026-10-31. The key co-sign,
+ * the signing-key rotation and the setup game's map read `cosignPhase` in
+ * `./plantingRequests`, which asks whether the village's own launch ballot
+ * carried. Game start was rejected for that question because it reads as live
+ * for every village migration 0112 recorded as issuing and for every village
+ * the test harness provisions, and none of those has held its launch vote.
+ *
+ * Nothing in the running server calls this today; only its own test does. It
+ * stays as the plain reading of `founderPowerStands` in planting words. Reach
+ * for `cosignPhase` when the question is who must sign. `shared/guilds.ts`
+ * says the same beside `PlantingPhase`, and `shared/launchFacts.ts` lists
+ * every launch fact and the door that reads it.
  */
 export async function plantingPhase(conn: Pool | PoolConnection): Promise<"before-launch" | "after-launch"> {
   return (await founderPowerStands(conn)) ? "before-launch" : "after-launch";

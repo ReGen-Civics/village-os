@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import GlossaryTip from "@/components/GlossaryTip";
+import { useGlossary } from "@/hooks/useGlossary";
 import { readerLanguage } from "@/lib/readerLanguage";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
@@ -281,6 +281,7 @@ export default function Circles() {
   // card offers one only while this reader's catalog lists that module as on.
   // The contact relay is the map's alone and is never offered here.
   const { t } = useLingui();
+  const glossary = useGlossary();
   const authUser = useUserOrVisitor();
   // The old anchor of the measures: send it on to their own page.
   useEffect(() => {
@@ -424,6 +425,9 @@ export default function Circles() {
     );
   }
   const { hero, card, together, closing } = page;
+  // While the village's own intro still uses the word "domain", that word wears what the village wrote for it
+  // (shared/glossary.ts), found the way the intro's other tipped words are.
+  const domainWord = /\b(?:domains?|dominios?)\b/i.exec(hero.fields.intro ?? "")?.[0] ?? "";
   const groupToday = page.today;
   const groupFuture = page.future;
   // `{coordinator}` is the village's own top circle, filled here and never
@@ -461,10 +465,9 @@ export default function Circles() {
                 tips={[
                   { term: hero.fields.firstTerm, tip: hero.fields.firstTip },
                   { term: hero.fields.secondTerm, tip: hero.fields.secondTip },
+                  { term: domainWord, tip: glossary?.domain ?? "" },
                 ]}
               />
-              {/* While the village's own intro still uses the word, its mark (shared/glossary.ts). */}
-              {/\b(?:domain|dominio)/i.test(hero.fields.intro ?? "") && <GlossaryTip slot="domain" word={t({ message: "domain", context: "glossary: the word a tip explains" })} />}
             </p>
             <Link href="/roles" className={BTN_PRIMARY}>
               {hero.fields.rolesLabel}

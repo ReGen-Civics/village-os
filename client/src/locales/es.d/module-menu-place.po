@@ -1,0 +1,174 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the account menu as a place"
+msgid "Your account menu"
+msgstr "El menú de su cuenta"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: a group would be too long"
+msgid "{group} would show {count} rows once every module is on, and it shows {max} at most. Choose one of its folders, or another group."
+msgstr "{group} mostraría {count} filas con todos los módulos activados, y muestra {max} como máximo. Elija una de sus carpetas u otro grupo."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: a folder would be too full"
+msgid "The {folder} folder would hold {count} entries once every module is on, and a folder holds {FOLDER_MAX} at most. Choose another folder, or a row of its own."
+msgstr "La carpeta {folder} tendría {count} entradas con todos los módulos activados, y una carpeta tiene {FOLDER_MAX} como máximo. Elija otra carpeta, o una fila propia."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: below the Module Library"
+msgid "The Module Library stays at the bottom of the menu. Choose a place above it."
+msgstr "La Biblioteca de módulos se queda al final del menú. Elija un lugar por encima de ella."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the entry's name field"
+msgid "In the menu as"
+msgstr "En el menú como"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the group or folder picker"
+msgid "Where"
+msgstr "Dónde"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: a group, not in a folder"
+msgid "{group}, a row of its own"
+msgstr "{group}, en una fila propia"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the position picker"
+msgid "Position"
+msgstr "Posición"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the first position"
+msgid "First"
+msgstr "Primero"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: a position after another row"
+msgid "After {after}"
+msgstr "Después de {after}"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuFields.tsx
+msgctxt "module menu place: the preview's heading"
+msgid "{shownGroup} will read"
+msgstr "{shownGroup} quedará así"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/MenuPlaceStep.tsx
+msgctxt "module menu place: the account menu, mid-sentence"
+msgid "your account menu"
+msgstr "el menú de su cuenta"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/MenuPlaceStep.tsx
+msgctxt "module menu place: where a module's entry will appear, read-only"
+msgid "In the menu as {name}, in {where}."
+msgstr "En el menú como {name}, en {where}."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/MenuPlaceStep.tsx
+msgctxt "module menu place: changing it later"
+msgid "Once it is on, the village can rename it or move it in Admin, Menu."
+msgstr "Una vez activado, la aldea puede cambiarle el nombre o moverlo en Administración, Menú."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/MenuPlaceStep.tsx
+msgctxt "module menu place: the turn-on step's heading"
+msgid "In the menu"
+msgstr "En el menú"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/MenuPlaceStep.tsx
+msgctxt "module menu place: the turn-on step, explained"
+msgid "Its name and where it shows. Keep them, or make them the village's own. You can change both later in Admin, Menu."
+msgstr "Su nombre y dónde aparece. Consérvelos, o hágalos propios de la aldea. Puede cambiar ambos más tarde en Administración, Menú."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuList.tsx
+msgctxt "admin menu: the modules' own menu entries"
+msgid "Module entries"
+msgstr "Entradas de módulos"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuList.tsx
+msgctxt "admin menu: the module entries, explained"
+msgid "Each module brings its own entry. Name it and choose where it sits: a group, a folder in it, and its place among the rows. The preview shows the group as members will meet it. Blank keeps the module's own name."
+msgstr "Cada módulo trae su propia entrada. Póngale nombre y elija dónde va: un grupo, una carpeta dentro de él y su lugar entre las filas. La vista previa muestra el grupo como lo verán los miembros. En blanco se usa el nombre propio del módulo."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuList.tsx
+msgctxt "admin menu: a module entry whose module is off"
+msgid "Module off"
+msgstr "Módulo desactivado"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleMenuList.tsx
+msgctxt "admin menu: whether a module entry shows in the menu"
+msgid "Shown"
+msgstr "Visible"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/modules/TurnOnAction.tsx
+msgctxt "TurnOnAction: the proposal's summary for a menu name and place"
+msgid "Menu name and place for {joined}"
+msgstr "Nombre y lugar en el menú para {joined}"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/modules/TurnOnAction.tsx
+msgctxt "TurnOnAction: the menu choice was refused"
+msgid "It is on. Its menu name and place did not save: {why}"
+msgstr "Está activado. Su nombre y su lugar en el menú no se guardaron: {why}"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/modules/TurnOnAction.tsx
+msgctxt "TurnOnAction: the menu choice was filed as a proposal"
+msgid "Its menu name and place wait for review in Admin, Proposals."
+msgstr "Su nombre y su lugar en el menú esperan revisión en Administración, Propuestas."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleStewardPanel.tsx
+msgctxt "ModuleStewardPanel: the proposal's summary for a menu name and place"
+msgid "Menu name and place for {name}"
+msgstr "Nombre y lugar en el menú para {name}"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleStewardPanel.tsx
+msgctxt "ModuleStewardPanel: the menu choice was refused"
+msgid "It is on. Its menu name and place did not save: {why}"
+msgstr "Está activado. Su nombre y su lugar en el menú no se guardaron: {why}"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleStewardPanel.tsx
+msgctxt "ModuleStewardPanel: the menu choice was filed as a proposal"
+msgid "Its menu name and place wait for review in Admin, Proposals."
+msgstr "Su nombre y su lugar en el menú esperan revisión en Administración, Propuestas."
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleStewardPanel.tsx
+msgctxt "ModuleStewardPanel, button: confirm turning a module on with its menu name and place"
+msgid "Turn on"
+msgstr "Activar"
+
+# needs-native-review: module menu names and places, 27 Nov 2026
+#: client/src/components/admin/ModuleStewardPanel.tsx
+msgctxt "ModuleStewardPanel, button"
+msgid "Not now"
+msgstr "Ahora no"

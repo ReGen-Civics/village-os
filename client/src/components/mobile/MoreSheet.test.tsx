@@ -18,6 +18,7 @@ const session = vi.hoisted(() => ({
   pay: null as null | object,
   recent: null as null | object,
   most: null as null | string,
+  recentPages: null as null | string[],
   phone: true,
   modules: [] as { id: string; lifecycle: string }[],
 }));
@@ -29,7 +30,9 @@ vi.mock("@/lib/gameApi", () => ({
     return body ? new Response(JSON.stringify(body), { status: 200 }) : new Response("{}", { status: 404 });
   }),
 }));
-vi.mock("@/lib/navVisits", () => ({ mostVisited: () => (session.most ? [session.most] : []) }));
+// The greeting reads the member's path; none here unless a test sets one.
+vi.mock("@/lib/usePath", () => ({ usePathState: () => ({ path: null, known: true }) }));
+vi.mock("@/lib/navVisits", () => ({ mostVisited: () => (session.most ? [session.most] : []), recentPages: () => session.recentPages ?? [] }));
 vi.mock("@/modules/ModuleProvider", () => ({
   useModules: () => ({ modules: session.modules, loaded: true, failed: false }),
   // The Pull a card speed card reads the Gene Keys module through useMyGeneKeys (speedCards/registered.ts).
@@ -179,7 +182,7 @@ describe("the More sheet", () => {
 });
 
 describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", () => {
-  it("opens with that group expanded, the group and the entry marked", async () => {
+  it("opens on that group's tab, the group and the entry marked", async () => {
     window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
     const { hook } = memoryLocation({ path: "/events/7" });
     render(
@@ -190,8 +193,8 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     await act(async () => {
       await new Promise((done) => setTimeout(done, 0));
     });
-    const button = screen.getByRole("button", { name: "Community" });
-    expect(button.getAttribute("aria-expanded")).toBe("true");
+    const button = screen.getByRole("tab", { name: "Community" });
+    expect(button.getAttribute("aria-selected")).toBe("true");
     expect(button.getAttribute("aria-current")).toBe("true");
     const link = screen.getByRole("link", { name: /Events/ });
     expect(link.getAttribute("aria-current")).toBe("true");
@@ -203,11 +206,108 @@ describe("the branch the page belongs to (the lead's team call, 26 Nov 2026)", (
     expect(button.closest('[data-wayfinding="menu"]')).toBeTruthy();
   });
 
-  it("opens with every group closed and nothing marked on a page in no entry", async () => {
+  it("opens on the first group, with nothing marked, on a page in no entry", async () => {
     await draw();
-    const button = screen.getByRole("button", { name: "Community" });
-    expect(button.getAttribute("aria-expanded")).toBe("false");
+    const button = screen.getByRole("tab", { name: "Community" });
+    expect(button.getAttribute("aria-selected")).toBe("true");
     expect(document.querySelector("[aria-current]")).toBeNull();
+  });
+});
+
+/* Phone reach (27 Nov 2026): the group tabs sit at the bottom of the sheet, and a sideways swipe moves between groups. */
+describe("the group tabs at the bottom, within thumb reach", () => {
+  const VILLAGE: NavGroup = { label: "Village", items: [{ href: "/quests", label: "Quests" }] };
+  const shown = () => Array.from(document.querySelectorAll("#more-group-panel a[href]")).map((a) => a.getAttribute("href"));
+  async function sheet() {
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    render(
+      <Router hook={memoryLocation({ path: "/" }).hook}>
+        <MoreSheet entries={[VILLAGE, COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+  }
+
+  it("draws the tabs after the rows, and a tab shows its group's rows", async () => {
+    await sheet();
+    const tabs = screen.getByRole("tablist");
+    const panel = document.getElementById("more-group-panel")!;
+    expect(panel.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tabs.className).toContain("sticky");
+    expect(shown()).toEqual(["/quests"]);
+  });
+
+  it("keeps its top bar and its tabs above the speed cards, and the handle out of the search row's way", async () => {
+    // The joint QA with search: once the sheet scrolled, the cards (a lifted card and a card's remove button are
+    // z-10) drew over the bar and took the taps meant for the search row and Close. The bar and the tabs sit above them.
+    await sheet();
+    const bar = document.querySelector("[data-more-bar]")!;
+    expect(bar.className.split(" ")).toEqual(expect.arrayContaining(["sticky", "z-20", "pr-14"]));
+    expect(bar.querySelector("[data-more-handle]")!.className).toContain("absolute");
+    expect(bar.contains(screen.getByRole("button", { name: "Close More" }))).toBe(true);
+    expect(screen.getByRole("tablist").className).toContain("z-20");
+  });
+
+  it("shows a tab's rows when the tab is pressed", async () => {
+    await sheet();
+    fireEvent.click(screen.getByRole("tab", { name: "Community" }));
+    expect(shown()).toContain("/events");
+  });
+
+  it("is one Tab stop: the arrows, Home and End move between the tabs and show their groups", async () => {
+    await sheet();
+    const tab = (name: string) => screen.getByRole("tab", { name });
+    expect(tab("Village").tabIndex).toBe(0);
+    expect(tab("Community").tabIndex).toBe(-1);
+    fireEvent.keyDown(tab("Village"), { key: "End" });
+    expect(tab("Community").getAttribute("aria-selected")).toBe("true");
+    expect(tab("Community")).toHaveFocus();
+    fireEvent.keyDown(tab("Community"), { key: "Home" });
+    expect(tab("Village")).toHaveFocus();
+    expect(tab("Village").tabIndex).toBe(0);
+  });
+
+  it("is the sheet's own last child, so it sticks to the sheet's bottom edge at any height", async () => {
+    await sheet();
+    const tabs = screen.getByRole("tablist");
+    expect(tabs.parentElement?.getAttribute("role")).toBe("dialog");
+    expect(tabs.parentElement?.lastElementChild).toBe(tabs);
+  });
+
+  it("moves to the next group on a swipe left, and back on a swipe right, and ignores a scroll", async () => {
+    await sheet();
+    const panel = document.getElementById("more-group-panel")!;
+    const swipe = (dx: number, dy = 0) => {
+      fireEvent.touchStart(panel, { touches: [{ clientX: 200, clientY: 300 }] });
+      fireEvent.touchEnd(document.getElementById("more-group-panel")!, { changedTouches: [{ clientX: 200 + dx, clientY: 300 + dy }] });
+    };
+    swipe(-120);
+    expect(screen.getByRole("tab", { name: "Community" }).getAttribute("aria-selected")).toBe("true");
+    swipe(-30, 200);
+    expect(screen.getByRole("tab", { name: "Community" }).getAttribute("aria-selected")).toBe("true");
+    swipe(120);
+    expect(screen.getByRole("tab", { name: "Village" }).getAttribute("aria-selected")).toBe("true");
+  });
+});
+
+describe("Recent and the greeting", () => {
+  it("lists the last pages opened here, named by the menu, for a member", async () => {
+    session.user = { id: "u-1", name: "Wren Ash" };
+    session.recentPages = ["/events", "/journal"];
+    window.matchMedia = ((q: string) => ({ matches: true, media: q, addEventListener() {}, removeEventListener() {} })) as unknown as typeof window.matchMedia;
+    render(
+      <Router hook={memoryLocation({ path: "/" }).hook}>
+        <MoreSheet entries={[COMMUNITY]} itemsOf={(g) => g.items as NavLink[]} account={ACCOUNT} onClose={() => {}} />
+      </Router>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    const recent = document.querySelector("[data-more-recent]")!;
+    expect(within(recent as HTMLElement).getAllByRole("link").map((a) => a.getAttribute("href"))).toEqual(["/events", "/journal"]);
+    session.recentPages = null;
   });
 });
 
@@ -248,7 +348,7 @@ describe("each page once in the sheet (the menu's QA, 27 Nov 2026)", () => {
     const seen = new Map<string, Set<string>>();
     const placeOf = (a: Element) => {
       const folder = a.closest("[data-nav-folder]")?.getAttribute("data-nav-folder") ?? "";
-      const group = a.closest('[data-wayfinding="menu"] > li')?.querySelector("button")?.textContent?.trim() ?? "";
+      const group = a.closest("#more-group-panel") ? (sheet.querySelector('[role="tab"][aria-selected="true"]')?.textContent?.trim() ?? "") : "";
       const list = a.closest("ul[aria-label]")?.getAttribute("aria-label") ?? a.closest("section")?.getAttribute("aria-labelledby") ?? "";
       return `${list}/${group}/${folder}`;
     };
@@ -268,12 +368,12 @@ describe("each page once in the sheet (the menu's QA, 27 Nov 2026)", () => {
     openFolders();
     collect();
     for (const label of NAV.filter(isGroup).map((g) => g.label)) {
-      const group = within(sheet).getAllByRole("button").find((b) => b.textContent?.trim() === label)!;
+      const group = within(sheet).getAllByRole("tab").find((b) => b.textContent?.trim() === label)!;
       act(() => group.click());
       openFolders();
       collect();
     }
     const twice = Array.from(seen).filter(([, places]) => places.size > 1).map(([h]) => h);
-    expect(twice.sort()).toEqual(["/quests", "/roles"]);
+    expect(twice.sort()).toEqual(["/governance/work", "/quests", "/roles"]);
   });
 });

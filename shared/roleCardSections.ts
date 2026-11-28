@@ -12,6 +12,9 @@
  *   aiSupport         "Digital Companion": one or two sentences on the companion that
  *                     saves the role time
  *   aiCompanion       the companion's animal, one or two words ("Heron")
+ *   companionUrl      an optional link to the role's companion page, opened in a
+ *                     new tab from the card ("Talk to this role's companion").
+ *                     Village DATA set per role, never a brand baked into code.
  *   paid              true draws "This is a paid role" at the top of the card (compensation words for a role, 23 Nov 2026)
  *   payShape          the SHAPE of the pay, never an amount: each share a label
  *                     and a percent ("Cash 40", "Equity 55", "Credits 5")
@@ -60,6 +63,8 @@ export interface RoleCardSections {
   qualities: string[];
   aiSupport: string;
   aiCompanion: string;
+  /** An optional link to the role's companion page. Absent or empty: no link shows on the card. */
+  companionUrl?: string;
   paid: boolean;
   payShape: PayShare[];
   payNote: string;
@@ -120,6 +125,7 @@ export const SECTION_LIMITS = {
   lineChars: 200,
   aiSupportChars: 400,
   companionChars: 40,
+  companionUrlChars: 300,
   whereChars: 120,
   shares: 5,
   shareLabelChars: 40,
@@ -127,7 +133,7 @@ export const SECTION_LIMITS = {
   relatedRoles: 12,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where", "applyBy", "relatedRoles"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "companionUrl", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where", "applyBy", "relatedRoles"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -140,6 +146,9 @@ export const SECTION_WORDS = {
   where: "Where, in the card's own words",
   applyBy: "Apply by (the last day to apply)",
   aiCompanionLabel: "Companion",
+  companionLink: "Talk to this role's companion",
+  companionUrlLabel: "Companion link (opens in a new tab)",
+  companionUrlHint: "A web address for this role's companion. Leave blank for none.",
   paid: "This is a paid role",
   payShape: "How compensation works",
   editorHeading: "Who we hope for, and how pay works",
@@ -188,6 +197,7 @@ export const SECTION_PROBLEMS = {
   relatedSelf: "A role cannot name itself as a related role.",
   relatedDuplicate: (id: string) => `The related roles name ${id} twice.`,
   relatedTooMany: `At most ${SECTION_LIMITS.relatedRoles} related roles.`,
+  notUrl: "A companion link is a web address starting with https://.",
 } as const;
 
 export const EMPTY_SECTIONS: RoleCardSections = {
@@ -230,6 +240,23 @@ function text(raw: unknown, max: number, what: string): { ok: true; value: strin
   const t = raw.replace(/\s+/g, " ").trim();
   if (t.length > max) return { ok: false, problem: SECTION_PROBLEMS.tooLong(what, max) };
   if (looksLikePaymentDetails(t)) return { ok: false, problem: SECTION_PROBLEMS.payment };
+  return { ok: true, value: t };
+}
+
+/** An optional web link (http/https), or empty. Not free text: a bad value is refused, never silently blanked. */
+function urlField(raw: unknown, max: number, what: string): { ok: true; value: string } | { ok: false; problem: string } {
+  if (raw === null || raw === undefined) return { ok: true, value: "" };
+  if (typeof raw !== "string") return { ok: false, problem: SECTION_PROBLEMS.notUrl };
+  const t = raw.trim();
+  if (!t) return { ok: true, value: "" };
+  if (t.length > max) return { ok: false, problem: SECTION_PROBLEMS.tooLong(what, max) };
+  let u: URL;
+  try {
+    u = new URL(t);
+  } catch {
+    return { ok: false, problem: SECTION_PROBLEMS.notUrl };
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return { ok: false, problem: SECTION_PROBLEMS.notUrl };
   return { ok: true, value: t };
 }
 
@@ -369,6 +396,8 @@ export function readSections(raw: unknown, ctx: SectionsContext = {}): SectionsR
   if (!ai.ok) return { ...ai, field: "sections.aiSupport" };
   const animal = text(o.aiCompanion, SECTION_LIMITS.companionChars, SECTION_WORDS.aiCompanionLabel);
   if (!animal.ok) return { ...animal, field: "sections.aiCompanion" };
+  const companionUrl = urlField(o.companionUrl, SECTION_LIMITS.companionUrlChars, SECTION_WORDS.companionUrlLabel);
+  if (!companionUrl.ok) return { ...companionUrl, field: "sections.companionUrl" };
   const shape = readPayShape(o.payShape);
   if (!shape.ok) return { ...shape, field: "sections.payShape" };
   const note = text(o.payNote, SECTION_LIMITS.payNoteChars, SECTION_WORDS.payNoteLabel);
@@ -415,6 +444,7 @@ export function readSections(raw: unknown, ctx: SectionsContext = {}): SectionsR
       ...(where.value ? { where: where.value } : {}),
       ...(applyBy.value ? { applyBy: applyBy.value } : {}),
       ...(related.value.length ? { relatedRoles: related.value } : {}),
+      ...(companionUrl.value ? { companionUrl: companionUrl.value } : {}),
     },
   };
 }
@@ -461,7 +491,7 @@ export function sectionsForReader(s: RoleCardSections, reader: PayReader): Reade
 /** Whether a card has any of these sections written. */
 export function hasSections(s: RoleCardSections | ReaderSections | null | undefined): boolean {
   if (!s) return false;
-  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0 || !!s.where || !!s.applyBy;
+  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || !!s.companionUrl || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0 || !!s.where || !!s.applyBy;
 }
 
 /** "Cash 40%", one line per share, for the card. */

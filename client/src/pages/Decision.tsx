@@ -380,12 +380,10 @@ export default function Decision() {
             {noun(ballot.subjectType)}
           </span>
           <span className="text-xs text-muted-foreground">
-            <Trans context="Decision, span">Decided by {ballot.method}
-            <InfoTip tip={METHOD_TIP[ballot.method] ?? UNKNOWN_METHOD_TIP} label="What this method means" /></Trans>
+            <Trans context="Decision, span">Decided by <InfoTip tip={METHOD_TIP[ballot.method] ?? UNKNOWN_METHOD_TIP}>{ballot.method}</InfoTip></Trans>
           </span>
           <span className="text-xs text-muted-foreground">
-            <Trans context="Decision, span">{ballot.electorateCount} on the roll, {weightText(ballot.totalWeight)} weight between them
-            <InfoTip tip={WEIGHT_MODE_TIP[ballot.weightMode] ?? UNKNOWN_WEIGHT_TIP} label="How weight was decided" /></Trans>
+            <Trans context="Decision, span">{ballot.electorateCount} on the roll, {weightText(ballot.totalWeight)} <InfoTip tip={WEIGHT_MODE_TIP[ballot.weightMode] ?? UNKNOWN_WEIGHT_TIP}>weight</InfoTip> between them</Trans>
           </span>
         </div>
 
@@ -700,11 +698,7 @@ export default function Decision() {
               <section className="rounded-xl border border-border bg-card p-4">
                 <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
                   <Trans context="Decision, h2"><Compass className="w-4 h-4 text-notice" aria-hidden="true" />
-                  How this serves the village's purpose
-                  <InfoTip
-                    tip="The person who opened this vote wrote one line on how it serves the governing purpose statement. It was written before the vote opened and stays on the record afterwards."
-                    label="Why this is here"
-                  /></Trans>
+                  <InfoTip tip="The person who opened this vote wrote one line on how it serves the governing purpose statement. It was written before the vote opened and stays on the record afterwards.">How this serves the village's purpose</InfoTip></Trans>
                 </h2>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                   {ballot.purposeAlignment}
@@ -716,11 +710,7 @@ export default function Decision() {
             <section className="rounded-xl border border-border bg-card p-4">
               <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
                 <Trans context="Decision, h2"><FileText className="w-4 h-4 text-notice" aria-hidden="true" />
-                What is being voted on
-                <InfoTip
-                  tip="This document was snapshotted when the ballot opened and cannot change while it runs. What is voted on is what was checked."
-                  label="Why the document is frozen"
-                /></Trans>
+                <InfoTip tip="This document was snapshotted when the ballot opened and cannot change while it runs. What is voted on is what was checked.">What is being voted on</InfoTip></Trans>
               </h2>
               {stranger ? (
                 <p className="mt-2 text-sm text-muted-foreground"><Trans context="Decision, p">Members read the document once they sign in.</Trans></p>

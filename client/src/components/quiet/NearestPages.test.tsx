@@ -35,6 +35,7 @@ vi.mock("@/lib/newcomer", () => ({
   }),
 }));
 
+import { EYEBROW } from "@/components/journey/look";
 import { FIND_ANYTHING_EVENT, FIND_ANYTHING_READY, FIND_ANYTHING_READY_EVENT, NearestPageList, SearchLink } from "./NearestPages";
 
 function at(path: string) {
@@ -60,6 +61,12 @@ describe("the nearest pages, as the reader's menu would draw them", () => {
     expect(link.getAttribute("href")).toBe("/quests");
     // Places in the menu's own order (config/nav.ts), each folder under its group (QA round 1).
     expect(link.textContent).toContain("In Village, and in Govern under This season");
+    // QA round 2: the heading wears the menu bar's gold kicker, and the place line keeps to one line on a phone with
+    // the whole line in its title.
+    expect(screen.getByRole("heading", { name: "Perhaps you were looking for" }).className).toBe(`${EYEBROW} font-body`);
+    const place = Array.from(link.querySelectorAll("span")).find((el) => el.textContent === "In Village, and in Govern under This season")!;
+    expect(place.className).toContain("max-sm:truncate");
+    expect(place.getAttribute("title")).toBe("In Village, and in Govern under This season");
   });
 
   it("offers a stranger no page whose module is off", () => {

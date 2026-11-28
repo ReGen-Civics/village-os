@@ -1,0 +1,17 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the one Reports queue in Admin (forum reports and message reports, folded), 27 Nov 2026
+#: client/src/pages/Admin.tsx
+msgctxt "Admin, h2"
+msgid "Reports"
+msgstr "Reportes"
+
+# needs-native-review: the Quest claims tab is folded; the queue is on the review list, 28 Nov 2026
+#: client/src/components/journey/EconomicsView.tsx
+msgid "Submitted work waiting for the human gate. Act on the review list, under Finished work to witness."
+msgstr "Trabajo entregado que espera la revisión de una persona. Atiéndalo en la lista de revisión, en Trabajo terminado por atestiguar."

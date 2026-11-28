@@ -430,7 +430,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // On the founding card the companion sits under a piece's heading, one level further down.
   const CompanionH = founding ? (lifted ? "h4" : "h5") : H4;
   const companion =
-    sections && (sections.aiSupport || sections.aiCompanion) ? (
+    sections && (sections.aiSupport || sections.aiCompanion || sections.companionUrl) ? (
       <section data-testid="ai-support">
         <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}><TipText text={SECTION_WORDS.aiSupport} /></CompanionH>
         <div className="mt-2 flex items-start gap-3 text-card-foreground">
@@ -440,6 +440,17 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           <div>
             {sections.aiCompanion && <p className="font-semibold">{sections.aiCompanion}</p>}
             {sections.aiSupport && <p className="leading-relaxed">{sections.aiSupport}</p>}
+            {sections.companionUrl && (
+              <a
+                href={sections.companionUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-2 inline-flex min-h-[44px] items-center text-sm underline underline-offset-2"
+                data-testid="companion-link"
+              >
+                {SECTION_WORDS.companionLink}
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -619,7 +630,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
               <Lines lines={sections.qualities} />
             </Block>
           )}
-          {sections && (sections.aiSupport || sections.aiCompanion) && (
+          {sections && (sections.aiSupport || sections.aiCompanion || sections.companionUrl) && (
             <Block heading={SECTION_WORDS.aiSupport} register={register} lifted={lifted} testId="ai-support">
               <div className="flex items-start gap-3">
                 <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-notice/50">
@@ -628,6 +639,17 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
                 <div>
                   {sections.aiCompanion && <p className="font-semibold">{sections.aiCompanion}</p>}
                   {sections.aiSupport && <p className="leading-relaxed">{sections.aiSupport}</p>}
+                  {sections.companionUrl && (
+                    <a
+                      href={sections.companionUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-2 inline-flex min-h-[44px] items-center text-sm underline underline-offset-2"
+                      data-testid="companion-link"
+                    >
+                      {SECTION_WORDS.companionLink}
+                    </a>
+                  )}
                 </div>
               </div>
             </Block>

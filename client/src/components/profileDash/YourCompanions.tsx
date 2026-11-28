@@ -29,6 +29,8 @@ import CompanionPet, { PetDrawing } from "./CompanionPet";
 import { NATURE_ART, natureArtUrl } from "@shared/natureArt";
 import { BTN_GOLD, BTN_LINE, H2, KICKER, LINK, PANEL, RAISED } from "./dashUi";
 import { Trans, useLingui } from "@lingui/react/macro";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 
 const API = "/api/me/companions";
 
@@ -429,7 +431,8 @@ function DraftRow({ it, name, onChanged }: { it: CompanionItemView; name: string
 function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: CompanionsPayload["consent"]; onChanged: () => Promise<void> }) {
   const { t } = useLingui();
   const [lines, setLines] = useState<ChatLine[]>([]);
-  const [text, setText] = useState("");
+  // Kept per companion in this tab, so a long message survives switching companions or leaving the page.
+  const [text, setText] = useChatDraft(`companion:${c.id}`);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [agreed, setAgreed] = useState(Boolean(consent?.given));
@@ -508,29 +511,25 @@ function ChatPanel({ c, consent, onChanged }: { c: CompanionView; consent: Compa
           </p>
         ))}
       </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={inputId} className="text-[13px] text-foreground/80">
-          <Trans context="YourCompanions, label">Message {c.name}</Trans>
-        </label>
-        <div className="flex gap-2">
-          <input
-            id={inputId}
-            type="text"
-            value={text}
-            maxLength={1000}
-            disabled={!consent || !agreed}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void say();
-            }}
-            placeholder={t({ message: "Ask, or tell it what to draft", context: "YourCompanions, placeholder" })}
-            className={`${INPUT} min-w-0 flex-1`}
-          />
-          <button type="button" disabled={busy || !consent || !agreed || !text.trim()} onClick={say} className={BTN_GOLD}>
-            <Trans context="YourCompanions, button">Send
-          </Trans></button>
-        </div>
-      </div>
+      {/* The shared chat box (components/chat/ChatComposer.tsx): it grows to two thirds of the screen, takes speech, and keeps its draft. */}
+      <ChatComposer
+        id={inputId}
+        value={text}
+        onChange={setText}
+        onSend={() => void say()}
+        label={<Trans context="YourCompanions, label">Message {c.name}</Trans>}
+        labelClassName="mb-1.5 block text-[13px] text-foreground/80"
+        maxLength={1000}
+        busy={busy}
+        disabled={!consent || !agreed}
+        placeholder={t({ message: "Ask, or tell it what to draft", context: "YourCompanions, placeholder" })}
+        fieldClassName="rounded-xl border border-dash-edge bg-background px-3 py-2.5 text-base leading-normal pointer-fine:text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+        sendLabel={t({ message: "Send", context: "YourCompanions, button" })}
+        sendText={<Trans context="YourCompanions, button">Send</Trans>}
+        sendClassName={`${BTN_GOLD} shrink-0 disabled:opacity-50`}
+        // A reply landed above: with the keyboard still up (iOS keeps it after a tap on Send), Send stays in sight.
+        follow={lines.length}
+      />
       {note ? (
         <p role="status" className="m-0 text-[13px] text-notice">
           {note}

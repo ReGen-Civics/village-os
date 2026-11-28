@@ -34,7 +34,8 @@ vi.mock("@/modules/ModuleProvider", () => ({
   useModule: () => ({ id: "crowdpool", lifecycle: "public" }),
   useModules: () => ({ loaded: true }),
 }));
-vi.mock("@/lib/gameApi", () => ({ authToken: () => null }));
+// The lantern reads the village's zone from the config (PoolPieces.tsx, QA round 2); none here.
+vi.mock("@/lib/gameApi", () => ({ authToken: () => null, useGameConfig: () => null }));
 vi.mock("@/hooks/useTokenNames", () => ({ useTokenName: () => "Gratitude" }));
 
 import CrowdpoolCampaign from "./CrowdpoolCampaign";
