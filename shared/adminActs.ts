@@ -190,7 +190,8 @@ function dialOf(a: Routed): VariableDef | undefined {
   return a.route?.path === DIAL_ROUTE ? VARIABLES_BY_KEY[a.route.params?.key ?? ""] : undefined;
 }
 
-const isWrite = (a: Routed): a is { route: ActRoute } => !!a.route && a.route.method !== "GET";
+/** A write keeps everything else the entry says: the guard narrows the route and nothing more. */
+const isWrite = <A extends Routed>(a: A): a is A & { route: ActRoute } => !!a.route && a.route.method !== "GET";
 
 /**
  * Every rule of the connector's list that names this act's write, whatever its mode. Empty for a read.
