@@ -366,7 +366,6 @@ export default function Roles() {
   const memberPct = useMyCommitment(!!user).pct;
   const [showBeyond, setShowBeyond] = useState(false);
   const { t } = useLingui();
-  const rootWord = t({ message: "root", context: "glossary: the word a tip explains" });
   const canTagNeeds = hasAdminAccess(user);
   // The waitlist offers a letter to everyone waiting, and that route asks the mail power: the account's own role.
   const isAdmin = useIsAdmin("account-role");
@@ -642,7 +641,7 @@ export default function Roles() {
                 {/* One quiet door (design pass D-04, M3): the roots, the season and the board live on
                     /roles/select, so the paid roles never share a scroll with the game. */}
                 <h3 className="font-display text-2xl leading-tight text-foreground">{t({ message: "Find your place in the game", context: "roles page, other ways to join" })}</h3>
-                <p className="mt-2 text-sm text-muted-foreground"><Trans context="roles page, other ways to join: the game's door">Choose the root<GlossaryTip slot="root" word={rootWord} /> you grow from, see this season's goals, and pick the roles you play.</Trans></p>
+                <p className="mt-2 text-sm text-muted-foreground"><Trans context="roles page, other ways to join: the game's door">Choose the <GlossaryTip slot="root">root</GlossaryTip> you grow from, see this season's goals, and pick the roles you play.</Trans></p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <Link href="/roles/select" className={BTN_SECONDARY} data-game-door="">
                     {t({ message: "Explore the game", context: "roles page, other ways to join: the game's door" })}

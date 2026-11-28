@@ -82,11 +82,7 @@ export default function VoterRoll({
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
         <Trans context="VoterRoll, h3"><MushroomNetwork className="w-4 h-4 text-notice" aria-hidden="true" />
-        Who may vote
-        <InfoTip
-          tip="This roll froze when the ballot opened. Members who joined since are not on it, and members who left still are."
-          label="How the roll is decided"
-        /></Trans>
+        <InfoTip tip="This roll froze when the ballot opened. Members who joined since are not on it, and members who left still are.">Who may vote</InfoTip></Trans>
       </h3>
       <p className="mt-1 text-sm text-muted-foreground">
         <Trans context="VoterRoll, p">{total} {total === 1 ? "member" : "members"}, {votes.length} spoken, {silent.length} yet to.

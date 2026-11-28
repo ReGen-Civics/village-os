@@ -48,6 +48,7 @@
  * It asks its own door every few seconds while the tab is visible, apart from
  * the room's poll, and draws nothing for a session opened without a template.
  */
+import InfoTip from "@/components/InfoTip";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Feather } from "lucide-react";
@@ -283,9 +284,11 @@ export default function TemplatePanel({ sessionId, agenda }: { sessionId: number
         </h2>
         <ol className="mt-3 flex flex-wrap gap-1.5" aria-label={TEMPLATE_COPY.flowHeading}>
           {flow.map((s, i) => (
-            <li key={s.key} className={CHIP} title={s.prompt || SECTION_KIND_DEFS[s.kind].hint}>
-              <Trans context="TemplatePanel, li">{i + 1}. {s.title} · {sectionMinutesFor(s, view.here.length)} min
-            </Trans></li>
+            <li key={s.key} className={CHIP}>
+              {/* The step's prompt on the step's own words, where a phone can open it (a title reached only a mouse). */}
+              <InfoTip tip={s.prompt || SECTION_KIND_DEFS[s.kind].hint}>
+                <Trans context="TemplatePanel, li">{i + 1}. {s.title} · {sectionMinutesFor(s, view.here.length)} min
+              </Trans></InfoTip></li>
           ))}
         </ol>
       </div>

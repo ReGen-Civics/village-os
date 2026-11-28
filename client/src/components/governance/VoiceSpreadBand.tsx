@@ -17,7 +17,8 @@
  * The heading and the sentence under it are the village's own words (Admin,
  * Pages, How We Govern); every figure is the village's own.
  */
-import GlossaryTip from "@/components/GlossaryTip";
+import GlossaryTip, { GlossaryText } from "@/components/GlossaryTip";
+import type { GlossarySlot } from "@shared/glossary";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useModule } from "@/modules/ModuleProvider";
@@ -31,10 +32,13 @@ const EVENNESS_WORDS: Record<Evenness, string> = {
   concentrated: "Most of the Voice sits with a few: the top groups have far more say than their size.",
 };
 
-function Tile({ label, value, tip }: { label: string; value: string; tip?: React.ReactNode }) {
+/** The word for Voice in the village's heading, English or Spanish, its first whole-word use. */
+const VOICE_WORD = /\b(?:voice|voz)\b/i;
+
+function Tile({ label, value, slot }: { label: string; value: string; slot?: GlossarySlot }) {
   return (
     <div data-spread-tile className="rounded-xl border border-border bg-muted px-4 py-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}{tip}</div>
+      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{slot ? <GlossaryTip slot={slot}>{label}</GlossaryTip> : label}</div>
       <div className="mt-1 font-display text-2xl font-bold text-card-foreground">{value}</div>
     </div>
   );
@@ -63,8 +67,8 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
     <section id="voice" className="scroll-mt-24 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8" aria-labelledby="voice-spread-heading">
       <div className="min-w-0">
         <h2 id="voice-spread-heading" className="font-display text-2xl text-card-foreground break-words">
-          {heading}
-          <GlossaryTip slot="voice" word={t({ message: "Voice", context: "glossary: the word a tip explains" })} />
+          {/* The village's own heading: its word for Voice wears the tip, or the whole heading when it has none. */}
+          <GlossaryText slot="voice" text={heading} match={VOICE_WORD} whole />
         </h2>
         {intro.trim() !== "" && <p className="mt-2 max-w-3xl text-muted-foreground leading-relaxed break-words">{intro}</p>}
         <p className="mt-3 text-sm font-medium text-foreground">
@@ -111,7 +115,7 @@ export default function VoiceSpreadBand({ heading, intro }: { heading: string; i
             <Tile label={ballots.since ? t({ message: "Votes this season", context: "VoiceSpreadBand, label" }) : t({ message: "Votes so far", context: "VoiceSpreadBand, label" })} value={String(ballots.run)} />
             <Tile label={t({ message: "Carried", context: "VoiceSpreadBand, label" })} value={ballots.closed ? `${ballots.passed} of ${ballots.closed}` : "None yet"} />
             <Tile label={t({ message: "Average turnout", context: "VoiceSpreadBand, label" })} value={ballots.turnoutPct === null ? "None closed yet" : `${ballots.turnoutPct}%`} />
-            <Tile label={t({ message: "Quorum", context: "VoiceSpreadBand, label" })} value={`${view.quorumPct}%`} tip={<GlossaryTip slot="quorum" word={t({ message: "quorum", context: "glossary: the word a tip explains" })} />} />
+            <Tile label={t({ message: "Quorum", context: "VoiceSpreadBand, label" })} value={`${view.quorumPct}%`} slot="quorum" />
           </div>
         </div>
       </div>
