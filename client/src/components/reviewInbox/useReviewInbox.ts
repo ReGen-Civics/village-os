@@ -16,19 +16,32 @@ import { authToken } from "@/lib/gameApi";
 import type { InboxItem, InboxSectionAnswer, SectionState } from "@shared/reviewInbox";
 import { INBOX_ORDER, INBOX_PAGE, INBOX_SOURCES, type InboxSource } from "@shared/reviewInboxSources";
 
+/**
+ * THE ONE COUNT, as the server defines it (shared/reviewInbox.ts, `decisionCounts`). Every page that says a number
+ * says `decisions`, through `DecisionsLine`, so Home and /admin/review can never disagree.
+ */
 export interface InboxCounts {
-  /** What waits on this person. With a queue in `unknown` it is a floor: say "at least". */
-  waiting: number;
+  /** DECISIONS WAITING ON YOU. With a queue in `unknown` it is a floor: say "at least". */
+  decisions: number;
+  /** Applications: listed on the page, never counted. */
+  applications: number;
+  /** Rows that cannot be applied as the village stands: said beside the count, not in it. */
+  blocked: number;
   /** The queues that did not load, whose numbers are not known. */
   unknown: InboxSource[];
-  /** How many of the waiting rows cannot be applied as the village stands. */
-  blocked: number;
+  /** Every row listed, of any kind: for a page to know the list is empty. Never the number a page says. */
+  waiting: number;
 }
 
 export interface InboxAnswer {
   sections: InboxSectionAnswer[];
   items: InboxItem[];
   counts: InboxCounts;
+  /**
+   * The one count split by the page each decision is made on (`decisionsByDoor`, shared/reviewInbox.ts). A number on
+   * one door reads its own entry, so it equals what that page lists. Empty from a server that does not send it.
+   */
+  byDoor: Record<string, number>;
 }
 
 export type InboxLoad = { phase: "loading" } | { phase: "failed" } | { phase: "ready"; answer: InboxAnswer };
@@ -42,6 +55,8 @@ export interface InboxGroup {
   atLeast: number;
   blocked: number;
   more: boolean;
+  /** The queue holds more than one read will ever send: no Show more, and a door to its own page for the rest. */
+  capped: boolean;
   decidedOnRow: boolean;
 }
 
@@ -69,7 +84,7 @@ const isSource = (v: unknown): v is InboxSource => typeof v === "string" && (INB
  * each is read from what it did send, so a rollback draws the list it has and never a broken page.
  */
 export function readAnswer(body: unknown): InboxAnswer | null {
-  const b = body as { sections?: unknown; items?: unknown; counts?: { waiting?: unknown; unknown?: unknown; blocked?: unknown } } | null;
+  const b = body as { sections?: unknown; items?: unknown; byDoor?: unknown; counts?: { waiting?: unknown; unknown?: unknown; blocked?: unknown; decisions?: unknown; applications?: unknown } } | null;
   // An answer without its two lists is not a list with nothing in it: the read failed.
   if (!b || !Array.isArray(b.items) || !Array.isArray(b.sections)) return null;
   const items = b.items as InboxItem[];
@@ -83,16 +98,24 @@ export function readAnswer(body: unknown): InboxAnswer | null {
       atLeast: typeof s.atLeast === "number" ? s.atLeast : typeof s.count === "number" ? s.count : listed,
       blocked: typeof s.blocked === "number" ? s.blocked : 0,
       more: s.more === true,
+      ...(s.capped === true ? { capped: true as const } : {}),
     };
   });
   const unknown = Array.isArray(b.counts?.unknown) ? b.counts.unknown.filter(isSource) : sections.filter((s) => s.state === "failed").map((s) => s.source);
+  const waiting = typeof b.counts?.waiting === "number" ? b.counts.waiting : items.length;
+  const blocked = typeof b.counts?.blocked === "number" ? b.counts.blocked : items.filter((i) => i.blocked).length;
+  const doors = b.byDoor && typeof b.byDoor === "object" && !Array.isArray(b.byDoor) ? (b.byDoor as Record<string, unknown>) : {};
   return {
     sections,
     items,
+    byDoor: Object.fromEntries(Object.entries(doors).filter((e): e is [string, number] => typeof e[1] === "number")),
     counts: {
-      waiting: typeof b.counts?.waiting === "number" ? b.counts.waiting : items.length,
+      // A server one release behind defines no count: every row it lists that is not blocked stands in for it.
+      decisions: typeof b.counts?.decisions === "number" ? b.counts.decisions : Math.max(0, waiting - blocked),
+      applications: typeof b.counts?.applications === "number" ? b.counts.applications : 0,
+      blocked,
       unknown,
-      blocked: typeof b.counts?.blocked === "number" ? b.counts.blocked : items.filter((i) => i.blocked).length,
+      waiting,
     },
   };
 }
@@ -130,6 +153,15 @@ export function useReviewInbox(enabled: boolean) {
     [fetchOnce],
   );
 
+  /** Ask the server for every row of one queue at once (`n` is its number), so a long queue is not 20 presses. */
+  const showAll = useCallback(
+    (source: InboxSource, n: number) => {
+      rows.current.set(source, Math.max(INBOX_PAGE, Math.floor(n)));
+      return fetchOnce(true);
+    },
+    [fetchOnce],
+  );
+
   useEffect(() => {
     if (enabled) void read();
   }, [enabled, read]);
@@ -157,6 +189,7 @@ export function useReviewInbox(enabled: boolean) {
         atLeast: s?.atLeast ?? items.length,
         blocked: s?.blocked ?? 0,
         more: s?.more ?? false,
+        capped: s?.capped === true,
         decidedOnRow: DECIDED_ON_ROW.has(source),
       }];
     });
@@ -167,13 +200,14 @@ export function useReviewInbox(enabled: boolean) {
     answer,
     /** Each queue's state: a queue that failed or refused says so, and is never read as an empty, quiet one. */
     sections: answer?.sections ?? [],
-    /** The server's numbers: what waits, which queues are unknown, how many rows are blocked. */
-    counts: answer?.counts ?? { waiting: 0, unknown: [], blocked: 0 },
-    /** Everything waiting on this person, across every kind, by the server's count. A floor while a queue is unknown. */
+    /** THE ONE COUNT and what sits beside it, as the server worked them out for this person. */
+    counts: answer?.counts ?? { decisions: 0, applications: 0, blocked: 0, unknown: [], waiting: 0 },
+    /** Every row listed, of any kind: whether the list is empty. The number a page SAYS is `counts.decisions`. */
     total: answer?.counts.waiting ?? 0,
     groups,
     read,
     refresh,
     showMore,
+    showAll,
   };
 }

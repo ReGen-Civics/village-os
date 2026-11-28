@@ -16,6 +16,10 @@
  *
  * A queue that failed is named, so a failure never reads as nothing waiting.
  * Nothing here ranks or judges: the rows are the list's rows.
+ *
+ * ONE READ, ONE COUNT (27 Nov 2026). Home hands this the read it already made (`inbox`), so opening Home reads the
+ * list once, and the number Home says (DecisionsLine, in Home's own card) is the one this list is counted by. This
+ * box says no second total.
  */
 import { useState } from "react";
 import { Link } from "wouter";
@@ -32,9 +36,16 @@ export const ROWS_PER_KIND = 3;
 const linkCls =
   "inline-flex min-h-[44px] items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring";
 
-export default function NeedsYouNow() {
+export type Inbox = ReturnType<typeof useReviewInbox>;
+
+/** Reads the list itself, for a page that has no read of its own to hand over. */
+export function NeedsYouNowAlone() {
+  return <NeedsYouNow inbox={useReviewInbox(true)} />;
+}
+
+export default function NeedsYouNow({ inbox }: { inbox: Inbox }) {
   const { t, i18n } = useLingui();
-  const { load, sections, groups: kinds, total, read, refresh } = useReviewInbox(true);
+  const { load, sections, groups: kinds, total, read, refresh } = inbox;
   const [notice, setNotice] = useState<string | null>(null);
 
   if (load.phase === "loading") {
@@ -83,17 +94,12 @@ export default function NeedsYouNow() {
 
       {notice && <p role="status" className="text-sm text-foreground">{notice}</p>}
 
-      {total === 0 ? (
+      {/* Never "nothing" while a queue did not load: it may hold something (QA, 28 Nov 2026). The line below names it. */}
+      {total === 0 && failed.length === 0 ? (
         <p className="text-base text-foreground">
           <Trans context="Admin Today, needs you now">Nothing on the review list is waiting on you.</Trans>
         </p>
-      ) : (
-        <p className="text-base text-foreground">
-          {total === 1
-            ? t({ message: "1 thing is waiting on you.", context: "Admin Today, needs you now" })
-            : t({ message: `${total} things are waiting on you.`, context: "Admin Today, needs you now" })}
-        </p>
-      )}
+      ) : null}
 
       {groups.map((g) => {
         const title = sourceText(g.source, i18n).title;

@@ -20,6 +20,7 @@ import { draftPageHref } from "./orgDraftView";
 import { APPROVALS_HREF, expiresAt } from "./approvalInbox";
 import { changeRequestHref } from "./changeRequestAddress";
 import { waitingKind } from "./seraWaiting";
+import { formKindWords, needsAction } from "./formsWaiting";
 
 import { INBOX_ORDER, INBOX_PAGE, INBOX_SOURCES, SERA_ROW_KEY, type InboxSource } from "./reviewInboxSources";
 export { INBOX_ORDER, INBOX_PAGE, INBOX_SOURCES, SERA_ROW_KEY, type InboxSource };
@@ -55,6 +56,11 @@ export interface InboxItem {
    * cannot. Set by the server half for the items a person's own reads already listed; absent when nothing blocks it.
    */
   blocked?: InboxBlocked | null;
+  /**
+   * Other ids a search finds this row by, when one row stands for many things: Sera's row answers to the id of every
+   * batch its differences came in on, as each of her rows did before they became one (QA, 28 Nov 2026).
+   */
+  finds?: string[];
 }
 
 export interface InboxBlocked {
@@ -230,7 +236,7 @@ export function fromAgentWaiting(body: unknown): InboxItem[] {
  * the live list were these, each a door to another page). The row holds what waits for a person by the list's own rule
  * (shared/seraWaiting.ts: every decision and conflict, and the small changes), so its number is the number the list
  * itself says. Facts, and what is ahead here, wait for nobody and are not counted. The row opens the list where a
- * person ticks and takes, with that list's own exclusions (never pay, never a new role apart from its circle).
+ * person ticks and takes. Pay and new roles are in that list too; the list confirms those one at a time, as before.
  * Dated by its oldest waiting difference, so it takes its place in the order like anything else.
  */
 export function fromSeraDifferences(body: unknown): InboxItem[] {
@@ -254,6 +260,7 @@ export function fromSeraDifferences(body: unknown): InboxItem[] {
     decideAt: "/review",
     touchesPerson: false,
     holds: n,
+    finds: Array.from(new Set(waiting.map((d) => str(d.batchId)).filter((v): v is string => !!v))).slice(0, 50),
   }];
 }
 
@@ -495,6 +502,22 @@ export function fromOrgDrafts(body: unknown): InboxItem[] {
   });
 }
 
+/**
+ * `GET /api/admin/submissions` (an admin's read): the forms people sent that nobody has answered yet, by the rule the
+ * admin's own lists use (shared/formsWaiting.ts). Each is named by the KIND of form and the day it came, never by
+ * who sent it: the form's own page, behind its own gate, is where a person reads that. Until the one count (27 Nov
+ * 2026) Home counted these as "requests" beside this list, so the two never added up.
+ */
+export function fromForms(body: unknown): InboxItem[] {
+  return list(body).flatMap((x) => {
+    const f = obj(x);
+    const id = str(f?.id);
+    if (!f || !id || !needsAction(typeof f.status === "string" ? f.status : null)) return [];
+    const kind = typeof f.type === "string" && f.type.trim() ? f.type : "request";
+    return [{ key: `form:${id}`, source: "form" as const, kind: `form_${kind}`, code: null, summary: line(formKindWords(kind), "A form to answer"), filedAt: str(f.submittedAt), batch: null, decideAt: "/admin?tab=submissions", touchesPerson: true }];
+  });
+}
+
 export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/admin/proposals", sources: ["connector"], read: fromConnector },
   { path: "/api/review/queue", sources: ["intake", "quest"], read: (b) => { const r = fromReviewQueue(b); return [...r.intake, ...r.quest]; } },
@@ -521,13 +544,16 @@ export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/hidden-map/vouch-queue", sources: ["vouch"], read: fromVouches },
   { path: "/api/review/erasure", sources: ["erasure"], read: fromErasure },
   { path: "/api/admin/open-proposals", sources: ["open"], read: fromOpenProposalDesk },
+  { path: "/api/admin/submissions", sources: ["form"], read: fromForms },
 ];
 
 // ── One list ────────────────────────────────────────────────────────────────
 
 /**
  * THE ORDER OF THE LIST, one rule wherever it is drawn (the hall relief, 27 Nov 2026):
- *   1. what lapses undecided, soonest lapse first: a real deadline is the only clock on this list;
+ *   0. what is BLOCKED comes first: it needs a hand before anybody can decide it, and a page that says "2 blocked"
+ *      must show them without a press (QA, 28 Nov 2026: a blocked draft sat behind Show more);
+ *   1. then what lapses undecided, soonest lapse first: a real deadline is the only clock on this list;
  *   2. then everything that carries a date, oldest first;
  *   3. then what carries no date, in the order its own queue lists it. Its queue keeps no time, and nothing here
  *      invents one, so it never jumps ahead of something that has waited a known time.
@@ -540,7 +566,9 @@ export function orderInbox(items: readonly InboxItem[]): InboxItem[] {
   const undated = items.filter((i) => !i.lapsesAt && !i.filedAt);
   lapsing.sort((a, b) => a.lapsesAt!.localeCompare(b.lapsesAt!) || a.key.localeCompare(b.key));
   dated.sort((a, b) => a.filedAt!.localeCompare(b.filedAt!) || a.key.localeCompare(b.key));
-  return [...lapsing, ...dated, ...undated];
+  const ordered = [...lapsing, ...dated, ...undated];
+  // Blocked first, each part keeping the order above.
+  return [...ordered.filter((i) => i.blocked), ...ordered.filter((i) => !i.blocked)];
 }
 
 /**
@@ -576,10 +604,15 @@ export interface InboxSectionAnswer {
   blocked: number;
   /** Whether rows past the ones sent wait to be asked for (`?rows=<queue>:<how many>`). */
   more: boolean;
+  /**
+   * Set when the queue holds more rows than one read will ever send (`INBOX_ROWS_MAX`). Then `more` is false: asking
+   * again brings nothing, so a page offers no Show more and sends the person to the queue's own page for the rest.
+   */
+  capped?: true;
 }
 
 /** The most rows of one queue a single read will send, however many are asked for. */
-export const INBOX_ROWS_MAX = 200;
+export const INBOX_ROWS_MAX = 1000;
 
 /**
  * `?rows=structure:20,quest:30`: how many rows of a queue to send, for the queues a person opened past their first
@@ -597,13 +630,80 @@ export function rowsAsked(raw: unknown): Map<InboxSource, number> {
   return out;
 }
 
+/**
+ * THE ONE COUNT: DECISIONS WAITING ON YOU (the Admin Garden plan, 27 Nov 2026: "One count, defined once. Applications
+ * are listed and never counted.").
+ *
+ * Defined here and nowhere else. The server works it out per person, on every read, from that person's own queues
+ * (server/routes/reviewInbox.ts), and every page that says a number says this one: Admin Home, and /admin/review.
+ *
+ *   decisions     every row waiting on this person that they can decide: one per item, one for a list that is gone
+ *                 through as one (Sera's differences), across every queue that answered.
+ *   applications  LISTED, NEVER COUNTED: a person's application for a role, and a proposal from outside the village
+ *                 for one. Each is shown in arrival order on its own row and its own page, and applicants are
+ *                 never added up. (A form to answer is a request, and is a decision like any other.)
+ *   blocked       rows that cannot be applied as the village stands. They need a hand before anyone can decide them,
+ *                 so they are said beside the count and are not in it.
+ *   unknown       the queues that did not load. With any, `decisions` is a floor: say "at least".
+ *
+ * NEVER CACHED ACROSS PEOPLE: nothing here or in the route keeps a count between requests. The answer is `no-store`,
+ * and a page that remembers a count on a device remembers whose it was (client/src/components/admin/todayGlance.ts).
+ */
+export interface DecisionCounts {
+  decisions: number;
+  applications: number;
+  blocked: number;
+  unknown: InboxSource[];
+}
+
+/** The queues that are applications: listed on the page, in arrival order, and left out of the count. */
+export const LISTED_NOT_COUNTED: readonly InboxSource[] = ["application", "open"];
+
+/** The one count, from every item waiting on a person (one row per item) and each queue's state. */
+export function decisionCounts(all: readonly InboxItem[], sections: readonly Pick<InboxSection, "source" | "state">[]): DecisionCounts {
+  const listed = all.filter((i) => LISTED_NOT_COUNTED.includes(i.source));
+  const counted = all.filter((i) => !LISTED_NOT_COUNTED.includes(i.source));
+  return {
+    decisions: counted.filter((i) => !i.blocked).length,
+    applications: listed.length,
+    blocked: counted.filter((i) => i.blocked).length,
+    unknown: sections.filter((s) => s.state === "failed").map((s) => s.source),
+  };
+}
+
+/** The page an item is decided on, without its search or its anchor: `/governance/work#approvals` is `/governance/work`. */
+export const doorPath = (decideAt: string): string => decideAt.split(/[?#]/)[0] || "/";
+
+/**
+ * THE ONE COUNT, BY DOOR: the same decisions, keyed by the page each is decided on.
+ *
+ * A number drawn on a door has to equal what is listed behind that door (the coordinator's rule for the menu,
+ * 28 Nov 2026: a member saw "2" on a row that opened a page listing neither of the two). `decisions` is the number
+ * for a page that lists every decision. A door that opens one page reads its own entry here, and the page behind it
+ * lists exactly those. Nothing is counted twice and nothing is left out: every value added together is `decisions`.
+ * Applications and blocked rows are in neither, as in the one count.
+ */
+export function decisionsByDoor(all: readonly InboxItem[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const i of all) {
+    if (LISTED_NOT_COUNTED.includes(i.source) || i.blocked) continue;
+    const door = doorPath(i.decideAt);
+    out[door] = (out[door] ?? 0) + 1;
+  }
+  return out;
+}
+
 export interface InboxPaged {
   sections: InboxSectionAnswer[];
   /** The rows sent: each queue's first page, or as many as were asked for, in the list's one order. */
   items: InboxItem[];
-  /** How many items wait across every queue that answered: the number, where `items` is only what was sent. */
+  /** How many rows wait across every queue that answered, applications and blocked rows among them. */
   waiting: number;
   blocked: number;
+  /** The one count a page says (`decisionCounts`). */
+  counts: DecisionCounts;
+  /** The same decisions by the page each is decided on (`decisionsByDoor`), for a number drawn on one door. */
+  byDoor: Record<string, number>;
 }
 
 /**
@@ -626,10 +726,12 @@ export function pageInbox(sections: readonly InboxSection[], rows: ReadonlyMap<I
       count: s.state === "failed" ? null : queue.length,
       atLeast: queue.length,
       blocked: queue.filter((i) => i.blocked).length,
-      more: queue.length > show,
+      // Past the cap nothing more can be asked for: say so, and never offer a press that does nothing.
+      more: queue.length > show && show < INBOX_ROWS_MAX,
+      ...(queue.length > show && show >= INBOX_ROWS_MAX ? { capped: true as const } : {}),
     };
   });
-  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length };
+  return { sections: answers, items: all.filter((i) => sent.has(i.key)), waiting: all.length, blocked: all.filter((i) => i.blocked).length, counts: decisionCounts(all, sections), byDoor: decisionsByDoor(all) };
 }
 
 /**
@@ -644,7 +746,8 @@ export function findInInbox(items: readonly InboxItem[], raw: string): InboxItem
     // The id is the key's last part: `agent:seating:<id>` carries the kind between the source and the id.
     const id = i.key.slice(i.key.lastIndexOf(":") + 1);
     const batchId = i.batch ? i.batch.key.slice(i.batch.key.indexOf(":") + 1) : null;
-    return matchesFind(q, { id, code: i.code, batchId, batchCode: i.batch?.code ?? null });
+    // A row that stands for many things is found by each id it answers to (Sera's row, by its batches).
+    return matchesFind(q, { id, code: i.code, batchId, batchCode: i.batch?.code ?? null }) || (i.finds ?? []).some((other) => matchesFind(q, { id: other, code: null, batchId: other, batchCode: null }));
   });
 }
 

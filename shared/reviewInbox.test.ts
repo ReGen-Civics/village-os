@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { decisionCounts, decisionsByDoor, doorPath, fromForms, LISTED_NOT_COUNTED } from "./reviewInbox";
 import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromOrgDrafts, fromReviewQueue, fromSeraDifferences, INBOX_PAGE, INBOX_ROWS_MAX, mergeSections, orderInbox, pageInbox, rowsAsked, searchedCode, SERA_ROW_KEY, stateOfStatus } from "./reviewInbox";
 import type { InboxItem } from "./reviewInbox";
 
@@ -164,13 +165,112 @@ describe("one list", () => {
     expect(paged.items.map((i) => i.key)).toEqual(["open:o1"]);
   });
 
-  it("BLOCKED rows are counted per queue and in all, and stay in their place in the order", () => {
+  it("THE ONE COUNT: decisions waiting on you, with applications listed and never counted, blocked rows beside it", () => {
+    const items = [
+      row("vote:v1"),
+      row("connector:c1"),
+      // Sera's whole list is one row, so it is one decision to open, whatever it holds.
+      row("sera:differences", { holds: 159 }),
+      row("form:f1", { touchesPerson: true }),
+      // A person's application, and a proposal from outside for a role: listed, never counted.
+      row("application:a1", { touchesPerson: true }),
+      row("application:a2", { touchesPerson: true }),
+      row("open:o1", { touchesPerson: true }),
+      // Blocked: it needs a hand before anyone can decide it, so it is beside the count.
+      row("structure:d1", { blocked: { count: 1, reads: null, why: "That role no longer exists" } }),
+    ];
+    const sections = [
+      { source: "vote" as const, state: "ok" as const },
+      { source: "quest" as const, state: "failed" as const },
+      { source: "mint" as const, state: "refused" as const },
+    ];
+    expect(decisionCounts(items, sections)).toEqual({ decisions: 4, applications: 3, blocked: 1, unknown: ["quest"] });
+    expect(LISTED_NOT_COUNTED).toEqual(["application", "open"]);
+    // Nothing waiting is a real zero, and a paged list carries the same count as the whole one.
+    expect(decisionCounts([], [])).toEqual({ decisions: 0, applications: 0, blocked: 0, unknown: [] });
+    const paged = pageInbox([{ source: "form", state: "ok", items: Array.from({ length: 23 }, (_, n) => row(`form:f${n}`)) }, { source: "application", state: "ok", items: [row("application:a1")] }]);
+    expect(paged.items.filter((i) => i.source === "form")).toHaveLength(INBOX_PAGE);
+    expect(paged.counts).toEqual({ decisions: 23, applications: 1, blocked: 0, unknown: [] });
+  });
+
+  it("BY DOOR: the one count split by the page each decision is made on, so a number on a door equals what that page lists", () => {
+    const items = [
+      row("claim:c1", { decideAt: "/review" }),
+      row("quest:q1", { decideAt: "/review" }),
+      // The search and the anchor are not the page: both of these are decided on /governance/work.
+      row("approval:a1", { decideAt: "/governance/work#approvals" }),
+      row("approval:a2", { decideAt: "/governance/work?x=1#approvals" }),
+      row("form:f1", { decideAt: "/admin?tab=submissions" }),
+      row("vote:v1", { decideAt: "/decisions/v1" }),
+      // Neither an application nor a blocked row is a decision, on any door.
+      row("application:p1", { decideAt: "/role-applications/p1" }),
+      row("structure:d1", { decideAt: "/review", blocked: { count: 1, reads: null, why: "That role no longer exists" } }),
+    ];
+    const byDoor = decisionsByDoor(items);
+    expect(byDoor).toEqual({ "/review": 2, "/governance/work": 2, "/admin": 1, "/decisions/v1": 1 });
+    // Nothing twice and nothing left out: the doors add up to the one count.
+    expect(Object.values(byDoor).reduce((a, b) => a + b, 0)).toBe(decisionCounts(items, []).decisions);
+    expect(doorPath("/governance/work#approvals")).toBe("/governance/work");
+    expect(decisionsByDoor([])).toEqual({});
+    // A paged list carries the split of every decision, not only of the rows it sends.
+    const paged = pageInbox([{ source: "claim", state: "ok", items: Array.from({ length: 23 }, (_, n) => row(`claim:c${n}`, { decideAt: "/review" })) }]);
+    expect(paged.items).toHaveLength(INBOX_PAGE);
+    expect(paged.byDoor).toEqual({ "/review": 23 });
+  });
+
+  it("forms: only those nobody has answered, named by the kind of form and its day, never by who sent it", () => {
+    const items = fromForms([
+      { id: "s1", type: "membership-request", name: "Ana Applicant", email: "ana@example.org", status: "new", submittedAt: "2026-11-20T10:00:00.000Z" },
+      { id: "s2", type: "visit", name: "Ben Visitor", submittedAt: "2026-11-21T10:00:00.000Z" },
+      { id: "s3", type: "visit", name: "Cy Done", status: "accepted" },
+      { id: "s4", type: "visit", name: "Di Declined", status: "Declined" },
+      { id: "s5", name: "No Type", status: "reviewing" },
+    ]);
+    expect(items.map((i) => [i.key, i.summary, i.filedAt])).toEqual([
+      ["form:s1", "Membership request", "2026-11-20T10:00:00.000Z"],
+      ["form:s2", "Visit", "2026-11-21T10:00:00.000Z"],
+      ["form:s5", "Request", null],
+    ]);
+    expect(items.every((i) => i.source === "form" && i.touchesPerson && i.decideAt === "/admin?tab=submissions")).toBe(true);
+    expect(JSON.stringify(items)).not.toMatch(/Ana|Ben|No Type|example\.org/);
+    for (const bad of [null, 5, "x", {}, { submissions: [] }]) expect(fromForms(bad)).toEqual([]);
+  });
+
+  it("A QUEUE LONGER THAN ONE READ WILL SEND says so: no Show more that does nothing, and every row up to the cap can be reached", () => {
+    const many = (n: number) => [{ source: "quest" as const, state: "ok" as const, items: Array.from({ length: n }, (_, k) => row(`quest:q${k}`)) }];
+    // 238 quest ideas (QA, 28 Nov 2026): asked for all of them, all of them come, and nothing more is offered.
+    const all = pageInbox(many(238), rowsAsked("quest:238"));
+    expect(all.items).toHaveLength(238);
+    expect(all.sections[0]).toEqual({ source: "quest", state: "ok", count: 238, atLeast: 238, blocked: 0, more: false });
+    // Past the cap the answer says it is capped, and `more` is false: a press would bring nothing.
+    const capped = pageInbox(many(INBOX_ROWS_MAX + 5), rowsAsked(`quest:${INBOX_ROWS_MAX + 500}`));
+    expect(capped.items).toHaveLength(INBOX_ROWS_MAX);
+    expect(capped.sections[0]).toMatchObject({ count: INBOX_ROWS_MAX + 5, more: false, capped: true });
+    // Below the cap, more is still offered and nothing is marked capped.
+    expect(pageInbox(many(INBOX_ROWS_MAX + 5)).sections[0]).toEqual({ source: "quest", state: "ok", count: INBOX_ROWS_MAX + 5, atLeast: INBOX_ROWS_MAX + 5, blocked: 0, more: true });
+  });
+
+  it("Sera's one row is still found by the id of a batch her differences came in on", () => {
+    const d = (key: string, batchId: string | null) => ({ key, lane: "decision", state: "theirsAhead", words: { sentence: `Sera says ${key}.` }, source: { editedAt: null }, batchId });
+    const [sera] = fromSeraDifferences({ differences: [d("a", "eb_batch_one_long_id"), d("b", "eb_batch_one_long_id"), d("c", "eb_batch_two_long_id"), d("e", null)] });
+    expect(sera.finds).toEqual(["eb_batch_one_long_id", "eb_batch_two_long_id"]);
+    expect(findInInbox([sera], "eb_batch_two_long_id").map((i) => i.key)).toEqual([SERA_ROW_KEY]);
+    expect(findInInbox([sera], "eb_batch_nine_long_id")).toEqual([]);
+  });
+
+  it("BLOCKED rows are counted per queue and in all, and come FIRST, so a page that says blocked shows them without a press", () => {
     const paged = pageInbox([
       { source: "structure", state: "ok", items: [row("structure:d1"), row("structure:d2", { blocked: { count: 2, reads: "Retire the Water Steward", why: "That role no longer exists" } })] },
     ]);
     expect(paged.sections[0]).toMatchObject({ count: 2, blocked: 1 });
     expect(paged.blocked).toBe(1);
-    expect(paged.items.map((i) => i.key)).toEqual(["structure:d1", "structure:d2"]);
+    expect(paged.items.map((i) => i.key)).toEqual(["structure:d2", "structure:d1"]);
+    // Twelve drafts, the blocked one listed last by its queue: it is still on the first page.
+    const twelve = pageInbox([{ source: "structure", state: "ok", items: [...Array.from({ length: 11 }, (_, n) => row(`structure:ok${n}`)), row("structure:stuck", { blocked: { count: 1, reads: null, why: "That role no longer exists" } })] }]);
+    expect(twelve.items).toHaveLength(INBOX_PAGE);
+    expect(twelve.items[0].key).toBe("structure:stuck");
+    // Blocked first, and inside each part the order holds: what lapses, then the oldest, then undated.
+    expect(orderInbox([row("claim:new", { filedAt: "2026-11-25T00:00:00.000Z" }), row("agent:lapses", { lapsesAt: "2026-11-28T00:00:00.000Z" }), row("structure:stuck", { blocked: { count: 1, reads: null, why: "x" } })]).map((i) => i.key)).toEqual(["structure:stuck", "agent:lapses", "claim:new"]);
   });
 
   it("finds a batch by its code, one change by its code, and nothing for a code it does not hold", () => {

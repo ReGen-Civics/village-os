@@ -229,12 +229,11 @@ export function register(app: Express, deps: Deps): void {
     res.json({
       sections: paged.sections,
       items: paged.items,
-      counts: {
-        // What the reads that answered listed. With a queue in `unknown` this is a floor, never the whole number.
-        waiting: paged.waiting,
-        unknown: paged.sections.filter((s) => s.state === "failed").map((s) => s.source),
-        blocked: paged.blocked,
-      },
+      // THE ONE COUNT (shared/reviewInbox.ts, `decisionCounts`): worked out for this person on this read, from their
+      // own queues, and kept nowhere. `waiting` is every row listed, for a page that needs to know the list is empty.
+      counts: { ...paged.counts, waiting: paged.waiting },
+      // The same decisions by the page each is decided on, for a number drawn on one door (`decisionsByDoor`).
+      byDoor: paged.byDoor,
       pageSize: INBOX_PAGE,
     });
   });

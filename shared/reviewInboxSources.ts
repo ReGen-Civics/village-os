@@ -11,6 +11,8 @@ export const INBOX_SOURCES = [
   // Every other queue a person decides from (lane 4a's completeness pass, 25 Nov 2026).
   "application", "consent", "open", "structure", "vote", "change", "suggestion", "hand", "tension", "task", "handoff",
   "recap", "cash", "owed", "mint", "cycle", "cosign", "letter", "assistant", "feedback", "vouch", "erasure",
+  // The forms people send (the one count, 27 Nov 2026): Home counted them apart from this list until they joined it.
+  "form",
 ] as const;
 export type InboxSource = (typeof INBOX_SOURCES)[number];
 
@@ -25,7 +27,7 @@ export const SERA_ROW_KEY = "sera:differences";
  * then work and duties, then the desks. Every source has a place; a source with nothing waiting draws nothing.
  */
 export const INBOX_ORDER: readonly InboxSource[] = [
-  "vote", "structure", "consent", "application", "open",
+  "vote", "structure", "consent", "application", "open", "form",
   "connector", "intake", "sera", "approval", "agent", "change", "suggestion", "quest",
   "claim", "task", "handoff", "tension", "hand",
   "recap", "owed", "cash", "mint", "cycle", "cosign", "letter", "assistant", "feedback", "vouch", "erasure",
