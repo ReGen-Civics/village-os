@@ -534,32 +534,6 @@ check with `--village`.
   enforces this, and states in its own header what it cannot see.
 - **BigInt literals** (`123n`) break the build target. Use `BigInt("...")`.
 - **`vitest -t`** breaks the order-dependent loop test. Run whole files.
-- **An admin tab, control or outside page is registered, and its id frozen, in the same change.**
-  The registry of acts holds one entry for every admin function, and admin search, the guide and
-  every button read that one list. Its files:
-
-  ```
-  shared/adminActs.ts              the registry; its header lists the steps for adding an act
-  shared/adminActs/<place>.ts      one file per place on the grounds; a written act is one row here
-  shared/adminActs/frozenIds.ts    FROZEN_ACT_IDS, every id that shipped
-  shared/adminActs.test.ts         holds the registry to the routes, the powers and the frozen ids
-  shared/adminActsImageProbe.test.ts   holds its word lists to the image build's probe
-  shared/adminTabs.ts              the tab table: a tab becomes an act the day it joins this
-  ```
-
-  A tab joins the registry the day it joins that table, a control or a page beside Admin the day it
-  joins `shared/adminSearch.ts`, and any other act is one row in the file of its place. Then add its
-  id to `FROZEN_ACT_IDS`: an id is an address that links, the guide and the search land by, so it
-  never changes once shipped, and a line is never taken off that list (an act that goes away keeps
-  its line and gets a redirect). Forget the line and the registry test fails with
-  `add to shared/adminActs/frozenIds.ts: <the ids>`. Rename or remove a shipped id and it fails with
-  `renamed or removed: <the ids>`. A dial needs no line, because its id is its key.
-  **No entry in a list of words may end in " import" or " export".** The image build's probe (the
-  long `RUN node -e` line in the `Dockerfile`) reads the built server for module names and cannot
-  tell a string from code, so the closing quote plus the next entry's opening quote read as a module
-  named `, ` that no image holds. Put the word first ("import a profile") or use it alone; the
-  image-probe test scans every act for it. It shipped red on #1895 because the image is built only
-  when a pull request touches the compose path, so nothing else had read the words.
 - **A copy change can break a test by capitalization alone.** Assertions use `toContain`
   on a phrase; turning an em-dash into a period capitalizes the next word and the match
   dies. Grep test files CASE-SENSITIVELY before editing any string, and reach for a colon
