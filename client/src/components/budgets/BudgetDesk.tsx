@@ -9,8 +9,10 @@
  * `role.pay`, `budgetDoorOf` in server/routes/budgets.ts) and the caller lets
  * it, the editor loads as its own chunk; nobody else downloads it.
  *
- * Drawn in Admin (components/admin/BudgetsTab.tsx) and on /governance/treasury
- * (pages/GovernanceTreasury.tsx), each with its own look and its own bearer.
+ * Drawn on /governance/treasury (pages/GovernanceTreasury.tsx), with the look
+ * and the bearer its page hands it. Admin had a tab that wrapped this same desk
+ * until 27 Nov 2026; `/admin?tab=budgets` now redirects to the Treasury's
+ * section (components/admin/adminTabAliases.ts).
  */
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";

@@ -5,11 +5,10 @@
  * nobody has moved it yet. Home counts only these. The inbox still lists the
  * finished ones, and says so on the row.
  */
-const SETTLED = new Set(["accepted", "declined"]);
+import { needsAction } from "@shared/formsWaiting";
 
-export function needsAction(status: string | null | undefined): boolean {
-  return !SETTLED.has(String(status || "new").toLowerCase());
-}
+// The rule itself is shared with the server's one count (shared/formsWaiting.ts), so the two cannot differ.
+export { needsAction };
 
 export function waitingRequests<T extends { status?: string | null }>(rows: readonly T[]): number {
   return rows.filter((row) => needsAction(row.status)).length;

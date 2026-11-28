@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { navGroups } from "./adminNavGroups";
-import { TAB_MODULE, filterNavByModules } from "@/lib/adminNav";
+import { LEFT_ADMIN, MOVED_TABS } from "./adminTabAliases";
+import { TAB_MODULE, TAB_MODULES, filterNavByModules, tabModules } from "@/lib/adminNav";
 
 /**
  * The tab registry, tested against the real thing for the first time.
@@ -44,7 +45,7 @@ describe("navGroups", () => {
 
   it("every module-to-tab mapping names a tab that exists", () => {
     const keys = new Set(allKeys(true));
-    const danglers = Object.keys(TAB_MODULE).filter((k) => !keys.has(k));
+    const danglers = [...Object.keys(TAB_MODULE), ...Object.keys(TAB_MODULES)].filter((k) => !keys.has(k));
     expect(danglers).toEqual([]);
   });
 
@@ -73,15 +74,15 @@ describe("navGroups", () => {
 
   it("keeps the platform tabs when every module is off", () => {
     const off = Object.fromEntries(
-      Object.values(TAB_MODULE).map((m) => [m, "off" as const]),
+      [...Object.values(TAB_MODULE), ...Object.values(TAB_MODULES).flat()].map((m) => [m, "off" as const]),
     );
     const kept = new Set(
       filterNavByModules(navGroups(true), off).flatMap((g) => g.items.map((i) => i.key)),
     );
     // Nothing that is mapped survives, and the unmapped ones all do.
-    for (const key of Object.keys(TAB_MODULE)) expect(kept.has(key), key).toBe(false);
+    for (const key of [...Object.keys(TAB_MODULE), ...Object.keys(TAB_MODULES)]) expect(kept.has(key), key).toBe(false);
     for (const key of allKeys(true)) {
-      if (!TAB_MODULE[key]) expect(kept.has(key), key).toBe(true);
+      if (tabModules(key).length === 0) expect(kept.has(key), key).toBe(true);
     }
   });
 
@@ -113,7 +114,8 @@ describe("navGroups", () => {
     // `money` is a CONTENT_SECTIONS entry the economics branch adds (Money &
     // Value Claims, the editor behind `client/src/lib/moneyClaims.ts`), so it
     // rides in with the other three rather than being placed here.
-    ["Make it yours", ["pages", "paths-stages", "team", "legal", "covenant", "money", "confidentiality", "menu-use", "work-with-us", "faqs", "milestones", "visit-config", "investor-summary"]],
+    // The Visit Program row left on 2026-11-27: one editor, the one inside Pages (cut C6).
+    ["Make it yours", ["pages", "paths-stages", "team", "legal", "covenant", "money", "confidentiality", "menu-use", "work-with-us", "faqs", "milestones", "investor-summary"]],
     // Email Settings became the start of Comms Settings on 2026-10-02 and moved
     // to the Comms group below; its old key still renders that screen.
     ["Connections", ["integrations"]],
@@ -123,8 +125,10 @@ describe("navGroups", () => {
       "stays-admin", "exchange-admin", "crowdpool-admin", "calls-admin", "intents-admin",
       "health-admin",
     ]],
-    ["Money and agreements", ["tokens", "ledger", "cash-payouts", "pricing-desk", "budgets", "cycles", "products", "resources-admin", "exits-admin", "settings"]],
-    ["Day to day", ["submissions", "portal-visitors", "feedback", "quest-claims", "forum-moderation", "message-reports", "drafts", "brain", "failures"]],
+    // The Pricing Desk and Cash Budget rows left on 2026-11-27: one desk each, on the Treasury (cut C5).
+    ["Money and agreements", ["tokens", "ledger", "cash-payouts", "cycles", "products", "resources-admin", "exits-admin", "settings"]],
+    // One Reports queue where Quest Claims, Moderation and Message Reports stood (cuts C4 and C7).
+    ["Day to day", ["submissions", "portal-visitors", "feedback", "reports", "drafts", "brain", "failures"]],
     // Village Comms (the comms build spec 6): after the week's queues.
     ["Comms", ["comms-overview", "comms-journeys", "comms-words", "comms-people", "comms-letters", "comms-sent", "comms-settings"]],
     ["Library and files", ["training-modules", "investor-vault", "uploaded-files"]],
@@ -194,10 +198,14 @@ describe("navGroups", () => {
       "home",
       // How the menu is used, 2026-11-27: the visits the bar counts, set against the menu (wayfinding lane).
       "menu-use",
+      // The one Reports queue, 2026-11-27: the forum's reports and the messages' (cut C7).
+      "reports",
     ];
-    // Rows that LEFT the rail, each with a key that still renders a screen, so
-    // a deep link to it still lands. `email-settings` renders Comms Settings.
-    const retiredSince = ["email-settings"];
+    // Rows that LEFT the rail. Each key keeps its address (adminTabAliases.ts), so
+    // a deep link to it still lands: `email-settings` opens Comms Settings, and the
+    // six folded on 2026-11-27 open the tab or the page that holds their control.
+    const retiredSince = ["email-settings", "quest-claims", "forum-moderation", "message-reports", "visit-config", "pricing-desk", "budgets"];
+    for (const key of retiredSince) expect(key in MOVED_TABS || key in LEFT_ADMIN, `${key} still has an address`).toBe(true);
     const expected = new Set([...before, ...addedSince].filter((k) => !retiredSince.includes(k)));
     for (const setupComplete of [true, false]) {
       expect(new Set(allKeys(setupComplete)), `setupComplete=${setupComplete}`).toEqual(expected);

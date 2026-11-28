@@ -11,6 +11,10 @@
  *
  * Every change waits for the server's answer before the card moves. A removed
  * task can be brought back with Undo, here and for 30 days in "Removed".
+ *
+ * Done, Remove and Redirect wait ten seconds before they are sent (`holdUndo`),
+ * and the card draws the Undo bar for that wait itself. It used to be mounted
+ * in Admin only, so on the profile the wait showed nothing to stop it.
  */
 import { useCallback, useEffect, useState } from "react";
 import { HORIZONS, TIERS, type Horizon, type ReasonCode, type Tier } from "@shared/memberTasks";
@@ -20,6 +24,7 @@ import type { FeedbackContext } from "@shared/memberTaskFeedback";
 import ReasonSheet, { type ReasonPick } from "./ReasonSheet";
 import RoleHandoffs from "./RoleHandoffs";
 import { holdUndo } from "@/components/admin/adminUndo";
+import UndoBar from "@/components/admin/UndoBar";
 import {
   addTask, changeTier, markDone, newFeedbackId, pinTask, readFeedbackSwitch, readList, redirectTask, removeTask, saveFeedbackSwitch, undoTask,
   type ListPayload, type ListTask, type RankedTask,
@@ -198,6 +203,8 @@ export default function YourListCard() {
 
   return (
     <section className={PANEL} aria-labelledby="your-list-h">
+      {/* The ten-second Undo, drawn on <body> in the profile's night world: the profile hides this tab on a phone. */}
+      <UndoBar world="sheet-night" />
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="your-list-h" className="font-display text-2xl text-foreground"><Trans context="YourListCard, h2">Your list</Trans></h2>
         <p className={HINT}>
