@@ -97,7 +97,9 @@ interface ActionsProps {
 export function RowActions({ d, acts, agent, pay, layout, onCompare }: ActionsProps) {
   const { t } = useLingui();
   // Pay is never taken from this list: who sets it, and for a reader the pay route lets through, the role's own pay setter.
-  if (d.kind === "pay") return <SeraPayRow d={d} pay={pay} agent={agent} onSet={acts.reload ? () => void acts.reload() : undefined} />;
+  // Keyed by the row: a pane that draws one row at a time (compare, and the phone's pane) must never hand the setter
+  // open for one role, with what was typed and answered there, to the next role it draws.
+  if (d.kind === "pay") return <SeraPayRow key={d.key} d={d} pay={pay} agent={agent} onSet={acts.reload ? () => void acts.reload() : undefined} />;
   const owner = possessive(agent);
   const busy = acts.busy;
   const block = layout === "compare";
