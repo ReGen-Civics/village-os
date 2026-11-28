@@ -1,23 +1,110 @@
 /**
- * THE DOCK'S OWN PIECES (GuideDock.tsx draws them): the card for a change the
- * guide drafted for the review page, the line that says who is answering and
- * the choice between the village's guide and Sera, what the launch and
- * organizing guides say they read, and her face. (How an address in a reply is
- * drawn is ./replyLinks.tsx.)
+ * THE DOCK'S OWN PIECES (GuideDock.tsx draws them): a change the guide
+ * prepared for the page's Save, a change she drafted for the review page, the
+ * choice between the village's guide and Sera, what the launch and organizing
+ * guides say they read, and her face. (How an address in a reply is drawn is
+ * ./replyLinks.tsx.)
  *
- * The proposal card for a dial is the helper panel's own (../helperPieces).
- * Tokens only, so every piece follows the Admin palette and its night look.
+ * Every word on them comes from ./dockWords.tsx, in the person's own setting
+ * (warm and plain, or brief and quiet). The helper panel keeps its own card
+ * and its own words (../helperPieces.tsx): with the village's dock off,
+ * nothing a person reads has changed.
+ *
+ * Tokens only, on the garden's night.
  */
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { HelperFiled, HelperFiling, HelperProvider } from "@shared/adminHelper";
+import type { HelperFiled, HelperFiling, HelperProposal, HelperProvider } from "@shared/adminHelper";
 import { GARDEN_GUIDE_URL } from "@shared/gardenArt";
 import type { GuideConsulted } from "../adminHelperApi";
-import { secondaryBtn } from "../helperPieces";
+import { proposalHref, secondaryBtn, type ProposalState } from "../helperPieces";
+import { goTo } from "../search/adminSearchModel";
+import type { DockWords } from "./dockWords";
 
 export const primaryBtn =
   "inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+/**
+ * A CHANGE SHE PREPARED: one dial, with what it is now and what it would
+ * become. She prepared it and nothing more: "Review and save" puts it ready
+ * at the bottom of the page, and only a person's Save there writes it. The
+ * words say so in that order (what she did, what she left).
+ */
+export function PreparedCard({
+  proposal,
+  state,
+  words,
+  onReview,
+  onUnreview,
+  onDrop,
+}: {
+  proposal: HelperProposal;
+  /** waiting: ready at the bottom of the page for a person's Save; saved: a person saved it. */
+  state: ProposalState;
+  words: DockWords["card"];
+  onReview: () => void;
+  onUnreview: () => void;
+  onDrop: () => void;
+}) {
+  if (state === "dropped") return <p className="mt-2 text-xs text-muted-foreground">{words.left}</p>;
+  const href = proposalHref(proposal);
+  const there = (
+    <a
+      href={href}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        goTo(href);
+      }}
+      className={secondaryBtn}
+    >
+      {words.open}
+    </a>
+  );
+  return (
+    <div data-testid="helper-proposal" className="mt-2 rounded-xl border border-border bg-card p-3 text-sm">
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{words.eyebrow}</p>
+      <p className="mt-1 font-semibold text-foreground">{proposal.label}</p>
+      <p className="text-xs text-muted-foreground">{proposal.category}</p>
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <dt className="text-muted-foreground">{words.now}</dt>
+        <dd className="break-words font-mono text-foreground line-through decoration-muted-foreground">{proposal.from || words.blank}</dd>
+        <dt className="text-muted-foreground">{words.becomes}</dt>
+        <dd className="break-words font-mono font-semibold text-foreground">{proposal.to || words.blank}</dd>
+      </dl>
+      {proposal.why && <p className="mt-2 text-muted-foreground">{proposal.why}</p>}
+      {state === "saved" ? (
+        <p className="mt-2 flex items-center gap-1 font-medium text-open">
+          <Check className="h-4 w-4" aria-hidden="true" />
+          {words.saved}
+        </p>
+      ) : state === "waiting" ? (
+        <>
+          <p role="status" className="mt-2 text-foreground">
+            {words.waiting}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={onUnreview} className={secondaryBtn}>
+              {words.setAside}
+            </button>
+            {there}
+          </div>
+        </>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={onReview} className={primaryBtn}>
+            {words.review}
+          </button>
+          <button type="button" onClick={onDrop} className={secondaryBtn}>
+            {words.notNow}
+          </button>
+          {there}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Where one drafted change stands. Absent: drawn, waiting on the person. */
 export type FilingState =
@@ -27,19 +114,34 @@ export type FilingState =
   | { state: "dropped" };
 
 /**
- * A change the guide drafted that is not a dial: it cannot go on the save bar,
- * so the one press here sends it to the review page. Nothing is applied by the
- * press, and the card says so before and after.
+ * A CHANGE SHE DRAFTED FOR REVIEW: it is not a dial, so the one press here
+ * sends it to the review page, where a person accepts it. Nothing is applied
+ * by the press, and the words say so before and after.
  */
-export function FilingCard({ filing, state, onSend, onDrop }: { filing: HelperFiling; state: FilingState | undefined; onSend: () => void; onDrop: () => void }) {
-  if (state?.state === "dropped") {
-    return <p className="mt-2 text-xs text-muted-foreground"><Trans context="admin helper, proposal">Left as it was.</Trans></p>;
-  }
+export function FilingCard({
+  filing,
+  state,
+  words,
+  left,
+  notNow,
+  onSend,
+  onDrop,
+}: {
+  filing: HelperFiling;
+  state: FilingState | undefined;
+  words: DockWords["draft"];
+  /** Said where the draft was declined, and on the button that declines it: the prepared change's own words. */
+  left: string;
+  notNow: string;
+  onSend: () => void;
+  onDrop: () => void;
+}) {
+  if (state?.state === "dropped") return <p className="mt-2 text-xs text-muted-foreground">{left}</p>;
   const sent = state?.state === "sent" ? state.filed : null;
   const code = sent?.code ?? "";
   return (
     <div data-testid="guide-filing" className="mt-2 rounded-xl border border-border bg-card p-3 text-sm">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground"><Trans context="guide dock, a change drafted for the review page">Drafted for review</Trans></p>
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{words.eyebrow}</p>
       <p className="mt-1 break-words font-semibold text-foreground">{filing.summary}</p>
       <p className="text-xs text-muted-foreground">{filing.where}</p>
       {filing.fields.length > 0 && (
@@ -56,65 +158,31 @@ export function FilingCard({ filing, state, onSend, onDrop }: { filing: HelperFi
         <>
           <p role="status" className={`mt-2 flex items-start gap-1 font-medium ${sent.state === "filed" ? "text-open" : "text-foreground"}`}>
             {sent.state === "filed" && <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />}
-            <span>
-              {sent.state === "held" ? (
-                sent.words || <Trans context="guide dock, a drafted change was held before review">Held before review. It waits under Held on the review page.</Trans>
-              ) : sent.state === "waiting" ? (
-                code ? (
-                  <Trans context="guide dock, the same drafted change already waits">The same change already waits on the review page, as {code}.</Trans>
-                ) : (
-                  <Trans context="guide dock, the same drafted change already waits">The same change already waits on the review page.</Trans>
-                )
-              ) : code ? (
-                <Trans context="guide dock, a drafted change was sent to review">Sent to review as {code}. Nothing changes until a person accepts it there.</Trans>
-              ) : (
-                <Trans context="guide dock, a drafted change was sent to review">Sent to review. Nothing changes until a person accepts it there.</Trans>
-              )}
-            </span>
+            {/* Held: the review page's own reason where it gave one. */}
+            <span>{sent.state === "held" ? sent.words || words.held : sent.state === "waiting" ? words.already(code) : words.sent(code)}</span>
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href={sent.reviewAt} className={secondaryBtn}>
-              <Trans context="guide dock, opens the review page">Open the review page</Trans>
+              {words.openReview}
             </a>
           </div>
         </>
       ) : (
         <>
-          <p className="mt-2 text-muted-foreground">
-            <Trans context="guide dock, what Send to review does">This goes to the review page. Nothing changes until a person accepts it there.</Trans>
-          </p>
+          <p className="mt-2 text-muted-foreground">{words.note}</p>
           {state?.state === "failed" && <p role="alert" className="mt-2 text-destructive">{state.error}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
             <button type="button" onClick={onSend} disabled={state?.state === "sending"} className={primaryBtn}>
               {state?.state === "sending" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-              <Trans context="guide dock, files the drafted change into the review queue">Send to review</Trans>
+              {words.send}
             </button>
             <button type="button" onClick={onDrop} disabled={state?.state === "sending"} className={secondaryBtn}>
-              <Trans context="admin helper, declines the proposed change">Not now</Trans>
+              {notNow}
             </button>
           </div>
         </>
       )}
     </div>
-  );
-}
-
-/**
- * Who is answering, said once under the heading, so an admin knows where
- * their words go (shared/guideChoice.ts: the page always says who is
- * answering). A key the platform lends is never called the village's own.
- */
-export function WhoAnswers({ provider, name, lent }: { provider: HelperProvider; name: string; lent: boolean }) {
-  return (
-    <p className="text-xs text-muted-foreground" data-testid="guide-who-answers">
-      {provider === "sera" ? (
-        <Trans context="guide dock, who answers">{name} is answering, through your village's org memory connection.</Trans>
-      ) : lent ? (
-        <Trans context="guide dock, who answers">{name} is answering, on Claude with a key the platform lends for now.</Trans>
-      ) : (
-        <Trans context="guide dock, who answers">{name} is answering, on Claude with your village's own Anthropic key.</Trans>
-      )}
-    </p>
   );
 }
 

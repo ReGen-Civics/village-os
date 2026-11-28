@@ -13,7 +13,7 @@
  *
  * TWO SHAPES, ONE BUTTON. Docked is the right-hand column the helper always
  * had. Expanded gives the conversation the main width and lists what the
- * guide has prepared beside it, under "Say yes". The same button contracts it
+ * guide has prepared beside it, under "Ready for your yes". The same button contracts it
  * again, and so does Escape (Escape on a docked dock closes it, as it always
  * did). The choice is remembered on this device (./dockState.ts). On a phone
  * the dock is the full width either way, so it has one shape there and no
@@ -25,7 +25,7 @@
  * the person presses Send. Above the box sit up to four suggested next steps
  * (./dockSuggestions.ts): a press puts the words in the box and stops there.
  *
- * SAY YES. The guide writes nothing. A dial she proposes goes on the page's
+ * READY FOR YOUR YES. The guide writes nothing. A dial she proposes goes on the page's
  * one save bar ("Review and save"), and only a person's Save writes it. A
  * change that is not a dial she may draft for the review page ("Send to
  * review"), where a person accepts it. Both are the server's rules
@@ -73,11 +73,13 @@ import { useChatDraft } from "@/components/chat/chatDraft";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { GARDEN } from "../garden/Garden";
+import { dayPartOf, useGuideSpeaking } from "../garden/speaking";
 import type { NavGroup } from "../adminNavGroups";
 import { askGuide, askHelper, fetchHelperStatus, fileForReview, tabsFromGroups, type GuideConsulted, type HelperLine } from "../adminHelperApi";
-import { ConnectSteps, OpenLabel, ProposalCard, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, WhatTheGuideReads, type ProposalState } from "../helperPieces";
-import { ConsultedLine, FilingCard, GuideChoice, GuideFace, WhoAnswers, type FilingState } from "./DockCards";
-import { dockDraftKey, dockSaidKey, readDockShape, rememberDockShape, type DockShape } from "./dockState";
+import { ConnectSteps, OpenLabel, proposalMarkOf, readPicked, rememberPicked, secondaryBtn, SwitchedOff, type ProposalState } from "../helperPieces";
+import { ConsultedLine, FilingCard, GuideChoice, GuideFace, PreparedCard, type FilingState } from "./DockCards";
+import { dockDraftKey, dockSaidKey, personTag, readDockShape, rememberDockShape, type DockShape } from "./dockState";
+import { useDockWords } from "./dockWords";
 import { DOCKED_SUGGESTIONS, MAX_SUGGESTIONS, useDockSuggestions, type SuggestionPlace } from "./dockSuggestions";
 import { replyAsWords, ReplyText, useLinkNamer } from "./replyLinks";
 
@@ -199,6 +201,10 @@ export interface GuideDockProps {
   linkNames?: Readonly<Record<string, string>>;
   /** The person's name, for her first line. Left out, the signed-in member's own. */
   personName?: string;
+  /** On the road to launch: how many things block it, when the page knows. She leads with it. */
+  blocking?: number | null;
+  /** For tests and photographs: the moment her greeting is said at. Left out, now. */
+  now?: Date;
 }
 
 export default function GuideDock({
@@ -225,8 +231,19 @@ export default function GuideDock({
   onStatus,
   linkNames,
   personName,
+  blocking = null,
+  now,
 }: GuideDockProps) {
   const { t, i18n } = useLingui();
+  /*
+   * HOW SHE SPEAKS (the founder, 28 Nov 2026): warm and plain, and brief and quiet for a person who turned that
+   * on. The setting is this person's speaking dial (../garden/speaking.tsx), kept in their own browser; inside a
+   * garden it is the garden's own, so the band and the dock follow one toggle. Every fixed line the dock says is in
+   * ./dockWords.tsx in both forms; the setting also rides with each ask, for the replies she writes.
+   */
+  const speaking = useGuideSpeaking({ personKey: personTag(password) });
+  const words = useDockWords(speaking.quiet);
+  const dayPart = dayPartOf((now ?? new Date()).getHours());
   // Her first line greets the person by their first name, when the page knows it.
   const signedIn = useOptionalAuth()?.user?.name;
   const firstName = String(personName ?? signedIn ?? "").trim().split(/\s+/)[0] ?? "";
@@ -237,16 +254,19 @@ export default function GuideDock({
   // A mode that left the list (the village launched, so the launch guide is done) falls back to the first one offered.
   const shown: DockMode = modes.includes(mode) ? mode : modes[0] ?? "helper";
 
-  /*
-   * The launch and organizing guides open on a greeting, the same words and the same first turn the launch guide's
-   * own panel has, so what is sent to their two routes is what that panel sends.
-   */
-  const [threads, setThreads] = useState<Record<DockMode, Turn[]>>(() => ({
-    helper: [],
-    launch: [{ role: "assistant", content: t`I can see exactly where your launch stands. Want to start with what's blocking, or shall I walk the whole journey with you?` }],
-    organize: [{ role: "assistant", content: t`Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it.` }],
-  }));
+  const [threads, setThreads] = useState<Record<DockMode, Turn[]>>(() => ({ helper: [], launch: [], organize: [] }));
   const turns = threads[shown];
+  /*
+   * HER FIRST WORDS. A greeting by the part of the day and the person's first name, then what waits: what blocks the
+   * launch, on the road to it. The launch and organizing guides open on these words the way the launch guide's own
+   * panel opened on its greeting, and they are sent as the conversation's first turn as that panel sent its own, so
+   * the two routes are handed the same shape they always were.
+   */
+  const greeting = words.greeting(dayPart, firstName);
+  const firstWords: Record<"launch" | "organize", string> = {
+    launch: `${greeting} ${words.launchLead(blocking)}`,
+    organize: `${greeting} ${words.organizeLead}`,
+  };
   const started = turns.some((turn) => turn.role === "user");
 
   // A person's words: kept per person and per conversation, the way every chat draft is (./dockState.ts).
@@ -377,10 +397,10 @@ export default function GuideDock({
   const append = (at: DockMode, turn: Turn) => setThreads((all) => ({ ...all, [at]: [...all[at], turn] }));
 
   const send = async () => {
-    const words = draft.trim();
-    if (!words || busy) return;
+    const asked = draft.trim();
+    if (!asked || busy) return;
     const at = shown;
-    const next: Turn[] = [...threads[at], { role: "user", content: words }];
+    const next: Turn[] = [...threads[at], { role: "user", content: asked }];
     setThreads((all) => ({ ...all, [at]: next }));
     setDraft("");
     setSaid("");
@@ -390,13 +410,13 @@ export default function GuideDock({
     const lines = next.map(({ role, content }) => ({ role, content }));
     const speaker = guide;
     if (at === "helper") {
-      const out = await askHelper(password, { messages: lines, tabs: tabsFromGroups(groups), tab, provider: chosen });
+      const out = await askHelper(password, { messages: lines, tabs: tabsFromGroups(groups), tab, provider: chosen, speaking: speaking.speaking });
       setBusy(null);
       if (!out.ok) {
         if (out.off) setStatus((s) => ({ guide: s?.guide ?? "", on: false, off: out.off, provider: null, available: [], names: {}, ...(s?.dock ? { dock: true } : {}) }));
         else {
           const spent = out.error === "assistant-unavailable";
-          setErrors((e) => ({ ...e, [at]: spent ? t({ message: "The guide has answered all it can for today. It starts again tomorrow.", context: "guide dock, the day's answers are used up" }) : out.error }));
+          setErrors((e) => ({ ...e, [at]: spent ? words.spent : out.error }));
         }
         return;
       }
@@ -407,14 +427,19 @@ export default function GuideDock({
       setAnnounce(t({ message: `${speaker} says: ${reply}`, context: "guide dock, a finished reply read to a screen reader" }));
       return;
     }
-    const out = await askGuide(password, at, lines);
+    const out = await askGuide(password, at, [{ role: "assistant", content: firstWords[at] }, ...lines]);
     setBusy(null);
     if (!out.ok) {
       if (out.gone) setGone((g) => ({ ...g, [at]: true }));
-      else setErrors((e) => ({ ...e, [at]: out.error || t`Something hiccuped. Ask me that again?` }));
+      else setErrors((e) => ({ ...e, [at]: out.error || words.notSent }));
       return;
     }
-    const said = out.reply || t`Something hiccuped. Ask me that again?`;
+    // An answer with no words in it is a send that failed, said as one: never an alert in her mouth.
+    if (!out.reply) {
+      setErrors((e) => ({ ...e, [at]: words.notSent }));
+      return;
+    }
+    const said = out.reply;
     append(at, { role: "assistant", content: said, consulted: out.consulted });
     const reply = replyAsWords(said, namer);
     setAnnounce(t({ message: `${speaker} says: ${reply}`, context: "guide dock, a finished reply read to a screen reader" }));
@@ -444,9 +469,10 @@ export default function GuideDock({
   const cardsOf = (turn: Turn, index: number): ReactNode => (
     <>
       {turn.answer?.proposal && (
-        <ProposalCard
+        <PreparedCard
           proposal={turn.answer.proposal}
           state={proposalState(turn)}
+          words={words.card}
           onReview={() => onReview?.(turn.answer!.proposal!)}
           onUnreview={() => onUnreview?.(turn.answer!.proposal!)}
           onDrop={() => patchHelperTurn(index, { applied: "dropped" })}
@@ -456,6 +482,9 @@ export default function GuideDock({
         <FilingCard
           filing={turn.answer.filing}
           state={turn.filing}
+          words={words.draft}
+          left={words.card.left}
+          notNow={words.card.notNow}
           onSend={() => void sendToReview(index)}
           onDrop={() => patchHelperTurn(index, { filing: { state: "dropped" } })}
         />
@@ -471,7 +500,7 @@ export default function GuideDock({
   const fromBar = onBar.filter((p) => !inTalk.has(proposalMarkOf(p)));
   const preparedCount = prepared.length + fromBar.length;
   /*
-   * WHILE THERE IS LITTLE TALK, SAY YES HAS HALF THE DOCK. On a first evening one change is prepared beside a
+   * WHILE THERE IS LITTLE TALK, WHAT IS READY HAS HALF THE DOCK. On a first evening one change is prepared beside a
    * conversation of a question and its answer, and a narrow column beside a wide, mostly empty one reads as an
    * afterthought. So with something prepared and no more than SHORT_TALK messages, the list takes half the
    * width; once the talk grows, it is the narrow column again and the conversation has the room.
@@ -517,12 +546,12 @@ export default function GuideDock({
    * Who is answering, under her name. The helper: whoever was picked. The launch and organizing guides are the
    * village's own guide on the same key the helper would use, so the same line is true of them while a key can answer.
    */
-  const whoAnswers =
-    shown === "helper" ? (
-      chosen && status?.on ? <WhoAnswers provider={chosen} name={names[chosen]} lent={status.lent === true} /> : null
-    ) : status?.available.includes("anthropic") ? (
-      <WhoAnswers provider="anthropic" name={names.anthropic} lent={status.lent === true} />
-    ) : null;
+  const answering: HelperProvider | null = shown === "helper" ? (status?.on ? chosen : null) : status?.available.includes("anthropic") ? "anthropic" : null;
+  const whoAnswers = answering ? (
+    <p className="text-xs text-muted-foreground" data-testid="guide-who-answers">
+      {words.whoAnswers(answering, names[answering], status?.lent === true)}
+    </p>
+  ) : null;
 
   return (
     <aside
@@ -543,15 +572,7 @@ export default function GuideDock({
         <div className="min-w-0 flex-1">
           <h2 className="truncate font-display text-xl font-semibold leading-tight text-foreground">{guide}</h2>
           {whoAnswers}
-          <p className="hidden text-xs text-muted-foreground @min-[40rem]:block">
-            {shown === "helper" ? (
-              <Trans context="admin helper panel">Helps you find things and proposes changes for you to approve.</Trans>
-            ) : shown === "launch" ? (
-              <Trans context="guide dock, what the launch guide does">Walks you through what is left before the launch.</Trans>
-            ) : (
-              <Trans context="guide dock, what the organizing guide does">Counsel on organizing, from your village's own brief first.</Trans>
-            )}
-          </p>
+          <p className="hidden text-xs text-muted-foreground @min-[40rem]:block">{words.about(shown)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {wide && (
@@ -580,7 +601,7 @@ export default function GuideDock({
           </button>
         </div>
         </div>
-          {/* The two choices, on a row of their own under her name: side by side where they fit, stacked where they do not. */}
+          {/* The choices, on a row of their own under her name: side by side where they fit, stacked where they do not. */}
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 empty:hidden">
           {shown === "helper" && status?.on && status.available.length > 1 && <GuideChoice available={status.available} names={names} chosen={chosen} onPick={pick} />}
           {modes.length > 1 && (
@@ -604,13 +625,23 @@ export default function GuideDock({
               ))}
             </div>
           )}
+          {/* The speaking dial's one toggle. On: she and every fixed line here say the same facts in the fewest words. */}
+          <button
+            type="button"
+            aria-pressed={speaking.quiet}
+            onClick={() => speaking.setQuiet(!speaking.quiet)}
+            data-testid="guide-brief-toggle"
+            className={`min-h-11 rounded-full px-4 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${speaking.quiet ? "bg-primary text-primary-foreground" : "border border-border text-foreground hover:bg-muted"}`}
+          >
+            {words.briefToggle}
+          </button>
           </div>
       </div>
 
       {shown === "helper" && !status && !statusError && (
         <div className="flex flex-1 items-center justify-center p-6 text-sm text-muted-foreground">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-          <Trans context="admin helper panel">Opening the helper</Trans>
+          {words.opening}
         </div>
       )}
       {shown === "helper" && statusError && <p role="alert" className="p-4 text-sm text-destructive">{statusError}</p>}
@@ -623,20 +654,21 @@ export default function GuideDock({
               <div className={`space-y-3 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
                 {shown === "helper" && turns.length === 0 && (
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    {/* One warm line in her voice first; then what she does and reads, from its one place. */}
+                    {/* Her greeting, then what waits (or, with nothing waiting, what she can do); then what she reads. */}
                     <p className="font-display text-lg leading-snug text-foreground" data-testid="guide-first-line">
-                      {firstName ? (
-                        <Trans context="guide dock, the guide's first line before any question">Hello, {firstName}. What are we tending today?</Trans>
-                      ) : (
-                        <Trans context="guide dock, the guide's first line before any question">Hello. What are we tending today?</Trans>
-                      )}
+                      {greeting} {words.helperLead(preparedCount)}
                     </p>
-                    <WhatTheGuideReads />
+                    <p data-testid="guide-reads">{words.reads}</p>
+                  </div>
+                )}
+                {shown !== "helper" && !gone[shown] && (
+                  <div className="max-w-full whitespace-pre-wrap break-words rounded-2xl bg-muted px-3 py-2 text-sm text-foreground" data-testid="guide-first-line">
+                    {firstWords[shown]}
                   </div>
                 )}
                 {gone[shown] && (
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p><Trans context="guide dock, the guide cannot answer">The guide cannot answer just now. It needs an AI key, or it has answered all it can for today. Everything here still works by hand.</Trans></p>
+                    <p role="alert">{words.gone}</p>
                     {onOpenTab ? (
                       <button type="button" onClick={() => onOpenTab("integrations")} className={secondaryBtn}>
                         <Trans context="admin helper, opens the Integrations page">Open Integrations</Trans>
@@ -675,7 +707,7 @@ export default function GuideDock({
                       {(turn.answer?.proposal || turn.answer?.filing) &&
                         (expanded ? (
                           <p className="mt-2 text-xs text-muted-foreground" data-testid="guide-prepared-pointer">
-                            <Trans context="guide dock, points from the conversation to the Say yes list">Prepared for you. It waits under Say yes.</Trans>
+                            {words.pointer}
                           </p>
                         ) : (
                           cardsOf(turn, i)
@@ -685,7 +717,7 @@ export default function GuideDock({
                 {busy === shown && (
                   <p className="flex items-center text-sm text-muted-foreground">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                    <Trans context="admin helper panel">{guide} is thinking</Trans>
+                    {words.thinking(guide)}
                   </p>
                 )}
                 {errors[shown] && <p role="alert" className="text-sm text-destructive">{errors[shown]}</p>}
@@ -741,24 +773,22 @@ export default function GuideDock({
 
           {expanded && shown === "helper" && (
             <section
-              aria-label={t({ message: "Say yes", context: "guide dock, the list of what the guide prepared" })}
+              aria-label={words.readyHeading}
               data-testid="guide-say-yes"
               data-roomy={roomy ? "true" : undefined}
               className={`order-first max-h-[35%] shrink-0 overflow-y-auto border-b border-border px-4 py-3 @min-[44rem]:order-none @min-[44rem]:max-h-none @min-[44rem]:border-b-0 @min-[44rem]:border-l ${roomy ? "@min-[44rem]:w-1/2" : "@min-[44rem]:w-[19rem] @min-[64rem]:w-[24rem]"} ${preparedCount === 0 ? "hidden @min-[44rem]:block" : ""}`}
             >
-              <h3 className="font-display text-base font-semibold text-foreground"><Trans context="guide dock, the list of what the guide prepared">Say yes</Trans></h3>
-              <p className="text-xs text-muted-foreground">
-                <Trans context="guide dock, under the Say yes heading">What {guide} has prepared. Each one waits on you, and nothing changes until you say so.</Trans>
-              </p>
+              <h3 className="font-display text-base font-semibold text-foreground">{words.readyHeading}</h3>
+              <p className="text-xs text-muted-foreground">{words.readyNote}</p>
               {preparedCount === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground"><Trans context="guide dock, the Say yes list is empty">Nothing is waiting on you.</Trans></p>
+                <p className="mt-3 text-sm text-muted-foreground">{words.readyNone}</p>
               ) : (
                 <div className="mt-1 space-y-2">
                   {prepared.map(({ turn, index }) => (
                     <div key={index}>{cardsOf(turn, index)}</div>
                   ))}
                   {fromBar.map((p) => (
-                    <ProposalCard key={proposalMarkOf(p)} proposal={p} state="waiting" onReview={() => onReview?.(p)} onUnreview={() => onUnreview?.(p)} onDrop={() => onUnreview?.(p)} />
+                    <PreparedCard key={proposalMarkOf(p)} proposal={p} state="waiting" words={words.card} onReview={() => onReview?.(p)} onUnreview={() => onUnreview?.(p)} onDrop={() => onUnreview?.(p)} />
                   ))}
                 </div>
               )}

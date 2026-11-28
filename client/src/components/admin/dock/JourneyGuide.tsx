@@ -59,6 +59,7 @@ export function JourneyGuide({
   launched = false,
   admin = false,
   fixes,
+  blocking,
 }: {
   open: boolean;
   onClose: () => void;
@@ -66,6 +67,8 @@ export function JourneyGuide({
   admin?: boolean;
   /** The checklist's rows, when the page has them. */
   fixes?: readonly LaunchFix[];
+  /** How many rows block the launch, when the page has the count. The dock leads with it. */
+  blocking?: number | null;
 }) {
   const token = authToken() ?? "";
   const linkNames = useMemo(() => fixNames(fixes), [fixes]);
@@ -126,6 +129,7 @@ export function JourneyGuide({
         initialStatus={fresh ?? undefined}
         onStatus={heard}
         linkNames={linkNames}
+        blocking={typeof blocking === "number" && Number.isFinite(blocking) ? blocking : null}
         // A village still on the road opens wide; a running one opens at the side. A remembered choice beats both.
         defaultShape={launched ? "docked" : "expanded"}
       />
