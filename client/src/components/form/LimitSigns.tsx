@@ -99,15 +99,15 @@ export function LimitSigns({ value, max, id, voice = true }: {
           <span id={id} className={`tabular-nums ${state === "room" ? "text-muted-foreground" : "font-semibold text-foreground"}`} data-character-count="">
             {n(used)} / {n(max)}
           </span>
+          {/* The words, never a circled "?" (the lead, 27 Nov 2026: tooltips on the word), as LimitsAtTop says it. */}
           <button
             type="button"
             onClick={() => setHelp((h) => !h)}
             aria-expanded={help}
-            aria-label={t({ message: "How the limits work", context: "limit help button beside a box" })}
-            className="inline-flex size-11 items-center justify-center rounded-full text-sm font-semibold text-notice hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             data-limit-help=""
           >
-            <span className="inline-flex size-6 items-center justify-center rounded-full border border-border" aria-hidden="true">?</span>
+            {t({ message: "How the limits work", context: "limit help button beside a box" })}
           </button>
         </span>
       </div>

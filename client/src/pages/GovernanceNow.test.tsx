@@ -49,7 +49,7 @@ describe("/governance, the Now view", () => {
     expect(within(box).getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe("/login");
     expect(within(box).getByRole("link", { name: "How we work together" }).getAttribute("href")).toBe("/governance/how");
     expect(f).not.toHaveBeenCalled();
-    expect(screen.queryByRole("link", { name: "Your work" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Waiting on you" })).toBeNull();
   });
 
   it("a guest reads the village's own line first", async () => {

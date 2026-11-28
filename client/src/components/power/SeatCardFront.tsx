@@ -98,7 +98,7 @@ export function SeatFigures({ view, wide }: { view: SeatSheetView; wide: boolean
           <Figure key={f.key} layout="seat" face="body" value={String(f.value)} label={f.label} tone={f.tone} />
         ))}
         {clock && (
-          <Figure layout="seat" face="body" value={String(clock.value)} label={clock.label} tone={clock.tone} title={clock.sub} />
+          <Figure layout="seat" face="body" value={String(clock.value)} label={clock.label} tone={clock.tone} tip={clock.sub} />
         )}
       </dl>
     );

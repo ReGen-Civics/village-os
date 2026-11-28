@@ -289,11 +289,7 @@ export default function Decisions() {
               <div className="rounded-xl border border-border bg-card p-4">
                 <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
                   <Trans context="Decisions, h3"><Scale className="w-4 h-4 text-notice" aria-hidden="true" />
-                  How this works
-                  <InfoTip
-                    tip="A proposal gathers support first. Once it has enough, someone opens a ballot, which freezes who may vote and how much each vote weighs."
-                    label="How a decision travels"
-                  /></Trans>
+                  <InfoTip tip="A proposal gathers support first. Once it has enough, someone opens a ballot, which freezes who may vote and how much each vote weighs.">How this works</InfoTip></Trans>
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                   <Trans context="Decisions, p">Thresholds and weights freeze the moment a ballot opens, so nothing anyone changes later can rewrite a

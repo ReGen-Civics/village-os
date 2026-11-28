@@ -41,14 +41,17 @@ describe("the menu by membership", () => {
     expect(NAV.every(isGroup)).toBe(true);
   });
 
+  /** The one named exception to five rows: Village (the lead, 27 Nov 2026, on the Library and Village Health each a row: "Allow six rows"). */
+  const ROWS_ALLOWED: Readonly<Record<string, number>> = { Village: 6 };
+
   for (const a of AUDIENCES) {
     describe(a.name, () => {
-      it("sees five groups at most, and five rows at most in each, and five links at most in each folder", () => {
+      it("sees five groups at most, and five rows at most in each (Village six), and five links at most in each folder", () => {
         const bar = barFor(a);
         expect(bar.length).toBeLessThanOrEqual(5);
         for (const { group, links } of bar) {
           const rows = navRows(links);
-          expect(rows.length, group.label).toBeLessThanOrEqual(5);
+          expect(rows.length, group.label).toBeLessThanOrEqual(ROWS_ALLOWED[group.label] ?? 5);
           for (const r of rows) if (r.kind === "folder") expect(r.links.length, `${group.label} / ${r.label}`).toBeLessThanOrEqual(5);
         }
         if (a.signedIn) {
@@ -73,14 +76,12 @@ describe("the menu by membership", () => {
         // (MoreSheet.tsx; its own test renders it with every folder open).
         const sheet = [...(a.signedIn ? ACCOUNT_MENU.filter(visibleTo(a)) : []), ...barFor(a).flatMap((g) => g.links)].map((l) => l.href);
         const twice = Array.from(new Set(sheet.filter((h, i) => sheet.indexOf(h) !== i))).sort();
-        for (const h of twice) expect(["/quests", "/roles"], h).toContain(h);
+        for (const h of twice) expect(["/quests", "/roles", "/governance/work"], h).toContain(h);
       });
 
-      it(a.newcomer ? "meets Join first" : "meets the village first, and Join before Govern", () => {
-        const labels = barFor(a).map((g) => g.group.label);
-        if (a.newcomer) expect(labels[0]).toBe("Join");
-        else expect(labels).toEqual(["Village", "Community", "Join", "Govern"]);
-        if (a.newcomer) expect(labels).toEqual(["Join", "Village", "Community", "Govern"]);
+      // Join first for every reader (the lead, 27 Nov 2026: "Join should be first on the list"), Govern last.
+      it("meets Join first, then Village and Community, and Govern last", () => {
+        expect(barFor(a).map((g) => g.group.label)).toEqual(["Join", "Village", "Community", "Govern"]);
       });
     });
   }
@@ -102,9 +103,15 @@ describe("what a stranger is shown (the lead, round 2)", () => {
   const offered = () => [...barFor(visitor).flatMap((g) => g.links)].map((l) => l.href);
 
   it("offers no member tool to a visitor", () => {
-    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/admin/role-progress", "/governance/how#game-mechanics"]) {
+    for (const h of ["/wallet", "/village-health", "/library", "/game-mechanics", "/tools", "/village-email", "/messages", "/hidden-map", "/admin/role-progress", "/governance/how#game-mechanics", "/protocols"]) {
       expect(offered(), h).not.toContain(h);
     }
+  });
+
+  it("keeps Protocols for a newcomer who is signed in, as the account menu did", () => {
+    // Main showed it to every signed-in reader in Your things; the move to Guides loses it for nobody but a visitor.
+    const applicant = AUDIENCES[1]!;
+    expect(barFor(applicant).flatMap((g) => g.links).map((l) => l.href)).toContain("/protocols");
   });
 
   it("offers a visitor what the village is, how to come and see, how to join, its story and team, and the Love Letter", () => {
@@ -127,8 +134,15 @@ describe("what a stranger is shown (the lead, round 2)", () => {
     // The lead's rule names Game Mechanics in Govern: a row of its own in How we work, a member's (round 4).
     expect(at("/governance/how#game-mechanics")).toEqual(["Govern/How we work"]);
     for (const old of ["/good-neighbor", "/resident-rights", "/steward-rights", "/exit-policy", "/photographs", "/changes", "/game-mechanics"]) expect(at(old), old).toEqual([]);
+    // The Library and Village Health are each a row (the lead, 27 Nov 2026: "LIbrary as it's own village row", then "Allow six
+    // rows"), and Village Tools left Community for a Tools folder in Village ("should be under tools").
     expect(at("/library")).toEqual(["Village/"]);
     expect(at("/village-health")).toEqual(["Village/"]);
+    expect(at("/tools")).toEqual(["Village/Tools"]);
+    // Pay is a member's own, beside the Wallet; Protocols, the village's checklists, joined the guides to make room.
+    expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.sub).toBe("Your things");
+    expect(ACCOUNT_MENU.find((l) => l.href === "/pay")?.module).toBeUndefined();
+    expect(at("/protocols")).toEqual(["Govern/Guides"]);
     expect(at("/quests").sort()).toEqual(["Govern/This season", "Village/"]);
     // No catch-all folder, and the Wallet is the member's own (the account menu).
     expect(NAV.filter(isGroup).flatMap((g) => g.items).some((l) => l.sub === "Shared things")).toBe(false);
@@ -182,16 +196,18 @@ describe("every entry has a page, and Your First Walk is gone", () => {
   /**
    * The named exceptions (the lead, round 2): Quests is something you do in the village and the work the season is
    * made of ("Quests could be in both village and in governance"), and the roles are both the way in (Join, Open
-   * Roles) and how the village is organised (Govern, Circles & Roles).
+   * Roles) and how the village is organised (Govern, Circles & Roles). Waiting on you is the member's own (the account
+   * menu) and where Govern's waiting dot leads (Decide), so the dot opens to a row that shows its count (the menu's QA,
+   * round 2).
    */
-  const IN_TWO_PLACES = ["/quests", "/roles"];
+  const IN_TWO_PLACES = ["/quests", "/roles", "/governance/work"];
 
   it("lists each page once, so nobody meets the same page in two places, but for the named exceptions", () => {
     const hrefs = [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => l.href);
     const twice = hrefs.filter((h, i) => hrefs.indexOf(h) !== i);
     expect(twice.sort()).toEqual([...IN_TWO_PLACES].sort());
-    // Each exception sits in two different groups, never twice in one.
-    for (const h of IN_TWO_PLACES) {
+    // Each exception sits in two different groups, never twice in one (Waiting on you: Govern and the account menu).
+    for (const h of IN_TWO_PLACES.filter((x) => x !== "/governance/work")) {
       const groups = NAV.filter(isGroup).filter((g) => g.items.some((l) => l.href === h)).map((g) => g.label);
       expect(new Set(groups).size, h).toBe(2);
     }

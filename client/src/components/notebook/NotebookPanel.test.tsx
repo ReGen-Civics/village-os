@@ -102,8 +102,9 @@ describe("the notebook", () => {
     render(<NotebookPanel />);
     expect(await screen.findByTestId("notebook-private-note")).toHaveTextContent(DOCUMENT_WORDS.private);
     expect(await screen.findByText("Well rota")).toBeTruthy();
-    expect(screen.getByText("Private").getAttribute("title")).toBe(STANDING_WORDS.private);
-    expect(screen.getByText("Asked to share").getAttribute("title")).toBe(STANDING_WORDS["share-asked"]);
+    // The standing's meaning is a tip on its own word, which a phone can open (it was a hover title).
+    expect(screen.getByRole("button", { name: "Private" })).toHaveAccessibleDescription(STANDING_WORDS.private);
+    expect(screen.getByRole("button", { name: "Asked to share" })).toHaveAccessibleDescription(STANDING_WORDS["share-asked"]);
     expect(screen.getByText(/from Bram/)).toBeTruthy();
   });
 

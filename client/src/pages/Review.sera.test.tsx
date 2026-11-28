@@ -199,7 +199,7 @@ describe("a member the queue refuses", () => {
     renderReview();
     expect(await screen.findByRole("heading", { level: 2, name: "Sera suggests 2 changes for the chart" })).toBeTruthy();
     expect(await screen.findByText("Ops lead (Rye) and the stewards decide them.")).toBeTruthy();
-    expect(screen.getByRole("heading", { level: 1, name: "Your work" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 1, name: "Waiting on you" })).toBeTruthy();
     expect(screen.queryByText("This queue is not open to you yet")).toBeNull();
     expect(screen.queryByText(/Water Steward/)).toBeNull();
   });

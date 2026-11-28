@@ -14,6 +14,8 @@
  * types appear only as TINTS on needs tiles, never as the hub's segmented
  * capital-stack widget.
  */
+import InfoTip from "@/components/InfoTip";
+import { useGameConfig } from "@/lib/gameApi";
 import type { CSSProperties } from "react";
 import { BookOpen, Mountain, Package, Repeat, UserRound, type LucideIcon } from "lucide-react";
 import { SeedGlint, SeedPod, TendingHands } from "@/components/sacred/living";
@@ -419,8 +421,60 @@ export function MiniRing({ percent, size = 64, floor }: { percent: number; size?
  * build day comes near. Intensity eases from a quarter-glow sixty days out to
  * full at the close.
  */
-export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number | null; endsAt: string | null }) {
-  const closed = daysRemaining === 0 && endsAt !== null && new Date(endsAt).getTime() < Date.now();
+/**
+ * "20 Dec 2026": the day a pool closes, as the village says a day (roleSheet's formatDay words) and in the village's
+ * zone. A civil date reads as written; an instant reads as the day it falls on where the village is. Kept here and not
+ * imported, so the campaign page's chunk does not carry the role sheet for one date.
+ */
+export function closingDay(iso: string | null | undefined, timeZone: string | null): string | null {
+  const s = String(iso ?? "").trim();
+  if (!s) return null;
+  const civil = /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const t = new Date(civil ? `${s}T12:00:00Z` : s);
+  if (Number.isNaN(t.getTime())) return null;
+  const words = (zone: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: zone }).format(t);
+  try {
+    return words(civil ? "UTC" : timeZone || "UTC");
+  } catch {
+    return words("UTC");
+  }
+}
+
+/** A day's civil date in a zone, as a UTC midnight, so two of them subtract to whole days. Null for an unknown zone. */
+function civilMidnight(t: Date, timeZone: string): number | null {
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone, year: "numeric", month: "numeric", day: "numeric" }).formatToParts(t);
+    const n = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+    return Date.UTC(n("year"), n("month") - 1, n("day"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The whole days from today to the closing day, both read in the village's zone, so the count and "Closes 19 Dec"
+ * beside it agree (QA round 3, 27 Nov 2026: the server's count of 24-hour spans read 23 where the calendar read 22).
+ * Null when the date cannot be read; never below zero.
+ */
+export function daysUntilClosing(iso: string | null | undefined, timeZone: string | null, now: Date = new Date()): number | null {
+  const s = String(iso ?? "").trim();
+  if (!s) return null;
+  const civil = /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const t = new Date(civil ? `${s}T12:00:00Z` : s);
+  if (Number.isNaN(t.getTime())) return null;
+  const zone = timeZone || "UTC";
+  const end = civil ? Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), t.getUTCDate()) : civilMidnight(t, zone) ?? civilMidnight(t, "UTC");
+  const today = civilMidnight(now, zone) ?? civilMidnight(now, "UTC");
+  if (end === null || today === null) return null;
+  return Math.max(0, Math.round((end - today) / 86_400_000));
+}
+
+export function StarLantern({ daysRemaining: served, endsAt }: { daysRemaining: number | null; endsAt: string | null }) {
+  const zone = useGameConfig()?.season?.timezone ?? null;
+  const closes = closingDay(endsAt, zone);
+  // Counted in the village's days when the end is known, so it agrees with the closing day beside it.
+  const daysRemaining = endsAt ? (daysUntilClosing(endsAt, zone) ?? served) : served;
+  const closed = endsAt !== null && new Date(endsAt).getTime() < Date.now();
   const glow = daysRemaining === null ? 0.35 : Math.max(0.25, Math.min(1, 1 - daysRemaining / 60));
   const line =
     daysRemaining === null
@@ -433,7 +487,7 @@ export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number |
             ? "One day until the pool closes"
             : `${daysRemaining} days until the pool closes`;
   return (
-    <div className="cp-lantern" title={endsAt ? `Closes ${new Date(endsAt).toLocaleDateString()}` : undefined}>
+    <div className="cp-lantern">
       <svg viewBox="0 0 48 64" width="44" height="58" aria-hidden="true">
         <path d="M14 8 L34 8 L30 2 L18 2 Z" fill="#3a2b1a" stroke="#c9a25e" strokeWidth="1" />
         <path d="M12 10 L36 10 L32 46 L16 46 Z" fill="rgba(36,26,15,.9)" stroke="#c9a25e" strokeWidth="1.4" />
@@ -445,7 +499,10 @@ export function StarLantern({ daysRemaining, endsAt }: { daysRemaining: number |
         />
         <path d="M16 46 L32 46 L30 52 L18 52 Z" fill="#3a2b1a" stroke="#c9a25e" strokeWidth="1" />
       </svg>
-      <div className="cp-lantern-line">{line}</div>
+      {/* The closing date on the line's own words, where a phone can open it (a title reached only a mouse), said in the
+          village's day words and zone, "Closes 20 Dec 2026": the browser's own format read 12/19/2026 for a 20 Dec end
+          (QA round 2, 27 Nov 2026). */}
+      <div className="cp-lantern-line">{closes ? <InfoTip tip={`Closes ${closes}`}>{line}</InfoTip> : line}</div>
     </div>
   );
 }

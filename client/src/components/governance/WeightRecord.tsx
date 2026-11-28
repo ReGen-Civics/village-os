@@ -98,11 +98,7 @@ export default function WeightRecord({
     <section className="rounded-xl border border-border bg-card p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
         <Trans context="WeightRecord, h3"><History className="w-4 h-4 text-notice" aria-hidden="true" />
-        The weight record
-        <InfoTip
-          tip="Every change to anyone's voting weight is kept with its reason and its author, and every member can read it."
-          label="What the weight record is"
-        /></Trans>
+        <InfoTip tip="Every change to anyone's voting weight is kept with its reason and its author, and every member can read it.">The weight record</InfoTip></Trans>
       </h3>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
         {record.mode === "custom"

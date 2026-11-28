@@ -253,7 +253,7 @@ export default function Pay() {
           {/* On a phone, once somebody is chosen the heading folds away so the pad and its next act share one screen. */}
           <header className={step === "who" ? "space-y-2" : "sr-only lg:not-sr-only lg:space-y-2"}>
             <p className={EYEBROW}>{t({ context: "pay page", message: "Credits" })}</p>
-            <h1 className={H1}>{t({ context: "pay page title", message: "Pay and receive" })}</h1>
+            <h1 className={H1}>{t({ context: "pay page title", message: "Pay" })}</h1>
             {token ? (
               <p className={LEDE}>
                 <span className="text-muted-foreground">{t({ context: "pay page, balance line", message: "You hold" })} </span>
