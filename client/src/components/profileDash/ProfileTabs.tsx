@@ -76,30 +76,56 @@ export function tabOfAnchor(hash: string): ProfileTab | undefined {
  * one by one after the jump, some seconds apart (QA round 2: on a desktop, /profile#my-moon ended 6,900px
  * off once the cards above it arrived). So this scrolls as soon as the target is drawn, and again each
  * time something above pushes it, for up to `withinMs`. A pause between reads proves nothing, so it does
- * not stop on one. It lets go the moment the reader takes the page: a wheel, a touch, a key, a press, or a
- * scroll it did not make. The target's own scroll-margin (the sheet sets one under its sticky bars)
- * decides where it lands.
+ * not stop on one. The target's own scroll-margin (the sheet sets one under its sticky bars) decides
+ * where it lands.
+ *
+ * THE READER ALWAYS WINS (QA round 3). It lets go the moment the reader takes the page: a wheel, a touch,
+ * a key or a press (never one inside a dialog: closing the level-up moment with Escape is not a scroll),
+ * or a scroll it did not make, before its first placement as well as after. On `arrival` (the page
+ * opening on the hash, not a jump made on the page) a page already scrolled with nothing drawn yet means
+ * the reader, or the browser putting them back where they were, got there first: it does not follow at
+ * all. While it follows, the browser's own scroll restoration is held off, so a Back that lands here is
+ * not overruled halfway.
  *
  * Returns a stop, for a newer jump to cancel an older one.
  */
-export function scrollWhenShown(id: string, { withinMs = 10000, stepMs = 100 } = {}): () => void {
+export function scrollWhenShown(id: string, { withinMs = 10000, stepMs = 100, arrival = false } = {}): () => void {
   const started = Date.now();
+  const startY = window.scrollY;
   let last: number | null = null;
   let placedAt: number | null = null;
   let timer = 0;
   let done = false;
+  const drawn = () => {
+    const el = document.getElementById(id);
+    return el && el.getClientRects().length > 0 ? el : null;
+  };
+  if (arrival && startY > 2 && !drawn()) return () => undefined;
   const LET_GO = ["wheel", "touchstart", "keydown", "pointerdown"] as const;
+  const restoring = "scrollRestoration" in history ? history.scrollRestoration : null;
+  if (restoring) history.scrollRestoration = "manual";
   const stop = () => {
     if (done) return;
     done = true;
     window.clearTimeout(timer);
-    LET_GO.forEach((e) => window.removeEventListener(e, stop));
+    LET_GO.forEach((e) => window.removeEventListener(e, onInput));
+    if (restoring) history.scrollRestoration = restoring;
   };
-  LET_GO.forEach((e) => window.addEventListener(e, stop, { passive: true }));
+  const onInput = (e: Event) => {
+    // A press or a key inside a dialog is about the dialog (Escape closing the level-up moment).
+    if (e.target instanceof Element && e.target.closest('[role="dialog"]')) return;
+    stop();
+  };
+  LET_GO.forEach((e) => window.addEventListener(e, onInput, { passive: true }));
   const tick = () => {
     if (done) return;
-    const el = document.getElementById(id);
-    if (el && el.getClientRects().length > 0) {
+    // Before the first placement, any move of the page is the reader's: none of it is ours yet.
+    if (placedAt === null && Math.abs(window.scrollY - startY) > 2) {
+      stop();
+      return;
+    }
+    const el = drawn();
+    if (el) {
       const at = el.getBoundingClientRect().top + window.scrollY;
       const moved = last === null || Math.abs(at - last) >= 1;
       // The target held still and the page moved anyway: the reader scrolled it (a scrollbar drag fires none of the events above).
@@ -130,14 +156,18 @@ export default function ProfileTabs({ tab, onTab }: { tab: ProfileTab; onTab: (t
   // A hash that names a section on another tab opens that tab first.
   useEffect(() => {
     let settling: (() => void) | null = null;
+    // The first call is the page opening on its hash; every later one is a jump made on the page.
+    let arrival = true;
     const go = () => {
+      const first = arrival;
+      arrival = false;
       const hash = window.location.hash.replace(/^#/, "");
       // A path's own card (/profile#path-<id>, the bar's path slot) lives on the Sheet.
       const t = tabOfAnchor(hash);
       if (!t) return;
       onTab(t);
       settling?.();
-      settling = scrollWhenShown(decodeURIComponent(hash));
+      settling = scrollWhenShown(decodeURIComponent(hash), { arrival: first });
     };
     go();
     window.addEventListener("hashchange", go);

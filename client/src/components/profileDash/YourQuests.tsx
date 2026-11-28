@@ -69,6 +69,8 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
 
   return (
     <section id="your-quests" className="mb-6 scroll-mt-28 rounded-2xl border border-border bg-card p-5 sm:p-6" aria-labelledby="your-quests-heading">
+      {/* The kicker the door below carries too: these are the member's own, that one is the village's board. */}
+      <p className="m-0 mb-1 text-xs font-semibold uppercase tracking-widest text-notice">{t({ message: "Your own", context: "profile My work: the kicker over the member's own quests" })}</p>
       <h2 id="your-quests-heading" className="m-0 font-display text-lg font-bold text-card-foreground">
         {t({ message: "Your quests", context: "profile: the full list of the member's quests" })}
       </h2>

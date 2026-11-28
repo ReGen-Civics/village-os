@@ -84,6 +84,83 @@ describe("the member portal's tabs", () => {
     }
   });
 
+  /** Where the page sits, as jsdom cannot scroll. */
+  const pageAt = (y: number) => Object.defineProperty(window, "scrollY", { value: y, configurable: true });
+
+  it("never yanks a reader who moved before the target was drawn", () => {
+    vi.useFakeTimers();
+    try {
+      pageAt(0);
+      const el = target("my-moon", { top: 1600 });
+      scrollWhenShown("my-moon");
+      // The reader scrolls (a wheel before the listeners, or a scrollbar) while the reads are still out.
+      pageAt(900);
+      vi.advanceTimersByTime(100);
+      document.body.appendChild(el);
+      vi.advanceTimersByTime(5000);
+      expect(el.scrollIntoView).not.toHaveBeenCalled();
+      el.remove();
+    } finally {
+      pageAt(0);
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not follow on arrival when the page is already scrolled and nothing is drawn yet", () => {
+    vi.useFakeTimers();
+    try {
+      pageAt(640); // the browser put a reader back where they were, or they scrolled first
+      const el = target("roles", { top: 300 });
+      scrollWhenShown("roles", { arrival: true });
+      document.body.appendChild(el);
+      vi.advanceTimersByTime(3000);
+      expect(el.scrollIntoView).not.toHaveBeenCalled();
+      // A jump made on the page (not an arrival) still follows from wherever the page sits.
+      scrollWhenShown("roles");
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(1);
+      window.dispatchEvent(new Event("wheel"));
+      el.remove();
+    } finally {
+      pageAt(0);
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps following through a key or a press inside a dialog, and holds off the browser's restore meanwhile", () => {
+    vi.useFakeTimers();
+    try {
+      pageAt(0);
+      const at = { top: 1200 };
+      const el = target("my-moon", at);
+      document.body.appendChild(el);
+      const dialog = document.createElement("div");
+      dialog.setAttribute("role", "dialog");
+      const close = document.createElement("button");
+      dialog.appendChild(close);
+      document.body.appendChild(dialog);
+      history.scrollRestoration = "auto";
+      scrollWhenShown("my-moon");
+      expect(history.scrollRestoration).toBe("manual");
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(1);
+      // Escape closes the level-up moment: that is not the reader taking the page.
+      close.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      close.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      at.top = 2400;
+      vi.advanceTimersByTime(100);
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(2);
+      // A key outside the dialog is: it lets go, and the browser's own restore comes back.
+      document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+      at.top = 3000;
+      vi.advanceTimersByTime(300);
+      expect(el.scrollIntoView).toHaveBeenCalledTimes(2);
+      expect(history.scrollRestoration).toBe("auto");
+      dialog.remove();
+      el.remove();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("let go the moment the reader scrolls, and give up after ten seconds", () => {
     vi.useFakeTimers();
     try {

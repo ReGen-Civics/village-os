@@ -112,3 +112,8 @@ msgstr "Intentar de nuevo"
 msgctxt "profile My roles: the phone's line that jumps to each role card"
 msgid "Your roles:"
 msgstr "Sus roles:"
+
+# needs-native-review: the portal's next moves, QA round 3, 27 Nov 2026
+msgctxt "profile My work: the kicker over the member's own quests"
+msgid "Your own"
+msgstr "Lo suyo"

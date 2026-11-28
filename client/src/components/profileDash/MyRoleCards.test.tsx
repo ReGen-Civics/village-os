@@ -134,6 +134,14 @@ describe("My roles", () => {
       return el as HTMLElement;
     });
     expect(line.textContent).toContain("Your roles did not load.");
+    // Inside the night card it is the card's own tile and pill: the sheet's tile takes the paper in light mode.
+    const tile = line.querySelector("[data-read-failed='roles']") as HTMLElement;
+    expect(tile.className).toContain("pc-box");
+    expect(tile.className).not.toContain("bg-muted");
+    const again = within(line).getByRole("button", { name: "Try again" });
+    expect(again.className).toContain("pc-tab");
+    expect(again.className).toContain("min-h-11");
+    expect(again.className).toContain("min-w-11");
     expect(document.querySelector("[data-commitment-field]")).toBeNull();
     fail = false;
     fireEvent.click(within(line).getByRole("button", { name: "Try again" }));

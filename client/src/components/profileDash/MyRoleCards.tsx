@@ -126,11 +126,11 @@ function MoonAndSeasonDoors({ moonHref }: { moonHref: string }) {
   );
 }
 
-/** A failed read of the roles held, said in the bar's tile with a way to ask again (the old panel's sentence). */
+/** A failed read of the roles held, said on the card's own tile with a way to ask again (the old panel's sentence). */
 function RolesReadFailed({ onRetry }: { onRetry: () => void }) {
   return (
     <div data-roles-failed="">
-      <ReadFailedTile name="roles" words={YOUR_ROLES_WORDS.failed} onRetry={onRetry} />
+      <ReadFailedTile night name="roles" words={YOUR_ROLES_WORDS.failed} onRetry={onRetry} />
     </div>
   );
 }
