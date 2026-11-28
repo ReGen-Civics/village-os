@@ -41,8 +41,20 @@ export async function raiseRevokeForEnded(db: { query: Pool["query"] }, assignme
   }
 }
 
-export const ACCESS_TASKS_LINK = "/admin?tab=org";
-const MY_ACCESS_LINK = "/season-plan";
+/**
+ * Where an access notice lands: the place the task is DONE. The only reader
+ * and writer of the access tasks is the season page's plan
+ * (client/src/components/seasonPlans/RoleCarryOn.tsx, drawn in Your plan on
+ * /season), and the holder of a granting role is often not an admin, so a
+ * door into Admin would show them a page they can only read.
+ *
+ * This said `/admin?tab=org` until 27 Nov 2026, a tab that never existed, so
+ * every notice opened Admin on nothing. A notice already sent still carries
+ * that address, and Admin sends it here too
+ * (client/src/components/admin/adminTabAliases.ts).
+ */
+export const ACCESS_TASKS_LINK = "/season#plan";
+const MY_ACCESS_LINK = "/season#plan";
 
 async function tell(
   pool: Pool,

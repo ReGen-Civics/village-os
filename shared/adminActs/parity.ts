@@ -17,9 +17,7 @@ export const TAB_PARITY: Readonly<Record<string, string>> = {
   submissions: "A2",
   "portal-visitors": "A3",
   feedback: "A4",
-  "quest-claims": "A5",
-  "forum-moderation": "A6",
-  "message-reports": "A7",
+  reports: "A6",
   drafts: "A8",
   brain: "A9",
   failures: "A10",
@@ -42,7 +40,6 @@ export const TAB_PARITY: Readonly<Record<string, string>> = {
   "work-with-us": "A27",
   faqs: "A28",
   milestones: "A29",
-  "visit-config": "A30",
   "investor-summary": "A31",
   modules: "A32",
   "needs-admin": "A33",
@@ -65,8 +62,6 @@ export const TAB_PARITY: Readonly<Record<string, string>> = {
   tokens: "A50",
   ledger: "A51",
   "cash-payouts": "A52",
-  "pricing-desk": "A53",
-  budgets: "A54",
   cycles: "A55",
   products: "A56",
   "resources-admin": "A57",
@@ -83,7 +78,6 @@ export const TAB_PARITY: Readonly<Record<string, string>> = {
   "comms-letters": "A68",
   "comms-sent": "A69",
   "comms-settings": "A70",
-  "email-settings": "A71",
   integrations: "A72",
 };
 
@@ -94,6 +88,10 @@ export const TAB_PARITY: Readonly<Record<string, string>> = {
  */
 export const TAB_PAGE_ALSO: Readonly<Record<string, readonly string[]>> = {
   setup: ["F1", "F9", "F28", "F29", "F31", "F32"],
+  // One Reports queue holds the forum's reports (its own row, A6) and the reports on messages (27 Nov 2026).
+  reports: ["A7"],
+  // Mail settings was listed twice. Its first address still opens this page (adminTabAliases.ts).
+  "comms-settings": ["A71"],
 };
 
 /** The ledger's row for an act on a tab, when the act does not name its own. */
@@ -114,6 +112,8 @@ export const KEY_ALSO: Readonly<Record<string, readonly string[]>> = { assistant
 /** The rows the shipped controls cover, where that is more than their tab's row. */
 export const CONTROL_PARITY: Readonly<Record<string, readonly string[]>> = {
   "season.timezone": ["A35", "G19"],
+  // The visit program had a tab of its own. It is a setting inside Pages now.
+  "visit.program": ["A30"],
   "project.fiatCurrency": ["F8", "G19"],
 };
 
@@ -121,12 +121,14 @@ export const CONTROL_PARITY: Readonly<Record<string, readonly string[]>> = {
 export const OUTSIDE_PARITY: Readonly<Record<string, readonly string[]>> = {
   "page.modules": ["H2"],
   "page.review": ["H3"],
+  // Quest claims was a tab holding one link. Finished work is a kind on the review list.
+  "page.quest-claims": ["A5"],
   "page.approvals": ["H3"],
   "page.proposals": ["B7", "B8", "G12"],
   "page.mint": ["B9", "B10", "B11"],
   "page.treasury": ["H5"],
-  "page.pricing": ["H5"],
-  "page.budget": ["H5"],
+  "page.pricing": ["H5", "A53"],
+  "page.budget": ["H5", "A54"],
   "page.role-measures": ["H1", "G30"],
   "page.launch": ["C1", "C11", "C12"],
   "page.setup-game": ["D1", "D2"],

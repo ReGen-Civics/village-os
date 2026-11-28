@@ -27,6 +27,7 @@ import SeatHistory from "@/components/power/SeatHistory";
 import LeadBuilds, { buildsFor } from "@/components/roleCard/LeadBuilds";
 import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/QuickPath";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { useModule, useModuleOn } from "@/modules/ModuleProvider";
 import { useNewcomerOrVisitor } from "@/lib/newcomer";
 import { seatHistoryShown } from "@shared/roleSheetInputs";
@@ -65,7 +66,7 @@ export default function RoleShare() {
   const newcomer = useNewcomerOrVisitor();
   const mayPropose = governanceOn && !newcomer;
   // Who may say what a seat is held for; the server refuses everybody else by itself.
-  const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
+  const canTagNeeds = hasAdminAccess(user);
   // Whose words the vendor panel shows: the listing's, so no connector is named here.
   const vendorName = useModule("saberra")?.name ?? t({ message: `the connected service`, context: "roles page, a connected service's fallback name" });
   const [, params] = useRoute("/roles/:slug");

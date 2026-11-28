@@ -286,11 +286,9 @@ export default function VotingWeightsPanel({
       <div className="bg-white border border-gray-100 rounded-xl p-5 mb-4">
         <h3 className="flex items-center gap-2 font-semibold text-gray-900">
           <Scale className="w-4 h-4 text-teal-deep" aria-hidden="true" />
-          {MODE_LABEL[data.mode]}
-          <InfoTip
-            tip="How voting weight is assigned is one setting for the whole village. Equal gives everyone the same vote, token reads a balance, custom uses the table below."
-            label={t({ message: "What the weight mode is", context: "VotingWeightsPanel, label" })}
-          />
+          <InfoTip tip="How voting weight is assigned is one setting for the whole village. Equal gives everyone the same vote, token reads a balance, custom uses the table below.">
+            {MODE_LABEL[data.mode]}
+          </InfoTip>
         </h3>
         <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{modeLine(data.mode, data.token)}</p>
         {data.capLine && <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{data.capLine}</p>}

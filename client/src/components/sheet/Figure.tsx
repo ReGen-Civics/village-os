@@ -20,6 +20,8 @@
  * Gold and living green mean "above zero". The caller decides the tone, and
  * a read 0 is plain.
  */
+import InfoTip from "@/components/InfoTip";
+
 export type FigureTone = "gold" | "living" | null | undefined;
 
 const ink = (tone: FigureTone): string =>
@@ -31,22 +33,23 @@ export default function Figure({
   tone,
   face = "display",
   layout = "standing",
-  title,
+  tip,
 }: {
   value: string;
   label: string;
   tone?: FigureTone;
   face?: "display" | "body";
   layout?: "standing" | "seat";
-  /** layout="seat" only: a hover line, as in the season clock's end date. */
-  title?: string;
+  /** layout="seat" only: a line the label opens as a tip, as in the season clock's end date. On the label's own words
+   *  so a phone can open it too: a hover title reached only a mouse (QA round 1, 27 Nov 2026). */
+  tip?: string;
 }) {
   const typeface = face === "display" ? "font-display" : "font-body";
   if (layout === "seat") {
     return (
-      <div title={title} className="flex min-w-0 flex-col-reverse justify-end border-l border-border/45 px-2 first:border-l-0 first:pl-1">
+      <div className="flex min-w-0 flex-col-reverse justify-end border-l border-border/45 px-2 first:border-l-0 first:pl-1">
         <dt className="mt-1.5 text-[11px] font-semibold uppercase leading-tight tracking-[0.1em] text-balance text-muted-foreground">
-          {label}
+          {tip ? <InfoTip tip={tip}>{label}</InfoTip> : label}
         </dt>
         <dd className={`${typeface} text-[30px] font-semibold leading-none tabular-nums ${ink(tone)}`}>{value}</dd>
       </div>

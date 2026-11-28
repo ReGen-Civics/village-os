@@ -1,0 +1,24 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the tag filter on the review list, 28 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: tags"
+msgid "Show only where it came from"
+msgstr "Mostrar solo según de dónde vino"
+
+# needs-native-review: the tag filter on the review list, 28 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: tags"
+msgid "The count above is of everything, whatever is shown."
+msgstr "La cuenta de arriba es de todo, se muestre lo que se muestre."
+
+# needs-native-review: the tag filter on the review list, 28 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: tags"
+msgid "Nothing of that kind is waiting on you."
+msgstr "Nada de ese tipo espera por usted."

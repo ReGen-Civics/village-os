@@ -123,6 +123,9 @@ const ALLOWLIST = {
   // requests are a kind of decision under Decisions. Each old address redirects to its new place with an anchor, for
   // notices and links already sent; nothing in the app links to them any more, on purpose.
   "/approvals": "a redirect to /governance/work#approvals, the approval inbox's old address, kept for notices already sent",
+  // The proposed changes page was folded into the review list (the accepted cut C8, 27 Nov 2026). Its address redirects to
+  // that list's Batches view with its search; links already sent, and the address the server hands agents, are its doors.
+  "/admin/proposals": "a redirect to /admin/review?view=batches keeping ?find=, the proposed changes page's old address, kept for links already sent and the agent tool's reviewAt",
   "/changes": "a redirect to /governance/decisions#changes, the change requests list's old address, kept for links already sent",
   "/changes/:id": "a redirect to one change request under Decisions, kept for notices already sent",
   "/governance/decisions/changes": "a redirect to /governance/decisions#changes, for the address people guess at",
@@ -133,6 +136,7 @@ const ALLOWLIST = {
   "/governance/decisions/changes/:id": "one change request's page, linked by changeRequestHref from Decisions, Now, Your work, Suggest and its notices",
   // The season fold (27 Nov 2026): three pages became /season. Each old address redirects to its tab, keeping the query; notifications already sent, old bookmarks and the term warning's ?renew= link are its doors.
   "/season-plans/mine": "a redirect to /season#plan, kept for notifications and term warnings already sent",
+  "/season-plan": "a redirect to /season#plan, kept for the renewal and role-access notices already sent to this address",
   "/season-plans": "a redirect to /season#everyone, kept for links already sent",
   "/season-places": "a redirect to /season#join, kept for crew notices already sent (?season= is kept)",
   "/aligned": "a redirect to /season#aligned, kept for alignment links already sent",

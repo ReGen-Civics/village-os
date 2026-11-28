@@ -1,6 +1,6 @@
 {
   "name": "village-os",
-  "version": "1.4.5",
+  "version": "1.4.7",
   "type": "module",
   "license": "AGPL-3.0-or-later",
   "scripts": {

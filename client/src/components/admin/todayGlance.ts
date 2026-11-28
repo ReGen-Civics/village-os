@@ -1,7 +1,12 @@
 /**
- * One sentence for today, and what changed since this device last looked.
+ * One sentence for today, and what changed since this person last looked on this device.
  *
- * The last visit stays in the browser. Nothing here is sent to the server.
+ * THE NUMBER IS THE ONE COUNT: decisions waiting on you, as the server defines it for the person reading
+ * (shared/reviewInbox.ts, `decisionCounts`). This file never works a count out; it is handed one, or null when the
+ * count did not load, and a count that did not load is never said as nothing waiting.
+ *
+ * The last visit stays in the browser. Nothing here is sent to the server. THE COUNT IS NEVER CARRIED ACROSS PEOPLE:
+ * the look this device remembers names whose it was, and somebody else's look is read as no look at all.
  */
 import { storedText, writeStored } from "@/lib/safeStorage";
 
@@ -9,8 +14,11 @@ export const LAST_GLANCE_KEY = "admin.lastGlance";
 
 export interface GlanceSnap {
   at: string;
-  requests: number;
+  /** The one count at that look. */
+  decisions: number;
   needs: number;
+  /** Whose look it was. A look by anybody else is never compared against. */
+  who: string;
 }
 
 export interface ConnCard {
@@ -97,8 +105,14 @@ export function connectionRows(input: ConnInput): ConnectionRow[] {
   }));
 }
 
-export function glanceSentence(requests: number, rows: ConnectionRow[]): string {
-  const req = requests === 1 ? "1 request" : `${requests} requests`;
+/**
+ * `decisions` is the one count, or null when it did not load: then the sentence says so and never "nothing".
+ * `alsoListed` is what the list holds beside the count (blocked rows, applications): with any, "nothing is waiting"
+ * is not said either.
+ */
+export function glanceSentence(decisions: number | null, rows: ConnectionRow[], alsoListed = 0): string {
+  const requests = decisions === null ? -1 : decisions === 0 && alsoListed > 0 ? -1 : decisions;
+  const req = decisions === null ? "The count of decisions did not load" : decisions === 1 ? "1 decision" : `${decisions} decisions`;
   const broken = rows.filter((r) => r.state === "broken").length;
   const needs = rows.filter((r) => r.state === "needs").length;
   if (broken > 0) {
@@ -115,32 +129,33 @@ export function glanceSentence(requests: number, rows: ConnectionRow[]): string 
   return `${req}, everything else is fine.`;
 }
 
-export function readLastGlance(): GlanceSnap | null {
+/** The last look `who` took on this device. A look by somebody else, or one kept before the one count, is no look. */
+export function readLastGlance(who: string): GlanceSnap | null {
   const raw = storedText("local", LAST_GLANCE_KEY);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as GlanceSnap;
-    if (!parsed || typeof parsed.at !== "string" || typeof parsed.requests !== "number") return null;
+    if (!parsed || typeof parsed.at !== "string" || typeof parsed.decisions !== "number" || parsed.who !== who) return null;
     return parsed;
   } catch {
     return null;
   }
 }
 
-export function sinceLastVisit(prev: GlanceSnap | null, requests: number): string {
+export function sinceLastVisit(prev: GlanceSnap | null, decisions: number): string {
   if (!prev) return "First look on this device.";
   const when = new Date(prev.at);
   const label = Number.isNaN(when.getTime()) ? "your last look" : when.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-  const more = requests - prev.requests;
-  if (more > 0) return `${more} more ${more === 1 ? "request" : "requests"} since ${label}.`;
+  const more = decisions - prev.decisions;
+  if (more > 0) return `${more} more ${more === 1 ? "decision" : "decisions"} since ${label}.`;
   if (more < 0) {
     const n = -more;
-    return `${n} fewer ${n === 1 ? "request" : "requests"} since ${label}.`;
+    return `${n} fewer ${n === 1 ? "decision" : "decisions"} since ${label}.`;
   }
   return `Nothing new since ${label}.`;
 }
 
-export function rememberGlance(requests: number, needs: number, now = new Date()): void {
-  const snap: GlanceSnap = { at: now.toISOString(), requests, needs };
+export function rememberGlance(decisions: number, needs: number, who: string, now = new Date()): void {
+  const snap: GlanceSnap = { at: now.toISOString(), decisions, needs, who };
   writeStored("local", LAST_GLANCE_KEY, JSON.stringify(snap));
 }

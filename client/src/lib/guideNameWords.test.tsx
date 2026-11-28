@@ -29,7 +29,7 @@ import { useGuideName } from "@/hooks/useGuideName";
 function spanishMessages(): Record<string, string> {
   const po = mergedPoText(path.resolve(__dirname, "../locales"), "es");
   const messages: Record<string, string> = {};
-  const entry = /(?:^msgctxt "((?:[^"\\]|\\.)*)"\n)?^msgid "((?:[^"\\]|\\.)+)"\nmsgstr "((?:[^"\\]|\\.)+)"$/gm;
+  const entry = /(?:^msgctxt "((?:[^"\\]|\\.)*)"\r?\n)?^msgid "((?:[^"\\]|\\.)+)"\r?\nmsgstr "((?:[^"\\]|\\.)+)"$/gm;
   const unquote = (s: string) => JSON.parse(`"${s}"`) as string;
   for (let m = entry.exec(po); m; m = entry.exec(po)) messages[generateMessageId(unquote(m[2]), m[1] === undefined ? undefined : unquote(m[1]))] = unquote(m[3]);
   return messages;

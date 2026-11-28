@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { TOKEN_KEY, authToken, clearAuthToken } from "@/lib/gameApi";
 import { forgetExamplesCache } from "@/components/ExamplesBanner";
+import { forgetChatDrafts } from "@/components/chat/draftStore";
 import { writeStored } from "@/lib/safeStorage";
 import { SIGN_IN_STORAGE_BLOCKED, canKeepSignedIn, sessionWriteRefused } from "@/lib/signInStorage";
+import { hasAdminAccess, holdsAdminRole } from "@/lib/adminAccess";
 
 export interface User {
   id: string;
@@ -10,6 +12,8 @@ export interface User {
   email: string;
   /** member (default) | admin | founder — founder is the master-admin tier. */
   role?: "member" | "admin" | "founder";
+  /** The server's answer to "may this account open admin": its own role, or a live power group that carries admin access (client/src/lib/adminAccess.ts). */
+  adminAccess?: boolean;
   /** Public name-tag for @mentions and audit views; emails never leak. */
   handle?: string;
   paths: string[];
@@ -85,6 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthToken();
         setToken(null);
         forgetExamplesCache();
+        // An expired session is a sign-out too: its half-written chat messages leave with it.
+        forgetChatDrafts();
       }
     } catch (err) {
       // A dropped connection says nothing about whether the token is valid.
@@ -176,6 +182,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     forgetExamplesCache();
+    // Half-written chat messages stay with the person who wrote them (components/chat/draftStore.ts).
+    forgetChatDrafts();
   }
 
   async function updateProfile(updates: Partial<Omit<User, "id" | "email" | "joinedAt">>) {
@@ -220,8 +228,16 @@ export function useAuth() {
  * Whether the signed-in person may reach an admin route, client-side.
  *
  * The MIRROR of `isAdmin` in server/index.ts, which is the authority: a valid
- * member token whose account role is 'admin' or 'founder'. The shared password
- * authenticates nothing there, so this is the whole test on both sides.
+ * member token whose account role is 'admin' or 'founder', or whose holder sits
+ * in a live power group that carries admin access. The server works the last
+ * one out and sends it as `adminAccess`; `hasAdminAccess`
+ * (client/src/lib/adminAccess.ts) is the one place the client reads all three.
+ * The shared password authenticates nothing there.
+ *
+ * `useIsAdmin("account-role")` asks the narrower question, the account's own
+ * role and nothing else. It is for a control whose route asks the capability
+ * gate, which refuses a member whose admin access comes from a group, so the
+ * wider answer would offer them an act the server refuses.
  *
  * It exists because the same expression was being hand-written wherever an
  * admin surface needed it, and a hand-kept copy of a rule is a promise nobody
@@ -259,8 +275,8 @@ export function useAuth() {
  * requests nothing. There is no path here where a missing provider grants
  * anything.
  */
-export function useIsAdmin(): boolean {
+export function useIsAdmin(scope: "admin-access" | "account-role" = "admin-access"): boolean {
   const context = useContext(AuthContext);
   const user = context?.user;
-  return !!user && (user.role === "admin" || user.role === "founder");
+  return scope === "account-role" ? holdsAdminRole(user) : hasAdminAccess(user);
 }

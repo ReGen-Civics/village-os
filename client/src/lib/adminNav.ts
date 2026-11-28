@@ -15,9 +15,14 @@ import type { ModuleLifecycle } from "@shared/modules";
  * its one reader on the client: a tab named there renders only while its module is
  * not off, and carries the module's lifecycle as a badge.
  */
-import { TAB_MODULE } from "@shared/adminTabModules";
+import { TAB_MODULE, TAB_MODULES, tabModules } from "@shared/adminTabModules";
 
-export { TAB_MODULE };
+export { TAB_MODULE, TAB_MODULES, tabModules };
+
+/** Whether a module is on. Unknown (the catalog has not arrived) reads as on, so nothing flashes away. */
+export function moduleIsOn(lifecycles: Record<string, ModuleLifecycle> | null | undefined, id: string): boolean {
+  return !lifecycles || (lifecycles[id] ?? "off") !== "off";
+}
 
 /** The badge an admin tab wears: where its module stands right now. */
 export type TabBadge = "preview" | "members" | "everyone";
@@ -58,13 +63,12 @@ export function filterNavByModules<I extends FilterableItem, G extends Filterabl
       ...g,
       items: g.items
         .filter((item) => {
-          const moduleId = TAB_MODULE[item.key];
-          if (!moduleId) return true;
-          return (lifecycles[moduleId] ?? "off") !== "off";
+          const ids = tabModules(item.key);
+          return ids.length === 0 || ids.some((id) => moduleIsOn(lifecycles, id));
         })
         .map((item) => {
-          const moduleId = TAB_MODULE[item.key];
-          const badge = moduleId ? tabBadge(lifecycles[moduleId]) : undefined;
+          const badges = new Set(tabModules(item.key).filter((id) => moduleIsOn(lifecycles, id)).map((id) => tabBadge(lifecycles[id])));
+          const badge = badges.size === 1 ? Array.from(badges)[0] : undefined;
           return badge ? { ...item, badge } : item;
         }),
     }))

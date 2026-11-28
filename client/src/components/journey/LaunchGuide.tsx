@@ -8,10 +8,10 @@
  * now reads the village's brief first (server/routes/organize.ts), and the
  * sections it read are named under each answer.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Send } from "lucide-react";
-import MicButton from "@/components/MicButton";
+import ChatComposer from "@/components/chat/ChatComposer";
+import { useChatDraft } from "@/components/chat/chatDraft";
 import { authToken } from "@/lib/gameApi";
 import { Trans, useLingui } from "@lingui/react/macro";
 import BreathingLoader from "@/components/natural/BreathingLoader";
@@ -50,7 +50,9 @@ export function LaunchGuide({ open, onClose, launched = false }: { open: boolean
   const msgs = threads[mode];
   const setMsgs = (fn: (m: typeof msgs) => typeof msgs) =>
     setThreads((all) => ({ ...all, [mode]: fn(all[mode]) }));
-  const [draft, setDraft] = useState("");
+  // One draft per tab of the guide, kept in this browser tab (components/chat/chatDraft.ts).
+  const [draft, setDraft] = useChatDraft(`launch-guide:${mode}`);
+  const panel = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [gone, setGone] = useState(false);
 
@@ -89,7 +91,7 @@ export function LaunchGuide({ open, onClose, launched = false }: { open: boolean
   // `data-hides-fab` hides the covered shortcut button while this panel holds the corner
   // (index.css), so a keyboard never lands on a control nobody can see.
   return (
-    <div data-hides-fab className="fixed bottom-[calc(var(--tabbar-h)+0.5rem)] md:bottom-4 right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[70vh]">
+    <div ref={panel} data-hides-fab data-dialogue className="fixed bottom-[max(calc(var(--tabbar-h,0px)+0.5rem),calc(var(--kb,0px)+0.5rem))] md:bottom-[max(1rem,calc(var(--kb,0px)+0.5rem))] right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] bg-white border border-stone-200 rounded-2xl shadow-2xl flex flex-col max-h-[min(70vh,calc(var(--vvh,100vh)-1rem))]">
       <header className="px-4 py-3 border-b border-stone-100 flex items-center justify-between gap-2">
         <div className="flex gap-1">
           {!launched && (
@@ -140,20 +142,18 @@ export function LaunchGuide({ open, onClose, launched = false }: { open: boolean
         {busy && <BreathingLoader decorative size={16} />}
       </div>
       {!gone && (
-        <div className="p-3 border-t border-stone-100 flex gap-2">
-          <MicButton onText={(heard) => setDraft((v) => (v ? v.replace(/\s*$/, " ") : "") + heard)} disabled={busy} className="!rounded-lg" />
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-            placeholder={t`Ask about any step…`}
-            className="flex-1 text-sm border border-stone-200 rounded-lg px-3 py-2"
-          />
-          <button onClick={send} disabled={busy || !draft.trim()}
-            className="bg-teal-deep text-white rounded-lg px-3 py-2 disabled:opacity-40">
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
+        <ChatComposer
+          id={`launch-guide-${mode}`}
+          className="p-3 border-t border-stone-100"
+          within={panel}
+          value={draft}
+          onChange={setDraft}
+          onSend={send}
+          busy={busy}
+          label={t({ message: "Your question", context: "guide question field" })}
+          placeholder={t`Ask about any step…`}
+          sendLabel={t({ message: "Ask", context: "send the question to the guide" })}
+        />
       )}
     </div>
   );

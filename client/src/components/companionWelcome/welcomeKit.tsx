@@ -233,7 +233,7 @@ export function Pet({ kind, tint, size, motion }: { kind: PetKind; tint: PetTint
 export const CHIP_BASE = `min-h-10 rounded-full border px-3 py-2 text-[13px] ${FOCUS}`;
 export const chip = (on: boolean) => `${CHIP_BASE} ${on ? "border-dash-gold bg-dash-gold font-semibold text-dash-gold-ink" : "border-dash-edge bg-card text-foreground"}`;
 export const INPUT = "min-h-11 w-full min-w-0 rounded-[14px] border border-dash-edge bg-background px-3 text-[15px] text-foreground";
-export const MIC_CLASS = "!size-11 !rounded-full border border-dash-edge !bg-card !text-dash-voice";
+export const MIC_CLASS = "!size-11 !rounded-full border !border-dash-edge !bg-card !text-dash-voice";
 
 export function confetti(n: number) {
   if (prefersReducedMotion()) return;

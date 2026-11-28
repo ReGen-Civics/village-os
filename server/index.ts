@@ -176,6 +176,7 @@ import { register as registerGovernanceLandingRoutes } from "./routes/governance
 import { register as registerMechanicsHistoryRoutes } from "./routes/mechanicsHistory";
 import { register as registerChangeRequestRoutes } from "./routes/changeRequests";
 import { register as registerStewardSlateRoutes } from "./routes/stewardSlate";
+import { register as registerLaunchFactsRoutes } from "./routes/launchFacts";
 import { registerMoonSettlementRoutes } from "./routes/moonSettlement";
 // The dispatcher lane: the landing path, the change-set executor and the roll notice.
 import { applyDueGovernance, autoSettleExpired, digestComposerFor, itemKindsOf, markNotApplicable, overrideDials, routeOutcome, runVetoWatch, vetoWindowOn, type CloseRouting, type LandingDeps, type SubjectCloser } from "./lib/applyDue";
@@ -351,6 +352,7 @@ import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBD
 import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
+import { register as registerGardenArtRoutes, GARDEN_ART_DIR } from "./routes/gardenArt";
 import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
 import { pathArtFocus } from "../shared/pathCardArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
@@ -12493,11 +12495,11 @@ async function startServer() {
     res.json({ ...status, gameStart: await readGameStart(getPool()), vote: await launchVoteFacts() });
   });
 
-  /** Confirm a manual (real-world) item, attributed to the admin who did it. */
+  /** Confirm a manual (real-world) item, attributed to the founder who did it. Founders only before launch (Rye, 27 Nov 2026). */
   app.post("/api/admin/launch/confirm", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
-    const actor = (await authedUser(req))?.id ?? adminActor(req)?.id ?? null;
-    if (!actor) return res.status(401).json({ error: "auth_required", message: "Confirming a launch step needs a named admin" });
+    const actor = await authedUser(req).then((u) => (u?.role === "founder" ? String(u.id) : null)); // the test POST /api/admin/launch/propose makes
+    if (!actor) return res.status(403).json({ error: "Confirming or declining a launch step is a founder's act" });
     const r = await confirmManual(getPool(), String(req.body?.id ?? ""), actor, req.body?.done);
     if (!r.ok) return res.status(400).json({ error: r.error });
     void recordEvent(getPool(), {
@@ -24509,6 +24511,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
   registerGovernanceModeRoutes(app, { authedUser, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate });
   registerStewardSlateRoutes(app, { authedUser, isAdmin, getPool, members, firstName });
+  registerLaunchFactsRoutes(app, { isAdmin, getPool });
   registerGoverningPurposeRoutes(app, { authedUser, isAdmin, adminActor, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate, addActivity });
   registerGovernanceAgreementRoutes(app, { authedUser, isAdmin, hasMembership, getPool, capabilityCtx, firstName, weightModeNow, circlesRepo, notify, buildElectorate, addActivity, villageTimezone });
   // The two optional canvas modules close their doors here, before any of their routes (Rye, 2026-10-01).
@@ -25871,6 +25874,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
+  registerGardenArtRoutes(app, { dir: path.resolve(__dirname, "..", GARDEN_ART_DIR) });
   registerNatureArtRoutes(app, { dir: path.resolve(__dirname, "..", NATURE_ART_DIR), isAdmin, guardCapability, overLimit, getPool });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

@@ -1,0 +1,119 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: nobody holds it yet"
+msgid "Unclaimed"
+msgstr "Sin reclamar"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: still being built"
+msgid "Setup"
+msgstr "En preparación"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: its launch vote is open"
+msgid "Vote open"
+msgstr "Votación abierta"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: its last launch vote closed without carrying"
+msgid "Vote did not carry"
+msgstr "La votación no prosperó"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: tokens are issued and no launch vote was held"
+msgid "Issuing and vote not held"
+msgstr "Emitiendo, y votación sin celebrar"
+
+# needs-native-review: launch facts, where the village stands, 27 Nov 2026
+#: client/src/lib/launchWords.ts
+msgctxt "where the village stands: its launch vote carried"
+msgid "Running"
+msgstr "En marcha"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, phone"
+msgid "Launch vote is open"
+msgstr "La votación de lanzamiento está abierta"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip"
+msgid "Journey to Launch: the village is voting on starting its Game"
+msgstr "Camino al lanzamiento: la aldea está votando si empieza su Juego"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgid "{blocking, plural, one {# blocking item open} other {# blocking items open}}"
+msgstr "{blocking, plural, one {# punto abierto que bloquea} other {# puntos abiertos que bloquean}}"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, no blocking rows left"
+msgid "nothing blocking"
+msgstr "nada bloquea"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, no blocking rows left"
+msgid "nothing blocking, ready when a founder asks the village"
+msgstr "nada bloquea, listo para cuando un fundador le pregunte a la aldea"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, phone"
+msgid "Launch · {blocking} open"
+msgstr "Lanzamiento · {blocking} abiertos"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, phone"
+msgid "Launch · nothing blocking"
+msgstr "Lanzamiento · nada bloquea"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip, a village issuing before its vote"
+msgid "Journey to Launch: {tokens} are being issued and no launch vote has carried · {what} · {recommended} recommended remaining"
+msgstr "Camino al lanzamiento: ya se emiten {tokens} y ninguna votación de lanzamiento ha prosperado · {what} · {recommended} recomendados pendientes"
+
+# needs-native-review: launch facts, the admin launch strip, 27 Nov 2026
+#: client/src/components/admin/launchBanner.ts
+msgctxt "admin launch strip"
+msgid "Journey to Launch: {what} · {recommended} recommended remaining"
+msgstr "Camino al lanzamiento: {what} · {recommended} recomendados pendientes"
+
+# needs-native-review: launch facts, the Start the Game card, 27 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, p"
+msgid "This village is already issuing {tokens}, and no launch vote has carried, so this page cannot open the vote. Changing that is the village's own decision, by its highest vote."
+msgstr "Esta aldea ya emite {tokens}, y ninguna votación de lanzamiento ha prosperado, así que esta página no puede abrir la votación. Cambiar eso lo decide la aldea misma, con su votación más alta."
+
+# needs-native-review: launch facts, the Start the Game card, 28 Nov 2026
+#: client/src/components/launch/StartTheGame.tsx
+msgctxt "StartTheGame, Link"
+msgid "Open the game mechanics"
+msgstr "Abrir las mecánicas del juego"
+
+# needs-native-review: launch facts, Journey to Launch, 28 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, p"
+msgid "Where the village stands: {standingWord}"
+msgstr "Dónde está la aldea: {standingWord}"
+
+# needs-native-review: launch facts, Journey to Launch, 28 Nov 2026
+#: client/src/pages/JourneyToLaunch.tsx
+msgctxt "JourneyToLaunch, p"
+msgid "This village was marked launched on {launchedOn}. No launch vote carried. This checklist stays as the record of what that took."
+msgstr "Esta aldea se marcó como lanzada el {launchedOn}. Ninguna votación de lanzamiento prosperó. Esta lista queda como registro de lo que hizo falta."

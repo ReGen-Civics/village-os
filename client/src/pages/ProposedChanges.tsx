@@ -1,4 +1,9 @@
 /**
+ * FOLDED INTO /admin/review (the accepted cut C8, 27 Nov 2026). This file holds the desk (`ProposalsDesk`), which
+ * /admin/review draws as its Batches view, unchanged, and the old page's address, which now lands there (the default
+ * export; client/src/lib/proposalsFold.ts). Everything below describes the desk as it was on its own page and as it
+ * is now inside the review page.
+ *
  * /admin/proposals: every change an agent proposed, on one page (the lead, 11 Nov 2026), as cards (16 Nov 2026:
  * "show more like role cards in that design to make it easier for me to understand the batching, what's
  * changing, what's being proposed").
@@ -30,7 +35,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { foldedProposalsAddress } from "@/lib/proposalsFold";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { authToken } from "@/lib/gameApi";
@@ -54,7 +60,11 @@ type Result = { id: string; ok: boolean; error?: string; field?: string | null; 
 
 const faceOfDecided = (d: Decided) => faceOf(d.kind ?? "setting", d.route ?? { method: "PUT", path: "" });
 
-export default function ProposedChanges() {
+/**
+ * The desk. `embedded` draws it inside another page (the review page's Batches view): no page frame and no header of
+ * its own. `onDecided` tells that page a decision was made, so its numbers follow.
+ */
+export function ProposalsDesk({ embedded = false, onDecided }: { embedded?: boolean; onDecided?: () => void } = {}) {
   const { t, i18n } = useLingui();
   const auth = useOptionalAuth();
   const signedOut = !!auth && !auth.loading && !auth.user;
@@ -205,6 +215,7 @@ export default function ProposedChanges() {
       setProblems(Object.fromEntries(failed.map((x) => [x.id, [{ error: x.error ?? "", field: x.field ?? null }]])));
       if (failed.length) setOpen((o) => ({ ...o, ...Object.fromEntries(list.map((c) => [c.batchId, true])) }));
       await load();
+      onDecided?.();
     } finally {
       setBusy(false);
     }
@@ -222,6 +233,7 @@ export default function ProposedChanges() {
       setOutcome(null);
       setProblems({});
       await load();
+      onDecided?.();
     } finally {
       setBusy(false);
     }
@@ -303,10 +315,9 @@ export default function ProposedChanges() {
   const showDecided = status !== "waiting";
   const filtered = !!(kind || page || who || searching);
 
-  return (
-    <Layout>
-      <div className={`${WORLD} pb-16 pt-8 sm:pt-12`}>
-        <div className="mx-auto max-w-6xl space-y-6 px-4">
+  const inner = (
+        <div className={embedded ? "space-y-6" : "mx-auto max-w-6xl space-y-6 px-4"}>
+          {!embedded && (
           <header className="space-y-3">
             <p className={EYEBROW}>
               <Trans context="proposed changes">Review</Trans>
@@ -322,6 +333,7 @@ export default function ProposedChanges() {
               <Link href="/admin/review" className={LINK}><Trans context="proposed changes, a door to the one list">one list</Trans></Link>.
             </p>
           </header>
+          )}
 
           {signedOut && (
             <p className={HINT}>
@@ -558,7 +570,24 @@ export default function ProposedChanges() {
             </section>
           )}
         </div>
-      </div>
+  );
+  return embedded ? (
+    inner
+  ) : (
+    <Layout>
+      <div className={`${WORLD} pb-16 pt-8 sm:pt-12`}>{inner}</div>
     </Layout>
   );
+}
+
+/**
+ * The old page's address. It holds nothing of its own any more: it lands on the review page's Batches view, carrying
+ * the search it came with, so every link ever sent to /admin/proposals still opens the control it was sent for.
+ */
+export default function ProposedChanges() {
+  const [, navigate] = useLocation();
+  useEffect(() => {
+    navigate(foldedProposalsAddress(window.location.search, window.location.hash), { replace: true });
+  }, [navigate]);
+  return null;
 }

@@ -54,6 +54,7 @@ import { ballotReturn } from "./gameMechanicsBallotCopy";
 import { dialLabel, localizeDials } from "./gameMechanicsDialWords";
 import { APPLYABLE, WEIGHING_KEYS, founderAdoptable } from "./gameMechanicsAdoption";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { focusTargetId, useFocusTarget } from "@/lib/useFocusTarget";
 import { dialFromSearch } from "@shared/comms/memberView";
 import { localizeConstitution } from "./gameMechanicsConstitutionWords";
@@ -223,8 +224,7 @@ function BallotReturnChip({ proposal }: { proposal: Proposal }) {
   if (!proposal.ballotId || !back?.chip) return null;
   return (
     <span className={chipCls(back.cls || CHIP_QUIET)}>
-      {back.chip}
-      {back.tip && <InfoTip tip={back.tip} label={`What ${back.chip} means`} />}
+      {back.tip ? <InfoTip tip={back.tip}>{back.chip}</InfoTip> : back.chip}
     </span>
   );
 }
@@ -767,7 +767,7 @@ export default function GameMechanics() {
   const allCategoryCount = new Set(allDials.map((v) => v.category)).size;
   const tunedCount = allDials.filter((v) => !v.isDefault).length;
   const backedIds = new Set((standing?.backed ?? []).filter((b) => b.kind === "support").map((b) => b.proposalId));
-  const isAdminViewer = user?.role === "admin" || user?.role === "founder";
+  const isAdminViewer = hasAdminAccess(user);
   const gov = snapshot?.governance ?? null;
   const onSite = gov?.decidesBy === "onsite";
   // The public answer, with the signed-in one as the fallback before the snapshot lands.
@@ -829,9 +829,8 @@ export default function GameMechanics() {
               {localizeConstitution(snapshot.constitution, i18n).map((law) => (
                 <li key={law.title} className={TILE}>
                   <h4 className="mb-1.5 font-semibold text-foreground">
-                    {law.title}
-                    {/* Where the platform holds it, for whoever wants to check: behind a tip, out of the reading line. */}
-                    <InfoTip tip={law.enforcedBy} label={t({ message: "Where the platform enforces this law", context: "GameMechanics, aria-label" })} tapBox className="ml-1 font-normal text-muted-foreground" />
+                    {/* Where the platform holds it, for whoever wants to check: on the law's own name, out of the reading line. */}
+                    <InfoTip tip={law.enforcedBy}>{law.title}</InfoTip>
                   </h4>
                   <p className="text-sm leading-relaxed text-muted-foreground">{law.plain}</p>
                 </li>
