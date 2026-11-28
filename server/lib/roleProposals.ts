@@ -117,7 +117,10 @@ export interface ConsentView {
   asked: number;
   consented: number;
   objected: number;
-  /** The reasons given, naming nobody. They are in the circle's backlog for every member already. */
+  /**
+   * The reasons given, naming nobody. Served only to the circle's members and the applicant
+   * (`mayReadObjectionReasons`); they also reach the circle's own backlog, read in its sessions.
+   */
   objections: string[];
   /**
    * The titles of the roles the asked holders hold in the circle they were
@@ -187,6 +190,27 @@ export function consentView(asks: readonly store.StoredAsk[], now: Date, timeZon
     record: state === "consented" ? CONSENT_WORDS.record : null,
     you: { asked: !!mine, answer: mine?.answer ?? null, mayAnswer: !!mine && !mine.answer && state === "open" },
   };
+}
+
+/**
+ * WHO READS THE OBJECTIONS' REASONS (the lead, 27 Nov 2026: "no the anchor circle members and the applicant can see
+ * this but not anyone else"): a member holding a role in a circle the round asked, and the applicant. Everybody else
+ * reads the proposal with the count alone. `rolesOf` is `askRolesFor` over the same asks.
+ */
+export function mayReadObjectionReasons(asks: readonly store.StoredAsk[], viewerId: string | null, rolesOf: AskRoles, isApplicant: boolean): boolean {
+  if (isApplicant) return true;
+  if (!viewerId) return false;
+  return Array.from(new Set(asks.map((a) => a.circleId))).some((c) => rolesOf(viewerId, c).length > 0);
+}
+
+/** The view with the reasons taken out, for a reader who may not read them. */
+export function withoutObjectionReasons(view: ConsentView): ConsentView {
+  return { ...view, objections: [] };
+}
+
+/** The view as this reader may read it: whole for the circle asked and the applicant, the count alone for anyone else. */
+export function readableConsent(view: ConsentView, asks: readonly store.StoredAsk[], viewerId: string | null, rolesOf: AskRoles, isApplicant: boolean): ConsentView {
+  return mayReadObjectionReasons(asks, viewerId, rolesOf, isApplicant) ? view : withoutObjectionReasons(view);
 }
 
 /**

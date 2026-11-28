@@ -20,6 +20,8 @@ import { GUT_CRITERION, type GutCheck, type GutAnswer, type InterviewState, type
 import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
+import { anchorCircleId } from "../../shared/circlePicker";
+import type { StageTimingFacts } from "../../shared/applicationStageTiming";
 import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
 import { deleteGuideNotesOf, forgetGuideNotesBy } from "./applicationGuide";
 import { deleteConversationNotesOf, forgetConversationNotesBy } from "./applicationConversationNotes";
@@ -57,6 +59,11 @@ export async function stampStep(db: Db, s: { ref: string; kind: StepKind; subjec
   return Number(r.affectedRows ?? 0) === 1;
 }
 
+/** Replace one step's detail (a stage letter's attempt, once its post has answered). */
+export async function setStepDetail(db: Db, ref: string, kind: StepKind, subject: string, detail: unknown): Promise<void> {
+  await db.query("UPDATE application_steps SET detail_json = ? WHERE application_ref = ? AND kind = ? AND subject = ?", [JSON.stringify(detail), ref, kind, subject]);
+}
+
 /** Write the booking mode into the confirmed step's detail. True when it changed. */
 export async function setMode(db: Db, ref: string, mode: "block" | "split"): Promise<boolean> {
   const [r] = await db.query<ResultSetHeader>(
@@ -78,7 +85,8 @@ export async function stepsOf(db: Db, ref: string): Promise<StoredStep[]> {
 export async function openReviews(db: Db): Promise<Array<{ ref: string; confirmedAt: Date; lastAt: Date; firstReplyAt: Date | null }>> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT c.application_ref, UNIX_TIMESTAMP(c.stamped_at) AS confirmed_s, " +
-      "(SELECT UNIX_TIMESTAMP(MAX(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref) AS last_s, " +
+      // A letter's attempt (stage_mail) is no act: it never makes a stalled application look moved.
+      "(SELECT UNIX_TIMESTAMP(MAX(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind <> 'stage_mail') AS last_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'first_reply') AS reply_s " +
       "FROM application_steps c LEFT JOIN open_role_proposals p ON p.id = c.application_ref WHERE c.kind = 'confirmed' " +
       "AND (p.id IS NULL OR p.status = 'confirmed') " +
@@ -183,8 +191,14 @@ export async function skipInterview(db: Db, id: number): Promise<boolean> {
   return Number(r.affectedRows ?? 0) === 1;
 }
 
-export async function markBooked(db: Db, id: number, at: Date): Promise<void> {
-  await db.query("UPDATE application_interviews SET booked_at = COALESCE(booked_at, ?) WHERE id = ?", [at, id]);
+/**
+ * THE CALL'S OWN DATE AND TIME ("I've booked it", the lead, 27 Nov 2026; shared/callBooked.ts): said by the applicant
+ * or set by the team. Only while the conversation is open, and a later save corrects it ("Change"). `booked_at` set
+ * is what the walkthrough and the role measures read as booked.
+ */
+export async function markBooked(db: Db, id: number, at: Date): Promise<boolean> {
+  const [r] = await db.query<ResultSetHeader>("UPDATE application_interviews SET booked_at = ? WHERE id = ? AND state = 'open'", [at, id]);
+  return Number(r.affectedRows ?? 0) === 1;
 }
 
 export async function markHeld(db: Db, id: number, at: Date): Promise<void> {
@@ -381,6 +395,115 @@ export async function agentRoleNamesInCircles(db: Db, circleIds: readonly string
  * Each role's booking link (`org_roles.booking_url`, 0362), read as `parseBookingUrl` allows it: an https
  * link or nothing. The applicant books a conversation through the link of the role that holds it.
  */
+/**
+ * EVERY APPLICATION'S STAGE STAMPS, the facts `stageHours` (shared/applicationStageTiming.ts) times: confirmed, the
+ * shortlist's yes, references asked, each conversation's opening and write-up in order, and decided. From what is
+ * already kept; the last year only. The caller turns them into averages and never shows one application's times.
+ */
+export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[]> {
+  const [apps] = await db.query<RowDataPacket[]>(
+    "SELECT c.application_ref AS ref, UNIX_TIMESTAMP(c.stamped_at) AS confirmed_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'shortlist' AND JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.answer')) = 'yes') AS yes_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'refs_asked') AS asked_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided') AS decided_s, " +
+      "(SELECT JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.how')) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided' LIMIT 1) AS how, " +
+      // Sent to the anchor circle (ruling 7), or, in flight before it, the consent round the last write-up opened.
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'to_circle') AS sent_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'consent') AS consent_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'scores_in') AS scores_s " +
+      "FROM application_steps c WHERE c.kind = 'confirmed' AND c.stamped_at >= ? LIMIT 2000",
+    [since],
+  );
+  if (!apps.length) return [];
+  const [ivs] = await db.query<RowDataPacket[]>(
+    "SELECT application_ref AS ref, is_final, state, UNIX_TIMESTAMP(opened_at) AS opened_s, UNIX_TIMESTAMP(scored_at) AS scored_s FROM application_interviews WHERE application_ref IN (?) ORDER BY application_ref, position",
+    [apps.map((a: any) => String(a.ref))],
+  );
+  const ms = (v: unknown): number | null => (v === null || v === undefined ? null : Math.round(Number(v) * 1000));
+  // The same facts the role progress page reads (server/repos/roleMeasures.ts), so both share one calculation:
+  // a skipped conversation is done, a waiting final has not opened, and only an adoption ends Agreement.
+  const byRef = new Map<string, Array<{ final: boolean; openedAt: number | null; scoredAt: number | null; skipped: boolean; waiting: boolean }>>();
+  for (const r of ivs as any[]) {
+    const list = byRef.get(String(r.ref)) ?? [];
+    list.push({ final: Number(r.is_final) === 1, openedAt: ms(r.opened_s), scoredAt: ms(r.scored_s), skipped: String(r.state) === "skipped", waiting: String(r.state) === "waiting" });
+    byRef.set(String(r.ref), list);
+  }
+  const [followed] = await db.query<RowDataPacket[]>(
+    "SELECT application_ref AS ref, COUNT(*) AS n, SUM(followed_up_at IS NULL) AS open_n, UNIX_TIMESTAMP(MAX(followed_up_at)) AS last_s FROM application_references WHERE application_ref IN (?) GROUP BY application_ref",
+    [apps.map((a: any) => String(a.ref))],
+  );
+  const allFollowed = new Map<string, number | null>((followed as any[]).map((r) => [String(r.ref), Number(r.n) > 0 && Number(r.open_n) === 0 ? ms(r.last_s) : null]));
+  return (apps as any[]).map((a) => ({
+    confirmedAt: ms(a.confirmed_s) ?? 0,
+    shortlistYesAt: ms(a.yes_s),
+    refsAskedAt: ms(a.asked_s),
+    interviews: byRef.get(String(a.ref)) ?? [],
+    decidedAt: ms(a.decided_s),
+    door: String(a.ref).startsWith("op-") ? ("open" as const) : ("member" as const),
+    refsAllFollowedUpAt: allFollowed.get(String(a.ref)) ?? null,
+    adopted: a.how === "adopted",
+    toCircleAt: ms(a.sent_s) ?? (a.consent_s != null && a.scores_s != null && Number(a.consent_s) >= Number(a.scores_s) ? ms(a.consent_s) : null),
+  }));
+}
+
+/**
+ * The village's anchor circle, by name (shared/circlePicker.ts `anchorCircleId`: the one marked, else the one that
+ * coordinates the rest), or null when it has none. The applicant reads it at Agreement: "Your proposal is with ...".
+ */
+/** The village's anchor circle's id, or null when it marks none. */
+export async function anchorCircleIdOf(db: Db): Promise<string | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, status, is_anchor, parent_circle_id, is_example FROM circles");
+  const circles = rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), status: r.status ?? null, isAnchor: !!r.is_anchor, parentCircleId: r.parent_circle_id ?? null, isExample: !!r.is_example }));
+  return anchorCircleId(circles) ?? null;
+}
+
+export async function anchorCircleName(db: Db): Promise<string | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, status, is_anchor, parent_circle_id, is_example FROM circles");
+  const circles = rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), status: r.status ?? null, isAnchor: !!r.is_anchor, parentCircleId: r.parent_circle_id ?? null, isExample: !!r.is_example }));
+  const id = anchorCircleId(circles);
+  const name = id ? circles.find((c) => c.id === id)?.name.trim() : "";
+  return name || null;
+}
+
+/**
+ * WHEN AN APPLICATION'S ROLES STOP TAKING APPLICATIONS (the lead, 27 Nov 2026: "we review 1-2 weeks after the
+ * application deadline"): the latest of its roles' card dates, YYYY-MM-DD, stamped at arrival; null when none set one.
+ */
+export async function applicationDeadline(db: Db, ref: string): Promise<string | null> {
+  // The day stamped on the application at arrival (`beginReview`, from the role card's `sections.applyBy`): one source,
+  // and a deadline changed or cleared later never re-times an application that already arrived (QA round 5).
+  const [steps] = await db.query<RowDataPacket[]>("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'confirmed' LIMIT 1", [ref]);
+  const detail = steps[0]?.detail_json;
+  const parsed = typeof detail === "string" ? (() => { try { return JSON.parse(detail); } catch { return null; } })() : detail;
+  const d = typeof parsed?.applyBy === "string" ? parsed.applyBy : null;
+  return d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
+}
+
+/** The review window opens a week after the deadline (the lead: "1-2 weeks after"); before that nothing is stalled. */
+export const REVIEW_WINDOW_DAYS = 7;
+/** When the review window opens: a week after the roles' deadline, or null when no role sets one. */
+export function reviewWindowOpensAt(deadline: string | null): Date | null {
+  return deadline ? new Date(new Date(`${deadline}T00:00:00Z`).getTime() + REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000) : null;
+}
+export function reviewWindowOpen(deadline: string | null, now: Date): boolean {
+  const opens = reviewWindowOpensAt(deadline);
+  return !opens || now.getTime() >= opens.getTime();
+}
+
+/**
+ * WHEN THE 90-DAY CLOCK STARTS (the lead, 27 Nov 2026, asked whether the close waits for the review window: "Yes"):
+ * at arrival, or, when a role it applies for sets "Applications close", when the review window opens (the deadline
+ * plus `REVIEW_WINDOW_DAYS`, the nudges' own start), whichever is later. The close, its day-75 warning and the
+ * status link's lifetime all count from here.
+ */
+export function closeClockStartOf(arrivedAt: Date, deadline: string | null): Date {
+  const opens = reviewWindowOpensAt(deadline);
+  return opens && opens.getTime() > arrivedAt.getTime() ? opens : arrivedAt;
+}
+export async function closeClockStart(db: Db, ref: string, arrivedAt: Date): Promise<Date> {
+  return closeClockStartOf(arrivedAt, await applicationDeadline(db, ref).catch(() => null));
+}
+
 export async function bookingUrlsById(db: Db, ids: readonly string[]): Promise<Map<string, string | null>> {
   if (!ids.length) return new Map();
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, booking_url FROM org_roles WHERE id IN (?)", [[...ids]]);

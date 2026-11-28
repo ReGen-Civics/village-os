@@ -69,6 +69,7 @@ import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { emailKeyOf } from "../../shared/comms/address";
 import { civilDateKey } from "../../shared/lunar";
 import {
+  APPLICATION_CLOSE_DAYS_VARIABLE,
   OPEN_ANONYMISE_DAYS,
   OPEN_CONFIRM_HOURS,
   OPEN_NAME_MAX,
@@ -80,7 +81,6 @@ import {
   limiterAddressKey,
   APPLY_EMAIL_WORDS,
   stepsAfterSubmit,
-  stepsAsLines,
   safeGreeting,
 } from "../../shared/openProposals";
 import { againLetter } from "../../shared/applicationAgain";
@@ -118,6 +118,10 @@ import { deleteReferencesOf, memberReferencesDecidedBefore } from "../repos/appl
 import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
+import { openBookingLinks, receivedNextLines } from "../lib/applicantStageLetters";
+import { framedLetter, statusLinkFor } from "../lib/applicantUpdates";
+import * as reviewRepo from "../repos/applicationReview";
+import { recordEvent } from "../lib/events";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { loadEmailVillage } from "../lib/comms/render";
 import { comeAndPlayFor } from "../lib/comms/villageLetter";
@@ -951,24 +955,37 @@ export function register(app: Express, deps: Deps): void {
     let statusPath: string | null = null;
     // The village's days, or null while every role applied for opens after the founding team.
     const replyMoons = await replyMoonsFor(getPool(), confirmed.proposal.body.roles.map((r) => r.roleId));
-    if (confirmed.review?.statusToken) {
-      statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
+    if (confirmed.review?.statusToken) statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
+    // An account holder gets the Received email too (QA pass 1: none went), with a signed status link and their profile.
+    const accountHolder = !!confirmed.review && !confirmed.review.statusToken;
+    const mailedLink = statusPath ? `${site()}${statusPath}` : accountHolder ? await statusLinkFor({ siteUrl: site, getPool }, confirmed.proposal.id) : null;
+    if (mailedLink) {
       if (confirmed.proposal.email) {
         const lang = languageOf(confirmed.proposal);
         const apply = APPLY_EMAIL_WORDS[lang];
-        // The steps after submit (lane A2's one list, through the slot in shared/openProposals.ts), when there are any.
-        const steps = stepsAsLines(stepsAfterSubmit(lang, replyMoons));
-        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyMoons))}${steps ? `\n\n${steps}` : ""}`;
+        // The next step and who acts by role, in the shape of every applicant letter (the lead, 27 Nov 2026: "each step
+        // should come with an email for next steps"), with a booking link only when a conversation is open now. Sent
+        // as before: at confirm, once, under the same key.
+        const next = await receivedNextLines(getPool(), confirmed.proposal.id, lang);
+        // With a role's application deadline (0445), when review happens; else the one-moon promise, unchanged.
+        const deadline = await reviewRepo.applicationDeadline(getPool(), confirmed.proposal.id).catch(() => null);
+        // Arrived after the deadline (QA round 5): said plainly, never "we review 1 to 2 weeks after" a day long past.
+        const arrived = confirmed.proposal.confirmedAt ?? new Date();
+        const late = !!deadline && arrived.toISOString().slice(0, 10) > deadline;
+        const promise = deadline ? (late ? wordsIn(lang).lateApplication(wordsIn(lang).day(deadline)) : wordsIn(lang).reviewWindow(wordsIn(lang).day(deadline))) : wordsIn(lang).replyPromise(replyMoons);
+        const text = [apply.statusText(mailedLink, promise), ...(accountHolder ? ["", apply.profileLine(`${site()}/profile`)] : []), "", next.join("\n")].join("\n");
         try {
+          // In the invitation's frame, with the status link as its button (QA: letters overflowed 375 px).
+          const framed = await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink, await openBookingLinks(getPool(), confirmed.proposal.id, lang));
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,
             kind: "essential",
             origin: "open_proposal.status",
             to: { email: confirmed.proposal.email },
             subject: apply.statusSubject,
-            // The status link as a button too, and every address a link (server/lib/letterHtml.ts).
-            html: plainLetterHtml(text, { action: { href: `${site()}${statusPath}`, label: apply.statusButton } }),
-            text,
+            ...framed,
+            // `html` by name: the economics reader tells an email from a ledger posting by it.
+            html: framed.html,
           });
         } catch (e) {
           console.error("[open-proposals] the status link could not be mailed", e);
@@ -1216,18 +1233,33 @@ export function register(app: Express, deps: Deps): void {
 export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, closing?: ClosingDeps): Promise<string> {
   const deleted = await store.deleteUnconfirmedBefore(pool, new Date(at.getTime() - OPEN_CONFIRM_HOURS * 60 * 60_000));
   const cutoff = new Date(at.getTime() - OPEN_ANONYMISE_DAYS * 24 * 60 * 60_000);
-  // Confirmed, and nobody decided it in 90 days: closed as withdrawn, and the name and address go now (red team, 9 Nov).
-  // With a post office handed in, each one first gets its one closed letter (keyed per application), while the address is still here.
+  // THE ONE STEP OF AN APPLICATION THAT HAPPENS WITHOUT A PERSON. Everything else in an application moves only by a
+  // person's act; this is the lead's explicit exception (27 Nov 2026: "yes close in 90 days"). A confirmed application
+  // nobody decided `org.application_close_days` (default 90) after it arrived is closed as withdrawn, and the name and
+  // address go now (red team, 9 Nov). With a post office handed in, each one first gets its one closed letter (keyed
+  // per application) while the address is still here, then the close is recorded as an event. An adopted, declined
+  // or withdrawn application is never touched: only `status = 'confirmed'` rows are read.
+  // The clock starts at arrival, or when the role's review window opens (the lead, 27 Nov 2026: "Yes";
+  // `closeClockStart`): a candidate by arrival is closed only once its own clock has run the days.
+  const closeDays = Math.max(1, Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || OPEN_ANONYMISE_DAYS);
+  const closeCutoff = new Date(at.getTime() - closeDays * 24 * 60 * 60_000);
+  const candidates = await store.undecidedBefore(pool, closeCutoff);
+  const due: typeof candidates = [];
+  for (const p of candidates) {
+    if ((await reviewRepo.closeClockStart(pool, p.id, p.confirmedAt ?? p.createdAt)).getTime() < closeCutoff.getTime()) due.push(p);
+  }
   let expired: number;
   let letters = 0;
   if (closing) {
-    const due = await store.undecidedBefore(pool, cutoff);
     letters = await sendClosedLetters(pool, closing, due);
-    const closed = await store.expireUndecided(pool, due.map((p) => p.id), cutoff, at);
+    const closed = await store.expireUndecided(pool, due.map((p) => p.id), closeCutoff, at);
     await stampQuietClose(pool, closed, at);
+    for (const id of closed) {
+      await recordEvent(pool, { kind: "application_closed", text: `an application nobody decided in ${closeDays} days was closed, and its applicant told`, actorKind: "system", entityType: "open_proposal", entityRef: id, audience: "admin" });
+    }
     expired = closed.length;
   } else {
-    expired = await store.expireUndecidedBefore(pool, cutoff, at);
+    expired = (await store.expireUndecided(pool, due.map((p) => p.id), closeCutoff, at)).length;
   }
   let anonymised = await store.anonymiseDecidedBefore(pool, cutoff, at);
   for (const p of await store.adoptedDecidedBefore(pool, cutoff)) {

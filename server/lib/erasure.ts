@@ -196,6 +196,7 @@ import { forgetMemberSessions } from "./liveSessions";
 import { forgetRoleTensionsFor } from "./roleTensions";
 import { forgetMemberProposals } from "../repos/roleProposals";
 import { anonymiseOpenProposal, openProposalsOfMember, withdrawForErasure } from "../repos/openProposals";
+import { clearReviewOf } from "../repos/applicationReview";
 import { removeProposalFiles } from "./proposalFiles";
 import { forgetMemberReview } from "../repos/applicationReview";
 import { isExampleUser } from "./examples";
@@ -1605,6 +1606,9 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
           await withdrawForErasure(pool, id, at);
           await anonymiseOpenProposal(pool, id, at);
           if (deps.proposalFileDir) await removeProposalFiles(deps.proposalFileDir, id);
+          // The review's words and files go in the erasure itself, voice reflections and recordings off the disk too
+          // (QA pass 3: they waited for the next tidy). `clearReviewOf` is the one list the tidy uses.
+          await clearReviewOf(pool, [id], at);
         }
       },
     },

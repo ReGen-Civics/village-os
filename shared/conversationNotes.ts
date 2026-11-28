@@ -85,6 +85,19 @@ export function mayReadConversationNotes(r: NoteReader): boolean {
   return r.holdsPower || r.isFinalCall || r.holdsConversationRole;
 }
 
+/**
+ * VOICE REFLECTIONS BETWEEN CONVERSATIONS (the lead, 27 Nov 2026: "so that the visionary at the end can listen to these
+ * before her call (and community can listen to mine before their call...)"). A later conversation's holder hears an
+ * earlier conversation's RECORDINGS before their own call, and nothing else of it: its written notes and files stay
+ * with its own readers. An earlier holder never hears a later one this way (they read it only by the power or the
+ * final call, `mayReadConversationNotes`). Never the applicant, never anyone who stepped out. Record and play only:
+ * nothing here transcribes, summarises or judges.
+ */
+export function mayHearReflection(r: { isApplicant: boolean; recused: boolean; holdsLaterConversationRole: boolean }, kind: ConversationNoteKind): boolean {
+  if (r.isApplicant || r.recused) return false;
+  return kind === "recording" && r.holdsLaterConversationRole;
+}
+
 /** Only the person who wrote a note or added a file takes it off. */
 export function mayRemoveNote(authorUserId: string, viewerId: string): boolean {
   return authorUserId === viewerId;
@@ -114,6 +127,12 @@ export interface ConversationNotesView {
   roleId: string;
   final: boolean;
   state: string;
+  /** The call's date and time once somebody said it ("I've booked it", shared/callBooked.ts). */
+  bookedAt?: string | null;
+  /** While the conversation is open, the team may set or correct it. */
+  mayBook?: boolean;
+  /** The village's zone, to say the booked time beside the reader's own. */
+  zone?: string;
   notes: ServedNote[];
 }
 
@@ -137,6 +156,7 @@ export const NOTES_WORDS = {
   notAllowed: "These notes are for the people who hold this conversation.",
   notYours: "Only the person who added it takes it off.",
   notFound: "That conversation is not here.",
+  notOpen: "This conversation has not opened yet.",
   decided: "This application has been decided. Its notes stay for the people who decided it.",
 } as const;
 

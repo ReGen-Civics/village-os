@@ -445,7 +445,7 @@ function KeyMeasures({ row, season }: { row: MeasureRow; season: string }) {
             { label: t({ message: "Applications", context: "role progress, a measure" }), value: String(row.applications.count) },
             { label: t({ message: "First reply", context: "role measures, applying chain" }), ...timed(row.applications.medianHoursToReply) },
             { label: t({ message: "Conversations booked", context: "role progress, a measure" }), ...share(row.conversations.booked) },
-            { label: t({ message: "Held and written up", context: "role progress, a measure" }), ...share(row.conversations.held) },
+            { label: t({ message: "Calls written up (of those booked)", context: "role progress, a measure" }), ...share(row.conversations.held) },
             { label: t({ message: "References followed up", context: "role progress, a measure" }), ...timed(row.references.medianHoursToFollowUp) },
             { label: t({ message: "Final conversations adopted", context: "role progress, a measure" }), ...share(o.offer) },
             { label: t({ message: "Agreements countered first", context: "role progress, a measure" }), ...share(o.countered) },

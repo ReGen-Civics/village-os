@@ -188,6 +188,7 @@ describe("the walkthrough", () => {
     };
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
     const section = (await screen.findByText(ONBOARDING_WORDS.referencesHeading)).closest("[data-walk-references]")!;
+    expect((section as HTMLDetailsElement).open).toBe(true);
     expect(section.textContent).toContain(ONBOARDING_WORDS.referencesKicker);
     const note = section.querySelector("[data-privacy-note]")!;
     expect(note.querySelector("p")?.textContent).toBe(ONBOARDING_WORDS.referencesShort);
@@ -215,6 +216,9 @@ describe("the walkthrough", () => {
     render(<Walkthrough applicationRef="op-0123456789abcdef0123" />);
     expect(await screen.findByText(ONBOARDING_WORDS.gatheredHeading)).toBeTruthy();
     const gathered = document.querySelector("[data-walk-gathered]")!;
+    // QA pass 2: past stages fold to one line, the current one opens.
+    expect((gathered as HTMLDetailsElement).open).toBe(true);
+    expect((document.querySelector("[data-walk-references]") as HTMLDetailsElement).open).toBe(false);
     expect(gathered.textContent).toContain("Warm and keen.");
     expect(gathered.textContent).toContain("Keeps the pace");
     expect(gathered.textContent).toContain("Heard it.");

@@ -25,13 +25,13 @@ describe("the conversation guide's lines", () => {
 });
 
 describe("who may use the guide", () => {
-  const base = { isApplicant: false, recused: false, isReviewer: false, isFinalCall: false };
-  it("is the reviewers and the final-call role, never the applicant or a recused reviewer", () => {
-    expect(mayUseGuide({ ...base, isReviewer: true })).toBe(true);
-    expect(mayUseGuide({ ...base, isFinalCall: true })).toBe(true);
+  const base = { isApplicant: false, recused: false, isPlacer: false, isInterviewer: false };
+  it("is 'Interviewers + placers' (ruling 22, QA round 5): a consent peer holding no conversation role reads none", () => {
+    expect(mayUseGuide({ ...base, isInterviewer: true })).toBe(true);
+    expect(mayUseGuide({ ...base, isPlacer: true })).toBe(true);
     expect(mayUseGuide(base)).toBe(false);
-    expect(mayUseGuide({ ...base, isReviewer: true, recused: true })).toBe(false);
-    expect(mayUseGuide({ ...base, isReviewer: true, isApplicant: true })).toBe(false);
+    expect(mayUseGuide({ ...base, isPlacer: true, recused: true })).toBe(false);
+    expect(mayUseGuide({ ...base, isInterviewer: true, isApplicant: true })).toBe(false);
   });
 });
 

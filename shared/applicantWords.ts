@@ -18,6 +18,7 @@
  */
 
 import { STEP_WORDS } from "./applicationReview";
+import { BOOKED_WORDS } from "./callBooked";
 
 export const APPLICANT_LANGUAGES = ["en", "es"] as const;
 export type ApplicantLanguage = (typeof APPLICANT_LANGUAGES)[number];
@@ -41,6 +42,10 @@ export interface ApplicantMessages {
   replyPromise(moons: number | null): string;
   /** Introduces a decider's note in an email or a notice. */
   noteIntro: string;
+  /** With a role's application deadline (0445): when review happens, in place of the one-moon promise. */
+  reviewWindow(day: string): string;
+  /** Applied after the role's deadline (QA round 5): said plainly. */
+  lateApplication(day: string): string;
   day(iso: string): string;
 
   confirm: {
@@ -84,7 +89,10 @@ export interface ApplicantMessages {
     subject(village: string): string;
     headline(roles: string): string;
     conversationsIntro: string;
+    /** One conversation in the invitation's list, as a "- " line (the lead, 27 Nov 2026: bullets for several steps). */
     conversation(role: string, minutes: number): string;
+    /** The final conversation in that list (the lead: "mention all 3 calls"). */
+    finalConversation(role: string): string;
     total(minutes: number): string;
     booking: string;
     /** The first conversation's own way in: the interviewing role's booking link, or our letter with times. */
@@ -93,6 +101,33 @@ export interface ApplicantMessages {
     /** Only when there is more than one: the later ones open in order. */
     laterOpen: string;
     after: string;
+  };
+
+  /**
+   * EVERY LETTER IN ONE SHAPE (the lead, 27 Nov 2026: "each step should come with an email for next steps"): the next
+   * step, who acts next by role, and a booking link only when the step is a conversation open now. Used by the
+   * confirmation, invitation, adoption and closed letters, beside the stage letters (shared/applicantStageLetters.ts).
+   */
+  shape: {
+    /** The letter's button to the status page, in place of a raw link (QA: links overflowed 375 px). */
+    seePage: string;
+    next: string;
+    who: string;
+    /** At Received with no conversation open yet: our review comes next. */
+    receivedReview: string;
+    /** Refining is open from the first day (the lead, 27 Nov 2026: "they can refine proposal in each stage"). */
+    /** Names the anchor circle (QA: the invitation said "the circle" where the later letters named it). */
+    refineAnyTime(anchor: string | null): string;
+    receivedBook(role: string, link: string): string;
+    receivedWrite(role: string): string;
+    receivedWho(role: string | null): string;
+    youBook(role: string): string;
+    /** The invitation's last line: the path after the conversations, in the six stages. */
+    inviteAfter(anchor: string | null): string;
+    adoptWho: string;
+    closedNext: string;
+    closedAgain: string;
+    closedWho: string;
   };
 
   /** THE NOT-INVITED LETTER (build list 6.6): warm, clear, never personal, with open ways to stay close. */
@@ -104,6 +139,8 @@ export interface ApplicantMessages {
     program(name: string, url: string): string;
     quest(url: string): string;
     events(url: string): string;
+    /** Ruling 12: the roles open again each season; the next one's start, and the roles page. */
+    nextSeason(name: string | null, day: string, url: string): string;
     closing: string;
   };
 
@@ -124,8 +161,9 @@ export interface ApplicantMessages {
 
 
   adopt: {
-    subject(village: string): string;
-    headline(village: string, roles: string, forWhen: string): string;
+    /** With the anchor circle's name, it is the one that accepted ("The Anchor Circle accepted your proposal"). */
+    subject(village: string, anchor?: string | null): string;
+    headline(village: string, roles: string, forWhen: string, anchor?: string | null): string;
     forThisMoon: string;
     forNextSeason: string;
     inviteIntro: string;
@@ -139,8 +177,22 @@ export interface ApplicantMessages {
     button: string;
     signFirst(): string;
     /** A reviewed application's yes: the circle consented, said as a welcome. */
-    headlineReviewed(village: string, roles: string): string;
+    headlineReviewed(village: string, roles: string, anchor?: string | null): string;
+    /** The same yes for a role adopted outside the conversation flow: the words that role's letter always had. */
+    headlineReviewedPlain(village: string, roles: string): string;
     firstCycle: string;
+    /** The day they start, and the all-hands they join that day (the lead, 27 Nov 2026). */
+    startDay(day: string): string;
+    startSooner(role: string | null): string;
+    /** Ops chose "start now": the roles start the day they are adopted, said with that day. */
+    startToday(day: string): string;
+    allHands(when: string): string;
+    /** With "start now": the next all-hands, with its own date. */
+    allHandsNext(when: string): string;
+    allHandsLink(link: string): string;
+    /** Their buddy for the first week (the lead, 27 Nov 2026: the Ops role by default). */
+    buddy(name: string, role: string | null): string;
+    allHandsTitle: string;
   };
 
   declined: {
@@ -194,6 +246,8 @@ export interface ApplicantMessages {
       interviewWaiting: string;
       consent: string;
       adopted: string;
+      /** Adopted from an account here (QA round 5): they sign in, no account is made. */
+      adoptedAccount: string;
       withdrawn: string;
       declined: string;
       review: string;
@@ -202,7 +256,7 @@ export interface ApplicantMessages {
       /** The application was closed because nobody answered it in time. */
       closed: string;
     };
-    notInvited: { heading: string; line: string; program(name: string): string; quests: string; events: string };
+    notInvited: { heading: string; line: string; program(name: string): string; quests: string; events: string; roles: string; nextSeason(name: string | null, day: string): string };
     /** The eyebrow and the card for an application closed because nobody answered it in time. */
     closed: { step: string; heading: string; line: string; quests: string; roles: string };
     /** The applicant's own door when their invitation expired: it asks the team, and never makes a new one by itself. */
@@ -246,10 +300,12 @@ export interface ApplicantMessages {
         referencesInFollow(role: string | null, refine: boolean): string;
         referencesInMove(role: string | null, refine: boolean): string;
         final(role: string | null): string;
-        /** Agreement with our answer still to come: nothing to answer yet. */
-        agreementWaiting: string;
+        /** Ruling 7: the final is written up; refine, then send the proposal to the anchor circle. */
+        toCircle(anchor: string | null): string;
+        /** Agreement with the anchor circle's answer still to come (its name from the village's circles). */
+        agreementWaiting(anchor: string | null): string;
         /** Agreement with a counter-offer to answer, line by line. */
-        agreement: string;
+        agreement(anchor: string | null): string;
         start: string;
       };
       /** Stage 3 as a task list: three rows, each with its state in words. */
@@ -266,8 +322,25 @@ export interface ApplicantMessages {
         fixed: string;
         book: string;
         notYet: string;
+        /** The buttons, one per action (the lead, 27 Nov 2026: "easy to see and click buttons"). */
+        edit: string;
+        refine: string;
+        done: string;
+        /** Ruling 7: send the written-up proposal to the anchor circle, with a confirm step. */
+        sendLabel(anchor: string | null): string;
+        sendRow(anchor: string | null): string;
+        sendState: string;
+        sendAsk(anchor: string | null): string;
+        sendYes: string;
+        sendKeep: string;
+        sendFailed: string;
+        /** Agreement: the counter-offer to answer, as a task on the page and the profile card (QA pass 1). */
+        terms: string;
+        answer: string;
       };
       refine: { eyebrow: string; heading: string; line: string; why: string; aim: string; save: string; saved: string; frozen: string; failed: string; versions(n: number): string };
+      /** The village's real averages (the lead, 27 Nov 2026: "give them actual averages based on our work"). */
+      average: { reply(days: number): string; stage(days: number): string };
     };
     references: {
       none: string;
@@ -284,6 +357,18 @@ export interface ApplicantMessages {
       name: string;
       contact: string;
       contactHint: string;
+      /** Each reference's email, and at least one of three numbers (the lead, 27 Nov 2026). */
+      email: string;
+      whatsapp: string;
+      usPhone: string;
+      signal: string;
+      channelsHint: string;
+      /** Ask the applicant to tell their references we will be in touch. */
+      tellThem: string;
+      /** Once given, while nobody has reached out yet: send again to replace the list. */
+      editLine: string;
+      /** Each reference reached or not, by its place in the list (never a name). */
+      reached(n: number, done: boolean): string;
       how: string;
       ally: string;
       allyHint: string;
@@ -294,14 +379,39 @@ export interface ApplicantMessages {
       sent: string;
       given(n: number): string;
       failed: string;
-      errors: Record<"none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+      errors: Record<"none" | "too_few" | "too_many" | "needs_all" | "email" | "channel" | "contact" | "twice" | "too_long", string>;
       /** The fewest and the preferred number, said under the form's line (the lead, 19 Nov 2026). */
       howMany: string;
     };
     private: string;
+    /** The quiet "withdraw my application" button, with its confirm step (the lead, 27 Nov 2026). */
+    withdraw: { button: string; ask: string; yes: string; keep: string; failed: string; /** The card's eyebrow once withdrawn (QA pass 1 read "FIRST REPLY"). */ step: string };
+    /** What the circle raised in its consent round, naming nobody (the lead, 27 Nov 2026). */
+    objections: { heading: string; line: string };
+    /** The counter-offer block, in the application's own language (QA round 5: it showed English on a Spanish page). */
+    terms: { eyebrow: string; heading: string; line: string; ours: string; yours: string; accept: string; talk: string; notAnswered: string; talkAbout: string; waiting: string; send: string; saved: string; failed: string; commitment: string };
+    /** A link to an application that was closed and its details removed (QA round 5). */
+    closedLink: string;
+    /** The adopted line and its sign-in door, in the application's own language. */
+    adoptedLine: { account: string; invite: string; plain: string; signIn: string };
     wait: { heading: string; line: string; quests: string; map: string; events: string };
   };
 }
+
+/**
+ * A line written with "the circle" (or "el círculo"), said with the anchor circle's own name when the village has one:
+ * one form everywhere, "the Anchor Circle" (QA round 5).
+ */
+export function nameCircle(lang: ApplicantLanguage | null | undefined, text: string, anchor: string | null | undefined): string {
+  if (!anchor) return text;
+  if (lang === "es") return text.replace(/\bal círculo\b/g, `al ${anchor}`).replace(/\bel círculo\b/g, `el ${anchor}`).replace(/\bEl círculo\b/g, `El ${anchor}`).replace(/\bdel círculo\b/g, `del ${anchor}`);
+  const named = /^the\s/i.test(anchor) ? anchor : `the ${anchor}`;
+  return text.replace(/\bthe circle's\b/g, `${named}'s`).replace(/\bthe circle\b/g, named).replace(/\bThe circle\b/g, named.charAt(0).toUpperCase() + named.slice(1));
+}
+
+/** The anchor circle as a sentence says it: its own name, with "the" before it unless the name starts with one. */
+const theCircle = (anchor: string | null): string => (!anchor ? "the circle" : /^the\s/i.test(anchor) ? anchor : `the ${anchor}`);
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 const enList = (items: readonly string[]): string => {
   const clean = items.map((s) => s.trim()).filter(Boolean);
@@ -335,6 +445,8 @@ const en: ApplicantMessages = {
   replyPromise: (moons) =>
     moons === null ? "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk." : moons === 1 ? "You'll hear from us within one moon cycle." : `You'll hear from us within ${moons} moon cycles.`,
   noteIntro: "A note from us:",
+  reviewWindow: (day) => `We review applications 1 to 2 weeks after ${day}, when applications close.`,
+  lateApplication: (day) => `Applications for this role closed on ${day}. We'll still read yours, and write to you.`,
   day: dayIn("en-GB"),
 
   confirm: {
@@ -354,14 +466,14 @@ const en: ApplicantMessages = {
   update: {
     confirmedTitle: (v) => `Your proposal is with ${v}`,
     confirmed: (roles, promise) => `Your proposal to hold ${roles} is with us. ${promise}`,
-    firstReplyTitle: "We have taken up your proposal",
-    firstReply: (roles) => `The role that welcomes people has taken up your proposal to hold ${roles} and will write to you so you can book a time that suits you.`,
-    conversationTitle: "We would love to talk with you",
-    conversation: (roles, withRole, minutes, bookingUrl) => `The next step on your proposal to hold ${roles} is a conversation${withRole ? ` with ${withRole}` : ""}${minutes ? `, about ${minutes} minutes` : ""}. ${bookingUrl ? `Book a time with ${withRole ?? "them"}: ${bookingUrl}` : "We'll write to you with times."}`,
-    consentTitle: "The circle is weighing your proposal",
-    consent: (roles) => `The conversations are written up, and the circle is now doing its process for your proposal to hold ${roles}. Watch your email or status page for next steps.`,
-    termsTitle: "The terms for your proposal changed",
-    terms: (roles) => `We changed the terms we suggest for your proposal to hold ${roles}. Open your status page to read them, and tell us what you think.`,
+    firstReplyTitle: "We've picked up your proposal",
+    firstReply: (roles) => `The role that welcomes new people has your proposal to hold ${roles}. They'll write to you so you can book a time that suits you.`,
+    conversationTitle: "Let's talk",
+    conversation: (roles, withRole, _minutes, bookingUrl) => `Next up for your proposal to hold ${roles}: a conversation${withRole ? ` with ${withRole}` : ""}. ${bookingUrl ? `Book a time with ${withRole ?? "them"}: ${bookingUrl}` : "We'll write to you with times."}`,
+    consentTitle: "Your proposal is with the circle",
+    consent: (roles) => `Your conversations are written up, and your proposal to hold ${roles} is now with the circle. Watch your email or your page for what comes next.`,
+    termsTitle: "We've suggested some changes",
+    terms: (roles) => `We changed some of the terms we suggest for your proposal to hold ${roles}. Open your page to read them and tell us what you think.`,
     adoptedTitle: (v) => `${v} said yes to your proposal`,
     adopted: (v, roles, next) => `${v} said yes to your proposal to hold ${roles}. ${next}`,
     declinedTitle: (v) => `Your proposal to ${v}`,
@@ -370,47 +482,66 @@ const en: ApplicantMessages = {
     invited: (roles) => `We read your application to hold ${roles} with care, and we would love to invite you for the next step to meet the team. The details are in your email.`,
     notInvitedTitle: (v) => `Thank you for applying to ${v}`,
     notInvited: (roles) => `Thank you for applying to hold ${roles}. We have found someone more closely matched to this role. We encourage you to explore quests, and we'd love to stay in touch.`,
-    referencesTitle: "You are on our shortlist: may we hear from your references?",
-    references: (roles) => `Thank you for your application to hold ${roles}. You are on our shortlist, and the next step is your references: people connected with this work, ideally people who could also become allies or partners of the village. Open your status page to add them, with how to reach each one, how they know you and why they might be an ally.`,
+    referencesTitle: "Next up: your references",
+    references: (roles) => `You're on our shortlist for ${roles}, and next up are your references. Add people connected with this work, ideally people who could become allies or partners of the village. For each one we need their email, plus a WhatsApp number, a US phone number or a Signal number. Add them on your page, and let them know we'll be in touch.`,
   },
 
   invite: {
     subject: (v) => `An invitation to talk with ${v}`,
-    headline: (roles) => `Thank you for applying to hold ${roles}. We have read your application with care, and we would love to invite you to book conversation times.`,
-    conversationsIntro: "The conversations, in order:",
-    conversation: (role, minutes) => `${role}, ${minutes} minutes`,
-    total: (minutes) => `About ${minutes} minutes in all.`,
+    headline: (roles) => `Thank you for applying to hold ${roles}. We read your application with care, and we'd love to meet you.`,
+    conversationsIntro: "Your conversations, in order:",
+    conversation: (role) => `- A conversation with ${role}`,
+    finalConversation: (role) => `- A final conversation with ${role}`,
+    total: (minutes) => `About ${minutes} minutes in all, or longer if needed.`,
     booking: "You book each conversation at times you choose, in the order above.",
-    bookFirst: (role, url) => `Book a time with ${role} for your first conversation: ${url}`,
+    bookFirst: (role, url) => `Book your first conversation, with ${role}: ${url}`,
     writeFirst: (role) => `We'll write to you with times for your first conversation, with ${role}.`,
-    laterOpen: "Each later conversation opens once the one before it is written up, and you book it the same way.",
+    laterOpen: "Each one opens once the one before it is written up. You'll get its link then.",
     after: "After the last conversation, the circle decides by consent, and we write to you with its answer.",
+  },
+
+  shape: {
+    seePage: "See your page",
+    next: "Next step:",
+    who: "Who acts next:",
+    receivedReview: "We read your proposal. If we invite you to the conversations, the invitation brings your first one to book.",
+    refineAnyTime: (anchor) => `You can refine your proposal on your page at any step, until it goes to ${theCircle(anchor)} for review.`,
+    receivedBook: (role, link) => `Book your first conversation, with ${role}: ${link}`,
+    receivedWrite: (role) => `We'll write to you with times for your first conversation, with ${role}.`,
+    receivedWho: (role) => (role ? `${role}. They read your proposal and write to you.` : "The team. They read your proposal and write to you."),
+    youBook: (role) => `You book the time. Then ${role} meets with you.`,
+    inviteAfter: (anchor) => `Along the way you add your references and keep refining your proposal. Then ${theCircle(anchor)} reviews it.`,
+    adoptWho: "You. Make your profile, and it shows what to align with before you start.",
+    closedNext: "Nothing more to do. If you'd like to stay close:",
+    closedAgain: "- Apply again whenever a role calls to you.",
+    closedWho: "You, if you choose to apply again.",
   },
 
   notInvited: {
     subject: (v) => `Thank you for applying to ${v}`,
     thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}, and for the care you put into it.`,
-    matched: "We have found someone more closely matched to this role. Thank you for your time and interest.",
+    matched: "We can't say yes this time. Thank you for your time.",
     stayClose: "We would love to stay in touch, and there are open ways to be part of the village:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Take a quest: ${url}`,
     events: (url) => `Come to an event: ${url}`,
+    nextSeason: (name, day, url) => `Our roles open again each season. ${name ? `${name} begins` : "The next season begins"} ${day}, and you're welcome to apply again: ${url}`,
     closing: "We hope to meet you soon.",
   },
 
   closed: {
     subject: (v) => `Your application to ${v}`,
     thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}.`,
-    closed: "We weren't able to answer your application in time, so we've closed it. Thank you for your time and interest.",
-    quest: (url) => `We encourage you to explore quests: ${url}`,
+    closed: "We weren't able to answer your application in time, so we've closed it. Thank you for your time and your care.",
+    quest: (url) => `- Take a quest: ${url}`,
     page: (link) => `Your application's page: ${link}`,
     signed: (team) => `With care,\nThe ${team} team`,
   },
 
 
   adopt: {
-    subject: (v) => `${v} said yes to your proposal`,
-    headline: (v, roles, forWhen) => `${v} said yes to your proposal to hold ${roles} ${forWhen}.`,
+    subject: (v, anchor) => (anchor ? `${cap(theCircle(anchor))} accepted your proposal` : `${v} said yes to your proposal`),
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `${cap(theCircle(anchor))} accepted` : `${v} said yes to`} your proposal to hold ${roles}${forWhen ? ` ${forWhen}` : ""}.`,
     forThisMoon: "this moon",
     forNextSeason: "next season",
     inviteIntro: "Here is your invitation. Use the button to create your profile, or open this link:",
@@ -422,8 +553,17 @@ const en: ApplicantMessages = {
     nextSeasonName: "next season",
     nextAfterProfile: "Then check your profile. Your tasks appear there once your role starts, and it is where we run our sessions and track our work together.",
     button: "Create your profile",
+    startDay: (day) => `You start on ${day}.`,
+    startSooner: (role) => (role ? `If ${role} asks you to start sooner, they'll write to you.` : "If the team asks you to start sooner, they'll write to you."),
+    startToday: (day) => `Your roles start today, ${day}.`,
+    allHands: (when) => `That day, join us for our all-hands meeting, ${when}.`,
+    allHandsNext: (when) => `Join us for our next all-hands meeting, ${when}.`,
+    allHandsLink: (link) => `The video call: ${link}`,
+    buddy: (name, role) => `Your buddy is ${name}${role ? ` (${role})` : ""}. They'll help you through your first week.`,
+    allHandsTitle: "All-hands meeting",
     signFirst: () => "Before you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:",
-    headlineReviewed: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
+    headlineReviewed: (v, roles, anchor) => `${cap(theCircle(anchor ?? null))} accepted your proposal: we'd love you to hold ${roles} in ${v}. Welcome.`,
+    headlineReviewedPlain: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
     firstCycle: "We begin with a first cycle together, and at its end either side may choose to end it there.",
   },
 
@@ -483,6 +623,7 @@ const en: ApplicantMessages = {
       interviewWaiting: "Our move: the next conversation opens once the last one is written up. You book it at a time you choose.",
       consent: "Our move: the circle weighs your proposal and consents, or says what is missing.",
       adopted: "Your move: make your account. The link to make it is in your email.",
+      adoptedAccount: "Sign in to see your roles.",
       withdrawn: "Nothing more is needed. You withdrew this proposal.",
       declined: "Nothing more is needed from you. We have answered.",
       review: "Our move: we read your application with care, then invite you to the conversations or write to thank you.",
@@ -506,10 +647,12 @@ const en: ApplicantMessages = {
     },
     notInvited: {
       heading: "Thank you for applying",
-      line: "We have found someone more closely matched to this role. Thank you for your time and interest. We'd love you to stay close:",
+      line: "We can't say yes this time. Thank you for your time and the care you put into it. We'd love you to stay close:",
       program: (name) => name,
       quests: "Take a quest",
       events: "Come to an event",
+      roles: "See the roles",
+      nextSeason: (name, day) => `Our roles open again each season. ${name ? `${name} begins` : "The next season begins"} ${day}, and you're welcome to apply again.`,
     },
     booking: {
       label: "How the conversations are booked",
@@ -517,52 +660,70 @@ const en: ApplicantMessages = {
         roles.length <= 1
           ? `After the invitation, you book the conversation${roles[0] ? ` with ${roles[0]}` : ""} at a time you choose.`
           : `After the invitation, you book each conversation at times you choose, in this order: ${roles[0]} first, then ${roles.slice(1).join(", then ")}. Each one opens once the one before it is written up.`,
-      bookNow: (role) => `Book a time with ${role}`,
+      // The role only (the lead, 27 Nov 2026): "Book with Ops".
+      bookNow: (role) => `Book with ${role}`,
       writeNow: (role) => `We'll write to you with times for your conversation with ${role}.`,
     },
     six: {
       names: { received: "Received", review: "Our review", references: "References and proposal", final_interview: "Final conversation", agreement: "Agreement", start: "Start" },
       move: {
-        received: "We have your proposal. Our review comes next.",
-        review: "We are reading your proposal. If we shortlist it, you book your first conversation here.",
-        reviewBook: (role) => `You are shortlisted. Book your conversation with ${role} below.`,
-        reviewInvited: (role) => `Book your first conversation with ${role} below. It is part of our review.`,
-        references: "Add your references and refine your proposal below. Your next conversation opens here when it is ready.",
-        referencesTalk: (role) => `Add your references, refine your proposal below, and book your conversation with ${role}.`,
-        referencesFixed: "Add your references below. Your next conversation opens here when it is ready.",
-        referencesFixedTalk: (role) => `Add your references below, and book your conversation with ${role}.`,
-        referencesInTalk: (role, refine) => `Your references are in. Book your conversation with ${role} below.${refine ? " You can still refine your proposal." : ""}`,
-        referencesInFollow: (role, refine) => `Your references are in. ${role ?? "The team"} contacts them next. Then we move your application to the final conversation.${refine ? " Until then you can still refine your proposal below." : ""}`,
-        referencesInMove: (role, refine) => `Your references are in. ${role ?? "The team"} moves your application to the final conversation next.${refine ? " Until then you can still refine your proposal below." : ""}`,
-        final: (role) => (role ? `Book your final conversation with ${role}. Bring your proposal: you present it there.` : "Your final conversation opens here soon. Bring your proposal: you present it there."),
-        agreementWaiting: "We are answering your proposal: we accept it, or we counter it. Our answer comes here.",
-        agreement: "We countered your proposal. Answer each line below. We go back and forth until we agree.",
-        start: "Welcome. You start on the terms we agreed. Your tasks appear on your profile.",
+        received: "We have your proposal. Our review is next.",
+        review: "We're reading your proposal. If we shortlist it, you'll book your first conversation right here.",
+        reviewBook: (role) => `You're on our shortlist. Book your conversation with ${role} below.`,
+        reviewInvited: (role) => `Book your first conversation with ${role} below. It's part of our review.`,
+        references: "Here's what to do at this step. Each one has its own button below.",
+        referencesTalk: () => "Here's what to do at this step. Each one has its own button below.",
+        referencesFixed: "Here's what to do at this step. Each one has its own button below.",
+        referencesFixedTalk: () => "Here's what to do at this step. Each one has its own button below.",
+        referencesInTalk: (role) => `Your references are in. Next, book your conversation with ${role} below.`,
+        referencesInFollow: (role) => `Your references are in. ${role ?? "The team"} is about to reach out to them.`,
+        referencesInMove: (role) => `Your references are in. ${role ?? "The team"} moves you to your final conversation next.`,
+        final: (role) => (role ? `Book your final conversation with ${role}. It's a chance to connect with the source of this village. Bring your proposal as best you can, and keep refining it as you go.` : "Your final conversation opens here soon. It's a chance to connect with the source of this village. Keep refining your proposal as you go."),
+        toCircle: (anchor) => `Your final conversation is written up. Refine your proposal, then send it to ${theCircle(anchor)}. It's fixed once you send it.`,
+        agreementWaiting: (anchor) => `Your proposal is with ${theCircle(anchor)} for review. They'll accept it or send a counter-offer, right here.`,
+        agreement: (anchor) => `${cap(theCircle(anchor))} sent a counter-offer. Answer each change below, and we'll go back and forth until we agree.`,
+        start: "Welcome! You start on the terms we agreed. Your tasks show up on your profile.",
       },
       tasks: {
-        heading: "Three things at this stage",
+        heading: "What to do at this step",
         add: "Add your references",
         references: "Your references",
         proposal: "Your proposal",
         conversation: (role) => (role ? `Your conversation with ${role}` : "Your next conversation"),
         todo: "To do",
-        sent: "Sent",
-        open: "Open to refine",
+        sent: "Done",
+        open: "You can update it",
         fixed: "Fixed",
-        book: "Book a time",
-        notYet: "Opens when it is ready",
+        book: "To book",
+        notYet: "Opens when it's ready",
+        edit: "Edit your references",
+        refine: "Refine your proposal",
+        done: "Done",
+        sendLabel: (anchor) => `Send it to ${theCircle(anchor)}`,
+        sendRow: (anchor) => `Your proposal goes to ${theCircle(anchor)}`,
+        sendState: "When you're ready",
+        sendAsk: (anchor) => `Send your proposal to ${theCircle(anchor)} now? It's fixed from that moment.`,
+        sendYes: "Send it",
+        sendKeep: "Not yet",
+        sendFailed: "That didn't go through. Try again in a moment.",
+        terms: "The counter-offer",
+        answer: "Answer the counter-offer",
       },
       refine: {
         eyebrow: "Your proposal",
         heading: "Refine your proposal",
-        line: "Make it solid before your final conversation. We keep each earlier version. Once your final conversation opens, it is fixed.",
+        line: "Make it as solid as you can. You can keep updating it, after your final conversation too, until it goes to the circle for review. We keep each earlier version.",
         why: "Why you, and why now",
         aim: "Your aim in this role, in a line",
         save: "Save my proposal",
         saved: "Saved. We keep your earlier version too.",
-        frozen: "Your proposal is fixed now that your final conversation has opened. A change goes through our answer to your proposal.",
+        frozen: "Your proposal is fixed now that it's with the circle for review. Any change goes through the circle's answer.",
         failed: "That did not save. Try again.",
         versions: (n) => (n === 1 ? "1 earlier version kept." : `${n} earlier versions kept.`),
+      },
+      average: {
+        reply: (d) => (d === 1 ? "Our review usually takes about a day." : `Our review usually takes about ${d} days.`),
+        stage: (d) => (d === 1 ? "This step usually takes about a day." : `This step usually takes about ${d} days.`),
       },
     },
     references: {
@@ -572,12 +733,20 @@ const en: ApplicantMessages = {
     referenceForm: {
       step: "References",
       heading: "Your references",
-      line: "You are on our shortlist. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
+      line: "You're on our shortlist. Add people who know your work, ideally people who could become allies or partners of the village.",
       lineFirstRole: "This is your first long-term role with us, so we ask for references. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
       privacy: "Only the people who review your application, and the person who follows up with each reference, read these details. No AI reads them. They are deleted with your application.",
       name: "Their name",
       contact: "How to reach them",
       contactHint: "An email address or a phone number.",
+      email: "Their email",
+      whatsapp: "WhatsApp number",
+      usPhone: "US phone number",
+      signal: "Signal number or username (like name.01)",
+      channelsHint: "We need their email, plus at least one of these three so we can reach them.",
+      tellThem: "Please let your references know we'll be in touch.",
+      editLine: "Want to change them? Send the list again and it replaces the one you gave. You can do this until we reach out.",
+      reached: (n, done) => (done ? `Reference ${n}: reached` : `Reference ${n}: not reached yet`),
       how: "How they know you",
       ally: "Why they might be an ally or partner (optional)",
       allyHint: "What they might bring to the village, or how they might work with us.",
@@ -587,19 +756,56 @@ const en: ApplicantMessages = {
       row: (n) => `Reference ${n}`,
       send: "Send my references",
       sent: "Thank you. We have your references.",
-      given: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. Thank you. If something changes, write to us.`,
+      given: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. Thank you!`,
       failed: "That did not send. Try again.",
       errors: {
         none: "Give at least two references.",
         too_few: "Give at least two references. We prefer three.",
         too_many: "Add up to ten references.",
-        needs_all: "Give each reference a name, how to reach them and how they know you. Or clear the row.",
-        contact: "Give an email address or a phone number we can reach that reference on.",
+        needs_all: "Give each reference a name and how they know you. Or clear the row.",
+        email: "Give each reference's email address.",
+        channel: "Give each reference a WhatsApp number, a US phone number or a Signal number, as well as their email.",
+        contact: "One of those numbers doesn't look right. Check it and try again.",
         twice: "You added the same reference twice.",
         too_long: "One of the answers is too long. Keep it shorter.",
       },
     },
     private: "This page shows steps only. What the people who talk with you write down stays with them.",
+    terms: {
+      eyebrow: "Terms",
+      heading: "We changed some of the terms",
+      line: "Here is our new wording beside what you answered. Settings we did not change stay as you accepted them.",
+      ours: "Our wording now",
+      yours: "What you answered",
+      accept: "I accept",
+      talk: "Let's talk",
+      notAnswered: "You did not answer this one.",
+      talkAbout: "What would you like to talk about?",
+      waiting: "We are waiting for your answer.",
+      send: "Send my answers",
+      saved: "Thank you. We have your answers.",
+      failed: "That did not save. Try again.",
+      commitment: "Commitment",
+    },
+    closedLink: "This application is closed, and its details were removed. You're welcome to apply again any time.",
+    adoptedLine: {
+      account: "The circle said yes. We'd love you on the team. Sign in to see your roles.",
+      invite: "The circle said yes. We'd love you on the team. Your invitation to make your account is in your email.",
+      plain: "The circle said yes. We'd love you on the team.",
+      signIn: "Sign in to see your roles",
+    },
+    objections: {
+      heading: "What the circle raised",
+      line: "Their reasons, in their words. Nobody is named.",
+    },
+    withdraw: {
+      step: "Withdrawn",
+      button: "Withdraw my application",
+      ask: "Withdraw it? This closes your application, and you can apply again any time.",
+      yes: "Yes, withdraw it",
+      keep: "Keep it",
+      failed: "That didn't go through. Try again.",
+    },
     wait: {
       heading: "While you wait",
       line: "The village is open to you. Here are three ways to look around:",
@@ -621,6 +827,8 @@ const es: ApplicantMessages = {
       ? "Primero estamos completando nuestro equipo fundador, así que puede pasar un tiempo antes de que respondamos. Le escribiremos en cuanto estemos listos para conversar." // needs-native-review: new words, 14 Nov 2026
       : moons === 1 ? "Tendrá noticias nuestras dentro de un ciclo lunar." : `Tendrá noticias nuestras dentro de ${moons} ciclos lunares.`, // needs-native-review: new words, 24 Nov 2026
   noteIntro: "Una nota de parte nuestra:",
+  reviewWindow: (day) => `Revisamos las postulaciones de 1 a 2 semanas después del ${day}, cuando cierran las postulaciones.`, // needs-native-review: the review window, 27 Nov 2026
+  lateApplication: (day) => `Las postulaciones para este rol cerraron el ${day}. Igual leeremos la suya, y le escribiremos.`, // needs-native-review: QA round 5
   day: dayIn("es"),
 
   confirm: {
@@ -640,14 +848,14 @@ const es: ApplicantMessages = {
   update: {
     confirmedTitle: (v) => `Su propuesta está con ${v}`,
     confirmed: (roles, promise) => `Su propuesta para ocupar ${roles} ya está con nosotros. ${promise}`,
-    firstReplyTitle: "Hemos recibido su propuesta",
+    firstReplyTitle: "Recibimos su propuesta",
     firstReply: (roles) => `El rol que da la bienvenida a las personas ha recibido su propuesta para ocupar ${roles} y le escribirá para que reserve un momento que le convenga.`, // needs-native-review: new words, 12 Nov 2026
-    conversationTitle: "Nos encantaría conversar con usted",
-    conversation: (roles, withRole, minutes, bookingUrl) => `El siguiente paso de su propuesta para ocupar ${roles} es una conversación${withRole ? ` con ${withRole}` : ""}${minutes ? `, de unos ${minutes} minutos` : ""}. ${bookingUrl ? `Reserve un horario con ${withRole ?? "esa persona"}: ${bookingUrl}` : "Le escribiremos con horarios."}`, // needs-native-review: new words, 16 Nov 2026
-    consentTitle: "El círculo está considerando su propuesta", // check: "círculo" is the village's term for circle
-    consent: (roles) => `Las conversaciones ya están escritas, y ahora el círculo sigue su proceso para su propuesta de ocupar ${roles}. Revise su correo o la página de su estado para los siguientes pasos.`, // needs-native-review: new words, 12 Nov 2026
-    termsTitle: "Cambiaron las condiciones de su propuesta",
-    terms: (roles) => `Cambiamos las condiciones que sugerimos para su propuesta de ocupar ${roles}. Abra la página del estado de su propuesta para leerlas y cuéntenos qué piensa.`,
+    conversationTitle: "Conversemos",
+    conversation: (roles, withRole, _minutes, bookingUrl) => `Lo que sigue en su propuesta para ocupar ${roles}: una conversación${withRole ? ` con ${withRole}` : ""}. ${bookingUrl ? `Reserve un horario con ${withRole ?? "esa persona"}: ${bookingUrl}` : "Le escribiremos con horarios."}`, // needs-native-review: the voice pass, 27 Nov 2026
+    consentTitle: "Su propuesta está con el círculo", // check: "círculo" is the village's term for circle
+    consent: (roles) => `Sus conversaciones ya están escritas, y su propuesta para ocupar ${roles} ahora está con el círculo. Revise su correo o su página para lo que sigue.`, // needs-native-review: the voice pass, 27 Nov 2026
+    termsTitle: "Le sugerimos algunos cambios",
+    terms: (roles) => `Cambiamos algunas de las condiciones que sugerimos para su propuesta de ocupar ${roles}. Abra su página para leerlas y cuéntenos qué piensa.`,
     adoptedTitle: (v) => `${v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
     adopted: (v, roles, next) => `${v} aceptó su propuesta para ocupar ${roles}. ${next}`, // needs-native-review: new words, 16 Nov 2026
     declinedTitle: (v) => `Su propuesta a ${v}`,
@@ -656,32 +864,52 @@ const es: ApplicantMessages = {
     invited: (roles) => `Leímos con cuidado su postulación para ocupar ${roles}, y nos encantaría invitarle al siguiente paso para conocer al equipo. Los detalles están en su correo.`, // check: "postulación" for application; needs-native-review: new words, 12 Nov 2026
     notInvitedTitle: (v) => `Gracias por postularse a ${v}`,
     notInvited: (roles) => `Gracias por postularse para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Le animamos a explorar misiones, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 16 Nov 2026
-    referencesTitle: "Está en nuestra lista corta: ¿podemos escuchar a sus referencias?", // needs-native-review: new words, 19 Nov 2026
-    references: (roles) => `Gracias por su postulación para ocupar ${roles}. Está en nuestra lista corta, y el siguiente paso son sus referencias: personas vinculadas con este trabajo, idealmente personas que también podrían ser aliadas o socias de la aldea. Abra la página de su estado para agregarlas, con cómo contactar a cada una, cómo le conocen y por qué podrían ser aliadas.`, // needs-native-review: new words, 19 Nov 2026
+    referencesTitle: "Lo que sigue: sus referencias", // needs-native-review: the voice pass, 27 Nov 2026
+    references: (roles) => `Está en nuestra lista corta para ${roles}, y lo que sigue son sus referencias. Agregue a personas vinculadas con este trabajo, idealmente personas que podrían ser aliadas o socias de la aldea. De cada una necesitamos su correo, y además un número de WhatsApp, un teléfono de EE. UU. o un número de Signal. Agréguelas en su página, y avíseles que nos pondremos en contacto.`, // needs-native-review: the voice pass, 27 Nov 2026
   },
 
   // needs-native-review: the invitation and the not-invited letter
   invite: {
     subject: (v) => `Una invitación a conversar con ${v}`,
     headline: (roles) => `Gracias por postularse para ocupar ${roles}. Leímos su postulación con cuidado, y nos encantaría invitarle a reservar horarios para las conversaciones.`, // needs-native-review: new words, 12 Nov 2026
-    conversationsIntro: "Las conversaciones, en orden:",
-    conversation: (role, minutes) => `${role}, ${minutes} minutos`,
-    total: (minutes) => `Unos ${minutes} minutos en total.`,
+    conversationsIntro: "Sus conversaciones, en orden:",
+    conversation: (role) => `- Una conversación con ${role}`,
+    finalConversation: (role) => `- Una conversación final con ${role}`,
+    total: (minutes) => `Unos ${minutes} minutos en total, o más si hace falta.`, // needs-native-review: the voice pass, 27 Nov 2026
     booking: "Usted reserva cada conversación en los horarios que elija, en el orden de arriba.", // needs-native-review: new words, 12 Nov 2026
-    bookFirst: (role, url) => `Reserve un horario con ${role} para su primera conversación: ${url}`, // needs-native-review: new words, 16 Nov 2026
+    bookFirst: (role, url) => `Reserve su primera conversación, con ${role}: ${url}`, // needs-native-review: the voice pass, 27 Nov 2026
     writeFirst: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`, // needs-native-review: new words, 12 Nov 2026
-    laterOpen: "Cada conversación siguiente se abre cuando la anterior esté escrita, y usted la reserva de la misma manera.", // needs-native-review: new words, 12 Nov 2026
+    laterOpen: "Cada una se abre cuando la anterior esté escrita. Entonces le llega su enlace.", // needs-native-review: the voice pass, 27 Nov 2026
     after: "Después de la última conversación, el círculo decide por consentimiento, y le escribimos con su respuesta.",
+  },
+
+  // needs-native-review: every letter in one shape, the voice pass, 27 Nov 2026
+  shape: {
+    seePage: "Ver su página", // needs-native-review: the letter frame's button, 27 Nov 2026
+    next: "Siguiente paso:",
+    who: "Quién actúa ahora:",
+    receivedReview: "Leemos su propuesta. Si le invitamos a las conversaciones, la invitación trae la primera para reservar.",
+    refineAnyTime: (anchor) => `Puede mejorar su propuesta en su página en cualquier paso, hasta que pase ${anchor ? `al ${anchor}` : "al círculo"} para su revisión.`, // needs-native-review: names the anchor circle, 27 Nov 2026
+    receivedBook: (role, link) => `Reserve su primera conversación, con ${role}: ${link}`,
+    receivedWrite: (role) => `Le escribiremos con horarios para su primera conversación, con ${role}.`,
+    receivedWho: (role) => (role ? `${role}. Lee su propuesta y le escribe.` : "El equipo. Lee su propuesta y le escribe."),
+    youBook: (role) => `Usted reserva el horario. Luego ${role} se reúne con usted.`,
+    inviteAfter: (anchor) => `En el camino agrega sus referencias y sigue mejorando su propuesta. Luego ${anchor ? `el ${anchor}` : "el círculo"} la revisa.`, // needs-native-review: names the anchor circle, 27 Nov 2026
+    adoptWho: "Usted. Cree su perfil, y le muestra con qué alinearse antes de empezar.",
+    closedNext: "No necesita hacer nada más. Si quiere seguir cerca:",
+    closedAgain: "- Postúlese de nuevo cuando un rol le llame.",
+    closedWho: "Usted, si decide postularse de nuevo.",
   },
 
   notInvited: {
     subject: (v) => `Gracias por postularse a ${v}`,
     thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}, y por el cuidado que puso en ello.`,
-    matched: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés.", // needs-native-review: new words, 12 Nov 2026
+    matched: "Esta vez no podemos decir que sí. Gracias por su tiempo.", // needs-native-review: ruling 12, 27 Nov 2026
     stayClose: "Nos encantaría seguir en contacto, y hay caminos abiertos para ser parte de la aldea:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Tome una misión: ${url}`,
     events: (url) => `Venga a un evento: ${url}`,
+    nextSeason: (name, day, url) => `Nuestros roles se abren de nuevo cada temporada. ${name ? `${name} empieza` : "La próxima temporada empieza"} el ${day}, y puede postularse de nuevo: ${url}`, // needs-native-review: ruling 12, 27 Nov 2026
     closing: "Esperamos conocerle pronto.",
   },
 
@@ -689,16 +917,16 @@ const es: ApplicantMessages = {
   closed: {
     subject: (v) => `Su postulación a ${v}`,
     thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}.`,
-    closed: "No pudimos responder a su postulación a tiempo, así que la cerramos. Gracias por su tiempo y su interés.",
-    quest: (url) => `Le animamos a explorar misiones: ${url}`,
+    closed: "No pudimos responder a su postulación a tiempo, así que la cerramos. Gracias por su tiempo y su cuidado.",
+    quest: (url) => `- Tome una misión: ${url}`,
     page: (link) => `La página de su postulación: ${link}`,
     signed: (team) => `Con cariño,\nEl equipo de ${team}`,
   },
 
 
   adopt: {
-    subject: (v) => `${v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
-    headline: (v, roles, forWhen) => `${v} aceptó su propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
+    subject: (v, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta para ocupar ${roles}${forWhen ? ` ${forWhen}` : ""}.`, // needs-native-review: new words, 16 Nov 2026
     forThisMoon: "esta luna",
     forNextSeason: "la próxima temporada",
     inviteIntro: "Aquí está su invitación. Use el botón para crear su perfil, o abra este enlace:",
@@ -710,8 +938,17 @@ const es: ApplicantMessages = {
     nextSeasonName: "la próxima temporada",
     nextAfterProfile: "Después revise su perfil. Allí aparecen sus tareas cuando empiece su rol, y es donde hacemos nuestras sesiones y seguimos nuestro trabajo juntos.",
     button: "Cree su perfil",
+    startDay: (day) => `Usted empieza el ${day}.`, // needs-native-review: the start day, 27 Nov 2026
+    startSooner: (role) => (role ? `Si ${role} le pide empezar antes, le escribirá.` : "Si el equipo le pide empezar antes, le escribirá."),
+    startToday: (day) => `Sus roles empiezan hoy, ${day}.`, // needs-native-review: start now, 28 Nov 2026
+    allHands: (when) => `Ese día, acompáñenos en nuestra reunión general, ${when}.`,
+    allHandsNext: (when) => `Acompáñenos en nuestra próxima reunión general, ${when}.`, // needs-native-review: start now, 28 Nov 2026
+    allHandsLink: (link) => `La videollamada: ${link}`,
+    buddy: (name, role) => `Su acompañante de inicio es ${name}${role ? ` (${role})` : ""}. Le ayudará en su primera semana.`,
+    allHandsTitle: "Reunión general",
     signFirst: () => "Antes de ocupar su rol, alinéese con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearse con ella le hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearse", "membresía"; needs-native-review: new words, 16 Nov 2026
-    headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
+    headlineReviewed: (v, roles, anchor) => `${anchor ? `El ${anchor}` : "El círculo"} aceptó su propuesta: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // needs-native-review: the voice pass, 27 Nov 2026
+    headlineReviewedPlain: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupe ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
   },
 
@@ -772,6 +1009,7 @@ const es: ApplicantMessages = {
       interviewWaiting: "Nos toca a nosotros: la siguiente conversación se abre cuando la anterior esté escrita. Usted la reserva en el horario que elija.", // needs-native-review: new words, 12 Nov 2026
       consent: "Nos toca a nosotros: el círculo valora su propuesta y da su consentimiento, o dice qué falta.",
       adopted: "Le toca a usted: crear su cuenta. El enlace para hacerlo está en su correo.",
+      adoptedAccount: "Inicie sesión para ver sus roles.", // needs-native-review: QA round 5
       withdrawn: "No hace falta nada más. Usted retiró esta propuesta.",
       declined: "No hace falta nada más de su parte. Ya respondimos.",
       review: "Nos toca a nosotros: leemos su postulación con cuidado, y luego le invitamos a las conversaciones o le escribimos para darle las gracias.",
@@ -796,10 +1034,12 @@ const es: ApplicantMessages = {
     },
     notInvited: {
       heading: "Gracias por postularse",
-      line: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por su tiempo y su interés. Nos encantaría que siga cerca:", // needs-native-review: new words, 16 Nov 2026
+      line: "Esta vez no podemos decir que sí. Gracias por su tiempo y por el cuidado que puso. Nos encantaría que siga cerca:", // needs-native-review: ruling 12, 27 Nov 2026
       program: (name) => name,
       quests: "Tome una misión",
       events: "Venga a un evento",
+      roles: "Ver los roles", // needs-native-review: ruling 12, 27 Nov 2026
+      nextSeason: (name, day) => `Nuestros roles se abren de nuevo cada temporada. ${name ? `${name} empieza` : "La próxima temporada empieza"} el ${day}, y puede postularse de nuevo.`, // needs-native-review: ruling 12, 27 Nov 2026
     },
     booking: {
       label: "Cómo se agendan las conversaciones",
@@ -808,53 +1048,71 @@ const es: ApplicantMessages = {
         roles.length <= 1
           ? `Después de la invitación, usted reserva la conversación${roles[0] ? ` con ${roles[0]}` : ""} en el horario que elija.`
           : `Después de la invitación, usted reserva cada conversación en los horarios que elija, en este orden: primero ${roles[0]}, luego ${roles.slice(1).join(", luego ")}. Cada una se abre cuando la anterior esté escrita.`,
-      bookNow: (role) => `Reserve un horario con ${role}`, // needs-native-review: new words, 16 Nov 2026
+      bookNow: (role) => `Reserve con ${role}`, // needs-native-review: the role only, 27 Nov 2026
       writeNow: (role) => `Le escribiremos con horarios para su conversación con ${role}.`,
     },
     // needs-native-review: the six stages, 27 Nov 2026
     six: {
       names: { received: "Recibida", review: "Nuestra revisión", references: "Referencias y propuesta", final_interview: "Conversación final", agreement: "Acuerdo", start: "Inicio" },
       move: {
-        received: "Tenemos su propuesta. Sigue nuestra revisión.",
-        review: "Estamos leyendo su propuesta. Si la preseleccionamos, usted reserva aquí su primera conversación.",
+        received: "Tenemos su propuesta. Ahora sigue nuestra revisión.",
+        review: "Estamos leyendo su propuesta. Si la preseleccionamos, aquí mismo reserva su primera conversación.",
         reviewBook: (role) => `Su propuesta está preseleccionada. Reserve abajo su conversación con ${role}.`,
         reviewInvited: (role) => `Reserve abajo su primera conversación con ${role}. Es parte de nuestra revisión.`,
-        references: "Agregue sus referencias y mejore su propuesta abajo. Su siguiente conversación se abre aquí cuando esté lista.",
-        referencesTalk: (role) => `Agregue sus referencias, mejore su propuesta abajo y reserve su conversación con ${role}.`,
-        referencesFixed: "Agregue sus referencias abajo. Su siguiente conversación se abre aquí cuando esté lista.",
-        referencesFixedTalk: (role) => `Agregue sus referencias abajo y reserve su conversación con ${role}.`,
-        referencesInTalk: (role, refine) => `Sus referencias ya llegaron. Reserve abajo su conversación con ${role}.${refine ? " Aún puede mejorar su propuesta." : ""}`,
-        referencesInFollow: (role, refine) => `Sus referencias ya llegaron. ${role ?? "El equipo"} las contacta ahora. Luego pasamos su solicitud a la conversación final.${refine ? " Mientras tanto, aún puede mejorar su propuesta abajo." : ""}`,
-        referencesInMove: (role, refine) => `Sus referencias ya llegaron. ${role ?? "El equipo"} pasa ahora su solicitud a la conversación final.${refine ? " Mientras tanto, aún puede mejorar su propuesta abajo." : ""}`,
-        final: (role) => (role ? `Reserve su conversación final con ${role}. Traiga su propuesta: usted la presenta allí.` : "Su conversación final se abre aquí pronto. Traiga su propuesta: usted la presenta allí."),
-        agreementWaiting: "Estamos respondiendo a su propuesta: la aceptamos o hacemos una contraoferta. Nuestra respuesta llega aquí.",
-        agreement: "Hicimos una contraoferta a su propuesta. Responda cada línea abajo. Seguimos hasta llegar a un acuerdo.",
-        start: "Le damos la bienvenida. Usted empieza con los términos acordados. Sus tareas aparecen en su perfil.",
+        references: "Esto es lo que toca en este paso. Cada cosa tiene su botón abajo.",
+        referencesTalk: () => "Esto es lo que toca en este paso. Cada cosa tiene su botón abajo.",
+        referencesFixed: "Esto es lo que toca en este paso. Cada cosa tiene su botón abajo.",
+        referencesFixedTalk: () => "Esto es lo que toca en este paso. Cada cosa tiene su botón abajo.",
+        referencesInTalk: (role) => `Sus referencias ya llegaron. Ahora reserve abajo su conversación con ${role}.`,
+        referencesInFollow: (role) => `Sus referencias ya llegaron. ${role ?? "El equipo"} está por contactarlas.`,
+        referencesInMove: (role) => `Sus referencias ya llegaron. ${role ?? "El equipo"} le pasa ahora a su conversación final.`,
+        final: (role) => (role ? `Reserve su conversación final con ${role}. Es una oportunidad para conectar con la fuente de esta aldea. Traiga su propuesta lo mejor que pueda, y siga mejorándola.` : "Su conversación final se abre aquí pronto. Es una oportunidad para conectar con la fuente de esta aldea. Siga mejorando su propuesta."),
+        toCircle: (anchor) => `Su conversación final está escrita. Mejore su propuesta y luego envíela a ${anchor ?? "el círculo"}. Queda fija una vez que la envíe.`, // needs-native-review: ruling 7, 27 Nov 2026
+        agreementWaiting: (anchor) => `Su propuesta está con ${anchor ?? "el círculo"} para su revisión. Aquí verá si la acepta o le envía una contraoferta.`,
+        agreement: (anchor) => `${anchor ?? "El círculo"} le envió una contraoferta. Responda cada cambio abajo, y seguimos hasta llegar a un acuerdo.`,
+        start: "¡Le damos la bienvenida! Usted empieza con los términos acordados. Sus tareas aparecen en su perfil.",
       },
       tasks: {
-        heading: "Tres cosas en esta etapa",
+        heading: "Qué hacer en este paso",
         add: "Agregar sus referencias",
         references: "Sus referencias",
         proposal: "Su propuesta",
         conversation: (role) => (role ? `Su conversación con ${role}` : "Su siguiente conversación"),
         todo: "Por hacer",
-        sent: "Enviadas",
-        open: "Abierta para mejorar",
+        sent: "Hecho",
+        open: "Puede actualizarla",
         fixed: "Fija",
-        book: "Reserve un horario",
+        book: "Por reservar",
         notYet: "Se abre cuando esté lista",
+        edit: "Editar sus referencias",
+        refine: "Mejorar su propuesta",
+        done: "Hecho",
+        sendLabel: (anchor) => `Enviarla a ${anchor ?? "el círculo"}`, // needs-native-review: ruling 7, 27 Nov 2026
+        sendRow: (anchor) => `Su propuesta va ${anchor ? `al ${anchor}` : "al círculo"}`, // needs-native-review: ruling 7, 27 Nov 2026
+        sendState: "Cuando esté lista", // needs-native-review: ruling 7, 27 Nov 2026
+        sendAsk: (anchor) => `¿Envía su propuesta a ${anchor ?? "el círculo"} ahora? Queda fija desde ese momento.`, // needs-native-review: ruling 7, 27 Nov 2026
+        sendYes: "Enviarla", // needs-native-review: ruling 7, 27 Nov 2026
+        sendKeep: "Todavía no", // needs-native-review: ruling 7, 27 Nov 2026
+        sendFailed: "No se envió. Inténtelo de nuevo en un momento.", // needs-native-review: ruling 7, 27 Nov 2026
+        terms: "La contraoferta", // needs-native-review: QA round 4, 27 Nov 2026
+        answer: "Responder la contraoferta", // needs-native-review: QA round 4, 27 Nov 2026
       },
       refine: {
         eyebrow: "Su propuesta",
         heading: "Mejore su propuesta",
-        line: "Déjela firme antes de su conversación final. Guardamos cada versión anterior. Cuando se abre su conversación final, queda fija.",
+        line: "Déjela lo más firme que pueda. Puede seguir actualizándola, también después de su conversación final, hasta que pase al círculo para su revisión. Guardamos cada versión anterior.",
         why: "Por qué usted, y por qué ahora",
         aim: "Su objetivo en este rol, en una línea",
         save: "Guardar mi propuesta",
         saved: "Guardada. También guardamos su versión anterior.",
-        frozen: "Su propuesta quedó fija porque se abrió su conversación final. Un cambio pasa por nuestra respuesta a su propuesta.",
+        frozen: "Su propuesta quedó fija porque ya está con el círculo para su revisión. Cualquier cambio pasa por la respuesta del círculo.",
         failed: "No se pudo guardar. Inténtelo de nuevo.",
         versions: (n) => (n === 1 ? "Se guarda 1 versión anterior." : `Se guardan ${n} versiones anteriores.`),
+      },
+      // needs-native-review: the village's averages, 27 Nov 2026
+      average: {
+        reply: (d) => (d === 1 ? "Nuestra revisión suele tomar alrededor de un día." : `Nuestra revisión suele tomar alrededor de ${d} días.`),
+        stage: (d) => (d === 1 ? "Este paso suele tomar alrededor de un día." : `Este paso suele tomar alrededor de ${d} días.`), // needs-native-review: QA round 5
       },
     },
     references: {
@@ -871,6 +1129,14 @@ const es: ApplicantMessages = {
       name: "Su nombre",
       contact: "Cómo contactarla",
       contactHint: "Un correo electrónico o un número de teléfono.",
+      email: "Su correo",
+      whatsapp: "Número de WhatsApp",
+      usPhone: "Teléfono de EE. UU.",
+      signal: "Número o usuario de Signal (como nombre.01)", // needs-native-review: QA round 4, 27 Nov 2026
+      channelsHint: "Necesitamos su correo, y además al menos uno de estos tres para contactarla.",
+      tellThem: "Por favor, avise a sus referencias que nos pondremos en contacto.",
+      editLine: "¿Quiere cambiarlas? Envíe la lista de nuevo y reemplaza la que dio. Puede hacerlo hasta que las contactemos.",
+      reached: (n, done) => (done ? `Referencia ${n}: contactada` : `Referencia ${n}: aún sin contactar`),
       how: "Cómo le conoce",
       ally: "Por qué podría ser aliada o socia (opcional)",
       allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
@@ -880,19 +1146,57 @@ const es: ApplicantMessages = {
       row: (n) => `Referencia ${n}`,
       send: "Enviar mis referencias",
       sent: "Gracias. Ya tenemos sus referencias.",
-      given: (n) => `Dio ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbanos.`,
+      given: (n) => `Dio ${n} ${n === 1 ? "referencia" : "referencias"}. ¡Gracias!`,
       failed: "No se envió. Inténtelo de nuevo.",
       errors: {
         none: "Dé al menos dos referencias.",
         too_few: "Dé al menos dos referencias. Preferimos tres.",
         too_many: "Agregue hasta diez referencias.",
-        needs_all: "Dé a cada referencia un nombre, cómo contactarla y cómo le conoce. O vacíe la fila.",
-        contact: "Dé un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
+        needs_all: "Dé a cada referencia un nombre y cómo le conoce. O vacíe la fila.",
+        email: "Dé el correo de cada referencia.",
+        channel: "Dé a cada referencia un número de WhatsApp, un teléfono de EE. UU. o un número de Signal, además de su correo.",
+        contact: "Uno de esos números no parece correcto. Revíselo e inténtelo de nuevo.",
         twice: "Agregó la misma referencia dos veces.",
         too_long: "Una de las respuestas es demasiado larga. Hágala más corta.",
       },
     },
     private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan con usted se queda con ellas.",
+    // needs-native-review: the withdraw button, 27 Nov 2026
+    terms: {
+      eyebrow: "Términos", // needs-native-review: QA round 5
+      heading: "Cambiamos algunos de los términos", // needs-native-review: QA round 5
+      line: "Aquí está nuestra nueva redacción junto a lo que usted respondió. Lo que no cambiamos queda como usted lo aceptó.", // needs-native-review: QA round 5
+      ours: "Nuestra redacción ahora", // needs-native-review: QA round 5
+      yours: "Lo que usted respondió", // needs-native-review: QA round 5
+      accept: "Acepto", // needs-native-review: QA round 5
+      talk: "Conversemos", // needs-native-review: QA round 5
+      notAnswered: "Usted no respondió este punto.", // needs-native-review: QA round 5
+      talkAbout: "¿De qué le gustaría conversar?", // needs-native-review: QA round 5
+      waiting: "Esperamos su respuesta.", // needs-native-review: QA round 5
+      send: "Enviar mis respuestas", // needs-native-review: QA round 5
+      saved: "Gracias. Tenemos sus respuestas.", // needs-native-review: QA round 5
+      failed: "No se guardó. Inténtelo de nuevo.", // needs-native-review: QA round 5
+      commitment: "Dedicación", // needs-native-review: QA round 5
+    },
+    closedLink: "Esta postulación está cerrada, y sus datos se eliminaron. Puede postularse de nuevo cuando quiera.", // needs-native-review: QA round 5
+    adoptedLine: {
+      account: "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Inicie sesión para ver sus roles.", // needs-native-review: QA round 5
+      invite: "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Su invitación para crear su cuenta está en su correo.", // needs-native-review: QA round 5
+      plain: "El círculo dijo que sí. Nos encantaría tenerle en el equipo.", // needs-native-review: QA round 5
+      signIn: "Inicie sesión para ver sus roles", // needs-native-review: QA round 5
+    },
+    objections: {
+      heading: "Lo que planteó el círculo", // needs-native-review: the objections' reasons, 27 Nov 2026
+      line: "Sus razones, en sus palabras. No se nombra a nadie.", // needs-native-review: the objections' reasons, 27 Nov 2026
+    },
+    withdraw: {
+      step: "Retirada", // needs-native-review: QA round 4, 27 Nov 2026
+      button: "Retirar mi postulación",
+      ask: "¿La retira? Esto cierra su postulación, y puede postularse de nuevo cuando quiera.",
+      yes: "Sí, retirarla",
+      keep: "Mantenerla",
+      failed: "No se pudo. Inténtelo de nuevo.",
+    },
     wait: {
       heading: "Mientras espera",
       line: "La aldea está abierta para usted. Aquí hay tres formas de conocerla:",
@@ -952,6 +1256,24 @@ export const LANGUAGES: Record<ApplicantLanguage, ApplicantMessages> = { en, es 
 
 export const wordsIn = (lang: ApplicantLanguage | null | undefined): ApplicantMessages => LANGUAGES[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
 
+/** "Below" said from the applicant's profile, where the form and the button are on the application's own page. */
+const ON_PAGE: Record<ApplicantLanguage, [RegExp, string]> = {
+  en: [/\bbelow\b/g, "on your application's page"],
+  es: [/\babajo\b/g, "en la página de su postulación"],
+};
+
+/**
+ * A status page line read on the applicant's PROFILE (components/profile/ApplicationNextCard.tsx): the page's words
+ * point "below", to the form or the button on that page; on the profile they point to the application's page. Only
+ * our own words pass through here, so the swap is exact.
+ */
+export function sayOnProfile(lang: ApplicantLanguage | null | undefined, line: string, ownButton = false): string {
+  const [word, said] = ON_PAGE[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
+  // The card draws the button itself (QA pass 1: "on your application's page" beside its own Book button): no pointer.
+  if (ownButton) return line.replace(new RegExp(`\\s*${word.source}`, "g"), "");
+  return line.replace(word, said);
+}
+
 /** How every language's "your status page link" line begins, so a notice can drop it whichever language wrote it. */
 export const STATUS_LINK_STARTS: readonly string[] = APPLICANT_LANGUAGES.flatMap((l) => [LANGUAGES[l].keepStatusLink.slice(0, 21), LANGUAGES[l].statusLinkLine("").slice(0, 21)]);
 
@@ -984,11 +1306,14 @@ export interface StatusServedForView {
    * `label` is the role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts).
    * `links` is every way in: one link, or one per person holding the role, by first name. `url` is the first, for an older reader.
    */
-  bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }>; final?: boolean } | null;
+  /** `booked`: the call's time once the applicant said it ("I've booked it", shared/callBooked.ts); `zone`: the village's. */
+  bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }>; final?: boolean; booked?: string | null; zone?: string } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
+  /** Made from an account here: adopted, they sign in to their roles. */
+  hasAccount?: boolean;
   referencesGiven?: number | null;
   /** References asked of a shortlisted applicant: the form while it waits, a count once given. */
-  referencesAsked?: { given: number | null; mayAdd: boolean } | null;
+  referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean } | null;
   /** Our counter-offer, when there is one to answer (server/lib/counterOffer.ts `applicantOffer`). */
   offer?: { mayAnswer?: boolean; rows?: ReadonlyArray<unknown> } | null;
   /** Our review comes before the conversations on this application. */
@@ -1009,6 +1334,12 @@ export interface StatusServedForView {
     shortlisted?: boolean;
     /** Once the references are in: the ROLE that acts next and its act. A role's name, never a person's. */
     next?: { act: "follow_up" | "move"; role: string | null } | null;
+    /** The village's anchor circle, by name, which reviews the proposal at Agreement. Null when it has none. */
+    anchorCircle?: string | null;
+    /** The village's real average for this stage, in days, once enough have passed it (shared/stageAverages.ts). */
+    average?: number;
+    /** Ruling 7: the final is written up, and the applicant may send the proposal to the anchor circle. */
+    toCircle?: boolean;
   } | null;
 }
 
@@ -1037,10 +1368,16 @@ export interface StatusView {
   applicantActs: boolean;
   /** The booking button is the page's one gold act (at References and proposal the references form is, while it waits). */
   bookGold: boolean;
+  /** The village's real average for the stage, said in a line ("On average we reply in 4 days"), or null. */
+  average: string | null;
   /** The stage card's own gold act, when it is not a booking: "Add your references" at References and proposal. */
   primary: { label: string; href: string } | null;
-  /** Stage 3 as a task list, or null at every other stage. */
-  tasks: Array<{ key: "references" | "proposal" | "conversation"; label: string; state: string; href: string | null }> | null;
+  /**
+   * The stage's tasks, one button each (the lead, 27 Nov 2026: "easy to see and click buttons"): what it is, whether
+   * it is done, and the button's words and where it goes (`external`: a booking page). At References and proposal and
+   * at the Final conversation; null at every other stage.
+   */
+  tasks: Array<{ key: "references" | "proposal" | "conversation" | "send" | "terms"; label: string; state: string; done: boolean; href: string | null; action: string | null; external: boolean }> | null;
 }
 
 /** The status page's booking doors: "Book a time with Role (First, First)", and each person's link under it when there are several. */
@@ -1049,7 +1386,8 @@ function bookDoors(w: ApplicantMessages["status"], b: NonNullable<StatusServedFo
   const links = b.links?.length ? b.links : b.url ? [{ who: null, url: b.url }] : [];
   if (!links.length) return { text: w.booking.writeNow(who) };
   const label = w.booking.bookNow(who);
-  return { label, links: links.map((l) => ({ label: links.length > 1 && l.who ? l.who : label, url: l.url })) };
+  // Several ways in are numbered, never named (the lead, 27 Nov 2026: "Just the Role").
+  return { label, links: links.map((l, n) => ({ label: links.length > 1 ? `${label} (${n + 1})` : label, url: l.url })) };
 }
 
 const CONVERSATION_LABEL = /^Conversation with (.+) \((\d+) minutes\)$/;
@@ -1091,6 +1429,8 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   const path: StatusView["path"] = [];
   for (const p of s.path) {
     if (closed && (p.label === STEP_WORDS.consent || p.state !== "done")) continue;
+    // Withdrawn by the applicant: nobody decided it, so no "Decision: done" (QA round 5).
+    if (s.outcome === "withdrawn" && p.label === STEP_WORDS.decided) continue;
     // An adopted application's first cycle is where they stand now, so it keeps its place.
     if (decided && p.state === "now" && !(s.outcome === "adopted" && p.label === STEP_WORDS.first_cycle)) continue;
     let state = p.state;
@@ -1104,7 +1444,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   const notInvited = !!s.notInvited && s.outcome === "declined";
   const quietlyClosed = !!s.closed && s.outcome === "withdrawn";
   let move: string;
-  if (s.outcome === "adopted") move = w.move.adopted;
+  if (s.outcome === "adopted") move = s.hasAccount ? w.move.adoptedAccount : w.move.adopted;
   else if (quietlyClosed) move = w.move.closed;
   else if (s.outcome === "withdrawn") move = w.move.withdrawn;
   else if (notInvited) move = w.move.notInvited;
@@ -1143,16 +1483,19 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     }
     // A conversation's button belongs to its own stage: the final one's only at the Final conversation (QA round 1).
     const atFinal = six.now === "final_interview";
-    const bookable = s.bookNow && !decided && (atFinal ? !!s.bookNow.final : !s.bookNow.final) ? s.bookNow : null;
+    // A step with no way to book yet (a role's review window not open) offers no booking and no "book below" (QA round 5).
+    const bookable = s.bookNow && !decided && (atFinal ? !!s.bookNow.final : !s.bookNow.final) && (s.bookNow.url || (s.bookNow.links?.length ?? 0) > 0) ? s.bookNow : null;
     const role = bookable ? bookable.label || bookable.role : null;
     const refineOpen = six.refine.open;
     const hasOffer = !!s.offer && (s.offer.rows?.length ?? 0) > 0;
     const refsToDo = !!s.referencesAsked?.mayAdd;
     // The references are in: given, and the form no longer waits on them.
     const refsIn = !refsToDo && typeof s.referencesAsked?.given === "number";
+    const refsEditable = refsIn && !!s.referencesAsked?.mayEdit;
+    const anchor = six.anchorCircle ?? null;
     const sixMove =
       s.outcome === "adopted"
-        ? w.move.adopted
+        ? s.hasAccount ? w.move.adoptedAccount : w.move.adopted
         : six.now === "received"
           ? sw.move.received
           : six.now === "review"
@@ -1164,23 +1507,64 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
                   : six.next?.act === "follow_up"
                     ? sw.move.referencesInFollow(six.next.role, refineOpen)
                     : sw.move.referencesInMove(six.next?.role ?? null, refineOpen)
-                : refineOpen
-                  ? role ? sw.move.referencesTalk(role) : sw.move.references
-                  : role ? sw.move.referencesFixedTalk(role) : sw.move.referencesFixed
+                : sw.move.references
               : atFinal
-                ? sw.move.final(role)
+                ? six.toCircle ? sw.move.toCircle(anchor) : sw.move.final(role)
                 : six.now === "agreement"
-                  ? hasOffer ? sw.move.agreement : sw.move.agreementWaiting
+                  ? hasOffer ? sw.move.agreement(anchor) : sw.move.agreementWaiting(anchor)
                   : sw.move.start;
-    const applicantActs = !decided && (!!bookable || refsToDo || (six.now === "references" && refineOpen) || (six.now === "agreement" && !!s.offer?.mayAnswer));
-    const tasks: StatusView["tasks"] =
-      six.now === "references" && !decided
+    const applicantActs = !decided && (!!bookable || refsToDo || ((six.now === "references" || atFinal) && refineOpen) || (six.now === "agreement" && !!s.offer?.mayAnswer) || !!six.toCircle);
+    // One button per action (the lead, 27 Nov 2026: "easy to see and click buttons so each stage for them is really
+    // easy to track and participate in"), each saying whether it is done.
+    const bookLink = bookable ? (bookable.links?.[0]?.url ?? bookable.url ?? null) : null;
+    const conversationTask: NonNullable<StatusView["tasks"]>[number] = {
+      key: "conversation",
+      label: sw.tasks.conversation(role),
+      // Once they said it is booked ("I've booked it"), the row reads Booked, done; the button stays to rebook.
+      state: bookable?.booked ? BOOKED_WORDS[lang === "es" ? "es" : "en"].state : bookLink ? sw.tasks.book : sw.tasks.notYet,
+      done: !!bookable?.booked,
+      href: bookLink && /^https:\/\//.test(bookLink) ? bookLink : null,
+      action: bookLink && role ? w.booking.bookNow(role) : null,
+      external: true,
+    };
+    const proposalTask: NonNullable<StatusView["tasks"]>[number] = {
+      key: "proposal",
+      label: sw.tasks.proposal,
+      state: refineOpen ? sw.tasks.open : sw.tasks.fixed,
+      done: !refineOpen,
+      href: refineOpen ? "#refine-heading" : null,
+      action: refineOpen ? sw.tasks.refine : null,
+      external: false,
+    };
+    const tasks: StatusView["tasks"] = decided
+      ? null
+      : six.now === "references"
         ? [
-            { key: "references", label: sw.tasks.references, state: refsToDo ? sw.tasks.todo : typeof s.referencesAsked?.given === "number" ? sw.tasks.sent : sw.tasks.notYet, href: refsToDo ? "#reference-form" : null },
-            { key: "proposal", label: sw.tasks.proposal, state: refineOpen ? sw.tasks.open : sw.tasks.fixed, href: refineOpen ? "#refine-heading" : null },
-            { key: "conversation", label: sw.tasks.conversation(role), state: bookable ? sw.tasks.book : sw.tasks.notYet, href: null },
+            {
+              key: "references",
+              label: sw.tasks.references,
+              state: refsToDo ? sw.tasks.todo : refsIn ? sw.tasks.sent : sw.tasks.notYet,
+              done: refsIn,
+              href: refsToDo || refsEditable ? "#reference-form" : null,
+              action: refsToDo ? sw.tasks.add : refsEditable ? sw.tasks.edit : null,
+              external: false,
+            },
+            proposalTask,
+            conversationTask,
           ]
-        : null;
+        : atFinal
+          ? six.toCircle
+            ? // Ruling 7: the call is written up; refine, then send it on (the page asks once before it sends).
+              [proposalTask, { key: "send", label: sw.tasks.sendRow(anchor), state: sw.tasks.sendState, done: false, href: "#send-to-circle", action: sw.tasks.sendLabel(anchor), external: false }]
+            : [conversationTask, proposalTask]
+          : six.now === "agreement" && hasOffer && !!s.offer?.mayAnswer
+            ? // The counter-offer as a task too, so the profile card offers it (QA pass 1).
+              [{ key: "terms", label: sw.tasks.terms, state: sw.tasks.todo, done: false, href: "#changed-terms", action: sw.tasks.answer, external: false }]
+          : // Received and Our review offer refining too (the lead, 27 Nov 2026: "they can refine proposal in each
+            // stage"), with the open conversation's button first once there is one.
+            (six.now === "received" || six.now === "review") && refineOpen
+            ? [...(bookable ? [conversationTask] : []), proposalTask]
+            : null;
     return {
       heading: s.reviewFirst ? w.headingApplication : w.heading,
       notInvited: false,
@@ -1191,13 +1575,17 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
       // Only the conversation open now at this stage, and only its button: no order list, no later conversations.
       booking: bookable ? { text: "", book: bookDoors(w, bookable) } : null,
       references,
-      // The form at References and proposal; its fixed line only at the Final conversation, never at Agreement.
-      refine: (six.now === "references" && refineOpen) || (atFinal && six.refine.frozen) ? six.refine : null,
+      // The form while the proposal can still change (References and proposal, and the Final conversation); its fixed
+      // line once it is with the circle for review (Agreement).
+      // The form at every stage until the anchor circle (the lead, 27 Nov 2026: "they can refine proposal in each
+      // stage"); its fixed line once the proposal is with the circle (Agreement).
+      refine: refineOpen ? six.refine : six.now === "agreement" && six.refine.frozen && !hasOffer ? six.refine : null,
       six: true,
       applicantActs,
       // One gold act: at References and proposal the references form holds it while it waits.
       bookGold: !!bookable && !(six.now === "references" && refsToDo),
       primary: six.now === "references" && refsToDo && !decided ? { label: sw.tasks.add, href: "#reference-form" } : null,
+      average: !decided && typeof six.average === "number" && six.average > 0 ? (six.now === "received" || six.now === "review" ? sw.average.reply(six.average) : sw.average.stage(six.average)) : null,
       tasks,
     };
   }
@@ -1206,7 +1594,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     heading: s.reviewFirst ? w.headingApplication : w.heading,
     notInvited,
     closed: quietlyClosed,
-    stepWords: quietlyClosed ? w.closed.step : ((w.step as Record<string, string>)[stepKey] ?? s.step),
+    stepWords: quietlyClosed ? w.closed.step : s.outcome === "withdrawn" ? w.withdraw.step : ((w.step as Record<string, string>)[stepKey] ?? s.step),
     move,
     path,
     booking,
@@ -1216,6 +1604,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     applicantActs: false,
     bookGold: false,
     primary: null,
+    average: null,
     tasks: null,
   };
 }

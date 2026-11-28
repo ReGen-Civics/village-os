@@ -156,6 +156,9 @@ export const DECIDE_WORDS = {
   adoptedAccount: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.",
   // A proposal for this moon starts its seat the day it is adopted, so it never says "the season's first day" (launch rehearsal F12).
   adoptedAccountMoon: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon.",
+  // An application that went through the conversation flow starts by the start rule (shared/startDay.ts): one day, said here as the letter says it.
+  adoptedAccountOn: (day: string) => `Adopted. That address already has an account here, so no invitation was needed: their roles start on ${day}.`,
+  adoptedAccountNow: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, because Ops chose to start now.",
   accountTold: "They were told by email as well.",
   accountNotTold: (why: NotSentWhy) => `${NOT_SENT[why]} They see it in their notifications when they sign in.`,
   declinedEmailed: "Declined. A kind no went to them by email.",
@@ -294,7 +297,21 @@ export function whyNotSent(r: { reason?: string | null }): NotSentWhy {
 // ── The letters ────────────────────────────────────────────────────────────
 
 export interface AdoptLetterIn {
+  /**
+   * The application went through the conversation flow (its role names conversations). Only then does the letter
+   * carry the start day, the all-hands, the buddy and the page; without it the letter is the one a role adopted
+   * outside the flow always had, word for word (e2e round 3, B3).
+   */
+  flow?: boolean;
+  /** Ops chose "start now": the roles start the day they are adopted, and `allHands` is the next one, with its date. */
+  startToday?: boolean;
+  /** A season role whose start day is the season's first day, so the letter may say "when the season begins". */
+  seasonSameDay?: boolean;
   firstName: string | null;
+  /** The applicant's page, shown as "See your page" (QA round 5, item 9). */
+  statusLink?: string | null;
+  /** The anchor circle that accepted it, by its own name ("Anchor Circle accepted your proposal"). */
+  anchorCircle?: string | null;
   village: string;
   roleNames: readonly string[];
   /** "Season of Roots", or null when the season has no name. */
@@ -312,13 +329,37 @@ export interface AdoptLetterIn {
   waitsForSeat?: boolean;
   /** Our review came first (Phase A): the yes is said as the circle's welcome, with the first cycle. */
   reviewed?: boolean;
+  /** The day they start, in words with its weekday ("Monday 1 December 2026"; shared/startDay.ts). */
+  startDay?: string | null;
+  /** The role that may start them sooner (the welcoming role, by name), or null for the team. */
+  soonerRole?: string | null;
+  /** The all-hands they join that day: when, in words, and its video link (village settings). */
+  allHands?: { when: string; link: string | null } | null;
+  /** Their buddy for the first week: by default whoever holds the welcoming role, unless the adopter chose another. */
+  buddy?: { name: string; role: string | null } | null;
 }
+
+/** The start day and the all-hands, when the letter knows them, and never for a role still waiting on a seat. */
+const startLines = (i: AdoptLetterIn): string[] => {
+  if (i.waitsForSeat || !i.flow) return [];
+  const w = wordsIn(i.lang).adopt;
+  const meeting = (line: (when: string) => string) => (i.allHands ? ["", line(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : []);
+  return [
+    // Start now: today, with no "start sooner" sentence, and the next all-hands by its own date.
+    ...(i.startDay ? (i.startToday ? ["", w.startToday(i.startDay), ...meeting(w.allHandsNext)] : ["", w.startDay(i.startDay), w.startSooner(i.soonerRole ?? null), ...meeting(w.allHands)]) : []),
+    ...(i.buddy ? ["", w.buddy(i.buddy.name, i.buddy.role)] : []),
+    ...(i.statusLink ? ["", wordsIn(i.lang).statusLinkLine(i.statusLink)] : []),
+  ];
+};
 
 /** The headline, and the first cycle's line for a reviewed application. */
 const yesLines = (i: AdoptLetterIn, w: ReturnType<typeof wordsIn>): string[] =>
   i.reviewed && !i.waitsForSeat
-    ? [w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole), "", w.adopt.firstCycle]
-    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i))];
+    ? [i.flow ? w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole, i.anchorCircle ?? null) : w.adopt.headlineReviewedPlain(i.village, w.list(i.roleNames) || w.aRole), "", w.adopt.firstCycle]
+    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i), anchorOf(i))];
+
+/** The circle the letter names: the anchor circle in the conversation flow, and none outside it. */
+const anchorOf = (i: AdoptLetterIn): string | null => (i.flow ? (i.anchorCircle ?? null) : null);
 
 /**
  * THE ADOPTION LETTER'S EXTRA LINES (audit P11 and B3), in every applicant language. Kept here
@@ -354,9 +395,29 @@ export const ADOPT_MORE: Record<ApplicantLanguage, {
   },
 };
 
+/**
+ * The steps as the conversation flow's start letter lists them (the lead, 27 Nov 2026: every multi-step line a list).
+ * A role adopted outside the flow keeps ADOPT_MORE's numbered ones, word for word (e2e round 3, B3).
+ */
+const ADOPT_STEPS_FLOW: Record<ApplicantLanguage, { stepCreate: string; stepSignIn: string; stepAgreements: string; stepFirstDays: string }> = {
+  en: {
+    stepCreate: "- Make your profile with the button above.",
+    stepSignIn: "- Sign in with this address.",
+    stepAgreements: "- Align with what your profile lists before you start, like our confidentiality agreement and your role's terms. Each one has its own button there.",
+    stepFirstDays: "- Once you start, your profile walks you through your first days with us.",
+  },
+  es: {
+    stepCreate: "- Cree su perfil con el botón de arriba.",
+    stepSignIn: "- Inicie sesión con este correo.",
+    stepAgreements: "- Alinéese con lo que muestra su perfil antes de empezar, como nuestro acuerdo de confidencialidad y los términos de su rol. Cada uno tiene allí su botón.", // check: "alinear"; needs-native-review: the voice pass, 27 Nov 2026
+    stepFirstDays: "- Cuando empiece, su perfil le acompaña en sus primeros días con nosotros.",
+  },
+};
+
 const nextSteps = (i: AdoptLetterIn, first: "create" | "signIn"): string[] => {
   const m = ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en;
-  return ["", m.nextHeading, first === "create" ? m.stepCreate : m.stepSignIn, m.stepAgreements, m.stepFirstDays];
+  const s = i.flow ? (ADOPT_STEPS_FLOW[i.lang ?? "en"] ?? ADOPT_STEPS_FLOW.en) : m;
+  return ["", m.nextHeading, first === "create" ? s.stepCreate : s.stepSignIn, s.stepAgreements, s.stepFirstDays];
 };
 
 const noteLines = (lang: ApplicantLanguage | undefined, note: string | null | undefined): string[] => (note ? ["", wordsIn(lang).noteIntro, note] : []);
@@ -368,10 +429,13 @@ const whenRolesStart = (i: AdoptLetterIn) => {
   const w = wordsIn(i.lang);
   // A role with every seat taken starts when one opens, and the letter promises no day (audit B3).
   if (i.waitsForSeat) return (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).seatOpens(w.list(i.roleNames) || w.aRole);
-  return i.moon ? w.adopt.moonRuns(i.moon.from, i.moon.to) : w.adopt.seasonStarts(i.season, i.startsOn);
+  if (i.moon) return w.adopt.moonRuns(i.moon.from, i.moon.to);
+  // In the flow the start line says the day. "When the season begins" is said beside it only when that is the same day.
+  return i.flow && !i.seasonSameDay ? "" : w.adopt.seasonStarts(i.season, i.startsOn);
 };
+// In the flow the start line says when: "this moon" and "next season" could both name another day.
 const forWhen = (i: AdoptLetterIn) =>
-  i.waitsForSeat ? (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).forAPlace : i.moon ? wordsIn(i.lang).adopt.forThisMoon : wordsIn(i.lang).adopt.forNextSeason;
+  i.waitsForSeat ? (ADOPT_MORE[i.lang ?? "en"] ?? ADOPT_MORE.en).forAPlace : i.flow ? "" : i.moon ? wordsIn(i.lang).adopt.forThisMoon : wordsIn(i.lang).adopt.forNextSeason;
 
 /**
  * THE DAY A MOON ROLE STARTS, as the letter says it: the day it is adopted, and
@@ -386,7 +450,7 @@ export function roleStartsOn(moonStartsOn: string, adoptedOn: string): string {
 export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: number }): { subject: string; text: string; button: { label: string; url: string } } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village),
+    subject: w.adopt.subject(i.village, anchorOf(i)),
     button: { label: w.adopt.button, url: i.link },
     text: [
       w.hello(i.firstName),
@@ -397,12 +461,14 @@ export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: num
       w.adopt.inviteIntro,
       i.link,
       "",
-      w.adopt.inviteWorks(i.days, whenRolesStart(i)),
+      w.adopt.inviteWorks(i.days, whenRolesStart(i)).trim(),
+      ...startLines(i),
       "",
       w.adopt.nextAfterProfile,
       ...nextSteps(i, "create"),
       ...signFirst(i),
       "",
+      ...(i.flow ? [w.shape.who, w.shape.adoptWho, ""] : []),
     ].join("\n"),
   };
 }
@@ -415,18 +481,20 @@ export const NEXT_AFTER_PROFILE = LANGUAGES.en.adopt.nextAfterProfile;
 export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village),
+    subject: w.adopt.subject(i.village, anchorOf(i)),
     text: [
       w.hello(i.firstName),
       "",
       ...yesLines(i, w),
       ...noteLines(i.lang, i.note),
       "",
-      w.adopt.signIn(whenRolesStart(i)),
+      w.adopt.signIn(whenRolesStart(i)).trim(),
       i.signIn,
+      ...startLines(i),
       ...nextSteps(i, "signIn"),
       ...signFirst(i),
       "",
+      ...(i.flow ? [w.shape.who, w.shape.adoptWho, ""] : []),
     ].join("\n"),
   };
 }
@@ -447,9 +515,14 @@ export function declinedLetter(i: {
   doorsInBlock?: boolean;
   /** The next steps, as lines with their links (shared/declineNextSteps.ts). Given: they replace the pointers to quests and roles. */
   nextSteps?: readonly string[];
+  /** Ruling 12, in every mode (QA round 5): the next season, when they may apply again. */
+  nextSeason?: { name: string | null; startsOn: string } | null;
+  /** Their page, shown as "See your page". */
+  statusLink?: string | null;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
-  const steps = i.nextSteps?.length ? [...i.nextSteps, ""] : [];
+  const season = i.nextSeason ? [w.notInvited.nextSeason(i.nextSeason.name, w.day(i.nextSeason.startsOn), `${i.site}/roles`), ""] : [];
+  const steps = [...season, ...(i.nextSteps?.length ? [...i.nextSteps, ""] : [])];
   const doors = i.doorsInBlock
     ? [...steps, w.declined.againOwn]
     : steps.length
@@ -457,7 +530,7 @@ export function declinedLetter(i: {
       : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
   return {
     subject: w.declined.subject(i.village),
-    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ""].join("\n"),
+    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ...(i.statusLink ? ["", w.statusLinkLine(i.statusLink)] : []), ""].join("\n"),
   };
 }
 
@@ -471,6 +544,8 @@ export interface InvitedConversation {
   bookingLinks?: readonly BookingLink[];
   /** The role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts). Said in place of `role` when given. */
   label?: string;
+  /** The final conversation, with the role that makes the final call (the lead, 27 Nov 2026: "mention all 3 calls"). */
+  final?: boolean;
 }
 
 /**
@@ -479,6 +554,8 @@ export interface InvitedConversation {
  */
 export function invitedLetter(i: {
   firstName: string | null;
+  /** The anchor circle, by name, as the later letters say it. */
+  anchorCircle?: string | null;
   village: string;
   roleNames: readonly string[];
   conversations: readonly InvitedConversation[];
@@ -493,14 +570,22 @@ export function invitedLetter(i: {
   const talks = i.conversations.length
     ? [
         "",
+        // Every call, the final one too, as a list (the lead, 27 Nov 2026: "mention all 3 calls and say they can be
+        // ~90 min in all or longer if needed"). No length per call: the total says it.
         w.invite.conversationsIntro,
-        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.label || c.role, c.minutes)}`),
+        ...i.conversations.map((c) => (c.final ? w.invite.finalConversation(c.label || c.role) : w.invite.conversation(c.label || c.role, c.minutes))),
         w.invite.total(total),
         "",
-        w.invite.booking,
-        // The first conversation's own way in. The later ones open in order, each with its own role's link then.
-        firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role),
-        ...(i.conversations.length > 1 ? [w.invite.laterOpen] : []),
+        // The next step, who acts by role, and only the first conversation's way in: it is the one open now. The
+        // later ones open in order, each with its own role's link then (the lead, 27 Nov 2026).
+        // As a list, like every multi-step line (the lead, 27 Nov 2026).
+        w.shape.next,
+        `- ${firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role)}`,
+        ...(i.conversations.length > 1 ? [`- ${w.invite.laterOpen}`] : []),
+        `- ${w.shape.refineAnyTime(i.anchorCircle ?? null)}`,
+        "",
+        w.shape.who,
+        w.shape.youBook(first.label || first.role),
       ]
     : [];
   return {
@@ -512,7 +597,8 @@ export function invitedLetter(i: {
       ...noteLines(i.lang, i.note),
       ...talks,
       "",
-      w.invite.after,
+      // The path after the conversations, in the six stages (no longer "the circle decides by consent").
+      w.shape.inviteAfter(i.anchorCircle ?? null),
       "",
       i.statusLink ? w.statusLinkLine(i.statusLink) : w.keepStatusLink,
       "",
@@ -554,6 +640,8 @@ export function notInvitedLetter(i: {
   note?: string | null;
   /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
   doorsInBlock?: boolean;
+  /** Ruling 12: the next season, so they can apply again then. */
+  nextSeason?: { name: string | null; startsOn: string } | null;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const doors = i.doorsInBlock ? [] : [
@@ -570,6 +658,7 @@ export function notInvitedLetter(i: {
       "",
       w.notInvited.matched,
       ...noteLines(i.lang, i.note),
+      ...(i.nextSeason ? ["", w.notInvited.nextSeason(i.nextSeason.name, w.day(i.nextSeason.startsOn), letterHref(i.site, "/roles"))] : []),
       ...(doors.length ? ["", w.notInvited.stayClose, ...doors] : []),
       "",
       w.notInvited.closing,
@@ -605,7 +694,13 @@ export function closedLetter(i: {
       "",
       w.closed.closed,
       "",
+      w.shape.next,
+      w.shape.closedNext,
       w.closed.quest(letterHref(i.site, "/quests")),
+      w.shape.closedAgain,
+      "",
+      w.shape.who,
+      w.shape.closedWho,
       ...(i.statusLink ? ["", w.closed.page(i.statusLink)] : []),
       "",
       w.closed.signed(i.team),

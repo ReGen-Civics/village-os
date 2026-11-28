@@ -18,6 +18,7 @@ import { authToken, gameFetch } from "@/lib/gameApi";
 import { BTN_NOTICE, BTN_SECONDARY, EYEBROW, FIELD, H2, HINT, LABEL } from "@/components/journey/look";
 import { CONVERSATION_NOTE_MAX, type ConversationNoteKind, type ConversationNotesView, type ServedNote } from "@shared/conversationNotes";
 import type { GuideView } from "@shared/conversationGuide";
+import BookedIt, { bookedLine } from "@/components/openProposal/BookedIt";
 import { GuideLine, useGuideQuestion } from "@/components/openProposal/ConversationGuide";
 import PrivacyNote from "@/components/openProposal/PrivacyNote";
 
@@ -87,7 +88,7 @@ export default function ConversationNotes({
 }
 
 function Conversation({ base, c, onSaved }: { base: string; c: ConversationNotesView; onSaved: () => void }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const day = useDayWords();
   const [adding, setAdding] = useState(false);
   const [text, setText] = useState("");
@@ -150,7 +151,15 @@ function Conversation({ base, c, onSaved }: { base: string; c: ConversationNotes
 
   return (
     <li className="min-w-0 py-4" data-conversation={c.interviewId}>
-      <p className="font-display text-lg font-semibold text-foreground">{c.label}</p>
+      {/* QA pass 2: the walkthrough ran 6,432 to 9,240 px. A conversation written up folds to its one line. */}
+      <details open={c.state === "open"} data-conversation-fold={c.state}>
+      <summary className="flex min-h-11 cursor-pointer items-center font-display text-lg font-semibold text-foreground">{c.label}</summary>
+      {/* The call's date when somebody said it ("I've booked it"); the team may set or correct it while it is open. */}
+      {c.mayBook ? (
+        <BookedIt booked={c.bookedAt ?? null} zone={c.zone ?? ""} lang={i18n.locale === "es" ? "es" : "en"} url={`${base}/interviews/${c.interviewId}/booked`} onSaved={() => onSaved()} />
+      ) : c.bookedAt ? (
+        <p className="text-sm text-foreground" data-booked-line="">{bookedLine(c.bookedAt, c.zone ?? "", i18n.locale === "es" ? "es" : "en")}</p>
+      ) : null}
       {c.notes.length === 0 ? (
         <p className={`mt-1 ${HINT}`}>{t({ message: "No notes yet.", context: "conversation notes: empty" })}</p>
       ) : (
@@ -206,6 +215,7 @@ function Conversation({ base, c, onSaved }: { base: string; c: ConversationNotes
         </div>
       )}
       {said?.text && <p role={said.ok ? "status" : "alert"} className={`mt-2 text-sm ${said.ok ? "text-foreground" : "text-destructive"}`}>{said.text}</p>}
+      </details>
     </li>
   );
 }

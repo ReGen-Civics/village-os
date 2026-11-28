@@ -40,7 +40,7 @@ import {
   reviewClockTick,
   scorecardsFor,
   stampFirstReply,
-  statusByToken,
+  closedByToken, statusByToken,
   statusOf,
   submitScore,
   type ReviewDeps,
@@ -56,7 +56,8 @@ import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
 import { registerApplicantOnboarding } from "./applicantOnboarding";
-import { applicantStagesOf, refineProposal } from "../lib/applicantOnboarding";
+import { applicantStagesOf, bookedByApplicant, refineProposal, sendToCircle, withdrawApplication } from "../lib/applicantOnboarding";
+import { emailKeyOf } from "../../shared/comms/address";
 import { REFINE_ERRORS } from "../../shared/proposalRefine";
 import path from "node:path";
 
@@ -107,6 +108,8 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
     if (await overLimit(`application-status:${deps.clientIp ? deps.clientIp(req) : "x"}`, 60, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
     const s = ref && token ? await statusByToken(work, ref, token) : null;
+    // A proven link to an application since closed and cleared says so (QA round 5).
+    if (!s && ref && token && (await closedByToken(work, ref, token))) return res.status(410).json({ error: "closed" });
     // One answer for an unknown ref and a wrong token, so a ref cannot be probed.
     if (!s) return res.status(404).json(NOT_HERE);
     // The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note.
@@ -123,6 +126,71 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
   });
 
+  // ── The applicant withdraws (the lead, 27 Nov 2026) ────────────────────────
+  /* By the emailed link, or signed in as the applicant. Quiet: no letter goes. */
+  app.post("/api/application-status/:ref/withdraw", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-withdraw:${deps.clientIp ? deps.clientIp(req) : "x"}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await withdrawApplication(work, ref);
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/withdraw", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-withdraw:${String(viewer.id)}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
+    const out = await withdrawApplication(work, ref);
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  // ── Send it to the anchor circle (ruling 7, the lead, 27 Nov 2026) ────────
+  /* After the final conversation is written up: the applicant by their link or account, or Ops or the Visionary
+     signed in from the walkthrough. The proposal is fixed from that moment. */
+  app.post("/api/application-status/:ref/to-circle", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-to-circle:${deps.clientIp ? deps.clientIp(req) : "x"}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await sendToCircle(work, ref, { applicant: true });
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/to-circle", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-to-circle:${String(viewer.id)}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref) return res.status(404).json(NOT_HERE);
+    const own = await isApplicant(work, ref, String(viewer.id));
+    const out = await sendToCircle(work, ref, own ? { applicant: true } : { viewerId: String(viewer.id) });
+    out.ok ? res.json({ success: true }) : res.status(out.status).json({ error: out.error });
+  });
+
+  // ── "I've booked it" (the lead, 27 Nov 2026; shared/callBooked.ts) ─────────
+  /* The applicant says when the call they booked is, for the conversation open now. By the emailed link, or signed in. */
+  app.post("/api/application-status/:ref/booked", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-booked:${deps.clientIp ? deps.clientIp(req) : "x"}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await bookedByApplicant(work, ref, req.body?.at);
+    out.ok ? res.json({ success: true, at: out.at }) : res.status(out.status).json({ error: out.error });
+  });
+
+  app.post("/api/governance/applications/:ref/booked", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-booked:${String(viewer.id)}`, 20, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
+    const out = await bookedByApplicant(work, ref, req.body?.at);
+    out.ok ? res.json({ success: true, at: out.at }) : res.status(out.status).json({ error: out.error });
+  });
+
   /** The same, signed in as the applicant. */
   app.post("/api/governance/applications/:ref/proposal", async (req, res) => {
     const viewer = await authedUser(req);
@@ -132,6 +200,26 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!ref || !(await isApplicant(work, ref, String(viewer.id)))) return res.status(404).json(NOT_HERE);
     const out = await refineProposal(work, ref, req.body);
     out.ok ? res.json({ success: true, versions: out.versions }) : res.status(out.status).json({ error: out.error, message: REFINE_ERRORS[out.error] });
+  });
+
+  /**
+   * THE APPLICANT'S NEXT STEP ON THEIR OWN PROFILE (the lead, 27 Nov 2026: "show them clearly their next step in
+   * their profile"). The signed-in member's newest application still waiting, read through the same proof as the
+   * signed-in status page (`isApplicant`: an account the application is trusted to be), with the same served shape.
+   * No application of theirs waiting: `{ next: null }`, and the profile draws nothing.
+   */
+  app.get("/api/me/application-next", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-next:${String(viewer.id)}`, 60, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const email = typeof viewer.email === "string" ? viewer.email : "";
+    for (const p of email ? await store.waitingAllFromAddress(getPool(), emailKeyOf(email)) : []) {
+      if (!(await isApplicant(work, p.id, String(viewer.id)))) continue;
+      const s = await statusOf(work, p.id);
+      if (!s) continue;
+      return res.set("Cache-Control", "no-store").json({ next: { ref: p.id, status: { ...s, sixStages: await applicantStagesOf(work, p.id) } } });
+    }
+    res.set("Cache-Control", "no-store").json({ next: null });
   });
 
   app.get("/api/governance/applications/:ref/status", async (req, res) => {

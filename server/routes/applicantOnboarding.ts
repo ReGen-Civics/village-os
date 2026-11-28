@@ -37,8 +37,8 @@ import multer from "multer";
 import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
-import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
-import { addConversationFile, addConversationText, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
+import { addFinalConversation, answerShortlist, directStartNow, askForReferences, claimReference, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
+import { addConversationFile, addConversationText, bookedByTeam, conversationFileFor, mayAddConversationFile, removeConversationNote } from "../lib/applicantOnboarding";
 import { CONVERSATION_FILE_MAX_BYTES, CONVERSATION_NOTES_PER_HOUR, NOTES_WORDS, isConversationNoteKind, storedExtension } from "../../shared/conversationNotes";
 import { CarriesLocationData, LocationDataSurvived, sanitiseForVolume } from "../lib/uploads";
 import { noteFilePath, setNoteFilesDir, writeNoteFile } from "../lib/conversationNoteFiles";
@@ -124,18 +124,25 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     res.json({ success: true, answer: out.answer, message: out.answer === "yes" ? ONBOARDING_WORDS.shortlisted : ONBOARDING_WORDS.notShortlisted });
   });
 
+  /** Ops directs "start now" (ruling 8): Ops's own act, never a placer's. */
+  app.post("/api/governance/applications/:ref/start-now", async (req, res) => {
+    const a = await acting(req, res, "start-now");
+    if (!a) return;
+    answer(res, await directStartNow(work, a.ref, a.viewerId), { message: ONBOARDING_WORDS.startNow.chosen });
+  });
+
   app.post("/api/governance/applications/:ref/references/ask", async (req, res) => {
     const a = await acting(req, res, "ask");
     if (!a) return;
     answer(res, await askForReferences(work, a.ref, a.viewerId), { message: ONBOARDING_WORDS.referencesAskedNow });
   });
 
-  app.post("/api/governance/applications/:ref/references/:id/owner", async (req, res) => {
-    const a = await acting(req, res, "owner");
+  app.post("/api/governance/applications/:ref/references/:id/claim", async (req, res) => {
+    const a = await acting(req, res, "claim");
     if (!a) return;
     const id = idOf(req);
     if (!id) return res.status(404).json(NOT_HERE);
-    answer(res, await assignOwner(work, a.ref, a.viewerId, id, req.body), { message: ONBOARDING_WORDS.ownerSaved });
+    answer(res, await claimReference(work, a.ref, a.viewerId, id), { message: ONBOARDING_WORDS.claimed });
   });
 
   app.post("/api/governance/applications/:ref/references/:id/notes", async (req, res) => {
@@ -163,7 +170,7 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
   // ── The applicant gives their references ──────────────────────────────────
 
   const given = (res: any, out: GiveOutcome) =>
-    out.ok ? res.json({ success: true, given: out.given }) : res.status(out.status).json({ error: out.error, ...(out.row !== null ? { row: out.row } : {}) });
+    out.ok ? res.json({ success: true, given: out.given }) : res.status(out.status).json({ error: out.error, ...(out.row !== null ? { row: out.row } : {}), ...("field" in out && out.field ? { field: out.field } : {}) });
 
   app.post("/api/application-status/:ref/references", async (req, res) => {
     const ref = refOf(req);
@@ -211,6 +218,16 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     }
     return { viewerId, ref };
   }
+
+  /** The team sets or corrects a conversation's booked date from the walkthrough ("I've booked it", shared/callBooked.ts). */
+  app.post("/api/governance/applications/:ref/interviews/:id/booked", async (req, res) => {
+    const a = await noting(req, res);
+    if (!a) return;
+    const interviewId = idOf(req);
+    if (!interviewId) return res.status(404).json(NOT_HERE);
+    const out = await bookedByTeam(work, a.ref, a.viewerId, interviewId, req.body?.at);
+    answer(res, out, out.ok ? { at: out.at } : {});
+  });
 
   app.post("/api/governance/applications/:ref/interviews/:id/notes", async (req, res) => {
     const a = await noting(req, res);

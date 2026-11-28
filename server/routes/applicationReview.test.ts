@@ -260,8 +260,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect([200, 409], JSON.stringify(asked.body)).toContain(asked.status);
         const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(signLink("application_status", { ref: id }, 1))}`, {
           references: [
-            { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a garden together.", ally: "" },
-            { name: "Ben Reference", contact: "ben.reference@example.test", how: "He hired me for two harvests.", ally: "" },
+            { name: "Ana Reference", email: "ana.reference@example.test", whatsapp: "+506 8888 1234", how: "We built a garden together.", ally: "" },
+            { name: "Ben Reference", email: "ben.reference@example.test", whatsapp: "+506 8888 1234", how: "He hired me for two harvests.", ally: "" },
           ],
         });
         expect([200, 409], JSON.stringify(given.body)).toContain(given.status);
@@ -382,11 +382,23 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
     });
   });
 
+  /** Ruling 7: shortlisted, every conversation written up, then a placer sends the proposal to the anchor circle. */
+  const sendOn = async (id: string) => {
+    await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, FOUNDER.id);
+    const sent = await call("POST", `/api/governance/applications/${id}/to-circle`, {}, FOUNDER.id);
+    expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+  };
+
   describe("the circle's consent round", () => {
-    it("opens at confirm when the village has not asked for the interviews to come first", async () => {
+    it("RULING 23 (QA round 5): never opens at confirm for a role that names conversations, whatever the village's setting; the send opens it", async () => {
+      await setting(false);
       const { id } = await confirmed("now@example.test");
+      expect(await asks(id)).toEqual([]);
+      expect(await stepKinds(id)).not.toContain("consent");
+      await scoreAll(id);
+      expect(await asks(id)).toEqual([]);
+      await sendOn(id);
       expect((await asks(id)).length).toBeGreaterThan(0);
-      expect(await stepKinds(id)).toContain("consent");
     });
 
     it("waits for the interviews when the village asks, tells the circle it arrived, then opens once every card is in", async () => {
@@ -396,9 +408,15 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(state.notices.filter((n) => n.type === "open_role_proposal_consent_ask")).toEqual([]);
       expect(state.notices.filter((n) => n.type === "application_arrived").length).toBeGreaterThan(0);
       await scoreAll(id);
+      // RULING 7 (the lead, 27 Nov 2026): every card in opens nothing; the round waits for the proposal to be SENT to
+      // the anchor circle (QA pass 1 saw "Your proposal is with the circle" before the final call).
+      expect(await asks(id)).toEqual([]);
+      expect(await stepKinds(id)).toContain("scores_in");
+      expect(await stepKinds(id)).not.toContain("consent");
+      await sendOn(id);
       const rows = await asks(id);
       expect(rows.length).toBeGreaterThan(0);
-      expect(await stepKinds(id)).toEqual(expect.arrayContaining(["scores_in", "consent"]));
+      expect(await stepKinds(id)).toEqual(expect.arrayContaining(["scores_in", "to_circle", "consent"]));
       expect(state.notices.some((n) => n.type === "open_role_proposal_consent_ask")).toBe(true);
     });
   });
@@ -425,6 +443,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       await setting(true);
       const { id } = await confirmed("agents2@example.test");
       await scoreAll(id);
+      await sendOn(id);
       const ask = state.notices.find((n) => n.type === "open_role_proposal_consent_ask");
       expect(ask?.body).toContain("held by an AI agent");
       expect((await q("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'consent'", [id]))[0].detail_json).toContain("Team Support Role");
@@ -456,11 +475,12 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("booklink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const first = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
+        // By the role only (the lead, 27 Nov 2026: "Just the Role"): no holder's name rides on the label.
+        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }], booked: null, zone: expect.any(String) });
         // The next conversation opens only once the first is written up, and then offers its own role's way in.
         await score(id, Number((await interviews(id))[0].id), IA.id);
         const second = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(second.body.status.bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
+        expect(second.body.status.bookNow).toEqual({ role: "Data Role", label: "Data Role", url: null, links: [], booked: null, zone: expect.any(String) });
         // Control: an http link is not a booking link.
         await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["http://calendar.example.test/data", roleB]);
         expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.bookNow.url).toBeNull();
@@ -501,7 +521,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       }
     });
 
-    it("offers the link of the person holding the step's role, then the role's link, then our letter with times", async () => {
+    it("offers the role's own link, then the link of the person holding it, then our letter with times, by role only", async () => {
       await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["https://calendar.example.test/channel-role", roleA]);
       try {
         await saveLink(IA.id, IA_LINK);
@@ -509,11 +529,11 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("ownlink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const status = async () => (await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status;
-        // 1. The interviewer's own link beats the role's.
-        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
-        // 2. CONTROL: cleared, the role's link comes back.
-        await saveLink(IA.id, "");
-        expect((await status()).bookNow.url).toBe("https://calendar.example.test/channel-role");
+        // 1. The role's own link, set by the village for this step, beats a holder's (the lead, 27 Nov 2026: "Just the Role").
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: "https://calendar.example.test/channel-role", links: [{ who: null, url: "https://calendar.example.test/channel-role" }], booked: null, zone: expect.any(String) });
+        // 2. CONTROL: the role's link cleared, the holder's own link comes in, still unnamed.
+        await q("UPDATE org_roles SET booking_url = NULL WHERE id = ?", [roleA]);
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role", url: IA_LINK, links: [{ who: null, url: IA_LINK }], booked: null, zone: expect.any(String) });
         // The next conversation's letter carries the next interviewer's own link, by role, never an email address.
         await saveLink(IA.id, IA_LINK);
         const sentBefore = state.sent.length;
@@ -524,12 +544,13 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect(JSON.stringify(await status())).not.toContain("hard to read");
         expect(JSON.stringify(await status())).not.toContain("unsure");
         const letter = state.sent.slice(sentBefore).find((m) => m.text.includes("Data Role"));
-        expect(letter?.text).toContain(`a conversation with Data Role (Ivo), about 20 minutes. Book a time with Data Role (Ivo): ${IB_LINK}`);
+        expect(letter?.text).toContain(`a conversation with Data Role. Book a time with Data Role: ${IB_LINK}`);
         expect(letter?.text).not.toContain(IB.email);
-        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
+        expect(letter?.text).not.toContain("Ivo");
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role", url: IB_LINK, links: [{ who: null, url: IB_LINK }], booked: null, zone: expect.any(String) });
         // 3. Neither a person's link nor the role's: nothing to follow, and the page says we write with times.
         await saveLink(IB.id, "");
-        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role", url: null, links: [], booked: null, zone: expect.any(String) });
         expect(JSON.stringify(await status())).not.toContain("@example.test");
       } finally {
         await saveLink(IA.id, "");
@@ -614,6 +635,9 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(early.status).toBe(409);
       expect(early.body.error).toBe("interviews_not_done");
       await scoreAll(id);
+      // Ruling 23 (QA round 5): every card in is not enough; the proposal is sent to the Anchor Circle first.
+      expect((await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id)).body.error).toBe("send_first");
+      await sendOn(id);
       const done = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
       expect(done.status, JSON.stringify(done.body)).toBe(200);
       expect(await stepKinds(id)).toContain("decided");
@@ -831,7 +855,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect((await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id)).body.stamped).toBe(true);
       expect((await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id)).body.stamped).toBe(false);
       expect(updates()).toHaveLength(1);
-      expect(updates()[0]).toMatchObject({ kind: "essential", idempotencyKey: `open-proposal:${id}:update:first_reply`, to: { email: "fr-person@example.test" }, subject: "We have taken up your proposal" });
+      expect(updates()[0]).toMatchObject({ kind: "essential", idempotencyKey: `open-proposal:${id}:update:first_reply`, to: { email: "fr-person@example.test" }, subject: "We've picked up your proposal" });
       expect(updates()[0].text).toContain("You'll hear from us within one moon cycle.");
       // No account yet: email only, nothing on any profile.
       expect(state.notices.filter((n) => n.type === "applicant_update")).toEqual([]);
@@ -858,7 +882,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(updates()).toHaveLength(1);
       expect(updates()[0]).toMatchObject({ idempotencyKey: `open-proposal:${id}:update:conversation:2`, to: { email: "conv-person@example.test" } });
       expect(updates()[0].text).toContain("Data Role");
-      expect(updates()[0].text).toContain("about 20 minutes");
+      // No length per call (the lead, 27 Nov 2026: "drop the per-conversation figures").
+      expect(updates()[0].text).not.toContain("minutes");
       // Scoring the same one again is refused, and tells nobody again.
       await score(id, Number(ivs[0].id), IA.id);
       expect(updates()).toHaveLength(1);
@@ -917,7 +942,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       const ivs = await interviews(id);
       await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id);
       await score(id, Number(ivs[0].id), IA.id, "strong");
-      const mail = state.sent.find((m) => m.to.email === "letterlink@example.test" && m.subject === "We would love to talk with you");
+      const mail = state.sent.find((m) => m.to.email === "letterlink@example.test" && m.subject === "Let's talk");
       expect(mail, "the conversation letter was sent").toBeTruthy();
       // The audit's finding: this letter used to say the link was "in the first email".
       const link = /https?:\/\/\S+\/application-status\/\S+/.exec(mail!.text)?.[0];

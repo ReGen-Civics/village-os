@@ -286,12 +286,14 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:invited`)!;
     expect(letter.subject).toBe("An invitation to talk with Test Village");
     const lines = letter.text.split("\n");
-    // Each conversation is named "Role (First)" with the person holding it (shared/roleHolderLabel.ts).
-    expect(lines).toContain("1. Channel Role (Iva), 60 minutes");
-    expect(lines).toContain("2. Data Role (Ivo), 30 minutes");
-    expect(lines).toContain("3. Build Role (Ida), 30 minutes");
-    expect(letter.text, "never the holder's last name").not.toContain("Alder");
-    expect(letter.text).toContain("About 120 minutes in all.");
+    // Each conversation is named by its ROLE only, as a list (the lead, 27 Nov 2026: "Book with Ops/Community/Visionary"),
+    // in order, with one total for all of them ("~90 min in all or longer if needed").
+    const at = lines.indexOf("Your conversations, in order:");
+    expect(lines.slice(at + 1, at + 4)).toEqual(["- A conversation with Channel Role", "- A conversation with Data Role", "- A final conversation with Build Role"]);
+    const next = lines.indexOf("Next step:");
+    expect(lines.slice(next + 1, next + 4).every((l: string) => l.startsWith("- ")), "the next step is a list").toBe(true);
+    for (const person of ["Iva", "Ivo", "Ida", "Alder"]) expect(letter.text, "no holder's name").not.toContain(person);
+    expect(letter.text).toContain("About 120 minutes in all, or longer if needed.");
     expect(letter.text).toContain("We loved your budget.");
     // The second answer is refused: one answer per application.
     const again = await call("POST", `/api/governance/open-proposals/${id}/not-invited`, {}, FOUNDER.id);
@@ -302,14 +304,29 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     expect(st.body.status.path.slice(0, 4).map((p: any) => p.state)).toEqual(["done", "done", "done", "now"]);
   });
 
+  it("REVIEWED FIRST (QA round 5): the second conversation opens only on a shortlist yes, so its link never goes out during Our review", async () => {
+    const { id } = await confirmed("second-waits@example.test");
+    expect((await call("POST", `/api/governance/open-proposals/${id}/invite`, {}, FOUNDER.id)).status).toBe(200);
+    const [first] = await interviews(id);
+    state.sent.length = 0;
+    expect((await score(id, Number(first.id), IA.id)).status).toBe(200);
+    // Written up, not yet shortlisted: the second stays waiting, and no letter about it goes.
+    expect((await interviews(id)).map((i: any) => i.state).slice(0, 2)).toEqual(["scored", "waiting"]);
+    expect(state.sent.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`))).toEqual([]);
+    expect((await call("POST", `/api/governance/applications/${id}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await interviews(id)).map((i: any) => i.state).slice(0, 2)).toEqual(["scored", "open"]);
+  });
+
   it("the not-invited letter is warm, points to the village's way to stay close, quests and events, and closes the application", async () => {
     const { id } = await confirmed("not-invited@example.test");
     const out = await call("POST", `/api/governance/open-proposals/${id}/not-invited`, {}, FOUNDER.id);
     expect(out.status, JSON.stringify(out.body)).toBe(200);
     const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:not-invited`)!;
     expect(letter.subject).toBe("Thank you for applying to Test Village");
-    expect(letter.text).toContain("more closely matched to this role");
-    expect(letter.text).toContain("Thank you for your time and interest.");
+    // Ruling 12: "we can't say yes this time", and the roles open again with the next season.
+    expect(letter.text).toContain("We can't say yes this time.");
+    expect(letter.text).not.toContain("more closely matched");
+    expect(letter.text).toContain(`Our roles open again each season. Season of Roots begins 1 January 2037, and you're welcome to apply again: ${ORIGIN}/roles`);
     expect(letter.text, "the lead cut the paragraph explaining it is not personal (12 Nov 2026)").not.toContain("it is not personal");
     expect(letter.text).toContain(`Friends of the Village: ${ORIGIN}/resident`);
     expect(letter.text).toContain(`Take a quest: ${ORIGIN}/quests`);
@@ -321,6 +338,7 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     const st = await statusOf(id);
     expect(st.body.status.notInvited).toBe(true);
     expect(st.body.status.stayClose).toEqual({ name: "Friends of the Village", href: "/resident" });
+    expect(st.body.status.nextSeason).toEqual({ name: "Season of Roots", startsOn: "2037-01-01" });
     expect(st.body.status.path.map((p: any) => p.label)).toEqual(["Received", "Our review"]);
     // CONTROL: an invitation after it is refused.
     expect((await call("POST", `/api/governance/open-proposals/${id}/invite`, {}, FOUNDER.id)).status).toBe(409);

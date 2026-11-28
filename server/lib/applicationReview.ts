@@ -67,7 +67,7 @@ import { consentClosesAt } from "../../shared/roleProposalConsent";
 import { inTransaction } from "../repos/liveSessions";
 import * as repo from "../repos/applicationReview";
 import { readApplication as readSeatApplication } from "../repos/seatApplications";
-import { referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
+import { referencesEditable, referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
 import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
 import { listOrgRoles } from "./orgChart";
@@ -80,7 +80,10 @@ import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
-import { stepBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
+import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
+import { sectionsForMany } from "./roleCardSections";
+import { roleBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
+import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { FINAL_CALL_ROLE_VARIABLE } from "../../shared/applicantOnboarding";
 
 /** The people holding the role the village names for the final call (`org.final_call_role`), or none when it names none. */
@@ -179,14 +182,20 @@ export async function beginReview(
   const setup = await setupFor(db, p.roleIds);
   // Our review is for an open proposal: the doors that answer it are the open proposal's page.
   const reviewFirst = !!p.reviewFirst && kindOfRef(p.ref) === "open";
-  // Reviewed first, the decision is the circle's consent after the conversations, so the ask always waits.
-  const holdConsent = reviewFirst || (!!deps.consentAfterInterviews?.() && setup.interviewers.length > 0 && kindOfRef(p.ref) === "open");
+  // RULING 23 (QA round 5): consent is asked only at the send, whatever the village's variables say, for every open
+  // application whose role names conversations (`sendToCircle`). Reviewed first, it always waits too.
+  void deps;
+  const holdConsent = reviewFirst || (setup.interviewers.length > 0 && kindOfRef(p.ref) === "open");
+  // THE DAY APPLICATIONS CLOSE, STAMPED AT ARRIVAL (QA round 5): read from the role card (`sections.applyBy`, the one
+  // source the card itself shows), the latest of the roles applied for. Changing or clearing it later re-times nothing.
+  const cards = await sectionsForMany(db as any, p.roleIds).catch(() => new Map());
+  const applyBy = p.roleIds.map((id) => cards.get(id)?.applyBy ?? null).filter((d): d is string => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().pop() ?? null;
   const statusToken = p.applicantUserId ? null : crypto.randomBytes(24).toString("base64url");
   await repo.stampStep(db, {
     ref: p.ref,
     kind: "confirmed",
     at: p.at,
-    detail: { roleIds: p.roleIds, criteria: setup.criteria, mode: setup.mode, holdConsent, reviewFirst, applicantUserId: p.applicantUserId, statusHash: statusToken ? hashToken(statusToken) : null },
+    detail: { roleIds: p.roleIds, criteria: setup.criteria, mode: setup.mode, holdConsent, reviewFirst, applicantUserId: p.applicantUserId, statusHash: statusToken ? hashToken(statusToken) : null, ...(applyBy ? { applyBy } : {}) },
   });
   await repo.insertInterviews(db, p.ref, setup.interviewers, p.at, !reviewFirst);
   if (!setup.interviewers.length) await repo.stampStep(db, { ref: p.ref, kind: "scores_in", at: p.at });
@@ -194,7 +203,7 @@ export async function beginReview(
 }
 
 /** After commit: the first interviewer's holders hear it waits on them. A retry writes nothing twice (stable keys). Reviewed first, nobody hears until the invitation. */
-export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, start: ReviewStart, applicantFirstName: string | null): Promise<void> {
+export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant"> & Partial<Pick<ReviewDeps, "liveHoldersOf" | "members">>, start: ReviewStart, applicantFirstName: string | null): Promise<void> {
   const first = start.interviews[0];
   if (!first || start.reviewFirst) return;
   await tellInterviewers(deps, start.ref, 1, first.roleId, first.minutes, applicantFirstName);
@@ -214,21 +223,38 @@ export async function stepBookingOf(db: Db, ref: string, roleId: string): Promis
   const people = await repo.bookingLinksOfMembers(db, holders);
   const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
   const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;
-  return stepBookingFor(roleName, people, roleUrl);
+  const label = roleShortLabel(roleId, roleName, stringVar(ROLE_SHORT_LABELS_VARIABLE));
+  // RULING 17 (the lead, 27 Nov 2026): with a role's application deadline, nothing is booked before its review window
+  // opens (QA pass 2: an Ops link stood open beside "we review 1 to 2 weeks after"). The step is named, with no link.
+  if (!repo.reviewWindowOpen(await repo.applicationDeadline(db, ref).catch(() => null), new Date())) return roleBookingFor(label, [], null);
+  // By the role only (the lead, 27 Nov 2026: "Just the Role - Ops, Community, Visionary"): its short label, and the
+  // role's own link before any holder's (shared/interviewBooking.ts `roleBookingFor`).
+  return roleBookingFor(label, people, roleUrl);
 }
 
-export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
+export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant"> & Partial<Pick<ReviewDeps, "liveHoldersOf" | "members">>, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
   const pool = deps.getPool();
   // The person who proposed hears the next conversation is asked for, once each (stable part). The first opens as they confirm, and their status email covers it.
   if (kindOfRef(ref) === "open" && deps.tellApplicant && position > 1) {
-    // The conversation that just opened is booked with the person holding its role (their own link), else the role's link, or we write with times.
-    // It is named "Role (First, First)".
-    const step = await stepBookingOf(pool, ref, roleId);
-    await deps.tellApplicant(ref, "conversation", { part: String(position), withRole: step.label, minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    // ONE LETTER FOR THE MOMENT (the lead, 27 Nov 2026): a conversation opening can begin a stage (the final one
+    // begins Final conversation), and that stage's next-step letter carries this conversation's booking link. When
+    // the stage's letter had already gone, the conversation's own letter says it opened.
+    if (!(await deps.tellApplicant.stage?.(ref))) {
+      // Booked by the role only: its short label, the role's link first (`stepBookingOf`).
+      const step = await stepBookingOf(pool, ref, roleId);
+      await deps.tellApplicant(ref, "conversation", { part: String(position), withRole: step.label, minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    }
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
+  // Never the applicant's own account, even when they hold the role (QA round 5); nobody else holds it: the placers.
+  const holders: string[] = [];
   for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
-    if (recused.has(userId)) continue;
+    if (recused.has(userId) || (await isTheApplicant(deps, ref, userId))) continue;
+    holders.push(userId);
+  }
+  const told = holders.length ? holders : (await (deps as ReviewDeps).liveHoldersOf?.(ADOPTING_POWER).catch(() => [] as string[])) ?? [];
+  for (const userId of told) {
+    if (recused.has(userId) || (await isTheApplicant(deps, ref, userId))) continue;
     await deps.notify({
       userId,
       type: "application_interview_turn",
@@ -262,6 +288,16 @@ async function confirmedDetail(db: Db, ref: string): Promise<{ roleIds: string[]
 }
 
 /** Whether this account is the applicant. By stored account, or for an open proposal by its address's account. */
+/**
+ * Whether a team notice would reach the applicant's own account (QA round 5): the account stamped at confirm, or the
+ * account the application is trusted to be. A notice is never sent there, whatever role they hold.
+ */
+async function isTheApplicant(deps: Pick<ReviewDeps, "getPool"> & Partial<Pick<ReviewDeps, "members">>, ref: string, userId: string): Promise<boolean> {
+  if ((await confirmedDetail(deps.getPool(), ref))?.applicantUserId === userId) return true;
+  if (!deps.members) return false;
+  return isApplicant(deps as ReviewDeps, ref, userId).catch(() => false);
+}
+
 export async function isApplicant(deps: ReviewDeps, ref: string, userId: string): Promise<boolean> {
   const pool = deps.getPool();
   if (kindOfRef(ref) !== "open") {
@@ -320,7 +356,11 @@ export async function submitScore(deps: ReviewDeps, p: { ref: string; interviewI
     const next = nextAfter(after, iv.position);
     // The final conversation never opens by itself (the lead, 27 Nov 2026: "once they have their proposal solid and
     // they passed this step they move to their final conversation"): a person moves the application there.
-    if (next && !next.final && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
+    // REVIEWED FIRST (QA round 5): the conversation after the first belongs to References and proposal, which a
+    // shortlist yes begins. Until that yes it stays waiting (its link once went out during Our review);
+    // `openAfterShortlist` opens it then.
+    const waitsForYes = d.reviewFirst && !(await repo.stepsOf(conn, p.ref)).some((s) => s.kind === "shortlist" && s.detail?.answer === "yes");
+    if (next && !next.final && !waitsForYes && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
     else if (interviewsDone(after)) {
       scoresIn = await repo.stampStep(conn, { ref: p.ref, kind: "scores_in", at });
     }
@@ -337,10 +377,39 @@ async function afterMove(deps: ReviewDeps, ref: string, opened: { position: numb
     const name = kindOfRef(ref) === "open" ? ((await proposals.readOpenProposal(deps.getPool(), ref))?.name ?? null) : null;
     await tellInterviewers(deps, ref, opened.position, opened.roleId, opened.minutes, firstName(name));
   }
+  // A written-up conversation can begin References and proposal (the first) or Agreement (the final one): that
+  // stage's next-step letter, once (server/lib/applicantStageLetters.ts).
+  const staged = kindOfRef(ref) === "open" ? !!(await deps.tellApplicant?.stage?.(ref)) : false;
+  // Ruling 7 (QA round 5, item 8): the final written up, its own letter, once: refine, then send it on.
+  if (kindOfRef(ref) === "open") await deps.tellApplicant?.ready?.(ref);
   if (scoresIn) {
     await deps.notifyAdmins("governance", REVIEW_WORDS.interviewsDone(await roleNamesOf(deps, ref)), `app:${ref}:scores-in`, scorecardHref(ref));
-    if (holdConsent) await openConsentRound(deps, ref);
+    // RULING 7 (the lead, 27 Nov 2026): the circle's consent round waits for the proposal to be SENT to the anchor
+    // circle (server/lib/applicantOnboarding.ts `sendToCircle`). Writing up the last conversation opens nothing: QA
+    // pass 1 saw "Your proposal is with the circle" after the Community write-up, before the final call.
+    void staged;
+    void holdConsent;
   }
+}
+
+/**
+ * A SHORTLIST YES OPENS THE NEXT CONVERSATION (QA round 5), when the one before it is done and it was held back for
+ * the yes (reviewed first). Its holders hear it; the applicant's letter is References and proposal's own.
+ */
+export async function openAfterShortlist(deps: ReviewDeps, ref: string): Promise<void> {
+  const pool = deps.getPool();
+  const at = deps.now();
+  const opened = await inTransaction(pool, async (conn) => {
+    const list = [...(await repo.interviewsOf(conn, ref, true))].sort((a, b) => a.position - b.position);
+    const talks = list.filter((i) => !i.final);
+    if (talks.some((i) => i.state === "open")) return null;
+    const next = talks.find((i) => i.state === "waiting");
+    if (!next || !talks.some((i) => i.state === "scored" || i.state === "skipped")) return null;
+    return (await repo.openInterview(conn, next.id, at)) ? { position: next.position, roleId: next.roleId, minutes: next.minutes } : null;
+  });
+  if (!opened) return;
+  const name = kindOfRef(ref) === "open" ? ((await proposals.readOpenProposal(pool, ref))?.name ?? null) : null;
+  await tellInterviewers(deps, ref, opened.position, opened.roleId, opened.minutes, firstName(name));
 }
 
 const firstName = (full: string | null): string | null => (full ? (full.trim().split(/\s+/)[0] ?? null) : null);
@@ -359,7 +428,7 @@ async function roleNamesOf(deps: ReviewDeps, ref: string): Promise<string[]> {
  * Does nothing twice: a proposal that already has asks, or is no longer waiting,
  * is left alone.
  */
-export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<boolean> {
+export async function openConsentRound(deps: ReviewDeps, ref: string, opts: { tellApplicant?: boolean } = {}): Promise<boolean> {
   if (kindOfRef(ref) !== "open") return false;
   const pool = deps.getPool();
   const p = await proposals.readOpenProposal(pool, ref);
@@ -367,12 +436,17 @@ export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<b
   if ((await asksFor(pool, [ref])).get(ref)?.length) return false;
   const at = deps.now();
   const closesAt = consentClosesAt(at, deps.calendar().timezone || "UTC");
-  const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
   const own = await trustedAccountFor(deps.members, p, pool);
-  const circles: string[] = [];
-  for (const r of p.body.roles) {
-    const c = circleOf.get(r.roleId);
-    if (c && !circles.includes(c)) circles.push(c);
+  // THE ANCHOR CIRCLE IS ASKED (QA round 5: every word says Anchor Circle), its holders; the applied roles' own
+  // circles only in a village that marks no anchor circle.
+  const anchor = await repo.anchorCircleIdOf(pool);
+  const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
+  const circles: string[] = anchor ? [anchor] : [];
+  if (!anchor) {
+    for (const r of p.body.roles) {
+      const c = circleOf.get(r.roleId);
+      if (c && !circles.includes(c)) circles.push(c);
+    }
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
   const holders = await holdersInCircles(pool, circles);
@@ -387,7 +461,7 @@ export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<b
   // An AI agent holding a role is never asked (D31); the round says so.
   const agents = await repo.agentRoleNamesInCircles(pool, circles);
   await repo.stampStep(pool, { ref, kind: "consent", at, detail: agents.length ? { skippedAgents: agents } : undefined });
-  if (deps.tellApplicant) await deps.tellApplicant(ref, "consent");
+  if (deps.tellApplicant && opts.tellApplicant !== false) await deps.tellApplicant(ref, "consent");
   const names = await roleNamesOf(deps, ref);
   const closesOn = civilDateKey(new Date(closesAt.getTime() - 1), deps.calendar().timezone || "UTC");
   for (const a of asked) {
@@ -530,12 +604,23 @@ export async function hasRecused(deps: Pick<ReviewDeps, "getPool">, ref: string,
 
 // ── Our review: invite, or not (Phase A) ────────────────────────────────────
 
-/** `label` is the role with the people holding it: "Role (First, First)". */
-export type ConversationListed = { roleId: string; role: string; label: string; minutes: number; bookingUrl: string | null; bookingLinks: BookingLink[] };
+/** `label` is the role, as its booking button says it ("Ops"). */
+export type ConversationListed = { roleId: string; role: string; label: string; minutes: number; bookingUrl: string | null; bookingLinks: BookingLink[]; final?: boolean };
 
 export type ReviewAnswer =
   | { ok: true; conversations: ConversationListed[] }
   | { ok: false; status: number; error: string; code: "none" | "done" | "gone" };
+
+/** The first season that begins after now, by name and first day: when a declined applicant may apply again. */
+function nextSeasonOf(deps: Pick<ReviewDeps, "calendar">, now: Date): { name: string | null; startsOn: string } | null {
+  const cal = deps.calendar();
+  const today = civilDateKey(now, cal.timezone || "UTC");
+  const next = cal.seasons
+    .map((x: any) => ({ name: typeof x?.name === "string" && x.name.trim() ? x.name.trim() : null, startsOn: String(x?.startsOn ?? "").slice(0, 10) }))
+    .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.startsOn) && x.startsOn > today)
+    .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
+  return next ?? null;
+}
 
 /** The application's conversations in order, by role name and minutes, each with how it is booked (`stepBookingOf`): what the invitation lists. */
 export async function conversationsOf(db: Db, ref: string): Promise<ConversationListed[]> {
@@ -544,9 +629,28 @@ export async function conversationsOf(db: Db, ref: string): Promise<Conversation
   const out: ConversationListed[] = [];
   for (const i of list) {
     const step = await stepBookingOf(db, ref, i.roleId);
-    out.push({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, label: step.label, minutes: i.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+    out.push({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, label: step.label, minutes: i.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links, ...(i.final ? { final: true } : {}) });
   }
   return out;
+}
+
+/** How long a final conversation is said to run when no role card names it. */
+const FINAL_MINUTES = 30;
+
+/**
+ * THE CONVERSATIONS THE INVITATION NAMES (the lead, 27 Nov 2026: "mention all 3 calls"): the application's own, and the
+ * final one with the role that makes the final call when the role's list names none (it opens later, by a person's
+ * move). No booking link rides on it: a later step's link is never given early.
+ */
+export async function conversationsToName(db: Db, ref: string): Promise<ConversationListed[]> {
+  const list = await conversationsOf(db, ref);
+  if (list.some((c) => c.final)) return list;
+  const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
+  if (!roleId) return list;
+  const name = (await repo.roleNamesById(db, [roleId])).get(roleId);
+  if (!name) return list;
+  const label = roleShortLabel(roleId, name, stringVar(ROLE_SHORT_LABELS_VARIABLE));
+  return [...list, { roleId, role: name, label, minutes: FINAL_MINUTES, bookingUrl: null, bookingLinks: [], final: true }];
 }
 
 /** Whether our review still waits on this application: it has a review step and nobody has answered it. */
@@ -662,7 +766,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { hasAccount: boolean; nextSeason: { name: string | null; startsOn: string } | null; roles: string[]; roleIds: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[]; booked: string | null; zone: string } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyMoons: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean; mayEdit: boolean; reached?: boolean[] } | null; reviewAfter: string | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; objections: string[]; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -701,14 +805,24 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   // The references a shortlisted applicant is asked for: a count once given, never the details back, and the form while it waits.
   const refsAsked = steps.some((x) => x.kind === "refs_asked");
   const refsGiven = steps.some((x) => x.kind === "refs_given");
-  const referencesAsked = refsAsked ? { given: refsGiven ? await countReferences(pool, ref) : null, mayAdd: !refsGiven && !decidedStep } : null;
+  // Once given, the applicant may replace them until somebody reaches out (the lead, 27 Nov 2026).
+  const mayEdit = refsGiven && !decidedStep && kindOfRef(ref) === "open" ? await referencesEditable(pool, ref) : false;
+  // Each reference reached or not, by its place in the list: never a name, a contact or a note (the lead, 27 Nov 2026).
+  const reached = refsGiven ? (await storedReferencesOf(pool, ref)).map((r) => !!r.followedUpAt) : [];
+  // The roles' application deadline, when one is set (0445): the page says when review happens.
+  const reviewAfter = await repo.applicationDeadline(pool, ref).catch(() => null);
+  const referencesAsked = refsAsked ? { given: refsGiven ? reached.length : null, mayAdd: !refsGiven && !decidedStep, mayEdit, ...(refsGiven ? { reached } : {}) } : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
   // The conversation open now, and how to book it (`stepBookingOf`): the later ones are offered only as they open, in order.
   // When several people hold the role and each keeps a link, each is listed by first name so the applicant can pick.
   const openNow = bookingShown && !outcome ? interviews.find((i) => i.state === "open") ?? null : null;
   const now = openNow ? await stepBookingOf(pool, ref, openNow.roleId) : null;
-  const bookNow = openNow && now ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links, ...(openNow.final ? { final: true } : {}) } : null;
+  // With the time the applicant said they booked ("I've booked it", shared/callBooked.ts), and the village's zone to
+  // say it beside theirs. Never who it is with: the role only.
+  const bookNow = openNow && now
+    ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links, ...(openNow.final ? { final: true } : {}), booked: openNow.bookedAt ? openNow.bookedAt.toISOString() : null, zone: stringVar(ALL_HANDS_VARIABLES.zone).trim() }
+    : null;
   return {
     ...s,
     roles: (d?.roleIds ?? []).map((id) => roleNames.get(id) ?? id),
@@ -723,10 +837,18 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     afterFounding: !firstReplied && (await afterFounding(pool, d?.roleIds ?? [])),
     referencesGiven,
     referencesAsked,
+    reviewAfter,
     locale: own ? languageOf(own) : "en",
     note: own?.body.note ?? null,
     offer: outcome ? null : await applicantOffer(pool, ref),
+    // Ruling 12: a decline at our review shows when the roles open again, the next season's first day.
+    nextSeason: outcome === "declined" ? nextSeasonOf(deps, deps.now()) : null,
+    // What the circle raised in its consent round, naming nobody: the applicant may read it (the lead, 27 Nov 2026:
+    // "the anchor circle members and the applicant can see this but not anyone else").
+    objections: kindOfRef(ref) === "open" ? ((await asksFor(pool, [ref])).get(ref) ?? []).filter((a) => a.answer === "object" && a.reason).map((a) => a.reason as string) : [],
     reviewFirst: stage !== null,
+    // An application made from an account here: adopted, it signs in to its roles, never waits for an invitation.
+    hasAccount: !!d?.applicantUserId,
     notInvited: stage === "not_invited",
     stayClose: stage === "not_invited" ? stayCloseProgram() : null,
     // Closed by the tidy job because nobody answered in time (server/lib/applicantFollowups.ts): the page says closed, never "you withdrew".
@@ -749,6 +871,8 @@ export async function statusByToken(deps: ReviewDeps, ref: string, token: string
   if (!token) return null;
   const d = await confirmedDetail(deps.getPool(), ref);
   if (!d) return null;
+  // Closed and its details removed: the link stops working, whatever it says (the lead, 27 Nov 2026).
+  if (kindOfRef(ref) === "open" && (await proposals.isAnonymised(deps.getPool(), ref))) return null;
   if (d.statusHash) {
     const a = Buffer.from(hashToken(token));
     const b = Buffer.from(d.statusHash);
@@ -757,6 +881,23 @@ export async function statusByToken(deps: ReviewDeps, ref: string, token: string
   const link = verifyLink("application_status", token);
   if (link && link.ref === ref) return statusOf(deps, ref);
   return null;
+}
+
+/**
+ * A LINK TO AN APPLICATION SINCE CLOSED AND CLEARED (QA round 5): the page says it closed, instead of "that link does
+ * not match a proposal". Only for a link that proves itself (the signed link every letter carries, or the first
+ * email's token while its hash is still kept), so a ref cannot be probed: a wrong token still answers the plain 404.
+ */
+export async function closedByToken(deps: Pick<ReviewDeps, "getPool">, ref: string, token: string): Promise<boolean> {
+  if (!token || kindOfRef(ref) !== "open") return false;
+  if (!(await proposals.isAnonymised(deps.getPool(), ref))) return false;
+  const link = verifyLink("application_status", token);
+  if (link && link.ref === ref) return true;
+  const d = await confirmedDetail(deps.getPool(), ref);
+  if (!d?.statusHash) return false;
+  const a = Buffer.from(hashToken(token));
+  const b = Buffer.from(d.statusHash);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 // ── Clocks: reminders only ──────────────────────────────────────────────────
@@ -783,14 +924,19 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
   const roleId = (deps.onboardingRole?.() ?? "").trim();
   const onboarding = roleId ? await repo.liveHoldersOfRole(pool, roleId) : [];
   const tell = async (kind: "application_first_reply_due" | "application_stale", title: string, key: string, ref: string) => {
-    if (onboarding.length) {
+    // Never the applicant's own account, even when they hold the welcoming role (QA round 5).
+    const team: string[] = [];
+    for (const userId of onboarding) if (!(await isTheApplicant(deps, ref, userId))) team.push(userId);
+    if (team.length) {
       // The type is spelled out in the call, so the notification catalogue's producer scan sees both kinds.
-      for (const userId of onboarding) await deps.notify({ userId, type: kind === "application_stale" ? "application_stale" : "application_first_reply_due", title, link: scorecardHref(ref), actorUserId: null, dedupeKey: `${key}:${userId}` });
+      for (const userId of team) await deps.notify({ userId, type: kind === "application_stale" ? "application_stale" : "application_first_reply_due", title, link: scorecardHref(ref), actorUserId: null, dedupeKey: `${key}:${userId}` });
     } else {
       await deps.notifyAdmins("governance", title, key, scorecardHref(ref));
     }
   };
   for (const r of await repo.openReviews(pool)) {
+    // Waiting for its role's review window (1 to 2 weeks after the deadline, the lead): not stalled, so no reminder.
+    if (!repo.reviewWindowOpen(await repo.applicationDeadline(pool, r.ref).catch(() => null), now)) continue;
     const names = await roleNamesOf(deps, r.ref);
     if (!r.firstReplyAt) {
       // Reviewed first, the first reply IS our review's answer, and the reminder says what to do.
@@ -808,6 +954,20 @@ export async function reviewClockTick(deps: ReviewDeps): Promise<TickSummary> {
       await tell("application_stale", REVIEW_WORDS.stale(names), `app:${r.ref}:stale:${r.lastAt.getTime()}:${bucket}`, r.ref);
       out.stale++;
     }
+  }
+  // The gentle nudges (the lead, 27 Nov 2026): reminders only, each once (server/lib/applicantNudges.ts).
+  try {
+    const { nudgeTick } = await import("./applicantNudges");
+    await nudgeTick(deps);
+  } catch (e) {
+    console.error("[application-review] the nudges did not run", e);
+  }
+  // A stage letter a provider fault stopped goes again, still once (QA pass 3).
+  try {
+    const open = (await repo.openReviews(pool)).map((r) => r.ref).filter((ref) => kindOfRef(ref) === "open");
+    if (open.length) await deps.tellApplicant?.retry?.(open);
+  } catch (e) {
+    console.error("[application-review] the stage letters could not be tried again", e);
   }
   return out;
 }

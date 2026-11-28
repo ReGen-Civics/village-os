@@ -32,7 +32,7 @@ import MyMoonMount, { holdsReviewPower } from "@/components/myMoon/MyMoonMount";
 import RolesBand from "@/components/profileDash/RolesBand";
 import ProposeBanner from "@/components/roleProposal/ProposeBanner";
 import ProposeRolesEntry from "@/components/roleProposal/ProposeRolesEntry";
-import YourMoveCard from "@/components/profile/YourMoveCard";
+import YourMoveCard, { ApplicantCards } from "@/components/profile/YourMoveCard";
 import SurfacedBanner from "@/components/profile/SurfacedBanner";
 import { useSurfaced } from "@/components/profile/useSurfaced";
 import TheVessel from "@/components/profile/TheVessel";
@@ -471,7 +471,7 @@ export default function Profile() {
             {/* YOUR PATH, the one featured card (the Root): the next step, what comes after, and the walk so
                 far. The steps before a role starts and the texts waiting on the reader are drawn inside it, so
                 the page has one "next" and no second card. On a server older than the path, the two cards stand alone. */}
-            {path ? (
+            <div className={`empty:hidden ${tabOf(["today"])}`}><ApplicantCards /></div>{path ? (
               <div className={tabOf(["today", "roles"])}>
                 <YourPathCard path={path}>
                   <RoleStartSteps embedded skipHref={path.step.href} onShown={setStartStepsShown} />

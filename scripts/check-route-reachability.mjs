@@ -73,6 +73,11 @@ const ALLOWLIST = {
   // purpose. Excluded from the route list by the deriver too; belt and braces.
   "/404": "the not-found page, reached by failing to reach something else",
 
+  // One application's references page for the team (the lead, 27 Nov 2026: "a link for the reference page ... to be
+  // able to share with the team"). Its door is the walkthrough's own link on that application's page, built from the
+  // application's id; the link is then shared among the team by hand. Never linked from an applicant's page or email.
+  "/open-proposals/:id/references": "the team's references page for one application, reached from its walkthrough and shared by hand",
+
   // One org chart draft's page (the lead, 26 Nov 2026). Every door to it is built by `draftPageHref(id)` in
   // shared/orgDraftView.ts, because the address carries the draft's id: the review row's "Read the draft", every
   // org draft in Your work and the Find box (shared/reviewInbox.ts), and another open draft on the same role. A

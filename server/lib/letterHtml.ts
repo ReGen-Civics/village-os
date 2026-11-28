@@ -44,13 +44,43 @@ export interface LetterAction {
   label: string;
 }
 
+/**
+ * One paragraph as HTML. Lines that start with "- " are a list in the plain text, so they become a real list here
+ * (the lead, 27 Nov 2026: "make these bullet points when there are multiple steps"); the other lines stay a paragraph.
+ */
+function paragraphHtml(para: string): string {
+  const out: string[] = [];
+  let text: string[] = [];
+  let items: string[] = [];
+  const flushText = () => {
+    if (text.length) out.push(`<p>${text.map((l) => linked(escapeHtml(l))).join("<br>")}</p>`);
+    text = [];
+  };
+  const flushItems = () => {
+    if (items.length) out.push(`<ul style="margin:0 0 16px;padding-left:20px">${items.map((l) => `<li style="margin:0 0 6px">${linked(escapeHtml(l))}</li>`).join("")}</ul>`);
+    items = [];
+  };
+  for (const line of para.split("\n")) {
+    if (line.startsWith("- ")) {
+      flushText();
+      items.push(line.slice(2));
+    } else {
+      flushItems();
+      text.push(line);
+    }
+  }
+  flushText();
+  flushItems();
+  return out.join("");
+}
+
 /** The paragraphs of `text` (split on blank lines) as escaped HTML, every http(s) address a link, and the action's button after its link. */
 export function letterParagraphs(text: string, opts: { action?: LetterAction | null; accent?: string } = {}): string {
   let placed = false;
   return text
     .split("\n\n")
     .map((para) => {
-      const html = `<p>${linked(escapeHtml(para)).replace(/\n/g, "<br>")}</p>`;
+      const html = paragraphHtml(para);
       if (opts.action && !placed && para.includes(opts.action.href)) {
         placed = true;
         return html + button(opts.action.href, opts.action.label, opts.accent ?? LETTER_ACCENT);

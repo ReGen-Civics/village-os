@@ -32,7 +32,7 @@ describe("a kind no's next steps", () => {
     };
     const text = declineNextStepsLines((k) => words[k] ?? "", { site: SITE, on: true }).join("\n");
     expect(text).toContain("Stay close, friend.");
-    expect(text).toContain("Try a quest:\nhttps://village.example/quests");
+    expect(text).toContain("- Try a quest: https://village.example/quests");
     expect(text).toContain("Join the Friends.");
     expect(text).toContain(`${SITE}/friends`);
     expect(text).not.toContain(DECLINE_STEPS_DEFAULTS.quests);

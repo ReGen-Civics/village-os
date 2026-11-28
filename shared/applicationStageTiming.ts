@@ -60,6 +60,12 @@ export interface StageTimingFacts {
   refsAllFollowedUpAt?: number | null;
   /** The decision was to adopt. Only an adoption ends Agreement; any other decision ends nothing. */
   adopted?: boolean;
+  /**
+   * RULING 7 (the lead, 27 Nov 2026): when the proposal was SENT to the anchor circle (the `to_circle` step), which is
+   * where Agreement begins; null while it has not been sent. Left out (a caller that does not know), Agreement begins
+   * at the last final conversation's write-up, the rule before ruling 7.
+   */
+  toCircleAt?: number | null;
 }
 
 const HOUR = 3_600_000;
@@ -107,6 +113,10 @@ function stageParts(f: StageTimingFacts): { at: Record<TimedStage, number | null
   if (referencesAt !== null && finalOpenedAt !== null && referencesAt > finalOpenedAt) referencesAt = finalOpenedAt;
   const finalsDone = finals.length > 0 && finals.every(isDone);
   const finalsDoneAt = finalsDone ? Math.max(...finals.map((i) => doneAt(i, finalOpenedAt) ?? finalOpenedAt ?? f.confirmedAt)) : null;
+  if (f.toCircleAt !== undefined) {
+    // Sent to the circle: a measured instant, never a guess. Not sent: no Agreement yet.
+    return { at: { review: f.confirmedAt, references: referencesAt, final_interview: finalOpenedAt, agreement: f.toCircleAt }, guessed };
+  }
   if (finalsDone && finals.some((i) => i.scoredAt === null)) guessed.add("agreement");
   return { at: { review: f.confirmedAt, references: referencesAt, final_interview: finalOpenedAt, agreement: finalsDoneAt }, guessed };
 }

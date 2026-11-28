@@ -24,6 +24,7 @@ describe("the door's words in the reader's language (lane ES-A)", () => {
       ],
       fromOutsideMoon: [["3 Nov", "1 Dec"]],
       adoptedEmailed: [[14]],
+      adoptedAccountOn: [["Monday 5 January 2037"]],
       adoptedNotEmailed: WHY,
       accountNotTold: WHY,
       declinedNotEmailed: WHY,
