@@ -39,7 +39,8 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
   curator: {
     "/api/places/reports": { status: 200, body: PLACES },
   },
-  // A greeter who moderates intake and is not an admin: invitation requests only. The forum's module is off here.
+  // A greeter who moderates intake and is not an admin. The invitation read would answer them, and its rows are
+  // decided on a tab of Admin they cannot open, so the list never shows them one. The forum's module is off here.
   greeter: {
     "/api/admin/visitors/invitations": { status: 200, body: INVITES },
     "/api/admin/forum/reports": { status: 404, body: { error: "module_off" } },
@@ -73,6 +74,8 @@ describe("the queues that sat on pages of their own, read as each person behind 
         return ANSWERS[who] ? { id: who } : null;
       },
       overLimit: async () => false,
+      // The server's own admin gate. Only the admin can open Admin; the curator and the greeter cannot.
+      isAdmin: async (req: any) => String(req.headers.authorization ?? "").replace("Bearer ", "") === "admin",
       clientIp: () => null,
       port: () => queuesPort,
       isMember: async () => true,
@@ -116,10 +119,33 @@ describe("the queues that sat on pages of their own, read as each person behind 
 
   it("a module that is off is off, and a queue that failed is unknown, never empty", async () => {
     const body = await read("greeter");
-    expect(body.items.map((i: any) => i.key)).toEqual(["invite:v1"]);
+    expect(body.items.map((i: any) => i.key)).toEqual([]);
     expect(stateOf(body, "report")).toBe("off");
     expect(body.sections.find((s: any) => s.source === "exit")).toMatchObject({ state: "failed", count: null });
-    expect(body.counts).toMatchObject({ decisions: 1, unknown: ["exit"] });
+    expect(body.counts).toMatchObject({ decisions: 0, unknown: ["exit"] });
+  });
+
+  // QA, 28 Nov 2026 (train 148, blocker B1): the invitation read is gated on `intake.moderate`, which is wider than
+  // its only page, a tab of Admin. A moderator who is not an admin was listed three rows whose door showed them
+  // nothing to press, and they were counted. On main that person sees neither the rows nor the count.
+  it("a moderator of intake who is not an admin gets no invitation rows and no count, and an admin still does", async () => {
+    asked.length = 0;
+    const greeter = await read("greeter");
+    expect(greeter.items.filter((i: any) => i.source === "invite")).toEqual([]);
+    expect(stateOf(greeter, "invite")).toBe("refused");
+    expect(greeter.sections.find((s: any) => s.source === "invite")).toMatchObject({ count: 0 });
+    expect(greeter.counts.decisions).toBe(0);
+    expect(greeter.counts.unknown).not.toContain("invite");
+    // Nothing was read on their behalf from a queue whose page they cannot open.
+    expect(asked.filter((a) => a.who === "greeter").map((a) => a.path)).not.toContain("/api/admin/visitors/invitations");
+    // Finding by id reaches no invitation row either.
+    const found = await fetch(`${base}/api/admin/review/find?q=v1`, { headers: { authorization: "Bearer greeter" } }); // module-review-ok: a test calling its own local server
+    expect(JSON.stringify(await found.json())).not.toContain("invite:v1");
+
+    const admin = await read("admin");
+    expect(admin.items.map((i: any) => i.key)).toContain("invite:v1");
+    expect(stateOf(admin, "invite")).toBe("ok");
+    expect(admin.sections.find((s: any) => s.source === "invite")).toMatchObject({ count: 1 });
   });
 
   it("no row names a person or carries what was said, for anybody", async () => {
