@@ -49,7 +49,7 @@ import { getPool } from "../db/pool";
 import { blockedLinesOf, draftChangeCap, listDrafts, loadPreviewContext, previewLoadedDraft } from "../lib/orgDrafts";
 import { communityChanges, communityHands, communityVotes, communityWaiting, type CommunityAnswer, type CommunityRead } from "../../shared/communityReview";
 
-type Deps = Pick<AppDeps, "authedUser" | "overLimit"> & {
+type Deps = Pick<AppDeps, "authedUser" | "overLimit" | "isAdmin"> & {
   port: () => number;
   clientIp: (req: express.Request) => string | null;
   /** A member at the member stage or past it who has not left: the community face's gate (the lead, 25 Nov 2026). */
@@ -59,6 +59,23 @@ type Deps = Pick<AppDeps, "authedUser" | "overLimit"> & {
 };
 
 type Read = (path: string) => Promise<{ status: number; body: unknown }>;
+
+/** The answer of a queue whose door is a tab of Admin, for a person who cannot open Admin: refused, with nothing read. */
+const NO_ADMIN_DOOR = { status: 403, body: null } as const;
+
+/**
+ * Whether the person asking can open Admin, by the server's own admin gate. Without that gate to ask (a test that
+ * registers this route with no `isAdmin`), the answer is no: an `adminDoor` queue is then shown to nobody, never to
+ * everybody.
+ */
+async function opensAdminNow(req: express.Request, deps: Deps): Promise<boolean> {
+  if (typeof deps.isAdmin !== "function") return false;
+  try {
+    return (await deps.isAdmin(req)) === true;
+  } catch {
+    return false;
+  }
+}
 
 /** Each queue's own read, as the person in this request. Timed out or unreadable is a failed section, never empty. */
 function readAs(req: express.Request, deps: Deps): Read {
@@ -129,8 +146,10 @@ export async function blockedDraftsNow(draftIds: readonly string[]): Promise<Map
  * failed (and still lists what the others gave), `refused` when none would let this person in, and `off` when its
  * module is off.
  */
-export async function readInbox(read: Read, facts?: InboxFacts): Promise<InboxSection[]> {
-  const answers = await Promise.all(INBOX_READS.map(async (r) => ({ r, a: await read(r.path) })));
+export async function readInbox(read: Read, facts?: InboxFacts, opensAdmin = false): Promise<InboxSection[]> {
+  // A queue whose rows are decided on a tab of Admin is not read for a person who cannot open Admin (`adminDoor`,
+  // shared/reviewInbox.ts). It answers as a queue that refused them, so it lists nothing and counts nothing.
+  const answers = await Promise.all(INBOX_READS.map(async (r) => ({ r, a: r.adminDoor && !opensAdmin ? NO_ADMIN_DOOR : await read(r.path) })));
   const states = new Map<InboxSource, SectionState[]>();
   const items = new Map<InboxSource, Map<string, InboxItem>>();
   for (const { r, a } of answers) {
@@ -224,7 +243,7 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`review-inbox:${String(user.id)}`, 60, 60_000)) return res.status(429).json({ error: "too_many" });
     // `?rows=structure:20`: more of a queue a person opened past its first page. Every queue is read again each time,
     // because one item is listed once ACROSS queues and only the whole read knows which queue it sits in.
-    const paged = pageInbox(await readInbox(readAs(req, deps), facts), rowsAsked(req.query.rows));
+    const paged = pageInbox(await readInbox(readAs(req, deps), facts, await opensAdminNow(req, deps)), rowsAsked(req.query.rows));
     res.set("Cache-Control", "no-store");
     res.json({
       sections: paged.sections,
@@ -270,7 +289,7 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in first." });
     if (await overLimit(`review-inbox:${String(user.id)}`, 60, 60_000)) return res.status(429).json({ error: "too_many" });
     const q = String(req.query.q ?? "").slice(0, 80);
-    const found = findInInbox(mergeSections(await readInbox(readAs(req, deps), facts)), q);
+    const found = findInInbox(mergeSections(await readInbox(readAs(req, deps), facts, await opensAdminNow(req, deps))), q);
     res.set("Cache-Control", "no-store");
     // A code that does not exist and a code this person may not see answer the same, so codes cannot be probed.
     if (!found.length) return res.status(404).json({ error: "not_found", code: searchedCode(q) });

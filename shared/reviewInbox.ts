@@ -86,6 +86,13 @@ export interface InboxRead {
   path: string;
   sources: readonly InboxSource[];
   read: (body: unknown) => InboxItem[];
+  /**
+   * These rows are decided on a tab of Admin, and the queue's own read lets in people who cannot open Admin. Such a
+   * person is shown no row and no count from it: the row's door would open a page with nothing to press (QA, 28 Nov
+   * 2026: a moderator of intake who is not an admin met three invitation rows that led nowhere). This only ever
+   * narrows. For everybody who can open Admin the queue's own gate still decides, as it does for every queue.
+   */
+  adminDoor?: true;
 }
 
 /** What an HTTP status means for a section. A 404 is a module that is off (the Sera read mounts behind its module). */
@@ -616,7 +623,7 @@ export const INBOX_READS: readonly InboxRead[] = [
   { path: "/api/admin/messages/reports", sources: ["report"], read: fromMessageReports },
   { path: "/api/places/reports", sources: ["photo"], read: fromPlaceReports },
   { path: "/api/admin/exits", sources: ["exit"], read: fromExits },
-  { path: "/api/admin/visitors/invitations", sources: ["invite"], read: fromInviteRequests },
+  { path: "/api/admin/visitors/invitations", sources: ["invite"], read: fromInviteRequests, adminDoor: true },
 ];
 
 // ── One list ────────────────────────────────────────────────────────────────
