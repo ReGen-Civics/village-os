@@ -39,7 +39,7 @@ export default function SeraListRow({ item, onChanged }: { item: InboxItem; onCh
           </p>
           <p className="text-sm text-foreground">{words.does}</p>
           <p className={HINT}>
-            <Trans context="review inbox: Sera's one row">Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. Nothing is taken without a person: pay, a new role apart from its circle, and anything marked Check first are each confirmed on their own.</Trans>
+            <Trans context="review inbox: Sera's one row">Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. A new role apart from its circle, and anything marked Check first, are each taken on their own. Pay is shown here and set where pay is set, by the people who set pay.</Trans>
           </p>
           {since ? (
             <p className={HINT}>
