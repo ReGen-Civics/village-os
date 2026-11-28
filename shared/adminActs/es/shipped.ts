@@ -12,9 +12,7 @@ const TABS: Readonly<Record<string, ActWords>> = {
   "tab.submissions": words("Formularios recibidos", "Lo que la gente envió, como pedir una visita o querer unirse.", ["formularios", "todos los formularios", "solicitudes", "postulaciones", "pedir una visita"]),
   "tab.portal-visitors": words("Visitantes del portal", "Todas las personas que entraron al portal, y quién pidió recibir noticias.", ["visitantes", "quién entró al portal", "lista de visitantes"]),
   "tab.feedback": words("Comentarios", "Notas que la gente envió sobre la aldea.", ["comentarios", "sugerencias", "opiniones", "reportes de errores"]),
-  "tab.quest-claims": words("Reclamos de misiones", "Misiones terminadas que esperan un testigo.", ["reclamos", "testigo", "misiones terminadas", "atestiguar"]),
-  "tab.forum-moderation": words("Moderación", "Publicaciones del foro que un miembro le pidió revisar.", ["moderación", "reportes del foro", "publicaciones reportadas", "denuncias"]),
-  "tab.message-reports": words("Reportes de mensajes", "Mensajes que un miembro le pidió revisar.", ["mensajes reportados", "reportes de mensajes", "denuncia de mensaje"]),
+  "tab.reports": words("Reportes", "Publicaciones del foro y mensajes que un miembro le pidió revisar.", ["reportes", "moderación", "publicaciones reportadas", "mensajes reportados", "denuncias"]),
   "tab.drafts": words("Borradores de la guía", "Borradores que esperan a que una persona los envíe o los descarte.", ["borradores", "borradores por enviar", "lo que redactó la guía"]),
   "tab.brain": words("Memoria de la aldea", "Lo que la guía ha aprendido para esta aldea.", ["memoria de la aldea", "lo que sabe la guía", "memoria", "cerebro de la aldea"]),
   "tab.failures": words("Qué está fallando", "Trabajo que no salió, y qué hacer después.", ["qué está fallando", "errores", "fallas", "reintentar", "algo se rompió"]),
@@ -38,7 +36,6 @@ const TABS: Readonly<Record<string, ActWords>> = {
   "tab.work-with-us": words("Trabaje con nosotros", "Los roles con los que la aldea pide ayuda.", ["trabaje con nosotros", "se busca ayuda", "ofertas de trabajo", "colaborar"]),
   "tab.faqs": words("Preguntas frecuentes", "Respuestas que la gente puede leer antes de preguntar.", ["preguntas frecuentes", "preguntas y respuestas", "dudas comunes"]),
   "tab.milestones": words("Avance de la construcción", "Lo que se ha construido, y lo que todavía falta.", ["avance de la construcción", "hitos", "qué se ha construido", "progreso"]),
-  "tab.visit-config": words("Programa de visitas", "Cómo funciona una visita, en palabras de esta aldea.", ["programa de visitas", "visitas", "venir a conocer"]),
   "tab.investor-summary": words("Resumen para inversionistas", "La página corta para quienes miran el emprendimiento.", ["resumen para inversionistas", "resumen financiero para inversionistas", "página de inversión"]),
   "tab.modules": words("Biblioteca de módulos", "Las partes adicionales de la aldea, y cuáles están encendidas.", ["biblioteca de módulos", "módulos", "encender", "apagar", "funciones"]),
   "tab.needs-admin": words("Para qué es esta aldea", "Las necesidades que la aldea ha asumido.", ["para qué es esta aldea", "necesidades", "propósito"]),
@@ -61,8 +58,6 @@ const TABS: Readonly<Record<string, ActWords>> = {
   "tab.tokens": words("Tokens", "Los tokens que usa esta aldea.", ["tokens", "fichas", "moneda", "reconocimiento"]),
   "tab.ledger": words("Libro mayor", "Por dónde se movió el valor.", ["libro mayor", "movimientos", "saldos", "transferencias"]),
   "tab.cash-payouts": words("Efectivo por pagar", "El efectivo que la aldea debe, y lo que ya se pagó.", ["efectivo por pagar", "pagos", "dinero que se debe", "transferencia bancaria"]),
-  "tab.pricing-desk": words("Mesa de precios", "Cada misión abierta junto a la sugerencia del motor, con el precio que pone la Tesorería.", ["mesa de precios", "precios de misiones", "poner precio"]),
-  "tab.budgets": words("Presupuesto en efectivo", "El efectivo que la aldea planea pagar esta luna, y lo que queda.", ["presupuesto en efectivo", "presupuesto", "plan de pagos"]),
   "tab.cycles": words("Cierre de ciclo", "Cerrar un ciclo, que es un acto de una persona.", ["cierre de ciclo", "cerrar el ciclo", "liquidar", "cierre de luna"]),
   "tab.products": words("Pagos", "Los productos y los pagos alrededor de ellos.", ["pagos", "productos", "pagos y donaciones", "ventas"]),
   "tab.resources-admin": words("Cómo fluyen los recursos", "Cómo se mueven los recursos por la aldea.", ["cómo fluyen los recursos", "recursos", "de dónde viene el dinero"]),
@@ -86,6 +81,7 @@ const TABS: Readonly<Record<string, ActWords>> = {
 const OUTSIDE: Readonly<Record<string, ActWords>> = {
   "page.modules": words("Biblioteca de módulos", "Las partes de la aldea, y cuáles están encendidas.", ["módulos", "funciones", "encender módulos"]),
   "page.review": words("Cola de revisión", "Cambios que esperan a que un custodio los mire.", ["revisión", "cola", "revisión de estructura", "por revisar"]),
+  "page.quest-claims": words("Reclamos de misiones", "Misiones terminadas que esperan un testigo, en la lista de revisión.", ["reclamos", "testigo", "misiones terminadas", "trabajo terminado", "atestiguar"]),
   "page.approvals": words("Aprobaciones", "Lo que espera su sí, en Tu trabajo.", ["aprobar", "bandeja de aprobaciones", "pendientes de aprobar"]),
   "page.proposals": words("Lo que propuso su agente", "Cambios que propuso un agente, en espera de que una persona los acepte.", ["propuestas del agente", "cambios propuestos", "aceptar propuestas"]),
   "page.mint": words("Mesa de emisión", "Emita tokens, con cada resguardo que tiene la emisión.", ["emitir tokens", "casa de la moneda", "casa de emisión", "acuñar"]),
@@ -120,6 +116,7 @@ const CONTROLS: Readonly<Record<string, ActWords>> = {
   "season.timezone": words("La zona horaria de la aldea", "La zona horaria en la que corren los días, las lunas y los recordatorios de la aldea.", ["zona horaria", "huso horario", "hora", "reloj"]),
   "project.fiatCurrency": words("La moneda de la aldea", "La moneda en la que se muestran los precios y las cuotas.", ["moneda", "dinero", "dólares", "colones", "precios"]),
   "exit.closing": words("Qué significa cerrar", "Las palabras de la aldea sobre lo que pasa si cierra.", ["política de cierre", "cerrar la aldea", "disolución"]),
+  "visit.program": words("Programa de visitas", "Cómo funciona una visita, en palabras de esta aldea: las formas de visitar y la logística.", ["visitas", "formas de visitar", "tipos de visita", "logística", "página de visitas"]),
 };
 
 /** One key's line: where it is planted and who it comes from. */

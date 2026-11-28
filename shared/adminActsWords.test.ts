@@ -124,6 +124,22 @@ describe("localizeEntry", () => {
     expect(localizeEntry(act, "es-CR")).toEqual(es);
   });
 
+  it("passes every other field through untouched for every entry: the address, the key, the module, `modulesAny`", () => {
+    const moved: string[] = [];
+    for (const e of NOT_DIALS) {
+      const { title: _t, help: _h, synonyms: _s, ...spanish } = localizeEntry(e, "es");
+      const { title: _et, help: _eh, synonyms: _es, ...english } = e;
+      if (JSON.stringify(spanish) !== JSON.stringify(english) || Object.keys(spanish).join() !== Object.keys(english).join()) moved.push(e.id);
+    }
+    expect(moved, moved.join(", ")).toEqual([]);
+    // The field the gate reads for a tab that answers for several modules is the registry's own list, not a copy.
+    const several = NOT_DIALS.filter((e) => e.modulesAny);
+    expect(several.length).toBeGreaterThan(0);
+    for (const e of several) expect(localizeEntry(e, "es").modulesAny).toBe(e.modulesAny);
+    const made: AdminSearchEntry = { id: "tab.reports", kind: "page", tab: "reports", title: "Reports", help: "x", synonyms: [], modulesAny: ["forum", "messaging"], module: "m", capability: "comms.manage", path: "/p" };
+    expect(localizeEntry(made, "es")).toMatchObject({ kind: "page", tab: "reports", modulesAny: ["forum", "messaging"], module: "m", capability: "comms.manage", path: "/p" });
+  });
+
   it("keeps every entry's English title among its synonyms", () => {
     const lost = NOT_DIALS.filter((e) => !localizeEntry(e, "es").synonyms.some((s) => s.toLowerCase() === e.title.toLowerCase())).map((e) => e.id);
     expect(lost, lost.join(", ")).toEqual([]);
