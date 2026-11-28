@@ -327,11 +327,20 @@ export interface BulkPlan<D> {
   cascades: Array<{ circle: D; roles: D[] }>;
 }
 
-/** Why a row is not taken in bulk, in the order the reasons are checked; null when it may be. */
-export function bulkLeftOut(d: Pick<Difference, "kind" | "state" | "bulkEligible" | "takeable">): Exclude<LeftOutWhy, "withCircle"> | null {
+/**
+ * Why a row is not taken in bulk, in the order the reasons are checked; null when it may be.
+ *
+ * `byHand`: the person ticked THIS row themselves (Rye, 28 Nov 2026, on Sera's pay and new-role suggestions:
+ * "Can manually select multiple"). It opens one thing: a NEW ROLE marked Check first may then be taken with the
+ * others. Every new role is marked so the first time it is seen, which is why each had to be taken alone. It
+ * opens nothing else: pay is never taken from the list, words on an unknown base stay Check first, and a row
+ * that may not be taken at all still may not. "Tick all shown" never ticks such a row, so a tick on one is a
+ * person's own.
+ */
+export function bulkLeftOut(d: Pick<Difference, "kind" | "state" | "bulkEligible" | "takeable">, byHand = false): Exclude<LeftOutWhy, "withCircle"> | null {
   if (d.kind === "pay") return "pay";
   if (d.state === "oursAhead") return "oursAhead";
-  if (!d.bulkEligible) return "checkFirst";
+  if (!d.bulkEligible && !(byHand && d.kind === "roleAdd")) return "checkFirst";
   if (!d.takeable) return "notTakeable";
   return null;
 }
@@ -339,9 +348,11 @@ export function bulkLeftOut(d: Pick<Difference, "kind" | "state" | "bulkEligible
 /**
  * What a bulk take of the ticked rows takes. Never a row that carries a
  * reason to check first, an unknown base among them (R2), never pay, and
- * never a new role apart from its new circle (R31).
+ * never a new role apart from its new circle (R31). `byHand` names the rows a
+ * person ticked themselves: a new role among them is taken with the others
+ * (`bulkLeftOut`).
  */
-export function bulkPlan<D extends Difference>(ticked: readonly D[], list: readonly D[]): BulkPlan<D> {
+export function bulkPlan<D extends Difference>(ticked: readonly D[], list: readonly D[], byHand: ReadonlySet<string> = new Set()): BulkPlan<D> {
   const take: D[] = [];
   const leftOut: Array<{ d: D; why: LeftOutWhy }> = [];
   const circles = new Map<string, D>();
@@ -354,7 +365,7 @@ export function bulkPlan<D extends Difference>(ticked: readonly D[], list: reado
       leftOut.push({ d, why: "withCircle" });
       continue;
     }
-    const why = bulkLeftOut(d);
+    const why = bulkLeftOut(d, byHand.has(d.key));
     if (why) leftOut.push({ d, why });
     else take.push(d);
     if (d.kind === "circleAdd" && d.subject.pageId && !take.includes(d)) touched.add(pageKey(d.subject.pageId));

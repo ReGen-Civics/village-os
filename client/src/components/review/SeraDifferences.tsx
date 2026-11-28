@@ -44,7 +44,7 @@ import SeraPayWalk from "@/components/review/SeraPayWalk";
 import { useMaySetPay } from "@/components/review/SeraPayRow";
 import { InDraftCard } from "@/components/review/SeraInDraft";
 import { handleListKey, KeysLegend, KeysToggle, useKeysToggle } from "@/components/review/SeraKeys";
-import { useSeraActs } from "@/components/review/useSeraActs";
+import { handOnly, useSeraActs } from "@/components/review/useSeraActs";
 import { card, inlineLink, primary, ring, secondary } from "@/components/review/seraStyles";
 import {
   aheadWords,
@@ -295,7 +295,8 @@ function SeraList({
   };
   // What "Tick all shown" ticks: every row shown that has its own tick (a new circle's roles go with it).
   // NEVER A PAY ROW: pay is ticked by hand, one row at a time, by a person who may set it.
-  const tickable = shownList.filter((d) => d.kind !== "pay" && !(d.kind === "roleAdd" && d.subject.ourId === null && (d.subject.circleId ?? "").startsWith("sera:")));
+  // NOR A NEW ROLE MARKED CHECK FIRST: ticked by hand, it is taken with the others (useSeraActs `handOnly`).
+  const tickable = shownList.filter((d) => !handOnly(d) && !(d.kind === "roleAdd" && d.subject.ourId === null && (d.subject.circleId ?? "").startsWith("sera:")));
 
   // Back from a comparison, focus returns to the button that opened it, in a layout effect so it is
   // settled before the click that caused it returns (the test raced a passive effect under load).

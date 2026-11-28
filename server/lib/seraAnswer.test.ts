@@ -31,7 +31,7 @@ import type { Difference, SnapshotRecord } from "../../shared/seraDifferences";
 import { landProposal, markProposalDecided } from "./externalProposals";
 import { answered, countAnswer, forgetCachedDifferences, listAnswer, readDifferences } from "./seraDifferencesRead";
 import { acceptedForDifferences } from "./saberraSnapshot";
-import { answerDifferences, lapseLeftAnswers, undoAnswers, type AnswerItem } from "./seraAnswer";
+import { answerDifferences, lapseLeftAnswers, readAnswerBody, undoAnswers, type AnswerItem } from "./seraAnswer";
 import { RETIRED_REASON, retireReplacedBatches } from "./saberraRetire";
 import { addChange, createDraft, DRAFT_CHANGED_SINCE_SHOWN, publishDraft, withdrawDraft } from "./orgDrafts";
 import { usersRepo } from "../repos/users";
@@ -302,6 +302,36 @@ describe.skipIf(!configured)("answering the differences", () => {
       expect(await changesIn(String(r.body.draftId))).toHaveLength(2);
       // Taken on its own, the same row goes in.
       expect((await answerDifferences(pool, deps, { act: "take", items: [item(well)], actor: HOLDER })).status).toBe(200);
+    });
+
+    // Rye, 28 Nov 2026, on Sera's pay and new-role suggestions: "Can manually select multiple."
+    it("takes a new role with the others when the person ticked it by hand, each its own change in the draft", async () => {
+      const words = await one("textField", "Water Steward");
+      const well = await one("roleAdd", "Well Monitor");
+      expect(well.bulkEligible).toBe(false);
+      const r = await answerDifferences(pool, deps, { act: "take", items: [item(words), { ...item(well), byHand: true }], actor: HOLDER });
+      expect(r.status).toBe(200);
+      expect((r.body.done as Array<{ key: string }>).map((d) => d.key)).toEqual([words.key, well.key]);
+      expect(r.body.refused).toEqual([]);
+      expect(await changesIn(String(r.body.draftId))).toHaveLength(2);
+    });
+
+    it("a hand-ticked new role that changed since it was read is refused alone, and the rest land", async () => {
+      const words = await one("textField", "Water Steward");
+      const well = await one("roleAdd", "Well Monitor");
+      const stale: AnswerItem = { ...item(well), seraHash: "0".repeat(32), byHand: true };
+      const r = await answerDifferences(pool, deps, { act: "take", items: [item(words), stale], actor: HOLDER });
+      expect(r.status).toBe(200);
+      expect((r.body.done as Array<{ key: string }>).map((d) => d.key)).toEqual([words.key]);
+      expect((r.body.refused as Array<{ key: string; why: string }>).map((x) => [x.key, x.why])).toEqual([[well.key, "seraChanged"]]);
+    });
+
+    it("by hand is read only as true, and only on a take: anything else is the rule as it was", () => {
+      const base = { key: "k", seraHash: "s".repeat(32), oursHash: "o".repeat(32) };
+      expect(readAnswerBody({ act: "take", items: [{ ...base, byHand: true }] })?.items[0].byHand).toBe(true);
+      expect(readAnswerBody({ act: "take", items: [{ ...base, byHand: "yes" }] })?.items[0].byHand).toBeUndefined();
+      expect(readAnswerBody({ act: "take", items: [base] })?.items[0].byHand).toBeUndefined();
+      expect(readAnswerBody({ act: "keep", items: [{ ...base, byHand: true }] })?.items[0].byHand).toBeUndefined();
     });
   });
 

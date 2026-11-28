@@ -31,11 +31,13 @@ async function called(r: Response | null): Promise<Called> {
 }
 
 /** The key and both hashes as the person saw them: what the server checks again under its locks (R14). */
-export const itemOf = (d: Pick<Difference, "key" | "seraHash" | "oursHash">, value?: string) => ({
+export const itemOf = (d: Pick<Difference, "key" | "seraHash" | "oursHash">, value?: string, byHand = false) => ({
   key: d.key,
   seraHash: d.seraHash,
   oursHash: d.oursHash,
   ...(value !== undefined ? { value } : {}),
+  // The person ticked this row themselves: a new role among them goes with the others (shared `bulkLeftOut`).
+  ...(byHand ? { byHand: true as const } : {}),
 });
 
 /** Take, keep or edit one difference or many. */

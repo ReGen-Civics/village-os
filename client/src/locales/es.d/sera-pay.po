@@ -86,8 +86,8 @@ msgstr "Usar la cifra que indica {agent}, {hers} al mes, como el pago de esta lu
 # needs-native-review: Sera's row, now that a pay row opens the role's own pay setter, 28 Nov 2026
 #: client/src/components/reviewInbox/SeraListRow.tsx
 msgctxt "review inbox: Sera's one row"
-msgid "Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. A new role apart from its circle, and anything marked Check first, are each taken on their own. Pay is set in the role's own pay setter, opened from its row by the people who set pay."
-msgstr "Marque las que quiera tomar y tómelas juntas. Las sugerencias de Sera sobre el pago y sobre roles nuevos también están en la lista. Un rol nuevo separado de su círculo, y todo lo marcado Revisar primero, se toman cada uno por separado. El pago se fija en el fijador de pago del propio rol, que abren desde su fila quienes fijan el pago."
+msgid "Tick the ones to take and take them together. Sera's suggestions for pay and for new roles are in the list too. You tick a new role or a pay suggestion yourself: Tick all shown leaves them alone. Anything else marked Check first is taken on its own. Pay is set in the role's own pay setter, one role at a time, by the people who set pay."
+msgstr "Marque las que quiera tomar y tómelas juntas. Las sugerencias de Sera sobre el pago y sobre roles nuevos también están en la lista. Usted marca por su cuenta un rol nuevo o una sugerencia de pago: Marcar todos los que se muestran no los toca. Todo lo demás marcado Revisar primero se toma por separado. El pago se fija en el fijador de pago del propio rol, un rol a la vez, por quienes fijan el pago."
 
 # needs-native-review: Sera's sheet, now that a pay row opens the role's own pay setter, 28 Nov 2026
 #: client/src/components/review/SeraBulk.tsx
@@ -190,3 +190,9 @@ msgstr "{who}: nadie más puede firmar esta cifra, así que pasa a la aldea."
 msgctxt "sera pay"
 msgid "{who}: skipped. Nothing was sent."
 msgstr "{who}: saltado. No se envió nada."
+
+# needs-native-review: the take sheet names the new roles a person ticked by hand, 28 Nov 2026
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera answers"
+msgid "Ticked by hand and taken with the rest: {byHand}."
+msgstr "Marcados a mano y tomados con el resto: {byHand}."

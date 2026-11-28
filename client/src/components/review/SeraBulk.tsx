@@ -20,7 +20,8 @@
  * first too (R16).
  *
  * PAY ROWS TICKED BY HAND (Rye, 28 Nov 2026: "Can manually select multiple")
- * are never part of a take or a keep. The bar offers them their own act,
+ * are never part of a take or a keep. NEW ROLES ticked by hand are taken
+ * with the rest, and the sheet names them first. The bar offers pay its own act,
  * "Set pay for N roles", which opens the walk through each role's own pay
  * setter (SeraPayWalk.tsx).
  *
@@ -103,6 +104,8 @@ export function BulkSheet({ acts, agent }: { acts: SeraActs; agent: string }) {
   const checks = plan.leftOut.filter((l) => l.why === "checkFirst" || l.why === "notTakeable").length;
   const pays = plan.leftOut.filter((l) => l.why === "pay").length;
   const named = plan.leftOut.filter((l) => l.why !== "withCircle").map((l) => l.d.subject.name);
+  // New roles the person ticked themselves, taken with the rest: named before anything is written (Rye, 28 Nov 2026).
+  const byHand = plan.take.filter((d) => d.kind === "roleAdd" && !d.bulkEligible).map((d) => d.subject.name).join(", ");
   const title = keep
     ? n === 1
       ? t({ message: "Keep ours for 1 change?", context: "sera answers" })
@@ -141,6 +144,7 @@ export function BulkSheet({ acts, agent }: { acts: SeraActs; agent: string }) {
               {n > 0 && (
                 <li>{n === 1 ? <Trans context="sera answers">It goes into a draft. It goes live when the draft is published.</Trans> : <Trans context="sera answers">{n} go into a draft. They go live when the draft is published.</Trans>}</li>
               )}
+              {byHand !== "" && <li data-by-hand="">{t({ message: `Ticked by hand and taken with the rest: ${byHand}.`, context: "sera answers" })}</li>}
               {checks > 0 && (
                 <li>{checks === 1 ? <Trans context="sera answers">1 marked Check first is left out. Take it on its own.</Trans> : <Trans context="sera answers">{checks} marked Check first are left out. Take each of them on its own.</Trans>}</li>
               )}
