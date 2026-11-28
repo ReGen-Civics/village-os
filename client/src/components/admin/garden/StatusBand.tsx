@@ -35,7 +35,7 @@ export default function StatusBand({ label, sentence, action, className = "" }: 
   const { t } = useLingui();
   return (
     <section aria-label={t({ message: "Where the village stands", context: "garden status band" })} className={`gd-band flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6 ${className}`.trim()}>
-      <p className="m-0 min-w-0 flex-[1_1_20rem] text-sm">
+      <p className="m-0 min-w-0 grow basis-64 text-sm">
         <strong className="mr-3 font-display text-lg font-normal text-notice">{label}</strong>
         {sentence ? <span className="text-muted-foreground">{sentence}</span> : null}
       </p>
