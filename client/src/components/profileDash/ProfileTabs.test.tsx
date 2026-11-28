@@ -28,6 +28,19 @@ describe("the member portal's tabs", () => {
     expect(PROFILE_TABS.length).toBeLessThanOrEqual(5);
   });
 
+  it("hands the browser its own scroll restore back as the profile goes, whatever it found", () => {
+    // An entry the profile had already taken reads "manual" on the way in. Handing that on left a reload or Back on
+    // every later page at the top (QA round 5), so the page after the profile always gets "auto".
+    history.scrollRestoration = "manual";
+    const { unmount } = render(
+      <I18nProvider i18n={i18n}>
+        <ProfileTabs tab="today" onTab={() => {}} />
+      </I18nProvider>,
+    );
+    unmount();
+    expect(history.scrollRestoration).toBe("auto");
+  });
+
   it("keep their ids, so the anchors the rest of the app links to still open them", () => {
     expect(TAB_OF_ANCHOR["my-tasks"]).toBe("quests");
     expect(TAB_OF_ANCHOR["cash-owed"]).toBe("treasury");

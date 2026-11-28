@@ -235,6 +235,20 @@ export const CONTROL_ENTRIES: readonly AdminSearchEntry[] = [
     help: "The currency prices and dues are shown in.",
     synonyms: ["currency", "money", "dollars", "colones", "prices"],
   },
+  // A module's own menu entry: its name and its place, chosen by the village (the lead, 27 Nov 2026). Both land on Admin,
+  // Menu, Module entries (client/src/components/admin/ModuleMenuList.tsx), saved under story.tell like the rest of the menu.
+  {
+    id: "menu.module-name", kind: "control", tab: "setup", capability: "story.tell",
+    title: "Rename a module's menu entry",
+    help: "The name a module's entry has in the menu. Blank keeps the module's own name.",
+    synonyms: ["rename menu entry", "menu name", "module name in the menu", "call it something else", "menu label"],
+  },
+  {
+    id: "menu.module-place", kind: "control", tab: "setup", capability: "story.tell",
+    title: "Move a module's menu entry",
+    help: "Where a module's entry sits in the menu: its group, a folder in it, and its position.",
+    synonyms: ["move menu entry", "menu place", "where in the menu", "reorder the menu", "menu position", "put it in a folder"],
+  },
   {
     id: "exit.closing", kind: "control", tab: "exits-admin",
     title: "What closing means",
