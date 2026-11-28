@@ -61,9 +61,9 @@ describe("reading each queue's answer", () => {
       differences: [
         d("a", "decision", "theirsAhead", "2026-11-19T00:00:00.000Z"),
         d("b", "lowRisk", "theirsAhead", "2026-11-17T00:00:00.000Z"),
-        d("c", "fact", "conflict", null),
+        d("c", "facts", "conflict", null),
         // Facts, and what is ahead here, wait for nobody (shared/seraWaiting.ts), so the row does not count them.
-        d("d", "fact", "theirsAhead", "2026-11-01T00:00:00.000Z"),
+        d("d", "facts", "theirsAhead", "2026-11-01T00:00:00.000Z"),
         d("e", "decision", "oursAhead", "2026-11-02T00:00:00.000Z"),
       ],
     });
@@ -71,7 +71,7 @@ describe("reading each queue's answer", () => {
     expect(items[0]).toMatchObject({ key: SERA_ROW_KEY, source: "sera", holds: 3, filedAt: "2026-11-17T00:00:00.000Z", decideAt: "/review", touchesPerson: false, batch: null });
     // One that waits keeps its own sentence; nothing that waits is no row at all.
     expect(fromSeraDifferences({ differences: [d("a", "decision", "theirsAhead", null)] })[0]).toMatchObject({ holds: 1, summary: "Sera says a.", filedAt: null });
-    expect(fromSeraDifferences({ differences: [d("d", "fact", "theirsAhead", null)] })).toEqual([]);
+    expect(fromSeraDifferences({ differences: [d("d", "facts", "theirsAhead", null)] })).toEqual([]);
     expect(fromSeraDifferences({ differences: [] })).toEqual([]);
   });
 

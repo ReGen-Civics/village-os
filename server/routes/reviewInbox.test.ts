@@ -54,7 +54,7 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
     "/api/saberra/differences": { status: 200, body: { differences: [
       { key: "s1", lane: "decision", state: "theirsAhead", words: { sentence: "Sera calls this circle Garden." }, source: { editedAt: "2026-11-10T00:00:00.000Z" } },
       { key: "s2", lane: "lowRisk", state: "theirsAhead", words: { sentence: "Sera changed a purpose." }, source: { editedAt: "2026-11-12T00:00:00.000Z" } },
-      { key: "s3", lane: "fact", state: "theirsAhead", words: { sentence: "A review date moved." }, source: { editedAt: "2026-11-01T00:00:00.000Z" } },
+      { key: "s3", lane: "facts", state: "theirsAhead", words: { sentence: "A review date moved." }, source: { editedAt: "2026-11-01T00:00:00.000Z" } },
     ] } },
     "/api/approval-inbox": { status: 200, body: { waiting: [{ id: "ap_1", kind: "setting", title: "Change a dial", at: "2026-11-26T00:00:00.000Z" }] } },
     "/api/review/queue": { status: 500, body: { error: "boom" } },
