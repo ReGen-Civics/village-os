@@ -125,7 +125,7 @@ export function BulkSheet({ acts, agent }: { acts: SeraActs; agent: string }) {
                 <li>{checks === 1 ? <Trans context="sera answers">1 marked Check first is left out. Take it on its own.</Trans> : <Trans context="sera answers">{checks} marked Check first are left out. Take each of them on its own.</Trans>}</li>
               )}
               {pays > 0 && (
-                <li>{pays === 1 ? <Trans context="sera answers">1 pay change is left out of this take. It is confirmed on its own.</Trans> : <Trans context="sera answers">{pays} pay changes are left out of this take. Each is confirmed on its own.</Trans>}</li>
+                <li>{pays === 1 ? <Trans context="sera answers">1 pay suggestion is left out of this take. Pay is set where pay is set, by the people who set pay.</Trans> : <Trans context="sera answers">{pays} pay suggestions are left out of this take. Pay is set where pay is set, by the people who set pay.</Trans>}</li>
               )}
               {plan.cascades.map((c) => {
                 const circle = c.circle.subject.name;
