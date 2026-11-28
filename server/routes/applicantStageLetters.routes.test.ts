@@ -212,6 +212,15 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     const out = await call("POST", `${app(id)}/interviews/${interviewId}/score`, { entries: criteria.map((c: any) => ({ criterionId: c.id, level: "solid", evidence: EVIDENCE })), gut: { answer: "yes", note: EVIDENCE } }, as);
     expect(out.status, out.text).toBe(200);
   };
+  /** The role card's "Apply by" (`sections.applyBy`), as the card's editor saves it; null clears it. */
+  const cardApplyBy = async (day: string | null) => {
+    const { saveSections } = await import("../lib/roleCardSections");
+    const { EMPTY_SECTIONS } = await import("../../shared/roleCardSections");
+    await saveSections(pool, gate, { ...EMPTY_SECTIONS, ...(day ? { applyBy: day } : {}) }, FOUNDER.id);
+  };
+  /** The deadline an application carries, as stamped at its arrival. */
+  const stampApplyBy = (ref: string, day: string) =>
+    q("UPDATE application_steps SET detail_json = JSON_SET(detail_json, '$.applyBy', ?) WHERE application_ref = ? AND kind = 'confirmed'", [day, ref]);
   const stageMails = (kind: string) => state.fresh.filter((m) => m.idempotencyKey.endsWith(`:stage:${kind}`));
   const everything = () => state.posted.map((m) => `${m.subject}\n${m.text}\n${m.html ?? ""}`).join("\n----\n");
 
@@ -640,7 +649,8 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
   it("THE REVIEW WINDOW (the lead: 'we review 1-2 weeks after the application deadline'): said when a role sets a deadline, and the team is nudged only once it opens", async () => {
     const { nudgeTick } = await import("../lib/applicantNudges");
     const deadline = new Date(Date.now() + 10 * 86_400_000).toISOString().slice(0, 10);
-    await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [deadline, gate]);
+    // The role card's own date (`sections.applyBy`, the one source the card shows), stamped on the application at arrival.
+    await cardApplyBy(deadline);
     try {
       const id = await confirmed("window@example.test");
       const first = state.posted.find((m) => m.idempotencyKey === `open-proposal:${id}:status`)!;
@@ -659,12 +669,15 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
       state.notices.length = 0;
       await nudgeTick(deps);
       expect(state.notices.filter((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`))).toEqual([]);
-      // The window opens (the deadline 30 days back): the role up next hears it.
-      await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10), gate]);
+      // Clearing the card's date later re-times nothing: the application keeps the day it arrived under (QA round 5).
+      await cardApplyBy(null);
+      expect((await call("GET", `/api/application-status/${id}?token=${statusToken(id)}`)).body.status.reviewAfter).toBe(deadline);
+      // The window opens (its stamped deadline 30 days back): the role up next hears it.
+      await stampApplyBy(id, new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10));
       await nudgeTick(deps);
       expect(state.notices.some((n) => n.dedupeKey.startsWith(`app:${id}:nudge:conversation`))).toBe(true);
     } finally {
-      await q("UPDATE org_roles SET apply_by = NULL WHERE id = ?", [gate]);
+      await cardApplyBy(null);
     }
   });
 
@@ -712,7 +725,7 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
       await q("UPDATE application_steps SET stamped_at = ? WHERE application_ref IN (?, ?) AND kind = 'confirmed'", [new Date(at.getTime() - 120 * 86_400_000), late, due]);
       try {
         // The deadline 50 days back: the window opened 43 days ago, so 43 days on the clock. Not closed.
-        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(50), gate]);
+        for (const r of [late, due]) await stampApplyBy(r, dayAgo(50));
         await tidyOpenProposals(pool, at, undefined, closing);
         expect(await statusOf(late)).toBe("confirmed");
         expect(await statusOf(due)).toBe("confirmed");
@@ -722,17 +735,17 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
         await nudgeTick(deps);
         expect(state.notices.filter((n) => n.dedupeKey === `app:${late}:close-warning:${FOUNDER.id}`)).toEqual([]);
         // The deadline 87 days back: the window opened 80 days ago. The warning goes, and nothing closes yet.
-        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(87), gate]);
+        for (const r of [late, due]) await stampApplyBy(r, dayAgo(87));
         await nudgeTick(deps);
         expect(state.notices.filter((n) => n.dedupeKey === `app:${late}:close-warning:${FOUNDER.id}`)).toHaveLength(1);
         await tidyOpenProposals(pool, at, undefined, closing);
         expect(await statusOf(late)).toBe("confirmed");
         // The deadline 100 days back: the window opened 93 days ago. Both close.
-        await q("UPDATE org_roles SET apply_by = ? WHERE id = ?", [dayAgo(100), gate]);
+        for (const r of [late, due]) await stampApplyBy(r, dayAgo(100));
         await tidyOpenProposals(pool, at, undefined, closing);
         expect([await statusOf(late), await statusOf(due)]).toEqual(["withdrawn", "withdrawn"]);
       } finally {
-        await q("UPDATE org_roles SET apply_by = NULL WHERE id = ?", [gate]);
+        await cardApplyBy(null);
       }
       // Without a deadline, from arrival: 120 days is closed (the test above pins 91 and 89).
       // The link: signed now for a window opening in 60 days, it lives those 60 days plus the close's 90 and the margin.

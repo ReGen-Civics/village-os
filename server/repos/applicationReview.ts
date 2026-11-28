@@ -445,6 +445,13 @@ export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[
  * The village's anchor circle, by name (shared/circlePicker.ts `anchorCircleId`: the one marked, else the one that
  * coordinates the rest), or null when it has none. The applicant reads it at Agreement: "Your proposal is with ...".
  */
+/** The village's anchor circle's id, or null when it marks none. */
+export async function anchorCircleIdOf(db: Db): Promise<string | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, status, is_anchor, parent_circle_id, is_example FROM circles");
+  const circles = rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), status: r.status ?? null, isAnchor: !!r.is_anchor, parentCircleId: r.parent_circle_id ?? null, isExample: !!r.is_example }));
+  return anchorCircleId(circles) ?? null;
+}
+
 export async function anchorCircleName(db: Db): Promise<string | null> {
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, status, is_anchor, parent_circle_id, is_example FROM circles");
   const circles = rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), status: r.status ?? null, isAnchor: !!r.is_anchor, parentCircleId: r.parent_circle_id ?? null, isExample: !!r.is_example }));
@@ -454,19 +461,17 @@ export async function anchorCircleName(db: Db): Promise<string | null> {
 }
 
 /**
- * WHEN AN APPLICATION'S ROLES STOP TAKING APPLICATIONS (0445, the lead, 27 Nov 2026: "we review 1-2 weeks after the
- * application deadline"): the latest `apply_by` among its roles, YYYY-MM-DD, or null when none sets one.
+ * WHEN AN APPLICATION'S ROLES STOP TAKING APPLICATIONS (the lead, 27 Nov 2026: "we review 1-2 weeks after the
+ * application deadline"): the latest of its roles' card dates, YYYY-MM-DD, stamped at arrival; null when none set one.
  */
 export async function applicationDeadline(db: Db, ref: string): Promise<string | null> {
+  // The day stamped on the application at arrival (`beginReview`, from the role card's `sections.applyBy`): one source,
+  // and a deadline changed or cleared later never re-times an application that already arrived (QA round 5).
   const [steps] = await db.query<RowDataPacket[]>("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'confirmed' LIMIT 1", [ref]);
   const detail = steps[0]?.detail_json;
   const parsed = typeof detail === "string" ? (() => { try { return JSON.parse(detail); } catch { return null; } })() : detail;
-  const ids = Array.isArray(parsed?.roleIds) ? (parsed.roleIds as unknown[]).map(String) : [];
-  if (!ids.length) return null;
-  const [cols] = await db.query<RowDataPacket[]>("SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'org_roles' AND COLUMN_NAME = 'apply_by' LIMIT 1");
-  if (!cols.length) return null;
-  const [rows] = await db.query<RowDataPacket[]>("SELECT DATE_FORMAT(MAX(apply_by), '%Y-%m-%d') AS d FROM org_roles WHERE id IN (?)", [ids]);
-  return rows[0]?.d ? String(rows[0].d) : null;
+  const d = typeof parsed?.applyBy === "string" ? parsed.applyBy : null;
+  return d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
 }
 
 /** The review window opens a week after the deadline (the lead: "1-2 weeks after"); before that nothing is stalled. */

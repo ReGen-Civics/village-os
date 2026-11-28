@@ -125,8 +125,6 @@ export const NOT_ROLE_WORDS: ReadonlySet<string> = new Set([
   "budgetLine",
   "fundedFrom",
   "reviewAfterDays",
-  // 0445: when a role's applications close (the lead, 27 Nov 2026). A steward decision, never a word a member proposes.
-  "applyBy",
   "accessBundle",
   "bookingUrl",
   // 0383 (E1): the share of a week a role asks and whether it is required. Set where roles are edited, alongside

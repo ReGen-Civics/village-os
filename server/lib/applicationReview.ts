@@ -81,6 +81,7 @@ import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
 import { ALL_HANDS_VARIABLES } from "../../shared/startDay";
+import { sectionsForMany } from "./roleCardSections";
 import { roleBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
 import { ROLE_SHORT_LABELS_VARIABLE, roleShortLabel } from "../../shared/roleShortLabel";
 import { FINAL_CALL_ROLE_VARIABLE } from "../../shared/applicantOnboarding";
@@ -181,14 +182,20 @@ export async function beginReview(
   const setup = await setupFor(db, p.roleIds);
   // Our review is for an open proposal: the doors that answer it are the open proposal's page.
   const reviewFirst = !!p.reviewFirst && kindOfRef(p.ref) === "open";
-  // Reviewed first, the decision is the circle's consent after the conversations, so the ask always waits.
-  const holdConsent = reviewFirst || (!!deps.consentAfterInterviews?.() && setup.interviewers.length > 0 && kindOfRef(p.ref) === "open");
+  // RULING 23 (QA round 5): consent is asked only at the send, whatever the village's variables say, for every open
+  // application whose role names conversations (`sendToCircle`). Reviewed first, it always waits too.
+  void deps;
+  const holdConsent = reviewFirst || (setup.interviewers.length > 0 && kindOfRef(p.ref) === "open");
+  // THE DAY APPLICATIONS CLOSE, STAMPED AT ARRIVAL (QA round 5): read from the role card (`sections.applyBy`, the one
+  // source the card itself shows), the latest of the roles applied for. Changing or clearing it later re-times nothing.
+  const cards = await sectionsForMany(db as any, p.roleIds).catch(() => new Map());
+  const applyBy = p.roleIds.map((id) => cards.get(id)?.applyBy ?? null).filter((d): d is string => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().pop() ?? null;
   const statusToken = p.applicantUserId ? null : crypto.randomBytes(24).toString("base64url");
   await repo.stampStep(db, {
     ref: p.ref,
     kind: "confirmed",
     at: p.at,
-    detail: { roleIds: p.roleIds, criteria: setup.criteria, mode: setup.mode, holdConsent, reviewFirst, applicantUserId: p.applicantUserId, statusHash: statusToken ? hashToken(statusToken) : null },
+    detail: { roleIds: p.roleIds, criteria: setup.criteria, mode: setup.mode, holdConsent, reviewFirst, applicantUserId: p.applicantUserId, statusHash: statusToken ? hashToken(statusToken) : null, ...(applyBy ? { applyBy } : {}) },
   });
   await repo.insertInterviews(db, p.ref, setup.interviewers, p.at, !reviewFirst);
   if (!setup.interviewers.length) await repo.stampStep(db, { ref: p.ref, kind: "scores_in", at: p.at });
@@ -386,12 +393,17 @@ export async function openConsentRound(deps: ReviewDeps, ref: string, opts: { te
   if ((await asksFor(pool, [ref])).get(ref)?.length) return false;
   const at = deps.now();
   const closesAt = consentClosesAt(at, deps.calendar().timezone || "UTC");
-  const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
   const own = await trustedAccountFor(deps.members, p, pool);
-  const circles: string[] = [];
-  for (const r of p.body.roles) {
-    const c = circleOf.get(r.roleId);
-    if (c && !circles.includes(c)) circles.push(c);
+  // THE ANCHOR CIRCLE IS ASKED (QA round 5: every word says Anchor Circle), its holders; the applied roles' own
+  // circles only in a village that marks no anchor circle.
+  const anchor = await repo.anchorCircleIdOf(pool);
+  const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
+  const circles: string[] = anchor ? [anchor] : [];
+  if (!anchor) {
+    for (const r of p.body.roles) {
+      const c = circleOf.get(r.roleId);
+      if (c && !circles.includes(c)) circles.push(c);
+    }
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
   const holders = await holdersInCircles(pool, circles);

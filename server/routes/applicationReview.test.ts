@@ -390,10 +390,15 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
   };
 
   describe("the circle's consent round", () => {
-    it("opens at confirm when the village has not asked for the interviews to come first", async () => {
+    it("RULING 23 (QA round 5): never opens at confirm for a role that names conversations, whatever the village's setting; the send opens it", async () => {
+      await setting(false);
       const { id } = await confirmed("now@example.test");
+      expect(await asks(id)).toEqual([]);
+      expect(await stepKinds(id)).not.toContain("consent");
+      await scoreAll(id);
+      expect(await asks(id)).toEqual([]);
+      await sendOn(id);
       expect((await asks(id)).length).toBeGreaterThan(0);
-      expect(await stepKinds(id)).toContain("consent");
     });
 
     it("waits for the interviews when the village asks, tells the circle it arrived, then opens once every card is in", async () => {

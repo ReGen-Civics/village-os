@@ -59,8 +59,6 @@ export interface RoleParams {
   budgetLine: string | null;
   fundedFrom: string | null;
   reviewAfterDays: number | null;
-  /** The last day applications are taken (0445), YYYY-MM-DD, or null when the role takes them all the time. */
-  applyBy: string | null;
   accessBundle: string[] | null;
   bookingUrl: string | null;
   /** A check happens for this role whatever the references say (0370). */
@@ -96,7 +94,6 @@ export const ROLE_PARAM_KEYS = [
   "budgetLine",
   "fundedFrom",
   "reviewAfterDays",
-  "applyBy",
   "accessBundle",
   "bookingUrl",
   "alwaysChecked",
@@ -122,7 +119,6 @@ export const ROLE_PARAM_COLUMNS: Record<RoleParamKey, string> = {
   budgetLine: "budget_line",
   fundedFrom: "funded_from",
   reviewAfterDays: "review_after_days",
-  applyBy: "apply_by",
   accessBundle: "access_bundle",
   bookingUrl: "booking_url",
   alwaysChecked: "always_checked",
@@ -146,7 +142,6 @@ export const ROLE_PARAM_LABELS: Record<RoleParamKey, string> = {
   budgetLine: "Budget line",
   fundedFrom: "Funded from",
   reviewAfterDays: "Review",
-  applyBy: "Applications close",
   accessBundle: "Access it needs",
   bookingUrl: "Booking link",
   alwaysChecked: "Always background-checked",
@@ -269,7 +264,6 @@ export function parseRoleParams(body: unknown): Parsed<Partial<RoleParams>> {
   if (o.budgetLine !== undefined) problems.push(put("budgetLine", parseLine(o.budgetLine, "The budget line", 120)));
   if (o.fundedFrom !== undefined) problems.push(put("fundedFrom", parseDate(o.fundedFrom)));
   if (o.reviewAfterDays !== undefined) problems.push(put("reviewAfterDays", parseDays(o.reviewAfterDays)));
-  if (o.applyBy !== undefined) problems.push(put("applyBy", parseDate(o.applyBy)));
   if (o.accessBundle !== undefined) problems.push(put("accessBundle", parseTextList(asJson(o.accessBundle), "The access list", 12, 120)));
   if (o.bookingUrl !== undefined) problems.push(put("bookingUrl", parseBooking(o.bookingUrl)));
   if (o.alwaysChecked !== undefined) problems.push(put("alwaysChecked", typeof o.alwaysChecked === "boolean" ? ok(o.alwaysChecked) : bad<boolean>("Say whether the role is always background-checked.")));
@@ -324,7 +318,6 @@ export function roleParamsFromRow(r: Record<string, unknown>): RoleParams {
   const track = parseTrack(r.track);
   const where = parseWhere(r.where_worked);
   const days = parseDays(r.review_after_days);
-  const applyBy = r.apply_by instanceof Date ? parseDate(r.apply_by.toISOString()) : parseDate(r.apply_by);
   const date = r.funded_from instanceof Date ? parseDate(r.funded_from.toISOString()) : parseDate(r.funded_from);
   const budget = parseLine(r.budget_line, "x", 120);
   const url = parseBooking(r.booking_url);
@@ -339,7 +332,6 @@ export function roleParamsFromRow(r: Record<string, unknown>): RoleParams {
     budgetLine: budget.ok ? budget.value : null,
     fundedFrom: date.ok ? date.value : null,
     reviewAfterDays: days.ok ? days.value : null,
-    applyBy: applyBy.ok ? applyBy.value : null,
     accessBundle: list(r.access_bundle, 12, 120),
     bookingUrl: url.ok ? url.value : null,
     alwaysChecked: r.always_checked === 1 || r.always_checked === true || r.always_checked === "1",
