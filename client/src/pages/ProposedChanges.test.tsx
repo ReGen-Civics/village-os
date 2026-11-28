@@ -25,7 +25,8 @@ vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: Reac
 vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => ({ loading: false, user: { id: "u1" } }) }));
 vi.mock("@/lib/gameApi", () => ({ authToken: () => "t" }));
 
-import ProposedChanges from "./ProposedChanges";
+// The desk is the review page's Batches view now; drawn on its own it is the old page, whole, and every case below holds.
+import { ProposalsDesk as ProposedChanges } from "./ProposedChanges";
 
 afterEach(() => {
   cleanup();
