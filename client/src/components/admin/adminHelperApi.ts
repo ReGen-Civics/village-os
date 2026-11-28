@@ -16,11 +16,32 @@ import type { HelperAnswer, HelperFiled, HelperProposal, HelperProvider, HelperS
 import type { GuideSpeaking } from "@shared/guideSpeaking";
 import type { NavGroup } from "./adminNavGroups";
 import { whatIsThis } from "./adminWords";
+import { storedText, writeStored } from "@/lib/safeStorage";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 
 export interface HelperLine {
   role: "user" | "assistant";
   content: string;
+}
+
+/*
+ * WHETHER THIS VILLAGE'S DOCK WAS ON, the last time this browser heard the
+ * status say so (`status.dock`). A hint only, so the next open draws the right
+ * surface at once: the server's answer decides. It lives here, beside the call
+ * that hears it, because the helper's host and the road's host read it BEFORE
+ * the dock is fetched. Kept in the dock's own folder it was a module two pages
+ * share, so the build gave it a file of its own, and every route's first page
+ * carried that file's name. Nothing of the dock itself is here: one stored
+ * word, read through lib/safeStorage, which never throws.
+ */
+const DOCK_HINT_KEY = "guide-dock:on";
+
+export function readDockHint(): boolean {
+  return storedText("local", DOCK_HINT_KEY) === "1";
+}
+
+export function rememberDockHint(on: boolean): void {
+  writeStored("local", DOCK_HINT_KEY, on ? "1" : "0");
 }
 
 export async function fetchHelperStatus(password: string, signal?: AbortSignal): Promise<HelperStatus> {

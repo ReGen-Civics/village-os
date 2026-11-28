@@ -27,8 +27,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { HelperProposal, HelperStatus } from "@shared/adminHelper";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 import type { NavGroup } from "./adminNavGroups";
-import { applyProposal } from "./adminHelperApi";
-import { readDockHint, rememberDockHint } from "./dock/dockState";
+import { applyProposal, readDockHint, rememberDockHint } from "./adminHelperApi";
 
 const AdminHelperPanel = lazy(() => import("./AdminHelperPanel"));
 const GuideDock = lazy(() => import("./dock/GuideDock"));

@@ -23,6 +23,24 @@
  * which would otherwise share a "lazy-" chunk with the role pieces every
  * visitor opens (dist headroom pass, 23 Nov 2026).
  *
+ * THE GUIDE'S DOCK AND THE ADMIN GARDEN (28 Nov 2026). Everything in
+ * `components/admin/dock/` and `components/admin/garden/` is drawn only behind
+ * an admin page: Admin itself, and the road to launch. None of it rides a
+ * shared group, by the folder it lives in, so a new file there needs no line
+ * here (ADMIN_ONLY_HOME).
+ *
+ * AND A DOOR TO ONE OF THESE IS HELD OUT TOO. The helper's host
+ * (`components/admin/AdminHelperHost.tsx`) has two importers and is small, so
+ * "smallui" took it, and with it the lazy import that opens the dock: the
+ * dock's chunk, with the garden's code and stylesheet in it, sat one lazy
+ * import away from every member page that loads "smallui". No member's browser
+ * fetched it, and it was still the wrong side of the boundary. So a module is
+ * asked what it opens, by its own lazy imports and never by a list of names
+ * (`opensPrivileged`): a door stays with whatever imports it, which for the
+ * host is the Admin page's own chunk. A route page that draws the dock or the
+ * garden itself keeps its own file for the same reason (`drawsAdminOnly`): the
+ * road to launch does, and stood alone only by its weight.
+ *
  * Kept out of vite.config.ts so a test can pin it without loading the build.
  */
 
@@ -32,7 +50,20 @@ export const PRIVILEGED_PAGE = /client[\\/]src[\\/]pages[\\/](?:Treasury|Admin|M
 /** A component that carries one of those pages' powers, never a group member. */
 export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|roleCard[\\/]Waitlist(?:Admin|Letter)|treasury[\\/][^\\/]+)\.tsx$/;
 
+/** The guide's dock and the Admin Garden, by their folders: every file in them, the stylesheet included. */
+export const ADMIN_ONLY_HOME = /client[\\/]src[\\/]components[\\/]admin[\\/](?:dock|garden)[\\/]/;
+
 /** Whether this module may join a shared page or component group at all. */
 export function mayJoinSharedGroup(id: string): boolean {
-  return !PRIVILEGED_PAGE.test(id) && !PRIVILEGED_COMPONENT.test(id);
+  return !PRIVILEGED_PAGE.test(id) && !PRIVILEGED_COMPONENT.test(id) && !ADMIN_ONLY_HOME.test(id);
+}
+
+/** A door: a module that lazily imports one of the pieces above. Given the module's own lazy imports. */
+export function opensPrivileged(lazyImports: readonly string[]): boolean {
+  return lazyImports.some((dep) => !mayJoinSharedGroup(dep));
+}
+
+/** A route page that draws the dock or the garden itself. Given the page's own static imports. */
+export function drawsAdminOnly(staticImports: readonly string[]): boolean {
+  return staticImports.some((dep) => ADMIN_ONLY_HOME.test(dep));
 }

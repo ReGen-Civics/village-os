@@ -3,10 +3,12 @@
  *
  * Two kinds of thing, kept apart on purpose:
  *
- *   PREFERENCES, in this browser's local storage: whether the dock is docked
- *   or expanded, and whether this village's dock was on the last time it was
- *   asked (so the next open draws the right surface at once). Harmless to the
- *   next person on the same browser, like the picked answerer.
+ *   A PREFERENCE, in this browser's local storage: whether the dock is docked
+ *   or expanded. Harmless to the next person on the same browser, like the
+ *   picked answerer. (Whether this village's dock was on the last time it was
+ *   asked is kept beside the status call that hears it, ../adminHelperApi.ts:
+ *   the two hosts read it before the dock is fetched, and this file is fetched
+ *   with the dock.)
  *
  *   A PERSON'S WORDS, the draft and the "You said" line: kept through
  *   `useChatDraft` (components/chat/chatDraft.ts), in this tab's session
@@ -23,7 +25,6 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 export type DockShape = "docked" | "expanded";
 
 const SHAPE_KEY = "guide-dock:shape";
-const ON_KEY = "guide-dock:on";
 
 /** The shape this person last chose, or `fallback` when they never chose. */
 export function readDockShape(fallback: DockShape): DockShape {
@@ -33,15 +34,6 @@ export function readDockShape(fallback: DockShape): DockShape {
 
 export function rememberDockShape(shape: DockShape): void {
   writeStored("local", SHAPE_KEY, shape);
-}
-
-/** Whether this village's dock was on the last time this browser heard. A hint only: the server's answer decides. */
-export function readDockHint(): boolean {
-  return storedText("local", ON_KEY) === "1";
-}
-
-export function rememberDockHint(on: boolean): void {
-  writeStored("local", ON_KEY, on ? "1" : "0");
 }
 
 /**

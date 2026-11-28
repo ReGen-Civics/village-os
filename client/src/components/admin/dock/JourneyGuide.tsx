@@ -23,8 +23,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react
 import type { HelperStatus } from "@shared/adminHelper";
 import { LaunchGuide } from "@/components/journey/LaunchGuide";
 import { authToken } from "@/lib/gameApi";
-import { fetchHelperStatus } from "../adminHelperApi";
-import { readDockHint, rememberDockHint } from "./dockState";
+import { fetchHelperStatus, readDockHint, rememberDockHint } from "../adminHelperApi";
 
 const GuideDock = lazy(() => import("./GuideDock"));
 
