@@ -224,28 +224,90 @@
   max-width: max(44rem, calc((100dvh - var(--gd-grounds-above, 10rem)) * 10 / 9));
   margin-inline: auto;
 }
+/* With the ground picker drawn, the row above the land is taller by the picker's own line. The land gives that
+   height back, so the foot of the map stays where it was and the picker never pushes it under the fold. */
+.gd-grounds[data-picker="true"] {
+  max-width: max(44rem, calc((100dvh - var(--gd-grounds-above, 10rem) - 1.75rem) * 10 / 9));
+}
 /*
- * The land. A village's own land image goes in `--gd-land-image` (the Grounds
- * sets it inline); with none, the default is painted here from the tokens: a
- * clearing lit by the fire, canopy on either side, and no geography at all.
- * The night wash and the vignette lie over either one.
+ * THE ROW ABOVE THE LAND: the page's heading where the land starts, the ground picker where it ends, inside the
+ * map's own width. The picker's place is the Grounds', so it is drawn only where a ground is: as a map. Where the
+ * places are rows it is not drawn at all (the container rules below draw it), and the row is the heading alone.
+ */
+.gd-grounds-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  column-gap: 1rem;
+}
+.gd-grounds-head > * {
+  min-width: 0;
+  margin-bottom: 0.5rem;
+}
+/* The picker: its line, then the four names in the lens toggle's look. Standing alone it is drawn; in the Grounds'
+   own row it waits for the map. */
+.gd-ground-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  max-width: 100%;
+  margin-left: auto;
+  text-align: right;
+}
+.gd-grounds-head .gd-ground-picker {
+  display: none;
+}
+/*
+ * THE LAND, AND WHAT IT IS NEVER WITHOUT. These are the land's own painted colours: a clearing lit by the fire,
+ * canopy on either side, the night wash and the vignette over them, and no geography at all. They are drawn from the
+ * tokens and are no picture, so nothing can fail to load, and no rule anywhere takes them away. Every picture the
+ * land carries is laid OVER them (`.gd-land::before`, next).
  */
 .gd-land {
-  --gd-land-image:
-    radial-gradient(34% 28% at 50% 40%, color-mix(in srgb, var(--garden-gold) 20%, transparent), transparent 72%),
-    radial-gradient(58% 44% at 16% 18%, color-mix(in srgb, var(--garden-raised) 85%, transparent), transparent 70%),
-    radial-gradient(52% 40% at 86% 74%, color-mix(in srgb, var(--garden-raised) 75%, transparent), transparent 70%),
-    radial-gradient(40% 30% at 20% 82%, color-mix(in srgb, var(--garden-surface) 80%, transparent), transparent 70%),
-    linear-gradient(var(--garden-ground), var(--garden-ground));
   position: relative;
   background-color: var(--garden-band);
   background-image:
     radial-gradient(120% 90% at 50% 38%, color-mix(in srgb, var(--garden-band) 18%, transparent), color-mix(in srgb, var(--garden-band) 92%, transparent) 100%),
     linear-gradient(color-mix(in srgb, var(--garden-ground) 50%, transparent), color-mix(in srgb, var(--garden-band) 62%, transparent)),
-    var(--gd-land-image);
+    radial-gradient(34% 28% at 50% 40%, color-mix(in srgb, var(--garden-gold) 20%, transparent), transparent 72%),
+    radial-gradient(58% 44% at 16% 18%, color-mix(in srgb, var(--garden-raised) 85%, transparent), transparent 70%),
+    radial-gradient(52% 40% at 86% 74%, color-mix(in srgb, var(--garden-raised) 75%, transparent), transparent 70%),
+    radial-gradient(40% 30% at 20% 82%, color-mix(in srgb, var(--garden-surface) 80%, transparent), transparent 70%),
+    linear-gradient(var(--garden-ground), var(--garden-ground));
   background-size: cover;
   background-position: center;
   border: 1px solid color-mix(in srgb, var(--garden-gold) 32%, var(--garden-band));
+}
+/*
+ * THE ONE PICTURE, over the painted colours and under the places: the village's own land art, or the ground the
+ * person picked. The Grounds names it in `--gd-land-image`, inline. It is a layer of its own, so while it loads, or
+ * if it never arrives, it draws nothing and the land is its painted colours, exactly as above.
+ *
+ * THE VEIL is the land itself: the picture is drawn at a little over half its strength, so the land's night shows
+ * through it. That keeps the buildings and their plaques in front of the brightest painting, and it is what sets a
+ * real lantern apart from the small painted ones behind it: a painted lantern is dimmed with its ground, a real one
+ * burns at full strength on its plaque.
+ *
+ * NOT DRAWN, AND NOT FETCHED, where the places are rows. No rule that holds there names the picture, so the
+ * browser never asks for it (measured: a rule that named it on a box with `content: none` was still fetched). The
+ * container rules below name it and draw it, for the map. A village's own land art is drawn at every width, as it
+ * always was.
+ */
+.gd-land::before {
+  content: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.58;
+  pointer-events: none;
+}
+.gd-land[data-land="own"]::before {
+  content: "";
+  background-image: var(--gd-land-image, none);
 }
 .gd-paths {
   display: none;
@@ -278,6 +340,14 @@
     aspect-ratio: 10 / 9;
     min-height: 44rem;
     max-height: 58rem;
+  }
+  /* The map is where a ground is drawn, and so where it is picked. */
+  .gd-land::before {
+    content: "";
+    background-image: var(--gd-land-image, none);
+  }
+  .gd-grounds-head .gd-ground-picker {
+    display: flex;
   }
   .gd-paths {
     display: block;
@@ -365,6 +435,14 @@
     aspect-ratio: 10 / 9;
     min-height: 0;
     max-height: none;
+  }
+  /* A small map is still a map: its ground is drawn, and picked, here too. */
+  :is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds) .gd-land::before {
+    content: "";
+    background-image: var(--gd-land-image, none);
+  }
+  :is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds) .gd-grounds-head .gd-ground-picker {
+    display: flex;
   }
   :is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds) .gd-paths {
     display: block;

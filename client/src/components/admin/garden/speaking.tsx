@@ -127,6 +127,8 @@ export interface GardenWords {
   legend: string;
   /** Under a map with places not built yet: what scaffolding is. */
   unbuilt: string;
+  /** Beside the ground picker: what it does, and whose screen it changes. */
+  groundPicker: string;
 }
 
 /**
@@ -186,6 +188,10 @@ export function useGardenWords(opts: { personKey?: string; now?: Date } = {}): G
     unbuilt: say(
       t({ message: "A place under scaffolding is not set up yet.", context: "garden map legend, places not built" }),
       t({ message: "Scaffolding: not set up.", context: "garden map legend, places not built, brief" }),
+    ),
+    groundPicker: say(
+      t({ message: "Pick the ground behind your garden. It changes only your own screen.", context: "garden ground picker" }),
+      t({ message: "Your ground. Only your screen.", context: "garden ground picker, brief" }),
     ),
   };
 }

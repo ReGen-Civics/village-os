@@ -353,4 +353,77 @@ describe("what the garden's stylesheet promises a host page", () => {
       expect(gardenCss.match(/@media/g)).toHaveLength(1);
     });
   });
+
+  /**
+   * THE GROUND BEHIND THE PLACES, AND ITS PICKER (the founder, 28 Nov 2026). The land is never blank: its painted
+   * colours are its own and no rule takes them away; the one picture is a layer over them. A picked ground is drawn,
+   * and so fetched, only where the places are a map, and the picker is drawn only there too.
+   */
+  describe("the ground behind the places, and its picker", () => {
+    const COMPACT = ':is(.gd-grounds[data-compact="true"], .gd-frame[data-dock="expanded"] .gd-frame-main .gd-grounds)';
+    const flat = gardenCss.replace(/\r\n/g, "\n");
+    /** One container rule's whole block, by its condition. */
+    const containerBlock = (condition: string) => {
+      const open = flat.indexOf(`@container (${condition})`);
+      expect(open, condition).toBeGreaterThan(0);
+      return flat.slice(open, flat.indexOf("\n}\n", open));
+    };
+    const fullMap = containerBlock("min-width: 38rem");
+    const smallMap = containerBlock("min-width: 28rem");
+    /** Everything that holds at every width: the stylesheet with its container rules and its one @media taken out. */
+    const everywhere = flat.replace(/@(?:container|media)[^{]*\{[\s\S]*?\n\}\n/g, "");
+
+    it("paints the land from the tokens alone: gradients over a solid ground, and no picture among them", () => {
+      const land = /\n\.gd-land \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(land).toMatch(/background-color: var\(--garden-band\);/);
+      expect(land).toMatch(/background-image:[^;]*linear-gradient\(var\(--garden-ground\), var\(--garden-ground\)\);/);
+      expect(land).not.toContain("url(");
+      expect(land).not.toContain("--gd-land-image");
+      // No other rule anywhere gives the land a background, so nothing can take its colours away.
+      const others = Array.from(flat.matchAll(/([^{}\n]*\.gd-land) \{([^}]*)\}/g)).filter((m) => /background/.test(m[2]));
+      expect(others.map((m) => m[1].trim())).toEqual([".gd-land"]);
+    });
+
+    it("lays the one picture over the land as a layer of its own, at a little over half its strength", () => {
+      const layer = /\n\.gd-land::before \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(layer).toMatch(/position: absolute;\s*inset: 0;/);
+      expect(layer).toMatch(/background-size: cover;\s*background-position: center;/);
+      expect(layer).toMatch(/pointer-events: none;/);
+      // THE VEIL: the land's own night shows through the picture. One number, in one place.
+      expect(layer).toMatch(/opacity: 0\.58;/);
+      expect(gardenCss.match(/opacity:/g)).toHaveLength(2); // this, and the building under scaffolding
+      // A picture that never arrives draws nothing: the layer has no colour of its own to leave behind.
+      expect(layer).not.toMatch(/background-color|background:/);
+    });
+
+    it("names a picked ground only where the places are a map, so where they are rows it is neither drawn nor fetched", () => {
+      // At every width the layer makes no box and names no picture...
+      const layer = /\n\.gd-land::before \{([^}]*)\}/.exec(everywhere)?.[1] ?? "";
+      expect(layer).toMatch(/content: none;/);
+      expect(layer).not.toContain("--gd-land-image");
+      // ...but for a village's own land art, drawn at every width as it always was.
+      expect(everywhere).toMatch(/\n\.gd-land\[data-land="own"\]::before \{\s*content: "";\s*background-image: var\(--gd-land-image, none\);\s*\}/);
+      expect(everywhere.match(/--gd-land-image/g)).toHaveLength(1);
+      // The map's own container rules draw it: the full map, and the small one.
+      expect(fullMap).toMatch(/\n  \.gd-land::before \{\s*content: "";\s*background-image: var\(--gd-land-image, none\);\s*\}/);
+      expect(smallMap).toContain(`${COMPACT} .gd-land::before {\n    content: "";\n    background-image: var(--gd-land-image, none);\n  }`);
+      expect(gardenCss.match(/--gd-land-image/g)).toHaveLength(3);
+    });
+
+    it("draws the picker only where a ground is drawn: never where the places are rows, and by container rules alone", () => {
+      // Standing alone (a settings page) the picker is drawn; in the Grounds' own row it waits for the map.
+      expect(everywhere).toMatch(/\n\.gd-ground-picker \{\s*display: flex;/);
+      expect(everywhere).toMatch(/\n\.gd-grounds-head \.gd-ground-picker \{\s*display: none;\s*\}/);
+      expect(fullMap).toMatch(/\n  \.gd-grounds-head \.gd-ground-picker \{\s*display: flex;\s*\}/);
+      expect(smallMap).toContain(`${COMPACT} .gd-grounds-head .gd-ground-picker {\n    display: flex;\n  }`);
+      // The window's width decides none of it.
+      expect(gardenCss.match(/@media/g)).toHaveLength(1);
+    });
+
+    it("gives the land back the height the picker's line takes, so the picker never pushes the map under the fold", () => {
+      expect(flat).toMatch(/\n\.gd-grounds\[data-picker="true"\] \{\s*max-width: max\(44rem, calc\(\(100dvh - var\(--gd-grounds-above, 10rem\) - 1\.75rem\) \* 10 \/ 9\)\);\s*\}/);
+      // The row above the land: the heading where it starts, the picker where it ends, wrapping where there is no room.
+      expect(everywhere).toMatch(/\n\.gd-grounds-head \{\s*display: flex;\s*flex-wrap: wrap;\s*align-items: flex-end;\s*justify-content: space-between;/);
+    });
+  });
 });

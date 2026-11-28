@@ -147,3 +147,43 @@ msgstr "tres"
 msgctxt "garden, a small count said as a word"
 msgid "two"
 msgstr "dos"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Beachside"
+msgstr "Junto a la playa"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Forest"
+msgstr "Bosque"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Terraced hills"
+msgstr "Colinas en terrazas"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground"
+msgid "Valley"
+msgstr "Valle"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker"
+msgid "Pick the ground behind your garden. It changes only your own screen."
+msgstr "Elija el terreno detrás de su jardín. Solo cambia su propia pantalla."
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker"
+msgid "The ground behind your garden"
+msgstr "El terreno detrás de su jardín"
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden ground picker, brief"
+msgid "Your ground. Only your screen."
+msgstr "Su terreno. Solo su pantalla."
+
+# needs-native-review: the ground picker, its four grounds and a dark lantern's words, 28 Nov 2026
+msgctxt "garden place, its lantern is dark"
+msgid "Nothing waiting."
+msgstr "Nada en espera."
