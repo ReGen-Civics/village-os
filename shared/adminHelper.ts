@@ -298,7 +298,8 @@ export function guideMaySee(def: (Named & Pick<VariableDef, "movedToSecret" | "w
  * know, a sealed one, a withheld one, her own three switches, and any dial
  * under `agents.`. A money dial is refused unless the rules open money dials,
  * and then only free text is: it names where value goes or who holds it. A
- * dial about choosing people is refused under every rule set.
+ * dial about choosing people is refused under every rule set, a money dial
+ * that is also about choosing people among them.
  */
 export function proposalRefusal(def: VariableDef | undefined, rules: GuideRules = TODAYS_RULES): string | null {
   if (!def) return "That is not a setting Admin knows.";
@@ -314,7 +315,7 @@ export function proposalRefusal(def: VariableDef | undefined, rules: GuideRules 
     if (def.type === "text" || def.type === "longtext") {
       return `${def.label} names where value goes or who holds it, so only a person changes it: open ${def.category} under Game Mechanics to set it.`;
     }
-    return null;
+    // An open money dial is still asked the next question: one that is also about choosing people stays a person's.
   }
   if (aboutChoosing(def)) {
     return `${def.label} is about choosing people for roles, and the helper stays out of selection. Change it by hand under Game Mechanics.`;

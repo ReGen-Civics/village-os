@@ -169,6 +169,18 @@ describe("the guide's rules", () => {
     }
   });
 
+  it("a money dial that is also about choosing people stays a person's when money dials open", () => {
+    // No dial is both today, so one is made up here: a fee, which the money pattern names, for an interview, which the selection pattern names.
+    const both: VariableDef = { key: "org.interview_fee", category: "The founding team", label: "Interview fee", description: "A made-up dial.", type: "integer", default: "0", min: 0, max: 100 };
+    expect(proposalRefusal(both), "as it always was").toContain("money settings stay in your own hands");
+    expect(proposalRefusal(both, ADVISING)).toContain("money settings stay in your own hands");
+    expect(proposalRefusal(both, OPEN)).toContain("stays out of selection");
+    expect(mayPropose(both, OPEN)).toBe(false);
+    // The same dial without the selection word is an ordinary money dial with bounds, so the pattern is what held it.
+    expect(proposalRefusal({ ...both, key: "org.hall_fee", label: "Hall fee" }, OPEN)).toBeNull();
+    expect(VARIABLES.filter((v) => (proposalRefusal(v) ?? "").includes("is about money") && /applica|candidate|interview|selection|shortlist/i.test(`${v.key} ${v.label}`))).toEqual([]);
+  });
+
   it("she sees every dial but a sealed one under the wide rules, and exactly what she saw before under the others", () => {
     for (const v of VARIABLES) {
       expect(guideMaySee(v, OPEN), v.key).toBe(!sealed(v));
