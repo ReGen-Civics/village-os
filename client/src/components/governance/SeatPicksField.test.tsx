@@ -13,7 +13,8 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import SeatPicksField from "./SeatPicksField";
 import { roleApplicationStart } from "./roleApplicationType";
 
-vi.mock("@/components/InfoTip", () => ({ default: () => null }));
+// The word a tip explains is the tip's children (InfoTip.tsx), so the stand-in keeps the word and drops the tip.
+vi.mock("@/components/InfoTip", () => ({ default: ({ children }: { children?: import("react").ReactNode }) => children ?? null }));
 vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => ({ user: { id: "u-ana" } }) }));
 vi.mock("./pickSources", () => ({
   loadPickOptions: async () => [

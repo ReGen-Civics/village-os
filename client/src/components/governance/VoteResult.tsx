@@ -113,8 +113,7 @@ function Heading({
   return (
     <div className="flex items-baseline justify-between gap-2">
       <span className="text-sm font-semibold text-foreground">
-        {title}
-        <InfoTip tip={tip} label={`What ${title.toLowerCase()} means`} />
+        <InfoTip tip={tip}>{title}</InfoTip>
       </span>
       <span className="flex items-center gap-1.5 text-sm font-bold tabular-nums text-foreground">
         <Mark className={`w-4 h-4 ${MARK_TONE[mark]}`} aria-hidden="true" />

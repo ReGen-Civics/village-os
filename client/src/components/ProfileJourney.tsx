@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import InfoTip from "@/components/InfoTip";
 import { m } from "framer-motion";
 import { Heart, ScrollText } from "lucide-react";
 import { Pines } from "@/components/sacred/living";
@@ -407,10 +408,15 @@ export default function ProfileJourney() {
               <p className="text-2xl font-display font-bold text-card-foreground">{flows.totals?.sent ?? 0}</p>
               <p className="text-xs text-muted-foreground mt-1"><Trans context="ProfileJourney, p">sent</Trans></p>
             </div>
-            <div className="text-center bg-muted rounded-xl py-4" title={t({ message: "How many different people have thanked you. Breadth is the real signal of community health", context: "ProfileJourney, title" })}>
-              <p className="text-2xl font-display font-bold text-notice">{flows.totals?.distinctAcknowledgers ?? 0}</p>
-              <p className="text-xs text-muted-foreground mt-1"><Trans context="ProfileJourney, p">people thanked you</Trans></p>
-            </div>
+            {/* The whole tile is the tip, so a phone can open it anywhere on it: a title only ever reached a mouse, and the
+                words alone were a small target (QA rounds 1 and 2, 27 Nov 2026). Only the words wear the underline. */}
+            <InfoTip
+              tip={t({ message: "How many different people have thanked you. Breadth is the real signal of community health", context: "ProfileJourney, title" })}
+              className="info-word-tile text-center bg-muted"
+            >
+              <span className="block text-2xl font-display font-bold text-notice">{flows.totals?.distinctAcknowledgers ?? 0}</span>
+              <span className="block text-xs text-muted-foreground mt-1"><span className="info-word-label"><Trans context="ProfileJourney, p">people thanked you</Trans></span></span>
+            </InfoTip>
           </div>
           {(flows.byCycle ?? []).length > 0 && (
             <div>

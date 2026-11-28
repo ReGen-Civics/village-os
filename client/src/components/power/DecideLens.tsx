@@ -8,6 +8,7 @@
  * else the circle's own method, else the village default. Colour never
  * stands alone: the accordion chips and the key row say the words.
  */
+import InfoTip from "@/components/InfoTip";
 import type { NestedLayout } from "@shared/mapLayout";
 import type { DecidesById } from "@shared/power";
 import type { PowerBlock, PowerCircle } from "./types";
@@ -122,9 +123,10 @@ export function DecideKey({
       {entries.map(([m, n]) => {
         const def = power.glossary.decidesBy.find((d) => d.id === m);
         return (
-          <span key={m} className="inline-flex items-center gap-1.5 text-xs text-foreground" title={def?.gloss}>
+          <span key={m} className="inline-flex min-h-11 items-center gap-1.5 text-xs text-foreground">
             <span className="w-3 h-3 rounded-full inline-block border border-black/10" style={{ background: methodColour(m) }} />
-            {def?.label ?? m}
+            {/* The method's gloss on its own name, where a phone can open it (a title reached only a mouse). */}
+            {def?.gloss ? <InfoTip tip={def.gloss}>{def.label ?? m}</InfoTip> : (def?.label ?? m)}
             <span className="text-muted-foreground tabular-nums">{n}</span>
           </span>
         );
