@@ -259,8 +259,8 @@ export interface TrackFacts {
   refsGiven: boolean;
   /** Each reference's follow-up: written up or still open. */
   references: ReadonlyArray<{ followedUp: boolean }>;
-  /** The application's conversations, in order, with the final one marked, and the role holding each when known. */
-  interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null }>;
+  /** The application's conversations, in order, with the final one marked, the role holding each when known, and whether its call is booked. */
+  interviews: ReadonlyArray<{ state: string; final: boolean; role?: string | null; booked?: boolean }>;
   /**
    * The proposal was sent to the anchor circle (ruling 7, the lead, 27 Nov 2026): Agreement begins and the proposal is
    * fixed. Writing up the final conversation alone does neither. Left out, a written-up final counts as sent: the rule
@@ -416,7 +416,7 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
           stages,
           now,
           who: talks[0].role ? `${talks[0].role}` : PLACING_POWER_WORDS,
-          next: "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
+          next: talks[0]?.booked ? "The first conversation is booked. Hold it, then write the notes and the scorecard." : "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
           primary: "conversation",
         };
       if (f.shortlist === null)
@@ -431,7 +431,7 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         stages,
         now,
         who: talks[0]?.role ? `${talks[0].role}` : PLACING_POWER_WORDS,
-        next: "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
+        next: talks[0]?.booked ? "The first conversation is booked. Hold it, then write the notes and the scorecard." : "The applicant books the first conversation, which is part of our review. Hold it, then write the notes and the scorecard.",
         primary: "conversation",
       };
     case "references":
@@ -463,7 +463,7 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
         stages,
         now: "agreement",
         who: anchor,
-        next: `${anchor} accepts the proposal as it is, or counters it. Counter until both sides agree, then adopt with the existing doors.`,
+        next: `${anchor} accepts the proposal as it is, or counters it. Counter until both sides agree, then adopt it. A placer presses accept or counter on the circle's behalf.`,
         primary: "decide",
       };
   }

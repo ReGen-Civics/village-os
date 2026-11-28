@@ -28,7 +28,7 @@ import { trustedAccountFor } from "./applicantAccount";
 import { languageOf } from "./applicantLanguage";
 import { applicantTrackFactsOf } from "./applicantOnboarding";
 import { stepBookingOf } from "./applicationReview";
-import { framedLetter, framedLetterWithButton, statusLinkFor, statusLinkIn, withoutStatusLink, type TellDeps } from "./applicantUpdates";
+import { framedLetter, framedLetterWithButton, statusLinkFor, statusLinkIn, withoutStatusLink, type LetterLink, type TellDeps } from "./applicantUpdates";
 import { stringVar } from "./variables";
 import { referencesEditable } from "../repos/applicantOnboarding";
 import { wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
@@ -81,7 +81,7 @@ function attemptKey(ref: string, kind: StageLetterKind, attempt: number): string
  * second finds the row and stops), and a restart mid-send leaves a row the retry pass can see. The row is updated with
  * the post's answer; an answer of `duplicate` means this key went before, and counts as gone, never as a new attempt.
  */
-async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: StageLetterKind, words: { subject: string; text: string }, attempt = 0): Promise<boolean> {
+async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: StageLetterKind, words: { subject: string; text: string }, attempt = 0, links: readonly LetterLink[] = []): Promise<boolean> {
   if (!p.email) return false;
   const pool = deps.getPool();
   const recorded = STAGE_LETTER_STAGES.includes(kind as StageLetterStage);
@@ -89,7 +89,9 @@ async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: Stage
   if (recorded && !(await review.stampStep(pool, { ref: p.id, kind: "stage_mail", subject, at: new Date(), detail: { went: null, status: "pending" } }))) return false;
   const name = greetingName(p.name);
   const lang = languageOf(p);
-  const framed = await framedLetter(deps, lang, words, statusLinkIn(words.text));
+  // The page by its words, wherever the letter names it, and each booking as a button (QA round 5, item 9).
+  const page = statusLinkIn(words.text) ?? (/https?:\/\/\S+\/application-status\/\S+/.exec(words.text)?.[0] ?? null);
+  const framed = await framedLetter(deps, lang, words, statusLinkIn(words.text), [...(page ? [{ url: page, label: wordsIn(lang).shape.seePage }] : []), ...links]);
   let status: PostResult["status"] | "error" = "error";
   try {
     status = (
@@ -179,7 +181,8 @@ export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0):
       profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
     });
-    const went = await send(deps, p, now, words, attempt);
+    const bookNow = step ? wordsIn(languageOf(p)).status.booking.bookNow(step.label) : "";
+    const went = await send(deps, p, now, words, attempt, step ? step.links.map((l) => ({ url: l.url, label: bookNow, pill: true })) : []);
     // The first attempt covers the moment whether or not the provider took it: a fault is the retry pass's.
     return attempt === 0 ? (await attemptsOf(deps, ref, now)).length > 0 : went;
   } catch (e) {
@@ -269,6 +272,15 @@ export async function retryStageLetters(deps: TellDeps, refs: readonly string[])
   return resent;
 }
 
+/** The open conversation's booking, as a letter's buttons ("Book with Ops"): for the Received letter. */
+export async function openBookingLinks(pool: Pool, ref: string, lang: ApplicantLanguage): Promise<LetterLink[]> {
+  const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && !i.final);
+  if (!open) return [];
+  const step = await stepBookingOf(pool, ref, open.roleId);
+  const label = wordsIn(lang).status.booking.bookNow(step.label);
+  return step.links.map((l) => ({ url: l.url, label, pill: true }));
+}
+
 /**
  * THE CONFIRMATION LETTER'S NEXT STEP (Received), in the same shape as every stage letter: the next step, who acts by
  * role, and the booking link only when a conversation is open now (a village that opens the first conversation as
@@ -301,7 +313,8 @@ export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId:
     const step = await stepBookingOf(pool, ref, iv.roleId);
     const words = bookingNudgeLetter({ firstName: greetingName(p.name), role: step.label, links: step.links.map((l) => l.url), statusLink: await statusLinkFor(deps, ref), lang: languageOf(p) });
     const name = greetingName(p.name);
-    const framed = await framedLetter(deps, languageOf(p), words, statusLinkIn(words.text));
+    const bookNow = wordsIn(languageOf(p)).status.booking.bookNow(step.label);
+    const framed = await framedLetter(deps, languageOf(p), words, statusLinkIn(words.text), step.links.map((l) => ({ url: l.url, label: bookNow, pill: true })));
     const sent = await deps.postEmail({
       idempotencyKey: nudgeKey(ref, interviewId),
       kind: "essential",

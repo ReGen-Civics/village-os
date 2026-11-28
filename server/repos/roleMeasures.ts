@@ -84,7 +84,7 @@ export async function applicationFacts(pool: Pool): Promise<ApplicationFact[]> {
   const steps = await rows(
     pool,
     "SELECT application_ref AS ref, kind, UNIX_TIMESTAMP(MIN(stamped_at)) AS t FROM application_steps " +
-      "WHERE kind IN ('confirmed','first_reply','interview','decided','shortlist','refs_asked') GROUP BY application_ref, kind",
+      "WHERE kind IN ('confirmed','first_reply','interview','decided','shortlist','refs_asked','to_circle','consent','scores_in') GROUP BY application_ref, kind",
   );
   if (steps.length === 0) return [];
   const byRef = new Map<string, Record<string, number | null>>();
@@ -136,6 +136,8 @@ export async function applicationFacts(pool: Pool): Promise<ApplicationFact[]> {
       shortlistYesAt: d?.shortlist?.answer === "yes" ? (t.shortlist ?? null) : null,
       refsAskedAt: t.refs_asked ?? null,
       refsAllFollowedUpAt: followed.get(ref) ?? null,
+      // Sent to the anchor circle (ruling 7), or, in flight before it, the consent round the last write-up opened.
+      toCircleAt: t.to_circle ?? (t.consent != null && t.scores_in != null && t.consent >= t.scores_in ? t.consent : null),
       interviews: talks.get(ref) ?? [],
       countered: p?.countered ?? false,
     });

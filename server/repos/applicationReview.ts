@@ -406,7 +406,11 @@ export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'shortlist' AND JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.answer')) = 'yes') AS yes_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'refs_asked') AS asked_s, " +
       "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided') AS decided_s, " +
-      "(SELECT JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.how')) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided' LIMIT 1) AS how " +
+      "(SELECT JSON_UNQUOTE(JSON_EXTRACT(s.detail_json, '$.how')) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'decided' LIMIT 1) AS how, " +
+      // Sent to the anchor circle (ruling 7), or, in flight before it, the consent round the last write-up opened.
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'to_circle') AS sent_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'consent') AS consent_s, " +
+      "(SELECT UNIX_TIMESTAMP(MIN(s.stamped_at)) FROM application_steps s WHERE s.application_ref = c.application_ref AND s.kind = 'scores_in') AS scores_s " +
       "FROM application_steps c WHERE c.kind = 'confirmed' AND c.stamped_at >= ? LIMIT 2000",
     [since],
   );
@@ -438,6 +442,7 @@ export async function stageTimes(db: Db, since: Date): Promise<StageTimingFacts[
     door: String(a.ref).startsWith("op-") ? ("open" as const) : ("member" as const),
     refsAllFollowedUpAt: allFollowed.get(String(a.ref)) ?? null,
     adopted: a.how === "adopted",
+    toCircleAt: ms(a.sent_s) ?? (a.consent_s != null && a.scores_s != null && Number(a.consent_s) >= Number(a.scores_s) ? ms(a.consent_s) : null),
   }));
 }
 

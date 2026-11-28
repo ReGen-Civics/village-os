@@ -64,7 +64,7 @@ interface ServedWalkthrough {
     mayRead: boolean;
     interviews: Array<{ position: number; roleName: string; minutes: number; final: boolean; state: InterviewState; entries: Array<{ criterionId: string; level: string; evidence: string }> | null; gut: { answer: GutAnswer; note: string } | null }>;
   } | null;
-  roleNames: { followup: string | null; finalCall: string | null };
+  roleNames: { followup: string | null; finalCall: string | null; anchorCircle?: string | null };
   guide?: GuideView | null;
   /** Each conversation's private notes and files this reader may read (0444). Never served to the applicant. */
   conversations?: ConversationNotesView[];
@@ -117,9 +117,11 @@ export interface WalkthroughProps {
   decideOnPage?: boolean;
   /** Draw only the references, for the team's own references page (pages/ApplicationReferences.tsx). */
   only?: "references";
+  /** The reader may not read what `only` asks for. */
+  onRefused?: () => void;
 }
 
-export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false, only }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel", onStage, decideOnPage = false, only, onRefused }: WalkthroughProps) {
   const OW = useOnboardingWords();
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
@@ -128,8 +130,11 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
 
   const load = useCallback(async () => {
     const a = await call(`${base}/walkthrough`, "GET");
-    setW(a.ok ? (a.data.walkthrough as ServedWalkthrough) : null);
-  }, [base]);
+    const got = a.ok ? (a.data.walkthrough as ServedWalkthrough) : null;
+    setW(got);
+    // The references page for somebody who may not read them: the caller draws "Off the trail" (QA round 5).
+    if (only === "references" && (!got || (!got.references.mayClaim && got.references.list.length === 0))) onRefused?.();
+  }, [base, only, onRefused]);
 
   useEffect(() => {
     void load();
@@ -199,7 +204,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
       case "send_to_circle":
         // Ruling 7: the applicant sends it, or Ops or the Visionary from here; it asks once, the proposal is fixed after.
         return w.you.maySendToCircle ? (
-          <SendToCircle url={`${base}/to-circle`} words={{ button: label, ask: OW.sendToCircle.ask, yes: OW.sendToCircle.yes, keep: OW.sendToCircle.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
+          <SendToCircle url={`${base}/to-circle`} words={{ button: namedCircle(label, w.roleNames.anchorCircle), ask: namedCircle(OW.sendToCircle.ask, w.roleNames.anchorCircle), yes: OW.sendToCircle.yes, keep: OW.sendToCircle.keep, failed: OW.sendToCircle.failed }} onDone={() => void load()} />
         ) : (
           <p className={HINT}>{OW.primary.wait_applicant}</p>
         );
@@ -284,7 +289,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
               {/* The gold fill says "you are here"; no number on it (QA round 4: dark on gold read at 2.35:1). */}
               <span className={`jw-stone-face !size-8 !text-xs ${STONE_FACE[s.state]}`}>{s.state === "done" ? <Check className="size-3.5" /> : ""}</span>
             </span>
-            <span className={`sr-only sm:not-sr-only ${STONE_LABEL[s.state]}`}>{s.label}</span>
+            <span className={`${s.state === "now" ? "" : "sr-only sm:not-sr-only"} ${STONE_LABEL[s.state]}`}>{s.label}</span>
             <span className="sr-only">{OW.stateWords[s.state]}</span>
           </li>
         ))}
@@ -334,6 +339,12 @@ function References({ w, busy, act, page = false, open = true }: { w: ServedWalk
   );
 }
 
+/** A team line written with "the anchor circle", said with the village's own name for it ("the Anchor Circle"), one form everywhere (QA round 5). */
+function namedCircle(text: string, name: string | null | undefined): string {
+  if (!name) return text;
+  return text.replace(/the anchor circle/gi, /^the\s/i.test(name) ? name : `the ${name}`).replace(/círculo ancla/gi, name);
+}
+
 function ownerWords(r: ServedReference): string {
   if (r.owner.userId) return r.owner.userName ?? onboardingWords().ownerMember;
   if (r.owner.roleName) return r.owner.isDefault ? onboardingWords().ownerDefault(r.owner.roleName) : r.owner.roleName;
@@ -349,10 +360,12 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
   const [pick, setPick] = useState("");
   return (
     <li className={TILE} data-walk-reference={r.position}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold text-foreground">{r.name}</p>
+      {/* Folded to its one line (QA round 5); open while it is this reader's to follow up. */}
+      <details open={r.mine && !r.followedUp} data-walk-reference-fold="">
+      <summary className="flex min-h-11 cursor-pointer flex-wrap items-center justify-between gap-2">
+        <span className="font-semibold text-foreground">{r.name}</span>
         <span className={CHIP_SOFT}>{r.followedUp ? OW.followedUp : OW.notFollowedUp}</span>
-      </div>
+      </summary>
       <dl className="mt-2 grid gap-1 text-sm">
         <div><dt className="inline font-semibold text-foreground">{OW.contact}: </dt><dd className="inline break-words text-foreground">{r.contact}</dd></div>
         <div><dt className="inline font-semibold text-foreground">{OW.howKnown}: </dt><dd className="inline break-words text-foreground">{r.how}</dd></div>
@@ -388,6 +401,7 @@ function ReferenceTile({ r, w, busy, act }: { r: ServedReference; w: ServedWalkt
           </div>
         )
       )}
+      </details>
     </li>
   );
 }

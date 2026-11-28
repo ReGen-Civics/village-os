@@ -8,7 +8,9 @@
  * notes from the village's standard questions, and marks it done. The applicant never sees this page, its link, or
  * any contact or note on it.
  */
+import { useState } from "react";
 import { useParams } from "wouter";
+import NotFound from "@/pages/NotFound";
 import Layout from "@/components/Layout";
 import { WORLD } from "@/components/journey/look";
 import Walkthrough from "@/components/openProposal/Walkthrough";
@@ -16,11 +18,14 @@ import Walkthrough from "@/components/openProposal/Walkthrough";
 export default function ApplicationReferences() {
   const params = useParams<{ id: string }>();
   const id = String(params.id ?? "");
+  // Somebody who may not read the references sees "Off the trail", as production's other refused pages do (QA round 5).
+  const [refused, setRefused] = useState(false);
+  if (refused) return <NotFound />;
   return (
     <Layout>
       <div className={WORLD}>
         <main className="mx-auto max-w-3xl px-4 py-10" data-application-references-page="">
-          <Walkthrough applicationRef={id} only="references" />
+          <Walkthrough applicationRef={id} only="references" onRefused={() => setRefused(true)} />
         </main>
       </div>
     </Layout>

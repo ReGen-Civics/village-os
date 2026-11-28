@@ -40,7 +40,7 @@ import {
   reviewClockTick,
   scorecardsFor,
   stampFirstReply,
-  statusByToken,
+  closedByToken, statusByToken,
   statusOf,
   submitScore,
   type ReviewDeps,
@@ -108,6 +108,8 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
     if (await overLimit(`application-status:${deps.clientIp ? deps.clientIp(req) : "x"}`, 60, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
     const s = ref && token ? await statusByToken(work, ref, token) : null;
+    // A proven link to an application since closed and cleared says so (QA round 5).
+    if (!s && ref && token && (await closedByToken(work, ref, token))) return res.status(410).json({ error: "closed" });
     // One answer for an unknown ref and a wrong token, so a ref cannot be probed.
     if (!s) return res.status(404).json(NOT_HERE);
     // The six stages (the lead, 27 Nov 2026): stage keys and states, and the refine form's state. Never a note.

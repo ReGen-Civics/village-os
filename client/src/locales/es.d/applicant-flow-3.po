@@ -257,15 +257,7 @@ msgctxt "game variable org.reference_questions, description"
 msgid "The questions that open in the notes box of whoever follows a reference up, the same for everyone, one per line. The notes stay with the team; the applicant only ever sees whether each reference was reached."
 msgstr "Las preguntas que se abren en la caja de notas de quien da seguimiento a una referencia, las mismas para todas las personas, una por línea. Las notas se quedan con el equipo; quien postula solo ve si se contactó a cada referencia."
 
-# needs-native-review: QA round 4, 27 Nov 2026
-msgctxt "applicant's application status, adoption, an account holder"
-msgid "The circle said yes. We'd love you on the team. Sign in to see your roles."
-msgstr "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Inicie sesión para ver sus roles."
 
-# needs-native-review: QA round 4, 27 Nov 2026
-msgctxt "applicant's application status, adoption, the sign-in door"
-msgid "Sign in to see your roles"
-msgstr "Inicie sesión para ver sus roles"
 
 # needs-native-review: QA round 4, 27 Nov 2026
 msgctxt "profile: a newcomer's first week, the start day step"
@@ -331,3 +323,13 @@ msgstr "Empezar ya ya está elegido."
 msgctxt "open proposal decide: adoptedAccountMoon"
 msgid "Adopted. That address already has an account here, so no invitation was needed: their roles start on their start day, within this moon."
 msgstr "Adoptada. Esa dirección ya tiene una cuenta aquí, así que no hizo falta una invitación: sus roles empiezan en su día de inicio, dentro de esta luna."
+
+# needs-native-review: QA round 5
+msgctxt "role progress, a measure"
+msgid "Calls written up (of those booked)"
+msgstr "Llamadas escritas (de las reservadas)"
+
+# needs-native-review: QA round 5
+msgctxt "role measures, holding chain"
+msgid "Seated now (current holders)"
+msgstr "Con rol ahora (quienes lo ocupan)"

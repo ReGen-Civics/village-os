@@ -156,6 +156,7 @@ export const NOTES_WORDS = {
   notAllowed: "These notes are for the people who hold this conversation.",
   notYours: "Only the person who added it takes it off.",
   notFound: "That conversation is not here.",
+  notOpen: "This conversation has not opened yet.",
   decided: "This application has been decided. Its notes stay for the people who decided it.",
 } as const;
 

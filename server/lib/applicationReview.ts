@@ -356,7 +356,11 @@ export async function submitScore(deps: ReviewDeps, p: { ref: string; interviewI
     const next = nextAfter(after, iv.position);
     // The final conversation never opens by itself (the lead, 27 Nov 2026: "once they have their proposal solid and
     // they passed this step they move to their final conversation"): a person moves the application there.
-    if (next && !next.final && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
+    // REVIEWED FIRST (QA round 5): the conversation after the first belongs to References and proposal, which a
+    // shortlist yes begins. Until that yes it stays waiting (its link once went out during Our review);
+    // `openAfterShortlist` opens it then.
+    const waitsForYes = d.reviewFirst && !(await repo.stepsOf(conn, p.ref)).some((s) => s.kind === "shortlist" && s.detail?.answer === "yes");
+    if (next && !next.final && !waitsForYes && (await repo.openInterview(conn, next.id, at))) opened = { position: next.position, roleId: next.roleId, minutes: next.minutes };
     else if (interviewsDone(after)) {
       scoresIn = await repo.stampStep(conn, { ref: p.ref, kind: "scores_in", at });
     }
@@ -386,6 +390,26 @@ async function afterMove(deps: ReviewDeps, ref: string, opened: { position: numb
     void staged;
     void holdConsent;
   }
+}
+
+/**
+ * A SHORTLIST YES OPENS THE NEXT CONVERSATION (QA round 5), when the one before it is done and it was held back for
+ * the yes (reviewed first). Its holders hear it; the applicant's letter is References and proposal's own.
+ */
+export async function openAfterShortlist(deps: ReviewDeps, ref: string): Promise<void> {
+  const pool = deps.getPool();
+  const at = deps.now();
+  const opened = await inTransaction(pool, async (conn) => {
+    const list = [...(await repo.interviewsOf(conn, ref, true))].sort((a, b) => a.position - b.position);
+    const talks = list.filter((i) => !i.final);
+    if (talks.some((i) => i.state === "open")) return null;
+    const next = talks.find((i) => i.state === "waiting");
+    if (!next || !talks.some((i) => i.state === "scored" || i.state === "skipped")) return null;
+    return (await repo.openInterview(conn, next.id, at)) ? { position: next.position, roleId: next.roleId, minutes: next.minutes } : null;
+  });
+  if (!opened) return;
+  const name = kindOfRef(ref) === "open" ? ((await proposals.readOpenProposal(pool, ref))?.name ?? null) : null;
+  await tellInterviewers(deps, ref, opened.position, opened.roleId, opened.minutes, firstName(name));
 }
 
 const firstName = (full: string | null): string | null => (full ? (full.trim().split(/\s+/)[0] ?? null) : null);
@@ -857,6 +881,23 @@ export async function statusByToken(deps: ReviewDeps, ref: string, token: string
   const link = verifyLink("application_status", token);
   if (link && link.ref === ref) return statusOf(deps, ref);
   return null;
+}
+
+/**
+ * A LINK TO AN APPLICATION SINCE CLOSED AND CLEARED (QA round 5): the page says it closed, instead of "that link does
+ * not match a proposal". Only for a link that proves itself (the signed link every letter carries, or the first
+ * email's token while its hash is still kept), so a ref cannot be probed: a wrong token still answers the plain 404.
+ */
+export async function closedByToken(deps: Pick<ReviewDeps, "getPool">, ref: string, token: string): Promise<boolean> {
+  if (!token || kindOfRef(ref) !== "open") return false;
+  if (!(await proposals.isAnonymised(deps.getPool(), ref))) return false;
+  const link = verifyLink("application_status", token);
+  if (link && link.ref === ref) return true;
+  const d = await confirmedDetail(deps.getPool(), ref);
+  if (!d?.statusHash) return false;
+  const a = Buffer.from(hashToken(token));
+  const b = Buffer.from(d.statusHash);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 // ── Clocks: reminders only ──────────────────────────────────────────────────

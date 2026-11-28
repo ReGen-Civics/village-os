@@ -118,7 +118,7 @@ import { deleteReferencesOf, memberReferencesDecidedBefore } from "../repos/appl
 import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
-import { receivedNextLines } from "../lib/applicantStageLetters";
+import { openBookingLinks, receivedNextLines } from "../lib/applicantStageLetters";
 import { framedLetter, statusLinkFor } from "../lib/applicantUpdates";
 import * as reviewRepo from "../repos/applicationReview";
 import { recordEvent } from "../lib/events";
@@ -982,7 +982,7 @@ export function register(app: Express, deps: Deps): void {
             to: { email: confirmed.proposal.email },
             subject: apply.statusSubject,
             // In the invitation's frame, with the status link as its button (QA: letters overflowed 375 px).
-            ...(await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink)),
+            ...(await framedLetter({ getPool, projectName: () => projectName(), siteUrl: site }, lang, { subject: apply.statusSubject, text }, mailedLink, await openBookingLinks(getPool(), confirmed.proposal.id, lang))),
           });
         } catch (e) {
           console.error("[open-proposals] the status link could not be mailed", e);

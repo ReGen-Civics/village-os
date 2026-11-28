@@ -28,7 +28,7 @@ import { gameFetch } from "@/lib/gameApi";
 import RoleArtBeside from "@/components/roleCard/RoleArtBeside";
 import { DECLINED_PAGE_WORDS } from "@shared/openProposalDecide";
 import { chooseApplicantLanguage } from "@shared/applicantLanguage";
-import { applicantSteps, statusView, wordsIn, type StatusServedForView } from "@shared/applicantWords";
+import { applicantSteps, nameCircle, statusView, wordsIn, type ApplicantLanguage, type StatusServedForView } from "@shared/applicantWords";
 import RefineProposal from "@/components/openProposal/RefineProposal";
 import WithdrawApplication from "@/components/openProposal/WithdrawApplication";
 import BookedIt from "@/components/openProposal/BookedIt";
@@ -148,8 +148,9 @@ interface ServedOffer {
 type Pick = { choice: "accept" | "talk"; note: string };
 
 /** The terms we changed: each one beside the applicant's own answer, with "I accept" and "Let's talk" again. */
-export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer; answerUrl: string; onSaved: (o: ServedOffer | null) => void }) {
-  const { t } = useLingui();
+export function ChangedTerms({ offer, answerUrl, onSaved, lang = "en" }: { offer: ServedOffer; answerUrl: string; onSaved: (o: ServedOffer | null) => void; lang?: ApplicantLanguage }) {
+  // In the application's own language, like the rest of the page (QA round 5: English on a Spanish page).
+  const tw = wordsIn(lang).status.terms;
   const [picks, setPicks] = useState<Record<string, Pick>>({});
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
@@ -160,34 +161,34 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
     try {
       const res = await gameFetch(answerUrl, { method: "POST", body: JSON.stringify({ replies: picks }), cache: "no-store" });
       const data = await res.json().catch(() => null);
-      if (!res.ok) setSaid({ ok: false, text: String(data?.message ?? data?.error ?? t`That did not save. Try again.`) });
+      if (!res.ok) setSaid({ ok: false, text: String(data?.message ?? data?.error ?? tw.failed) });
       else {
         setPicks({});
-        setSaid({ ok: true, text: t`Thank you. We have your answers.` });
+        setSaid({ ok: true, text: tw.saved });
         onSaved(data?.offer ?? null);
       }
     } catch {
-      setSaid({ ok: false, text: t`That did not save. Try again.` });
+      setSaid({ ok: false, text: tw.failed });
     } finally {
       setBusy(false);
     }
   };
-  const choice = (c: "accept" | "talk") => (c === "accept" ? t({ message: `I accept`, context: "applicant's application status, terms" }) : t({ message: `Let's talk`, context: "applicant's application status, terms" }));
+  const choice = (c: "accept" | "talk") => (c === "accept" ? tw.accept : tw.talk);
   return (
     <section aria-labelledby="changed-terms" className="rounded-2xl border-2 border-notice/60 bg-card p-5 shadow-sm sm:p-6" data-changed-terms="">
-      <p className="text-xs font-semibold uppercase tracking-widest text-notice">{t({ message: `Terms`, context: "applicant's application status, terms" })}</p>
-      <h2 id="changed-terms" className="font-display text-2xl font-bold text-card-foreground">{t`We changed some of the terms`}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{t`Here is our new wording beside what you answered. Settings we did not change stay as you accepted them.`}</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-notice">{tw.eyebrow}</p>
+      <h2 id="changed-terms" className="font-display text-2xl font-bold text-card-foreground">{tw.heading}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{tw.line}</p>
       <ul className="mt-4 grid gap-3">
         {offer.rows.map((r) => (
           <li key={r.key} className="rounded-xl border border-border bg-muted p-4" data-changed-term={r.key}>
-            <h3 className="font-semibold text-foreground">{r.label}</h3>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t({ message: `Our wording now`, context: "applicant's application status, terms" })}</p>
+            <h3 className="font-semibold text-foreground">{r.key === "commitment" ? tw.commitment : r.label}</h3>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{tw.ours}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">{r.ours}</p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t({ message: `What you answered`, context: "applicant's application status, terms" })}</p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{tw.yours}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">
               {/* Their latest answer to this change first (QA pass 1: "You did not answer this one" stayed after sending). */}
-              {r.reply ? `${choice(r.reply.choice)}${r.reply.note ? `: ${r.reply.note}` : ""}` : r.theirsText ? r.theirsText : r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : t`You did not answer this one.`}
+              {r.reply ? `${choice(r.reply.choice)}${r.reply.note ? `: ${r.reply.note}` : ""}` : r.theirsText ? r.theirsText : r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : tw.notAnswered}
             </p>
             {offer.mayAnswer && (
               <fieldset className="mt-3">
@@ -210,7 +211,7 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
                 </div>
                 {now(r)?.choice === "talk" && (
                   <div className="mt-2">
-                    <label htmlFor={`changed-term-note-${r.key}`} className="text-sm font-semibold text-foreground">{t`What would you like to talk about?`}</label>
+                    <label htmlFor={`changed-term-note-${r.key}`} className="text-sm font-semibold text-foreground">{tw.talkAbout}</label>
                     <GrowingField
                       id={`changed-term-note-${r.key}`}
                       minRows={2}
@@ -221,7 +222,7 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
                     />
                   </div>
                 )}
-                {r.state === "waiting" && !picks[r.key] && <p className="mt-2 text-sm text-muted-foreground">{t`We are waiting for your answer.`}</p>}
+                {r.state === "waiting" && !picks[r.key] && <p className="mt-2 text-sm text-muted-foreground">{tw.waiting}</p>}
               </fieldset>
             )}
           </li>
@@ -235,7 +236,7 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
             onClick={() => void send()}
             className="inline-flex min-h-11 items-center justify-center rounded-xl bg-notice px-5 py-2 font-semibold text-background hover:bg-notice/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
           >
-            {t({ message: `Send my answers`, context: "applicant's application status, terms" })}
+            {tw.send}
           </button>
           {said && <p role="status" className={said.ok ? "text-sm text-foreground" : "text-sm text-destructive"}>{said.text}</p>}
         </div>
@@ -273,7 +274,7 @@ export default function ApplicationStatus() {
   const params = useParams<{ ref: string }>();
   const ref = String(params.ref ?? "");
   const [s, setS] = useState<Served | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "missing">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "missing" | "closed">("loading");
   // The references form opened again to replace the list (the lead, 27 Nov 2026: "offer them a chance to edit").
   const [editRefs, setEditRefs] = useState(false);
   // QA pass 1: the page ran 3,600 to 7,000 px on a phone. The refine form and the reference rows fold behind one button each.
@@ -302,7 +303,7 @@ export default function ApplicationStatus() {
         if (res.ok && data?.status) {
           setS(data.status as Served);
           setState("ready");
-        } else setState("missing");
+        } else setState(res.status === 410 ? "closed" : "missing");
       } catch {
         setState("missing");
       }
@@ -403,6 +404,13 @@ export default function ApplicationStatus() {
           </div>
         )}
         {state === "missing" && <p className="sel-rise mx-auto max-w-2xl rounded-2xl border-2 border-dashed border-border bg-card p-6 text-foreground">{w.status.missing}</p>}
+        {/* A link to an application since closed and cleared says so (QA round 5), and offers the roles again. */}
+        {state === "closed" && (
+          <div className="sel-rise mx-auto max-w-2xl rounded-2xl border-2 border-dashed border-border bg-card p-6 text-foreground" data-closed-link="">
+            <p>{w.status.closedLink}</p>
+            <a className={`mt-3 ${DOOR}`} href="/roles">{w.status.notInvited.roles}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
+          </div>
+        )}
         {state === "ready" && s && view && (
           <article className="space-y-6" data-application-step={s.step}>
             <header>
@@ -476,16 +484,12 @@ export default function ApplicationStatus() {
                   )}
                   {s.outcome === "adopted" && (
                     <p className="mt-2 font-medium text-notice" data-adopted-line="">
-                      {s.hasAccount
-                        ? t({ message: `The circle said yes. We'd love you on the team. Sign in to see your roles.`, context: "applicant's application status, adoption, an account holder" })
-                        : founding
-                          ? t({ message: `The circle said yes. We'd love you on the team. Your invitation to make your account is in your email.`, context: "applicant's application status, adoption" })
-                          : t({ message: `The circle said yes. We'd love you on the team.`, context: "applicant's application status, adoption" })}
+                      {nameCircle(lang, s.hasAccount ? w.status.adoptedLine.account : founding ? w.status.adoptedLine.invite : w.status.adoptedLine.plain, s.sixStages?.anchorCircle)}
                     </p>
                   )}
                   {s.outcome === "adopted" && s.hasAccount && (
                     <a className={`mt-2 ${DOOR}`} href="/profile" data-adopted-sign-in="">
-                      {t({ message: "Sign in to see your roles", context: "applicant's application status, adoption, the sign-in door" })}
+                      {w.status.adoptedLine.signIn}
                       <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                     </a>
                   )}
@@ -601,6 +605,8 @@ export default function ApplicationStatus() {
               <section aria-label={w.page.declinedHeading} className="rounded-xl border border-border bg-card p-4" data-declined="">
                 <h2 className="font-display text-xl font-bold text-foreground">{w.page.declinedHeading}</h2>
                 <p className="mt-1 text-foreground">{w.page.declinedLine}</p>
+                {/* Ruling 12, in every mode (QA round 5): when the roles open again. */}
+                {s.nextSeason && <p className="mt-2 text-foreground" data-next-season="">{w.status.notInvited.nextSeason(s.nextSeason.name, w.day(s.nextSeason.startsOn))}</p>}
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground">
                   <li><a className="font-semibold underline" href={DECLINED_PAGE_WORDS.quests.href}>{w.page.quests}</a></li>
                   <li><a className="font-semibold underline" href={DECLINED_PAGE_WORDS.roles.href}>{w.page.roles}</a></li>
@@ -608,7 +614,7 @@ export default function ApplicationStatus() {
                 </ul>
               </section>
             )}
-            {s.referencesAsked?.mayAdd && !refsShown && !editRefs && (
+            {s.referencesAsked?.mayAdd && !refsShown && !editRefs && !view.tasks?.some((task) => task.key === "references" && !!task.action) && (
               <div id="reference-form" className={`scroll-mt-24 ${TILE}`} data-references-folded="">
                 <button type="button" className={BTN_PRIMARY} onClick={() => setRefsShown(true)} data-references-open="">
                   {w.status.six.tasks.add}
@@ -655,6 +661,7 @@ export default function ApplicationStatus() {
             )}
             {s.offer && s.offer.rows.length > 0 && (
               <ChangedTerms
+                lang={lang}
                 offer={s.offer}
                 answerUrl={token ? `/api/application-status/${encodeURIComponent(ref)}/terms?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/terms`}
                 onSaved={(o) => setS((cur) => (cur ? { ...cur, offer: o } : cur))}
@@ -693,7 +700,7 @@ export default function ApplicationStatus() {
                 {view.booking.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
               </section>
             )}
-            {view.refine && view.refine.open && !refineShown && (
+            {view.refine && view.refine.open && !refineShown && !view.tasks?.some((task) => task.key === "proposal" && !!task.action) && (
               <div id="refine-heading" className={`scroll-mt-24 ${TILE}`} data-refine-folded="">
                 <button type="button" className={BTN_NOTICE} onClick={() => setRefineShown(true)} data-refine-open="">
                   {w.status.six.tasks.refine}
@@ -703,7 +710,7 @@ export default function ApplicationStatus() {
             {view.refine && (!view.refine.open || refineShown) && (
               <RefineProposal
                 refine={view.refine}
-                words={w.status.six.refine}
+                words={{ ...w.status.six.refine, line: nameCircle(lang, w.status.six.refine.line, s.sixStages?.anchorCircle), frozen: nameCircle(lang, w.status.six.refine.frozen, s.sixStages?.anchorCircle) }}
                 url={token ? `/api/application-status/${encodeURIComponent(ref)}/proposal?token=${encodeURIComponent(token)}` : `/api/governance/applications/${encodeURIComponent(ref)}/proposal`}
                 onSaved={(versions) => setS((cur) => (cur?.sixStages ? { ...cur, sixStages: { ...cur.sixStages, refine: { ...cur.sixStages.refine, versions } } } : cur))}
               />

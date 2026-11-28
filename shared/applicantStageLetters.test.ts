@@ -35,7 +35,7 @@ describe("the next-step letters", () => {
     expect(refs.subject).toBe("Next up: your references and your proposal");
     expect(refs.text).toContain("Next step:\nEverything for this step is on your page, one button each: https://village.example.test/application-status/op-1?token=t");
     expect(refs.text).toContain("- Add your references. For each one we need their email, plus a WhatsApp number, a US phone number or a Signal number. Please let them know we'll be in touch.");
-    expect(refs.text).toContain("- Keep refining your proposal. You can update it until it goes to Anchor Circle for review.");
+    expect(refs.text).toContain("- Keep refining your proposal. You can update it until it goes to the Anchor Circle for review.");
     expect(refs.text).toContain("- Book your conversation with Community: https://cal.example.test/c");
     expect(refs.text).toContain("Who acts next:\nYou, then Ops, who reaches out to your references.");
   });
@@ -54,15 +54,15 @@ describe("the next-step letters", () => {
     expect(fin.subject).toBe("Next up: your final conversation with Visionary");
     expect(fin.text).toContain("It's a chance to connect with the source of this village.");
     expect(fin.text).toContain("You won't be presenting it.");
-    expect(fin.text).toContain("until it goes to Anchor Circle for review");
+    expect(fin.text).toContain("until it goes to the Anchor Circle for review");
     expect(fin.text).not.toMatch(/fixed/i);
     expect(fin.text).toContain("Next step:\nBook your final conversation with Visionary: https://cal.example.test/v");
   });
 
   it("Agreement: the anchor circle by its own name accepts or counters, and nothing to book", () => {
     const agr = stageLetter({ ...base, kind: "agreement" });
-    expect(agr.subject).toBe("Your proposal is with Anchor Circle");
-    expect(agr.text).toContain("Who acts next:\nAnchor Circle.");
+    expect(agr.subject).toBe("Your proposal is with the Anchor Circle");
+    expect(agr.text).toContain("Who acts next:\nThe Anchor Circle.");
     expect(agr.text).toContain("Then you get an email with your start date.");
     expect(stageLetter({ ...base, kind: "agreement", anchorCircle: null }).text).toContain("Who acts next:\nThe circle.");
   });

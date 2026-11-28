@@ -295,6 +295,8 @@ export function whyNotSent(r: { reason?: string | null }): NotSentWhy {
 
 export interface AdoptLetterIn {
   firstName: string | null;
+  /** The applicant's page, shown as "See your page" (QA round 5, item 9). */
+  statusLink?: string | null;
   /** The anchor circle that accepted it, by its own name ("Anchor Circle accepted your proposal"). */
   anchorCircle?: string | null;
   village: string;
@@ -333,6 +335,7 @@ const startLines = (i: AdoptLetterIn): string[] => {
       ? ["", w.startDay(i.startDay), w.startSooner(i.soonerRole ?? null), ...(i.allHands ? ["", w.allHands(i.allHands.when), ...(i.allHands.link ? [w.allHandsLink(i.allHands.link)] : [])] : [])]
       : []),
     ...(i.buddy ? ["", w.buddy(i.buddy.name, i.buddy.role)] : []),
+    ...(i.statusLink ? ["", wordsIn(i.lang).statusLinkLine(i.statusLink)] : []),
   ];
 };
 
@@ -340,7 +343,7 @@ const startLines = (i: AdoptLetterIn): string[] => {
 const yesLines = (i: AdoptLetterIn, w: ReturnType<typeof wordsIn>): string[] =>
   i.reviewed && !i.waitsForSeat
     ? [w.adopt.headlineReviewed(i.village, w.list(i.roleNames) || w.aRole, i.anchorCircle ?? null), "", w.adopt.firstCycle]
-    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i))];
+    : [w.adopt.headline(i.village, w.list(i.roleNames) || w.aRole, forWhen(i), i.anchorCircle ?? null)];
 
 /**
  * THE ADOPTION LETTER'S EXTRA LINES (audit P11 and B3), in every applicant language. Kept here
@@ -408,7 +411,7 @@ export function roleStartsOn(moonStartsOn: string, adoptedOn: string): string {
 export function adoptedInviteLetter(i: AdoptLetterIn & { link: string; days: number }): { subject: string; text: string; button: { label: string; url: string } } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village),
+    subject: w.adopt.subject(i.village, i.anchorCircle ?? null),
     button: { label: w.adopt.button, url: i.link },
     text: [
       w.hello(i.firstName),
@@ -441,7 +444,7 @@ export const NEXT_AFTER_PROFILE = LANGUAGES.en.adopt.nextAfterProfile;
 export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   return {
-    subject: w.adopt.subject(i.village),
+    subject: w.adopt.subject(i.village, i.anchorCircle ?? null),
     text: [
       w.hello(i.firstName),
       "",
@@ -477,9 +480,14 @@ export function declinedLetter(i: {
   doorsInBlock?: boolean;
   /** The next steps, as lines with their links (shared/declineNextSteps.ts). Given: they replace the pointers to quests and roles. */
   nextSteps?: readonly string[];
+  /** Ruling 12, in every mode (QA round 5): the next season, when they may apply again. */
+  nextSeason?: { name: string | null; startsOn: string } | null;
+  /** Their page, shown as "See your page". */
+  statusLink?: string | null;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
-  const steps = i.nextSteps?.length ? [...i.nextSteps, ""] : [];
+  const season = i.nextSeason ? [w.notInvited.nextSeason(i.nextSeason.name, w.day(i.nextSeason.startsOn), `${i.site}/roles`), ""] : [];
+  const steps = [...season, ...(i.nextSteps?.length ? [...i.nextSteps, ""] : [])];
   const doors = i.doorsInBlock
     ? [...steps, w.declined.againOwn]
     : steps.length
@@ -487,7 +495,7 @@ export function declinedLetter(i: {
       : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
   return {
     subject: w.declined.subject(i.village),
-    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ""].join("\n"),
+    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ...(i.statusLink ? ["", w.statusLinkLine(i.statusLink)] : []), ""].join("\n"),
   };
 }
 

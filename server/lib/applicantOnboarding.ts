@@ -70,9 +70,10 @@ import { asksFor } from "../repos/roleProposals";
 import { inTransaction } from "../repos/liveSessions";
 import { readApplication as readSeatApplication } from "../repos/seatApplications";
 import { applicationHref } from "../../shared/seatApplications";
-import { finalCallHolders, isApplicant, openConsentRound, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
+import { finalCallHolders, isApplicant, openAfterShortlist, openConsentRound, scorecardHref, scorecardsFor, statusOf, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
 import { BOOKED_WORDS, readBookedAt } from "../../shared/callBooked";
 import { civilDateKey } from "../../shared/lunar";
+import { wordsIn } from "../../shared/applicantWords";
 import { parseRoleShortLabels } from "../../shared/roleShortLabel";
 import { ALL_HANDS_VARIABLES, START_RULE_WORDS, startOf, weekdayIndex, weekdayName } from "../../shared/startDay";
 import { stringVar } from "./variables";
@@ -188,8 +189,12 @@ export async function answerShortlist(deps: ReviewDeps, ref: string, viewerId: s
   if (reviewStageOf(steps) === "review") return refuse(409, "review_first", ONBOARDING_WORDS.shortlistWaitsReview);
   if (reviewStageOf(steps) === "not_invited") return refuse(409, "decided", ONBOARDING_WORDS.decided);
   if (!(await review.stampStep(pool, { ref, kind: "shortlist", at: deps.now(), actorUserId: viewerId, detail: { answer } }))) return refuse(409, "done", ONBOARDING_WORDS.shortlistDone);
-  // A yes can move the application to References and proposal: that stage's next-step letter, once.
-  if (answer === "yes") await deps.tellApplicant?.stage?.(ref);
+  // A yes begins References and proposal: the conversation held back for it opens (reviewed first, QA round 5), and
+  // that stage's next-step letter goes, once.
+  if (answer === "yes") {
+    await openAfterShortlist(deps, ref);
+    await deps.tellApplicant?.stage?.(ref);
+  }
   return { ok: true, answer };
 }
 
@@ -482,7 +487,7 @@ export interface Walkthrough {
   members: Array<{ id: string; name: string }>;
   /** The scorecards, read through the review's own rule (`scorecardsFor`). */
   scorecards: ScorecardView | null;
-  roleNames: { followup: string | null; finalCall: string | null };
+  roleNames: { followup: string | null; finalCall: string | null; anchorCircle?: string | null };
   /** The conversation guide: the role's criteria and qualities as prompts, with reviewers' notes. Null for anybody who may not use it. */
   guide: GuideView | null;
   /** Each conversation's private notes and files, only the conversations this viewer may read (shared/conversationNotes.ts). */
@@ -536,7 +541,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
       refsAsked: steps.some((x) => x.kind === "refs_asked"),
       refsGiven: steps.some((x) => x.kind === "refs_given"),
       references: stored.map((r) => ({ followedUp: !!r.followedUpAt })),
-      interviews: interviews.map((i) => ({ state: i.state, final: i.final, role: names.get(i.roleId) ?? null })),
+      interviews: interviews.map((i) => ({ state: i.state, final: i.final, role: names.get(i.roleId) ?? null, booked: !!i.bookedAt })),
       sentToCircle: sentToCircleOf(steps, interviews), finalExpected: !!stringVar(FINAL_CALL_ROLE_VARIABLE).trim(),
     },
     { welcome: welcomeRole ? (names.get(welcomeRole) ?? null) : null, followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
@@ -545,9 +550,15 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
   if (!member && how === "adopted" && decidedStep && track.now === "start") {
     const weekday = weekdayIndex(stringVar(ALL_HANDS_VARIABLES.day));
     const accepted = civilDateKey(decidedStep.at, deps.calendar().timezone || "UTC");
-    const start = startOf({ acceptedIso: accepted, weekday, seasonStarts: deps.calendar().seasons.map((x) => String(x.startsOn ?? "")), startNow: await proposals.startNowOf(pool, ref) });
+    const moonTerm = (await proposals.readOpenProposal(pool, ref))?.body.term ?? null;
+    const start = startOf({ acceptedIso: accepted, weekday, seasonStarts: deps.calendar().seasons.map((x) => String(x.startsOn ?? "")), startNow: await proposals.startNowOf(pool, ref), term: moonTerm ? { startsOn: moonTerm.startsOn, endsOn: moonTerm.endsOn } : null });
     const day = weekdayName(weekday, "en");
-    track.next = `${track.next} They start ${day} ${start.iso}: ${START_RULE_WORDS[start.rule](day)}.`;
+    // The date in words and the buddy by first name (QA round 5).
+    const chosen = await proposals.buddyOf(pool, ref);
+    const buddyId = chosen ?? (welcomeRole ? (await review.liveHoldersOfRole(pool, welcomeRole))[0] ?? null : null);
+    const buddy: any = buddyId ? await deps.members.byId(buddyId) : null;
+    const buddyName = String(buddy?.name ?? "").trim().split(/\s+/)[0] || null;
+    track.next = `${track.next} They start ${day} ${wordsIn("en").day(start.iso)}: ${START_RULE_WORDS[start.rule](day)}.${buddyName ? ` Their buddy is ${buddyName}.` : ""}`;
   }
 
   const readsAll = mayReadReference({ ...referenceReader(s), isApplicant: false });
@@ -593,7 +604,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     conversations: await conversationNotesFor(deps, ref, s, viewerId, interviews),
     reflections: await reflectionsFor(deps, ref, s, interviews),
     ...(await versionsView(deps, ref, s.isReviewer || s.isFinalCall)),
-    roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
+    roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null, anchorCircle: await review.anchorCircleName(pool) },
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
       mayAskReferences: open && s.holdsPower && !s.recused && (member ? member.firstRole : shortlist === "yes" && kindOfRef(ref) === "open") && !steps.some((x) => x.kind === "refs_asked"),
@@ -746,6 +757,9 @@ async function writableConversation(deps: ReviewDeps, ref: string, viewerId: str
   const s = await standingOf(deps, ref, viewerId);
   // Anybody who may not read this conversation gets the same 404 as a stranger (QA round 1).
   if (!readsConversation(s, interview.roleId)) return refuse(404, "not_found", NOTES_WORDS.notFound);
+  // A decided application takes no new note or booked date, and a conversation not yet opened has none (QA round 5).
+  if ((await review.stepsOf(pool, ref)).some((x) => x.kind === "decided")) return refuse(409, "decided", NOTES_WORDS.decided);
+  if (interview.state === "waiting") return refuse(409, "not_open", NOTES_WORDS.notOpen);
   return { ok: true, interview };
 }
 
@@ -888,7 +902,9 @@ export async function applicantStagesOf(deps: ReviewDeps, ref: string): Promise<
   if (now === "references" && !decided && read.facts.refsGiven) {
     const act = read.facts.references.every((r) => r.followedUp) ? "move" : "follow_up";
     const roleId = stringVar(act === "follow_up" ? FOLLOWUP_ROLE_VARIABLE : FINAL_CALL_ROLE_VARIABLE).trim();
-    const role = roleId ? ((await review.roleNamesById(deps.getPool(), [roleId])).get(roleId) ?? null) : null;
+    // The role's short label ("Visionary"), as its booking button says it (QA round 5).
+    const full = roleId ? ((await review.roleNamesById(deps.getPool(), [roleId])).get(roleId) ?? null) : null;
+    const role = roleId && full ? roleShortLabel(roleId, full, stringVar(ROLE_SHORT_LABELS_VARIABLE)) : full;
     next = { act, role };
   }
   return {
@@ -939,6 +955,8 @@ export async function withdrawApplication(deps: ReviewDeps, ref: string): Promis
  */
 export async function bookedByApplicant(deps: ReviewDeps, ref: string, raw: unknown): Promise<{ ok: true; at: string } | { ok: false; status: number; error: string }> {
   const pool = deps.getPool();
+  // A decided application takes no booked date (QA round 5).
+  if ((await review.stepsOf(pool, ref)).some((x) => x.kind === "decided")) return { ok: false, status: 409, error: "closed" };
   const s = await statusOf(deps, ref);
   // Only while the page offers this conversation's booking: open, undecided, invited.
   const open = s?.bookNow ? (await review.interviewsOf(pool, ref)).find((i) => i.state === "open") : undefined;
@@ -1030,7 +1048,13 @@ export async function sendToCircle(deps: ReviewDeps, ref: string, by: { applican
   const read = await trackFactsOf(deps, ref);
   if (!read) return { ok: false, status: 404, error: "not_found" };
   if (!mayGoToCircle(read.facts)) return { ok: false, status: read.facts.sentToCircle ? 409 : 409, error: read.facts.sentToCircle ? "closed" : "not_ready" };
-  if (!(await review.stampStep(pool, { ref, kind: "to_circle", at: deps.now(), actorUserId: "viewerId" in by ? by.viewerId : null, detail: { by: "viewerId" in by ? "team" : "applicant" } }))) return { ok: false, status: 409, error: "closed" };
+  // Under the proposal's row lock, the one `refineProposal` holds: the proposal is fixed at this instant.
+  const stamped = await inTransaction(pool, async (conn) => {
+    const held = await proposals.readOpenProposal(conn, ref, true);
+    if (!held || held.status !== "confirmed") return false;
+    return review.stampStep(conn, { ref, kind: "to_circle", at: deps.now(), actorUserId: "viewerId" in by ? by.viewerId : null, detail: { by: "viewerId" in by ? "team" : "applicant" } });
+  });
+  if (!stamped) return { ok: false, status: 409, error: "closed" };
   // The Agreement letter goes now; the consent round's own letter stays quiet (one email per moment).
   await openConsentRound(deps, ref, { tellApplicant: false });
   await deps.tellApplicant?.stage?.(ref);
@@ -1067,6 +1091,9 @@ export async function refineProposal(deps: ReviewDeps, ref: string, raw: unknown
   const out = await inTransaction(pool, async (conn) => {
     const p = await proposals.readOpenProposal(conn, ref, true);
     if (!p || p.status !== "confirmed") return { ok: false, status: 409, error: "closed" } as RefineOutcome;
+    // THE FREEZE, CHECKED AGAIN UNDER THE ROW'S LOCK (QA round 5): a send that landed since the read above closes it.
+    // `sendToCircle` stamps under the same lock, so a refinement and a send never both win.
+    if (sentToCircleOf(await review.stepsOf(conn, ref), await review.interviewsOf(conn, ref, true))) return { ok: false, status: 409, error: "closed" } as RefineOutcome;
     if (p.body.why === words.why && p.body.aim === words.aim) return { ok: false, status: 400, error: "unchanged" } as RefineOutcome;
     const versions = [...readVersions(await proposals.proposalVersionsOf(conn, ref)), { at: at.toISOString(), why: p.body.why, aim: p.body.aim }].slice(-PROPOSAL_VERSIONS_MAX);
     if (!(await proposals.refineOpenProposal(conn, ref, words.why, words.aim, versions))) return { ok: false, status: 409, error: "closed" } as RefineOutcome;

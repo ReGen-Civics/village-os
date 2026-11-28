@@ -103,7 +103,7 @@ import { whileSessionHolds } from "../lib/sessionHold";
 import { effectiveLifecycle } from "../lib/modules";
 import { answerNotInvited, conversationsOf, conversationsToName, hasRecused, interviewsAreIn, inviteToConversations, reviewWaits, stampDecided, stayCloseProgram } from "../lib/applicationReview";
 import { currentMoonTerm, moonEnded, REVIEW_WORDS, reviewStageOf } from "../../shared/applicationReview";
-import { statusLinkFor } from "../lib/applicantUpdates";
+import { labelLinks, statusLinkFor, type LetterLink } from "../lib/applicantUpdates";
 import { anchorCircleName } from "../repos/applicationReview";
 import { waitsForSend } from "../lib/applicantOnboarding";
 /** Adopt and terms before the send (ruling 23). */
@@ -306,9 +306,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     origin: string,
     to: { email: string; name: string | null },
     words: { subject: string; text: string; button?: { label: string; url: string } },
-    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[]; attachments?: OutgoingEmail["attachments"] } = {},
+    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[]; attachments?: OutgoingEmail["attachments"]; links?: readonly LetterLink[] } = {},
   ): Promise<OutgoingEmail> {
-    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
+    const dressedRaw = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
+    // The page and each booking by their words, never a raw address (QA round 5, item 9).
+    const page = /https?:\/\/\S+\/application-status\/[^\s<"]+/.exec(words.text)?.[0] ?? null;
+    const dressed = { ...dressedRaw, html: labelLinks(dressedRaw.html, [...(page ? [{ url: page, label: wordsIn(o.lang ?? "en").shape.seePage }] : []), ...(o.links ?? [])]) };
     return {
       idempotencyKey: key,
       kind: "essential",
@@ -329,6 +332,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.startsOn) && x.startsOn > dayIso)
       .sort((a, b) => a.startsOn.localeCompare(b.startsOn))[0];
     return next ?? null;
+  };
+
+  /** The first conversation's booking as the invitation's button ("Book with Ops"). */
+  const firstBookingLinks = async (p: store.StoredOpenProposal): Promise<LetterLink[]> => {
+    const first = (await conversationsToName(getPool(), p.id))[0];
+    if (!first) return [];
+    const label = wordsIn(languageOf(p)).status.booking.bookNow(first.label || first.role);
+    const urls = first.bookingLinks?.length ? first.bookingLinks.map((l) => l.url) : first.bookingUrl ? [first.bookingUrl] : [];
+    return urls.map((url) => ({ url, label, pill: true }));
   };
 
   /** Send, and say why not when it did not go. */
@@ -424,7 +436,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   };
 
   /** Everything the start letter adds: the day, the all-hands, the buddy. */
-  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()) });
+  const newcomer = async (p: store.StoredOpenProposal, adoptedAt: Date) => ({ ...(await startWords(p, adoptedAt)), buddy: await buddyFor(p), anchorCircle: await anchorCircleName(getPool()), statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id) });
 
   /** The all-hands as a calendar invite, attached to the start letter (the lead, 27 Nov 2026). */
   const allHandsAttachment = async (p: store.StoredOpenProposal, adoptedAt: Date): Promise<OutgoingEmail["attachments"]> => {
@@ -1063,7 +1075,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const nextSteps = declineNextStepsLines((k) => stringVar(k), { site: site(), on: boolVar(DECLINE_STEPS_KEYS.on), lang: languageOf(p) });
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true, nextSteps }), { lang: languageOf(p), comeAndPlay: true, skip: nextSteps.length ? NEXT_STEP_DOORS : undefined })
+        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, statusLink: await statusLinkFor({ siteUrl: site, getPool }, p.id), nextSeason: nextSeasonAfter(civilDateKey(at, tz())), village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true, nextSteps }), { lang: languageOf(p), comeAndPlay: true, skip: nextSteps.length ? NEXT_STEP_DOORS : undefined })
         : null,
     );
     await tell(p.id, "declined");
@@ -1149,7 +1161,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             statusLink: await statusLinkFor({ siteUrl: site, getPool: () => pool }, p.id),
             lang: languageOf(p),
             note,
-          }), { lang: languageOf(p) })
+          }), { lang: languageOf(p), links: await firstBookingLinks(p) })
         : null,
     );
     await tell(p.id, "invited");

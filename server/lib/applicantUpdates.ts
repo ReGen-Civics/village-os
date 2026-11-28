@@ -64,6 +64,33 @@ export function statusLinkDays(clockStartsAt: Date | null = null, now: Date = ne
   return Math.max(120, ahead + (Math.trunc(numberVar(APPLICATION_CLOSE_DAYS_VARIABLE)) || 90) + STATUS_LINK_MARGIN_DAYS);
 }
 
+/** A link a letter shows by its words, never as a raw address: the page ("See your page") or a call's booking ("Book with Ops", a button). */
+export interface LetterLink {
+  url: string;
+  label: string;
+  /** Drawn as a small button (a booking). */
+  pill?: boolean;
+}
+
+/**
+ * EVERY LINK BY ITS WORDS (QA round 5: a raw link wrapped over seven lines at 375 px, and booking links were bare
+ * addresses). In a letter's HTML, the address the frame linked is shown as its label; a booking is a button in the
+ * village's colour. The plain text keeps the address, for a reader without HTML.
+ */
+export function labelLinks(html: string, links: readonly LetterLink[]): string {
+  const brand = /bgcolor="([^"]+)"/.exec(html)?.[1] ?? null;
+  let out = html;
+  for (const l of links) {
+    const shown = escapeHtml(l.url).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(<a href="[^"]*")([^>]*)>${shown}</a>`, "g");
+    out = out.replace(re, (_m, open: string, rest: string) => {
+      const style = l.pill && brand ? ` style="display:inline-block;margin:6px 0;padding:10px 20px;border-radius:999px;background-color:${brand};color:#ffffff;font-weight:bold;text-decoration:none;"` : rest;
+      return `${open}${style}>${escapeHtml(l.label)}</a>`;
+    });
+  }
+  return out;
+}
+
 /**
  * AN APPLICANT LETTER IN THE INVITATION'S FRAME (QA: 15 of 39 letters overflowed 375 px, and the stage letters had no
  * frame): the village's band, "With love, The <village> team", the footer, and the status link as a "See your page"
@@ -74,9 +101,11 @@ export async function framedLetter(
   lang: ApplicantLanguage,
   words: { subject: string; text: string },
   statusLink: string | null,
+  links: readonly LetterLink[] = [],
 ): Promise<{ html: string; text: string; preheader?: string }> {
   const origin = deps.siteUrl?.().replace(/\/+$/, "") ?? "";
   if (!origin) return { html: plainLetterHtml(words.text), text: words.text };
+  const labelled = [...(statusLink ? [{ url: statusLink, label: wordsIn(lang).shape.seePage }] : []), ...links];
   try {
     const dressed = await dressLetter(
       deps.getPool(),
@@ -91,7 +120,7 @@ export async function framedLetter(
       const at = text.indexOf(comeAndPlayWords(lang).signOff);
       text = at >= 0 ? `${text.slice(0, at)}${line}\n\n${text.slice(at)}` : `${text}\n\n${line}`;
     }
-    return { html: dressed.html, text, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
+    return { html: labelLinks(dressed.html, labelled), text, ...(dressed.preheader ? { preheader: dressed.preheader } : {}) };
   } catch (e) {
     console.error("[open-proposals] a letter could not be framed, so it goes plain", e);
     return { html: plainLetterHtml(words.text), text: words.text };
@@ -184,7 +213,9 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
       if (!p || !p.email || p.status === "unconfirmed") return;
       const words = await wordsFor(deps, p, kind, facts);
       if (UPDATE_EMAILS[kind]) {
-        const framed = await framedLetter(deps, languageOf(p), { subject: words.title, text: words.text }, statusLinkIn(words.text));
+        const book = facts.withRole ? wordsIn(languageOf(p)).status.booking.bookNow(facts.withRole) : null;
+        const bookings: LetterLink[] = book ? (facts.bookingLinks?.length ? facts.bookingLinks.map((l) => l.url) : facts.bookingUrl ? [facts.bookingUrl] : []).map((url) => ({ url, label: book, pill: true })) : [];
+        const framed = await framedLetter(deps, languageOf(p), { subject: words.title, text: words.text }, statusLinkIn(words.text), bookings);
         const sent = await deps.postEmail({
           idempotencyKey: `open-proposal:${keyOf(ref, kind, facts.part)}`,
           kind: "essential",

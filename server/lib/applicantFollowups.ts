@@ -32,6 +32,7 @@ import * as store from "../repos/openProposals";
 import * as review from "../repos/applicationReview";
 import { languageOf } from "./applicantLanguage";
 import { statusLinkFor } from "./applicantUpdates";
+import { wordsIn } from "../../shared/applicantWords";
 import { escapeHtml } from "./comms/mailer";
 import { plainLetterHtml } from "./letterHtml";
 import type { NotifyInput } from "./notify";
@@ -135,13 +136,14 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     site,
     // Signed by the village's team, never a role's (QA: "The Human Operations & Onboarding Lead Steward team").
     team: village,
-    // The page closes with the application (its details go now), so the letter points nowhere it cannot keep.
+    // The page says the application closed (QA round 5), so the letter's button leads somewhere true.
     statusLink: null,
     lang: languageOf(p),
   });
   const block = (await deps.footer?.({ village, site, lang: languageOf(p) })) ?? null;
   const footer = block && block.html ? block : null;
 
+  const page = await statusLinkFor({ siteUrl: () => site, getPool: () => pool }, p.id);
   const text = footer ? `${words.text}\n${footer.text}\n` : words.text;
   return {
     idempotencyKey: closedLetterKey(p.id),
@@ -149,8 +151,8 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     origin: "open_proposal.closed",
     to: { email: p.email, ...(firstName ? { name: firstName } : {}) },
     subject: words.subject,
-    // Every address a link (server/lib/letterHtml.ts), the footer block after.
-    html: plainLetterHtml(words.text, { after: footer ? footer.html : "" }),
+    // Every address a link (server/lib/letterHtml.ts), the page as a button, the footer block after.
+    html: plainLetterHtml(words.text, { after: footer ? footer.html : "", ...(page ? { action: { href: page, label: wordsIn(languageOf(p)).shape.seePage } } : {}) }),
     text,
   };
 }

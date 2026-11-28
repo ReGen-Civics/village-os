@@ -86,7 +86,7 @@ describe("the letters", () => {
     const l = notInvitedLetter({ firstName: "Rowan", village: "V", roleNames: ["Lead Role"], site: "https://v.test/", stayClose: { program: { name: "Seeders", href: "/resident" }, quests: true, events: false }, lang: "en" });
     // The lead's words (12 Nov 2026): no paragraph explaining that it is not personal.
     // Ruling 12: "we can't say yes this time", never "someone more closely matched".
-    expect(l.text).toContain("We can't say yes this time. Thank you for your time and the care you put into it.");
+    expect(l.text).toContain("We can't say yes this time. Thank you for your time.");
     expect(l.text).not.toContain("more closely matched");
     expect(l.text).not.toContain("not personal");
     expect(l.text).toContain("Seeders: https://v.test/resident");

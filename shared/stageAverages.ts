@@ -14,12 +14,13 @@
  * PURE.
  */
 import { stageHours, TIMED_STAGES, type StageTimingFacts, type TimedStage } from "./applicationStageTiming";
+import { median } from "./roleMeasures";
 
 export const AVERAGE_MIN_SAMPLE = 3;
 
 export type AveragedStage = TimedStage;
 
-/** Each stage's mean in whole days (at least 1), or nothing for a stage fewer than the sample have finished. */
+/** Each stage's median in whole days (at least 1), or nothing for a stage fewer than the sample have finished. */
 export function stageAverages(apps: readonly StageTimingFacts[]): Partial<Record<AveragedStage, number>> {
   const spans: Record<TimedStage, number[]> = { review: [], references: [], final_interview: [], agreement: [] };
   for (const a of apps) {
@@ -33,7 +34,8 @@ export function stageAverages(apps: readonly StageTimingFacts[]): Partial<Record
   for (const stage of TIMED_STAGES) {
     const list = spans[stage];
     if (list.length < AVERAGE_MIN_SAMPLE) continue;
-    out[stage] = Math.max(1, Math.round(list.reduce((n, h) => n + h, 0) / list.length / 24));
+    // THE MEDIAN (QA round 5): the same statistic the admin's role progress page shows, so the two never disagree.
+    out[stage] = Math.max(1, Math.round((median(list) as number) / 24));
   }
   return out;
 }

@@ -161,8 +161,9 @@ export interface ApplicantMessages {
 
 
   adopt: {
-    subject(village: string): string;
-    headline(village: string, roles: string, forWhen: string): string;
+    /** With the anchor circle's name, it is the one that accepted ("The Anchor Circle accepted your proposal"). */
+    subject(village: string, anchor?: string | null): string;
+    headline(village: string, roles: string, forWhen: string, anchor?: string | null): string;
     forThisMoon: string;
     forNextSeason: string;
     inviteIntro: string;
@@ -239,6 +240,8 @@ export interface ApplicantMessages {
       interviewWaiting: string;
       consent: string;
       adopted: string;
+      /** Adopted from an account here (QA round 5): they sign in, no account is made. */
+      adoptedAccount: string;
       withdrawn: string;
       declined: string;
       review: string;
@@ -319,7 +322,7 @@ export interface ApplicantMessages {
         done: string;
         /** Ruling 7: send the written-up proposal to the anchor circle, with a confirm step. */
         sendLabel(anchor: string | null): string;
-        sendRow: string;
+        sendRow(anchor: string | null): string;
         sendState: string;
         sendAsk(anchor: string | null): string;
         sendYes: string;
@@ -379,8 +382,25 @@ export interface ApplicantMessages {
     withdraw: { button: string; ask: string; yes: string; keep: string; failed: string; /** The card's eyebrow once withdrawn (QA pass 1 read "FIRST REPLY"). */ step: string };
     /** What the circle raised in its consent round, naming nobody (the lead, 27 Nov 2026). */
     objections: { heading: string; line: string };
+    /** The counter-offer block, in the application's own language (QA round 5: it showed English on a Spanish page). */
+    terms: { eyebrow: string; heading: string; line: string; ours: string; yours: string; accept: string; talk: string; notAnswered: string; talkAbout: string; waiting: string; send: string; saved: string; failed: string; commitment: string };
+    /** A link to an application that was closed and its details removed (QA round 5). */
+    closedLink: string;
+    /** The adopted line and its sign-in door, in the application's own language. */
+    adoptedLine: { account: string; invite: string; plain: string; signIn: string };
     wait: { heading: string; line: string; quests: string; map: string; events: string };
   };
+}
+
+/**
+ * A line written with "the circle" (or "el círculo"), said with the anchor circle's own name when the village has one:
+ * one form everywhere, "the Anchor Circle" (QA round 5).
+ */
+export function nameCircle(lang: ApplicantLanguage | null | undefined, text: string, anchor: string | null | undefined): string {
+  if (!anchor) return text;
+  if (lang === "es") return text.replace(/\bal círculo\b/g, `al ${anchor}`).replace(/\bel círculo\b/g, `el ${anchor}`).replace(/\bEl círculo\b/g, `El ${anchor}`).replace(/\bdel círculo\b/g, `del ${anchor}`);
+  const named = /^the\s/i.test(anchor) ? anchor : `the ${anchor}`;
+  return text.replace(/\bthe circle's\b/g, `${named}'s`).replace(/\bthe circle\b/g, named).replace(/\bThe circle\b/g, named.charAt(0).toUpperCase() + named.slice(1));
 }
 
 /** The anchor circle as a sentence says it: its own name, with "the" before it unless the name starts with one. */
@@ -494,7 +514,7 @@ const en: ApplicantMessages = {
   notInvited: {
     subject: (v) => `Thank you for applying to ${v}`,
     thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}, and for the care you put into it.`,
-    matched: "We can't say yes this time. Thank you for your time and the care you put into it.",
+    matched: "We can't say yes this time. Thank you for your time.",
     stayClose: "We would love to stay in touch, and there are open ways to be part of the village:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Take a quest: ${url}`,
@@ -514,8 +534,8 @@ const en: ApplicantMessages = {
 
 
   adopt: {
-    subject: (v) => `${v} said yes to your proposal`,
-    headline: (v, roles, forWhen) => `${v} said yes to your proposal to hold ${roles} ${forWhen}.`,
+    subject: (v, anchor) => (anchor ? `${cap(theCircle(anchor))} accepted your proposal` : `${v} said yes to your proposal`),
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `${cap(theCircle(anchor))} accepted` : `${v} said yes to`} your proposal to hold ${roles} ${forWhen}.`,
     forThisMoon: "this moon",
     forNextSeason: "next season",
     inviteIntro: "Here is your invitation. Use the button to create your profile, or open this link:",
@@ -594,6 +614,7 @@ const en: ApplicantMessages = {
       interviewWaiting: "Our move: the next conversation opens once the last one is written up. You book it at a time you choose.",
       consent: "Our move: the circle weighs your proposal and consents, or says what is missing.",
       adopted: "Your move: make your account. The link to make it is in your email.",
+      adoptedAccount: "Sign in to see your roles.",
       withdrawn: "Nothing more is needed. You withdrew this proposal.",
       declined: "Nothing more is needed from you. We have answered.",
       review: "Our move: we read your application with care, then invite you to the conversations or write to thank you.",
@@ -670,7 +691,7 @@ const en: ApplicantMessages = {
         refine: "Refine your proposal",
         done: "Done",
         sendLabel: (anchor) => `Send it to ${theCircle(anchor)}`,
-        sendRow: "Your proposal goes to the circle",
+        sendRow: (anchor) => `Your proposal goes to ${theCircle(anchor)}`,
         sendState: "When you're ready",
         sendAsk: (anchor) => `Send your proposal to ${theCircle(anchor)} now? It's fixed from that moment.`,
         sendYes: "Send it",
@@ -692,8 +713,8 @@ const en: ApplicantMessages = {
         versions: (n) => (n === 1 ? "1 earlier version kept." : `${n} earlier versions kept.`),
       },
       average: {
-        reply: (d) => (d === 1 ? "On average our review takes about a day." : `On average our review takes about ${d} days.`),
-        stage: (d) => (d === 1 ? "On average this step takes about a day." : `On average this step takes about ${d} days.`),
+        reply: (d) => (d === 1 ? "Our review usually takes about a day." : `Our review usually takes about ${d} days.`),
+        stage: (d) => (d === 1 ? "This step usually takes about a day." : `This step usually takes about ${d} days.`),
       },
     },
     references: {
@@ -741,6 +762,29 @@ const en: ApplicantMessages = {
       },
     },
     private: "This page shows steps only. What the people who talk with you write down stays with them.",
+    terms: {
+      eyebrow: "Terms",
+      heading: "We changed some of the terms",
+      line: "Here is our new wording beside what you answered. Settings we did not change stay as you accepted them.",
+      ours: "Our wording now",
+      yours: "What you answered",
+      accept: "I accept",
+      talk: "Let's talk",
+      notAnswered: "You did not answer this one.",
+      talkAbout: "What would you like to talk about?",
+      waiting: "We are waiting for your answer.",
+      send: "Send my answers",
+      saved: "Thank you. We have your answers.",
+      failed: "That did not save. Try again.",
+      commitment: "Commitment",
+    },
+    closedLink: "This application is closed, and its details were removed. You're welcome to apply again any time.",
+    adoptedLine: {
+      account: "The circle said yes. We'd love you on the team. Sign in to see your roles.",
+      invite: "The circle said yes. We'd love you on the team. Your invitation to make your account is in your email.",
+      plain: "The circle said yes. We'd love you on the team.",
+      signIn: "Sign in to see your roles",
+    },
     objections: {
       heading: "What the circle raised",
       line: "Their reasons, in their words. Nobody is named.",
@@ -851,7 +895,7 @@ const es: ApplicantMessages = {
   notInvited: {
     subject: (v) => `Gracias por postularse a ${v}`,
     thanks: (roles, v) => `Gracias por postularse para ocupar ${roles} en ${v}, y por el cuidado que puso en ello.`,
-    matched: "Esta vez no podemos decir que sí. Gracias por su tiempo y por el cuidado que puso.", // needs-native-review: ruling 12, 27 Nov 2026
+    matched: "Esta vez no podemos decir que sí. Gracias por su tiempo.", // needs-native-review: ruling 12, 27 Nov 2026
     stayClose: "Nos encantaría seguir en contacto, y hay caminos abiertos para ser parte de la aldea:",
     program: (name, url) => `${name}: ${url}`,
     quest: (url) => `Tome una misión: ${url}`,
@@ -872,8 +916,8 @@ const es: ApplicantMessages = {
 
 
   adopt: {
-    subject: (v) => `${v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
-    headline: (v, roles, forWhen) => `${v} aceptó su propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
+    subject: (v, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta`, // needs-native-review: new words, 16 Nov 2026
+    headline: (v, roles, forWhen, anchor) => `${anchor ? `El ${anchor}` : v} aceptó su propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
     forThisMoon: "esta luna",
     forNextSeason: "la próxima temporada",
     inviteIntro: "Aquí está su invitación. Use el botón para crear su perfil, o abra este enlace:",
@@ -953,6 +997,7 @@ const es: ApplicantMessages = {
       interviewWaiting: "Nos toca a nosotros: la siguiente conversación se abre cuando la anterior esté escrita. Usted la reserva en el horario que elija.", // needs-native-review: new words, 12 Nov 2026
       consent: "Nos toca a nosotros: el círculo valora su propuesta y da su consentimiento, o dice qué falta.",
       adopted: "Le toca a usted: crear su cuenta. El enlace para hacerlo está en su correo.",
+      adoptedAccount: "Inicie sesión para ver sus roles.", // needs-native-review: QA round 5
       withdrawn: "No hace falta nada más. Usted retiró esta propuesta.",
       declined: "No hace falta nada más de su parte. Ya respondimos.",
       review: "Nos toca a nosotros: leemos su postulación con cuidado, y luego le invitamos a las conversaciones o le escribimos para darle las gracias.",
@@ -1031,7 +1076,7 @@ const es: ApplicantMessages = {
         refine: "Mejorar su propuesta",
         done: "Hecho",
         sendLabel: (anchor) => `Enviarla a ${anchor ?? "el círculo"}`, // needs-native-review: ruling 7, 27 Nov 2026
-        sendRow: "Su propuesta va al círculo", // needs-native-review: ruling 7, 27 Nov 2026
+        sendRow: (anchor) => `Su propuesta va ${anchor ? `al ${anchor}` : "al círculo"}`, // needs-native-review: ruling 7, 27 Nov 2026
         sendState: "Cuando esté lista", // needs-native-review: ruling 7, 27 Nov 2026
         sendAsk: (anchor) => `¿Envía su propuesta a ${anchor ?? "el círculo"} ahora? Queda fija desde ese momento.`, // needs-native-review: ruling 7, 27 Nov 2026
         sendYes: "Enviarla", // needs-native-review: ruling 7, 27 Nov 2026
@@ -1054,8 +1099,8 @@ const es: ApplicantMessages = {
       },
       // needs-native-review: the village's averages, 27 Nov 2026
       average: {
-        reply: (d) => (d === 1 ? "En promedio nuestra revisión toma alrededor de un día." : `En promedio nuestra revisión toma alrededor de ${d} días.`),
-        stage: (d) => (d === 1 ? "En promedio este paso toma alrededor de un día." : `En promedio este paso toma alrededor de ${d} días.`),
+        reply: (d) => (d === 1 ? "Nuestra revisión suele tomar alrededor de un día." : `Nuestra revisión suele tomar alrededor de ${d} días.`),
+        stage: (d) => (d === 1 ? "Este paso suele tomar alrededor de un día." : `Este paso suele tomar alrededor de ${d} días.`), // needs-native-review: QA round 5
       },
     },
     references: {
@@ -1105,6 +1150,29 @@ const es: ApplicantMessages = {
     },
     private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan con usted se queda con ellas.",
     // needs-native-review: the withdraw button, 27 Nov 2026
+    terms: {
+      eyebrow: "Términos", // needs-native-review: QA round 5
+      heading: "Cambiamos algunos de los términos", // needs-native-review: QA round 5
+      line: "Aquí está nuestra nueva redacción junto a lo que usted respondió. Lo que no cambiamos queda como usted lo aceptó.", // needs-native-review: QA round 5
+      ours: "Nuestra redacción ahora", // needs-native-review: QA round 5
+      yours: "Lo que usted respondió", // needs-native-review: QA round 5
+      accept: "Acepto", // needs-native-review: QA round 5
+      talk: "Conversemos", // needs-native-review: QA round 5
+      notAnswered: "Usted no respondió este punto.", // needs-native-review: QA round 5
+      talkAbout: "¿De qué le gustaría conversar?", // needs-native-review: QA round 5
+      waiting: "Esperamos su respuesta.", // needs-native-review: QA round 5
+      send: "Enviar mis respuestas", // needs-native-review: QA round 5
+      saved: "Gracias. Tenemos sus respuestas.", // needs-native-review: QA round 5
+      failed: "No se guardó. Inténtelo de nuevo.", // needs-native-review: QA round 5
+      commitment: "Dedicación", // needs-native-review: QA round 5
+    },
+    closedLink: "Esta postulación está cerrada, y sus datos se eliminaron. Puede postularse de nuevo cuando quiera.", // needs-native-review: QA round 5
+    adoptedLine: {
+      account: "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Inicie sesión para ver sus roles.", // needs-native-review: QA round 5
+      invite: "El círculo dijo que sí. Nos encantaría tenerle en el equipo. Su invitación para crear su cuenta está en su correo.", // needs-native-review: QA round 5
+      plain: "El círculo dijo que sí. Nos encantaría tenerle en el equipo.", // needs-native-review: QA round 5
+      signIn: "Inicie sesión para ver sus roles", // needs-native-review: QA round 5
+    },
     objections: {
       heading: "Lo que planteó el círculo", // needs-native-review: the objections' reasons, 27 Nov 2026
       line: "Sus razones, en sus palabras. No se nombra a nadie.", // needs-native-review: the objections' reasons, 27 Nov 2026
@@ -1229,6 +1297,8 @@ export interface StatusServedForView {
   /** `booked`: the call's time once the applicant said it ("I've booked it", shared/callBooked.ts); `zone`: the village's. */
   bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }>; final?: boolean; booked?: string | null; zone?: string } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
+  /** Made from an account here: adopted, they sign in to their roles. */
+  hasAccount?: boolean;
   referencesGiven?: number | null;
   /** References asked of a shortlisted applicant: the form while it waits, a count once given. */
   referencesAsked?: { given: number | null; mayAdd: boolean; mayEdit?: boolean } | null;
@@ -1347,6 +1417,8 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   const path: StatusView["path"] = [];
   for (const p of s.path) {
     if (closed && (p.label === STEP_WORDS.consent || p.state !== "done")) continue;
+    // Withdrawn by the applicant: nobody decided it, so no "Decision: done" (QA round 5).
+    if (s.outcome === "withdrawn" && p.label === STEP_WORDS.decided) continue;
     // An adopted application's first cycle is where they stand now, so it keeps its place.
     if (decided && p.state === "now" && !(s.outcome === "adopted" && p.label === STEP_WORDS.first_cycle)) continue;
     let state = p.state;
@@ -1360,7 +1432,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   const notInvited = !!s.notInvited && s.outcome === "declined";
   const quietlyClosed = !!s.closed && s.outcome === "withdrawn";
   let move: string;
-  if (s.outcome === "adopted") move = w.move.adopted;
+  if (s.outcome === "adopted") move = s.hasAccount ? w.move.adoptedAccount : w.move.adopted;
   else if (quietlyClosed) move = w.move.closed;
   else if (s.outcome === "withdrawn") move = w.move.withdrawn;
   else if (notInvited) move = w.move.notInvited;
@@ -1411,7 +1483,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     const anchor = six.anchorCircle ?? null;
     const sixMove =
       s.outcome === "adopted"
-        ? w.move.adopted
+        ? s.hasAccount ? w.move.adoptedAccount : w.move.adopted
         : six.now === "received"
           ? sw.move.received
           : six.now === "review"
@@ -1471,7 +1543,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
         : atFinal
           ? six.toCircle
             ? // Ruling 7: the call is written up; refine, then send it on (the page asks once before it sends).
-              [proposalTask, { key: "send", label: sw.tasks.sendRow, state: sw.tasks.sendState, done: false, href: "#send-to-circle", action: sw.tasks.sendLabel(anchor), external: false }]
+              [proposalTask, { key: "send", label: sw.tasks.sendRow(anchor), state: sw.tasks.sendState, done: false, href: "#send-to-circle", action: sw.tasks.sendLabel(anchor), external: false }]
             : [conversationTask, proposalTask]
           : six.now === "agreement" && hasOffer && !!s.offer?.mayAnswer
             ? // The counter-offer as a task too, so the profile card offers it (QA pass 1).

@@ -152,7 +152,7 @@ function Conversation({ base, c, onSaved }: { base: string; c: ConversationNotes
   return (
     <li className="min-w-0 py-4" data-conversation={c.interviewId}>
       {/* QA pass 2: the walkthrough ran 6,432 to 9,240 px. A conversation written up folds to its one line. */}
-      <details open={!(c.state === "scored" || c.state === "skipped")} data-conversation-fold={c.state}>
+      <details open={c.state === "open"} data-conversation-fold={c.state}>
       <summary className="flex min-h-11 cursor-pointer items-center font-display text-lg font-semibold text-foreground">{c.label}</summary>
       {/* The call's date when somebody said it ("I've booked it"); the team may set or correct it while it is open. */}
       {c.mayBook ? (

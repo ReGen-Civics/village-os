@@ -80,7 +80,8 @@ interface StageWords {
   circle: string;
 }
 
-const theCircle = (anchor: string | null | undefined, plain: string): string => (!anchor ? plain : /^(the|el|la)\s/i.test(anchor) ? anchor : anchor);
+/** The anchor circle as a sentence says it: "the Anchor Circle" / "el Anchor Circle", one form everywhere (QA round 5). */
+const theCircle = (anchor: string | null | undefined, plain: string): string => (!anchor ? plain : /^(the|el|la)\s/i.test(anchor) ? anchor : `${plain.split(" ")[0]} ${anchor}`);
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 const EN: StageWords = {
@@ -111,7 +112,7 @@ const EN: StageWords = {
     who: (role) => (role ? `You book the time. Then ${role} meets with you.` : "You book the time. Then the team meets with you."),
   },
   agreement: {
-    where: (circle) => `Your final conversation is done, and your proposal is now with ${circle} for review. It's fixed from here.`,
+    where: (circle) => `Your proposal is now with ${circle} for review. It's fixed from here.`,
     next: (circle) => `${cap(circle)} accepts your proposal or sends a counter-offer. If they counter, you answer each change on your page, and we go back and forth until we agree. Then you get an email with your start date.`,
     who: (circle) => `${cap(circle)}.`,
   },
@@ -153,7 +154,7 @@ const ES: StageWords = {
     who: (role) => (role ? `Usted reserva el horario. Luego ${role} se reúne con usted.` : "Usted reserva el horario. Luego el equipo se reúne con usted."),
   },
   agreement: {
-    where: (circle) => `Su conversación final está lista, y su propuesta ahora está con ${circle} para su revisión. Desde aquí queda fija.`,
+    where: (circle) => `Su propuesta ahora está con ${circle} para su revisión. Desde aquí queda fija.`,
     next: (circle) => `${cap(circle)} acepta su propuesta o le envía una contraoferta. Si hay contraoferta, usted responde cada cambio en su página, y seguimos hasta llegar a un acuerdo. Luego le llega un correo con su fecha de inicio.`,
     who: (circle) => `${cap(circle)}.`,
   },

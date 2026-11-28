@@ -77,7 +77,7 @@ export function Chains({ row }: { row: ServedRow }) {
     { label: t({ message: "Decision", context: "role measures, applying chain" }), ...timed(a.medianHoursToDecision) },
   ];
   const holding: Step[] = [
-    { label: t({ message: "Seated", context: "role measures, holding chain" }), value: String(h.count) },
+    { label: t({ message: "Seated now (current holders)", context: "role measures, holding chain" }), value: String(h.count) },
     { label: t({ message: "Path done by day 30", context: "role measures, holding chain" }), ...share(h.pathCompleteBy30) },
     { label: t({ message: "Still in the role at day 90", context: "role measures, holding chain" }), ...share(h.stillInRoleAt90) },
     { label: t({ message: "Renewed at each moon", context: "role measures, holding chain" }), ...share(h.renewed) },
@@ -155,7 +155,7 @@ export function CircleRow({ row, open = false, onPick }: { row: ServedRow; open?
             <span className="grid flex-1 grid-cols-3 gap-2 sm:w-80 sm:flex-none sm:gap-4">
               <Headline label={t({ message: "Applied", context: "role measures, applying chain" })} value={String(row.applications.count)} />
               <Headline label={t({ message: "Answered", context: "role measures, applying chain" })} value={answered === null ? null : `${answered}%`} />
-              <Headline label={t({ message: "Seated", context: "role measures, holding chain" })} value={String(row.holders.count)} />
+              <Headline label={t({ message: "Seated now (current holders)", context: "role measures, holding chain" })} value={String(row.holders.count)} />
             </span>
             <ChevronDown className="hidden size-5 shrink-0 text-notice motion-safe:transition-transform group-open:rotate-180 sm:block" aria-hidden="true" />
           </span>
