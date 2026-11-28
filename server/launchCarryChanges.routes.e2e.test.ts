@@ -41,7 +41,7 @@ if (!DB_CONFIGURED) {
 const DIST = path.resolve(process.cwd(), "dist/index.js");
 
 /** This suite's port window. `scripts/check-e2e-ports.mjs` holds it apart from every other file's. */
-const PORT = 12700 + (process.pid % 250);
+const PORT = 12700 + (process.pid % 100); // 12700-12799: narrowed at composition (train 149), since the permission matrix suite holds 12800-12999
 const BASE = `http://localhost:${PORT}`;
 const ADMIN = "launchcarry-admin";
 const PASSWORD = "LaunchCarryTest123!";
