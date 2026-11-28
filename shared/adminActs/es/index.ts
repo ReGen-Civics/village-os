@@ -19,6 +19,7 @@ import type { AdminPlace } from "../../adminTabs";
 import type { ActWords } from "../types";
 import { CEIBA_WORDS_ES } from "./ceiba";
 import { FIRE_WORDS_ES } from "./fire";
+import { FRAME_WORDS_ES } from "./frame";
 import { GATE_WORDS_ES } from "./gate";
 import { GREENHOUSE_WORDS_ES } from "./greenhouse";
 import { GUIDE_WORDS_ES } from "./guide";
@@ -43,6 +44,7 @@ export const ES_PLACE_WORDS: Readonly<Partial<Record<AdminPlace, Readonly<Record
   stage: STAGE_WORDS_ES,
   ceiba: CEIBA_WORDS_ES,
   guide: GUIDE_WORDS_ES,
+  frame: FRAME_WORDS_ES,
 };
 
 /** The Spanish of the tabs, the shipped controls, the pages beside Admin and the keys. */
