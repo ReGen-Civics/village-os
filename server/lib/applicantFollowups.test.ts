@@ -151,13 +151,14 @@ describe("the closed letter", () => {
   };
   const confirmed = { ...adopted, status: "confirmed", body: { ...adopted.body, locale: "en" } };
 
-  it("goes as one essential letter keyed per application, signed by the welcoming role's team", async () => {
+  it("goes as one essential letter keyed per application, signed by the village's team (QA round 4: never a role's)", async () => {
     const { deps } = closing();
     const e = await closedEmailFor(pool, deps, confirmed as any);
     expect(e).toMatchObject({ idempotencyKey: closedLetterKey("op_1"), kind: "essential", origin: "open_proposal.closed", to: { email: "ana@example.test", name: "Ana" } });
     expect(e!.text).toContain("Gate Keeper");
     expect(e!.text).toContain("https://x.test/quests");
-    expect(e!.text).toContain("The Welcome Host team");
+    expect(e!.text).toContain("The Test Village team");
+    expect(e!.text).not.toContain("The Welcome Host team");
     expect(e!.text).not.toMatch(/\b90\b/);
   });
 
@@ -165,7 +166,7 @@ describe("the closed letter", () => {
     const { deps } = closing();
     const e = await closedEmailFor(pool, { ...deps, footer: () => ({ html: "<div data-come-and-play></div>", text: "COME AND PLAY" }) }, confirmed as any);
     expect(e!.html).toContain("<div data-come-and-play></div>");
-    expect(e!.text.indexOf("COME AND PLAY")).toBeGreaterThan(e!.text.indexOf("The Welcome Host team"));
+    expect(e!.text.indexOf("COME AND PLAY")).toBeGreaterThan(e!.text.indexOf("The Test Village team"));
     const plain = await closedEmailFor(pool, deps, confirmed as any);
     expect(plain!.text).not.toContain("COME AND PLAY");
   });

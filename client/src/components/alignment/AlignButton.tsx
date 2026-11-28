@@ -42,7 +42,7 @@ export const ALIGN_LOOK = {
   BTN_SECONDARY:
     "jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50",
   FIELD:
-    "w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
+    "min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring",
   TILE: "rounded-xl border border-border bg-muted p-4",
 } as const;
 const { BTN_PRIMARY, BTN_SECONDARY, FIELD, TILE } = ALIGN_LOOK;

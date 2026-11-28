@@ -59,6 +59,11 @@ export async function stampStep(db: Db, s: { ref: string; kind: StepKind; subjec
   return Number(r.affectedRows ?? 0) === 1;
 }
 
+/** Replace one step's detail (a stage letter's attempt, once its post has answered). */
+export async function setStepDetail(db: Db, ref: string, kind: StepKind, subject: string, detail: unknown): Promise<void> {
+  await db.query("UPDATE application_steps SET detail_json = ? WHERE application_ref = ? AND kind = ? AND subject = ?", [JSON.stringify(detail), ref, kind, subject]);
+}
+
 /** Write the booking mode into the confirmed step's detail. True when it changed. */
 export async function setMode(db: Db, ref: string, mode: "block" | "split"): Promise<boolean> {
   const [r] = await db.query<ResultSetHeader>(

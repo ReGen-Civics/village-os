@@ -51,32 +51,62 @@ async function roleWord(deps: Pick<TellDeps, "getPool">, roleId: string): Promis
 /** How many times a stage letter is tried again after a provider fault, each under its own key. */
 export const STAGE_LETTER_RETRIES = 3;
 
-/** The attempts at one stage's letter, oldest first: whether each went. */
-async function attemptsOf(deps: Pick<TellDeps, "getPool">, ref: string, kind: StageLetterKind): Promise<boolean[]> {
+/** A pending attempt this old is taken as lost (a restart mid-send) and tried again. */
+const PENDING_LOST_MS = 15 * 60_000;
+
+/** One attempt at a stage's letter: whether it went (null while its post has not answered), and when it began. */
+type Attempt = { went: boolean | null; at: number };
+
+/** The attempts at one stage's letter, oldest first. */
+async function attemptsOf(deps: Pick<TellDeps, "getPool">, ref: string, kind: StageLetterKind): Promise<Attempt[]> {
   const steps = (await review.stepsOf(deps.getPool(), ref)).filter((s) => s.kind === "stage_mail" && s.subject.startsWith(`${kind}:`));
-  return steps.sort((a, b) => Number(a.subject.split(":")[1]) - Number(b.subject.split(":")[1])).map((s) => s.detail?.went === true);
+  return steps
+    .sort((a, b) => Number(a.subject.split(":")[1]) - Number(b.subject.split(":")[1]))
+    .map((s) => ({ went: s.detail?.went === true ? true : s.detail?.went === false ? false : null, at: s.at.getTime() }));
 }
 
-/** Send one letter (and ring the bell). True when the letter went now. `attempt` 0 is the first; a retry keys its own. */
+/** The one booking reminder's key, per conversation (shared/applicantStageLetters.ts `bookingNudgeKey`, written here so the economics reader can follow it). */
+function nudgeKey(ref: string, interviewId: number): string {
+  return `open-proposal:${ref}:nudge:book:${interviewId}`;
+}
+
+/** The key of one attempt: the stage's own key first, then one of its own for each retry. */
+function attemptKey(ref: string, kind: StageLetterKind, attempt: number): string {
+  return attempt ? `open-proposal:${ref}:stage:${kind}:r${attempt}` : `open-proposal:${ref}:stage:${kind}`;
+}
+
+/**
+ * Send one letter (and ring the bell). True when the letter went now. `attempt` 0 is the first; a retry keys its own.
+ * THE ATTEMPT IS WRITTEN BEFORE THE POST (QA round 5): a pending row first, so two triggers at once post once (the
+ * second finds the row and stops), and a restart mid-send leaves a row the retry pass can see. The row is updated with
+ * the post's answer; an answer of `duplicate` means this key went before, and counts as gone, never as a new attempt.
+ */
 async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: StageLetterKind, words: { subject: string; text: string }, attempt = 0): Promise<boolean> {
   if (!p.email) return false;
+  const pool = deps.getPool();
+  const recorded = STAGE_LETTER_STAGES.includes(kind as StageLetterStage);
+  const subject = `${kind}:${attempt}`;
+  if (recorded && !(await review.stampStep(pool, { ref: p.id, kind: "stage_mail", subject, at: new Date(), detail: { went: null, status: "pending" } }))) return false;
   const name = greetingName(p.name);
   const lang = languageOf(p);
   const framed = await framedLetter(deps, lang, words, statusLinkIn(words.text));
-  const sent = await deps.postEmail({
-    idempotencyKey: attempt ? `${stageLetterKey(p.id, kind)}:r${attempt}` : stageLetterKey(p.id, kind),
-    kind: "essential",
-    origin: "open_proposal.stage",
-    to: { email: p.email, ...(name ? { name } : {}) },
-    subject: words.subject,
-    ...framed,
-  });
-  // Each attempt is written down, so a provider fault is tried again by the retry pass, and a letter that went is
-  // never sent a second time (`retryStageLetters`).
-  const went = WENT_NOW.has(sent.status) || sent.status === "queued" || sent.status === "rehearsed";
-  if (STAGE_LETTER_STAGES.includes(kind as StageLetterStage)) {
-    await review.stampStep(deps.getPool(), { ref: p.id, kind: "stage_mail", subject: `${kind}:${attempt}`, at: new Date(), detail: { went, status: sent.status } });
+  let status: PostResult["status"] | "error" = "error";
+  try {
+    status = (
+      await deps.postEmail({
+        idempotencyKey: attemptKey(p.id, kind, attempt),
+        kind: "essential",
+        origin: "open_proposal.stage",
+        to: { email: p.email, ...(name ? { name } : {}) },
+        subject: words.subject,
+        ...framed,
+      })
+    ).status;
+  } finally {
+    const went = status !== "error" && (WENT_NOW.has(status) || status === "queued" || status === "rehearsed" || status === "duplicate");
+    if (recorded) await review.setStepDetail(pool, p.id, "stage_mail", subject, { went, status });
   }
+  const went = WENT_NOW.has(status as PostResult["status"]) || status === "queued" || status === "rehearsed";
   if (attempt > 0) return went;
   const account = await trustedAccountFor(deps.members, p, deps.getPool());
   if (account) {
@@ -90,7 +120,7 @@ async function send(deps: TellDeps, p: proposals.StoredOpenProposal, kind: Stage
       dedupeKey: `op:${p.id}:stage:${kind}:${account}`,
     });
   }
-  return WENT_NOW.has(sent.status);
+  return went;
 }
 
 /** The roles the application is for, by name, for "your application to hold ...". */
@@ -100,8 +130,16 @@ async function roleNamesOf(deps: Pick<TellDeps, "getPool">, p: proposals.StoredO
 }
 
 /**
- * The stage's letter, when the application stands at a stage that has one and its letter has not gone. True when a
- * letter went now. Never throws: a letter that did not go is logged, and the act it follows has already happened.
+ * The stage's letter, when the application stands at a stage that has one and its letter has not gone. Never throws:
+ * a letter that did not go is logged, and the act it follows has already happened.
+ *
+ * WHAT IT ANSWERS (QA round 5): whether the stage's letter COVERS this moment, so the caller sends no other letter
+ * beside it. True when it went now, when it was already tried (the retry pass owns it then), and when References and
+ * proposal's letter is held for what it must carry. A retry (`attempt` above 0) answers whether it went.
+ *
+ * ONE LETTER AT REFERENCES, IN EITHER ORDER: its letter carries the references ask AND the conversation after Ops,
+ * so it waits until the references are asked for and the first conversation is written up. Whichever comes second
+ * sends it; nothing else goes at this stage.
  */
 export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0): Promise<boolean> {
   try {
@@ -113,7 +151,12 @@ export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0):
     const { now } = trackStates(read.facts);
     if (!isLetterStage(now)) return false;
     // Once per stage: a letter already tried is the retry pass's to try again, never a second first attempt.
-    if (attempt === 0 && (await attemptsOf(deps, ref, now)).length > 0) return false;
+    if (attempt === 0 && (await attemptsOf(deps, ref, now)).length > 0) return true;
+    if (now === "references") {
+      const talks = read.facts.interviews.filter((i) => !i.final);
+      const firstDone = !talks.length || talks[0].state === "scored" || talks[0].state === "skipped";
+      if (!(read.facts.refsAsked || read.facts.refsGiven) || !firstDone) return attempt === 0;
+    }
     // The conversation open NOW at this stage: the final's only at Final conversation, a community one only before.
     const open = (await review.interviewsOf(pool, ref)).find((i) => i.state === "open" && (now === "final_interview" ? i.final : !i.final));
     const step = open && now !== "agreement" ? await stepBookingOf(pool, ref, open.roleId) : null;
@@ -136,11 +179,21 @@ export async function tellStageLetter(deps: TellDeps, ref: string, attempt = 0):
       profileLink: account && origin ? `${origin}/profile` : null,
       lang: languageOf(p),
     });
-    return await send(deps, p, now, words, attempt);
+    const went = await send(deps, p, now, words, attempt);
+    // The first attempt covers the moment whether or not the provider took it: a fault is the retry pass's.
+    return attempt === 0 ? (await attemptsOf(deps, ref, now)).length > 0 : went;
   } catch (e) {
     console.error(`[open-proposals] the stage letter for ${ref} was not sent`, e);
-    return false;
+    return attempt === 0 ? (await attemptsOf(deps, ref, (await stageNowOf(deps, ref)) ?? "references").catch(() => [])).length > 0 : false;
   }
+}
+
+/** The letter stage an application stands at, or null. */
+async function stageNowOf(deps: TellDeps, ref: string): Promise<StageLetterStage | null> {
+  const read = await applicantTrackFactsOf(deps, ref);
+  if (!read) return null;
+  const { now } = trackStates(read.facts);
+  return isLetterStage(now) ? now : null;
 }
 
 /**
@@ -158,7 +211,9 @@ export async function retryStageLetters(deps: TellDeps, refs: readonly string[])
       const { now } = trackStates(read.facts);
       if (!isLetterStage(now)) continue;
       const tries = await attemptsOf(deps, ref, now);
-      if (!tries.length || tries.some(Boolean) || tries.length > STAGE_LETTER_RETRIES) continue;
+      // Gone once: never again. Still pending and recent: its post may yet answer. Pending and old: lost in a restart.
+      const lost = (t: Attempt) => t.went === false || (t.went === null && Date.now() - t.at > PENDING_LOST_MS);
+      if (!tries.length || tries.some((t) => t.went === true) || !tries.every(lost) || tries.length > STAGE_LETTER_RETRIES) continue;
       if (await tellStageLetter(deps, ref, tries.length)) resent++;
     } catch (e) {
       console.error(`[open-proposals] the stage letter for ${ref} could not be tried again`, e);
@@ -200,7 +255,7 @@ export async function tellBookingNudge(deps: TellDeps, ref: string, interviewId:
     const name = greetingName(p.name);
     const framed = await framedLetter(deps, languageOf(p), words, statusLinkIn(words.text));
     const sent = await deps.postEmail({
-      idempotencyKey: bookingNudgeKey(ref, interviewId),
+      idempotencyKey: nudgeKey(ref, interviewId),
       kind: "essential",
       origin: "open_proposal.nudge",
       to: { email: p.email, ...(name ? { name } : {}) },

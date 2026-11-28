@@ -219,9 +219,10 @@ export async function askForReferences(deps: ReviewDeps, ref: string, viewerId: 
   } else {
     // ONE EMAIL FOR THE MOMENT (QA passes 1 and 3): References and proposal's own letter carries the ask, so it is the
     // one that goes. Only when that stage's letter already went (before the ask) does the references letter go alone.
-    const tried = (await review.stepsOf(pool, ref)).some((x) => x.kind === "stage_mail" && x.subject.startsWith("references:"));
-    const staged = !tried && deps.tellApplicant?.stage ? await deps.tellApplicant.stage(ref) : false;
-    if (!staged && (tried || !deps.tellApplicant?.stage)) await deps.tellApplicant?.(ref, "references");
+    // QA round 5: never the references letter once References' own letter is in hand; it carries the ask, and goes
+    // when the first conversation is written up too (server/lib/applicantStageLetters.ts `tellStageLetter`).
+    if (deps.tellApplicant?.stage) await deps.tellApplicant.stage(ref);
+    else await deps.tellApplicant?.(ref, "references");
   }
   return { ok: true };
 }

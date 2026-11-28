@@ -214,8 +214,9 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     const id = await confirmed(email, locale);
     expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
     expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)!;
-    const token = tokenOf(letter);
+    // References' one letter waits for the first conversation's write-up too (QA round 5): the status link is signed here.
+    const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`);
+    const token = signLink("application_status", { ref: id }, 1);
     const given = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(token)}`, { references: REFS }, null);
     expect(given.status, JSON.stringify(given.body)).toBe(200);
     return { id, token, letter };
@@ -254,7 +255,14 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id);
       expect((await call("POST", `${app(id)}/references/ask`, {}, OUTSIDER.id)).status).toBe(403);
       expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-      // ONE EMAIL AT REFERENCES (QA round 4): the stage's own letter carries the ask; the separate letter never goes with it.
+      // ONE EMAIL AT REFERENCES (QA rounds 4 and 5): asked before the first conversation is written up, the stage's letter
+      // waits for it, so it carries the ask AND the conversation after; nothing goes at the ask alone.
+      expect(state.sent.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:stage:references`))).toEqual([]);
+      expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toEqual([]);
+      const [first] = await interviews(id);
+      const card = await call("GET", `${app(id)}/scorecards`, undefined, IA.id);
+      const criteria = card.body.scorecards.criteria as Array<{ id: string }>;
+      expect((await call("POST", `${app(id)}/interviews/${first.id}/score`, { entries: criteria.map((c) => ({ criterionId: c.id, level: "solid", evidence: "Heard it." })), gut: { answer: "yes", note: "" } }, IA.id)).status).toBe(200);
       const letters = state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`);
       expect(letters).toHaveLength(1);
       expect(state.sent.filter((m) => m.idempotencyKey === `open-proposal:${id}:update:references`)).toEqual([]);
@@ -303,15 +311,16 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(early.status).toBe(409);
       expect(early.body.error).toBe("not_asked");
       await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
-      const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:stage:references`)!;
-      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", how: "x" }] }, null);
+      // The applicant's status link (References' letter waits for the first write-up, QA round 5).
+      const linkToken = signLink("application_status", { ref: id }, 1);
+      const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", how: "x" }] }, null);
       expect(bad.status).toBe(400);
       // An email alone is refused: one of WhatsApp, a US phone or Signal too (the lead, 27 Nov 2026).
       expect(bad.body).toMatchObject({ error: "channel", row: 1 });
-      const badNumber = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", usPhone: "12", how: "x" }] }, null);
+      const badNumber = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0], { name: "No Way", email: "no.way@example.test", usPhone: "12", how: "x" }] }, null);
       expect(badNumber.body).toMatchObject({ error: "contact", row: 1 });
       // The status page asks at least two too (the lead, 19 Nov 2026).
-      const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0]] }, null);
+      const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(linkToken)}`, { references: [REFS[0]] }, null);
       expect([one.status, one.body.error]).toEqual([400, "too_few"]);
       expect(await refRows(id)).toEqual([]);
     });

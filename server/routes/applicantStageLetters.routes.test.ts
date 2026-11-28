@@ -233,23 +233,21 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ? AND state = 'waiting'", [first.id]);
     expect((await call("POST", `${app(id)}/interviews/${first.id}/notes`, { body: NOTE }, IA.id)).status).toBe(200);
 
-    // The first conversation written up: References and proposal begins, and the Community conversation opens. ONE
-    // email says both: the stage's letter, with the Community link and no other.
+    // The first conversation written up: References and proposal begins, and the Community conversation opens. Its ONE
+    // letter waits for the references ask (QA round 5), so nothing goes yet: no stage letter and no "Let's talk".
     state.fresh.length = 0;
     await score(id, Number(first.id), IA.id);
-    expect(stageMails("references")).toHaveLength(1);
-    expect(state.fresh.filter((m) => m.idempotencyKey.includes(":update:conversation"))).toHaveLength(0);
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`))).toEqual([]);
+
+    // The references asked: the ONE letter of the stage, carrying the ask and the Community link, and nothing else.
+    expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`)).map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:stage:references`]);
     const refs = stageMails("references")[0];
     expect(refs.text).toContain(`Book your conversation with Community: ${LINK.community}`);
+    expect(refs.text).toMatch(/references/i);
     expect(refs.text).not.toContain(LINK.final);
     expect(refs.text).not.toContain("a-person");
     expect(refs.text).not.toMatch(/Iva|Ivo|Flor|Fern/);
-
-    // Asking for references after the stage's letter: the references letter says the form is open, once.
-    state.fresh.length = 0;
-    expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
-    expect(state.fresh.map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:update:references`]);
-    expect(stageMails("references")).toHaveLength(0);
 
     // The applicant gives references and refines: the refined letter goes once, however often they save.
     const given = await call("POST", `/api/application-status/${id}/references?token=${statusToken(id)}`, {
@@ -469,16 +467,50 @@ describe.skipIf(!configured)("the applicant's next-step letters and the 90-day c
     expect(received!.text).toContain("With love,");
     expect(received!.text).toContain("The Test Village team");
 
-    // 3c: shortlisted and asked for references in the same minute: ONE letter at References, which carries the ask.
+    // QA round 5, item 1. ASK FIRST: shortlisted and asked while Ops is still open, nothing goes; Ops written up, ONE
+    // letter goes, carrying the ask and the Community link, and no "Let's talk" beside it.
     const id = await confirmed("one-letter@example.test");
     const [first] = await ivs(id);
     await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ? AND state = 'waiting'", [first.id]);
     state.fresh.length = 0;
     expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
     expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`))).toEqual([]);
+    await score(id, Number(first.id), IA.id);
     const mails = state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${id}:`));
     expect(mails.map((m) => m.idempotencyKey)).toEqual([`open-proposal:${id}:stage:references`]);
     expect(mails[0].text).toMatch(/reference/i);
+    expect(mails[0].text).toContain(LINK.community);
+
+    // A FAULT: the provider fails References' letter. No "Let's talk" goes in its place; the review clock sends the one
+    // letter, once, under its retry key.
+    const { tellStageLetter } = await import("../lib/applicantStageLetters");
+    const tellDeps = { getPool: () => pool, members: usersRepo(pool), notify: async () => ({ fresh: true }), postEmail, projectName: () => "Test Village", siteUrl: () => ORIGIN };
+    const faulty = await confirmed("one-letter-fault@example.test");
+    const [fFirst] = await ivs(faulty);
+    await q("UPDATE application_interviews SET state = 'open', opened_at = NOW(3) WHERE id = ? AND state = 'waiting'", [fFirst.id]);
+    expect((await call("POST", `${app(faulty)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    expect((await call("POST", `${app(faulty)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+    state.fresh.length = 0;
+    state.failing = `open-proposal:${faulty}:stage:references`;
+    await score(faulty, Number(fFirst.id), IA.id);
+    state.failing = null;
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${faulty}:`))).toEqual([]);
+    const tickDeps: any = { getPool: () => pool, notify: async () => ({ fresh: true }), notifyAdmins: async () => {}, liveHoldersOf: async () => [FOUNDER.id], now: () => new Date(), calendar: () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" }), members: usersRepo(pool) };
+    tickDeps.tellApplicant = makeApplicantTeller(tellDeps as any);
+    await reviewClockTick(tickDeps);
+    await reviewClockTick(tickDeps);
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${faulty}:`)).map((m) => m.idempotencyKey)).toEqual([`open-proposal:${faulty}:stage:references:r1`]);
+
+    // TWO TRIGGERS OF ONE LETTER AT ONCE (the write-up and the ask, with a slow provider): one letter.
+    const raced = await confirmed("one-letter-race@example.test");
+    const [rFirst] = await ivs(raced);
+    await q("UPDATE application_interviews SET state = 'scored' WHERE id = ?", [rFirst.id]);
+    expect((await call("POST", `${app(raced)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(200);
+    await q("INSERT IGNORE INTO application_steps (application_ref, kind, subject, stamped_at) VALUES (?, 'refs_asked', '', NOW(3))", [raced]);
+    state.fresh.length = 0;
+    await Promise.all([tellStageLetter(tellDeps as any, raced), tellStageLetter(tellDeps as any, raced), tellStageLetter(tellDeps as any, raced)]);
+    expect(state.fresh.filter((m) => m.idempotencyKey.startsWith(`open-proposal:${raced}:`)).map((m) => m.idempotencyKey)).toEqual([`open-proposal:${raced}:stage:references`]);
 
     // 3f: the provider fails the Final conversation's letter; the review clock sends it again, once, under a new key.
     await q("UPDATE application_interviews SET state = 'scored' WHERE application_ref = ? AND is_final = 0", [id]);
