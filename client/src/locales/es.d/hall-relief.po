@@ -1,0 +1,145 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "{n, plural, one {# difference waits.} other {# differences wait, as one list.}}"
+msgstr "{n, plural, one {# diferencia espera.} other {# diferencias esperan, como una sola lista.}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "Tick the ones to take and take them together. Pay, anything marked Check first, and a new role apart from its circle are left out of that: each is decided on its own."
+msgstr "Marque las que quiera tomar y tómelas juntas. El pago, todo lo marcado Revisar primero y un rol nuevo separado de su círculo quedan fuera: cada uno se decide por separado."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "The oldest has waited since {since}"
+msgstr "La más antigua espera desde el {since}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "Go through them"
+msgstr "Revisarlas"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+msgctxt "review inbox: Sera's one row"
+msgid "Close the list"
+msgstr "Cerrar la lista"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraListRow.tsx
+#: client/src/components/reviewInbox/SeraSheet.tsx
+msgctxt "review inbox: Sera's list"
+msgid "Reading the list."
+msgstr "Leyendo la lista."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/SeraSheet.tsx
+msgctxt "review inbox: Sera's list"
+msgid "Could not read whether a draft is open"
+msgstr "No se pudo leer si hay un borrador abierto"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: a row that cannot be applied as the village stands"
+msgid "Blocked"
+msgstr "Bloqueado"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: a blocked row"
+msgid "It cannot be applied as the village stands."
+msgstr "No se puede aplicar tal como está la aldea."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/reviewInbox/InboxRow.tsx
+msgctxt "review inbox: a blocked row"
+msgid "{more, plural, one {# more of its changes is blocked.} other {# more of its changes are blocked.}}"
+msgstr "{more, plural, one {# cambio más está bloqueado.} other {# cambios más están bloqueados.}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: header, while a queue did not load"
+msgid "{waiting, plural, one {At least # waiting on you.} other {At least # waiting on you.}}"
+msgstr "{waiting, plural, one {Al menos # espera por usted.} other {Al menos # esperan por usted.}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: header"
+msgid "{blocked, plural, one {# blocked.} other {# blocked.}}"
+msgstr "{blocked, plural, one {# bloqueado.} other {# bloqueados.}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: header"
+msgid "{unknown, plural, one {# queue did not load, so its number is unknown.} other {# queues did not load, so their numbers are unknown.}}"
+msgstr "{unknown, plural, one {# cola no cargó, así que su número se desconoce.} other {# colas no cargaron, así que sus números se desconocen.}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: a queue that did not load has no number"
+msgid "unknown"
+msgstr "se desconoce"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: a kind's heading"
+msgid "{0, plural, one {# blocked} other {# blocked}}"
+msgstr "{0, plural, one {# bloqueado} other {# bloqueados}}"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: a queue that did not load"
+msgid "This queue did not load in full, so how many wait here is unknown. What did load is listed."
+msgstr "Esta cola no cargó completa, así que se desconoce cuántos esperan aquí. Lo que sí cargó está en la lista."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: a queue that did not load"
+msgid "This queue did not load, so how many wait here is unknown. It may hold something."
+msgstr "Esta cola no cargó, así que se desconoce cuántos esperan aquí. Puede que contenga algo."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: the order of the list"
+msgid "In each kind: what lapses soonest comes first, then the oldest. What carries no date comes last, in the order its own queue keeps."
+msgstr "En cada tipo: primero lo que vence antes, luego lo más antiguo. Lo que no lleva fecha va al final, en el orden que guarda su propia cola."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: more rows of one kind"
+msgid "Show more"
+msgstr "Mostrar más"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: more rows of one kind"
+msgid "Reading more"
+msgstr "Leyendo más"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: more rows of one kind"
+msgid "Showing {shown} of {of}."
+msgstr "Se muestran {shown} de {of}."
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/admin/NeedsYouNow.tsx
+msgctxt "Admin Today, needs you now: a queue that did not load has no number"
+msgid "unknown"
+msgstr "se desconoce"
+
+# needs-native-review: the review list's hall relief, 27 Nov 2026
+#: client/src/components/admin/NeedsYouNow.tsx
+msgctxt "Admin Today, needs you now: open one kind on the review list"
+msgid "See all of them"
+msgstr "Ver todas"
