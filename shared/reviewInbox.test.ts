@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromOrgDrafts, fromReviewQueue, fromSeraDifferences, mergeSections, searchedCode, stateOfStatus } from "./reviewInbox";
+import { findInInbox, fromAgentWaiting, fromApprovals, fromClaims, fromConnector, fromOrgDrafts, fromReviewQueue, fromSeraDifferences, INBOX_PAGE, INBOX_ROWS_MAX, mergeSections, orderInbox, pageInbox, rowsAsked, searchedCode, SERA_ROW_KEY, stateOfStatus } from "./reviewInbox";
 import type { InboxItem } from "./reviewInbox";
 
 const connector = {
@@ -55,9 +55,24 @@ describe("reading each queue's answer", () => {
     expect(fromAgent.find((i) => i.kind === "seating")).toMatchObject({ lapsesAt: "2026-11-27T00:00:01.000Z", decideAt: "/governance/work#approvals" });
   });
 
-  it("reads Sera's differences by their sentence", () => {
-    const items = fromSeraDifferences({ differences: [{ key: "page1:name", kind: "rename", words: { sentence: "Sera calls this circle Garden." }, source: { editedAt: "2026-11-17T00:00:00.000Z" }, batchId: "eb_1" }] });
-    expect(items.map((i) => [i.key, i.summary, i.batch?.key])).toEqual([["sera:page1:name", "Sera calls this circle Garden.", "intake:eb_1"]]);
+  it("reads Sera's differences as ONE row holding what waits for a person, dated by the oldest, and never one row each", () => {
+    const d = (key: string, lane: string, state: string, editedAt: string | null) => ({ key, kind: "rename", lane, state, words: { sentence: `Sera says ${key}.` }, source: { editedAt }, batchId: "eb_1" });
+    const items = fromSeraDifferences({
+      differences: [
+        d("a", "decision", "theirsAhead", "2026-11-19T00:00:00.000Z"),
+        d("b", "lowRisk", "theirsAhead", "2026-11-17T00:00:00.000Z"),
+        d("c", "fact", "conflict", null),
+        // Facts, and what is ahead here, wait for nobody (shared/seraWaiting.ts), so the row does not count them.
+        d("d", "fact", "theirsAhead", "2026-11-01T00:00:00.000Z"),
+        d("e", "decision", "oursAhead", "2026-11-02T00:00:00.000Z"),
+      ],
+    });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ key: SERA_ROW_KEY, source: "sera", holds: 3, filedAt: "2026-11-17T00:00:00.000Z", decideAt: "/review", touchesPerson: false, batch: null });
+    // One that waits keeps its own sentence; nothing that waits is no row at all.
+    expect(fromSeraDifferences({ differences: [d("a", "decision", "theirsAhead", null)] })[0]).toMatchObject({ holds: 1, summary: "Sera says a.", filedAt: null });
+    expect(fromSeraDifferences({ differences: [d("d", "fact", "theirsAhead", null)] })).toEqual([]);
+    expect(fromSeraDifferences({ differences: [] })).toEqual([]);
   });
 
   it("tolerates an answer of the wrong shape as an empty one, never as a crash", () => {
@@ -87,6 +102,75 @@ describe("one list", () => {
       { source: "sera", state: "off", items: [{ ...seat, key: "sera:o" }] },
     ]);
     expect(merged.map((i) => i.key)).toEqual(["connector:pc_0", "agent:seating:s1", "claim:x", "structure:d1"]);
+  });
+
+  // ── The hall relief (27 Nov 2026) ─────────────────────────────────────────
+  const row = (key: string, over: Partial<InboxItem> = {}): InboxItem => ({ key, source: key.slice(0, key.indexOf(":")) as InboxItem["source"], kind: "k", code: null, summary: key, filedAt: null, batch: null, decideAt: "/review", touchesPerson: false, ...over });
+
+  it("THE ORDER: what lapses first, soonest lapse first; then the oldest; then what carries no date, as its queue listed it", () => {
+    const ordered = orderInbox([
+      row("claim:undated-first"),
+      row("claim:new", { filedAt: "2026-11-25T00:00:00.000Z" }),
+      row("agent:lapses-later", { filedAt: "2026-11-01T00:00:00.000Z", lapsesAt: "2026-11-30T00:00:00.000Z" }),
+      row("claim:old", { filedAt: "2026-11-02T00:00:00.000Z" }),
+      row("claim:undated-second"),
+      // Filed last of all, and still first: a real deadline is the only clock on the list.
+      row("agent:lapses-soon", { filedAt: "2026-11-26T00:00:00.000Z", lapsesAt: "2026-11-28T00:00:00.000Z" }),
+    ]);
+    expect(ordered.map((i) => i.key)).toEqual(["agent:lapses-soon", "agent:lapses-later", "claim:old", "claim:new", "claim:undated-first", "claim:undated-second"]);
+  });
+
+  it("PAGING: a queue is sent its first page with its whole number, more rows when asked, and never more than the cap", () => {
+    const claims = Array.from({ length: 23 }, (_, n) => row(`claim:c${String(n).padStart(2, "0")}`, { filedAt: `2026-11-${String(n + 1).padStart(2, "0")}T00:00:00.000Z` }));
+    const sections = [
+      { source: "claim" as const, state: "ok" as const, items: [...claims].reverse() },
+      { source: "quest" as const, state: "ok" as const, items: [row("quest:q1")] },
+    ];
+    const first = pageInbox(sections);
+    expect(first.items.filter((i) => i.source === "claim").map((i) => i.key)).toEqual(claims.slice(0, INBOX_PAGE).map((i) => i.key));
+    expect(first.sections).toEqual([
+      { source: "claim", state: "ok", count: 23, atLeast: 23, blocked: 0, more: true },
+      { source: "quest", state: "ok", count: 1, atLeast: 1, blocked: 0, more: false },
+    ]);
+    // The number is every item, sent or not: a page never counts the rows it was sent.
+    expect(first.waiting).toBe(24);
+    expect(first.items).toHaveLength(INBOX_PAGE + 1);
+    const second = pageInbox(sections, rowsAsked("claim:20"));
+    expect(second.items.filter((i) => i.source === "claim")).toHaveLength(20);
+    expect(second.sections[0]).toMatchObject({ count: 23, more: true });
+    const all = pageInbox(sections, rowsAsked("claim:30"));
+    expect(all.items.filter((i) => i.source === "claim")).toHaveLength(23);
+    expect(all.sections[0].more).toBe(false);
+  });
+
+  it("?rows= names real queues only, never fewer than a page, never more than the cap", () => {
+    expect(Array.from(rowsAsked("claim:20,nonsense:50,quest:3,vote:99999,cash:abc"))).toEqual([["claim", 20], ["quest", INBOX_PAGE], ["vote", INBOX_ROWS_MAX]]);
+    for (const bad of [undefined, null, 5, ["claim:20"], ""]) expect(rowsAsked(bad).size).toBe(0);
+  });
+
+  it("UNKNOWN, NEVER ZERO: a queue that did not load has no number, and what its other read gave is a floor", () => {
+    const paged = pageInbox([
+      { source: "sera", state: "failed", items: [] },
+      { source: "open", state: "failed", items: [row("open:o1")] },
+      { source: "claim", state: "ok", items: [] },
+      { source: "quest", state: "refused", items: [row("quest:hidden")] },
+    ]);
+    expect(paged.sections).toEqual([
+      { source: "sera", state: "failed", count: null, atLeast: 0, blocked: 0, more: false },
+      { source: "open", state: "failed", count: null, atLeast: 1, blocked: 0, more: false },
+      { source: "claim", state: "ok", count: 0, atLeast: 0, blocked: 0, more: false },
+      { source: "quest", state: "refused", count: 0, atLeast: 0, blocked: 0, more: false },
+    ]);
+    expect(paged.items.map((i) => i.key)).toEqual(["open:o1"]);
+  });
+
+  it("BLOCKED rows are counted per queue and in all, and stay in their place in the order", () => {
+    const paged = pageInbox([
+      { source: "structure", state: "ok", items: [row("structure:d1"), row("structure:d2", { blocked: { count: 2, reads: "Retire the Water Steward", why: "That role no longer exists" } })] },
+    ]);
+    expect(paged.sections[0]).toMatchObject({ count: 2, blocked: 1 });
+    expect(paged.blocked).toBe(1);
+    expect(paged.items.map((i) => i.key)).toEqual(["structure:d1", "structure:d2"]);
   });
 
   it("finds a batch by its code, one change by its code, and nothing for a code it does not hold", () => {

@@ -34,7 +34,7 @@ const linkCls =
 
 export default function NeedsYouNow() {
   const { t, i18n } = useLingui();
-  const { load, sections, groups, read } = useReviewInbox(true);
+  const { load, sections, groups: kinds, total, read, refresh } = useReviewInbox(true);
   const [notice, setNotice] = useState<string | null>(null);
 
   if (load.phase === "loading") {
@@ -57,11 +57,13 @@ export default function NeedsYouNow() {
     );
   }
 
-  const total = groups.reduce((n, g) => n + g.count, 0);
+  // The kinds with rows to show. The number of each, and the total, are the server's (a kind is sent its first rows
+  // only); a kind whose queue did not load has no number and is named below as not counted.
+  const groups = kinds.filter((g) => g.items.length > 0);
   const failed = sections.filter((s) => s.state === "failed").map((s) => sourceText(s.source, i18n).title);
   const row = (item: InboxItem) =>
     item.source === "structure" ? (
-      <OrgDraftRow key={item.key} item={item} onDone={(said) => { setNotice(said); void read(); }} />
+      <OrgDraftRow key={item.key} item={item} onDone={(said) => { setNotice(said); void refresh(); }} />
     ) : (
       <InboxRow key={item.key} item={item} />
     );
@@ -96,17 +98,21 @@ export default function NeedsYouNow() {
       {groups.map((g) => {
         const title = sourceText(g.source, i18n).title;
         const id = `needs-${g.source}`;
+        // What this kind holds: the server's number, or what did load when its queue failed in part.
+        const n = g.count ?? g.atLeast;
         return (
           <div key={g.source} className="space-y-2">
             <h4 id={id} className="text-sm font-semibold text-foreground">
-              {title} <span className="font-normal text-muted-foreground">({g.count})</span>
+              {title} <span className="font-normal text-muted-foreground">({g.count === null ? t({ message: "unknown", context: "Admin Today, needs you now: a queue that did not load has no number" }) : g.count})</span>
             </h4>
             <ul aria-labelledby={id} className="space-y-2 list-none p-0 m-0">
               {g.items.slice(0, ROWS_PER_KIND).map(row)}
             </ul>
-            {g.count > ROWS_PER_KIND && (
+            {n > ROWS_PER_KIND && (
               <Link href={`/admin/review?kind=${g.source}`} className={linkCls}>
-                {t({ message: `See all ${g.count}`, context: "Admin Today, needs you now: open one kind on the review list" })}
+                {g.count === null
+                  ? t({ message: "See all of them", context: "Admin Today, needs you now: open one kind on the review list" })
+                  : t({ message: `See all ${g.count}`, context: "Admin Today, needs you now: open one kind on the review list" })}
               </Link>
             )}
           </div>

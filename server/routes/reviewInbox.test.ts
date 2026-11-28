@@ -47,6 +47,18 @@ const ANSWERS: Record<string, Record<string, Answer>> = {
     "/api/governance/waiting-on-me": { status: 200, body: { drafts: [{ id: "dr_1", title: "Add a Seed Keeper role", circles: 0, seats: 1, href: "/review/structure/b_1" }] } },
     "/api/admin/org/drafts": { status: 200, body: [{ id: "dr_1", status: "open", title: "Add a Seed Keeper role", changes: [{ id: "c1" }] }, { id: "dr_2", status: "open", title: "Rest the old council", changes: [{ id: "c2" }] }] },
   },
+  // THE HALL RELIEF (27 Nov 2026). A moderator with 23 finished Quests to witness, Sera's list of differences, an
+  // approval that lapses, and one queue that fails.
+  moderator: {
+    "/api/admin/quest-claims": { status: 200, body: Array.from({ length: 23 }, (_, n) => ({ id: `w${String(n).padStart(2, "0")}`, status: "submitted", questTitle: `Quest ${n}`, submittedAt: `2026-11-${String(n + 1).padStart(2, "0")}T00:00:00.000Z` })) },
+    "/api/saberra/differences": { status: 200, body: { differences: [
+      { key: "s1", lane: "decision", state: "theirsAhead", words: { sentence: "Sera calls this circle Garden." }, source: { editedAt: "2026-11-10T00:00:00.000Z" } },
+      { key: "s2", lane: "lowRisk", state: "theirsAhead", words: { sentence: "Sera changed a purpose." }, source: { editedAt: "2026-11-12T00:00:00.000Z" } },
+      { key: "s3", lane: "fact", state: "theirsAhead", words: { sentence: "A review date moved." }, source: { editedAt: "2026-11-01T00:00:00.000Z" } },
+    ] } },
+    "/api/approval-inbox": { status: 200, body: { waiting: [{ id: "ap_1", kind: "setting", title: "Change a dial", at: "2026-11-26T00:00:00.000Z" }] } },
+    "/api/review/queue": { status: 500, body: { error: "boom" } },
+  },
   // A member who decides nothing.
   member: Object.fromEntries(
     ["/api/admin/proposals", "/api/review/queue", "/api/admin/quest-claims", "/api/approval-inbox", "/api/agent-proposals/waiting", "/api/saberra/differences"].map((p) => [p, REFUSED]),
@@ -80,6 +92,7 @@ describe("the deciders' read shows each person exactly what their own queues sho
   let inbox: http.Server;
   let base = "";
   const seenAuth: string[] = [];
+  const askedDrafts: string[][] = [];
 
   beforeAll(async () => {
     const fake = express();
@@ -103,6 +116,11 @@ describe("the deciders' read shows each person exactly what their own queues sho
       clientIp: () => null,
       port: () => queuesPort,
       isMember: async (u: { id: string }) => u.id !== "visitor",
+      // Which of the drafts a person's reads listed cannot publish: the chart's answer, faked (no database here).
+      blockedDrafts: async (ids: readonly string[]) => {
+        askedDrafts.push([...ids]);
+        return new Map(ids.filter((id) => id === "dr_2").map((id) => [id, { count: 2, reads: "Rest the old council", why: "That role no longer exists" }]));
+      },
     } as any);
     inbox = http.createServer(app);
     await new Promise<void>((r) => inbox.listen(0, "127.0.0.1", r));
@@ -161,6 +179,62 @@ describe("the deciders' read shows each person exactly what their own queues sho
       const theirs = JSON.stringify(ANSWERS[who]);
       for (const item of r.body.items) expect(theirs, `${who}: ${item.key}`).toContain(item.key.split(":").pop());
     }
+  });
+
+  // ── The hall relief (27 Nov 2026) ─────────────────────────────────────────
+
+  it("PAGES EACH QUEUE: the first ten rows with the queue's whole number, more when asked, never the whole queue unasked", async () => {
+    const r = await get("/api/admin/review/inbox", "moderator");
+    const claims = r.body.items.filter((i: any) => i.source === "claim");
+    expect(claims.map((i: any) => i.key)).toEqual(Array.from({ length: 10 }, (_, n) => `claim:w${String(n).padStart(2, "0")}`));
+    const claim = r.body.sections.find((s: any) => s.source === "claim");
+    expect(claim).toEqual({ source: "claim", state: "ok", count: 23, atLeast: 23, blocked: 0, more: true });
+    // 23 finished Quests, Sera's one row and one approval: the number counts what waits, never the rows sent.
+    expect(r.body.counts.waiting).toBe(25);
+    expect(r.body.items).toHaveLength(12);
+    expect(r.body.pageSize).toBe(10);
+
+    const more = await get("/api/admin/review/inbox?rows=claim:20", "moderator");
+    expect(more.body.items.filter((i: any) => i.source === "claim")).toHaveLength(20);
+    expect(more.body.sections.find((s: any) => s.source === "claim")).toMatchObject({ count: 23, more: true });
+    const all = await get("/api/admin/review/inbox?rows=claim:30,nonsense:9", "moderator");
+    expect(all.body.items.filter((i: any) => i.source === "claim")).toHaveLength(23);
+    expect(all.body.sections.find((s: any) => s.source === "claim").more).toBe(false);
+  });
+
+  it("SERA IS ONE ROW holding what waits for a person, and what lapses leads the list", async () => {
+    const r = await get("/api/admin/review/inbox", "moderator");
+    const sera = r.body.items.filter((i: any) => i.source === "sera");
+    // Two wait (a decision and a small change); the fact waits for nobody.
+    expect(sera).toHaveLength(1);
+    expect(sera[0]).toMatchObject({ key: "sera:differences", holds: 2, filedAt: "2026-11-10T00:00:00.000Z" });
+    expect(r.body.sections.find((s: any) => s.source === "sera")).toMatchObject({ state: "ok", count: 1 });
+    // The approval was filed last of all and lapses, so it leads.
+    expect(r.body.items[0]).toMatchObject({ key: "approval:ap_1", lapsesAt: "2026-12-03T00:00:00.000Z" });
+  });
+
+  it("A QUEUE THAT DID NOT LOAD IS UNKNOWN, NEVER ZERO, and the number becomes a floor that names it", async () => {
+    const r = await get("/api/admin/review/inbox", "moderator");
+    for (const source of ["intake", "quest"]) expect(r.body.sections.find((s: any) => s.source === source)).toMatchObject({ state: "failed", count: null, atLeast: 0 });
+    expect(r.body.counts.unknown).toEqual(["intake", "quest"]);
+    // A queue that answered with nothing is a real zero, and says so.
+    expect((await get("/api/admin/review/inbox", "steward")).body.sections.find((s: any) => s.source === "quest")).toMatchObject({ state: "ok", count: 0 });
+    expect((await get("/api/admin/review/inbox", "teller")).body.counts.unknown).toEqual(["sera"]);
+  });
+
+  it("BLOCKED: a draft that cannot be applied as the village stands says so and why, and only listed drafts are asked about", async () => {
+    askedDrafts.length = 0;
+    const r = await get("/api/admin/review/inbox", "teller");
+    const drafts = Object.fromEntries(r.body.items.filter((i: any) => i.source === "structure").map((i: any) => [i.key, i.blocked ?? null]));
+    expect(drafts).toEqual({ "structure:dr_1": null, "structure:dr_2": { count: 2, reads: "Rest the old council", why: "That role no longer exists" } });
+    expect(r.body.sections.find((s: any) => s.source === "structure")).toMatchObject({ count: 2, blocked: 1 });
+    expect(r.body.counts.blocked).toBe(1);
+    // The check is handed the drafts this person's own reads listed, and nothing else.
+    expect(askedDrafts).toEqual([["dr_1", "dr_2"]]);
+    // A person whose reads list no draft causes no check at all.
+    askedDrafts.length = 0;
+    await get("/api/admin/review/inbox", "steward");
+    expect(askedDrafts).toEqual([]);
   });
 
   it("finds B-71 for the one who may see it, and answers a code they may not see exactly as one that does not exist", async () => {
