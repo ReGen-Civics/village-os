@@ -5,8 +5,9 @@
  *                 modules that are on), each by its one name in adminAreas.ts,
  *                 with the menu's label, old names and synonyms
  *                 (shared/adminSearch.ts) as the words it is also found by
- *   the rest      controls, dials and steward pages outside /admin, from
- *                 GET /api/admin/search-index, which asked the one gate
+ *   the rest      controls, acts, dials and steward pages outside /admin, from
+ *                 GET /api/admin/search-index, which reads the registry of
+ *                 acts (shared/adminActs.ts) and asked the one gate
  *
  * A control whose page the menu does not show is left out, so a result never
  * lands on a page this person cannot open. Nothing here acts.
@@ -52,7 +53,9 @@ export function searchEntries(groups: readonly NavGroup[], served: readonly Admi
   const tabs = new Set(pages.map((p) => p.tab));
   const rest = served.filter((e) => {
     if (e.kind === "outside") return true;
-    // A dial lands on Game mechanics, a control on its own page: both only when that page is in the menu.
+    // An act on a page beside Admin lands on that page's own path.
+    if (e.kind === "act" && !e.tab) return true;
+    // A dial lands on Game mechanics, a control or an act on its own page: all only when that page is in the menu.
     return tabs.has(e.tab ?? "");
   });
   return [...pages, ...rest];

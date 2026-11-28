@@ -3,7 +3,8 @@
  * the village's guide, "so that even if they don't get the word right we can still help them find the right place").
  *
  * Ctrl K or Cmd K anywhere, or the search icon in the header and the phone's top bar, opens one dialog
- * (client/src/components/search). It finds pages, roles, circles, quests and, for members only, people.
+ * (client/src/components/search). It finds pages, roles, circles, quests and, for members only, people. An admin
+ * also finds every Admin act (the registry, shared/adminActs.ts), everybody on the Players page, and a review code.
  *
  * ── WHO SEES WHAT ─────────────────────────────────────────────────────────
  *
@@ -146,8 +147,15 @@ export function scoreFindWords(query: string, e: FindEntry): { score: number; al
   // Half for a partial answer, never to nothing: a match found only in a page's line still counts.
   if (ws.length > 1 && !all && n > 0) n = Math.max(1, Math.floor(n / 2));
   if (n > 0 && e.kind === "page") n += 2;
+  // A page's own name, typed whole, is that page: no setting can outrank it however many of its words also match.
+  // Admin search learned this first (EXACT_PAGE, shared/adminSearch.ts): "Library" would open a dial of the Library
+  // category, whose name starts with the word and whose category is the word.
+  if (e.kind === "page" && (title === q || (!!core && title === core))) n += EXACT_FIND_PAGE;
   return { score: n, all: ws.length === 0 ? n > 0 : all };
 }
+
+/** Lifts a page whose name is exactly the words typed above every other kind of match. */
+export const EXACT_FIND_PAGE = 1000;
 
 /** Below this, the best answer is a guess: the dialog offers the guide. */
 export const WEAK_SCORE = 12;
@@ -288,5 +296,7 @@ export interface FindIndex {
   entries: FindEntry[];
   /** True when people are in `entries` (a member is reading). */
   people: boolean;
+  /** True when the reader is an admin: the dialog may then read the roster and offer a code's lookup. */
+  admin?: boolean;
   guide: { name: string; available: boolean };
 }
