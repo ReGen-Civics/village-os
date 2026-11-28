@@ -129,6 +129,42 @@ describe("the waiting-on-you count", () => {
     expect(waitingOf(null)).toBeNull();
   });
 
+  /* The inbox pages its items and counts on the server first (`byDoor`): its QA saw 20 where 37 were waiting. */
+  it("reads the server's own count by door when the reply carries one, and the items when it does not", () => {
+    expect(waitingOf({ byDoor: { "/governance/work": 30, "/review": 7, "/decisions": 12 } })).toBe(37);
+    expect(waitingOf({ byDoor: { "/governance/work": 4 } })).toBe(4);
+    expect(waitingOf({ byDoor: { "/decisions": 12 } })).toBe(0);
+    expect(waitingOf({ byDoor: {} })).toBe(0);
+    // Both shapes: the server's count wins, even when the page of items holds fewer rows (or more).
+    const page = Array.from({ length: 20 }, () => ({ decideAt: "/governance/work" }));
+    expect(waitingOf({ items: page, byDoor: { "/governance/work": 30, "/review": 7 } })).toBe(37);
+    expect(waitingOf({ items: page, byDoor: { "/governance/work": 3 } })).toBe(3);
+    // Numbers only: anything else counts as nothing.
+    expect(waitingOf({ byDoor: { "/governance/work": "30", "/review": 2 } })).toBe(2);
+    expect(waitingOf({ byDoor: { "/governance/work": null, "/review": Number.NaN } })).toBe(0);
+    expect(waitingOf({ byDoor: { "/governance/work": -4, "/review": { n: 1 } } })).toBe(0);
+    // A byDoor that is no object is no count: the items are read, as on a server without it.
+    expect(waitingOf({ items: page, byDoor: null })).toBe(20);
+    expect(waitingOf({ items: page, byDoor: [5] })).toBe(20);
+    expect(waitingOf({ items: page, byDoor: "37" })).toBe(20);
+  });
+
+  it("shows the server's count on the dot, from the one shared read", async () => {
+    fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: [{ decideAt: "/review" }], byDoor: { "/governance/work": 5, "/review": 1 } }), { status: 200 }));
+    render(
+      <>
+        <WaitingCount who="u7" variant="dot" />
+        <WaitingCount who="u7" />
+      </>,
+    );
+    await act(async () => {
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(document.querySelector("[data-waiting-dot]")?.textContent).toBe("6");
+    expect(document.querySelector("[data-waiting-count]")?.textContent).toBe("6");
+  });
+
   it("asks once for every dot on the page, and shows nothing at zero", async () => {
     fetchMock.mockImplementation(async () => new Response(JSON.stringify({ items: Array.from({ length: 4 }, () => ({ decideAt: "/review" })) }), { status: 200 }));
     render(
