@@ -66,7 +66,7 @@ export const WHAT_TO_ADD: Readonly<Record<CountKey, string>> = {
   functions: "Mount its tab or page in its place (shared/gardenMounts.ts), give the missing part an act, or record the founder's ruling that cuts it (CUT_BY_RULING, with the date and the words).",
   acts: "Give the act a route that was read, so its tier is settled, and a power its catalog holds a consequence line for (shared/adminActs/, shared/draftKinds.ts). Never write the line on the act.",
   endpoints:
-    "Give the route a home: an act that calls it (shared/adminActs/, one row in the file of its place), a page that reads it (run `npx tsx scripts/garden-reads.ts --write`), or, when it is not admin's, a family in shared/notAdminRoutes.ts with its reason.",
+    "Give the route a home: an act that calls it (shared/adminActs/, one row in the file of its place), a page that reads it (run `npx tsx scripts/garden-reads.ts --write`), or a family in shared/notAdminRoutes.ts, with its reason, for a route that belongs to a member, a visitor or a machine.",
   settings: "Give the setting what it is missing: a label and a description of its own (shared/gameVariables.ts), a door that was read, or a path by a vote.",
   road: "Nothing to add here yet.",
   threeWays: "A new act is open here until the guide's code can do it. A new dial she may not prepare is open by the lists that say so (shared/adminHelper.ts, shared/proposedChanges.ts).",

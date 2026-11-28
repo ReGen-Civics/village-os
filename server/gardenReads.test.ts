@@ -32,18 +32,18 @@ const lines = (table: Readonly<Record<string, readonly string[]>>): string[] => 
 
 describe("how a route's path is found in the client's code", () => {
   it("matches the three ways the client spells the base, and a `${...}` where the path has a `:name`", () => {
-    expect(codeCalls('fetch("/api/admin/players")', "/api/admin/players")).toBe(true);
-    expect(codeCalls("fetch(`${API_BASE}/admin/players`)", "/api/admin/players")).toBe(true);
-    expect(codeCalls("fetch(`${API_BASE}/api/admin/players?stage=${s}`)", "/api/admin/players")).toBe(true);
-    expect(codeCalls("fetch(`/api/admin/players/${id}/notes`)", "/api/admin/players/:id/notes")).toBe(true);
+    expect(codeCalls('load("/api/admin/players")', "/api/admin/players")).toBe(true);
+    expect(codeCalls("load(`${API_BASE}/admin/players`)", "/api/admin/players")).toBe(true);
+    expect(codeCalls("load(`${API_BASE}/api/admin/players?stage=${s}`)", "/api/admin/players")).toBe(true);
+    expect(codeCalls("load(`/api/admin/players/${id}/notes`)", "/api/admin/players/:id/notes")).toBe(true);
     expect(pathPattern("/api/admin/players/:id").source).toContain("API_BASE");
   });
 
   it("never reads a longer path, a neighbour, or a plain word in a `:name` place as the route", () => {
-    expect(codeCalls('fetch("/api/admin/players/detail")', "/api/admin/players")).toBe(false);
-    expect(codeCalls('fetch("/api/admin/players/detail")', "/api/admin/players/:id")).toBe(false);
-    expect(codeCalls('fetch("/api/admin/playersx")', "/api/admin/players")).toBe(false);
-    expect(codeCalls("fetch(`/api/admin/players/${id}/notes`)", "/api/admin/players/:id")).toBe(false);
+    expect(codeCalls('load("/api/admin/players/detail")', "/api/admin/players")).toBe(false);
+    expect(codeCalls('load("/api/admin/players/detail")', "/api/admin/players/:id")).toBe(false);
+    expect(codeCalls('load("/api/admin/playersx")', "/api/admin/players")).toBe(false);
+    expect(codeCalls("load(`/api/admin/players/${id}/notes`)", "/api/admin/players/:id")).toBe(false);
     expect(codeCalls("the words /api/admin/players in a comment", "/api/admin/players")).toBe(false);
   });
 });

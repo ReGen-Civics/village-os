@@ -93,6 +93,7 @@ describe("each ratchet fires, and names what arrived", () => {
     expect(said).toContain("Endpoints, /api/admin");
     expect(said).toContain("POST /api/admin/zz-control/new");
     expect(said).toContain("What to add: Give the route a home");
+    expect(said).toContain("shared/notAdminRoutes.ts");
   });
 
   it("Endpoints: a route under a prefix nobody has seen fails, though the ratchet never named that heading", () => {
