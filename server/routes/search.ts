@@ -245,11 +245,11 @@ export async function buildFindIndex(deps: SearchDeps, req: Request, viewer: any
     // (`registry: false`) stays English: what goes to the provider is what it was.
     const locale = opts.registry === false ? null : readerLocale(req);
     for (const e of admin) {
-      const words = localizeEntry(e, locale);
-      const found = findEntryOf(words);
+      const spoken = localizeEntry(e, locale);
+      const found = findEntryOf(spoken);
       if (found.kind !== "page") putAct(found);
       // A page the site already listed at this address keeps its place; a reader of another language still finds it by their words.
-      else if (!put(found) && words !== e) alsoFoundBy(out, found);
+      else if (!put(found) && spoken !== e) alsoFoundBy(out, found);
     }
   }
 

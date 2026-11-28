@@ -117,6 +117,8 @@ const CONTROLS: Readonly<Record<string, ActWords>> = {
   "project.fiatCurrency": words("La moneda de la aldea", "La moneda en la que se muestran los precios y las cuotas.", ["moneda", "dinero", "dólares", "colones", "precios"]),
   "exit.closing": words("Qué significa cerrar", "Las palabras de la aldea sobre lo que pasa si cierra.", ["política de cierre", "cerrar la aldea", "disolución"]),
   "visit.program": words("Programa de visitas", "Cómo funciona una visita, en palabras de esta aldea: las formas de visitar y la logística.", ["visitas", "formas de visitar", "tipos de visita", "logística", "página de visitas"]),
+  "menu.module-name": words("Cambiar el nombre de la entrada de un módulo en el menú", "El nombre que tiene la entrada de un módulo en el menú. Si se deja en blanco, conserva el nombre propio del módulo.", ["nombre en el menú", "renombrar entrada del menú", "nombre del módulo en el menú", "llamarlo de otra forma", "etiqueta del menú"]),
+  "menu.module-place": words("Mover la entrada de un módulo en el menú", "Dónde va la entrada de un módulo en el menú: su grupo, una carpeta dentro de él y su posición.", ["mover entrada del menú", "lugar en el menú", "dónde va en el menú", "reordenar el menú", "ponerlo en una carpeta"]),
 };
 
 /** One key's line: where it is planted and who it comes from. */
