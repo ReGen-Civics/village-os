@@ -1,0 +1,43 @@
+/**
+ * The Store's acts in Spanish, by act id (the English is shared/adminActs/store.ts). The Spanish is awaiting a native reader.
+ */
+import { words, type ActWords } from "../types";
+
+export const STORE_WORDS_ES: Readonly<Record<string, ActWords>> = {
+  "store.tokens.add": words("Agregar un token", "Cree un token que usa la aldea, con su nombre, su tipo y si los miembros pueden pasarlo a otra persona.", ["nuevo token", "crear token", "ficha", "moneda de la aldea"]),
+  "store.tokens.edit": words("Cambiar un token", "Cambie el nombre y las palabras de un token, o haga que deje de usarse.", ["editar token", "renombrar token", "retirar token", "cambiar ficha"]),
+  "store.mint.mint": words("Emitir un token a un miembro", "Emita una cantidad de un token a un miembro, con el motivo guardado en el registro.", ["emitir tokens", "mesa de emisión", "dar tokens", "acuñar", "emisión manual"]),
+  "store.mint.approve": words("Dar la segunda firma de una emisión", "Apruebe una emisión que espera a una segunda persona que firme.", ["aprobar emisión", "segunda firma de emisión", "firmar emisión", "solicitud de emisión"]),
+  "store.mint.decline": words("Rechazar una emisión en espera", "Rechace una emisión que espera una segunda firma, con el motivo.", ["rechazar emisión", "negar emisión"]),
+  "store.token-jobs.read": words("Tareas de tokens", "El trabajo programado que mueve tokens, y cómo salió cada corrida.", ["tareas de tokens", "tareas programadas", "trabajo en segundo plano"]),
+  "store.org-accounts.open": words("Abrir una cuenta para un rol", "Dele a un rol una cuenta propia que guarda tokens.", ["cuenta de rol", "cuenta del organigrama", "cuenta de círculo"]),
+  "store.org-accounts.rename": words("Renombrar la cuenta de un rol", "Cambie el nombre de la cuenta de un rol.", ["renombrar cuenta de rol", "cambiar nombre de cuenta"]),
+  "store.ledger.read": words("Leer el libro mayor", "Por dónde se movió el valor, y si cada token todavía suma cero.", ["libro mayor", "conciliación", "saldos", "transferencias", "auditoría"]),
+  "store.cash.mark-paid": words("Marcar efectivo como pagado", "Registre que salió el dinero que la aldea le debía a un miembro, con una nota.", ["marcar pagado", "efectivo por pagar", "pago a un miembro", "transferencia bancaria"]),
+  "store.cash.record-transfer": words("Registrar una transferencia bancaria", "Registre una transferencia que pagó varios de los montos pendientes, con su fecha.", ["transferencia bancaria", "pago en lote", "registrar transferencia"]),
+  "store.cash.export": words("Descargar el efectivo por pagar", "Una hoja de cálculo de lo que la aldea debe, para el banco.", ["exportar efectivo", "lista de pagos", "hoja para el banco", "csv"]),
+  "store.cash.invoices": words("Facturas", "La factura de cada miembro para la luna, y en qué estado está.", ["facturas", "factura de fin de luna", "seguimiento de facturas"]),
+  "store.moon.settings": words("Cambiar los ajustes de Fin de Luna", "Cómo corre la revisión de fin de luna: a quién se le pide, y qué necesita una factura.", ["fin de luna", "revisión de la luna", "ajustes de la luna", "ajustes del resumen"]),
+  "store.moon.payers": words("Definir quién paga", "Los pagadores a nombre de quienes se puede hacer una factura.", ["pagadores", "quién paga", "entidad que paga"]),
+  "store.moon.rhythm": words("Mover los días de la luna", "Los días de la revisión de cada luna, la hora en que sale su correo y el enlace a su guía.", ["ritmo de la luna", "días de la luna", "fechas de revisión", "hora de envío"]),
+  "store.budget.import": words("Subir el presupuesto en efectivo", "Traiga las partidas del presupuesto desde una hoja, con su origen.", ["presupuesto", "subir presupuesto", "importar presupuesto", "presupuesto en efectivo"]),
+  "store.budget.add-line": words("Agregar una partida al presupuesto en efectivo", "Agregue una partida de efectivo planeado.", ["partida del presupuesto", "agregar partida", "nueva línea del presupuesto"]),
+  "store.budget.edit-line": words("Cambiar una partida del presupuesto en efectivo", "Cambie una partida de efectivo planeado.", ["editar partida", "cambiar línea del presupuesto"]),
+  "store.budget.withdraw-line": words("Retirar una partida del presupuesto en efectivo", "Saca una partida del presupuesto. Se puede restaurar.", ["retirar partida", "quitar línea del presupuesto"]),
+  "store.budget.restore-line": words("Restaurar una partida retirada del presupuesto en efectivo", "Devuelve una partida retirada.", ["restaurar partida", "recuperar línea del presupuesto"]),
+  "store.cycles.close": words("Cerrar el ciclo", "Cierre el ciclo de gratitud que está esperando. Cerrar libera valor, y por eso lo hace una persona.", ["cierre de ciclo", "cerrar el ciclo", "liquidar", "cierre de luna", "liberar valor"]),
+  "store.cycles.settlement-proposal": words("Pedirle a la aldea que liquide la luna", "Congela el reparto de la luna y abre la votación que la liquida.", ["propuesta de liquidación", "liquidar la luna", "abrir votación de liquidación"]),
+  "store.cycles.land-due": words("Aplicar las decisiones que ya vencieron", "Aplica las decisiones aprobadas cuyo tiempo de espera ya pasó.", ["aplicar decisiones", "decisiones vencidas", "aplicar votaciones"]),
+  "store.products.add": words("Agregar un producto", "Algo que la aldea vende por dinero, con su precio.", ["producto", "vender", "cuotas de membresía", "precio"]),
+  "store.products.edit": words("Cambiar un producto", "Cambie las palabras de un producto, su orden, o deje de venderlo.", ["editar producto", "dejar de vender"]),
+  "store.products.confirm-purchase": words("Confirmar una compra pagada fuera del sitio", "Registre que se pagó una compra que esperaba un pago hecho a mano.", ["confirmar compra", "pago a mano", "pago manual", "pagó por fuera"]),
+  "store.exits.open": words("Abrir una salida", "Empiece la salida de un miembro, con el tipo de salida y una nota.", ["salida", "miembro que se va", "dar de baja", "despedida"]),
+  "store.exits.settle": words("Liquidar los saldos de un miembro que se va", "Liquida lo que tiene un miembro que se va, según la política de salida de la aldea.", ["liquidar saldos", "liquidación de salida", "saldos al salir"]),
+  "store.exits.resolve": words("Cerrar una salida", "Marque una salida como terminada, con la referencia del acuerdo.", ["cerrar salida", "terminar salida", "resolver salida"]),
+  "store.exits.cancel": words("Cancelar una salida", "Anula una salida que se había abierto.", ["cancelar salida", "al final se queda", "anular salida"]),
+  "store.exits.policy": words("Cambiar la política de salida", "Qué pasa con la parte de un miembro cuando se va.", ["política de salida", "qué pasa cuando alguien se va", "reglas de salida"]),
+  "store.settings.save": words("Cambiar los ajustes de dinero", "Las cuotas, los cargos y las cifras de la tierra que muestran las páginas.", ["cuotas", "cargos", "cifras de la tierra", "ajustes de dinero", "precio de la membresía"]),
+  "store.economy.rule": words("Cambiar una regla de la economía", "Cuánto paga una regla de la economía, su tope y si está encendida.", ["reglas de la economía", "regla de emisión", "monto de la recompensa", "tope"]),
+  "store.economy.read": words("Vista previa de la oferta y la liquidación", "Cuánto existe de cada token, y qué liberaría la próxima liquidación.", ["oferta de tokens", "vista previa de la liquidación", "economía", "emitido hasta ahora"]),
+  "store.economics.read": words("Economía de la aldea", "La economía de la aldea en una sola vista: lo que entra, lo que sale y lo que se guarda.", ["economía de la aldea", "dinero que entra y sale", "finanzas"]),
+};
