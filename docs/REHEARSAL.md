@@ -134,3 +134,47 @@ Playwright and axe-core outside the repository at exact versions, restores the l
 screenshots from the actions cache, rehearses, saves tonight's screenshots for tomorrow only when
 every act passed, and uploads the run folder as an artifact kept for 14 days. A first run, or a run
 after the cache expired, compares with nothing and says so.
+
+## The launch rehearsal
+
+A second, smaller rehearsal walks one thing: a whole launch. `scripts/rehearse-launch.mjs` takes a
+throwaway village from set up to launched through the real routes of a freshly booted build, with
+three founder accounts, and checks and writes down every step. Run it before a village holds its
+launch vote, so the people holding the real one have read what each answer does.
+
+```bash
+pnpm build
+node --import tsx scripts/rehearse-launch.mjs
+```
+
+It needs no browser. It takes about two minutes, most of it the migrations.
+
+What it walks:
+
+1. A founder sets the village up and clears the journey to launch.
+2. The founder invites three people. Two are given the founder role and one stays a member.
+3. The calendar is written with a founding season that has no end date and the next season queued.
+4. By default the village is put in the state of one that was issuing before the launch vote
+   existed, so the vote it holds is the ratifying one, which never restarts issuance. `--first`
+   rehearses a first launch, where the vote starts issuance.
+5. The list of what the carry will change is read before the vote
+   (`GET /api/admin/launch/carry-changes`).
+6. A founder opens the vote and names who carries the steward role.
+7. One yes, then a no that holds the vote, then a second yes that carries nothing while the no
+   stands. The no is withdrawn by changing the answer, and that third yes carries the vote in the
+   same request.
+8. What the launch did: the launch on the record, the day issuance began unmoved, the season
+   turned, the steward seated for the whole new season, Moon 1, the pay period unmoved, and one
+   door tried from both sides.
+
+The transcript goes to `.rehearsal/launch/<stamp>.md`, or wherever `--out` says. The exit code is 0
+when every check held, 1 when any did not, and 2 when it could not start. `--keep` leaves the
+scratch schema in place afterwards.
+
+It never touches a real village, by the same two refusals as the nightly rehearsal
+(`scripts/rehearsal/guard.mjs`): the server must be on this machine, and the database a scratch
+schema on this machine whose name starts with `village_rehearsal`. It uses the MySQL that
+`TEST_DATABASE_URL` in `.env` names, or `REHEARSAL_DB_SERVER`. It drops and recreates its schema
+(`village_rehearsal_launch`) at the start, sends no mail and calls no AI.
+
+It is not part of CI. Run it by hand.
