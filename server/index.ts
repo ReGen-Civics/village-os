@@ -12476,6 +12476,15 @@ async function startServer() {
       roll: roll.kind,
       founders: roll.founders,
       notOnTheRoll: roll.notOnTheRoll,
+      /*
+       * HOW MANY MEMBERS HOLD A VOICE ON EVERY ORDINARY VOTE: the roll every
+       * other ballot freezes. `onTheRoll` was this number until 2026-11-27 and
+       * is the launch's own roll now, which is the founders as shipped. Both
+       * are stated, so a village reads that its launch asks three people while
+       * forty hold a voice, and so the suites that measure who holds a voice
+       * keep a count that means what it always meant.
+       */
+      membersWithAVoice: (await votingRoll()).length,
       // How many yeses carry it. The page says this number.
       yesNeeded: threshold ? rule.yesNeeded : null,
       unityPct: threshold?.minUnityPct ?? null,
