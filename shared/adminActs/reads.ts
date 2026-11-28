@@ -96,7 +96,7 @@ export const PATH_READS: Readonly<Record<string, readonly string[]>> = {
   "/governance/treasury": ["/api/admin/mint-requests", "/api/cash-owed/export.csv", "/api/cash-owed/invoice-track", "/api/cash-owed/queue", "/api/content/:section", "/api/org/founding-team", "/api/treasury/mint-options"],
   "/governance/work": ["/api/admin/quest-claims", "/api/admin/quest-claims/owed", "/api/approval-inbox", "/api/content/:section", "/api/org", "/api/org/drafts/:id/decide", "/api/org/founding-team", "/api/review/erasure", "/api/review/queue", "/api/saberra/differences", "/api/saberra/differences/count"],
   "/journey-to-launch": ["/api/admin/command-centre", "/api/admin/launch", "/api/admin/launch/steward-candidates", "/api/canvas", "/api/canvas/blocks/:id", "/api/canvas/moon", "/api/canvas/season", "/api/content/:section", "/api/documents", "/api/documents/:id", "/api/documents/:id/file", "/api/org/founding-team"],
-  "/modules": ["/api/admin/modules", "/api/content/:section", "/api/modules/catalog", "/api/org/founding-team"],
+  "/modules": ["/api/admin/modules", "/api/admin/proposals", "/api/content/:section", "/api/modules/catalog", "/api/org/founding-team"],
   "/network": ["/api/admin/network/peers", "/api/content/:section", "/api/examples", "/api/org/founding-team"],
   "/powers": ["/api/content/:section", "/api/org/founding-team"],
   "/profile": ["/api/admin/org-redemptions", "/api/admin/quest-claims", "/api/cash-owed/queue", "/api/content/:section", "/api/events", "/api/org/drafts/:id/decide", "/api/org/founding-team", "/api/people/:handle/role-card", "/api/roles/:id/tensions", "/api/sessions", "/api/sessions/tasks/count"],

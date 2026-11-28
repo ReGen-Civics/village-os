@@ -13,7 +13,7 @@
   "acts": {
    "full": false,
    "arrivals": "may be open",
-   "total": 815,
+   "total": 817,
    "open": {
     "needs a consequence line": 40,
     "tier not settled": 3
@@ -141,9 +141,9 @@
   "settings": {
    "full": false,
    "arrivals": "may be open",
-   "total": 418,
+   "total": 420,
    "open": {
-    "control: no path by the highest vote": 15,
+    "control: no path by the highest vote": 17,
     "control: no who may change it, no path by the highest vote": 3,
     "dial: no path by the highest vote": 1,
     "key: no path by the highest vote": 25
@@ -153,11 +153,11 @@
   "threeWays": {
    "full": false,
    "arrivals": "may be open",
-   "total": 815,
+   "total": 817,
    "open": {
     "a dial the guide may not prepare": 113,
     "not by the guide yet: act": 339,
-    "not by the guide yet: control": 18,
+    "not by the guide yet: control": 20,
     "not by the guide yet: page": 67,
     "not by the guide yet: page beside Admin": 16
    }
@@ -165,9 +165,9 @@
   "oldDoors": {
    "full": false,
    "arrivals": "may be open",
-   "total": 489,
+   "total": 491,
    "open": {
-    "outside the garden: control": 17,
+    "outside the garden: control": 19,
     "outside the garden: dial": 375,
     "outside the garden: folded tab": 9,
     "outside the garden: page": 20,
