@@ -58,7 +58,7 @@ services:
       start_period: 30s
 
   app:
-    image: ${VILLAGE_OS_IMAGE:-ghcr.io/regen-civics/village-os:1.4.4}
+    image: ${VILLAGE_OS_IMAGE:-ghcr.io/regen-civics/village-os:1.4.5}
     restart: unless-stopped
     depends_on:
       db:
