@@ -620,9 +620,9 @@ export default function Review() {
         <div>
           <p className={`${EYEBROW} flex items-center gap-2`}>
             <Inbox className="size-4" aria-hidden="true" />
-            <Trans context="review: eyebrow">Waiting on the village</Trans>
+            <Trans context="governance now: eyebrow, the hub's name">Governance</Trans>
           </p>
-          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Your work</Trans></h1>
+          <h1 className={`${H1} mt-1`}><Trans context="Review, h1">Waiting on you</Trans></h1>
           {!forbidden && (
             <div className={`${LEDE} mt-2 space-y-1`}>
               <p><Trans context="Review, p">What an outside service proposes about this village. Nothing here is true yet.</Trans></p>

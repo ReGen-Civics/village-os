@@ -27,7 +27,12 @@ const HISTORY_MAX = 60;
 interface History {
   counts: Record<string, number>;
   personal?: { path: string; day: string } | null;
+  /** The pages opened last, newest first, kept on this device only (the More sheet's Recent row, 27 Nov 2026). */
+  recent?: string[];
 }
+
+/** How many recent pages the device keeps. */
+const RECENT_MAX = 8;
 
 export interface BarAnswer {
   on: boolean;
@@ -84,6 +89,9 @@ export async function visited(location: string, token: string, fetchImpl: typeof
   if (token.startsWith(AGENT_TOKEN_PREFIX)) return;
   const path = clean(location);
   if (path === "/" || path === PATH_PATH || !/^\/[\w\-/]*$/.test(path)) return;
+  // Every opening moves the page to the front of Recent, on this device only; the count below is once a session.
+  const was = readHistory();
+  writeHistory({ ...was, recent: [path, ...(was.recent ?? []).filter((p) => p !== path)].slice(0, RECENT_MAX) });
   const sent = sentThisSession();
   if (sent.has(path)) return;
   sent.add(path);
@@ -116,6 +124,15 @@ export function personalFor(bar: readonly string[], excluded: readonly string[],
   const path = choosePersonal(h.counts, bar, excluded);
   writeHistory({ ...h, personal: path ? { path, day: today } : null });
   return path;
+}
+
+/**
+ * The pages this device opened last, newest first, leaving out `excluded` (the page being read, the cards). Read only.
+ * The More sheet's Recent row draws them (components/mobile/MoreSheet.tsx).
+ */
+export function recentPages(excluded: readonly string[], n: number): string[] {
+  const off = new Set([HOME_PATH, PATH_PATH, ...excluded]);
+  return (readHistory().recent ?? []).filter((p) => typeof p === "string" && !off.has(p)).slice(0, n);
 }
 
 /**

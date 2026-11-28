@@ -1,0 +1,167 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: Pay in the menu, 27 Nov 2026
+#: client/src/config/navWords.ts
+msgctxt "site menu"
+msgid "Pay"
+msgstr "Pagar"
+
+# needs-native-review: village-named folders, 27 Nov 2026
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the folder names"
+msgid "Folders"
+msgstr "Carpetas"
+
+# needs-native-review: village-named folders, 27 Nov 2026
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the folder names, explained"
+msgid "A folder holds a few entries inside a group. Blank keeps the platform's name, in each reader's language."
+msgstr "Una carpeta reúne algunas entradas dentro de un grupo. En blanco se usa el nombre de la plataforma, en el idioma de cada lector."
+
+# needs-native-review: village-named folders, 27 Nov 2026
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: a folder name field"
+msgid "The name for the {f} folder"
+msgstr "El nombre de la carpeta {f}"
+
+# needs-native-review: village-named folders, 27 Nov 2026
+#: client/src/components/admin/MenuPanel.tsx
+msgid "Your own word for each menu entry, which ones show, the names of the groups and folders, and the phone's four tabs. An entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu. Blank keeps the platform's word."
+msgstr "Su propia palabra para cada entrada del menú, cuáles se muestran, los nombres de los grupos y las carpetas, y las cuatro pestañas del teléfono. Una entrada conserva su página y quién puede abrirla: cambiarle el nombre nunca la mueve, y ocultarla solo la saca del menú. En blanco se usa la palabra de la plataforma."
+
+# needs-native-review: waiting-on-you dots, 27 Nov 2026
+#: client/src/components/nav/WaitingCount.tsx
+msgctxt "the menu: how many things wait on the reader, read aloud"
+msgid "{n} waiting on you"
+msgstr "{n} esperan su respuesta"
+
+# needs-native-review: the More sheet's greeting, 27 Nov 2026
+#: client/src/components/mobile/MoreSheet.tsx
+msgctxt "the phone's More sheet: the greeting, with the member's next step"
+msgid "Hello, {firstName}. Next:"
+msgstr "Hola, {firstName}. Lo siguiente:"
+
+# needs-native-review: the More sheet's Recent row, 27 Nov 2026
+#: client/src/components/mobile/MoreSheet.tsx
+msgctxt "the phone's More sheet: the pages opened last"
+msgid "Recent"
+msgstr "Recientes"
+
+# needs-native-review: the More sheet's group tabs, 27 Nov 2026
+#: client/src/components/mobile/MoreSheet.tsx
+msgctxt "the phone's More sheet: the group tabs, read aloud"
+msgid "The menu's groups"
+msgstr "Los grupos del menú"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "What's happening now"
+msgstr "Lo que está pasando ahora"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/components/governance/now/GovernanceTabs.tsx
+msgctxt "governance: a view"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: eyebrow, the hub's name"
+msgid "Governance"
+msgstr "Gobernanza"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/GovernanceNow.tsx
+msgctxt "governance now: h1"
+msgid "What's happening now"
+msgstr "Lo que está pasando ahora"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/Review.tsx
+msgctxt "Review, h1"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/components/review/SeraOnReview.tsx
+msgctxt "review page"
+msgid "Waiting on you"
+msgstr "Lo que espera su respuesta"
+
+# needs-native-review: the full breadcrumb, 27 Nov 2026
+#: client/src/components/nav/Breadcrumbs.tsx
+msgctxt "the breadcrumb: a group or folder that opens the menu there, read aloud"
+msgid "Open {words} in the menu"
+msgstr "Abrir {words} en el menú"
+
+# needs-native-review: a + opens edit mode for every card, 27 Nov 2026
+#: client/src/components/mobile/SpeedCards.tsx
+msgctxt "the phone's More sheet: read aloud when a + opens edit mode and the picker"
+msgid "Editing your cards. Pick one to add, or drag a card to move it."
+msgstr "Editando sus tarjetas. Elija una para añadir, o arrastre una tarjeta para moverla."
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page title"
+msgid "Pay"
+msgstr "Pagar"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Propose.tsx
+msgctxt "Propose, h1"
+msgid "Make a proposal"
+msgstr "Hacer una propuesta"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Season.tsx
+msgctxt "season page"
+msgid "Season"
+msgstr "Temporada"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Library.tsx
+msgctxt "Library, h1"
+msgid "Library"
+msgstr "Biblioteca"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Badges.tsx
+msgctxt "Badges, h1"
+msgid "Badges"
+msgstr "Insignias"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/Events.tsx
+msgctxt "calendar page title"
+msgid "Events"
+msgstr "Eventos"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/pages/GovernanceTreasury.tsx
+msgctxt "governance treasury: h1"
+msgid "Treasury"
+msgstr "Tesorería"
+
+# needs-native-review: one name per page and the season mark, 27 Nov 2026
+#: client/src/components/nav/menuJoys.tsx
+msgctxt "the menu: the mark before a heading, the village's season, read aloud"
+msgid "Season: {name}"
+msgstr "Temporada: {name}"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page"
+msgid "Roles"
+msgstr "Roles"
+
+# needs-native-review: one name per page, 27 Nov 2026
+#: client/src/pages/VillageMap.tsx
+msgctxt "VillageMap, h1"
+msgid "Circles"
+msgstr "Círculos"

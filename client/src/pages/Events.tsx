@@ -415,10 +415,10 @@ export default function Events() {
             {moonOnPhone ? (
               <>
                 <span className="sm:hidden">{moonTitle}</span>
-                <span className="hidden sm:inline">{t({ message: "Village calendar", context: "calendar page title" })}</span>
+                <span className="hidden sm:inline">{t({ message: "Events", context: "calendar page title" })}</span>
               </>
             ) : (
-              t({ message: "Village calendar", context: "calendar page title" })
+              t({ message: "Events", context: "calendar page title" })
             )}
           </h1>
           {/* R47: the Trail line leads, the tooltip defines the moons, and
