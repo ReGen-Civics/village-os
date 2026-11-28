@@ -31,8 +31,15 @@
  */
 import { useGardenWords } from "./speaking";
 
-/** The exit's look: the page's own ink, underlined, 44px tall. Semantic tokens only, so it draws on any page. */
-export const GARDEN_EXIT = "jw-btn inline-flex min-h-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-foreground underline decoration-1 underline-offset-4 hover:decoration-2";
+/**
+ * The exit's look: the page's own ink, underlined, 44px tall. Semantic tokens only, so it draws on any page.
+ *
+ * EVERY CLASS HERE IS ONE THE SITE ALREADY USES. The site's one stylesheet holds every utility any file names,
+ * so a class nothing else used would add a rule to the stylesheet every visitor downloads, on every page.
+ * Measured: a hover class used nowhere else added 57 bytes to it. With these the built client is the same,
+ * file for file, as it is without the garden.
+ */
+export const GARDEN_EXIT = "jw-btn inline-flex min-h-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-foreground underline underline-offset-4 hover:no-underline";
 
 export interface SeeOldAdminProps {
   /** What pressing it does: the page shows this person the old admin, and keeps that choice wherever it keeps it. */
