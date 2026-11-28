@@ -150,7 +150,8 @@ describe("More says whether the menu it opens is open (the five-reviewer QA pass
       </Router>,
     );
     const more = document.querySelector<HTMLButtonElement>('button[aria-controls="mobile-menu"]');
-    expect(more?.getAttribute("aria-label")).toBe("More");
+    // Named by its visible word, so the waiting dot's hidden words can join its name (the menu's QA, round 2).
+    expect(more?.textContent?.trim()).toBe("More");
     expect(more?.getAttribute("aria-expanded")).toBe("false");
     act(() => {
       window.dispatchEvent(new CustomEvent("mobile-menu-state", { detail: { open: true } }));

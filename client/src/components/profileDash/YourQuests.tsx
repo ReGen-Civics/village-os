@@ -4,20 +4,32 @@
  *
  *   doing       every quest in the member's hands or turned in, from the same
  *               `/api/game/me` claims the rest of the profile reads;
+ *   done        the last four the village consented to, newest first, which the
+ *               short Quests card used to carry before it left My work;
  *   suited      open quests suited to the roles they hold, from
  *               `/api/game/quests/suited`: a quest whose role gate they hold,
  *               or whose circle one of their seats sits in. Nothing else links
  *               a quest to a role, so a member whose roles no quest names sees
  *               that list left out, never a guess.
  *
- * The profile's short Quests card (GameDashboard) stays as it was; this is the
- * full list it points into.
+ * The profile's short Quests card (GameDashboard) left My work on the lead's
+ * "yes" to the portal's next moves (27 Nov 2026): it repeated this list and the
+ * village's board, and a door to Quests (QuestsDoor.tsx) stands in its place.
  */
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { gameFetch, type QuestClaim } from "@/lib/gameApi";
 import { useLingui } from "@lingui/react/macro";
+import { claimStatus } from "@/lib/questStatus";
+import { dateLocale } from "@shared/civilDay";
+import { PlantGlyph } from "@/components/openWork/StatusMark";
+
+/** The board's own mark for a claim: a sprout in hand, a flower done this moon, nothing for an older finish. */
+function Mark({ claim }: { claim: QuestClaim }) {
+  const plant = claimStatus(claim);
+  return plant ? <PlantGlyph state={plant} className="size-5" /> : <span className="size-5 shrink-0" aria-hidden="true" />;
+}
 
 interface SuitedQuest {
   id: string;
@@ -26,10 +38,13 @@ interface SuitedQuest {
   why: "role" | "circle";
 }
 
+/** How many finished quests the list keeps: four, as many as the short card it replaced could show. */
+const DONE_SHOWN = 4;
+
 const ROW = "flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border px-3 py-2 text-sm text-foreground no-underline hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [suited, setSuited] = useState<SuitedQuest[] | null>(null);
   useEffect(() => {
     let live = true;
@@ -41,10 +56,21 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
   }, []);
 
   const doing = claims.filter((c) => c.status === "claimed" || c.status === "submitted");
-  if (doing.length === 0 && !suited?.length) return null;
+  /** The day the village consented, short ("21 Nov"), in the reader's language; empty when unknown. */
+  const doneOn = (c: QuestClaim): string => {
+    const at = c.resolvedAt ? new Date(c.resolvedAt) : null;
+    return at && !Number.isNaN(at.getTime()) ? at.toLocaleDateString(dateLocale(i18n.locale), { day: "numeric", month: "short" }) : "";
+  };
+  const done = claims
+    .filter((c) => c.status === "consented")
+    .sort((a, b) => String(b.resolvedAt ?? b.claimedAt ?? "").localeCompare(String(a.resolvedAt ?? a.claimedAt ?? "")))
+    .slice(0, DONE_SHOWN);
+  if (doing.length === 0 && done.length === 0 && !suited?.length) return null;
 
   return (
     <section id="your-quests" className="mb-6 scroll-mt-28 rounded-2xl border border-border bg-card p-5 sm:p-6" aria-labelledby="your-quests-heading">
+      {/* The kicker the door below carries too: these are the member's own, that one is the village's board. */}
+      <p className="m-0 mb-1 text-xs font-semibold uppercase tracking-widest text-notice">{t({ message: "Your own", context: "profile My work: the kicker over the member's own quests" })}</p>
       <h2 id="your-quests-heading" className="m-0 font-display text-lg font-bold text-card-foreground">
         {t({ message: "Your quests", context: "profile: the full list of the member's quests" })}
       </h2>
@@ -57,7 +83,8 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
             {doing.map((c) => (
               <li key={c.id}>
                 <Link href={`/quests/${encodeURIComponent(c.questId)}`} className={ROW} data-your-quest={c.status}>
-                  <span className="min-w-0">
+                  <Mark claim={c} />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{c.questTitle}</span>
                     <span className="block text-xs text-muted-foreground">
                       {c.status === "claimed"
@@ -65,6 +92,31 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
                           ? t({ message: "Taken back to change. Turn it in again when ready.", context: "profile: a quest taken back after turning it in" })
                           : t({ message: "In your hands. Turn it in when it is done.", context: "profile: a quest the member holds" })
                         : t({ message: "Turned in. Waiting on a steward.", context: "profile: a quest the member turned in" })}
+                    </span>
+                  </span>
+                  <ArrowRight className="size-4 shrink-0 text-notice" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {done.length > 0 && (
+        <>
+          <h3 className="mb-2 mt-5 text-sm font-semibold text-muted-foreground">
+            {t({ message: "Done", context: "profile: quests the village consented to, the newest few" })}
+          </h3>
+          <ul className="m-0 list-none space-y-2 p-0">
+            {done.map((c) => (
+              <li key={c.id}>
+                <Link href={`/quests/${encodeURIComponent(c.questId)}`} className={ROW} data-your-quest={c.status}>
+                  <Mark claim={c} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium">{c.questTitle}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {doneOn(c)
+                        ? t({ message: `Done · ${doneOn(c)}`, context: "profile: a quest the village consented to, and the day" })
+                        : t({ message: "Done", context: "profile: a quest the village consented to, no day known" })}
                     </span>
                   </span>
                   <ArrowRight className="size-4 shrink-0 text-notice" aria-hidden="true" />
@@ -83,7 +135,9 @@ export default function YourQuests({ claims }: { claims: readonly QuestClaim[] }
             {suited.map((q) => (
               <li key={q.id}>
                 <Link href={`/quests/${encodeURIComponent(q.id)}`} className={ROW} data-suited-quest={q.why}>
-                  <span className="min-w-0">
+                  {/* Open work wears no plant yet; the empty slot keeps it in line with the rows above. */}
+                  <span className="size-5 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{q.title}</span>
                     <span className="block text-xs text-muted-foreground">
                       {q.why === "role"

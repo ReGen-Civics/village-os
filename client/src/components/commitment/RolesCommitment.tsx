@@ -55,9 +55,14 @@ export interface CommitmentSeat {
 
 const SUMMARY = "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 text-sm font-semibold text-notice [&::-webkit-details-marker]:hidden";
 
-export default function RolesCommitment({ seats }: { seats: readonly CommitmentSeat[] }) {
+/**
+ * `mine` is the page's own read of the member's word, when the page already holds one (the profile's My
+ * roles draws each role's part from it), so a save here moves those lines too and nothing reads it twice.
+ */
+export default function RolesCommitment({ seats, mine: given }: { seats: readonly CommitmentSeat[]; mine?: ReturnType<typeof useMyCommitment> }) {
   const { t, i18n } = useLingui();
-  const mine = useMyCommitment(true);
+  const own = useMyCommitment(!given);
+  const mine = given ?? own;
   const [pct, setPct] = useState<number | null>(null);
   const [period, setPeriod] = useState<CommitmentPeriod | null>(null);
   const [note, setNote] = useState("");

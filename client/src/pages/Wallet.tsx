@@ -279,8 +279,8 @@ export default function Wallet() {
                         {formatTokenAmount(Number(bal), decimalsOf(tokenDecimals, slug))}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {contributionSlug(slug) ? <ContributionWord short /> : (tokenNames[slug] ?? slug)}
-                        <InfoTip tip={tokenTip()} label={`What ${tokenOf(slug)} is`} />
+                        {/* The contribution token's name already carries its own tip (ContributionWord.tsx), and a tip never holds another. */}
+                        {contributionSlug(slug) ? <ContributionWord short /> : <InfoTip tip={tokenTip()}>{tokenNames[slug] ?? slug}</InfoTip>}
                       </p>
                     </div>
                   ))}
@@ -310,8 +310,7 @@ export default function Wallet() {
             <div className="flex items-center gap-2 mb-3">
               <SeedPod className="w-4 h-4 text-teal-deep" />
               <p className="font-semibold text-foreground text-sm">
-                <Trans context="Wallet, p">Buy tokens
-                <InfoTip tip={`Money flows in and never back out: the village sells its own credit tokens and never buys them back. Nothing puts ${tokenName} up for sale.`} label="How buying works" /></Trans>
+                <Trans context="Wallet, p"><InfoTip tip={`Money flows in and never back out: the village sells its own credit tokens and never buys them back. Nothing puts ${tokenName} up for sale.`}>Buy tokens</InfoTip></Trans>
               </p>
             </div>
             {status === "failed" ? (
@@ -427,8 +426,7 @@ export default function Wallet() {
           {hypha.configured && (
             <div className="bg-card border border-border rounded-xl p-5">
               <p className="font-semibold text-foreground text-sm mb-1">
-                <Trans context="Wallet, p">Hypha holdings
-                <InfoTip tip={`Hypha is the outside network where governance tokens and ${shareNames.equity} live. This page is a door to it; nothing here moves those holdings.`} label="What Hypha holdings are" /></Trans>
+                <Trans context="Wallet, p"><InfoTip tip={`Hypha is the outside network where governance tokens and ${shareNames.equity} live. This page is a door to it; nothing here moves those holdings.`}>Hypha holdings</InfoTip></Trans>
               </p>
               <p className="text-xs text-muted-foreground mb-3">
                 {/* The lead's ruling, 19 Nov 2026: the Hypha token is the village's contribution token itself, so it is

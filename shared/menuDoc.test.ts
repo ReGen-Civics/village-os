@@ -3,7 +3,7 @@
  * /governance and the "Decide" group now applies to the entries and group that took their place.
  */
 import { describe, expect, it } from "vitest";
-import { menuDocOf } from "./menuDoc";
+import { menuDocIsEmpty, menuDocOf, menuDocProblem } from "./menuDoc";
 
 describe("menuDocOf carries a village's words over to the moved entries", () => {
   it("a label, a hidden entry and a group name set on the old key apply to the new one", () => {
@@ -36,7 +36,22 @@ describe("menuDocOf carries a village's words over to the moved entries", () => 
       labels: { "/forum": "Crew Talk" },
       hidden: ["/forum"],
       groups: { Community: "Aboard" },
+      folders: {},
       tabs: ["/map"],
     });
+  });
+});
+
+describe("a village's own folder names (the lead, 27 Nov 2026: \"Yes\")", () => {
+  it("keeps a folder's name by the platform's, clipped, and drops an empty one", () => {
+    const m = menuDocOf({ folders: { "Places and homes": "  Where we live  ", Decide: "", Tools: "x".repeat(40) } });
+    expect(m.folders).toEqual({ "Places and homes": "Where we live", Tools: "x".repeat(32) });
+    expect(menuDocIsEmpty(m)).toBe(false);
+  });
+
+  it("refuses a folder name that is not words, or too long", () => {
+    expect(menuDocProblem({ folders: ["Tools"] })).toMatch(/Folder names/);
+    expect(menuDocProblem({ folders: { Tools: "x".repeat(40) } })).toMatch(/"Tools" folder/);
+    expect(menuDocProblem({ folders: { Tools: "Kit" } })).toBeNull();
   });
 });

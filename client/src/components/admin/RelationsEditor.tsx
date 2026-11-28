@@ -193,11 +193,9 @@ export default function RelationsEditor({
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-5">
       <h3 className="flex items-center gap-2 font-semibold text-gray-900">
-        Links between circles and roles
-        <InfoTip
-          tip="A link joins two nodes, never two people. It stays true when the holders change, which is why it can be published."
-          label="What a link joins"
-        />
+        <InfoTip tip="A link joins two nodes, never two people. It stays true when the holders change, which is why it can be published.">
+          Links between circles and roles
+        </InfoTip>
       </h3>
       <p className="text-sm text-gray-500 mt-1 leading-relaxed">
         Deputies, successors, mentors and escalation paths. The Power Map draws a circle's links when that circle is

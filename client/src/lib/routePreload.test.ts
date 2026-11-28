@@ -77,7 +77,8 @@ describe("lazyRoutesFromApp, against the real App.tsx", () => {
     // /season-plans/mine, /season-places, /aligned, redirects to /season tabs since the season fold, 27 Nov 2026), and the /first-walk redirect home (the page was
     // removed on 27 Nov 2026) is lazy today.
     // The treasury's three (/treasury, /cash-payouts, /pricing) are counted above, beside /budget.
-    expect(routes.length).toBeGreaterThanOrEqual(declared - 32);
+    // /season-plan redirects to /season#plan (28 Nov 2026: two notices linked to an address with no page).
+    expect(routes.length).toBeGreaterThanOrEqual(declared - 33);
     expect(routes.length).toBeGreaterThan(60);
   });
 
