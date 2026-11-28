@@ -119,6 +119,12 @@ export interface GuideConsulted {
   references?: string[];
 }
 
+/** The two routes, each written whole: this file asks no other assistant route. */
+const GUIDE_ROUTES = {
+  launch: `${API_BASE}/admin/assistant/launch`,
+  organize: `${API_BASE}/admin/assistant/organize`,
+} as const;
+
 export type GuideAskOutcome = { ok: true; reply: string; consulted?: GuideConsulted } | { ok: false; gone: boolean; error: string };
 
 /**
@@ -128,7 +134,7 @@ export type GuideAskOutcome = { ok: true; reply: string; consulted?: GuideConsul
  */
 export async function askGuide(password: string, mode: "launch" | "organize", messages: HelperLine[]): Promise<GuideAskOutcome> {
   try {
-    const r = await fetch(`${API_BASE}/admin/assistant/${mode}`, {
+    const r = await fetch(GUIDE_ROUTES[mode], {
       method: "POST",
       headers: authHeaders(password, { "Content-Type": "application/json" }),
       body: JSON.stringify({ messages }),

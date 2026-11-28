@@ -8,14 +8,18 @@
  * conversations, on the same two routes, with the same payload.
  *
  * WITH THE DIAL OFF NOTHING CHANGES: this draws the launch guide, with the
- * props the page always gave it. The one difference nobody sees is a single
- * read of the helper's status when an admin opens the page, which is how the
- * page learns whether the dock is on before the button is pressed. Anyone who
- * is not an admin is never asked and always gets the launch guide. This
- * browser's hint from an earlier visit decides until the answer arrives, so a
- * village with the dock on does not see the old panel flash first.
+ * props the page always gave it, and the page loads exactly as it did. The one
+ * difference nobody sees is a single read of the helper's status when an
+ * admin OPENS the guide, which is how the page learns the dial is on. Anyone
+ * who is not an admin is never asked and always gets the launch guide.
+ *
+ * The same swap the Admin host makes (../AdminHelperHost.tsx): the launch
+ * guide opens at once, the status says whether the dock is on, and this
+ * browser keeps the answer as a hint so the next open goes straight to the
+ * dock. The dock reads the status too, so a village that turns the dial off
+ * again gets its launch guide back the same way.
  */
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import type { HelperStatus } from "@shared/adminHelper";
 import { LaunchGuide } from "@/components/journey/LaunchGuide";
 import { authToken } from "@/lib/gameApi";
@@ -37,26 +41,36 @@ function headerBottom(): number {
 export function JourneyGuide({ open, onClose, launched = false, admin = false }: { open: boolean; onClose: () => void; launched?: boolean; admin?: boolean }) {
   const token = authToken() ?? "";
   const [dockOn, setDockOn] = useState<boolean>(() => readDockHint());
-  const [status, setStatus] = useState<HelperStatus | null>(null);
+  // The status the launch guide's side read, handed to the dock so it is read once.
+  const [fresh, setFresh] = useState<HelperStatus | null>(null);
   const [top, setTop] = useState(0);
+  const docked = admin && dockOn;
 
+  const heard = useCallback((s: HelperStatus) => {
+    const on = s.dock === true;
+    setDockOn(on);
+    if (on !== readDockHint()) rememberDockHint(on);
+  }, []);
+
+  // The launch guide is open: ask once, as an admin, whether the dock is on.
   useEffect(() => {
-    if (!admin || !token) return;
+    if (!open) {
+      setFresh(null);
+      return;
+    }
+    if (!admin || !token || docked) return;
     const ctrl = new AbortController();
     fetchHelperStatus(token, ctrl.signal)
       .then((s) => {
-        const on = s.dock === true;
-        setStatus(s);
-        setDockOn(on);
-        if (on !== readDockHint()) rememberDockHint(on);
+        setFresh(s);
+        heard(s);
       })
       .catch(() => {
-        /* unreachable: the hint stands, and the launch guide is what a browser with no hint draws */
+        /* unreachable: the launch guide stands, as it always did */
       });
     return () => ctrl.abort();
-  }, [admin, token]);
+  }, [open, admin, token, docked, heard]);
 
-  const docked = admin && dockOn;
   useEffect(() => {
     if (!open || !docked) return;
     const sync = () => setTop((was) => (was === headerBottom() ? was : headerBottom()));
@@ -80,7 +94,8 @@ export function JourneyGuide({ open, onClose, launched = false, admin = false }:
         top={top}
         bottom="var(--tabbar-h, 0px)"
         onClose={onClose}
-        initialStatus={status ?? undefined}
+        initialStatus={fresh ?? undefined}
+        onStatus={heard}
         // A village still on the road opens wide; a running one opens at the side. A remembered choice beats both.
         defaultShape={launched ? "docked" : "expanded"}
       />

@@ -64,6 +64,8 @@ function mockFetch(routes: Record<string, (init: any) => Hit | Promise<Hit>>) {
 const answer = (over: Partial<HelperAnswer> = {}): HelperAnswer => ({ reply: "Here you go.", open: null, proposal: null, refused: null, consulted: [], ...over });
 const box = () => screen.getByRole("textbox", { name: "Your question" }) as HTMLTextAreaElement;
 const frame = () => screen.getByTestId("guide-dock");
+/** The conversation itself, apart from the quiet line that reads a finished reply to a screen reader. */
+const talk = () => within(screen.getByTestId("guide-talk"));
 const posts = (calls: Array<{ url: string; init: any }>) => calls.filter((c) => (c.init.method ?? "GET") !== "GET");
 
 beforeEach(() => {
@@ -278,7 +280,7 @@ describe("the launch and organizing guides", () => {
     expect(screen.getByRole("button", { name: "Launch" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText(/I can see exactly where your launch stands/)).toBeTruthy();
     await userEvent.type(box(), "what is blocking?{Enter}");
-    expect(await screen.findByText(/Start with the closing policy/)).toBeTruthy();
+    expect(await talk().findByText(/Start with the closing policy/)).toBeTruthy();
     expect(calls[0].url).toBe("/api/admin/assistant/launch");
     expect(calls[0].init.headers.Authorization).toBe("Bearer pw");
     const launchSent = JSON.parse(calls[0].init.body);
@@ -300,8 +302,8 @@ describe("the launch and organizing guides", () => {
     expect(screen.getByText(/References: Sociocracy 3\.0\./)).toBeTruthy();
     // Each conversation keeps its own thread.
     await userEvent.click(screen.getByRole("button", { name: "Launch" }));
-    expect(screen.getByText(/Start with the closing policy/)).toBeTruthy();
-    expect(screen.queryByText("Consent first.")).toBeNull();
+    expect(talk().getByText(/Start with the closing policy/)).toBeTruthy();
+    expect(talk().queryByText("Consent first.")).toBeNull();
   });
 
   it("offer only organizing once the village is live, with no tabs", () => {
