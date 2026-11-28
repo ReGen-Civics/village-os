@@ -12,7 +12,8 @@ import { Trans } from "@lingui/react/macro";
  */
 export function HyphaAdminNote() {
   const hypha = useHypha();
-  const isAdmin = useIsAdmin();
+  // The note sends its reader to Admin, Variables, and saving a variable asks the account's own role.
+  const isAdmin = useIsAdmin("account-role");
   if (hypha.configured || !isAdmin) return null;
   return (
     <p className="mx-auto my-8 max-w-3xl rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">

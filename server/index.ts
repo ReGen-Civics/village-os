@@ -176,6 +176,7 @@ import { register as registerGovernanceLandingRoutes } from "./routes/governance
 import { register as registerMechanicsHistoryRoutes } from "./routes/mechanicsHistory";
 import { register as registerChangeRequestRoutes } from "./routes/changeRequests";
 import { register as registerStewardSlateRoutes } from "./routes/stewardSlate";
+import { register as registerLaunchFactsRoutes } from "./routes/launchFacts";
 import { registerMoonSettlementRoutes } from "./routes/moonSettlement";
 // The dispatcher lane: the landing path, the change-set executor and the roll notice.
 import { applyDueGovernance, autoSettleExpired, digestComposerFor, itemKindsOf, markNotApplicable, overrideDials, routeOutcome, runVetoWatch, vetoWindowOn, type CloseRouting, type LandingDeps, type SubjectCloser } from "./lib/applyDue";
@@ -24510,6 +24511,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
   registerGovernanceModeRoutes(app, { authedUser, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate });
   registerStewardSlateRoutes(app, { authedUser, isAdmin, getPool, members, firstName });
+  registerLaunchFactsRoutes(app, { isAdmin, getPool });
   registerGoverningPurposeRoutes(app, { authedUser, isAdmin, adminActor, getPool, capabilityCtx, firstName, weightModeNow, buildElectorate, addActivity });
   registerGovernanceAgreementRoutes(app, { authedUser, isAdmin, hasMembership, getPool, capabilityCtx, firstName, weightModeNow, circlesRepo, notify, buildElectorate, addActivity, villageTimezone });
   // The two optional canvas modules close their doors here, before any of their routes (Rye, 2026-10-01).

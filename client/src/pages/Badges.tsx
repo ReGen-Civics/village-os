@@ -142,7 +142,7 @@ export default function Badges() {
     <Layout>
       <section className="py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container text-center">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Badges, h1">Badges & Skills</Trans></h1>
+          <h1 className="font-display text-4xl font-bold text-foreground mb-3"><Trans context="Badges, h1">Badges</Trans></h1>
           <p className="text-muted-foreground max-w-xl mx-auto">
             <Trans context="Badges, p">What the village recognizes: skills you declare, badges earned from
             real contribution, honors granted by stewards.

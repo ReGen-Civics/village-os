@@ -155,11 +155,7 @@ export default function VoteWidget({
         <h3 className="text-base font-bold text-foreground">{mine ? "Your vote" : "Your vote is open"}</h3>
         {ballot.myWeight !== null && (
           <span className="text-xs text-muted-foreground">
-            <Trans context="VoteWidget, span">weighs {ballot.myWeight}
-            <InfoTip
-              tip="This is the weight frozen for you when this ballot opened. Changing the village's settings now does not change it."
-              label="What your weight means here"
-            /></Trans>
+            <Trans context="VoteWidget, span"><InfoTip tip="This is the weight frozen for you when this ballot opened. Changing the village's settings now does not change it.">weighs {ballot.myWeight}</InfoTip></Trans>
           </span>
         )}
       </div>

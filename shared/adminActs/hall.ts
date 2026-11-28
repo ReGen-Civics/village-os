@@ -194,7 +194,7 @@ export const HALL_ACTS = inPlace("hall", [
     fields: [text("status", "Status")],
   },
   {
-    id: "hall.reports.forum", tab: "forum-moderation", power: "intake.moderate",
+    id: "hall.reports.forum", tab: "reports", module: "forum", parity: ["A6"], power: "intake.moderate",
     title: "Answer a reported forum post",
     help: "Mark a reported post as resolved or dismissed. The person who reported it is told it was looked at.",
     synonyms: ["reported post", "flagged post", "moderation", "forum report", "reports"],
@@ -202,7 +202,7 @@ export const HALL_ACTS = inPlace("hall", [
     fields: [choice("status", "Outcome", ["resolved", "dismissed"])],
   },
   {
-    id: "hall.reports.message", tab: "message-reports", power: "intake.moderate",
+    id: "hall.reports.message", tab: "reports", module: "messaging", parity: ["A7"], power: "intake.moderate",
     title: "Answer a reported message",
     help: "Mark a reported message as resolved or dismissed.",
     synonyms: ["reported message", "flagged message", "message report", "reports"],

@@ -73,6 +73,14 @@ import {
   type EventsPayload,
 } from "@/components/calendar/calendarTime";
 
+/**
+ * The calendar's own words for the moons, until the village writes its own (shared/glossary.ts). On a wide screen the
+ * tip sits on "moons" inside the lede, which already says the two clocks, so it says only what the lede does not (QA
+ * round 1, 27 Nov 2026); a phone hides the lede, so its tip says both.
+ */
+const MOONS_MORE = "The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does.";
+const MOONS_TIP = `The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. ${MOONS_MORE}`;
+
 const headers = (): Record<string, string> => {
   const t = authToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
@@ -103,7 +111,6 @@ const MONTHS = ["January", "February", "March", "April", "May", "June", "July", 
 
 export default function Events() {
   const { t, i18n } = useLingui();
-  const moonWord = t({ message: "moon", context: "glossary: the word a tip explains" });
   const modules = useModules();
   const eventsModule = useModule("events");
   const [payload, setPayload] = useState<EventsPayload | null>(null);
@@ -262,7 +269,9 @@ export default function Events() {
             a member reads only after the charge is a surprise charge. */}
         {(g.seatPrice ?? 0) > 0 && (
           <span className="text-xs font-medium text-notice border border-notice/50 rounded-lg px-2 py-1">
-            {g.seatPrice} {g.seatTokenName ?? g.seatToken}
+            <InfoTip tip="A place here costs credits, held from the moment you take it. Change your answer, leave the queue, or see the gathering come off the calendar, and every one of them gives it straight back.">
+              {g.seatPrice} {g.seatTokenName ?? g.seatToken}
+            </InfoTip>
           </span>
         )}
         {(["going", "maybe", "declined"] as RsvpStatus[]).map((s) => {
@@ -285,10 +294,12 @@ export default function Events() {
             </button>
           );
         })}
-        <InfoTip tip="A full gathering only blocks a new I'm coming. Maybe and can't make it always go through, and a freed place goes to whoever has waited longest." label={t({ message: "How answering works", context: "Events, label" })} />
-        {(g.seatPrice ?? 0) > 0 && (
-          <InfoTip tip="A place here costs credits, held from the moment you take it. Change your answer, leave the queue, or see the gathering come off the calendar, and every one of them gives it straight back." label={t({ message: "How the seat fee works", context: "Events, label" })} />
-        )}
+        {/* The answers are buttons, and a tip never sits inside one, so the tip wears its own few words. */}
+        <span className="text-xs text-muted-foreground">
+          <InfoTip tip="A full gathering only blocks a new I'm coming. Maybe and can't make it always go through, and a freed place goes to whoever has waited longest.">
+            {t({ message: "How answering works", context: "Events, label" })}
+          </InfoTip>
+        </span>
       </div>
     );
   };
@@ -404,20 +415,23 @@ export default function Events() {
             {moonOnPhone ? (
               <>
                 <span className="sm:hidden">{moonTitle}</span>
-                <span className="hidden sm:inline">{t({ message: "Village calendar", context: "calendar page title" })}</span>
+                <span className="hidden sm:inline">{t({ message: "Events", context: "calendar page title" })}</span>
               </>
             ) : (
-              t({ message: "Village calendar", context: "calendar page title" })
+              t({ message: "Events", context: "calendar page title" })
             )}
           </h1>
           {/* R47: the Trail line leads, the tooltip defines the moons, and
               the two clocks line is the Lore, last and quiet. On a phone the words sit
-              behind the "?" (design pass M6). */}
+              behind "About the moons" (design pass M6), the tip on its own words. */}
           <p className="mt-2 max-w-2xl text-muted-foreground">
             <span className="hidden sm:inline">
-              <Trans context="calendar page lede">Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons<GlossaryTip slot="moon" word={moonWord} /> the land turns by.</Trans>{" "}
+              <Trans context="calendar page lede">Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the <GlossaryTip slot="moon" fallback={MOONS_MORE}>moons</GlossaryTip> the land turns by.</Trans>
             </span>
-            <InfoTip tapBox tip="The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does." label={t({ message: "About the moons", context: "calendar page: tip about moons" })} />
+            {/* A phone hides the lede, so the tip rides on its own few words there. */}
+            <span className="sm:hidden">
+              <InfoTip tip={MOONS_TIP}>{t({ message: "About the moons", context: "calendar page: tip about moons" })}</InfoTip>
+            </span>
           </p>
           {lunar && (
             // The day panel under the moon says the same on a phone, so the pill waits for a wider screen there.

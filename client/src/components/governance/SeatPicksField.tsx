@@ -96,10 +96,9 @@ export default function SeatPicksField({
   return (
     <fieldset aria-describedby={describedBy} aria-invalid={invalid} className="min-w-0">
       <legend className="block text-sm font-semibold text-foreground">
-        {ww(field.label)}
+        {field.tip ? <InfoTip tip={ww(field.tip)}>{ww(field.label)}</InfoTip> : ww(field.label)}
         {field.required && <span className="ml-1 text-destructive" aria-hidden="true">*</span>}
         {field.required && <span className="sr-only"> <Trans context="SeatPicksField, span">(required)</Trans></span>}
-        {field.tip && <InfoTip tip={ww(field.tip)} label={`What ${ww(field.label).toLowerCase()} means`} />}
       </legend>
       <p className="mt-0.5 text-xs text-muted-foreground" aria-live="polite">
         <Trans context="SeatPicksField, p">{picked.length} of at most {max} picked.

@@ -608,7 +608,18 @@ describe("admin search reads the registry", () => {
   it("names the key its door hands the gate, and none where the door asks only for an admin", () => {
     expect(actSearchEntry(adminAct("hall.forms.set-status")!).capability).toBe("intake.moderate");
     expect(actSearchEntry(adminAct("gate.players.set-stage")!).capability).toBeUndefined();
-    expect(actSearchEntry(adminAct("tab.forum-moderation")!).module).toBe("forum");
+    expect(actSearchEntry(adminAct("tab.events-admin")!).module).toBe("events");
+  });
+
+  it("the one Reports tab shows while either of its two modules is on, and each report act follows its own", () => {
+    const tab = actSearchEntry(adminAct("tab.reports")!);
+    expect(tab.module).toBeUndefined();
+    expect(tab.modulesAny).toEqual(["forum", "messaging"]);
+    expect(actSearchEntry(adminAct("hall.reports.forum")!).module).toBe("forum");
+    expect(actSearchEntry(adminAct("hall.reports.message")!).module).toBe("messaging");
+    // A tab with one module, or none, carries no list.
+    expect(actSearchEntry(adminAct("tab.events-admin")!).modulesAny).toBeUndefined();
+    expect(actSearchEntry(adminAct("tab.home")!).modulesAny).toBeUndefined();
   });
 
   it("every admin tab is found by its own name: a page of that name leads, and the tab is in the first three", () => {

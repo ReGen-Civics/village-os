@@ -4,8 +4,13 @@
  * Home is the start page unless this device has turned it off. An old
  * `?tab=` link still opens that tab. The names and the one-line help are
  * the words a new steward reads.
+ *
+ * A tab is listed here once. A tab that was folded into another keeps its
+ * address in adminTabAliases.ts and has no row here, so Home never shows one
+ * page under two rows.
  */
 import { storedText, writeStored } from "@/lib/safeStorage";
+import { tabLanding } from "./adminTabAliases";
 
 export const HOME_SWITCH_KEY = "admin.homeBase";
 
@@ -45,8 +50,11 @@ export function fallbackAdminTab(): string {
   return homeBaseOn() ? "home" : "submissions";
 }
 
-/** An explicit `?tab=` wins. A bare /admin uses the device's start page. */
+/**
+ * An explicit `?tab=` wins. A bare /admin uses the device's start page. A tab
+ * that was folded into another opens the one that holds its control now.
+ */
 export function tabFromSearch(search: string): string {
   const named = new URLSearchParams(search).get("tab");
-  return named && named.trim() ? named : fallbackAdminTab();
+  return named && named.trim() ? tabLanding(named).tab : fallbackAdminTab();
 }

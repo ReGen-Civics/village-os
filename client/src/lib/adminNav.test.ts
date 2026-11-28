@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ModuleLifecycle } from "@shared/modules";
-import { filterNavByModules, TAB_MODULE, tabBadge } from "./adminNav";
+import { filterNavByModules, moduleIsOn, TAB_MODULE, TAB_MODULES, tabBadge, tabModules } from "./adminNav";
 
 /**
  * The Admin nav's honesty, as arithmetic: a fresh village shows platform tabs
@@ -18,7 +18,7 @@ const groups: Group[] = [
     items: [
       { key: "submissions", label: "All Forms" },
       { key: "products", label: "Payments" },
-      { key: "forum-moderation", label: "Moderation" },
+      { key: "reports", label: "Reports" },
     ],
   },
   {
@@ -80,20 +80,37 @@ describe("adminNav", () => {
     expect(TAB_MODULE["intents-admin"]).toBe("introductions");
   });
 
-  it("hides the DM report queue while messaging is off, and shows it when it is on", () => {
-    // The queue reads /api/admin/messages/reports, which mounts behind
-    // requireModule("messaging"): with the module off the tab would load a
-    // module_disabled body and render an empty queue over live reports.
-    const withGroups = [
-      ...groups,
-      { title: "Reports", items: [{ key: "message-reports", label: "Message Reports" }] },
-    ];
-    const hidden = filterNavByModules(withGroups, {} as Record<string, ModuleLifecycle>);
-    expect(hidden.flatMap((g) => g.items.map((i) => i.key))).not.toContain("message-reports");
+  it("hides the Reports queue while the forum and messaging are both off, and shows it when either is on", () => {
+    // One queue for two modules (cut C7, 27 Nov 2026). It reads
+    // /api/admin/forum/reports and /api/admin/messages/reports, each behind its
+    // own requireModule: with both off the tab would render an empty queue
+    // over nothing it can read.
+    const keysWith = (lifecycles: Record<string, ModuleLifecycle>) => filterNavByModules(groups, lifecycles).flatMap((g) => g.items.map((i) => i.key));
+    expect(keysWith({})).not.toContain("reports");
+    expect(keysWith({ forum: "off", messaging: "off" })).not.toContain("reports");
+    expect(keysWith({ messaging: "members" })).toContain("reports");
+    expect(keysWith({ forum: "preview" })).toContain("reports");
+    expect(keysWith({ forum: "public", messaging: "members" })).toContain("reports");
+  });
 
-    const shown = filterNavByModules(withGroups, { messaging: "members" } as Record<string, ModuleLifecycle>);
-    const item = shown.flatMap((g) => g.items).find((i) => i.key === "message-reports");
-    expect(item?.badge).toBe("members");
+  it("badges the Reports queue only when the modules that are on stand in the same place", () => {
+    const badgeWith = (lifecycles: Record<string, ModuleLifecycle>) =>
+      filterNavByModules(groups, lifecycles).flatMap((g) => g.items).find((i) => i.key === "reports")?.badge;
+    expect(badgeWith({ messaging: "members" })).toBe("members");
+    expect(badgeWith({ forum: "preview", messaging: "off" })).toBe("preview");
+    expect(badgeWith({ forum: "members", messaging: "members" })).toBe("members");
+    // Two different answers is no single answer: the row wears none.
+    expect(badgeWith({ forum: "public", messaging: "members" })).toBeUndefined();
+  });
+
+  it("names the modules a tab follows, and reads an unloaded catalog as on", () => {
+    expect(tabModules("reports")).toEqual(["forum", "messaging"]);
+    expect(tabModules("tools-admin")).toEqual(["tools"]);
+    expect(tabModules("tokens")).toEqual([]);
+    expect(moduleIsOn(null, "forum")).toBe(true);
+    expect(moduleIsOn({}, "forum")).toBe(false);
+    expect(moduleIsOn({ forum: "preview" }, "forum")).toBe(true);
+    expect(moduleIsOn({ forum: "off" }, "forum")).toBe(false);
   });
 
   it("leaves the settlement desk unmapped, because gratitude is core", () => {
@@ -108,7 +125,8 @@ describe("adminNav", () => {
     expect(out[0].items.map((i) => i.key)).toEqual(["cycles"]);
   });
 
-  it("the mapping is exactly the ruled twenty-one", () => {
+  it("the mapping is exactly the ruled set: nineteen tabs with one module, and the Reports queue with two", () => {
+    expect(TAB_MODULES).toEqual({ reports: ["forum", "messaging"] });
     expect(TAB_MODULE).toEqual({
       "circles-map": "map",
       "events-admin": "events",
@@ -125,8 +143,6 @@ describe("adminNav", () => {
       "health-admin": "health",
       "calls-admin": "automation",
       products: "commerce",
-      "forum-moderation": "forum",
-      "message-reports": "messaging",
       "resources-admin": "resources",
       "intents-admin": "introductions",
       // The voting-weight allocation table. Every weight route sits behind

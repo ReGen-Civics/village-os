@@ -16,6 +16,10 @@
  *
  * A queue that failed is named, so a failure never reads as nothing waiting.
  * Nothing here ranks or judges: the rows are the list's rows.
+ *
+ * ONE READ, ONE COUNT (27 Nov 2026). Home hands this the read it already made (`inbox`), so opening Home reads the
+ * list once, and the number Home says (DecisionsLine, in Home's own card) is the one this list is counted by. This
+ * box says no second total.
  */
 import { useState } from "react";
 import { Link } from "wouter";
@@ -32,9 +36,16 @@ export const ROWS_PER_KIND = 3;
 const linkCls =
   "inline-flex min-h-[44px] items-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring";
 
-export default function NeedsYouNow() {
+export type Inbox = ReturnType<typeof useReviewInbox>;
+
+/** Reads the list itself, for a page that has no read of its own to hand over. */
+export function NeedsYouNowAlone() {
+  return <NeedsYouNow inbox={useReviewInbox(true)} />;
+}
+
+export default function NeedsYouNow({ inbox }: { inbox: Inbox }) {
   const { t, i18n } = useLingui();
-  const { load, sections, groups, read } = useReviewInbox(true);
+  const { load, sections, groups: kinds, total, read, refresh } = inbox;
   const [notice, setNotice] = useState<string | null>(null);
 
   if (load.phase === "loading") {
@@ -57,11 +68,13 @@ export default function NeedsYouNow() {
     );
   }
 
-  const total = groups.reduce((n, g) => n + g.count, 0);
+  // The kinds with rows to show. The number of each, and the total, are the server's (a kind is sent its first rows
+  // only); a kind whose queue did not load has no number and is named below as not counted.
+  const groups = kinds.filter((g) => g.items.length > 0);
   const failed = sections.filter((s) => s.state === "failed").map((s) => sourceText(s.source, i18n).title);
   const row = (item: InboxItem) =>
     item.source === "structure" ? (
-      <OrgDraftRow key={item.key} item={item} onDone={(said) => { setNotice(said); void read(); }} />
+      <OrgDraftRow key={item.key} item={item} onDone={(said) => { setNotice(said); void refresh(); }} />
     ) : (
       <InboxRow key={item.key} item={item} />
     );
@@ -81,32 +94,31 @@ export default function NeedsYouNow() {
 
       {notice && <p role="status" className="text-sm text-foreground">{notice}</p>}
 
-      {total === 0 ? (
+      {/* Never "nothing" while a queue did not load: it may hold something (QA, 28 Nov 2026). The line below names it. */}
+      {total === 0 && failed.length === 0 ? (
         <p className="text-base text-foreground">
           <Trans context="Admin Today, needs you now">Nothing on the review list is waiting on you.</Trans>
         </p>
-      ) : (
-        <p className="text-base text-foreground">
-          {total === 1
-            ? t({ message: "1 thing is waiting on you.", context: "Admin Today, needs you now" })
-            : t({ message: `${total} things are waiting on you.`, context: "Admin Today, needs you now" })}
-        </p>
-      )}
+      ) : null}
 
       {groups.map((g) => {
         const title = sourceText(g.source, i18n).title;
         const id = `needs-${g.source}`;
+        // What this kind holds: the server's number, or what did load when its queue failed in part.
+        const n = g.count ?? g.atLeast;
         return (
           <div key={g.source} className="space-y-2">
             <h4 id={id} className="text-sm font-semibold text-foreground">
-              {title} <span className="font-normal text-muted-foreground">({g.count})</span>
+              {title} <span className="font-normal text-muted-foreground">({g.count === null ? t({ message: "unknown", context: "Admin Today, needs you now: a queue that did not load has no number" }) : g.count})</span>
             </h4>
             <ul aria-labelledby={id} className="space-y-2 list-none p-0 m-0">
               {g.items.slice(0, ROWS_PER_KIND).map(row)}
             </ul>
-            {g.count > ROWS_PER_KIND && (
+            {n > ROWS_PER_KIND && (
               <Link href={`/admin/review?kind=${g.source}`} className={linkCls}>
-                {t({ message: `See all ${g.count}`, context: "Admin Today, needs you now: open one kind on the review list" })}
+                {g.count === null
+                  ? t({ message: "See all of them", context: "Admin Today, needs you now: open one kind on the review list" })
+                  : t({ message: `See all ${g.count}`, context: "Admin Today, needs you now: open one kind on the review list" })}
               </Link>
             )}
           </div>

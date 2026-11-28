@@ -32,6 +32,11 @@ import {
   type VisitType,
 } from "@shared/visitProgram";
 import { Trans } from "@lingui/react/macro";
+import { VISIT_PROGRAM_SETTING } from "@shared/adminSearch";
+import { useLandingFocus, useSettingFromAddress } from "../settingFocus";
+
+/** The heading an address that names the visit program lands on. */
+const HEADING_ID = "visit-program-h";
 
 const chars = (s: string) => Array.from(s).length;
 
@@ -114,6 +119,11 @@ export default function VisitProgramEditor({
 
   const problems = useMemo(() => (draft ? visitProgramProblems(draft) : []), [draft]);
 
+  // `?tab=pages&setting=visit.program`, where the old Visit Program tab's address lands, and where
+  // Admin search lands: scroll to this editor once it has drawn, and focus its heading.
+  const arrival = useSettingFromAddress();
+  useLandingFocus(arrival.setting === VISIT_PROGRAM_SETTING ? HEADING_ID : null, !!draft, arrival.seq);
+
   if (loadError) {
     return (
       <section className="border border-border rounded-xl p-4 bg-card">
@@ -156,10 +166,10 @@ export default function VisitProgramEditor({
   };
 
   return (
-    <section className="border border-border rounded-xl p-4 bg-card space-y-4" aria-labelledby="visit-program-h">
+    <section className="border border-border rounded-xl p-4 bg-card space-y-4" aria-labelledby={HEADING_ID}>
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 basis-64">
-          <h3 id="visit-program-h" className="text-sm font-bold text-foreground"><Trans context="VisitProgramEditor, h3">Visit Program</Trans></h3>
+          <h3 id={HEADING_ID} tabIndex={-1} className="text-sm font-bold text-foreground outline-none"><Trans context="VisitProgramEditor, h3">Visit Program</Trans></h3>
           <p className="text-[11px] text-muted-foreground">
             <Trans context="VisitProgramEditor, p">The rest of the Visit page: the sentence under the headline, the ways to visit and the logistics. Changes save from the bar at the bottom.
           </Trans></p>

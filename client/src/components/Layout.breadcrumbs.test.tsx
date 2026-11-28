@@ -56,7 +56,8 @@ describe("the breadcrumb", () => {
     at("/powers/water");
     const nav = trail()!;
     expect(nav).toBeTruthy();
-    expect(nav.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / What We Look After");
+    // The full trail (27 Nov 2026): the group, the folder the entry sits in, then the entry.
+    expect(nav.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles & Roles / What We Look After");
     const links = within(nav).getAllByRole("link");
     expect(links.map((a) => a.getAttribute("href"))).toEqual(["/governance", "/powers"]);
   });
@@ -65,7 +66,7 @@ describe("the breadcrumb", () => {
     at("/powers/water", { name: "  Water  " });
     const here = within(trail()!).getByText("Water");
     expect(here.getAttribute("aria-current")).toBe("page");
-    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / What We Look After / Water");
+    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Govern / Circles & Roles / What We Look After / Water");
   });
 
   it("drops the page's name when the page leaves", () => {
@@ -77,7 +78,15 @@ describe("the breadcrumb", () => {
 
   it("speaks the village's own words for the group and the entry", () => {
     at("/powers/water", { menu: { groups: { Decide: "Choose together" }, labels: { "/powers": "Who holds what" } } });
-    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Choose together / Who holds what");
+    expect(trail()!.textContent?.replace(/\s*\/\s*/g, " / ").trim()).toBe("Choose together / Circles & Roles / Who holds what");
+  });
+
+  it("names the folder in the village's own word, as a step that opens the menu there", () => {
+    at("/powers/water", { menu: { folders: { "Circles & Roles": "Who does what" } } });
+    const folder = trail()!.querySelector<HTMLButtonElement>('[data-crumb="folder"]')!;
+    expect(folder.textContent).toBe("Who does what");
+    expect(folder.tagName).toBe("BUTTON");
+    expect(folder.getAttribute("aria-label")).toBe("Open Who does what in the menu");
   });
 
   it("is not drawn on an entry's own page, on a page in no entry, or under an entry the village hid", () => {
@@ -99,7 +108,8 @@ describe("the breadcrumb", () => {
     expect(nav.querySelector('[data-crumb="entry"]')?.textContent).toBe("What We Look After");
     expect(nav.querySelector('[data-crumb="leaf"]')?.getAttribute("aria-current")).toBe("page");
     const seps = nav.querySelectorAll("[data-crumb-sep]");
-    expect(seps).toHaveLength(2);
+    expect(nav.querySelector('[data-crumb="folder"]')?.textContent).toBe("Circles & Roles");
+    expect(seps).toHaveLength(3);
     for (const s of Array.from(seps)) expect(s.getAttribute("aria-hidden")).toBe("true");
     expect(document.querySelector('[data-wayfinding="menu"] [data-lit-rule]')).toBeTruthy();
   });

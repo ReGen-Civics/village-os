@@ -174,9 +174,9 @@ describe("the menu entries", () => {
     // Beside the member's other own pages, after the wallet.
     const hrefs = ACCOUNT_MENU.map((l) => l.href);
     expect(hrefs.indexOf(TASK_BOARD_PATH)).toBeGreaterThan(hrefs.indexOf("/profile"));
-    // One entry carries this count; the only other count is Messages' own.
+    // One entry carries this count; the others are Messages' own and Waiting on you's (nav/WaitingCount.tsx).
     expect(ACCOUNT_MENU.filter((l) => l.count === "tasks")).toHaveLength(1);
-    expect(ACCOUNT_MENU.filter((l) => l.count).map((l) => l.count).sort()).toEqual(["messages", "tasks"]);
+    expect(ACCOUNT_MENU.filter((l) => l.count).map((l) => l.count).sort()).toEqual(["messages", "tasks", "waiting"]);
   });
 
 });

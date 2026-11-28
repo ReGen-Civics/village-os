@@ -65,6 +65,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { LogIn, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { hasAdminAccess } from "@/lib/adminAccess";
 import { FabTriggerIcon } from "@/config/mobileNav";
 import { haptic } from "@/lib/haptics";
 import { useGuideName } from "@/hooks/useGuideName";
@@ -195,8 +196,8 @@ export default function MobileFab() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
   const { user } = useAuth();
-  // The same rule as AuthContext's useIsAdmin, read off the user the page already has (no second import to mock).
-  const admin = user?.role === "admin" || user?.role === "founder";
+  // The same rule as AuthContext's useIsAdmin, read off the user the page already has (no hook to mock).
+  const admin = hasAdminAccess(user);
   const { name: guideName } = useGuideName();
   const { army, reread } = useCompanions(!!user);
   const entrance = useEntranceStands(location, !!user);

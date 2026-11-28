@@ -19,7 +19,7 @@
  * answered. Light-only, like the rest of `client/src/components/admin`.
  */
 import { useEffect, useState } from "react";
-import { API_BASE, authHeaders } from "@/components/admin/adminApi";
+import { readLaunchStatus } from "@/lib/launchReads";
 import { Trans } from "@lingui/react/macro";
 
 /**
@@ -45,18 +45,13 @@ export default function VillageAnswers({ password }: { password: string }) {
 
   useEffect(() => {
     let alive = true;
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/admin/launch`, { headers: authHeaders(password) });
-        if (!res.ok) return;
-        const data = await res.json();
-        const items: LaunchItem[] = Array.isArray(data?.items) ? data.items : [];
-        const asks = items.filter((i) => ASKS.includes(i.id) && i.state === "missing");
-        if (alive) setMissing(asks);
-      } catch {
-        /* a reading we could not take is not something to announce */
-      }
-    })();
+    // The strip above the header asks for the same checklist; the two share one request (lib/launchReads.ts).
+    void readLaunchStatus(password).then((data) => {
+      // A reading we could not take is not something to announce.
+      if (!alive || !data) return;
+      const items: LaunchItem[] = Array.isArray(data.items) ? data.items : [];
+      setMissing(items.filter((i) => ASKS.includes(i.id) && i.state === "missing"));
+    });
     return () => { alive = false; };
   }, [password]);
 
