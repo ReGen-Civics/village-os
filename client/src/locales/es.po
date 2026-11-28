@@ -480,6 +480,12 @@ msgctxt "character card, link to every role"
 msgid "see every role"
 msgstr "ver todos los roles"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: what is not recorded"
+msgid "A count is a page's. Opening it from the menu, a link or a typed address counts the same, and a page with two rows in the menu has one count."
+msgstr "La cifra es de la página. Abrirla desde el menú, un enlace o una dirección escrita cuenta igual, y una página con dos filas en el menú tiene una sola cifra."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/yourList/PersonalListsPanel.tsx
 msgctxt "PersonalListsPanel, h3"
@@ -795,6 +801,12 @@ msgctxt "week strip, retry the calendar read"
 msgid "Try again"
 msgstr "Intentar de nuevo"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Opened, with no menu entry, most first:"
+msgstr "Abiertas, sin entrada en el menú, de más a menos:"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "the season's ordered list of group priorities"
@@ -911,6 +923,12 @@ msgstr "Todavía no hay roles en este círculo"
 msgctxt "SaberraBridgeBoard, button"
 msgid "Dry run"
 msgstr "Prueba sin cambios"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Nothing stands out: every page in the menu was opened, and none is out of step with its group."
+msgstr "Nada destaca: se abrió cada página del menú y ninguna desentona con su grupo."
 
 # needs-native-review: player card, 26 Nov 2026
 #: client/src/components/playerCard/playerCardMessages.ts
@@ -4587,6 +4605,12 @@ msgctxt "HandoverTab, p"
 msgid "You can bring it back to the admin panel from this tab later, and the village sees that on its feed too."
 msgstr "Puede devolverlo al panel de administración desde esta pestaña más adelante, y la aldea también lo verá en su muro."
 
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: one more place the page sits"
+msgid "{line}, and in {where}"
+msgstr "{line}, y en {where}"
+
 # needs-native-review: the org chart draft page, 26 Nov 2026
 #: client/src/pages/OrgDraft.tsx
 msgctxt "draft page: state"
@@ -6737,6 +6761,12 @@ msgctxt "WordsPreview, p"
 msgid "Preview"
 msgstr "Vista previa"
 
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "No one opened {name} in {seasonName}: consider folding it."
+msgstr "Nadie abrió {name} en {seasonName}: considere plegarla."
+
 # needs-native-review: first pass, shell, 24 Nov 2026
 #: client/src/components/Layout.tsx
 #~ msgctxt "Layout, Link"
@@ -7830,6 +7860,12 @@ msgctxt "circle card, put yes"
 msgid "Yes, open the vote"
 msgstr "Sí, abrir la votación"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Every page that was opened is in the list beside this one."
+msgstr "Cada página que se abrió está en la lista de al lado."
+
 # needs-native-review: the live session room, 26 Nov 2026
 #: client/src/components/sessions/roomWords.ts
 msgctxt "live session room: leftWord"
@@ -8556,6 +8592,12 @@ msgctxt "WalkEditorPanel, label"
 msgid "Welcome"
 msgstr "Bienvenida"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "The visit counts could not be read. Check your connection, then reload."
+msgstr "No se pudieron leer las cifras de visitas. Revise su conexión y vuelva a cargar."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "admin mint form, what stood behind a grant"
@@ -8678,6 +8720,12 @@ msgstr "La aldea dijo que sí, y {toWhom} no lleva esto hoy. No se pierde nada: 
 msgctxt "thanks send: an unknown failure"
 msgid "Something went wrong"
 msgstr "Algo salió mal"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Counting began on {recordedSince}. This window counted {countedDays} days."
+msgstr "El conteo empezó el {recordedSince}. Este periodo contó {countedDays} días."
 
 #. placeholder {0}: batch.by
 #. placeholder {1}: day(batch.at)
@@ -11161,6 +11209,12 @@ msgctxt "the occasion of a canvas reading"
 msgid "The occasion"
 msgstr "La ocasión"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "No page in the menu was opened."
+msgstr "No se abrió ninguna página del menú."
+
 # needs-native-review: the places fold, 26 Nov 2026
 #: client/src/components/places/PlaceGallery.tsx
 msgctxt "add a photo form"
@@ -12711,6 +12765,12 @@ msgstr "{head} y {last}: siguen siendo un borrador de Sera. Edítelos o pulse \"
 msgctxt "Admin, title"
 msgid "Map & styling"
 msgstr "Mapa y estilo"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Opened at least once, fewest first."
+msgstr "Abiertas al menos una vez, de menos a más."
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: orphans.length
@@ -16913,6 +16973,12 @@ msgctxt "live sessions: setRhythm"
 msgid "Set a meeting rhythm"
 msgstr "Fijar un ritmo de reuniones"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} has a row of its own in {group} and {visits} visits, against {median} for a typical page there: consider moving it into a folder."
+msgstr "{name} tiene una fila propia en {group} y {visits} visitas, frente a {median} de una página típica allí: considere moverla a una carpeta."
+
 # needs-native-review: the role proposal and its door, 26 Nov 2026
 #: client/src/components/roleProposal/proposalWordsMirror.ts
 msgctxt "role proposal: addNewRole"
@@ -18023,6 +18089,12 @@ msgstr "Abierta de nuevo."
 msgctxt "admin portal visitors"
 msgid "Forget"
 msgstr "Olvidar"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "And {more} more pages nobody opened."
+msgstr "Y {more} páginas más que nadie abrió."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 # needs-native-review: profile overhaul, follow-ups as one list, 25 Nov 2026
@@ -35411,6 +35483,12 @@ msgctxt "site menu"
 msgid "Your work"
 msgstr "Tu trabajo"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h2"
+msgid "How the menu is used"
+msgstr "Cómo se usa el menú"
+
 # needs-native-review: the applicant's walk and the onboarding path, 26 Nov 2026
 #: client/src/components/openProposal/onboardingWords.ts
 msgctxt "applicant onboarding: whatNext"
@@ -36684,6 +36762,12 @@ msgstr "Compromiso"
 msgctxt "ProfileJournalCard, Link"
 msgid "Feedback"
 msgstr "Comentarios"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: where a page sits"
+msgid "In {first}"
+msgstr "En {first}"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/NoticeWordsPanel.tsx
@@ -41777,6 +41861,12 @@ msgctxt "quest step: upload a document"
 msgid "Add a document"
 msgstr "Añadir un documento"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: column"
+msgid "Page"
+msgstr "Página"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: (detail.transcript.segments ?? []).length
 #. placeholder {1}: detail.recording.durationS ? `, ${fmtTs(detail.recording.durationS * 1000)} long` : ""
@@ -43605,6 +43695,12 @@ msgstr "Conexiones"
 msgctxt "Quests, p"
 msgid "Meet the circles on a community call, then come back and take a Start here Quest."
 msgstr "Conozca los círculos en una llamada comunitaria, y luego vuelva y tome una misión de Empiece aquí."
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "No one opened these in the last 90 days ({unopenedCount})"
+msgstr "Nadie abrió estas en los últimos 90 días ({unopenedCount})"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/pages/Admin.tsx
@@ -46584,6 +46680,12 @@ msgctxt "game variable governance.quorum_fallback, choice on, hint"
 msgid "A ballot that misses quorum is asked again once, at half the quorum."
 msgstr "Una votación que no alcanza el quórum se vuelve a preguntar una vez, con la mitad del quórum."
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Nothing has been counted yet."
+msgstr "Todavía no se ha contado nada."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/QuestDetail.tsx
 msgctxt "QuestDetail, h2"
@@ -48968,6 +49070,12 @@ msgctxt "budget add line"
 msgid "Add one line by hand"
 msgstr "Agregar una línea a mano"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "How often each page in the menu was opened, from the visits the phone bar already counts. Counts only: no visit carries a name."
+msgstr "Cuántas veces se abrió cada página del menú, según las visitas que ya cuenta la barra del teléfono. Solo cifras: ninguna visita lleva un nombre."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #. placeholder {0}: data?.mintCapPerCycle
 #: client/src/pages/Admin.tsx
@@ -49005,6 +49113,12 @@ msgstr "Resend aún no ha entregado los registros. Presione Revisar el cielo."
 msgctxt "PoolStatement, th"
 msgid "Members"
 msgstr "Miembros"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "The visit counts could not be read."
+msgstr "No se pudieron leer las cifras de visitas."
 
 # needs-native-review: module library, 26 Nov 2026
 #: client/src/components/modules/moduleWords.ts
@@ -49242,6 +49356,12 @@ msgctxt "settlement table column"
 msgid "Credited"
 msgstr "Acreditado"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: picker"
+msgid "This season ({currentName})"
+msgstr "Esta temporada ({currentName})"
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/JourneyDetail.tsx
 msgctxt "JourneyDetail, aria-label"
@@ -49362,6 +49482,12 @@ msgctxt "Admin, p"
 msgid "No departures yet, and the policy is already published. Good."
 msgstr "Todavía no hay salidas, y la política ya está publicada. Bien."
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} was opened {visits} times and has no menu entry: consider giving it one."
+msgstr "{name} se abrió {visits} veces y no tiene entrada en el menú: considere darle una."
+
 # needs-native-review: player card health, 26 Nov 2026
 #: client/src/components/playerCard/playerCardHealthMessages.ts
 msgctxt "player card health, parts written, some missing"
@@ -49379,6 +49505,12 @@ msgstr "Abrir"
 msgctxt "SeatSettingsFields, label"
 msgid "Lowest"
 msgstr "Mínimo"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "What this suggests"
+msgstr "Lo que esto sugiere"
 
 #: client/src/components/admin/PortalVisitorsTab.tsx
 #, needs-native-review
@@ -53794,6 +53926,12 @@ msgstr "Alguien levantó la mano para un rol o una facultad, y la aldea le debe 
 #: client/src/pages/RightsAndAgreements.tsx
 msgid "We couldn't reach the village just now"
 msgstr "No pudimos comunicarnos con la aldea en este momento"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Not shown in the menu now, so not judged: {notJudged}."
+msgstr "Ahora no aparecen en el menú, así que no se juzgan: {notJudged}."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/modules/TurnOnAction.tsx
@@ -59374,6 +59512,12 @@ msgctxt "Journal, button"
 msgid "Keep it"
 msgstr "Guardarlo"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "{menuVisits} visits to pages in the menu."
+msgstr "{menuVisits} visitas a páginas del menú."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/Bootstrap.tsx
 msgctxt "Bootstrap, p"
@@ -59626,6 +59770,12 @@ msgstr "Envíelo al repositorio principal. Una persona lee cada módulo antes de
 msgctxt "companion welcome"
 msgid "Profile tour"
 msgstr "Recorrido por el perfil"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: the window's dates"
+msgid "{windowFrom} to {windowTo}, counted in UTC days"
+msgstr "Del {windowFrom} al {windowTo}, contado en días UTC"
 
 # needs-native-review: quest card 2, your quests, 2026-11-27
 #: client/src/components/profileDash/YourQuests.tsx
@@ -61197,6 +61347,12 @@ msgstr "Una de sus raíces"
 msgctxt "calendar: step back one moon"
 msgid "The moon before"
 msgstr "La luna anterior"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "Most visited"
+msgstr "Más visitadas"
 
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
@@ -63692,6 +63848,12 @@ msgctxt "LoveLetter, aria-label"
 msgid "Your custom monthly contribution"
 msgstr "Su aporte mensual personalizado"
 
+# needs-native-review: the helpful not-found page, 27 Nov 2026
+#: client/src/components/quiet/NearestPages.tsx
+msgctxt "404 page: a link to search"
+msgid "Search the village"
+msgstr "Buscar en la aldea"
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/GameMechanics.tsx
 msgctxt "GameMechanics, button"
@@ -65423,6 +65585,12 @@ msgstr "Pagado"
 msgctxt "admin compare"
 msgid "Open the full proposal"
 msgstr "Abrir la propuesta completa"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits} visits over {days} days. Suggestions need {minDays} days and {minVisits} visits to read."
+msgstr "Solo {visits} visitas en {days} días. Las sugerencias necesitan {minDays} días y {minVisits} visitas que leer."
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript, who wrote it"
@@ -68421,6 +68589,12 @@ msgctxt "loading the Decision Matrix"
 msgid "Reading the matrix"
 msgstr "Leyendo la matriz"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: what is not recorded"
+msgid "Only signed-in visits are counted. A visitor's visits are not recorded at all."
+msgstr "Solo se cuentan las visitas con sesión iniciada. Las visitas de un visitante no se registran."
+
 # needs-native-review: first pass, public pages, 24 Nov 2026
 #: client/src/components/governance/PracticeVote.tsx
 msgctxt "PracticeVote, label"
@@ -70817,6 +70991,12 @@ msgctxt "Modules, a"
 msgid "Read the builder guide ↗"
 msgstr "Leer la guía para constructores ↗"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used"
+msgid "Every page in the menu was opened at least once."
+msgstr "Cada página del menú se abrió al menos una vez."
+
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgid "This upload did not reach the server. Nothing changed."
@@ -71746,6 +71926,12 @@ msgstr "Cada una está marcada en su tarjeta. Acepte una y luego vuelva a revisa
 msgctxt "role card: what goes to the circle for consent"
 msgid "Goes to the circle"
 msgstr "Va al círculo"
+
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: the account menu"
+msgid "Your account"
+msgstr "Su cuenta"
 
 #: client/src/components/admin/PortalVisitorsTab.tsx
 #, needs-native-review
@@ -73150,6 +73336,12 @@ msgctxt "role editor card"
 msgid "Choose a file"
 msgstr "Elegir un archivo"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: what is not recorded"
+msgid "Members and admins are counted together. The count carries no audience, so it cannot be split into visitor, member and admin without a change to what is stored."
+msgstr "Miembros y administradores se cuentan juntos. La cifra no guarda el público, así que no puede separarse en visitante, miembro y administrador sin cambiar lo que se almacena."
+
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords.ts
 msgctxt "game variable stage choice guide"
@@ -74541,6 +74733,12 @@ msgctxt "live session room: facilitationNone"
 msgid "No feedback yet."
 msgstr "Aún no hay comentarios."
 
+# needs-native-review: the place line, QA round 1, 27 Nov 2026
+#: client/src/lib/placeLine.ts
+msgctxt "menu place: a folder inside a group"
+msgid "{group} under {folder}"
+msgstr "{group}, en {folder}"
+
 # needs-native-review: the places fold, 26 Nov 2026
 #: client/src/components/places/PhotoIndex.tsx
 msgctxt "all photos view"
@@ -75294,6 +75492,12 @@ msgstr "Usar el rango de Sera"
 msgctxt "proposal wizard"
 msgid "Good enough for now, safe enough to try, until this date. The date is written into the agreement, and on that day every present member is reminded. Leaving it blank makes it open-ended."
 msgstr "Suficientemente bueno por ahora, suficientemente seguro para probar, hasta esta fecha. La fecha queda escrita en el acuerdo, y ese día se le recuerda a cada miembro presente. Dejarla en blanco lo deja sin fecha de término."
+
+# needs-native-review: the helpful not-found page, 27 Nov 2026
+#: client/src/components/quiet/NearestPages.tsx
+msgctxt "404 page: the nearest real pages"
+msgid "Perhaps you were looking for"
+msgstr "Quizás buscaba"
 
 # needs-native-review: game mechanics dials, 26 Nov 2026
 #: client/src/pages/gameMechanicsDialWords1.ts
@@ -78166,6 +78370,12 @@ msgstr "Pantallas de error que vieron los visitantes"
 msgctxt "proposal wizard"
 msgid "Write an agreement"
 msgstr "Escribir un acuerdo"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: the account menu"
+msgid "Your account"
+msgstr "Su cuenta"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/profileDash/PartiesCard.tsx
@@ -82276,6 +82486,12 @@ msgctxt "module commerce, benefit 3"
 msgid "Zeffy and manual paths for fee-free giving"
 msgstr "Zeffy y caminos manuales para donar sin comisiones"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: picker"
+msgid "The last 90 days"
+msgstr "Los últimos 90 días"
+
 # needs-native-review: the proposal's earlier versions, QA round 2
 #: client/src/components/openProposal/ProposalVersions.tsx
 msgctxt "proposal versions: what they are"
@@ -82977,6 +83193,12 @@ msgstr "Cada poder de abajo tiene a alguien detrás. Un poder que tiene la aldea
 msgctxt "valuation receipt"
 msgid "Narrow range"
 msgstr "Rango estrecho"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "No one opened {name} this season: consider folding it."
+msgstr "Nadie abrió {name} esta temporada: considere plegarla."
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/governance/HandOverPowers.tsx
@@ -84215,6 +84437,12 @@ msgstr "Su módulo está apagado, así que esta tarea no está corriendo."
 msgctxt "CommsSentMail, button"
 msgid "Newer"
 msgstr "Más recientes"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: summary"
+msgid "Pages outside the menu"
+msgstr "Páginas fuera del menú"
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -86474,6 +86702,12 @@ msgctxt "circle hearth, we meet"
 msgid "The seed for this meeting: {0} of {SEED_CIRCLES} circles filled"
 msgstr "La semilla de esta reunión: {0} de {SEED_CIRCLES} círculos llenos"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "{name} draws {pct}% of the visits in {group} from inside the {folder} folder: consider giving it a row of its own."
+msgstr "{name} recibe el {pct}% de las visitas de {group} desde dentro de la carpeta {folder}: considere darle una fila propia."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/pages/FundingRounds.tsx
 msgid "Round name, such as the season it funds"
@@ -86691,6 +86925,12 @@ msgstr "Para quienes cuidan y administran: las propuestas que le esperan y las h
 msgctxt "PullACard, Link"
 msgid "Your Gene Keys"
 msgstr "Sus Gene Keys"
+
+# needs-native-review: how the menu is used (admin), QA round 1, 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "No one opened these in {seasonName} ({unopenedCount})"
+msgstr "Nadie abrió estas en {seasonName} ({unopenedCount})"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/SetupSection.tsx
@@ -87729,6 +87969,12 @@ msgstr "Se necesita un motivo"
 msgctxt "Mail settings, danger zone"
 msgid "Disconnect delivery reports"
 msgstr "Desconectar los informes de entrega"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "No one opened these this season ({unopenedCount})"
+msgstr "Nadie abrió estas esta temporada ({unopenedCount})"
 
 # needs-native-review: the constitution's laws, 26 Nov 2026
 #: client/src/pages/gameMechanicsConstitutionWords.ts
@@ -91017,6 +91263,12 @@ msgctxt "admin identity: the village's own nouns"
 msgid "Your words for things"
 msgstr "Sus palabras para las cosas"
 
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "No one opened {name} in the last 90 days: consider folding it."
+msgstr "Nadie abrió {name} en los últimos 90 días: considere plegarla."
+
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #. placeholder {0}: r.kind
 #. placeholder {1}: r.reason ? ` (${r.reason})` : ""
@@ -92028,6 +92280,12 @@ msgstr "Las misiones abiertas orbitan su círculo como pequeños satélites, con
 #: client/src/components/notebook/NotebookAdd.tsx
 msgid "Add to my notebook"
 msgstr "Agregar a mi cuaderno"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: column"
+msgid "Visits"
+msgstr "Visitas"
 
 # needs-native-review: account email addresses, 24 Nov 2026
 #: client/src/components/AccountEmailsPanel.tsx
@@ -93064,6 +93322,12 @@ msgstr "La aldea ya está organizada así, así que no había nada que publicar.
 msgctxt "Mail settings, danger zone done"
 msgid "Delivery reports disconnected"
 msgstr "Informes de entrega desconectados"
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: suggestion"
+msgid "Only {visits} visits over {days} days so far. Suggestions start once there are {minDays} days and {minVisits} visits to read."
+msgstr "Por ahora solo {visits} visitas en {days} días. Las sugerencias empiezan cuando hay {minDays} días y {minVisits} visitas que leer."
 
 # needs-native-review: usted pass (the lead, 26 Nov 2026: usted everywhere), 2026-11-26
 #: client/src/components/fireflyPath/applyWordsT.ts
@@ -94205,6 +94469,12 @@ msgstr "A la espera del círculo"
 msgctxt "HandoverTab, p"
 msgid "The admin panel looks after this one."
 msgstr "El panel de admin se encarga de este."
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: picker"
+msgid "Season"
+msgstr "Temporada"
 
 # needs-native-review: first pass, admin, 24 Nov 2026
 #: client/src/components/admin/comms/CommsWords.tsx
@@ -95578,6 +95848,12 @@ msgstr "Los pagos con tarjeta abandonados se liberan después de"
 msgctxt "module profiles, for whom"
 msgid "Every village. People have to be findable to be met."
 msgstr "Toda aldea. Para conocer a las personas, primero hay que poder encontrarlas."
+
+# needs-native-review: how the menu is used (admin), 27 Nov 2026
+#: client/src/components/admin/MenuUseTab.tsx
+msgctxt "admin, how the menu is used: h3"
+msgid "Least visited"
+msgstr "Menos visitadas"
 
 # needs-native-review: first pass, member and applicant, 24 Nov 2026
 #: client/src/components/review/SeraInDraft.tsx
