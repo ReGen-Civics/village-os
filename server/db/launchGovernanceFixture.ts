@@ -63,3 +63,33 @@ export async function recordEveryCanvasBlock(call: LaunchSuiteCall): Promise<voi
     }
   }
 }
+
+/**
+ * RAISE THESE ACCOUNTS TO FOUNDER, the way a founder does it before launch.
+ *
+ * Only founders vote on the launch, and it carries on three founder yeses
+ * (Rye, 2026-11-27), so a suite that launches a village needs three of them.
+ * Through the real route, as the suite's signed-in founder. A registered
+ * account never proved its address by a claim link, and the route asks the
+ * founder to say they know (R104), which `addressUnprovedOk` is.
+ */
+export async function makeFounders(call: LaunchSuiteCall, userIds: readonly string[]): Promise<void> {
+  for (const id of userIds) {
+    const r = await call("PUT", `/api/admin/users/${id}/role`, { body: { role: "founder", addressUnprovedOk: true } });
+    if (r.status !== 200) throw new Error(`making ${id} a founder answered ${r.status}: ${JSON.stringify(r.json)}`);
+  }
+}
+
+/**
+ * PUT THEM BACK AS MEMBERS, after the launch has carried.
+ *
+ * For a suite whose later cases were written about ordinary members. After
+ * launch any administrator may change a role, and the last-admin guard is met
+ * while the suite's own founder keeps their reach.
+ */
+export async function standDown(call: LaunchSuiteCall, userIds: readonly string[]): Promise<void> {
+  for (const id of userIds) {
+    const r = await call("PUT", `/api/admin/users/${id}/role`, { body: { role: "member" } });
+    if (r.status !== 200) throw new Error(`standing ${id} down answered ${r.status}: ${JSON.stringify(r.json)}`);
+  }
+}

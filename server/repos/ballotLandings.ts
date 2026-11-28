@@ -521,6 +521,23 @@ export async function openBallotIdsPastClose(pool: Pool, at: Date): Promise<stri
 }
 
 /**
+ * Every open ballot on one of these subject types, oldest first.
+ *
+ * For the subjects that carry the moment their rule is met
+ * (server/lib/launchCarry.ts): the five-minute job reads each one again, so a
+ * ballot whose rule was met while no process was there to close it carries on
+ * the next tick. An empty list asks nothing and returns nothing.
+ */
+export async function openBallotIdsOfSubjects(pool: Pool, subjectTypes: readonly string[]): Promise<string[]> {
+  if (subjectTypes.length === 0) return [];
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT id FROM ballots WHERE status = 'open' AND subject_type IN (${subjectTypes.map(() => "?").join(",")}) ORDER BY opens_at, id`,
+    [...subjectTypes],
+  );
+  return rows.map((r) => String(r.id));
+}
+
+/**
  * Two counts over every ballot ever held on one mechanics proposal.
  *
  * One statement rather than two, because the question they answer together is

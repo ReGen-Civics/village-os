@@ -10,8 +10,8 @@
  * Game alone: modules, dials, quests, seasons, every item on the launch
  * journey. Token issuance is the one power that waits, because a token issued
  * is a claim on everybody and everybody has not agreed yet. The launch ballot
- * carrying is the moment it turns on (`shared/ballotSubjects.ts`: 100 unity
- * and 100 quorum, with three people on the roll).
+ * carrying is the moment it turns on (`shared/ballotSubjects.ts`: three
+ * founders say yes and no founder says no; Rye, 2026-11-27).
  *
  * ── WHERE THE GATE SITS, AND WHY THERE ──────────────────────────────────────
  *

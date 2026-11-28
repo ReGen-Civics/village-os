@@ -38,6 +38,11 @@ export const GOVERNANCE_DIALS_CLOSE_AT_LAUNCH = true;
  */
 export const VOTE_RULE_DIAL_EXTRAS: readonly string[] = [
   "governance.launch_min_electorate",
+  // Who the launch asks (Rye, 2026-11-27 and 2026-11-06). It matters after
+  // the Game has started only for a village that is issuing and has not yet
+  // held its launch vote, and there it is exactly a vote rule: the panel must
+  // not be able to choose who answers.
+  "governance.launch_roll",
   "governance.default_method",
   "governance.consent_window_days",
   "governance.steward_veto_tiers",

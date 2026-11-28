@@ -171,7 +171,9 @@ verified and delivers nothing, so wait until Resend marks the domain verified.
 Members join by invitation. Open your profile and make an invitation link for
 each person: one use each, valid for fourteen days. Before your village
 launches, each person who makes their account with a link you made is a member
-straight away, and counts toward the launch vote. After launch, a link is one
+straight away. Only founding members vote on the launch, and it carries when
+three of them say yes, so give the two people starting the village with you
+the Founder access on their card in Admin, People. After launch, a link is one
 vouch of the three a newcomer needs (`membership.vouches_required`). Somebody
 without a link can ask to join at `/request-membership`, and the request lands
 in your Admin.
