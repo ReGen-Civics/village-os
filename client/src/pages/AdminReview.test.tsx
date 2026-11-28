@@ -11,8 +11,13 @@ import type { ReactNode } from "react";
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
 vi.mock("@/contexts/AuthContext", () => ({ useOptionalAuth: () => ({ loading: false, user: { id: "u1" } }) }));
 vi.mock("@/lib/gameApi", () => ({ authToken: () => "t" }));
+// The old proposals page's desk is a chunk of its own with its own reads (client/src/pages/ProposedChanges.test.tsx holds it); here a stand-in.
+vi.mock("@/pages/ProposedChanges", () => ({ ProposalsDesk: ({ embedded, onDecided }: { embedded?: boolean; onDecided?: () => void }) => <button type="button" data-testid="stub-desk" data-embedded={embedded ? "yes" : "no"} onClick={onDecided}>the desk</button> }));
+// The list Sera's row opens is its own chunk with its own reads (client/src/components/review); here it is a stand-in.
+vi.mock("@/components/reviewInbox/SeraSheet", () => ({ default: ({ onChanged }: { onChanged: () => void }) => <button type="button" data-testid="stub-sheet" onClick={onChanged}>the list</button> }));
 
 import AdminReview from "./AdminReview";
+import { decisionCounts, type InboxItem } from "@shared/reviewInbox";
 
 const base = { draft: null, status: "proposed", error: null, by: "Sera Companion", byKind: "agent", labels: { "words.aim": "Aim" }, target: { roleId: "fin" } };
 const role = (id: string, aim: string, at: string, extra: Record<string, unknown> = {}) => ({
@@ -68,7 +73,21 @@ const item = (c: { id: string; code: string; summary: string; at: string; batchI
 
 type Call = { url: string; method: string; body: any };
 
-function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: { status: number; body: unknown }; extra?: unknown[]; decide?: Record<string, unknown>; preview?: number } = {}) {
+/** The server's answer for these rows: each kind's state and number, as server/routes/reviewInbox.ts sends them. */
+function inboxAnswer(items: { source: string; blocked?: unknown }[], over: Record<string, Record<string, unknown>> = {}) {
+  const sources = Array.from(new Set([...items.map((i) => i.source), ...Object.keys(over)]));
+  const sections = sources.map((source) => {
+    const n = items.filter((i) => i.source === source).length;
+    return { source, state: "ok", count: n, atLeast: n, blocked: items.filter((i) => i.source === source && i.blocked).length, more: false, ...(over[source] ?? {}) };
+  });
+  const waiting = sections.reduce((sum, s) => sum + Number((s.count as number | null) ?? s.atLeast), 0);
+  // The one count, by the server's own definition, over the rows this answer lists (a kind that says it holds more
+  // than it lists adds those to the decisions, as the server's count of every row would).
+  const counts = decisionCounts(items as unknown as InboxItem[], sections as never);
+  return { sections, items, counts: { ...counts, decisions: counts.decisions + (waiting - items.length), waiting } };
+}
+
+function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: { status: number; body: unknown }; extra?: unknown[]; decide?: Record<string, unknown>; preview?: number; inbox?: (url: string) => unknown } = {}) {
   const changes = (opts.changes ?? [OPT_1, OPT_2, PAGE]) as any[];
   const calls: Call[] = [];
   const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -77,9 +96,12 @@ function stub(opts: { changes?: unknown[]; connector?: "ok" | "refused"; find?: 
     vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
       calls.push({ url, method, body: init?.body ? JSON.parse(String(init.body)) : null });
-      if (url === "/api/admin/review/inbox") {
+      if (url === "/api/admin/review/inbox" || url.startsWith("/api/admin/review/inbox?")) {
+        if (opts.inbox) return json(200, opts.inbox(url));
         const ok = opts.connector !== "refused";
-        return json(200, { sections: [{ source: "connector", state: ok ? "ok" : "refused", count: ok ? changes.length : 0 }, { source: "claim", state: "ok", count: 0 }], items: [...(ok ? changes.map(item) : []), ...(opts.extra ?? [])] });
+        const items = [...(ok ? changes.map(item) : []), ...(opts.extra ?? [])] as { source: string }[];
+        // Refused by the connector, and still a reader of another queue (finished work), so the page is theirs.
+        return json(200, inboxAnswer(items, ok ? {} : { connector: { state: "refused" }, claim: {} }));
       }
       if (url.startsWith("/api/admin/review/find")) return opts.find ? json(opts.find.status, opts.find.body) : json(404, { error: "not_found", code: null });
       if (url === "/api/admin/proposals" && method === "GET") return json(200, { timezone: "UTC", batches: [], changes, decided: [DECIDED] });
@@ -152,7 +174,7 @@ describe("deciding on /admin/review", () => {
     window.history.replaceState(null, "", "/admin/review?view=held");
     render(<AdminReview />);
     const first = await screen.findByTestId("held-sg_1");
-    expect(screen.getByRole("status").textContent).toBe("3 waiting on you. 2 held.");
+    expect(screen.getByRole("status").textContent).toBe("3 decisions waiting on you. 2 held.");
     expect(screen.getByTestId("tab-held").textContent).toBe("Held 2");
     expect(first.textContent).toContain("Sent again after B-9.1 was discarded, with a reason. Let it through to be read, or clear it.");
     expect(first.textContent).toContain("From an agent · Waiting 3 days");
@@ -226,7 +248,7 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     stub({ changes: [PAGE], extra: [claim, draft] });
     render(<AdminReview />);
     const kinds = await screen.findByTestId("kinds");
-    expect(within(kinds).getAllByRole("link").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
+    expect(within(kinds).getAllByRole("button").map((a) => a.textContent)).toEqual(["Org chart drafts · 1", "Proposed changes · 1", "Finished work to witness · 1"]);
     expect(screen.getByRole("heading", { name: "Org chart drafts 1" })).toBeTruthy();
   });
 
@@ -299,9 +321,141 @@ describe("every row says what it is and what deciding it does (lane 4c)", () => 
     stub({ changes: [PAGE], extra: [claim, draft] });
     window.history.replaceState(null, "", "/admin/review?kind=structure");
     render(<AdminReview />);
-    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. Show everything");
+    expect((await screen.findByTestId("only-kind")).textContent).toBe("Showing only Org chart drafts. The count above is of everything, whatever is shown. Show everything");
     expect(screen.getByTestId("row-structure:dr_1")).toBeTruthy();
     expect(screen.queryByTestId("row-claim:c1")).toBeNull();
-    expect(screen.queryByTestId("kinds")).toBeNull();
+    // The tags stay in reach, so the filter can be changed where it is.
+    expect(screen.getByTestId("tag-structure").getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByTestId("tag-claim").getAttribute("aria-pressed")).toBe("false");
+  });
+});
+
+describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order said, Blocked, unknown", () => {
+  const claimRow = (n: number) => ({ key: `claim:c${n}`, source: "claim", kind: "quest.finished", code: null, summary: `Quest ${n}`, filedAt: `2026-11-${String(n + 1).padStart(2, "0")}T00:00:00.000Z`, batch: null, decideAt: "/review", touchesPerson: false });
+  const sera = { key: "sera:differences", source: "sera", kind: "difference_list", code: null, summary: "159 differences Sera noticed", filedAt: "2026-11-10T00:00:00.000Z", batch: null, decideAt: "/review", touchesPerson: false, holds: 159 };
+
+  it("Sera's differences are ONE row that says how many wait, and opens their list in place", async () => {
+    const calls = stub({ changes: [], extra: [sera] });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-sera:differences");
+    expect(screen.getAllByTestId(/^row-sera:/)).toHaveLength(1);
+    expect(within(row).getByTestId("sera-holds").textContent).toBe("159 differences wait, as one list.");
+    // Pay and new roles are Sera's to suggest and a person's to confirm (Rye, 27 Nov 2026): the row says both.
+    expect(row.textContent).toContain("Sera's suggestions for pay and for new roles are in the list too.");
+    // True to today: a pay suggestion is never taken from the list; its row opens the role's own pay setter.
+    expect(row.textContent).toContain("A new role apart from its circle, and anything marked Check first, are each taken on their own.");
+    expect(row.textContent).toContain("Pay is set in the role's own pay setter, opened from its row by the people who set pay.");
+    // One row counts once at the top and in its kind, whatever it holds.
+    expect(screen.getByTestId("inbox-status").textContent).toBe("1 decision waiting on you.");
+    expect(screen.getByTestId("count-sera").textContent).toBe("1");
+    expect(screen.queryByTestId("sera-list")).toBeNull();
+    fireEvent.click(within(row).getByTestId("sera-open"));
+    const list = await screen.findByTestId("sera-list");
+    expect(within(row).getByTestId("sera-open").getAttribute("aria-expanded")).toBe("true");
+    // An answer inside the list reads the page's numbers again, behind the list: it stays open.
+    const before = calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length;
+    fireEvent.click(await within(list).findByTestId("stub-sheet"));
+    await waitFor(() => expect(calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length).toBe(before + 1));
+    expect(screen.getByTestId("sera-list")).toBeTruthy();
+    expect(screen.queryByText("Reading what is waiting.")).toBeNull();
+  });
+
+  it("a kind shows its first rows with the server's number, and Show more asks the server for the next page", async () => {
+    const all = Array.from({ length: 23 }, (_, n) => claimRow(n));
+    const calls = stub({
+      changes: [],
+      inbox: (url) => {
+        const rows = Number(/claim%3A(\d+)/.exec(url)?.[1] ?? 10);
+        return inboxAnswer(all.slice(0, rows), { claim: { count: 23, atLeast: 23, more: rows < 23 } });
+      },
+    });
+    render(<AdminReview />);
+    await screen.findByTestId("row-claim:c0");
+    expect(screen.getAllByTestId(/^row-claim:/)).toHaveLength(10);
+    // 23 wait: the number is the server's, never a count of the ten rows sent.
+    expect(screen.getByTestId("inbox-status").textContent).toBe("23 decisions waiting on you.");
+    expect(screen.getByTestId("count-claim").textContent).toBe("23");
+    expect(screen.getByTestId("showing-claim").textContent).toBe("Showing 10 of 23.");
+    fireEvent.click(screen.getByTestId("more-claim"));
+    await waitFor(() => expect(screen.getAllByTestId(/^row-claim:/)).toHaveLength(20));
+    expect(calls.some((c) => c.url === "/api/admin/review/inbox?rows=claim%3A20")).toBe(true);
+    fireEvent.click(screen.getByTestId("more-claim"));
+    await waitFor(() => expect(screen.getAllByTestId(/^row-claim:/)).toHaveLength(23));
+    expect(screen.queryByTestId("more-claim")).toBeNull();
+  });
+
+  it("says the order of the list on the page", async () => {
+    stub({ changes: [], extra: [claimRow(1)] });
+    render(<AdminReview />);
+    expect((await screen.findByTestId("inbox-order")).textContent).toBe("In each kind: what is blocked comes first, then what lapses soonest, then the oldest. What carries no date comes last, in the order its own queue keeps.");
+  });
+
+  it("a queue that did not load reads unknown, never zero, and the number at the top becomes a floor", async () => {
+    stub({ changes: [], inbox: () => inboxAnswer([claimRow(1)], { quest: { state: "failed", count: null, atLeast: 0 } }) });
+    render(<AdminReview />);
+    await screen.findByTestId("row-claim:c1");
+    expect(screen.getByTestId("inbox-status").textContent).toBe("At least 1 decision waiting on you. 1 queue did not load, so its number is unknown.");
+    expect(screen.getByTestId("count-quest").textContent).toBe("unknown");
+    expect(screen.getByTestId("unknown-quest").textContent).toBe("This queue did not load, so how many wait here is unknown. It may hold something.");
+    expect(within(screen.getByTestId("kinds")).getAllByRole("button").map((a) => a.textContent)).toEqual(["Quest ideas · unknown", "Finished work to witness · 1"]);
+    // And it is still named in the alert, with a way to try again.
+    expect(screen.getByRole("alert").textContent).toContain("Some of what waits did not load: Quest ideas.");
+  });
+
+  it("a row that cannot be applied as the village stands says Blocked and why, and is counted", async () => {
+    const blocked = { count: 2, reads: "Retire the Water Steward", why: "That role no longer exists" };
+    const agentDraft = { key: "structure:dr_9", source: "agent", kind: "role_change", code: null, summary: "An agent's role change", filedAt: null, batch: null, decideAt: "/governance/decisions/drafts/dr_9", touchesPerson: false, blocked };
+    stub({ changes: [], extra: [agentDraft, { key: "structure:dr_1", source: "structure", kind: "org_draft", code: null, summary: "Rest the old council", filedAt: null, batch: null, decideAt: "/x", touchesPerson: false, blocked }] });
+    render(<AdminReview />);
+    const row = await screen.findByTestId("row-structure:dr_9");
+    expect(within(row).getByTestId("blocked-chip").textContent).toBe("Blocked");
+    expect(within(row).getByTestId("blocked-why").textContent).toBe("It cannot be applied as the village stands. Retire the Water Steward: That role no longer exists. 1 more of its changes is blocked.");
+    // Blocked rows are said beside the count and are not in it.
+    expect(screen.getByTestId("inbox-status").textContent).toBe("0 decisions waiting on you. 2 blocked.");
+    expect(screen.getByRole("heading", { name: "Org chart drafts 1 1 blocked" })).toBeTruthy();
+    // The draft's own row carries the chip too, before its lines are read.
+    expect(within(screen.getByTestId("row-structure:dr_1")).getByTestId("blocked-chip")).toBeTruthy();
+  });
+});
+
+describe("the Batches view: /admin/proposals folded into this page (the accepted cut C8, 27 Nov 2026)", () => {
+  it("a person who may read the connector gets a Batches view that draws the old page's desk, and a decision there re-reads the list behind it", async () => {
+    const calls = stub();
+    window.history.replaceState(null, "", "/admin/review?view=batches");
+    render(<AdminReview />);
+    const view = await screen.findByTestId("batches-view");
+    expect(screen.getByTestId("tab-batches").getAttribute("aria-current")).toBe("page");
+    const desk = await within(view).findByTestId("stub-desk");
+    // The desk is drawn inside this page: no second page frame, no second header.
+    expect(desk.getAttribute("data-embedded")).toBe("yes");
+    // Waiting's own cards are not drawn on this view.
+    expect(screen.queryByTestId("conflict-card-pc_1")).toBeNull();
+    const before = calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length;
+    fireEvent.click(desk);
+    await waitFor(() => expect(calls.filter((c) => c.url.startsWith("/api/admin/review/inbox")).length).toBe(before + 1));
+    expect(screen.getByTestId("batches-view")).toBeTruthy();
+  });
+
+  it("a person who may not read the connector gets no Batches view, even by its address", async () => {
+    stub({ connector: "refused" });
+    window.history.replaceState(null, "", "/admin/review?view=batches");
+    render(<AdminReview />);
+    await screen.findByText("Nothing is waiting on you.");
+    expect(screen.queryByTestId("tab-batches")).toBeNull();
+    expect(screen.queryByTestId("batches-view")).toBeNull();
+  });
+});
+
+describe("a change under Waiting names its batch and links to it in the Batches view", () => {
+  it("says which batch it is part of, with a door to that batch, and stays one decision", async () => {
+    stub({ changes: [PAGE] });
+    render(<AdminReview />);
+    const line = await screen.findByTestId("batch-of-pc_3");
+    expect(line.textContent).toBe("Part of batch B-3. See the whole batch");
+    // And it carries its tag, as every row does: where it came from.
+    expect(screen.getByTestId("tag-of-pc_3").textContent).toBe("A proposed change");
+    expect(within(line).getByRole("link").getAttribute("href")).toBe("/admin/review?view=batches&find=B-3");
+    // The change is drawn here and in the Batches view; the count is the server's one row for it, said once.
+    expect(screen.getByTestId("inbox-status").textContent).toContain("1 decision waiting on you.");
   });
 });

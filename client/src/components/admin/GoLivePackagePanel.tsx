@@ -132,7 +132,8 @@ export default function GoLivePackagePanel({
   villageName?: string;
 }) {
   const [saved, setSaved] = useState(false);
-  const isAdmin = useIsAdmin();
+  // `isAdmin` draws the connector switch, which saves a game variable: the account's own role.
+  const isAdmin = useIsAdmin("account-role");
 
   /* One click, one file, built from the same lists the page above renders.
      The blob is revoked straight after the click, which is what every other

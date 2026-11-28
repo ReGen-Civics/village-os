@@ -8,6 +8,9 @@
  *   few or no hits   "Ask <guide> where to find it": POST /api/search/guide sends only the typed words, and the
  *                    server keeps only the places on this reader's own list
  *   no key           the search's own results, and one gentle line
+ *   an admin         also every Admin act (the server's registry), everybody on the Players page, read from that
+ *                    page's own route so its own door answers, and a review code (B-71), which opens the Review
+ *                    page's own lookup. Names and addresses from the roster stay in this browser
  *
  * A proper modal: the focus stays inside, Escape closes it, and the focus goes back to what opened it. Arrows move
  * through every result, Enter opens one. Every row is at least 44px tall, and the whole dialog fits 320px.
@@ -28,6 +31,7 @@ import { authToken } from "@/lib/gameApi";
 import { guideNameAtSentenceStart } from "@shared/guideName";
 import { EYEBROW, HINT } from "@/components/journey/look";
 import { groupFind, rankFind, weakFind, type FindEntry, type FindGuideAnswer, type FindGuideLimit, type FindIndex, type FindKind, type FindPick } from "@shared/findAnything";
+import { FIND_ROSTER_URL, findCode, findCodePath, withRoster, type RosterPerson } from "@shared/findAdmin";
 
 export const INDEX_URL = "/api/search/index";
 export const GUIDE_URL = "/api/search/guide";
@@ -55,9 +59,34 @@ async function readIndex(): Promise<FindIndex | null> {
   }
 }
 
-/** For tests: forget the session's index. */
+/** The Players page's roster, kept for the session per account. Only an admin's dialog reads it. */
+let roster: { token: string | null; people: RosterPerson[] } | null = null;
+
+/** Where somebody from the roster opens when they have no profile page in the index. */
+export const PLAYERS_PATH = "/admin?tab=players";
+
+async function readRoster(): Promise<RosterPerson[]> {
+  const token = authToken();
+  if (roster && roster.token === token) return roster.people;
+  try {
+    const r = await fetch(FIND_ROSTER_URL, { headers: auth() });
+    if (!r.ok) return [];
+    const rows: unknown = await r.json();
+    if (!Array.isArray(rows)) return [];
+    const people = (rows as Array<Partial<RosterPerson> | null>)
+      .filter((p): p is Partial<RosterPerson> & { id: string } => !!p && (typeof p.id === "string" || typeof p.id === "number"))
+      .map((p) => ({ id: String(p.id), name: String(p.name ?? ""), email: typeof p.email === "string" ? p.email : null, handle: typeof p.handle === "string" ? p.handle : null }));
+    roster = { token, people };
+    return people;
+  } catch {
+    return [];
+  }
+}
+
+/** For tests: forget the session's index and roster. */
 export function forgetFindIndex(): void {
   cached = null;
+  roster = null;
 }
 
 type Guide =
@@ -124,7 +153,22 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
     };
   }, []);
 
-  const entries = index && index !== "failed" ? index.entries : [];
+  // An admin also searches the Players page's roster, read from that page's own route (its own door answers).
+  const isAdmin = !!(index && index !== "failed" && index.admin);
+  const [rosterPeople, setRosterPeople] = useState<RosterPerson[]>(roster && roster.token === authToken() ? roster.people : []);
+  useEffect(() => {
+    if (!isAdmin) return;
+    let live = true;
+    void readRoster().then((p) => live && setRosterPeople(p));
+    return () => {
+      live = false;
+    };
+  }, [isAdmin]);
+  const playersLine = t({ message: "On the Players page", context: "find anything: where a person from the roster opens" });
+  const entries = useMemo(() => {
+    const base = index && index !== "failed" ? index.entries : [];
+    return isAdmin && rosterPeople.length ? withRoster(base, rosterPeople, PLAYERS_PATH, playersLine) : base;
+  }, [index, isAdmin, rosterPeople, playersLine]);
   // The guide's name the way every surface reads it (hooks/useGuideName.ts), worded for this reader.
   const guideName = useGuideName().name;
   // "Open the menu" only while the shell listens for it (findAnythingDoor.ts): never a door that does not open.
@@ -150,7 +194,22 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
   const q = query.trim();
   const ranked = useMemo(() => (q ? rankFind(q, entries, 30) : []), [q, entries]);
   const groups = useMemo(() => groupFind(ranked), [ranked]);
-  const weak = !!q && weakFind(ranked);
+  // A review code an admin typed: one row that opens the Review page's own lookup for it.
+  const code = isAdmin ? findCode(q) : null;
+  const codeEntry: FindEntry | null = useMemo(
+    () =>
+      code
+        ? {
+            id: `code:${code}`,
+            kind: "page",
+            title: t({ message: `Open ${code} in Review`, context: "find anything: a review code an admin typed" }),
+            help: t({ message: "The batch or the change with this code, among what you may see.", context: "find anything: a review code an admin typed, its line" }),
+            path: findCodePath(code),
+          }
+        : null,
+    [code, t],
+  );
+  const weak = !!q && !codeEntry && weakFind(ranked);
   const answeredHere = guide.phase === "answered" && guide.query === q ? guide : null;
   const askable = weak && guideOn && q.length >= 2 && guide.phase !== "unavailable" && guide.phase !== "resting" && !answeredHere;
 
@@ -158,10 +217,11 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
     const list: Row[] = [];
     // The guide's answer leads: it is an answer to these very words.
     if (answeredHere) for (const pick of answeredHere.picks) list.push({ type: "pick", pick });
+    if (codeEntry) list.push({ type: "entry", entry: codeEntry });
     for (const g of groups) for (const entry of g.entries) list.push({ type: "entry", entry });
     if (askable) list.push({ type: "ask" });
     return list;
-  }, [answeredHere, groups, askable]);
+  }, [answeredHere, codeEntry, groups, askable]);
 
   useEffect(() => setActive(0), [q, answeredHere]);
   // A new query is a new question: an answer about other words, or a refusal, does not carry over.
@@ -333,6 +393,7 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
                   )}
                 </div>
               )}
+              {codeEntry && option({ type: "entry", entry: codeEntry }, codeEntry.id, entryBody(codeEntry.title, codeEntry.help))}
               {groups.map((g) => (
                 <div key={g.kind} role="group" aria-label={groupName[g.kind]}>
                   <div aria-hidden="true" className={`px-3 pb-1 pt-2 ${look.eyebrow}`}>{groupName[g.kind]}</div>
@@ -358,13 +419,13 @@ export default function FindAnythingDialog({ onClose }: { onClose: (opts?: { ret
               </p>
             )}
 
-            {q && index !== null && index !== "failed" && ranked.length === 0 && !answeredHere?.picks.length && !askable && (
+            {q && index !== null && index !== "failed" && ranked.length === 0 && !codeEntry && !answeredHere?.picks.length && !askable && (
               <p className={`px-3 py-2 ${look.hint}`}>
                 <Trans context="find anything: no results">Nothing here matches “{q}”. Try another word.</Trans>
               </p>
             )}
             {/* The second door when nothing matches: the whole menu, opened by the shell over the page. */}
-            {q && index !== null && ranked.length === 0 && menuReady && (
+            {q && index !== null && ranked.length === 0 && !codeEntry && menuReady && (
               <div className="px-1 pt-2">
                 <button
                   type="button"

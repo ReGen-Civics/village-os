@@ -95,8 +95,12 @@ function PageTitle() {
   const config = useGameConfig();
   const village = config?.project?.name ?? "";
   const commitment = config?.project?.commitmentName ?? "";
-  // The village's own menu names for its story pages, so a tab reads what the menu reads (one name per page).
-  const names = useMemo(() => Object.fromEntries(Object.entries((config as { site?: { menu?: Record<string, { label?: string }> } } | null)?.site?.menu ?? {}).map(([h, w]) => [h, String(w?.label ?? "")])), [config]);
+  // The village's own names, so a tab reads what the menu reads (one name per page): its story pages' names, and the
+  // names it gave its menu entries (Admin, Menu, or chosen when a module was turned on), which the menu draws first.
+  const names = useMemo(() => {
+    const c = config as { site?: { menu?: Record<string, { label?: string }> }; menu?: { labels?: Record<string, string> } } | null;
+    return { ...Object.fromEntries(Object.entries(c?.site?.menu ?? {}).map(([h, w]) => [h, String(w?.label ?? "")])), ...(c?.menu?.labels ?? {}) };
+  }, [config]);
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
   const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);

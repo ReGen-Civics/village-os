@@ -1,5 +1,6 @@
 /**
- * The door from Admin to the review page (/admin/proposals), with how many
+ * The door from Admin to the review page's Batches view (/admin/review?view=batches, where /admin/proposals was
+ * folded on 27 Nov 2026), with how many
  * proposed changes wait there. Drawn on every tab while something waits, and
  * on Home always, so the page is findable before the first proposal arrives.
  */
@@ -25,7 +26,7 @@ export default function ProposedChangesLink({ password, always }: { password: st
   if (open === null || (!always && open === 0)) return null;
   return (
     <Link
-      href="/admin/proposals"
+      href="/admin/review?view=batches"
       className="mb-4 flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-2 font-medium text-foreground shadow-sm hover:border-notice"
       data-testid="proposed-changes-link"
     >

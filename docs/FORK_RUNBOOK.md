@@ -903,8 +903,9 @@ address. Drive time in a test with `POST /api/admin/comms/run` and
 ### Selling library credits (`library.creditSaleEnabled`) — opt-in, off forever by default
 
 By default a library credit is backed by a physical item on the shelf and
-can never be bought. Opening sales (Admin → Exchange, the L9 caution card)
-makes it purchasable for fiat like any credit token — backed by money
+can never be bought. Opening sales (Admin → Library, the L9 caution card,
+shown while the Exchange module is on; it sat on Admin → Exchange until
+2026-11-27) makes it purchasable for fiat like any credit token — backed by money
 instead of an item, indistinguishable from earned credits after the sale.
 The card states the risk: oversell against the shelves and every credit's
 promise weakens. Swapping stays sealed regardless — this card opens the

@@ -70,7 +70,7 @@ let bare: http.Server;
 let bareBase = "";
 const who = { signedIn: true, mayLook: false, mayGuard: false, limited: false };
 /** Who holds each power live, as the gate counts them. */
-const liveHolders: Record<string, string[]> = { "org.decide": ["u-rye"], "cash.pay": [] };
+const liveHolders: Record<string, string[]> = { "org.decide": ["u-rye"], "role.pay": [] };
 const asked: string[] = [];
 const buckets: string[] = [];
 let guardCalls = 0;
@@ -106,7 +106,7 @@ beforeAll(async () => {
     }) as never,
     members: { all: async () => [{ id: "u-rye", name: "Rye Weaver", email: "rye@example.test" }] } as never,
     deciders: {
-      roles: () => [{ id: "ops-lead", name: "Ops lead", capabilities: liveHolders["org.decide"].length ? ["org.decide"] : [] }, { id: "treasurer", name: "Treasurer", capabilities: ["cash.pay"] }],
+      roles: () => [{ id: "ops-lead", name: "Ops lead", capabilities: liveHolders["org.decide"].length ? ["org.decide"] : [] }, { id: "treasurer", name: "Treasurer", capabilities: ["role.pay"] }],
       roleHolders: () => [{ roleId: "ops-lead", userId: "u-rye" }],
       orgRoles: async () => [],
       villageHolder: async () => null,

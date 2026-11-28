@@ -123,6 +123,9 @@ const ALLOWLIST = {
   // requests are a kind of decision under Decisions. Each old address redirects to its new place with an anchor, for
   // notices and links already sent; nothing in the app links to them any more, on purpose.
   "/approvals": "a redirect to /governance/work#approvals, the approval inbox's old address, kept for notices already sent",
+  // The proposed changes page was folded into the review list (the accepted cut C8, 27 Nov 2026). Its address redirects to
+  // that list's Batches view with its search; links already sent, and the address the server hands agents, are its doors.
+  "/admin/proposals": "a redirect to /admin/review?view=batches keeping ?find=, the proposed changes page's old address, kept for links already sent and the agent tool's reviewAt",
   "/changes": "a redirect to /governance/decisions#changes, the change requests list's old address, kept for links already sent",
   "/changes/:id": "a redirect to one change request under Decisions, kept for notices already sent",
   "/governance/decisions/changes": "a redirect to /governance/decisions#changes, for the address people guess at",

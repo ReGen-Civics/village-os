@@ -17,7 +17,8 @@
  */
 import { useEffect, useId, useRef } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { whoSetsPayWords, type Door } from "@shared/seraDecides";
+import type { Door } from "@shared/seraDecides";
+import SeraPayRow from "@/components/review/SeraPayRow";
 import { comparable, possessive, type ListedDifference } from "@/lib/seraReview";
 import { editable, type SeraActs } from "@/components/review/useSeraActs";
 import { card, inlineLink, primary, secondary } from "@/components/review/seraStyles";
@@ -95,7 +96,10 @@ interface ActionsProps {
 /** The buttons a row offers, by what it is and where it is drawn. */
 export function RowActions({ d, acts, agent, pay, layout, onCompare }: ActionsProps) {
   const { t } = useLingui();
-  if (d.kind === "pay") return pay ? <p className="text-[13px] text-muted-foreground">{whoSetsPayWords(pay)}</p> : null;
+  // Pay is never taken from this list: who sets it, and for a reader the pay route lets through, the role's own pay setter.
+  // Keyed by the row: a pane that draws one row at a time (compare, and the phone's pane) must never hand the setter
+  // open for one role, with what was typed and answered there, to the next role it draws.
+  if (d.kind === "pay") return <SeraPayRow key={d.key} d={d} pay={pay} agent={agent} onSet={acts.reload ? () => void acts.reload() : undefined} />;
   const owner = possessive(agent);
   const busy = acts.busy;
   const block = layout === "compare";

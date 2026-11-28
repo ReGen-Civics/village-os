@@ -31,6 +31,7 @@ vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-token" }));
 
 import SeraDifferences, { SeraSummaryLine, useSeraDifferences } from "./SeraDifferences";
 import { listed } from "@/test/seraDifferences";
+import { forgetPayDoor } from "@/lib/seraPay";
 import type { ListedDifference } from "@/lib/seraReview";
 import { countDifferences } from "@shared/seraDifferences";
 
@@ -60,7 +61,7 @@ function listAnswer(differences: ListedDifference[], over: Record<string, unknow
   };
 }
 
-function serve(routes: { count?: Answer; list?: Answer; guide?: Answer; sync?: Answer; listAfterSync?: Answer }) {
+function serve(routes: { count?: Answer; list?: Answer; guide?: Answer; sync?: Answer; listAfterSync?: Answer; model?: Answer }) {
   let synced = false;
   const fetchMock = vi.fn(async (url: string, init?: { method?: string }) => {
     const path = String(url);
@@ -80,7 +81,9 @@ function serve(routes: { count?: Answer; list?: Answer; guide?: Answer; sync?: A
           ? (routes.list ?? [200, listAnswer([])])
           : path === "/api/guide"
             ? (routes.guide ?? [404, {}])
-            : [404, {}];
+            : path === "/api/valuation/model"
+              ? (routes.model ?? [404, {}])
+              : [404, {}];
     return { ok: status >= 200 && status < 300, status, json: async () => body };
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -150,6 +153,8 @@ function mainBoard(): ListedDifference[] {
 beforeEach(() => {
   vi.restoreAllMocks();
   wideScreen(false);
+  // Whether this reader may set pay is asked once and kept (lib/seraPay.ts): each test asks afresh.
+  forgetPayDoor();
 });
 afterEach(() => {
   cleanup();
@@ -649,5 +654,67 @@ describe("the 1280 px board", () => {
     expect(within(pane).getAllByRole("button").filter((b) => b.dataset.act).map((b) => b.textContent)).toEqual(["Take Sera's: add to draft", "Keep ours", "Edit"]);
     for (const a of screen.getAllByRole("article")) expect(within(a).queryByRole("button", { name: "Keep ours" })).toBeNull();
     expect(screen.getAllByRole("article").every((a) => !a.textContent?.includes("Edited in Sera"))).toBe(true);
+  });
+});
+
+/*
+ * PAY IS TICKED BY HAND (Rye, 28 Nov 2026, on Sera's pay and new-role suggestions: "Can manually select multiple").
+ * A pay row has a tick only for a reader the pay route lets through, "Tick all shown" never sets it, and a ticked
+ * pay row is never part of a take: the bar offers it its own act.
+ */
+describe("ticking pay suggestions by hand", () => {
+  const row = (text: string) => screen.getAllByRole("article").find((a) => a.textContent?.includes(text)) as HTMLElement;
+  const board = () => serve({ list: [200, listAnswer(mainBoard())], count: [200, { ...COUNT, lastReadAt: TODAY_1405(), lastReadWhole: true }], model: [200, { model: {}, payDoor: "holder" }] });
+
+  it("a reader who may set pay gets a tick on a pay row, never set for them and never set by Tick all shown", async () => {
+    board();
+    show();
+    const payTick = (await waitFor(() => within(row("Cook's pay")).getByRole("checkbox"))) as HTMLInputElement;
+    expect(payTick.checked).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: /Tick all shown/ }));
+    const ticks = screen.getAllByRole("checkbox").filter((c) => c.hasAttribute("data-tick")) as HTMLInputElement[];
+    // Every other row that has a tick is ticked. The pay row is not.
+    expect(ticks.filter((c) => c !== payTick).every((c) => c.checked)).toBe(true);
+    expect(ticks.length).toBeGreaterThan(2);
+    expect(payTick.checked).toBe(false);
+    expect(screen.queryByRole("button", { name: /Set pay for/ })).toBeNull();
+  });
+
+  it("ticked by hand, a pay row is offered its own act and is never counted in the take", async () => {
+    board();
+    show();
+    const payTick = (await waitFor(() => within(row("Cook's pay")).getByRole("checkbox"))) as HTMLInputElement;
+    fireEvent.click(payTick);
+    expect(screen.getByText("1 ticked")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Set pay for 1 role" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^Take Sera's for/ })).toBeNull();
+    // With another row ticked too, the take counts that one alone.
+    fireEvent.click(within(row("moving Water Steward")).getByRole("checkbox"));
+    expect(screen.getByText("2 ticked")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Take Sera's for 1" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Set pay for 1 role" })).toBeTruthy();
+  });
+
+  it("the walk opens on the ticked role, listed by name, and leaving it unticks the pay row and sends no answer", async () => {
+    const fetchMock = board();
+    show();
+    fireEvent.click(await waitFor(() => within(row("Cook's pay")).getByRole("checkbox")));
+    fireEvent.click(screen.getByRole("button", { name: "Set pay for 1 role" }));
+    const walk = await screen.findByTestId("pay-walk");
+    expect(within(walk).getByTestId("pay-walk-line").textContent).toContain("Cook");
+    expect(within(walk).getByTestId("pay-walk-line").textContent).toContain("Sera lists Cook's pay");
+    fireEvent.click(within(walk).getByRole("button", { name: "Not now" }));
+    await waitFor(() => expect(screen.queryByTestId("pay-walk")).toBeNull());
+    await waitFor(() => expect(screen.queryByText("1 ticked")).toBeNull());
+    // Nothing was written: no answer route, no pay route.
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method && init.method !== "GET")).toEqual([]);
+  });
+
+  it("a reader the pay route would refuse has no tick on a pay row", async () => {
+    serve({ list: [200, listAnswer(mainBoard())], count: [200, { ...COUNT, lastReadAt: TODAY_1405(), lastReadWhole: true }], model: [200, { model: {}, payDoor: null }] });
+    show();
+    await screen.findByText(/Sera lists Cook's pay/);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(within(row("Cook's pay")).queryByRole("checkbox")).toBeNull();
   });
 });

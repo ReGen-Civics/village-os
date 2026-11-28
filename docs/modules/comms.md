@@ -525,6 +525,6 @@ The routes are `server/routes/commsMembers.ts`, gated by the module one route at
   `eventComms.ts`, `timePolls.ts`.
 - **Admin.** The Comms group in the rail, one screen per file in
   `client/src/components/admin/comms/`: Overview, Journeys, Words, People, Letters, Sent mail,
-  Settings. The old `email-settings` key renders Settings, so old links still land.
+  Settings. The old `email-settings` key opens Settings (`client/src/components/admin/adminTabAliases.ts`), so old links still land.
 - **Event-page widgets** in `client/src/components/comms/`: the guest door, the time vote, the
   host's recap panel, attendance, and each gathering's email settings.
