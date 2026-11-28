@@ -16,7 +16,7 @@ import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
 import type { ReactElement } from "react";
 import { GARDEN_PLACE_KEYS, gardenSpriteUrl } from "@shared/gardenArt";
-import { Circle, Desk, Fireflies, Garden, GardenFrame, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, useGardenDock, type GardenPlaceState, type Stone } from "./index";
+import { Circle, Desk, Fireflies, Garden, GardenFrame, Grounds, Lantern, LensToggle, Place, SeedOfLife, StatusBand, SteppingStones, useGardenDock, useGardenLens, ViewSwitch, type GardenPlaceState, type Stone } from "./index";
 import { cssUrl, groundsPaths } from "./Grounds";
 import { forgetPageCopy } from "./gardenMemory";
 import { GARDEN_PLACES } from "./places";
@@ -586,5 +586,126 @@ describe("a place always says what it holds", () => {
     const gate = screen.getByRole("link", { name: "The Gate, 2 waiting" });
     expect(document.getElementById(gate.getAttribute("aria-describedby")!)?.className ?? "").not.toContain("sr-only");
     expect(described(gate)).toBe(i18n._(GARDEN_PLACES.gate.holds));
+  });
+});
+
+/**
+ * THE BAND'S TWO SWITCHES (the founder, on the first photographs: "I don't see the toggle to switch from AI first to
+ * the other dashboard"). One labelled, two-sided control for which leads the page, beside the lens toggle, in the
+ * band in every dock state.
+ */
+describe("the band's two switches: what leads the page, and the lens", () => {
+  function Page({ firstEvening = false, bare = false }: { firstEvening?: boolean; bare?: boolean }) {
+    const dock = useGardenDock({ firstEvening });
+    const lens = useGardenLens();
+    const switches = (
+      <>
+        <ViewSwitch dock={dock} />
+        <LensToggle lens={lens.lens} onChange={lens.setLens} />
+      </>
+    );
+    return (
+      <GardenFrame band={<StatusBand label="The Game is running" switches={bare ? undefined : switches} />} dock={<p>the conversation</p>} dockState={dock.state}>
+        <button type="button" onClick={() => dock.setState("closed")}>
+          close her
+        </button>
+        {bare ? <LensToggle lens={lens.lens} onChange={lens.setLens} /> : null}
+      </GardenFrame>
+    );
+  }
+  const band = () => screen.getByRole("region", { name: "Where the village stands" });
+  const view = () => screen.getByRole("group", { name: "What leads this page" });
+  const side = (name: string) => within(view()).getByRole("button", { name });
+  const pressed = () => ({ guide: side("Guide first").getAttribute("aria-pressed"), dashboard: side("Dashboard").getAttribute("aria-pressed") });
+  const frameState = () => document.querySelector(".gd-frame")?.getAttribute("data-dock");
+
+  it("is one named group of two real buttons, each a finger tall, with the side you are on marked", () => {
+    show(<Page />);
+    expect(within(view()).getAllByRole("button").map((b) => b.textContent)).toEqual(["Guide first", "Dashboard"]);
+    for (const b of within(view()).getAllByRole("button")) {
+      expect(b.className.split(/\s+/)).toContain("min-h-11");
+      expect(b.hasAttribute("aria-pressed")).toBe(true);
+    }
+    // The lens toggle's own look, so the two read as a pair.
+    expect(view().className.split(/\s+/)).toEqual(expect.arrayContaining(["gd-lens", "gd-view"]));
+  });
+
+  it("marks the current side in each of the three dock states: docked, expanded and closed", () => {
+    const docked = show(<Page />);
+    expect(frameState()).toBe("docked");
+    expect(pressed()).toEqual({ guide: "false", dashboard: "true" });
+    docked.unmount();
+    localStorage.clear();
+    forgetPageCopy();
+
+    show(<Page firstEvening />);
+    expect(frameState()).toBe("expanded");
+    expect(pressed()).toEqual({ guide: "true", dashboard: "false" });
+
+    // Closed: the dashboard has the whole page, so Dashboard is the marked side.
+    fireEvent.click(screen.getByRole("button", { name: "close her" }));
+    expect(frameState()).toBe("closed");
+    expect(pressed()).toEqual({ guide: "false", dashboard: "true" });
+  });
+
+  it("moves the dock's state and the frame with it when a side is pressed, and the side you are on changes nothing", () => {
+    show(<Page />);
+    fireEvent.click(side("Guide first"));
+    expect(frameState()).toBe("expanded");
+    expect(pressed()).toEqual({ guide: "true", dashboard: "false" });
+    fireEvent.click(side("Guide first"));
+    expect(frameState()).toBe("expanded");
+
+    fireEvent.click(side("Dashboard"));
+    expect(frameState()).toBe("docked");
+    expect(pressed()).toEqual({ guide: "false", dashboard: "true" });
+    fireEvent.click(side("Dashboard"));
+    expect(frameState()).toBe("docked");
+
+    // With her closed, Dashboard is where you already are: it does not open her again. Guide first does.
+    fireEvent.click(screen.getByRole("button", { name: "close her" }));
+    fireEvent.click(side("Dashboard"));
+    expect(frameState()).toBe("closed");
+    fireEvent.click(side("Guide first"));
+    expect(frameState()).toBe("expanded");
+  });
+
+  it("sets the one value the dock's own buttons set, so the two never disagree", () => {
+    show(
+      <>
+        <Page />
+        <DockProbe />
+      </>,
+    );
+    fireEvent.click(side("Guide first"));
+    expect(screen.getByTestId("dock-state").textContent).toBe("expanded");
+    // And the other way: the dock's own contract button moves the switch.
+    fireEvent.click(screen.getByRole("button", { name: "close" }));
+    expect(pressed()).toEqual({ guide: "false", dashboard: "true" });
+  });
+
+  it("draws both switches in the band, side by side, in the docked and in the expanded state", () => {
+    show(<Page />);
+    for (const state of ["docked", "expanded"]) {
+      if (state === "expanded") fireEvent.click(side("Guide first"));
+      expect(frameState()).toBe(state);
+      expect(within(band()).getByRole("group", { name: "What leads this page" })).toBeTruthy();
+      expect(within(band()).getByRole("group", { name: "How you see the garden" })).toBeTruthy();
+      // Each is the band's own item: one that steps back on a narrow screen leaves no gap behind it.
+      expect(screen.getByTestId("garden-band-switches").className).toBe("contents");
+      expect(Array.from(screen.getByTestId("garden-band-switches").children).map((c) => c.getAttribute("aria-label"))).toEqual(["What leads this page", "How you see the garden"]);
+    }
+    // The lens toggle is drawn once, in the band and nowhere else.
+    expect(screen.getAllByRole("group", { name: "How you see the garden" })).toHaveLength(1);
+  });
+
+  it("leaves a caller that passes nothing as it was: no switch in the band, and its lens toggle in its own place", () => {
+    show(<Page bare />);
+    expect(screen.queryByTestId("garden-band-switches")).toBeNull();
+    expect(within(band()).queryByRole("group")).toBeNull();
+    expect(screen.queryByRole("group", { name: "What leads this page" })).toBeNull();
+    const lens = screen.getByRole("group", { name: "How you see the garden" });
+    expect(lens.closest(".gd-frame-main")).toBeTruthy();
+    expect(lens.className.split(/\s+/)).toEqual(expect.arrayContaining(["hidden", "w-fit", "lg:flex"]));
   });
 });

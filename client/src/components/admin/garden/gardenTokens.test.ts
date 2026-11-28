@@ -326,8 +326,9 @@ describe("what the garden's stylesheet promises a host page", () => {
 
     it("fills the window under the band in two columns, never too short for the talk box, and stays put", () => {
       expect(wide).toMatch(
-        /\.gd-frame-dock \{\s*position: sticky;\s*top: calc\(var\(--gd-frame-top, 0px\) \+ 0\.75rem\);\s*align-self: start;\s*height: max\(24rem, calc\(100dvh - var\(--gd-frame-top, 0px\) - var\(--gd-frame-above, 3\.5rem\) - 1\.5rem\)\);/,
+        /\.gd-frame-dock \{\s*position: sticky;\s*top: calc\(var\(--gd-frame-top, 0px\) \+ 0\.75rem\);\s*align-self: start;\s*height: max\(24rem, calc\(100dvh - var\(--gd-frame-top, 0px\) - var\(--gd-frame-above, 4\.5rem\) - 1\.5rem\)\);/,
       );
+      // The allowance is a band of one row WITH its switches (72px): measured, a 56px one left the slot 3px under the fold.
     });
 
     it("gives the slot its own edge, so what is passed as the dock only has to fill it", () => {
@@ -339,6 +340,13 @@ describe("what the garden's stylesheet promises a host page", () => {
       // The land's own shape and the pictures' sizing are untouched: nothing is squeezed by height.
       expect(flat).toMatch(/\.gd-land \{\s*aspect-ratio: 10 \/ 9;\s*min-height: 44rem;/);
       expect(flat).toContain("calc(var(--gd-w) * 1cqw)");
+    });
+
+    it("draws the view switch only where the frame has two columns: nothing to switch where she is first and the places follow", () => {
+      // Hidden by its own rule, and drawn inside the frame's two-column container rule, never by the window's width.
+      expect(flat).toMatch(/\n\.gd-view \{\s*display: none;\s*\}/);
+      expect(wide).toMatch(/\.gd-view \{\s*display: flex;\s*\}/);
+      expect(flat.slice(0, flat.indexOf("@container (min-width: 64rem)"))).not.toMatch(/\.gd-view \{\s*display: flex;/);
     });
 
     it("does all of it with the window's own units and container rules: still one @media, the reduced-motion guard", () => {

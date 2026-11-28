@@ -1,0 +1,19 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: es\n"
+
+# needs-native-review: the garden's view switch, the guide first or the dashboard, 27 Nov 2026
+msgctxt "garden view switch"
+msgid "What leads this page"
+msgstr "Qué va primero en esta página"
+
+# needs-native-review: the garden's view switch, the guide first or the dashboard, 27 Nov 2026
+msgctxt "garden view switch"
+msgid "Guide first"
+msgstr "La guía primero"
+
+# needs-native-review: the garden's view switch, the guide first or the dashboard, 27 Nov 2026
+msgctxt "garden view switch"
+msgid "Dashboard"
+msgstr "Tablero"
