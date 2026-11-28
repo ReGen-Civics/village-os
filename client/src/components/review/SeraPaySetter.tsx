@@ -16,7 +16,19 @@ import { toast } from "sonner";
 import RolePayWithEngine from "@/components/valuation/RolePayWithEngine";
 import { payCall, readStoredEstimate, type SeraPay, type StoredEstimate } from "@/lib/seraPay";
 
-export default function SeraPaySetter({ role, sera, onSet }: { role: { id: string; name: string }; sera: SeraPay; onSet?: () => void }) {
+export default function SeraPaySetter({
+  role,
+  sera,
+  onSet,
+  onOutcome,
+}: {
+  role: { id: string; name: string };
+  sera: SeraPay;
+  /** Pay was set: the list may be read again. */
+  onSet?: () => void;
+  /** Whatever the pay route answered, for the walk through several roles. */
+  onOutcome?: (state: "set" | "awaiting_second" | "village") => void;
+}) {
   const [stored, setStored] = useState<StoredEstimate | null>(null);
   useEffect(() => {
     let gone = false;
@@ -28,5 +40,5 @@ export default function SeraPaySetter({ role, sera, onSet }: { role: { id: strin
     };
   }, [role.id]);
   const call = useCallback((path: string, body?: unknown, method?: string) => payCall(path, body, method, (words) => toast.error(words)), []);
-  return <RolePayWithEngine role={role} call={call} onSaved={() => onSet?.()} sera={sera} stored={stored} />;
+  return <RolePayWithEngine role={role} call={call} onSaved={() => onSet?.()} sera={sera} stored={stored} onOutcome={onOutcome} />;
 }

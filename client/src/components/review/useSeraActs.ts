@@ -64,6 +64,8 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [sheet, setSheet] = useState<Sheet | null>(null);
+  /** The pay rows a walk is going through, as they were ticked, or null when no walk is open (SeraPayWalk.tsx). */
+  const [payWalk, setPayWalk] = useState<ListedDifference[] | null>(null);
   /** The button that opened the sheet: focus goes back to it when the sheet closes (review 20, 23). */
   const sheetOpener = useRef<HTMLElement | null>(null);
   /** The key last acted on, so the list can move focus to the row after it (R32). */
@@ -210,12 +212,27 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
     },
     sheetOpener,
     closeSheet: () => setSheet(null),
+    payWalk,
+    /** Open the walk through the pay rows ticked by hand. It is its own act: nothing here takes or keeps. */
+    openPayWalk: (opener?: HTMLElement | null) => {
+      sheetOpener.current = opener ?? null;
+      const rows = tickedRows.filter((d) => d.kind === "pay");
+      if (rows.length > 0) setPayWalk(rows);
+    },
+    /** Leave the walk: its rows come unticked, and the list is read again so a role whose pay was set settles. */
+    closePayWalk: () => {
+      const walked = new Set((payWalk ?? []).map((d) => d.key));
+      setPayWalk(null);
+      setTicked((s) => new Set(Array.from(s).filter((k) => !walked.has(k))));
+      void reload();
+    },
     /** The sheet's confirm: a bulk take of what may be taken together, or a bulk keep. */
     confirmSheet: async () => {
       const s = sheet;
       setSheet(null);
       if (!s) return;
-      if (s.kind === "keep") return run("keep", tickedRows);
+      // A pay row has no Keep of its own, so a tick on one never becomes a keep.
+      if (s.kind === "keep") return run("keep", tickedRows.filter((d) => d.kind !== "pay"));
       const out = plan.leftOut.map((l) => named(l.d.key, l.why));
       return run("take", plan.take, undefined, out);
     },

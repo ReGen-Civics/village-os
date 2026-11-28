@@ -100,3 +100,93 @@ msgstr "Se deja fuera de esta toma 1 sugerencia de pago. El pago se fija en el f
 msgctxt "sera answers"
 msgid "{pays} pay suggestions are left out of this take. Pay is set in the role's own pay setter, opened from each row."
 msgstr "Se dejan fuera de esta toma {pays} sugerencias de pago. El pago se fija en el fijador de pago del propio rol, que se abre desde cada fila."
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera pay"
+msgid "Set pay for 1 role"
+msgstr "Fijar el pago de 1 rol"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraBulk.tsx
+msgctxt "sera pay"
+msgid "Set pay for {pays} roles"
+msgstr "Fijar el pago de {pays} roles"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Set pay for {n} roles, one at a time"
+msgstr "Fijar el pago de {n} roles, uno a la vez"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Each role is set on its own, in its own pay setter. Nothing is sent until you press Set this role's pay there."
+msgstr "Cada rol se fija por separado, en su propio fijador de pago. Nada se envía hasta que usted presione Fijar el pago de este rol allí."
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Start with {first}"
+msgstr "Empezar con {first}"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Not now"
+msgstr "Ahora no"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Role {step} of {n}: {name}"
+msgstr "Rol {step} de {n}: {name}"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Finish"
+msgstr "Terminar"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Next role"
+msgstr "Siguiente rol"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Skip this role"
+msgstr "Saltar este rol"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "Back to the list"
+msgstr "Volver a la lista"
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "{who}: pay is set."
+msgstr "{who}: el pago está fijado."
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "{who}: waiting for a second signer. Its pay stays as it is until they sign."
+msgstr "{who}: en espera de una segunda firma. Su pago queda como está hasta que firmen."
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "{who}: nobody else can sign this figure, so it goes to the village."
+msgstr "{who}: nadie más puede firmar esta cifra, así que pasa a la aldea."
+
+# needs-native-review: pay suggestions ticked by hand are set one role at a time, 28 Nov 2026
+#: client/src/components/review/SeraPayWalk.tsx
+msgctxt "sera pay"
+msgid "{who}: skipped. Nothing was sent."
+msgstr "{who}: saltado. No se envió nada."

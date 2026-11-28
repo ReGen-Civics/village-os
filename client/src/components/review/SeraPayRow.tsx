@@ -27,7 +27,7 @@ const SeraPaySetter = lazy(() => import("@/components/review/SeraPaySetter"));
 const QUIET = "text-[13px] text-muted-foreground";
 
 /** Whether this reader may set pay. False until the read answers, and when it does not. */
-function useMaySetPay(): boolean {
+export function useMaySetPay(): boolean {
   const [may, setMay] = useState(false);
   useEffect(() => {
     let gone = false;

@@ -60,6 +60,7 @@ export default function RolePayWithEngine({
   onSaved,
   sera = null,
   stored = null,
+  onOutcome,
 }: {
   role: { id: string; name: string };
   call: Call;
@@ -68,6 +69,8 @@ export default function RolePayWithEngine({
   sera?: SeraPay | null;
   /** The estimate kept with this role's last pay setting, offered for reuse. */
   stored?: StoredEstimate | null;
+  /** What the pay route answered, each time it answers: set, waiting for a second signer, or to the village. */
+  onOutcome?: (state: "set" | "awaiting_second" | "village") => void;
 }) {
   const { t } = useLingui();
   const [read, setRead] = useState<ModelRead | null>(null);
@@ -146,6 +149,7 @@ export default function RolePayWithEngine({
       ownNumberFirst: toMinor(ownFirst, currency) ?? undefined,
     }, "PUT");
     if (!d) return;
+    onOutcome?.(d.state === "set" ? "set" : d.state === "awaiting_second" ? "awaiting_second" : "village");
     if (d.state === "set") {
       toast.success(t({ message: "Saved", context: "role pay" }));
       setOutcome(t`Saved. The role's pay is set.`);
