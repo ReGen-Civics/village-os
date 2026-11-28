@@ -398,6 +398,7 @@ function tree(dir, o = {}) {
     lazy: {},
   };
   if (o.graph !== false) put("dist/chunk-graph.json", JSON.stringify(o.staleGraph ? { ...graph, chunks: [...graph.chunks, chunk("assets/gone-z.js")] } : graph));
+  if (o.record) put("scripts/admin-shell-step-down.json", JSON.stringify(o.record));
 }
 
 /** Run the gate over a fixture tree. The budgets come from `env`; nothing is inherited from the machine or from CI. */
@@ -530,6 +531,38 @@ check("--report always exits 0, and --json prints one JSON document with the tot
   assert.strictEqual(doc.split.memberKb + doc.split.adminKb, doc.blockChargedKb);
   // ci.yml reads the total with: sed -n 's/.*"blockChargedKb": *\([0-9]*\).*/\1/p'
   assert.strictEqual(r.out.split("\n").filter((line) => /"blockChargedKb": *[0-9]+/.test(line)).length, 1);
+});
+
+/* The step down: the old admin shell, recorded in scripts/admin-shell-step-down.json (the rule's own cases are in admin-shell-step-down.test.mjs). */
+
+check("the old shell still built: the gate says which chunk holds it and what it weighs, and fails nothing", () => {
+  const r = gate({ record: { page: "client/src/pages/Admin.tsx", chargedKb: 12, allowanceWithShellKb: 28 } }, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "28" });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /Old admin shell: client\/src\/pages\/Admin\.tsx is in assets\/Admin-d\.js, 12 KB block-charged; scripts\/admin-shell-step-down\.json records 12 KB/);
+  assert.ok(!r.out.includes("out of date"));
+});
+
+check("a recorded weight the build has moved away from is said, so the record is right on the day", () => {
+  const r = gate({ record: { page: "client/src/pages/Admin.tsx", chargedKb: 8, allowanceWithShellKb: null } });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.match(r.out, /records 8 KB.*The record is out of date: write 12 there/);
+});
+
+check("THE STEP DOWN: the old shell in no built chunk and the allowance not lowered by its weight fails; lowered, it passes", () => {
+  const record = { page: "client/src/pages/OldAdmin.tsx", chargedKb: 12, allowanceWithShellKb: 60 };
+  const still = gate({ record }, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "60" });
+  assert.strictEqual(still.code, 1);
+  assert.match(still.err, /::error::The old admin shell \(client\/src\/pages\/OldAdmin\.tsx\) is no longer built, and the admin allowance is 60 KB\..*must come down to 48 KB or less/);
+  assert.strictEqual(gate({ record }, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "52" }).code, 1, "lowered by 8 of the 12 is not enough");
+  const lowered = gate({ record }, { MAX_MEMBER_DIST_KB: "60", MAX_ADMIN_DIST_KB: "48" });
+  assert.strictEqual(lowered.code, 0, lowered.err);
+  assert.match(lowered.out, /Old admin shell: client\/src\/pages\/OldAdmin\.tsx is in no built chunk\. .*came down from 60 KB to 48 KB/);
+});
+
+check("with no admin allowance set, a retired shell fails nothing: the gate exits as it always did", () => {
+  const r = gate({ record: { page: "client/src/pages/OldAdmin.tsx", chargedKb: 12, allowanceWithShellKb: 60 } });
+  assert.strictEqual(r.code, 0, r.err);
+  assert.strictEqual(r.err, "");
 });
 
 check("--admin-top limits the list", () => {

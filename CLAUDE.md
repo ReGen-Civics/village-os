@@ -324,6 +324,9 @@ the Admin Garden's code. `MAX_MEMBER_DIST_KB` and `MAX_ADMIN_DIST_KB` gate the t
 are set beside the other three in `ci.yml`; unset, the single total gates alone as before. The
 rule is `scripts/lib/distSplit.mjs`, held by `scripts/check-dist-budget.test.mjs`;
 `node scripts/plant-admin-import.mjs` proves it on a real build (two client builds, minutes).
+The allowance steps DOWN when the old admin shell is retired: `scripts/admin-shell-step-down.json`
+records that page and its weight, its header says what to do on the day, and
+`scripts/admin-shell-step-down.test.mjs` fails until the allowance has fallen by that much.
 
 Images are WebP. `scripts/check-image-budget.mjs` enforces it on `client/public`, and the
 exemptions are DERIVED, never typed: whatever `shared/gameConfig.ts` names as the favicon and

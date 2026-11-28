@@ -94,6 +94,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BLOCK, GARDEN_DIR, charged, classifyDist, memberChunksHolding, routesFromApp, splitTotals, textNames, unreadRoutes } from "./lib/distSplit.mjs";
+import { budgetInWorkflow, stepDownVerdict } from "./lib/adminShellStepDown.mjs";
 
 const args = process.argv.slice(2);
 /** The value after a flag, or null: `--root <dir>`, `--admin-top <n>`. */
@@ -105,6 +106,8 @@ const WORKFLOW = path.join(ROOT, ".github", "workflows", "ci.yml");
 /** The build's chunk graph, written beside dist/public by vite.config.ts (writeChunkGraph). */
 const GRAPH = path.join(ROOT, "dist", "chunk-graph.json");
 const ROUTER = path.join(ROOT, "client", "src", "App.tsx");
+/** The old admin shell and what it weighs, for the day it is retired (scripts/lib/adminShellStepDown.mjs). */
+const STEP_DOWN = path.join(ROOT, "scripts", "admin-shell-step-down.json");
 
 const asJson = args.includes("--json");
 /** du's drift from this model seen on a runner (8 KB on ea9a3a1), plus a block. */
@@ -119,9 +122,8 @@ function budgetFromWorkflow(name, fallback) {
   const fromEnv = process.env[name];
   if (fromEnv && /^\d+$/.test(fromEnv)) return { value: Number(fromEnv), source: "env" };
   try {
-    const yml = fs.readFileSync(WORKFLOW, "utf8");
-    const m = yml.match(new RegExp(`^\\s*${name}:\\s*(\\d+)\\s*$`, "m"));
-    if (m) return { value: Number(m[1]), source: ".github/workflows/ci.yml" };
+    const inWorkflow = budgetInWorkflow(fs.readFileSync(WORKFLOW, "utf8"), name);
+    if (inWorkflow !== null) return { value: inWorkflow, source: ".github/workflows/ci.yml" };
   } catch {
     /* falls through to the fallback below */
   }
@@ -295,7 +297,28 @@ function measureSplit() {
     for (const t of texts) if (t.path !== f.path && textNames(t.text, f.path)) textRefs.push({ from: t.path, to: f.path });
   }
   const split = classifyDist({ graph, routes, files, indexRefs, textRefs });
-  return { measured: true, split, totals: splitTotals(split, scan.dirBytes), garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)) };
+  return { measured: true, split, totals: splitTotals(split, scan.dirBytes), garden: memberChunksHolding(graph, split, (id) => id.startsWith(GARDEN_DIR)), oldShell: oldShellIn(graph) };
+}
+
+/**
+ * THE STEP DOWN (the ruling's fourth point): the old admin shell, as
+ * scripts/admin-shell-step-down.json records it, and whether any built chunk
+ * still holds it. Once none does, the admin allowance must have come down by
+ * the shell's recorded weight, or the gate fails; with no admin allowance set
+ * there is nothing to come down and nothing here can fail. Null when the
+ * record is not there, which is how it is once the step down is done.
+ */
+function oldShellIn(graph) {
+  if (!fs.existsSync(STEP_DOWN)) return null;
+  let record;
+  try {
+    record = JSON.parse(fs.readFileSync(STEP_DOWN, "utf8"));
+  } catch (err) {
+    return { unreadable: `scripts/admin-shell-step-down.json does not parse (${err.message})` };
+  }
+  const holder = graph.chunks.find((c) => Object.keys(c.modules ?? {}).includes(record.page));
+  const bytes = holder ? (files.find((f) => f.path === holder.file)?.bytes ?? 0) : 0;
+  return { record, chunk: holder?.file ?? null, chargedKb: holder ? kb(charged(bytes)) : null, verdict: stepDownVerdict(record, Boolean(holder), MAX_ADMIN.value) };
 }
 const sm = measureSplit();
 const memberKb = sm.measured ? kb(sm.totals.memberChargedBytes) : null;
@@ -341,6 +364,7 @@ const result = {
         unnamedFiles: sm.split.unnamedFiles,
         notes: sm.split.notes,
         gardenInMemberChunks: sm.garden.map((g) => ({ chunk: g.chunk, modules: g.modules.map((m) => m.id) })),
+        oldShell: sm.oldShell?.record ? { page: sm.oldShell.record.page, chunk: sm.oldShell.chunk, chargedKb: sm.oldShell.chargedKb, recordedKb: sm.oldShell.record.chargedKb, stepDownOk: sm.oldShell.chunk ? true : sm.oldShell.verdict.ok } : null,
       }
     : { measured: false, why: sm.why, gated: splitGated },
 };
@@ -402,6 +426,12 @@ if (!sm.measured) {
     say(`Garden code in member chunks: YES, ${sm.garden.length} chunk(s) a member's page can load hold modules from ${GARDEN_DIR}`);
     for (const g of sm.garden) say(`    ${g.chunk}: ${g.modules.map((m) => m.id).join(" ")}`);
   }
+  const shell = sm.oldShell;
+  if (shell?.unreadable) say(`Old admin shell: ${shell.unreadable}`);
+  else if (shell?.chunk) {
+    const moved = shell.chargedKb === shell.record.chargedKb ? "" : `. The record is out of date: write ${shell.chargedKb} there before the day the shell is retired`;
+    say(`Old admin shell: ${shell.record.page} is in ${shell.chunk}, ${shell.chargedKb} KB block-charged; scripts/admin-shell-step-down.json records ${shell.record.chargedKb} KB, which the admin allowance steps down by when it is retired${moved}`);
+  } else if (shell) say(`Old admin shell: ${shell.record.page} is in no built chunk. ${shell.verdict.message}`);
 }
 say("");
 say("Splitting a chunk lowers main JS and RAISES the block-charged total.");
@@ -488,5 +518,16 @@ if (splitGated && sm.measured) {
     );
     fail = 1;
   }
+}
+/*
+ * THE STEP DOWN. Only when the old shell is in no built chunk, an admin
+ * allowance is set and the record carries the allowance it had with the shell:
+ * with any of the three missing the verdict is "nothing to step down". While
+ * the shell still ships, keeping the record in step with ci.yml is the
+ * self-test's to hold (scripts/admin-shell-step-down.test.mjs), never this gate's.
+ */
+if (sm.measured && sm.oldShell?.record && !sm.oldShell.chunk && !sm.oldShell.verdict.ok) {
+  console.error(`::error::${sm.oldShell.verdict.message}`);
+  fail = 1;
 }
 process.exit(fail);

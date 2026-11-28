@@ -1,0 +1,17 @@
+{
+  "about": [
+    "THE STEP DOWN (the founder's ruling, 28 Nov 2026): the admin allowance falls when the old admin shell is retired.",
+    "The old shell is the page the /admin route drew on the day of the ruling, read from client/src/App.tsx: `page` below. `chargedKb` is the block-charged weight of the chunk that holds it, as `node scripts/check-dist-budget.mjs` prints it on a build.",
+    "scripts/admin-shell-step-down.test.mjs fails once that page's file is gone and MAX_ADMIN_DIST_KB in .github/workflows/ci.yml is not at least `chargedKb` below `allowanceWithShellKb`; the gate fails the same way once no built chunk holds the page.",
+    "WHEN THE ALLOWANCE IS FIRST SET, or changed while the old shell still ships: write the same number into `allowanceWithShellKb`, in the same change. The test fails until the two agree.",
+    "ON THE DAY the old shell is removed: (1) on the commit before the removal, run `pnpm build` and `node scripts/check-dist-budget.mjs`, read the line 'Old admin shell', and write its weight into `chargedKb` if it has moved; (2) in the change that removes the page, lower MAX_ADMIN_DIST_KB by at least `chargedKb`, and MAX_TOTAL_DIST_KB by the same amount; leave this file as it is. (3) Once that change has landed, delete this file and scripts/admin-shell-step-down.test.mjs in the next one: their work is done.",
+    "`withWhatOnlyItReachesKb` is for information: the old shell's chunk plus the admin-only chunks only the /admin route reached on the measured build. The Admin Garden may keep those, so the rule holds the allowance to `chargedKb` alone."
+  ],
+  "route": "/admin",
+  "page": "client/src/pages/Admin.tsx",
+  "measuredOn": "614b5d16",
+  "bytes": 749559,
+  "chargedKb": 732,
+  "withWhatOnlyItReachesKb": 812,
+  "allowanceWithShellKb": null
+}
