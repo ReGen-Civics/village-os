@@ -28,7 +28,8 @@ import ModuleArt from "@/components/modules/ModuleArt";
 import ModuleHistoryStrip from "@/components/modules/ModuleHistoryStrip";
 import SuggestDial from "@/components/modules/SuggestDial";
 import TurnOnAction from "@/components/modules/TurnOnAction";
-import ModuleStewardPanel from "@/components/admin/ModuleStewardPanel";
+import { lazy, Suspense } from "react";
+import { BreathingLoader } from "@/components/natural";
 import { useAdminModules, useCatalog, useModuleHistory, viewerOf } from "@/components/modules/catalog";
 import { runningLine, switchDoor } from "@/components/modules/switchDoor";
 import { proposalHref } from "@/components/modules/switchModules";
@@ -51,6 +52,14 @@ const DATA_CLASS_PLAIN: Record<ModuleDataClass, string> = {
 };
 
 const CARD = "mt-8 rounded-xl border border-teal-deep/30 bg-teal-deep/5 p-4 sm:p-5";
+
+/*
+ * The steward's panel, and every module's settings form inside it, loads only
+ * for a steward (size pass, 28 Nov 2026). Imported statically it was about 85
+ * KB on the first view of this page and of every page grouped with it, for
+ * every member and visitor, who never see it.
+ */
+const ModuleStewardPanel = lazy(() => import("@/components/admin/ModuleStewardPanel"));
 
 export default function ModuleDetail() {
   const [, params] = useRoute("/modules/:id");
@@ -307,7 +316,9 @@ export default function ModuleDetail() {
         {viewer.mode !== "visitor" && !steward && m.on === true && (m.dialKeys ?? []).length > 0 && <SuggestDial dialKeys={m.dialKeys ?? []} />}
 
         {steward && adminRow && (
-          <ModuleStewardPanel m={adminRow} all={adminRows ?? []} extra={extra} viewer={viewer} onChanged={reloadAdmin} />
+          <Suspense fallback={<BreathingLoader />}>
+            <ModuleStewardPanel m={adminRow} all={adminRows ?? []} extra={extra} viewer={viewer} onChanged={reloadAdmin} />
+          </Suspense>
         )}
       </div>
     </Layout>

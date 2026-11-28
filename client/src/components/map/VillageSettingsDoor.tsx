@@ -24,14 +24,21 @@
  * The door keeps its old behaviour for them: it navigates, and `/admin`
  * refuses them there as it always has.
  */
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { useIsAdmin } from "@/contexts/AuthContext";
-import MapSkinPanel from "@/components/MapSkinPanel";
-import WalkEditorPanel from "@/components/WalkEditorPanel";
-import MapVocabularyPanel from "@/components/admin/MapVocabularyPanel";
-import MapChipsPanel from "@/components/admin/MapChipsPanel";
+import { BreathingLoader } from "@/components/natural";
 import { Trans, useLingui } from "@lingui/react/macro";
+
+/*
+ * The four editors load only when an admin opens the drawer (size pass, 28 Nov
+ * 2026). Imported statically they rode the map page's first view, and the
+ * files grouped with it, for every member and visitor, who never see them.
+ */
+const MapSkinPanel = lazy(() => import("@/components/MapSkinPanel"));
+const WalkEditorPanel = lazy(() => import("@/components/WalkEditorPanel"));
+const MapVocabularyPanel = lazy(() => import("@/components/admin/MapVocabularyPanel"));
+const MapChipsPanel = lazy(() => import("@/components/admin/MapChipsPanel"));
 
 /**
  * Whether a route the artifact asked the site to open is the settings door.
@@ -204,10 +211,12 @@ export default function VillageSettingsDoor({ open, onClose, onOpenFullPage }: {
         </header>
 
         <div className="px-5 pb-8 space-y-5">
-          <MapSkinPanel />
-          <MapChipsPanel />
-          <WalkEditorPanel focus={askedWalk} />
-          <MapVocabularyPanel />
+          <Suspense fallback={<BreathingLoader />}>
+            <MapSkinPanel />
+            <MapChipsPanel />
+            <WalkEditorPanel focus={askedWalk} />
+            <MapVocabularyPanel />
+          </Suspense>
 
           {/* Everything else the settings page holds is still one tap away. */}
           <button
