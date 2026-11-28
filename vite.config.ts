@@ -195,6 +195,8 @@ function routeChunkPreload(): Plugin {
           copyParts: copyPartsIn(out.code),
           // A chunk of CSS modules alone: Vite drops its empty script after this hook, so it is never listed (routePreload.ts).
           cssOnly: Object.keys(out.modules).length > 0 && Object.keys(out.modules).every((id) => /\.css(?:$|\?)/.test(id)),
+          // A packed page group's modules, so a page with no chunk of its own is found through its group (routePreload.ts).
+          modules: out.isEntry ? undefined : Object.keys(out.modules),
         });
       }
       const table = routePreloadTable([...landingRoutes(app), ...lazyRoutesFromApp(app)], chunks);
