@@ -103,6 +103,8 @@ export interface AnswerItem {
   oursHash: string;
   /** An edit's own words. */
   value?: string;
+  /** A take only: the person ticked this row themselves, so a new role marked Check first may go with the others (`bulkLeftOut`). */
+  byHand?: true;
 }
 
 export interface AnswerActor {
@@ -142,6 +144,7 @@ export function readAnswerBody(body: unknown): { act: AnswerAct; items: AnswerIt
     const oursHash = str(r.oursHash, 32);
     if (!key || !seraHash || !oursHash) return null;
     const item: AnswerItem = { key, seraHash, oursHash };
+    if (act === "take" && r.byHand === true) item.byHand = true;
     if (act === "edit") {
       if (typeof r.value !== "string" || r.value.length > VALUE_MAX) return null;
       item.value = r.value;
@@ -278,7 +281,9 @@ export async function answerDifferences(
       else if (d.oursHash !== item.oursHash) refused.push(refuse(d.key, "oursChanged", d));
       else {
         // R2: what carries a reason to check first, and pay and ours ahead, are never taken with others; each says which.
-        const why = bulk && act === "take" ? bulkLeftOut(d) : null;
+        // One exception, by Rye's word (28 Nov 2026): a new role the person ticked by hand. It is still its own
+        // change in the draft, and it passed its own stale checks above like every other item.
+        const why = bulk && act === "take" ? bulkLeftOut(d, item.byHand === true) : null;
         if (why) refused.push(refuse(d.key, why));
         else pass.push({ item, d, retake: state === "changed" && row ? row : null });
       }

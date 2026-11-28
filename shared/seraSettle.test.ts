@@ -170,6 +170,36 @@ describe("bulk takes only what may be taken together (R2, R30, R31)", () => {
     ]);
   });
 
+  // Rye, 28 Nov 2026, on Sera's pay and new-role suggestions: "Can manually select multiple."
+  it("takes a new role a person ticked by hand with the others, and nothing else that is marked Check first", () => {
+    const plain = diff();
+    const newRole = () => diff({ kind: "roleAdd", lane: "decision", field: null, flags: [{ key: "baseUnknown" }, { key: "firstSight" }], bulkEligible: false, autoEligible: false });
+    const byHand = newRole();
+    const notByHand = newRole();
+    const unknownBase = diff({ flags: [{ key: "baseUnknown" }], bulkEligible: false, autoEligible: false, base: "unknown" });
+    const pay = diff({ kind: "pay", lane: "decision", field: "pay", bulkEligible: false, takeable: false });
+    const all = [plain, byHand, notByHand, unknownBase, pay];
+    // The person ticked the first new role, the unknown-base words and the pay row by hand.
+    const plan = bulkPlan(all, all, new Set([byHand.key, unknownBase.key, pay.key]));
+    expect(plan.take).toEqual([plain, byHand]);
+    expect(plan.leftOut.map((l) => [l.d.key, l.why])).toEqual([
+      [notByHand.key, "checkFirst"],
+      [unknownBase.key, "checkFirst"],
+      [pay.key, "pay"],
+    ]);
+    // With no hand ticks named, the rule is what it was.
+    expect(bulkPlan(all, all).take).toEqual([plain]);
+  });
+
+  it("by hand never takes a new role that may not be taken at all, nor one that goes with its new circle", () => {
+    const named = diff({ kind: "roleAdd", lane: "decision", field: null, flags: [{ key: "namesAMember" }], bulkEligible: false, takeable: false, namesAMember: true });
+    expect(bulkPlan([named], [named], new Set([named.key])).leftOut.map((l) => l.why)).toEqual(["notTakeable"]);
+    const { circle, roles } = newCircleWithRoles();
+    const plan = bulkPlan([roles[0]], [circle, ...roles], new Set([roles[0].key]));
+    expect(plan.take).toEqual([]);
+    expect(plan.leftOut.map((l) => l.why)).toEqual(["withCircle"]);
+  });
+
   it("names pay and ours ahead as what they are, never as Check first (review 10)", () => {
     const pay = diff({ kind: "pay", lane: "decision", field: "pay", bulkEligible: false, takeable: false, flags: [{ key: "baseUnknown" }] });
     const ahead = diff({ state: "oursAhead", bulkEligible: false, takeable: false });

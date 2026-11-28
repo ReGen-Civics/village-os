@@ -343,8 +343,10 @@ describe("the hall relief (27 Nov 2026): one Sera row, pages per kind, the order
     // Pay and new roles are Sera's to suggest and a person's to confirm (Rye, 27 Nov 2026): the row says both.
     expect(row.textContent).toContain("Sera's suggestions for pay and for new roles are in the list too.");
     // True to today: a pay suggestion is never taken from the list; its row opens the role's own pay setter.
-    expect(row.textContent).toContain("A new role apart from its circle, and anything marked Check first, are each taken on their own.");
-    expect(row.textContent).toContain("Pay is set in the role's own pay setter, opened from its row by the people who set pay.");
+    // And ticked by hand (Rye, 28 Nov 2026: "Can manually select multiple").
+    expect(row.textContent).toContain("You tick a new role or a pay suggestion yourself: Tick all shown leaves them alone.");
+    expect(row.textContent).toContain("Anything else marked Check first is taken on its own.");
+    expect(row.textContent).toContain("Pay is set in the role's own pay setter, one role at a time, by the people who set pay.");
     // One row counts once at the top and in its kind, whatever it holds.
     expect(screen.getByTestId("inbox-status").textContent).toBe("1 decision waiting on you.");
     expect(screen.getByTestId("count-sera").textContent).toBe("1");

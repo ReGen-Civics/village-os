@@ -228,21 +228,74 @@ describe("many at once (R2, R30, R31, the bulk board)", () => {
     await screen.findByText(/moving Water Steward/);
     expect(screen.queryByRole("button", { name: /^Take Sera's for/ }), "the bar only once something is ticked").toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Tick all shown" }));
-    fireEvent.click(screen.getByRole("button", { name: "Take Sera's for 4" }));
+    // Three, never four: a new role marked Check first is ticked by hand only (Rye, 28 Nov 2026).
+    fireEvent.click(screen.getByRole("button", { name: "Take Sera's for 3" }));
     const sheet = screen.getByRole("dialog");
     expect(within(sheet).getByRole("heading", { name: "Take Sera's for 2 changes?" })).toBeTruthy();
     expect(within(sheet).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
       "2 go into a draft. They go live when the draft is published.",
-      "2 marked Check first are left out. Take each of them on its own.",
+      "1 marked Check first is left out. Take it on its own.",
       "Leaving out Land Stewardship also leaves out its role.",
-      "Left out: Well Monitor, Land Stewardship.",
+      "Left out: Land Stewardship.",
     ]);
     fireEvent.click(within(sheet).getByRole("button", { name: "Take 2" }));
     await waitFor(() => expect(posts("/api/saberra/differences/answer")).toHaveLength(1));
     expect(posts("/api/saberra/differences/answer")[0].body.items.map((i: { key: string }) => i.key)).toEqual([a.key, b.key]);
     const strip = await theStrip();
     await waitFor(() => expect(strip.textContent).toContain("Added 2 to the draft"));
-    expect(strip.textContent).toContain("Left out: Well Monitor (Check first); Land Stewardship (Check first).");
+    expect(strip.textContent).toContain("Left out: Land Stewardship (Check first).");
+  });
+
+  // Rye, 28 Nov 2026, on Sera's pay and new-role suggestions: "Can manually select multiple."
+  it("a new role ticked by hand is taken with the rest: named in the sheet first, and sent as the person's own tick", async () => {
+    const a = move();
+    const b = words();
+    const well = firstSight();
+    const circle = newCircle();
+    const seed = seedRole();
+    serve({
+      "GET /api/saberra/differences": [200, listAnswer([a, b, well, circle, seed])],
+      "POST /api/saberra/differences/answer": [200, { done: [{ key: a.key }, { key: b.key }, { key: well.key }], refused: [], draftId: "d-1" }],
+    });
+    render(<Harness />);
+    await screen.findByText(/moving Water Steward/);
+    fireEvent.click(screen.getByRole("button", { name: "Tick all shown" }));
+    const wellTick = within((await screen.findByText(/Well Monitor/)).closest("article") as HTMLElement).getByRole("checkbox") as HTMLInputElement;
+    // Select-all left it alone. The person ticks it themselves.
+    expect(wellTick.checked).toBe(false);
+    fireEvent.click(wellTick);
+    fireEvent.click(screen.getByRole("button", { name: "Take Sera's for 4" }));
+    const sheet = screen.getByRole("dialog");
+    expect(within(sheet).getByRole("heading", { name: "Take Sera's for 3 changes?" })).toBeTruthy();
+    expect(within(sheet).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+      "3 go into a draft. They go live when the draft is published.",
+      "Ticked by hand and taken with the rest: Well Monitor.",
+      "1 marked Check first is left out. Take it on its own.",
+      "Leaving out Land Stewardship also leaves out its role.",
+      "Left out: Land Stewardship.",
+    ]);
+    fireEvent.click(within(sheet).getByRole("button", { name: "Take 3" }));
+    await waitFor(() => expect(posts("/api/saberra/differences/answer")).toHaveLength(1));
+    const items = posts("/api/saberra/differences/answer")[0].body.items as Array<{ key: string; byHand?: boolean }>;
+    expect(items.map((i) => [i.key, i.byHand === true])).toEqual([[a.key, false], [b.key, false], [well.key, true]]);
+    // Pressing "Tick all shown" again keeps the tick the person gave it.
+  });
+
+  it("Tick all shown keeps a tick a person gave a new role, and Untick all clears it", async () => {
+    const well = firstSight();
+    serve({ "GET /api/saberra/differences": [200, listAnswer([move(), words(), well])] });
+    render(<Harness />);
+    const wellTick = within((await screen.findByText(/Well Monitor/)).closest("article") as HTMLElement).getByRole("checkbox") as HTMLInputElement;
+    fireEvent.click(wellTick);
+    fireEvent.click(screen.getByRole("button", { name: "Tick all shown" }));
+    expect(wellTick.checked).toBe(true);
+    expect(screen.getByText("3 ticked")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Keep or untick" }));
+    fireEvent.click(screen.getByRole("button", { name: "Untick all" }));
+    expect(wellTick.checked).toBe(false);
+    // Ticked again by select-all alone, it stays unticked.
+    fireEvent.click(screen.getByRole("button", { name: "Tick all shown" }));
+    expect(wellTick.checked).toBe(false);
   });
 
   it("is a real modal: Escape closes it and focus goes back to the button that opened it (review 20)", async () => {

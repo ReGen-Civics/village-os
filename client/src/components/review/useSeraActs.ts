@@ -57,9 +57,23 @@ export function focusSoon(selector: string | null): void {
   }, 0);
 }
 
+/**
+ * A row that is only ever ticked by hand, never by "Tick all shown": pay, and a new role marked Check first
+ * (Rye, 28 Nov 2026, on Sera's pay and new-role suggestions: "Can manually select multiple").
+ */
+export const handOnly = (d: Pick<ListedDifference, "kind" | "bulkEligible"> | undefined): boolean =>
+  !!d && (d.kind === "pay" || (d.kind === "roleAdd" && !d.bulkEligible));
+
 export function useSeraActs(differences: readonly ListedDifference[], reload: () => Promise<void>) {
   const { t } = useLingui();
   const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
+  /**
+   * The rows a person ticked themselves, one at a time (Rye, 28 Nov 2026: "Can manually select multiple").
+   * "Tick all shown" never adds here. A new role marked Check first is taken with the others only from here.
+   */
+  const [hand, setHand] = useState<ReadonlySet<string>>(new Set());
+  const tickedNow = useRef(ticked);
+  tickedNow.current = ticked;
   const [strip, setStrip] = useState<Strip | null>(null);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Editing | null>(null);
@@ -83,6 +97,9 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
             : t({ message: "it cannot be taken from this list", context: "sera answers" }),
     [t],
   );
+  /** Ticked, and ticked by the person themselves. */
+  const byHand = useMemo(() => new Set(Array.from(hand).filter((k) => ticked.has(k))), [hand, ticked]);
+
   const named = useCallback((key: string, why: string) => `${byKey.get(key)?.subject.name ?? key} (${whyWords(why)})`, [byKey, whyWords]);
 
   const run = useCallback(
@@ -90,13 +107,14 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
       if (ds.length === 0) return;
       setBusy(true);
       setActed(ds[0].key);
-      const r = await answerDifferences(act, ds.map((d) => itemOf(d, value)));
+      const r = await answerDifferences(act, ds.map((d) => itemOf(d, value, act === "take" && d.kind === "roleAdd" && byHand.has(d.key))));
       const done = (Array.isArray(r.body?.done) ? r.body?.done : []) as Done[];
       const refused = (Array.isArray(r.body?.refused) ? r.body?.refused : []) as Refused[];
       await reload();
       setBusy(false);
       setEditing(null);
       setTicked(new Set());
+      setHand(new Set());
       if (!r.ok) {
         setStrip({ words: errorWords(r) ?? t({ message: "The answer was not written.", context: "sera answers" }), undo: null, leftOut: [] });
         return;
@@ -123,7 +141,7 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
       }
       setStrip({ words, undo: n > 0 ? undo : null, leftOut });
     },
-    [reload, t, named],
+    [reload, t, named, byHand],
   );
 
   const undo = useCallback(
@@ -149,18 +167,22 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
   );
 
   const tick = useCallback((key: string, on?: boolean) => {
-    setTicked((s) => {
+    const turnOn = on ?? !tickedNow.current.has(key);
+    const flip = (s: ReadonlySet<string>) => {
       const next = new Set(s);
-      if (on ?? !next.has(key)) next.add(key);
+      if (turnOn) next.add(key);
       else next.delete(key);
       return next;
-    });
+    };
+    setTicked(flip);
+    // A tick set on one row is the person's own.
+    setHand(flip);
   }, []);
 
   /** The ticked rows, in the list's order. */
   const tickedRows = useMemo(() => differences.filter((d) => ticked.has(d.key)), [differences, ticked]);
   /** What a bulk take of the ticked rows takes, leaves out, and carries away with a circle (R2, R30, R31). */
-  const plan = useMemo(() => bulkPlan(tickedRows, differences), [tickedRows, differences]);
+  const plan = useMemo(() => bulkPlan(tickedRows, differences, byHand), [tickedRows, differences, byHand]);
 
   return {
     ticked,
@@ -175,13 +197,17 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
     /** Read the list again: after pay is set in the role's own setter, so its row settles. */
     reload,
     tick,
-    tickAll: (keys: string[]) => setTicked(new Set(keys)),
+    /** Tick what is shown. Rows only ever ticked by hand (pay, a new role marked Check first) keep the tick a person gave them. */
+    tickAll: (keys: string[]) => setTicked((s) => new Set([...keys, ...Array.from(s).filter((k) => byHand.has(k) && handOnly(byKey.get(k)))])),
     /** Put an outcome from elsewhere on the list (the draft card) in the same strip, and focus it (review 23). */
     say: (words: string) => {
       setStrip({ words, undo: null, leftOut: [] });
       focusSoon(null);
     },
-    untickAll: () => setTicked(new Set()),
+    untickAll: () => {
+      setTicked(new Set());
+      setHand(new Set());
+    },
     take: (d: ListedDifference) => run("take", [d]),
     /** Take again, from the draft card, a take that changed since: with the difference as it stands now (R13). */
     takeAgain: async (now: { key: string; seraHash: string; oursHash: string }) => {
@@ -224,6 +250,7 @@ export function useSeraActs(differences: readonly ListedDifference[], reload: ()
       const walked = new Set((payWalk ?? []).map((d) => d.key));
       setPayWalk(null);
       setTicked((s) => new Set(Array.from(s).filter((k) => !walked.has(k))));
+      setHand((s) => new Set(Array.from(s).filter((k) => !walked.has(k))));
       void reload();
     },
     /** The sheet's confirm: a bulk take of what may be taken together, or a bulk keep. */
