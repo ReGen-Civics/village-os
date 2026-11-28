@@ -115,6 +115,29 @@ export interface SubjectThresholds {
    */
   minYesHeads?: number | "all";
   /**
+   * The subject's two numbers are the WHOLE rule, and the village's own dials
+   * neither raise nor lower them. Every other subject declares floors, for the
+   * reasons in this file's header. This is for a subject whose ruling is a
+   * rule about heads, where a village quorum dial stamped on top would ask for
+   * something the ruling does not (see the `village_launch` entry).
+   */
+  fixedDials?: boolean;
+  /**
+   * The ballot carries the MOMENT its rule is met, without waiting for its
+   * window to end, and nobody may close it early any other way. Only a subject
+   * in `NO_WINDOW_SUBJECTS` (shared/governanceKinds.ts) may say this: every
+   * other pass waits for the clock so that nobody chooses which days a steward
+   * gets, and a subject with no steward window has no such days to choose.
+   */
+  carriesAtOnce?: boolean;
+  /**
+   * Who is frozen onto the roll. Absent means every present member who holds
+   * `ballot.vote`. `"founders"` means the present members holding the founder
+   * role and nobody else, each counted once whatever the village's weight
+   * mode is.
+   */
+  roll?: "founders";
+  /**
    * The fact a member reads on the surface that opens this. A fact, never an
    * argument: it says what the numbers are and stops there.
    */
@@ -128,29 +151,67 @@ export function tierFloors(criticality: Criticality): { minUnityPct: number; min
 }
 
 /**
- * ── THE ONE ENTRY TODAY: STARTING THE GAME ──────────────────────────────────
+ * ── THE FIRST ENTRY: STARTING THE GAME ──────────────────────────────────────
  *
- * R74, in the founder's words: the button that marked a village launched
- * "actually generates the first proposal that requires 100% unity and 100%
- * quorum to launch and a minimum of 3 people."
+ * R67 is why this vote exists. A founder builds the whole Game alone: modules,
+ * dials, quests, seasons, every requirement on the launch journey. Starting it
+ * is the one act that is not theirs alone, because starting it turns on token
+ * issuance, and a token issued is a claim on everybody.
  *
- * R67 is why the numbers are these numbers. A founder builds the whole Game
- * alone: modules, dials, quests, seasons, every requirement on the launch
- * journey. Starting it is the one act that is not theirs, because starting it
- * turns on token issuance, and a token issued is a claim on everybody. So the
- * first vote a village ever holds asks for everyone.
+ * THE RULE (Rye, 2026-11-27). The launch carries with "Not everyone, but at
+ * least 3 members holding the founder role", and it "doesn't need to wait 7
+ * days". The details he accepted the same day:
  *
- * THE FLOOR OF THREE is R67's other half. A Game needs three people to play.
- * Below three, the surface says how many hold a voice and offers nothing to
- * press.
+ *   1. Only founders vote on the launch. The roll is the founders present when
+ *      the vote opens, each counted once.
+ *   2. It carries the moment a third founder says yes, unless a founder has
+ *      said no.
+ *   3. A no holds it until that founder withdraws it, by changing their answer.
+ *   4. A founder may change yes to no until it carries. Once it has carried the
+ *      ballot is closed and no answer moves.
+ *   5. A vote cast for somebody by the person they follow never counts here.
+ *   6. With fewer than three founders the vote cannot open.
  *
- * THE FLOOR OF THREE COUNTS HEADS, AND THE ENGINE COUNTS WEIGHT. That gap is
- * what `everySeatWeighs` closes, and the block above `weightFloorProblem` is
- * the whole of why.
+ * It replaces R74's rule of 2026-09-02, where every member on the roll had to
+ * say yes ("100% unity and 100% quorum") and the pass waited for the window.
  *
- * `custom` for the reason in this file's header: the ruling is a pair of
- * numbers, and `custom` is the only method that decides by the numbers a
- * ballot freezes.
+ * HOW THE ENGINE CARRIES IT. The rule is written in heads, and every seat on
+ * this roll is frozen at one. Unity 100 is "nobody on the roll has said no".
+ * How many must say yes is frozen as a share of the roll (`launchQuorumPct`),
+ * which is what a member reads on the ballot, and the close turns it back into
+ * a whole count and counts heads (`atOnceEvaluation`), because a share compared
+ * in floating point misses its own boundary. `fixedDials` keeps the village's
+ * ORDINARY quorum dial off it: a village that set its quorum to 100 for
+ * everyday votes would otherwise be asking every founder to answer, which is
+ * the rule this one replaced. `minYesHeads` is the floor nothing lowers: three
+ * people, R67. `custom` is the one method that decides by the numbers a ballot
+ * freezes.
+ *
+ * ── WHAT A VILLAGE MAY CHANGE, AND HOW (Rye, 2026-11-06) ────────────────────
+ *
+ * "EVERYTHING can change with the highest village vote", and no action may be
+ * left without a vote path. So the two halves of this rule are the village's
+ * own settings, and the rule above is what they ship as:
+ *
+ *   THE NUMBER   `governance.launch_min_electorate`: how many on the roll must
+ *                say yes. Three as shipped, never fewer (`LAUNCH_YES_HEADS`).
+ *   WHO COUNTS   `governance.launch_roll`: the founding members as shipped, or
+ *                every member who holds a voice.
+ *
+ * Both are constitutional. Before the Game starts a founder sets them, as a
+ * founder sets every dial of a Game still being built. Once a village is
+ * issuing they close to the panel with the other vote rules
+ * (server/lib/launchDoors.ts) and move only by a vote at the village's highest
+ * tier, asked of every member. That is the path for a village with fewer than
+ * three founders: a founder gives the role to more people before the Game
+ * starts, or the village changes who the launch asks.
+ *
+ * Whatever they hold is frozen onto the ballot when it opens, so changing
+ * either while a launch vote runs changes nothing about that vote.
+ *
+ * WHEN THE WINDOW ENDS without three yeses: a standing no closes it as failed,
+ * and otherwise it closes short of participation. Nothing changes either way
+ * and the vote can be asked again on a fresh roll the same hour.
  */
 export const VILLAGE_LAUNCH = "village_launch";
 
@@ -170,6 +231,100 @@ export const VILLAGE_LAUNCH = "village_launch";
  * no join and no extra column.
  */
 export const LAUNCH_SUBJECT_REF = "start";
+
+/**
+ * How many founders must say yes for the launch to carry (Rye, 2026-11-27: "at
+ * least 3 members holding the founder role"). It is also R67's floor: a Game
+ * needs three people to play. The village's `governance.launch_min_electorate`
+ * dial decides how many founders must be ON THE ROLL before the vote may open,
+ * never below this; the number of yeses it carries on is this one.
+ */
+export const LAUNCH_YES_HEADS = 3;
+
+/** Who a launch vote asks. `founders` is the rule as shipped (Rye, 2026-11-27). */
+export const LAUNCH_ROLL_KINDS = ["founders", "members"] as const;
+export type LaunchRollKind = (typeof LAUNCH_ROLL_KINDS)[number];
+
+/** The village's setting for who the launch asks. Constitutional. */
+export const LAUNCH_ROLL_KEY = "governance.launch_roll";
+
+/** Read the setting. Anything unrecognised is the rule as shipped. */
+export function launchRollKindFrom(raw: unknown): LaunchRollKind {
+  return String(raw ?? "").trim() === "members" ? "members" : "founders";
+}
+
+/** A small count as a word, the way the launch's sentences say it. */
+function countWord(n: number): string {
+  const words = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+  return Number.isInteger(n) && n >= 0 && n < words.length ? words[n] : String(n);
+}
+
+/**
+ * The launch's rule as one sentence, for the number and the roll a village
+ * actually holds. The registry's own `why` is this sentence at the shipped
+ * values, so the default and a village's own reading cannot drift apart.
+ */
+export function launchRuleSentence(rule: { yesNeeded: number; roll: LaunchRollKind }): string {
+  const n = countWord(rule.yesNeeded);
+  // One name for every village, issuing or not (Rye, 2026-11-28: "Let's stay with start the game").
+  const what = "starting the Game";
+  if (rule.roll === "members") {
+    return `Every member who holds a voice votes on ${what}, each counted once. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that member changes their answer.`;
+  }
+  return `Only founding members vote on ${what}. It carries the moment ${n} of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.`;
+}
+
+/**
+ * THE PARTICIPATION A LAUNCH BALLOT FREEZES: `yesNeeded` of the roll, as a
+ * percentage, rounded DOWN to the two decimals `ballots.quorum_pct` holds.
+ *
+ * It is how the village's number is frozen onto the ballot with no new column:
+ * a member reads "60%" on a roll of five and that is three people. It is never
+ * COMPARED as a percentage, because a share worked out in floating point
+ * misses its own boundary (23 of 40 computes as 57.4999 against a stored
+ * 57.5). The close reads it back as a whole count with `yesHeadsFrozenAs` and
+ * counts heads, which is exact.
+ */
+export function launchQuorumPct(yesNeeded: number, rollSize: number): number {
+  const roll = Math.max(0, Math.trunc(rollSize));
+  const need = Math.max(0, Math.trunc(yesNeeded));
+  if (roll <= 0 || need >= roll) return 100;
+  return Math.floor((need / roll) * 10000) / 100;
+}
+
+/**
+ * How many yes heads a frozen share stands for: the inverse of
+ * `launchQuorumPct`, exact for any roll under five thousand people.
+ *
+ * The stored share lost at most two hundredths of a point to rounding, which
+ * on a roll of r is less than r / 5000 of a person, so the count above it is
+ * the count that was frozen. Beyond five thousand it can read one short, and
+ * the subject's own `minYesHeads` still holds the floor.
+ */
+export function yesHeadsFrozenAs(quorumPct: number, rollSize: number): number {
+  const roll = Math.max(0, Math.trunc(Number(rollSize) || 0));
+  const pct = Math.max(0, Math.min(100, Number(quorumPct) || 0));
+  if (roll <= 0) return 0;
+  return Math.min(roll, Math.max(0, Math.ceil((pct / 100) * roll - 1e-9)));
+}
+
+/**
+ * WHAT THE ENGINE IS HANDED FOR A BALLOT THAT CARRIES AT ONCE: no percentage
+ * quorum, and the frozen count as yes heads, never below the subject's floor.
+ *
+ * One function, used by `closeBallot` and by the tests, so the arithmetic a
+ * test proves is the arithmetic the close runs. Null for every other subject,
+ * which is evaluated on its frozen dials exactly as before.
+ */
+export function atOnceEvaluation(
+  subjectType: string,
+  frozen: { quorumPct: number; electorateCount: number },
+): { quorumPct: number; minYesHeads: number } | null {
+  const rules = evaluationRulesFor(subjectType);
+  if (!rules.carriesAtOnce) return null;
+  const floor = typeof rules.minYesHeads === "number" ? rules.minYesHeads : 0;
+  return { quorumPct: 0, minYesHeads: Math.max(floor, yesHeadsFrozenAs(frozen.quorumPct, frozen.electorateCount)) };
+}
 
 /**
  * ── THE SECOND ENTRY: CHANGING WHAT THE VILLAGE MINTS ───────────────────────
@@ -333,8 +488,12 @@ export const FUNDING_DIVERGENCE = "funding_divergence";
 
 export const SUBJECT_THRESHOLDS: Readonly<Record<string, SubjectThresholds>> = {
   [VILLAGE_LAUNCH]: {
+    // "No founder has said no", on a roll where every founder counts once.
     minUnityPct: 100,
-    minQuorumPct: 100,
+    // Zero HERE, and the village's ordinary quorum dial never reaches it. The
+    // route stamps the launch's own participation, `launchQuorumPct`.
+    minQuorumPct: 0,
+    fixedDials: true,
     /*
      * THIS NUMBER ALSO DECIDES WHO MAY BE ADMITTED. Read the next paragraph
      * before you change it.
@@ -379,38 +538,30 @@ export const SUBJECT_THRESHOLDS: Readonly<Record<string, SubjectThresholds>> = {
      * Until this comment existed the coupling was asserted in prose in three
      * files and enforced in none. It is now enforced in one and stated here,
      * at the home the other two read.
+     *
+     * THE 2026-11-27 RULE DID NOT MOVE IT. The launch now counts founders and
+     * carries on `minYesHeads` yeses, and those are separate fields. This one
+     * is still three, it is still what `server/lib/vouches.ts` reads, and the
+     * membrane is where it was (`server/lib/vouches.test.ts` pins the pair).
      */
     minElectorate: 3,
+    // Every founder is frozen at one, so this holds by construction. It stays
+    // because a roll built any other way must still refuse a seat at zero.
     everySeatWeighs: true,
+    roll: "founders",
     method: "custom",
     /*
-     * THE BIRTHING IS THE ONE VOTE THAT ASKS FOR A YES FROM EVERYBODY.
-     *
-     * The founder's words, 2026-09-02 (Q3): "we need 100% saying yes as a
-     * collective 'Birthing' moment". Until this pair of fields, the engine
-     * read that sentence as "everybody answers and nobody objects", so one
-     * yes and two abstentions carried a launch at 100 and 100, and
-     * `ballotSubjects.test.ts` pinned it as a documented decision. It is now
-     * the wrong rule and the test is rewritten to this one.
-     *
-     * `no_answer` is the kinder half. An abstention on the Birthing is not a
-     * refusal, it is a question nobody has answered yet, so it leaves quorum
-     * short and the ballot closes `no_quorum` rather than `failed`. A missed
-     * quorum returns the subject and the vote can be asked again the same
-     * hour on a fresh freeze; a failure is terminal. The village that has not
-     * finished deciding is not a village that said no.
-     *
-     * `minYesHeads: "all"` is the founder's sentence said in heads, which is
-     * the unit he said it in. On today's floors it is also provable from the
-     * weights (100% quorum over a roll where every seat weighs something is
-     * every seat present, and 100% unity is nobody against), so it decides
-     * nothing today that the arithmetic did not already decide. It is here
-     * because the arithmetic proves it only while all three of those floors
-     * hold, and the rule is meant to outlive them.
+     * AN ABSTENTION IS NEITHER A YES NOR A NO. It does not count toward the
+     * three, and it does not hold the vote. A founder who withdraws a no by
+     * abstaining has taken the hold off.
      */
     abstainPolicy: "no_answer",
-    minYesHeads: "all",
-    why: "Starting the Game asks every member on the roll to vote yes. An abstention is not a yes, and a vote nobody cast is not a yes either.",
+    minYesHeads: LAUNCH_YES_HEADS,
+    carriesAtOnce: true,
+    // The rule as shipped, as a literal because the governance document reads this
+    // registry as source text. It is `launchRuleSentence` at the shipped values, and
+    // `ballotSubjects.test.ts` pins the two equal.
+    why: "Only founding members vote on starting the Game. It carries the moment three of them have said yes, unless one of them has said no. A no holds it until that founding member changes their answer.",
   },
   [MINT_RULE]: {
     minUnityPct: 0,
@@ -649,10 +800,10 @@ export function methodForSubject(
  *     touches them. These keys move a FLOOR, and a floor that could move down
  *     is not one.
  *
- * The Birthing has no keys at all. It is 100 and 100 by rule (Q11: the
- * Birthing stays at 100 and 100 because it is the one vote where everyone is
- * present by definition), and a setting that could only ever hold the one
- * value it already has is a control that does nothing.
+ * The Birthing has no keys at all. Its rule is three founder yeses and no
+ * founder's no (Rye, 2026-11-27), fixed on the registry, and a setting that
+ * could only ever hold the one value it already has is a control that does
+ * nothing.
  */
 export const TIER_SETTING_KEYS: Readonly<Record<Criticality, { unity: string; quorum: string }>> = {
   routine: {
@@ -799,6 +950,16 @@ export function dialsForSubject(
   settings?: ThresholdSettings,
 ): MethodDials {
   const subjects = typeof subjectType === "string" ? [subjectType] : subjectType;
+  /*
+   * A subject whose numbers are its whole rule takes them as written, and the
+   * village's dials never reach it (`fixedDials` on the registry). Alone on its
+   * ballot only: in a bundle its numbers go back to being a floor, which is
+   * the stricter reading and the safe one.
+   */
+  if (subjects.length === 1) {
+    const only = thresholdsForSubject(subjects[0]);
+    if (only?.fixedDials) return { unityPct: only.minUnityPct, quorumPct: only.minQuorumPct };
+  }
   let out = dialsForMethod(method, village);
   for (const subject of subjects) out = raiseDials(out, floorForSubject(subject, settings));
   return out;
@@ -863,10 +1024,9 @@ export function thresholdsFor(
   let dials = dialsForSubject(subjects, conducts, village, settings);
   if (target.criticality) dials = raiseDials(dials, floorForCriticality(target.criticality, settings));
   /*
-   * The Birthing is exempt from the warning by rule (Q11). It is the one vote
-   * where everybody is present by definition: the village has not started, so
-   * nobody has joined it and drifted away again, and the whole point of the
-   * vote is that every catalyst is in the room.
+   * The Birthing is exempt from the warning by rule (Q11). Its unity of 100
+   * means "no founder has said no" on a roll of founders, which is the rule
+   * and never a stalemate hazard: one founder's no is meant to hold it.
    */
   const exempt = subjects.includes(VILLAGE_LAUNCH);
   return {
@@ -895,10 +1055,14 @@ export function stalemateWarningFor(key: string, value: string | number): string
  */
 export function evaluationRulesFor(
   subjectType: string | readonly string[],
-): { abstainPolicy: AbstainPolicy; minYesHeads: number | "all" | undefined } {
+): { abstainPolicy: AbstainPolicy; minYesHeads: number | "all" | undefined; carriesAtOnce: boolean } {
   const subjects = typeof subjectType === "string" ? [subjectType] : subjectType;
   let abstainPolicy: AbstainPolicy = "counts_toward_quorum";
   let minYesHeads: number | "all" | undefined;
+  // Only a ballot on that one subject carries at once: a bundle waits for its
+  // window like everything else, because one of its parts may have a steward
+  // window to honour.
+  const carriesAtOnce = subjects.length === 1 && thresholdsForSubject(subjects[0])?.carriesAtOnce === true;
   for (const subject of subjects) {
     const t = thresholdsForSubject(subject);
     if (!t) continue;
@@ -908,7 +1072,17 @@ export function evaluationRulesFor(
       minYesHeads = Math.max(typeof minYesHeads === "number" ? minYesHeads : 0, t.minYesHeads);
     }
   }
-  return { abstainPolicy, minYesHeads };
+  return { abstainPolicy, minYesHeads, carriesAtOnce };
+}
+
+/** Whether a ballot on this subject carries the moment its rule is met. See `carriesAtOnce` on the registry. */
+export function carriesAtOnce(subjectType: string): boolean {
+  return evaluationRulesFor(subjectType).carriesAtOnce;
+}
+
+/** Whether this subject's roll is the founders alone. See `roll` on the registry. */
+export function rollIsFounders(subjectType: string): boolean {
+  return thresholdsForSubject(subjectType)?.roll === "founders";
 }
 
 /**
@@ -1028,16 +1202,30 @@ export function launchMinElectorate(villageMin: number, floor: number = LAUNCH_M
  * two is young. It is not behind, it is not failing, and nothing here tells it
  * what to want. `null` means the floor is met.
  */
-export function electorateFloorProblem(subjectType: string, onTheRoll: number, villageMin?: number): string | null {
+export function electorateFloorProblem(
+  subjectType: string,
+  onTheRoll: number,
+  villageMin?: number,
+  /** Who the village's launch asks. Absent reads the registry, which is the rule as shipped. */
+  rollKind?: LaunchRollKind,
+): string | null {
   const floor = thresholdsForSubject(subjectType);
   if (!floor || floor.minElectorate <= 0) return null;
   // The launch's head count is the village's own dial (Rye, 2026-11-06), never below the floor (D3).
   const min = subjectType === VILLAGE_LAUNCH && villageMin !== undefined && Number.isFinite(villageMin) ? launchMinElectorate(villageMin) : floor.minElectorate;
   if (onTheRoll >= min) return null;
   const short = min - onTheRoll;
+  if ((rollKind ?? floor.roll) === "founders") {
+    // Counted in founders, because founders are who this vote asks (Rye, 2026-11-27).
+    // "Founding member" is the word a member reads for the stored role `founder`.
+    const here = onTheRoll === 0 ? "No founding member is" : onTheRoll === 1 ? "One founding member is" : `${onTheRoll} founding members are`;
+    const moreFounders = short === 1 ? "One more founding member" : `${short} more founding members`;
+    return `${here} on the roll today. ${moreFounders} and the village can hold its launch vote.`;
+  }
   const people = onTheRoll === 1 ? "One member holds a voice" : `${onTheRoll} members hold a voice`;
   const more = short === 1 ? "One more member" : `${short} more members`;
-  return `${people} in this village today. ${more} and the village can vote to start its Game.`;
+  // "Hold its launch vote", so the sentence is also true of a village already issuing, whose vote starts nothing.
+  return `${people} in this village today. ${more} and the village can hold its launch vote.`;
 }
 
 /** One seat on a frozen roll: who was asked, and what their answer weighs. */
@@ -1090,10 +1278,12 @@ export interface RollSeat {
  * It does not read `weight_mode`. A rule written against a mode is a rule a
  * future fourth mode inherits by accident or escapes by accident.
  *
- * It says nothing about abstention. A launch can still carry on one yes and
- * two abstentions, because that is R74 plus the engine's stated abstain rule,
- * and it takes three people choosing to answer. That is a documented decision,
- * not this gap.
+ * It says nothing about abstention. What an abstention is on the launch is
+ * the entry's own `abstainPolicy` and `minYesHeads`.
+ *
+ * SINCE 2026-11-27 THE LAUNCH ROLL CANNOT TRIP THIS. Its roll is the founders,
+ * each frozen at one (`roll: "founders"`), so no seat on it weighs nothing.
+ * The check stays for any roll built another way.
  */
 export function weightFloorProblem(subjectType: string, roll: readonly RollSeat[]): string | null {
   const floor = thresholdsForSubject(subjectType);
@@ -1114,8 +1304,13 @@ export function weightFloorProblem(subjectType: string, roll: readonly RollSeat[
  * be asked this?") and one place a route refuses. Two separate calls at each of
  * the two call sites is how the second check gets added to one of them.
  */
-export function rollProblem(subjectType: string, roll: readonly RollSeat[], villageMin?: number): string | null {
-  return electorateFloorProblem(subjectType, roll.length, villageMin) ?? weightFloorProblem(subjectType, roll);
+export function rollProblem(
+  subjectType: string,
+  roll: readonly RollSeat[],
+  villageMin?: number,
+  rollKind?: LaunchRollKind,
+): string | null {
+  return electorateFloorProblem(subjectType, roll.length, villageMin, rollKind) ?? weightFloorProblem(subjectType, roll);
 }
 
 /**
@@ -1321,8 +1516,8 @@ export function subjectInPeople(
   const dials = floorForSubject(subjectType, settings);
   /*
    * The Birthing is exempt from both warnings for the reason `thresholdsFor`
-   * already gives: it is the one vote where everybody is present by
-   * definition, so "every seat must answer" is the rule and not a hazard.
+   * already gives: a founder's no holding the launch is the rule and not a
+   * hazard.
    */
   const exempt = subjectType === VILLAGE_LAUNCH;
   return {
@@ -1339,11 +1534,11 @@ export function subjectInPeople(
  * ── A DELEGATED ROW DOES NOT COUNT WHERE EVERYONE MUST AGREE ────────────────
  *
  * A ballot conducted at 100 unity asks every member who takes a side to
- * agree, and the Birthing asks every seat on the roll to say yes. A row
- * derived from somebody else's choice is not that member saying yes. It is a
- * copy of a neighbour's answer, and counting it would let three delegations
- * to one person carry the vote the founder wrote as "at LEAST 3 but could be
- * many more people who then activate a new game".
+ * agree, and the Birthing asks three founders to say yes. A row derived from
+ * somebody else's choice is not that founder saying yes. It is a copy of a
+ * neighbour's answer, and counting it would let two delegations to one person
+ * carry the vote the founder wrote as "at least 3 members holding the founder
+ * role" (Rye, 2026-11-27).
  *
  * So on any subject asking 100 unity, the Birthing included, a delegated row
  * counts toward neither the weighted tally nor the head count. The member is

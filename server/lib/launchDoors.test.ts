@@ -44,6 +44,7 @@ describe("D2a: the dials that decide how votes pass", () => {
       "governance.subject_mint_rule_unity_pct",
       "governance.highest_tier",
       "governance.launch_min_electorate",
+      "governance.launch_roll",
       "governance.default_method",
       "governance.vote_days",
       "governance.window_role_seat",
@@ -115,6 +116,20 @@ describe("D2a through the dial write itself", () => {
     started = true;
     const a = await writeDial(dialDeps({}), {} as any, "governance.launch_min_electorate", "1");
     expect(a.status).toBe(409);
+  });
+
+  it("who the launch asks is the founder's to set before the Game starts, and closed to the panel after (Rye, 2026-11-06 and 2026-11-27)", async () => {
+    // Before: a founder builds the Game, this setting included.
+    started = false;
+    const before = await writeDial(dialDeps({}), {} as any, "governance.launch_roll", "members");
+    expect(before.status).toBe(200);
+    // After: a village that is issuing and has not held its launch vote must
+    // not have its panel choose who answers. The village's highest vote does.
+    started = true;
+    const after = await writeDial(dialDeps({}), {} as any, "governance.launch_roll", "founders");
+    expect(after.status).toBe(409);
+    expect((after.body as any).proposeInstead).toBe(true);
+    expect((after.body as any).code).toBe("vote_rule_dial_closed_at_launch");
   });
 
   it("after launch an ordinary dial still writes", async () => {

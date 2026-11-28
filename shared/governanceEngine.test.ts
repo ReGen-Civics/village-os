@@ -218,11 +218,18 @@ describe("the yes-head floor", () => {
     expect(requiredYesHeads(3, 7)).toBe(3);
   });
 
-  it("fails a ballot that met both dials on weight and is short of yes heads", () => {
+  it("does not pass a ballot that met both dials on weight and is short of yes heads", () => {
     /*
      * The case the weighted arithmetic cannot see: one heavy member and two
      * light ones, quorum and unity both satisfied by two of the three, and a
      * subject that asked for all three to say yes.
+     *
+     * WHICH not-passed it is changed on 2026-11-27 (Rye: the launch carries on
+     * three founder yeses, and a no holds it). Short of the yes heads with
+     * nobody refusing is a question the roll has not finished answering, so it
+     * reads `no_quorum` and can be asked again. With a no standing it is a
+     * refusal and reads `failed`, which is what this case used to assert for
+     * both.
      */
     const input = {
       method: "custom" as const,
@@ -238,6 +245,15 @@ describe("the yes-head floor", () => {
         minYesHeads: "all",
         heads: { yesHeads: 2, noHeads: 0, abstainHeads: 0, electorateCount: 3 },
       }),
+    ).toBe("no_quorum");
+    // The same shortfall with one head saying no: a refusal, so it fails.
+    expect(
+      evaluateBallot({
+        ...input,
+        tallies: t(11, 1, 0),
+        minYesHeads: "all",
+        heads: { yesHeads: 2, noHeads: 1, abstainHeads: 0, electorateCount: 3 },
+      }),
     ).toBe("failed");
     expect(
       evaluateBallot({
@@ -246,6 +262,30 @@ describe("the yes-head floor", () => {
         heads: { yesHeads: 3, noHeads: 0, abstainHeads: 0, electorateCount: 3 },
       }),
     ).toBe("passed");
+  });
+
+  it("carries on a NUMBER of yes heads with the rest of the roll silent, and a no holds it", () => {
+    // The launch's shape (shared/ballotSubjects.ts): three yes heads, unity
+    // 100, no quorum percent, every seat weighing one.
+    const launch = { method: "custom" as const, unityPct: 100, quorumPct: 0, totalWeight: 9, minYesHeads: 3 };
+    const heads = (yes: number, no: number, abstain = 0) => ({ yesHeads: yes, noHeads: no, abstainHeads: abstain, electorateCount: 9 });
+    expect(evaluateBallot({ ...launch, tallies: t(3, 0, 0), heads: heads(3, 0) })).toBe("passed");
+    expect(evaluateBallot({ ...launch, tallies: t(2, 0, 0), heads: heads(2, 0) })).toBe("no_quorum");
+    expect(evaluateBallot({ ...launch, tallies: t(8, 1, 0), heads: heads(8, 1) })).toBe("failed");
+    expect(evaluateBallot({ ...launch, tallies: t(2, 1, 0), heads: heads(2, 1) })).toBe("failed");
+    expect(evaluateBallot({ ...launch, tallies: t(3, 0, 6), heads: heads(3, 0, 6) })).toBe("passed");
+  });
+
+  it("still fails a re-run decided by the votes cast when it is short of yes heads", () => {
+    // The quorum fallback's second miss replaces the quorum bar and the unity
+    // bar and nothing else: a head floor still fails it closed.
+    expect(
+      evaluateBallot({
+        method: "custom", unityPct: 80, quorumPct: 90, totalWeight: 12, tallies: t(5, 0, 0),
+        majorityOfCast: true, minYesHeads: 3,
+        heads: { yesHeads: 2, noHeads: 0, abstainHeads: 0, electorateCount: 5 },
+      }),
+    ).toBe("failed");
   });
 
   it("fails closed when a subject asks for heads and the caller hands none", () => {
