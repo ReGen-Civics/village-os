@@ -372,7 +372,7 @@ export default function Season() {
                   )}
                 </p>
                 <h1 className={H1}>
-                  {focus || <Trans context="season page">The season</Trans>}
+                  {focus || <Trans context="season page">Season</Trans>}
                 </h1>
                 {closes && active ? (
                   <SeasonLine

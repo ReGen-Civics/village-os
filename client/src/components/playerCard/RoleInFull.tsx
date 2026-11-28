@@ -171,7 +171,13 @@ function PlaysChips({ plays }: { plays: NonNullable<RoleOut["plays"]> }) {
   );
 }
 
-export function RoleInFull({ role, health = null }: { role: RoleOut; health?: HealthOut | null }) {
+/**
+ * `mark` and `lead` are the profile's My roles (MyRoleCards.tsx): `mark` is the role's art beside its
+ * title, the tile's gold line icon, and `lead` follows the role's chips and health with what its "Your
+ * roles" list said about it (the member's part of their commitment and the role's own page on /roles),
+ * so each role reads as one card. Everywhere else neither is drawn.
+ */
+export function RoleInFull({ role, health = null, mark = null, lead = null }: { role: RoleOut; health?: HealthOut | null; mark?: ReactNode; lead?: ReactNode }) {
   const W = useCardWords();
   const { t } = useLingui();
   const { editing } = useContext(CardEditContext);
@@ -202,9 +208,18 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
 
   return (
     <article id={role.anchor} aria-labelledby={headingId} className="pc-rolecard">
-      <h3 id={headingId} className="pc-roletitle">
-        {role.title}
-      </h3>
+      {mark ? (
+        <div className="pc-roletitle-row">
+          {mark}
+          <h3 id={headingId} className="pc-roletitle">
+            {role.title}
+          </h3>
+        </div>
+      ) : (
+        <h3 id={headingId} className="pc-roletitle">
+          {role.title}
+        </h3>
+      )}
 
       {role.chips.length || role.circle || chipTime || powers.length || role.plays ? (
         <ul className="pc-chips" aria-label={t({ message: "About this role", context: "RoleInFull, aria-label" })}>
@@ -260,6 +275,7 @@ export function RoleInFull({ role, health = null }: { role: RoleOut; health?: He
         </div>
       ) : null}
       {health ? <HealthLine health={health} /> : null}
+      {lead}
 
       {role.proposals.length ? (
         <RoleProposals role={role} onDone={setDecided} />

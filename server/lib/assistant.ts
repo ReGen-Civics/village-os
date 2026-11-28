@@ -48,7 +48,8 @@ export type AssistantMode =
   | "card"
   | "adminHelper"
   | "fieldHelp"
-  | "translate";
+  | "translate"
+  | "find";
 
 export interface ModeSpec {
   audience: "public" | "member" | "admin";
@@ -105,6 +106,10 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // (CONTENT_MACHINE_DRAFTS=on); a holder of the power asks, a page at a time.
   // No tools: the English arrives in the message.
   translate: { audience: "admin", dailyBudget: 60, maxTokens: 4000, toolCalls: 0 },
+  // Find anything's guide (server/routes/search.ts): when a search finds little, the guide names one to three
+  // places from the reader's own list. Public, because a visitor is the one most often lost; strangers draw on the
+  // anonymous slices of this day. No tools: the list arrives in the prompt, and nothing else does.
+  find: { audience: "public", dailyBudget: 200, maxTokens: 500, toolCalls: 0 },
 };
 
 /** Conversation limits, shared so no mode can quietly widen them. */
@@ -566,7 +571,18 @@ export type AssistantResult =
       /** Reader keys actually called, in order, for the transparency line. */
       toolsUsed: string[];
     }
-  | { ok: false; status: number; error: string; spent?: AssistantSpend };
+  | {
+      ok: false;
+      status: number;
+      error: string;
+      spent?: AssistantSpend;
+      /**
+       * Set when the refusal is the mode's whole day spent, so a caller can say "today" where it would otherwise
+       * say "not now" (Find anything, server/routes/search.ts). Additive: the status and the error are unchanged.
+       * Set on the village and platform keys' road; the Sera road keeps its answer as it was.
+       */
+      reason?: "day";
+    };
 
 /**
  * The endpoint and the reply shape live in `assistantProviders.ts` now (round
@@ -710,7 +726,7 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
         // Serving what we have would hand a caller their own fallback sentence
         // at HTTP 200 with nothing in the log.
         if (i > 0) console.warn(`[assistant:${req.mode}] day budget ran out mid-loop after ${iterations} call(s)`);
-        return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
+        return { ok: false, status: 503, error: "assistant-unavailable", reason: "day", ...spent() };
       }
       // A borrowed key spends someone else's allowance, so it carries a second,
       // smaller ceiling on top of the mode's own.

@@ -1,0 +1,30 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the Batches view of the review list, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: views"
+msgid "Batches"
+msgstr "Lotes"
+
+# needs-native-review: the Batches view of the review list, 27 Nov 2026
+#: client/src/pages/AdminReview.tsx
+msgctxt "review inbox: batches view"
+msgid "Reading the batches."
+msgstr "Leyendo los lotes."
+
+# needs-native-review: a Waiting card names its batch, 27 Nov 2026
+#: client/src/components/reviewInbox/ConnectorWaiting.tsx
+msgctxt "review inbox: a change's batch"
+msgid "Part of batch {code}."
+msgstr "Parte del lote {code}."
+
+# needs-native-review: a Waiting card names its batch, 27 Nov 2026
+#: client/src/components/reviewInbox/ConnectorWaiting.tsx
+msgctxt "review inbox: a change's batch"
+msgid "See the whole batch"
+msgstr "Ver el lote completo"

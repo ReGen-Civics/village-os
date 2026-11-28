@@ -90,7 +90,7 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         { key: "work-with-us", label: "Work With Us", icon: Handshake },
         { key: "faqs", label: "FAQs", icon: HelpCircle },
         { key: "milestones", label: "Build Progress", icon: Activity },
-        { key: "visit-config", label: "Visit Program", icon: Calendar },
+        // The visit program is edited inside Pages, on the Visit page (cut C6, 27 Nov 2026).
         { key: "investor-summary", label: "Investor Summary", icon: BarChart3 },
       ],
     },
@@ -104,7 +104,7 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
       //
       // Email Settings sat beside it until 2026-10-02, and is now the start of
       // Comms Settings, in the Comms group below. Its old key, `email-settings`,
-      // still renders that screen, so every link to it still lands.
+      // still opens that screen (adminTabAliases.ts), so every link to it still lands.
       title: CONNECTIONS_GROUP_TITLE,
       items: [{ key: "integrations", label: "Integrations", icon: KeyRound }],
     },
@@ -163,10 +163,8 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         // that paid it (0285, 2026-10-30). Beside the Ledger because it is the
         // other book a treasurer keeps, and it never touches the ledger.
         { key: "cash-payouts", label: "Cash To Pay Out", icon: Coins },
-        // The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
-        { key: "pricing-desk", label: "Pricing Desk", icon: Scale },
-        // The cash budget (0360): the Treasurer uploads it, every member reads it at /governance/treasury.
-        { key: "budgets", label: "Cash Budget", icon: BarChart3 },
+        // The pricing desk and the cash budget are one desk each, on the governance
+        // Treasury (cut C5, 27 Nov 2026). Their old tab keys redirect there.
         { key: "cycles", label: "Cycle Close", icon: Moon },
         { key: "products", label: "Payments", icon: Handshake },
         { key: "resources-admin", label: "How Resources Flow", icon: Coins },
@@ -184,11 +182,11 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         { key: "submissions", label: "All Forms", icon: Inbox },
         { key: "portal-visitors", label: "Portal Visitors", icon: DoorOpen },
         { key: "feedback", label: "Feedback", icon: HelpCircle },
-        { key: "quest-claims", label: "Quest Claims", icon: Sparkles },
-        { key: "forum-moderation", label: "Moderation", icon: Users2 },
-        // Beside the forum queue on purpose: the same job, the same card, and
-        // the two are the only places a flag from a member ever lands.
-        { key: "message-reports", label: "Message Reports", icon: MessageSquare },
+        // ONE queue for every flag a member raises, on the forum or in a
+        // message (cut C7, 27 Nov 2026): the same job on the same card. The
+        // two old keys, and Quest Claims (a link to the review list, cut C4),
+        // keep their addresses in adminTabAliases.ts.
+        { key: "reports", label: "Reports", icon: MessageSquare },
         { key: "drafts", label: "Her Drafts", icon: Inbox },
         { key: "brain", label: "Village Brain", icon: FileText },
         // What keeps failing, and what to do about each. Last in the queues

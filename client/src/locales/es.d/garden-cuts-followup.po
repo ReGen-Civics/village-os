@@ -1,0 +1,30 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
+# needs-native-review: the Library tab says why the credit-sale card is missing while the Exchange module is off, 27 Nov 2026
+#: client/src/components/admin/CreditSaleMissing.tsx
+msgctxt "CreditSaleMissing, h3"
+msgid "Selling library credits needs the Exchange"
+msgstr "La venta de créditos de la biblioteca necesita el Intercambio"
+
+# needs-native-review: the Library tab says why the credit-sale card is missing while the Exchange module is off, 27 Nov 2026
+#: client/src/components/admin/CreditSaleMissing.tsx
+msgctxt "CreditSaleMissing, p"
+msgid "Library credits are listed and sold on the Exchange, and the Exchange module is off. Turn it on from its own page, and the caution card that opens credit sales shows here."
+msgstr "Los créditos de la biblioteca se publican y se venden en el Intercambio, y el módulo de Intercambio está apagado. Enciéndalo desde su propia página, y la tarjeta de precaución que abre la venta de créditos aparece aquí."
+
+# needs-native-review: the link to the Exchange module's own page, 27 Nov 2026
+#: client/src/components/admin/CreditSaleMissing.tsx
+msgctxt "CreditSaleMissing, link"
+msgid "Open the Exchange module"
+msgstr "Abrir el módulo de Intercambio"
+
+# needs-native-review: the read that serves the credit-sale card failed, 27 Nov 2026
+#: client/src/components/admin/CreditSaleMissing.tsx
+msgctxt "CreditSaleMissing, p"
+msgid "Whether library credits can be sold did not load. Reload the page to try again."
+msgstr "No cargó si los créditos de la biblioteca se pueden vender. Recargue la página para intentarlo de nuevo."

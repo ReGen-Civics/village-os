@@ -1947,6 +1947,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   color: var(--day-accent, var(--pal-day-accent));
 }
 
+/* The menu's season ring at night takes its heading's own ink (the gold), which is held to text contrast on every
+   menu. Coral measured 2.26:1 there and the green 2.51:1 (nav/menuJoys.tsx, QA rounds 2 and 3); by day the ring keeps
+   the season's colour. */
+:root[data-mode="dark"] [data-season-mark] {
+  border-color: currentColor;
+}
+
 /* The page's light: a warm sky by day, the goldwash over the canopy by night. */
 :root[data-mode="light"] .sheet-night.min-h-screen {
   background-image:

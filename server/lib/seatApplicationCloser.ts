@@ -528,7 +528,7 @@ export async function tellSteps(deps: NoticeDeps, app: StoredApplication, steps:
     actorUserId: actorId,
     dedupeKey: key,
   });
-  if (steps.includes("confidentiality") && !agreementWritten()) await deps.notifyAdmins("governance", START_WORDS.noAgreement, `sa:${app.id}:no-agreement`, "/admin?tab=content");
+  if (steps.includes("confidentiality") && !agreementWritten()) await deps.notifyAdmins("governance", START_WORDS.noAgreement, `sa:${app.id}:no-agreement`, "/admin?tab=confidentiality");
 }
 
 // ── The closer ──────────────────────────────────────────────────────────────

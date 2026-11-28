@@ -5,7 +5,12 @@
  * as the lit menu (config/navBearings.ts), so the words are the menu's own: the village's renames, in the reader's
  * language. A page that IS a menu entry draws none, so the top-level pages stay as they were.
  *
- * The group is a link only where it has a page of its own (NavGroup.href); otherwise it is plain words.
+ * The group is a link only where it has a page of its own (NavGroup.href).
+ *
+ * THE FULL TRAIL (27 Nov 2026, the lead's "do first" list): group, then folder, then page, each tappable. The folder
+ * the entry sits in (NavLink.sub) is named between them, in the village's own word for it. A group or a folder with no
+ * page of its own opens the menu at that place instead (`onOpen`: the group's dropdown, or the phone's More), so every
+ * step of the trail goes somewhere.
  */
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
@@ -20,22 +25,41 @@ const CRUMB_LINK = "inline-flex min-h-6 items-center rounded-lg text-teal-deep u
 export interface Trail {
   group: string | null;
   groupHref?: string;
+  /** The folder the entry sits in, already in the reader's words. */
+  folder?: string | null;
   item: { href: string; label: string };
   leaf: string | null;
+  /** Opens the menu where the trail points: the group's dropdown on a wide screen, the More sheet on a phone. */
+  onOpen?: () => void;
 }
 
 function Sep() {
   return <span aria-hidden="true" data-crumb-sep="" className="text-muted-foreground">/</span>;
 }
 
-export default function Breadcrumbs({ group, groupHref, item, leaf }: Trail) {
+export default function Breadcrumbs({ group, groupHref, folder = null, item, leaf, onOpen }: Trail) {
   const { t } = useLingui();
+  // A step with no page of its own: a button that opens the menu there, or plain words where nothing can open it.
+  const opener = (words: string, crumb: string) =>
+    onOpen ? (
+      <button type="button" onClick={onOpen} className={CRUMB_LINK} data-crumb={crumb} aria-haspopup="true" aria-label={t({ message: `Open ${words} in the menu`, context: "the breadcrumb: a group or folder that opens the menu there, read aloud" })}>
+        {words}
+      </button>
+    ) : (
+      <span data-crumb={crumb}>{words}</span>
+    );
   return (
     <nav aria-label={t({ message: "Breadcrumb", context: "the trail at the top of a page: where it sits in the menu, read aloud" })} className="container pt-4" data-breadcrumbs="" data-wayfinding="breadcrumb">
       <ol className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
         {group ? (
           <li className="inline-flex items-center gap-2">
-            {groupHref ? <Link href={groupHref} className={CRUMB_LINK} data-crumb="group">{group}</Link> : <span data-crumb="group">{group}</span>}
+            {groupHref ? <Link href={groupHref} className={CRUMB_LINK} data-crumb="group">{group}</Link> : opener(group, "group")}
+            <Sep />
+          </li>
+        ) : null}
+        {folder ? (
+          <li className="inline-flex items-center gap-2">
+            {opener(folder, "folder")}
             <Sep />
           </li>
         ) : null}

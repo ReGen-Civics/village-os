@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@lingui/core";
-import NeedsYouNow, { ROWS_PER_KIND } from "./NeedsYouNow";
+import { NeedsYouNowAlone as NeedsYouNow, ROWS_PER_KIND } from "./NeedsYouNow";
 
 const item = (source: string, n: number) => ({
   key: `${source}:${n}`, source, kind: source, code: null, summary: `${source} number ${n}`,
@@ -42,8 +42,9 @@ const show = () => render(<I18nProvider i18n={i18n}><NeedsYouNow /></I18nProvide
 describe("Needs you now on Today", () => {
   it("reads the review list: every kind, its count, the first rows, and See all", async () => {
     show();
-    expect(await screen.findByText("6 things are waiting on you.")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "Needs you now" })).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "Needs you now" })).toBeTruthy();
+    // No second total here: Home's card says the one count, and this list is what it counts.
+    expect(screen.queryByText(/things? (is|are) waiting on you/)).toBeNull();
     // Each item is a row on the list's own terms: its own words and a door to where it is decided.
     expect(screen.getByText("vote number 1")).toBeTruthy();
     const apps = screen.getAllByText(/^application number /);
@@ -53,6 +54,22 @@ describe("Needs you now on Today", () => {
     expect(seeAll.getAttribute("href")).toBe("/admin/review?kind=application");
     // A kind with three or fewer has no See all.
     expect(screen.getAllByRole("link", { name: /^See all/ })).toHaveLength(1);
+  });
+
+  it("says the server's numbers, never a count of the rows it was sent, and unknown for a queue that did not load", async () => {
+    // The list is paged per kind (the hall relief, 27 Nov 2026): ten of 23 applications are sent, and one queue failed.
+    answer = {
+      sections: [
+        { source: "application", state: "ok", count: 23, atLeast: 23, blocked: 0, more: true },
+        { source: "open", state: "failed", count: null, atLeast: 1, blocked: 0, more: false },
+      ],
+      items: [...Array.from({ length: 10 }, (_, n) => item("application", n + 1)), item("open", 1)],
+      counts: { waiting: 24, unknown: ["open"], blocked: 0 },
+    };
+    show();
+    expect(await screen.findByRole("heading", { name: "Applications for a role (23)" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: "See all 23" }).getAttribute("href")).toBe("/admin/review?kind=application");
+    expect(screen.getByRole("heading", { name: "Proposals from outside the village (unknown)" })).toBeTruthy();
   });
 
   it("names a queue that failed, so it never reads as nothing waiting", async () => {
@@ -65,6 +82,13 @@ describe("Needs you now on Today", () => {
     show();
     expect(await screen.findByText("The review list did not load, so this cannot say what is waiting.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+  });
+
+  it("never says nothing is waiting while a queue did not load: it may hold something", async () => {
+    answer = { sections: [{ source: "recap", state: "failed", count: null, atLeast: 0, blocked: 0, more: false }], items: [], counts: { decisions: 0, applications: 0, blocked: 0, unknown: ["recap"], waiting: 0 } };
+    show();
+    expect(await screen.findByText(/Could not be read just now, so not counted: /)).toBeTruthy();
+    expect(screen.queryByText("Nothing on the review list is waiting on you.")).toBeNull();
   });
 
   it("says nothing is waiting when the list is empty", async () => {
