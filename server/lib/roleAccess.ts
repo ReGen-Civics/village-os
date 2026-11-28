@@ -41,7 +41,14 @@ export async function raiseRevokeForEnded(db: { query: Pool["query"] }, assignme
   }
 }
 
-export const ACCESS_TASKS_LINK = "/admin?tab=org";
+/**
+ * Where an access notice lands: the org chart, the Admin tab whose key is
+ * `org-chart`. This said `?tab=org` until 27 Nov 2026, a tab that never
+ * existed, so every notice opened Admin on nothing. A notice already sent
+ * still carries the old address, and Admin opens the org chart for it
+ * (client/src/components/admin/adminTabAliases.ts).
+ */
+export const ACCESS_TASKS_LINK = "/admin?tab=org-chart";
 const MY_ACCESS_LINK = "/season-plan";
 
 async function tell(

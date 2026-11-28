@@ -28,6 +28,8 @@ import { pageSectionKey, type FieldSpec, type ListSpec, type PageSpec, type Sect
 import { BrochureSwitch, PageSwitch, useBrochureSwitches } from "./PageSwitches";
 import VisitProgramEditor from "./VisitProgramEditor";
 import { VISIT_PAGE } from "@shared/pageContent/visit";
+import { VISIT_PROGRAM_SETTING } from "@shared/adminSearch";
+import { useSettingFromAddress } from "../settingFocus";
 import { Trans, useLingui } from "@lingui/react/macro";
 
 type Doc = Record<string, any>;
@@ -310,7 +312,10 @@ export default function PagesEditor({ password }: { password: string }) {
   const { t } = useLingui();
   const kept = useKeptSpecs(password);
   const specs = useMemo(() => [...PAGE_SPECS, ...kept], [kept]);
-  const [pageId, setPageId] = useState(PAGE_SPECS[0]?.id ?? "");
+  // An address that names the visit program (`?tab=pages&setting=visit.program`, where the old
+  // Visit Program tab's address lands) opens the page that holds it.
+  const arrival = useSettingFromAddress();
+  const [pageId, setPageId] = useState(() => (arrival.setting === VISIT_PROGRAM_SETTING ? VISIT_PAGE.id : PAGE_SPECS[0]?.id ?? ""));
   const spec = useMemo(() => specs.find((p) => p.id === pageId) ?? specs[0], [pageId, specs]);
   const [saved, setSaved] = useState<Doc>({});
   const [draft, setDraft] = useState<Doc>({});
@@ -349,6 +354,12 @@ export default function PagesEditor({ password }: { password: string }) {
 
   const problems = useMemo(() => pageDocumentProblems(spec, draft), [spec, draft]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
+  // The same address arriving while Pages is already open (Admin search, Back). Unsaved words keep
+  // the page where it is, the way the picker does.
+  useEffect(() => {
+    if (arrival.seq > 0 && arrival.setting === VISIT_PROGRAM_SETTING && !dirty && !programDirty) setPageId(VISIT_PAGE.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrival.seq]);
 
   const put = async (raw: Doc, done: string): Promise<SaveResult> => {
     if (loadError) return { ok: false, reason: `${loadError} Saving is off until it reads, so nothing you have written gets overwritten.` };

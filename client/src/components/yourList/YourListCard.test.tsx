@@ -76,4 +76,36 @@ describe("Your list", () => {
     expect(body).toMatchObject({ reason: "already_done", context: { surface: "profile" } });
     expect(body.feedbackId).toMatch(/^fb-/);
   });
+
+  it("shows the Undo bar for the wait, on the page itself, and Undo stops the change before it is sent", async () => {
+    // The bar was mounted in Admin only, so on the profile this wait showed nothing.
+    setUndoWaitMs(60_000);
+    gameFetch.mockImplementation(() => answer(onList));
+    render(<YourListCard />);
+    await screen.findByText("Your list");
+    expect(document.querySelector("[data-undo-bar]")).toBeNull();
+    await userEvent.click(screen.getAllByText("It's done")[0]);
+    const bar = document.querySelector("[data-undo-bar]") as HTMLElement;
+    expect(bar, "the Undo bar is drawn").toBeTruthy();
+    expect(bar.textContent).toContain("Marking this done.");
+    expect(bar.textContent).toContain("You have 10 seconds.");
+    // Drawn at the end of <body> in the profile's night world, outside the card a phone tab can hide.
+    expect(bar.parentElement?.className).toBe("sheet-night");
+    expect(bar.parentElement?.parentElement).toBe(document.body);
+    expect(bar.closest("section")).toBeNull();
+    await userEvent.click(bar.querySelector("button")!);
+    expect(document.querySelector("[data-undo-bar]")).toBeNull();
+    expect(gameFetch.mock.calls.some(([u, i]) => String(u).endsWith("/done") && i?.method === "POST")).toBe(false);
+  });
+
+  it("sends the change when the wait ends with no Undo", async () => {
+    setUndoWaitMs(500);
+    gameFetch.mockImplementation(() => answer(onList));
+    render(<YourListCard />);
+    await screen.findByText("Your list");
+    await userEvent.click(screen.getAllByText("It's done")[0]);
+    expect(document.querySelector("[data-undo-bar]")).toBeTruthy();
+    await waitFor(() => expect(gameFetch.mock.calls.some(([u, i]) => String(u).endsWith("/done") && i?.method === "POST")).toBe(true));
+    expect(document.querySelector("[data-undo-bar]")).toBeNull();
+  });
 });

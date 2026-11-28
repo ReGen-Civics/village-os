@@ -35,11 +35,9 @@ export const TAB_MODULE: Record<string, string> = {
   "health-admin": "health",
   "calls-admin": "automation",
   products: "commerce",
-  "forum-moderation": "forum",
-  // `/api/admin/messages` mounts behind requireModule("messaging"), so the DM
-  // report queue is only a queue while the module is on. `cycles` is NOT here:
-  // gratitude is core, always public, and its close route is behind no gate.
-  "message-reports": "messaging",
+  // `cycles` is NOT here: gratitude is core, always public, and its close
+  // route is behind no gate. The Reports queue follows two modules and is in
+  // TAB_MODULES below.
   "resources-admin": "resources",
   "intents-admin": "introductions",
   // `app.use("/api/admin/governance", requireModule("governance"))` gates every
@@ -57,6 +55,31 @@ export const TAB_MODULE: Record<string, string> = {
   "comms-people": "comms",
   "comms-letters": "comms",
 };
+
+/**
+ * A tab that answers for more than one module. It renders while ANY of them is
+ * on, and wears a badge only when the ones that are on stand in the same place.
+ *
+ * The one Reports queue (cut C7, 27 Nov 2026) holds the forum's reports and
+ * the reports on private messages. `/api/admin/forum` mounts behind
+ * requireModule("forum") and `/api/admin/messages` behind
+ * requireModule("messaging"), so the queue is only a queue while one of the
+ * two is on, and it reads only the half that is.
+ */
+export const TAB_MODULES: Record<string, readonly string[]> = {
+  reports: ["forum", "messaging"],
+};
+
+/** The modules a tab follows. None for a platform tab, which always renders. */
+export function tabModules(key: string): readonly string[] {
+  const one = TAB_MODULE[key];
+  return one ? [one] : TAB_MODULES[key] ?? [];
+}
+
+/** Whether a module is on. Unknown (the catalog has not arrived) reads as on, so nothing flashes away. */
+export function moduleIsOn(lifecycles: Record<string, ModuleLifecycle> | null | undefined, id: string): boolean {
+  return !lifecycles || (lifecycles[id] ?? "off") !== "off";
+}
 
 /** The badge an admin tab wears: where its module stands right now. */
 export type TabBadge = "preview" | "members" | "everyone";
@@ -97,13 +120,12 @@ export function filterNavByModules<I extends FilterableItem, G extends Filterabl
       ...g,
       items: g.items
         .filter((item) => {
-          const moduleId = TAB_MODULE[item.key];
-          if (!moduleId) return true;
-          return (lifecycles[moduleId] ?? "off") !== "off";
+          const ids = tabModules(item.key);
+          return ids.length === 0 || ids.some((id) => moduleIsOn(lifecycles, id));
         })
         .map((item) => {
-          const moduleId = TAB_MODULE[item.key];
-          const badge = moduleId ? tabBadge(lifecycles[moduleId]) : undefined;
+          const badges = new Set(tabModules(item.key).filter((id) => moduleIsOn(lifecycles, id)).map((id) => tabBadge(lifecycles[id])));
+          const badge = badges.size === 1 ? Array.from(badges)[0] : undefined;
           return badge ? { ...item, badge } : item;
         }),
     }))
