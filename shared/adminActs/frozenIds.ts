@@ -110,6 +110,8 @@ export const FROZEN_ACT_IDS: readonly string[] = [
   "comms.investor-words",
   "comms.rehearsal-inbox",
   "visit.program",
+  "menu.module-name",
+  "menu.module-place",
   "season.timezone",
   "project.fiatCurrency",
   "exit.closing",

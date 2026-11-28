@@ -14,6 +14,7 @@ import { CONTROL_ENTRIES, OUTSIDE_ENTRIES, TAB_SYNONYMS, dialEntry, type AdminSe
 import { ADMIN_TABS, type AdminPlace, type AdminTabEntry } from "../adminTabs";
 import { VARIABLES, type VariableDef, type VariableType } from "../gameVariables";
 import { SEEDS, type GuildSeed } from "../guilds";
+import { MENU_SECTION } from "../menuDoc";
 import { CONTROL_PARITY, DIAL_PARITY, KEY_ALSO, KEY_PARITY, MINT_DIAL_CATEGORY, MINT_DIAL_PARITY, OUTSIDE_PARITY, TAB_PAGE_ALSO, TAB_PARITY, tabParity } from "./parity";
 import { POST, PUT, secret, text, type ActField, type ActFieldKind, type ActPower, type ActRoute, type AdminAct } from "./types";
 
@@ -138,6 +139,10 @@ export const CONTROL_ROUTES: Readonly<Record<string, Adopted>> = {
   "season.timezone": { place: "spring", power: "admin", holder: "dial.set", route: PUT("/api/admin/seasons"), fields: [text("timezone", "The village's timezone")] },
   "project.fiatCurrency": { place: "spring", power: "admin", holder: "story.tell", route: PUT("/api/admin/brand"), fields: [text("currency", "The village's currency")] },
   "exit.closing": { place: "store", power: "admin", route: PUT("/api/admin/exit-policy/closing"), partial: true },
+  // A module's name and place in the menu are part of the menu document, saved whole through the page-content
+  // route (client/src/components/admin/MenuPanel.tsx; server/index.ts checks it with `menuDocumentProblem`).
+  "menu.module-name": { place: "library", route: PUT("/api/admin/content/:section", { section: MENU_SECTION }) },
+  "menu.module-place": { place: "library", route: PUT("/api/admin/content/:section", { section: MENU_SECTION }) },
 };
 
 const tabPlace = (tab: string | undefined): AdminPlace => ADMIN_TABS.find((t) => t.key === tab)?.place ?? "frame";
